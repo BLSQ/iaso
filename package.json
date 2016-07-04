@@ -17,5 +17,6 @@
   },
   "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
   "devDependencies": {
+    "couchdb-bootstrap": "^1.13.2"
   }
 }

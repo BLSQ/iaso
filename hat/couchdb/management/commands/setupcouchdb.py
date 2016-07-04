@@ -5,11 +5,7 @@ from django.conf import settings
 class Command(BaseCommand):
     help = 'Setup couchdb'
 
-    def add_argument(self, parser):
-        pass
-
     def handle(self, *args, **options):
-        self.stdout.write('Setting up couchdb at: ' + settings.COUCHDB_URL)
         try:
             run(['couchdb-bootstrap', settings.COUCHDB_URL, './couchdb'],
                 check=True)

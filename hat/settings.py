@@ -125,6 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 COUCHDB_URL = 'http://couchdb:5984'
+COUCHDB_DBNAME = 'hat'
 
 
 # Celery settings

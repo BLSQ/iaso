@@ -125,3 +125,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 COUCHDB_URL = 'http://couchdb:5984'
+
+
+# Celery settings
+
+BROKER_URL = 'amqp://broker'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_IMPORTS=("hat.tasks",)

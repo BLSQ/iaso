@@ -4,6 +4,21 @@ services:
     image: postgres
   couchdb:
     image: couchdb
+  broker:
+    image: rabbitmq
+
+  celery:
+    build: .
+    volumes:
+      - .:/code
+    links:
+      - db
+      - couchdb
+      - broker
+    command: celery -A hat worker -B -l INFO
+    environment:
+      - C_FORCE_ROOT=true
+
   web:
     build: .
     ports:

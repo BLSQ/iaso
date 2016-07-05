@@ -1,8 +1,9 @@
 import argparse
 import json
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.conf import settings
 from hat.couchdb.utils import importdocs
+
 
 class Command(BaseCommand):
     help = 'Import docs to couchdb'

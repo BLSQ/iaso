@@ -3,9 +3,11 @@ import string
 from datetime import datetime
 from uuid import uuid4
 
+
 def randstr(minlen=2, maxlen=10):
     n = min(24, random.randint(minlen, maxlen))
     return ''.join(random.sample(string.ascii_lowercase, n))
+
 
 def mock_ref(schema, defs):
     ref = schema['$ref']
@@ -15,44 +17,67 @@ def mock_ref(schema, defs):
         if d in defs:
             return mock_schema(defs[d], defs)
 
+
 def mock_enum(schema):
     return random.choice(schema['enum'])
 
+
 def mock_object(schema, defs=None):
-     if 'properties' in schema:
+    if 'properties' in schema:
         return {p: mock_schema(s, defs)
                 for p, s in schema['properties'].items()}
 
+
 def mock_array(schema, defs=None):
-    if 'minItems' in schema: minimum = schema['minItems']
-    else: minimum = 1
-    if 'maxItems' in schema: maximum = schema['maxItems']
-    else: maximum = minimum + 9
+    if 'minItems' in schema:
+        minimum = schema['minItems']
+    else:
+        minimum = 1
+    if 'maxItems' in schema:
+        maximum = schema['maxItems']
+    else:
+        maximum = minimum + 9
     n = random.randint(minimum, maximum)
     if isinstance(schema['items'], dict):
         s = schema['items']
-        return [mock_schema(s, defs) for i in range(minimum)]
+        return [mock_schema(s, defs) for i in range(n)]
+
 
 def mock_integer(schema):
-    if 'minimum' in schema: minimum = schema['minimum']
-    else: minimum = 0
-    if 'maximum' in schema: maximum = schema['maximum']
-    else: maximum = minimum + 100
+    if 'minimum' in schema:
+        minimum = schema['minimum']
+    else:
+        minimum = 0
+    if 'maximum' in schema:
+        maximum = schema['maximum']
+    else:
+        maximum = minimum + 100
     return random.randint(minimum, maximum)
 
+
 def mock_number(schema):
-    if 'minimum' in schema: minimum = schema['minimum']
-    else: minimum = 0
-    if 'maximum' in schema: maximum = schema['maximum']
-    else: maximum = minimum + 100
+    if 'minimum' in schema:
+        minimum = schema['minimum']
+    else:
+        minimum = 0
+    if 'maximum' in schema:
+        maximum = schema['maximum']
+    else:
+        maximum = minimum + 100
     return minimum + random.random() * (maximum - minimum)
 
+
 def mock_string(schema):
-    if 'minLength' in schema: minlen = schema['minLength']
-    else: minlen = 2
-    if 'maxLength' in schema: maxlen = schema['maxLength']
-    else: maxlen = max(minlen, 10)
+    if 'minLength' in schema:
+        minlen = schema['minLength']
+    else:
+        minlen = 2
+    if 'maxLength' in schema:
+        maxlen = schema['maxLength']
+    else:
+        maxlen = max(minlen, 10)
     return randstr(minlen, maxlen)
+
 
 def mock_format(schema):
     f = schema['format']
@@ -77,6 +102,7 @@ def mock_format(schema):
         return 'area'
     elif f == 'location-village':
         return 'village'
+
 
 def mock_schema(schema, definitions=None):
     defs = definitions

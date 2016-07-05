@@ -2,12 +2,13 @@ from django.test import TestCase
 import unittest
 import hat.common.mock_jsonschema as schema
 
+
 class SchemaTests(TestCase):
     def test_mock_ref(self):
         v = schema.mock_ref({
             '$ref': '#/definitions/foo'
         }, {
-            'foo': { 'type': 'boolean' }
+            'foo': {'type': 'boolean'}
         })
         self.assertIsInstance(v, bool)
 
@@ -18,7 +19,7 @@ class SchemaTests(TestCase):
     def test_mock_object(self):
         v = schema.mock_object({
             'type': 'object',
-            'properties': { 'foo': { 'type': 'string' } }
+            'properties': {'foo': {'type': 'string'}}
         })
         self.assertIsInstance(v, dict)
         self.assertIn('foo', v)
@@ -27,7 +28,7 @@ class SchemaTests(TestCase):
     def test_mock_array(self):
         v = schema.mock_array({
             'type': 'array',
-            'items': { 'type': 'string' },
+            'items': {'type': 'string'},
             'minItems': 1,
             'maxItems': 1
         })
@@ -68,24 +69,24 @@ class SchemaTests(TestCase):
         v = schema.mock_schema({
             'type': 'object',
             'properties': {
-                'enum': { 'enum': [True, False] },
-                'boolean': { 'type': 'boolean' },
+                'enum': {'enum': [True, False]},
+                'boolean': {'type': 'boolean'},
                 'object': {
                     'type': 'object',
                     'properties': {
-                        'ref': { '$ref': '#/definitions/bar' },
+                        'ref': {'$ref': '#/definitions/bar'},
                     }
                 },
                 'array': {
                     'type': 'array',
-                    'items': { 'type': 'integer' },
+                    'items': {'type': 'integer'},
                     'minItems': 1
                 },
-                'number': { 'type': 'number' },
-                'string': { 'type': 'string' }
+                'number': {'type': 'number'},
+                'string': {'type': 'string'}
             },
             'definitions': {
-                'bar': { 'type': 'boolean' }
+                'bar': {'type': 'boolean'}
             }
         })
         self.assertIsInstance(v, dict)

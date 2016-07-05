@@ -1,0 +1,15 @@
+language: python
+sudo: false
+python:
+  - "3.5"
+node_js:
+  - "4.4"
+before_install:
+  - flake8
+cache:
+  - pip
+install:
+  - npm install
+  - pip install -r requirements/dev.txt
+script:
+  - ./manage.py test

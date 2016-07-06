@@ -1,0 +1,997 @@
+[
+  {
+    "person": {
+      "forename": "Kfhdhdjfj",
+      "postname": "Vkhgjvhf",
+      "surname": "Fjgfud",
+      "age": {
+        "years": "5"
+      },
+      "gender": "Female",
+      "mothersSurname": "Mo",
+      "location": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "birthYear": 2011
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "rdt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/e5fbe5ad-e11a-4f7d-be5e-430e0550bc95.jpg",
+          "group": "2016-07-05T15:05:12.780Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "hatId": "FJVKKFF2011M",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:44:10.472Z",
+    "dateModified": "2016-07-06T09:44:10.472Z",
+    "_id": "participant-fjvkkff2011m",
+    "_rev": "1-7d3634b7c3f50607f20fe94be4df36e6"
+  },
+  {
+    "person": {
+      "forename": "D4😡😢😴",
+      "postname": "C3😉😯😐",
+      "surname": "B3☺😮😑",
+      "age": {
+        "months": "11"
+      },
+      "gender": "Female",
+      "mothersSurname": "Guga",
+      "location": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "birthYear": 2015
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "rdt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/9db0ac22-c787-4ada-b1a1-2a9dde1a6c8b.jpg",
+          "group": "2016-07-06T09:44:17.680Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "hatId": "B3C3D4F2015G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:45:44.761Z",
+    "dateModified": "2016-07-06T09:45:44.761Z",
+    "_id": "participant-b3c3d4f2015g",
+    "_rev": "1-47008dcbde0bc26fe0be1ba145e8c2cb"
+  },
+  {
+    "person": {
+      "forename": "♤♡♢♧fk",
+      "postname": "Ggaa🐏",
+      "surname": "Huhba",
+      "age": {
+        "months": "11"
+      },
+      "gender": "Male",
+      "mothersSurname": "Haba",
+      "location": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "birthYear": 2015
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "rdt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/67271d01-97a1-4feb-8df4-11be9ffd24df.jpg",
+          "group": "2016-07-06T09:44:17.680Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "hatId": "HUGGFKM2015H",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:46:54.006Z",
+    "dateModified": "2016-07-06T09:46:54.006Z",
+    "_id": "participant-huggfkm2015h",
+    "_rev": "1-7eca4274b45977bec532fec52b06e579"
+  },
+  {
+    "person": {
+      "forename": "Bbøöőœõl",
+      "postname": "Aa₩¥£€",
+      "surname": "Dd《》☆⊙°•¿¡■□●○▪",
+      "age": {
+        "years": "22"
+      },
+      "gender": "Male",
+      "mothersSurname": "Gg",
+      "location": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "birthYear": 1994
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "rdt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "group": "2016-07-06T09:44:17.680Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "hatId": "DDAABBM1994G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:48:12.879Z",
+    "dateModified": "2016-07-06T09:48:12.879Z",
+    "_id": "participant-ddaabbm1994g",
+    "_rev": "1-f72e16849f8b42bebf4f9390d2a662fe"
+  },
+  {
+    "person": {
+      "forename": "VŲűůūüûúù",
+      "postname": "HĖęěĕĕəèéêëē",
+      "surname": "Ccåæāăąàáâãä",
+      "age": {
+        "years": "25"
+      },
+      "gender": "Female",
+      "mothersSurname": "Gfd",
+      "location": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "birthYear": 1991
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "rdt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/06ab7c46-6d02-45d6-b55e-45762c40d8fc.jpg",
+          "group": "2016-07-06T09:44:17.680Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "mangungu",
+        "village": "m-ngunguvilla"
+      },
+      "hatId": "CCHEVUF1991G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:49:55.617Z",
+    "dateModified": "2016-07-06T09:49:55.617Z",
+    "_id": "participant-cchevuf1991g",
+    "_rev": "1-e57e3281612a6aace34dd86b7235e63f"
+  },
+  {
+    "person": {
+      "forename": "Jojo",
+      "postname": "Sojo",
+      "surname": "Fghıįīïîíì",
+      "age": {
+        "years": "44"
+      },
+      "gender": "Male",
+      "mothersSurname": "Hh",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1972
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "1",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/8bc63a16-c2b8-4a3b-9ef9-9f187541e60e.jpg",
+          "screeningIndex": 1,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "FGSOJOM1972H",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:51:28.197Z",
+    "dateModified": "2016-07-06T09:51:28.197Z",
+    "_id": "participant-fgsojom1972h",
+    "_rev": "1-e426ac940d1cba1d23d8130d2e579a96"
+  },
+  {
+    "person": {
+      "forename": "Jggg",
+      "postname": "Hfff",
+      "surname": "Jhfff",
+      "age": {
+        "years": "55"
+      },
+      "gender": "Male",
+      "mothersSurname": "Gjf",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1961
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "2",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/20dfc5e3-725f-4db5-9032-6759b97bf69d.jpg",
+          "screeningIndex": 2,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "JHHFJGM1961G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:52:02.096Z",
+    "dateModified": "2016-07-06T09:52:02.096Z",
+    "_id": "participant-jhhfjgm1961g",
+    "_rev": "1-d9b8dbb4b36cc2394b09fff03f815953"
+  },
+  {
+    "person": {
+      "forename": "Cgy",
+      "postname": "Ijn",
+      "surname": "Fgdt",
+      "age": {
+        "years": "44"
+      },
+      "gender": "Male",
+      "mothersSurname": "Dfg",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1972
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "0",
+          "image": "file:///storage/emulated/0/Android/data/org.ehealthafrica.hat/files/064e6542-5b27-4844-9c0a-2185b246da1f.jpg",
+          "screeningIndex": 3,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "FGIJCGM1972D",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:52:56.502Z",
+    "dateModified": "2016-07-06T09:52:56.502Z",
+    "_id": "participant-fgijcgm1972d",
+    "_rev": "1-dde6ca4ce4c63a5c441eb5a4c3ec7631"
+  },
+  {
+    "person": {
+      "forename": "Rdc",
+      "postname": "Esx",
+      "surname": "Dsa",
+      "age": {
+        "years": "33"
+      },
+      "gender": "Female",
+      "mothersSurname": "Rew",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1983
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "level": "-1",
+          "screeningIndex": 4,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "DSESRDF1983R",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:53:29.549Z",
+    "dateModified": "2016-07-06T09:53:29.549Z",
+    "_id": "participant-dsesrdf1983r",
+    "_rev": "1-090dbaf115f0e14b6fe755fcc54f54bf"
+  },
+  {
+    "person": {
+      "forename": "Hjf",
+      "postname": "Ffg",
+      "surname": "Asdg",
+      "age": {
+        "years": "25"
+      },
+      "gender": "Female",
+      "mothersSurname": "Gyh",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1991
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "2",
+          "screeningIndex": 5,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "ASFFHJF1991G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:53:56.482Z",
+    "dateModified": "2016-07-06T09:53:56.482Z",
+    "_id": "participant-asffhjf1991g",
+    "_rev": "1-ce99f0382255c4e3ec0051b77c00bb3a"
+  },
+  {
+    "person": {
+      "forename": "Kiju",
+      "postname": "Huji",
+      "surname": "Drft",
+      "age": {
+        "years": "32"
+      },
+      "gender": "Male",
+      "mothersSurname": "Fgh",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1984
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "0",
+          "screeningIndex": 6,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "DRHUKIM1984F",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:54:25.590Z",
+    "dateModified": "2016-07-06T09:54:25.590Z",
+    "_id": "participant-drhukim1984f",
+    "_rev": "1-f78b84197793169ab4d1d5a79b2365e8"
+  },
+  {
+    "person": {
+      "forename": "Jik",
+      "postname": "Desw",
+      "surname": "Tghu",
+      "age": {
+        "years": "69"
+      },
+      "gender": "Male",
+      "mothersSurname": "Gftr",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1947
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "level": "3",
+          "screeningIndex": 7,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "TGDEJIM1947G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:55:00.278Z",
+    "dateModified": "2016-07-06T09:55:00.278Z",
+    "_id": "participant-tgdejim1947g",
+    "_rev": "1-e57cc7fec1b3098f6da124fb885ffe57"
+  },
+  {
+    "person": {
+      "forename": "Frds",
+      "postname": "Hygf",
+      "surname": "Uhyg",
+      "age": {
+        "months": "6"
+      },
+      "gender": "Male",
+      "mothersSurname": "Gtf",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 2016
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "level": "-1",
+          "screeningIndex": 8,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "UHHYFRM2016G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:55:32.347Z",
+    "dateModified": "2016-07-06T09:55:32.347Z",
+    "_id": "participant-uhhyfrm2016g",
+    "_rev": "1-7c8bd1aaecab82ae34c1fe1a0769e929"
+  },
+  {
+    "person": {
+      "forename": "Jk",
+      "postname": "Gh",
+      "surname": "Df",
+      "age": {
+        "months": "9"
+      },
+      "gender": "Female",
+      "mothersSurname": "Ft",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 2015
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "level": "-1",
+          "screeningIndex": 9,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "DFGHJKF2015F",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:55:57.862Z",
+    "dateModified": "2016-07-06T09:55:57.862Z",
+    "_id": "participant-dfghjkf2015f",
+    "_rev": "1-7cfa857e8140085db325c3f01204825d"
+  },
+  {
+    "person": {
+      "forename": "Gyhj",
+      "postname": "Frds",
+      "surname": "Jikn",
+      "age": {
+        "years": "41"
+      },
+      "gender": "Female",
+      "mothersSurname": "Ftgh",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1975
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "catt": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "level": "-1",
+          "screeningIndex": 10,
+          "group": "2016-07-06T09:50:26.065Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "JIFRGYF1975F",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:56:30.934Z",
+    "dateModified": "2016-07-06T09:56:30.934Z",
+    "_id": "participant-jifrgyf1975f",
+    "_rev": "1-d9d505e046ddc547cb4fae26ea0124fe"
+  },
+  {
+    "person": {
+      "forename": "Pg",
+      "postname": "Pg",
+      "surname": "Pg",
+      "age": {
+        "years": "25"
+      },
+      "gender": "Male",
+      "mothersSurname": "Gy",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1991
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "pg": {
+          "sessionType": "onTheSpot",
+          "result": "negative",
+          "group": "2016-07-06T09:56:56.024Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "PGPGPGM1991G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:57:21.544Z",
+    "dateModified": "2016-07-06T09:57:21.544Z",
+    "_id": "participant-pgpgpgm1991g",
+    "_rev": "1-089f8c1ac6cf4b06e0074baf92f089ad"
+  },
+  {
+    "person": {
+      "forename": "Rd",
+      "postname": "Ji",
+      "surname": "Des",
+      "age": {
+        "years": "32"
+      },
+      "gender": "Female",
+      "mothersSurname": "Gyh",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1984
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "pg": {
+          "sessionType": "onTheSpot",
+          "result": "positive",
+          "group": "2016-07-06T09:56:56.024Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "DEJIRDF1984G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T09:57:48.201Z",
+    "dateModified": "2016-07-06T09:57:48.201Z",
+    "_id": "participant-dejirdf1984g",
+    "_rev": "1-604642299247bb963ad41ca49de6d9cc"
+  },
+  {
+    "person": {
+      "forename": "Gyhuji",
+      "postname": "Ftgyhu",
+      "surname": "Drftgy",
+      "age": {
+        "years": "36"
+      },
+      "gender": "Male",
+      "mothersSurname": "Fgy",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1980
+    },
+    "participant": {
+      "memberType": "traveller",
+      "screenings": {
+        "maect": {
+          "sessionType": "onTheSpot",
+          "result": "positive",
+          "group": "2016-07-06T09:59:57.210Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "DRFTGYM1980F",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T10:00:24.028Z",
+    "dateModified": "2016-07-06T10:00:24.028Z",
+    "_id": "participant-drftgym1980f",
+    "_rev": "1-3fedac871ce81140be47bff2bdb799b1"
+  },
+  {
+    "person": {
+      "forename": "Gyhujh",
+      "postname": "Hujgy",
+      "surname": "Ftgdr",
+      "age": {
+        "years": "11"
+      },
+      "gender": "Female",
+      "mothersSurname": "Ghj",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 2005
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "ctcwoo": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "group": "2016-07-06T10:00:42.014Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "FTHUGYF2005G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T10:01:08.256Z",
+    "dateModified": "2016-07-06T10:01:08.256Z",
+    "_id": "participant-fthugyf2005g",
+    "_rev": "1-71279a288be94e58eebb6745a10c3a05"
+  },
+  {
+    "person": {
+      "forename": "Hyg",
+      "postname": "Huj",
+      "surname": "Gtf",
+      "age": {
+        "years": "2"
+      },
+      "gender": "Male",
+      "mothersSurname": "Fddsa",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 2014
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "ge": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "group": "2016-07-06T10:01:24.637Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "GTHUHYM2014F",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T10:01:56.636Z",
+    "dateModified": "2016-07-06T10:01:58.257Z",
+    "_id": "participant-gthuhym2014f",
+    "_rev": "2-693479c24de6ba82ec2464ba9729719d"
+  },
+  {
+    "person": {
+      "forename": "Gyhuj",
+      "postname": "Gyhuj",
+      "surname": "Rfgtyh",
+      "age": {
+        "years": "15"
+      },
+      "gender": "Female",
+      "mothersSurname": "Gtfd",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 2001
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "pl": {
+          "sessionType": "doorToDoor",
+          "result": "negative",
+          "group": "2016-07-06T10:03:11.080Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "RFGYGYF2001G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T10:03:36.378Z",
+    "dateModified": "2016-07-06T10:03:36.378Z",
+    "_id": "participant-rfgygyf2001g",
+    "_rev": "1-9e6482e5c4e536d7c17097c64ccae881"
+  },
+  {
+    "person": {
+      "forename": "Jhg",
+      "postname": "Ygft",
+      "surname": "Oldrt",
+      "age": {
+        "years": "85"
+      },
+      "gender": "Female",
+      "mothersSurname": "Gty",
+      "location": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "birthYear": 1931
+    },
+    "participant": {
+      "memberType": "resident",
+      "screenings": {
+        "pl": {
+          "sessionType": "doorToDoor",
+          "result": "positive",
+          "group": "2016-07-06T10:03:11.080Z"
+        }
+      },
+      "screeningLocation": {
+        "zone": "mosango",
+        "area": "kasay",
+        "village": "camp-bulungu"
+      },
+      "hatId": "OLYGJHF1931G",
+      "version": 4,
+      "geoLocation": {
+        "latitude": 0,
+        "longitude": 0
+      }
+    },
+    "type": "participant",
+    "dateCreated": "2016-07-06T10:04:01.171Z",
+    "dateModified": "2016-07-06T10:04:01.171Z",
+    "_id": "participant-olygjhf1931g",
+    "_rev": "1-799c701dc2647c347a90af1136999a24"
+  }
+]

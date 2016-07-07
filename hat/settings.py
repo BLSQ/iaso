@@ -20,10 +20,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f4h^=s3eqe1-c+f@h7=!jglhvediohd=x#2wlp*cc+ds4!d90f'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.environ.get("DEBUG", "false") == "true")
 
 ALLOWED_HOSTS = []
 
@@ -78,10 +78,11 @@ WSGI_APPLICATION = 'hat.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+        'NAME': os.environ.get('RDS_DB_NAME', 'postgres'),
+        'USER': os.environ.get('RDS_USERNAME', 'postgres'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD', None),
+        'HOST': os.environ.get('RDS_HOSTNAME', 'db'),
+        'PORT': os.environ.get('RDS_PORT', 5432),
     }
 }
 
@@ -124,13 +125,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-COUCHDB_URL = 'http://couchdb:5984'
+COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
 COUCHDB_DBNAME = 'hat'
 
 
 # Celery settings
 
-BROKER_URL = 'amqp://broker'
+BROKER_URL = os.environ.get('BROKER_URL', 'amqp://broker')
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

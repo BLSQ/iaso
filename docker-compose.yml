@@ -1,0 +1,38 @@
+version: '2'
+services:
+  db:
+    image: postgres
+  couchdb:
+    image: couchdb
+  broker:
+    image: rabbitmq
+
+  celery:
+    build: .
+    volumes:
+      - .:/code
+    links:
+      - db
+      - couchdb
+      - broker
+    command: startcelery
+    environment:
+      - DEBUG=true
+      - SECRET_KEY=secret
+      - C_FORCE_ROOT=true
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+      # preserve node_modules from the image
+      - /code/node_modules
+    links:
+      - db
+      - couchdb
+    command: devserver
+    environment:
+      - DEBUG=true
+      - SECRET_KEY=secret

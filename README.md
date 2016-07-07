@@ -1,7 +1,14 @@
-# hat
+# Sense HAT
 
-Main repo for HAT (Human African Trypanosomiasis) project.
+## Tests
 
+Run tests locally
+`docker-compose run web ./manage.py test`
+
+Run codestyle check
+`docker-compose run web flake8`
+
+## Repos
 * [Mobile app](https://github.com/eHealthAfrica/sense-hat-mobile), live static web apps:
   * [eha-hat](http://eha-hat.s3-website-eu-west-1.amazonaws.com/static/) (master branch)
   * [eha-hat-dev](http://eha-hat-dev.s3-website-eu-west-1.amazonaws.com/static/) (development branch)

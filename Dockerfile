@@ -46,3 +46,5 @@ RUN pip install -r requirements.txt
 
 RUN npm install
 ENV PATH /code/node_modules/.bin:$PATH
+
+ENTRYPOINT ["/code/entrypoint.sh"]

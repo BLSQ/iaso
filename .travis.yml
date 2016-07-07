@@ -15,5 +15,4 @@ before_install:
 before_script:
   - docker-compose up -d db
 script:
-  - docker-compose run web flake8
-  - docker-compose run web ./manage.py test
+  - docker-compose run web test

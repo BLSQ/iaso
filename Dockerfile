@@ -1,5 +1,8 @@
 FROM python:3.5
 
+# Do not buffer stdout so we see log output immediatly
+ENV PYTHONUNBUFFERED true
+
 RUN apt-get update && \
     apt-get install -y postgresql-client
 
@@ -43,4 +46,3 @@ RUN pip install -r requirements.txt
 
 RUN npm install
 ENV PATH /code/node_modules/.bin:$PATH
-

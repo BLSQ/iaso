@@ -1,26 +1,27 @@
 version: '2'
 services:
   db:
-    image: postgres
+    image: postgres:9.5
   couchdb:
-    image: couchdb
-  broker:
-    image: rabbitmq
+    image: couchdb:1.6
+  redis:
+    image: redis:3.2
 
-  celery:
+  # the worker container of the task runner
+  rq:
     build: .
     volumes:
       - .:/code
     links:
       - db
       - couchdb
-      - broker
-    command: startcelery
+      - redis
     environment:
       - DEBUG=true
       - SECRET_KEY=secret
-      - C_FORCE_ROOT=true
+    command: start_rq
 
+  # the django dev server container
   web:
     build: .
     ports:
@@ -29,10 +30,12 @@ services:
       - .:/code
       # preserve node_modules from the image
       - /code/node_modules
+      # map python site-packages for debugging
+      # - /usr/local/lib/python3.5/site-packages
     links:
       - db
       - couchdb
-    command: devserver
     environment:
       - DEBUG=true
       - SECRET_KEY=secret
+    command: start_devweb

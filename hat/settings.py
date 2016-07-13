@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'hat.couchdb'
+    'hat.rq',
+    'hat.couchdb',
+    'hat.home',
+    'hat.historic',
+    'hat.dashboard',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -126,14 +130,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
-COUCHDB_DBNAME = 'hat'
+COUCHDB_DB = 'hat'
 
+REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
+REDIS_PORT = 6379
+REDIS_DB = 0
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
 
-# Celery settings
+# RQ
 
-BROKER_URL = os.environ.get('BROKER_URL', 'amqp://broker')
-
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_IMPORTS=("hat.tasks",)
+QUEUES = ['default']

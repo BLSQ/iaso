@@ -11,7 +11,9 @@ services:
   rq:
     build: .
     volumes:
-      - .:/code
+      - .:/opt/app
+      # shared dir between containers
+      - ./shared:/opt/shared
     links:
       - db
       - couchdb
@@ -27,11 +29,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/code
+      - .:/opt/app
       # preserve node_modules from the image
-      - /code/node_modules
-      # map python site-packages for debugging
-      # - /usr/local/lib/python3.5/site-packages
+      - /opt/app/node_modules
+      # shared dir between containers
+      - ./shared:/opt/shared
     links:
       - db
       - couchdb
@@ -39,3 +41,20 @@ services:
       - DEBUG=true
       - SECRET_KEY=secret
     command: start_devweb
+
+  # the jupyter server
+  jupyter:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/opt/app
+      # shared dir between containers
+      - ./shared:/opt/shared
+    links:
+      - db
+      - couchdb
+    environment:
+      - DEBUG=true
+      - SECRET_KEY=secret
+    command: start_jupyter

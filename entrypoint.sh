@@ -7,6 +7,7 @@ show_help() {
   test          : run tests
   start_devweb  : start django devserver
   start_rq      : start rq worker
+  start_jupyter : start jupyter notebook
   celery        : run celery commands
   manage        : run django manage.py
   eval          : eval shell command
@@ -27,7 +28,12 @@ case "$1" in
     ./manage.py runserver 0.0.0.0:8000
   ;;
   "start_rq" )
-    ./manage.py rq_worker
+    export DJANGO_SETTINGS_MODULE=hat.settings
+    rq worker
+  ;;
+  "start_jupyter" )
+    export DJANGO_SETTINGS_MODULE=hat.settings
+    jupyter notebook -y --no-browser --ip=0.0.0.0
   ;;
   "manage" )
     ./manage.py "${@:2}"

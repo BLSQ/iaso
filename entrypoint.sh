@@ -5,6 +5,7 @@ show_help() {
   echo """
   Commands
   test          : run tests
+  start         : start django supervisor + uwsgi
   start_devweb  : start django devserver
   start_rq      : start rq worker
   start_jupyter : start jupyter notebook
@@ -19,6 +20,11 @@ case "$1" in
     export TESTING=true
     flake8
     ./manage.py test
+  ;;
+  "start" )
+    envsubst < /opt/app/build_scripts/supervisor.hat.conf.tmpl > /etc/supervisor/conf.d/hat.conf
+    /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+    nginx -g "daemon off;"
   ;;
   "start_devweb" )
     until psql -h "db" -U "postgres" -c '\l'; do
@@ -39,6 +45,10 @@ case "$1" in
   ;;
   "eval" )
     eval "${@:2}"
+  ;;
+  "bash" )
+    envsubst < /opt/app/build_scripts/supervisor.hat.conf.tmpl > /etc/supervisor/conf.d/hat.conf
+    bash
   ;;
   * )
     show_help

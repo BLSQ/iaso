@@ -4,6 +4,7 @@ __pycache__
 celerybeat-schedule.db
 .ipynb_checkpoints
 shared
+*.swp
 
 # Deployment
 build_scripts/nginx.hf_registry.conf

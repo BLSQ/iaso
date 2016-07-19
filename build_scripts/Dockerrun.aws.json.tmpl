@@ -1,0 +1,71 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+    {
+      "name": "historical-shared",
+      "host": {
+        "sourcePath": "/var/"
+      }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "historical-web",
+      "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/hat-historical:${TAG}",
+      "essential": true,
+      "memory": 512,
+      "hostname": "historical-web",
+      "command": [ "start_devweb" ],
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8000
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "historical-shared",
+          "containerPath": "/opt/shared",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "DEBUG",
+          "value": "True"
+        }
+      ]
+    },
+    {
+      "name": "redis",
+      "image": "redis:3.2",
+      "essential": true,
+      "memory": 512,
+      "hostname": "historical-redis"
+    },
+    {
+      "name": "historical-rq",
+      "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/hat-historical:${TAG}",
+      "essential": true,
+      "memory": 512,
+      "hostname": "historical-rq",
+      "command": [ "start_rq" ],
+      "mountPoints": [
+        {
+          "sourceVolume": "historical-shared",
+          "containerPath": "/opt/shared",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "DEBUG",
+          "value": "True"
+        }
+      ],
+      "links": [
+        "logstash"
+      ]
+    }
+  ]
+}

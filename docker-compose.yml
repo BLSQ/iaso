@@ -7,9 +7,32 @@ services:
   redis:
     image: redis:3.2
 
+  # the django dev server container
+  web:
+    build:
+      context: .
+    image: django
+    ports:
+      - "8000:8000"
+      - "8080:80"
+    volumes:
+      - .:/opt/app
+      # preserve node_modules from the image
+      - /opt/app/node_modules
+      # shared dir between containers
+      - ./shared:/opt/shared
+    links:
+      - db
+      - couchdb
+    environment:
+      - DEBUG=true
+      - SECRET_KEY=secret
+    #command: start_devweb
+    command: start
+
   # the worker container of the task runner
   rq:
-    build: .
+    image: django
     volumes:
       - .:/opt/app
       # shared dir between containers
@@ -23,28 +46,9 @@ services:
       - SECRET_KEY=secret
     command: start_rq
 
-  # the django dev server container
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/opt/app
-      # preserve node_modules from the image
-      - /opt/app/node_modules
-      # shared dir between containers
-      - ./shared:/opt/shared
-    links:
-      - db
-      - couchdb
-    environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
-    command: start_devweb
-
   # the jupyter server
   jupyter:
-    build: .
+    image: django
     ports:
       - "8888:8888"
     volumes:

@@ -1,12 +1,14 @@
 FROM python:3.5
 
 # Do not buffer stdout so we see log output immediatly
+ENV DEBIAN_FRONTEND noninteractive
 ENV PYTHONUNBUFFERED true
+ENV NPM_CONFIG_LOGLEVEL info
+ENV NODE_VERSION 4.4.7
 
-RUN apt-get update && \
-    apt-get install -y \
-            postgresql-client \
-            mdbtools
+ADD build_scripts/nginx.conf /etc/nginx/sites-enabled/default
+ADD build_scripts/apt-packages.txt /tmp/apt-packages.txt
+RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
 
 ################################################################################
 # install nodejs, taken from:
@@ -27,9 +29,6 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 4.4.7
-
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
   && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
@@ -43,9 +42,15 @@ ADD . /opt/app
 WORKDIR /opt/app
 
 RUN pip install --upgrade pip==8.1.2
-RUN pip install -v -r requirements.txt
+RUN pip install -v -r build_scripts/pip-requirements.txt
 
-RUN npm install
+RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
+RUN mkdir -p /etc/supervisor/conf.d && mkdir -p /var/log/supervisor
+RUN ln -sf /opt/app/build_scripts/supervisord.conf /etc/supervisor/supervisord.conf
+
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
+ 
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN npm prune

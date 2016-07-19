@@ -4,7 +4,9 @@ FROM python:3.5
 ENV PYTHONUNBUFFERED true
 
 RUN apt-get update && \
-    apt-get install -y postgresql-client
+    apt-get install -y \
+            postgresql-client \
+            mdbtools
 
 ################################################################################
 # install nodejs, taken from:
@@ -37,14 +39,13 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 
 ################################################################################
 
-ADD . /code
-WORKDIR /code
+ADD . /opt/app
+WORKDIR /opt/app
 
 RUN pip install --upgrade pip==8.1.2
-# RUN pip install --require-hashes --no-deps -r requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install -v -r requirements.txt
 
 RUN npm install
-ENV PATH /code/node_modules/.bin:$PATH
+ENV PATH /opt/app/node_modules/.bin:$PATH
 
-ENTRYPOINT ["/code/entrypoint.sh"]
+ENTRYPOINT ["/opt/app/entrypoint.sh"]

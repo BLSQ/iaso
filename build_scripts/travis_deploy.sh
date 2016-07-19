@@ -48,7 +48,7 @@ then
     *)
     zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
     zip -r build_scripts/deploy.zip .ebextensions/
-    eb deploy hat-dev -l $TAG
+    eb deploy hat-historical-dev -l $TAG
     echo "cannot find environment for $BRANCH"
   esac
 fi

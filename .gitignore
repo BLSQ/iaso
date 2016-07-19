@@ -2,3 +2,5 @@ node_modules
 __pycache__
 *.pyc
 celerybeat-schedule.db
+.ipynb_checkpoints
+shared

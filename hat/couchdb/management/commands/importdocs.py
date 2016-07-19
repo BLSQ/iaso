@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('jsonfile', type=argparse.FileType('r'))
 
     def handle(self, *args, **options):
-        dburl = settings.COUCHDB_URL + '/' + settings.COUCHDB_DBNAME
+        dburl = settings.COUCHDB_URL + '/' + settings.COUCHDB_DB
         file = options['jsonfile']
         importdocs(dburl, json.load(file))
         self.stdout.write('Successfully imported docs.')

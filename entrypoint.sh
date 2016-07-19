@@ -5,34 +5,42 @@ show_help() {
   echo """
   Commands
   test          : run tests
-  devserver     : start django devserver
-  startcelery   : start celery
+  start_devweb  : start django devserver
+  start_rq      : start rq worker
+  start_jupyter : start jupyter notebook
+  celery        : run celery commands
   manage        : run django manage.py
+  eval          : eval shell command
   """
 }
 
 case "$1" in
-  test)
-    flake8 && \
+  "test" )
+    export TESTING=true
+    flake8
     ./manage.py test
   ;;
-  devserver)
+  "start_devweb" )
     until psql -h "db" -U "postgres" -c '\l'; do
       >&2 echo "Waiting for db..."
       sleep 1
     done
     ./manage.py runserver 0.0.0.0:8000
   ;;
-  startcelery)
-    celery -A hat worker -B -l INFO
+  "start_rq" )
+    ./manage.py rq_worker
   ;;
-  manage)
+  "start_jupyter" )
+    export DJANGO_SETTINGS_MODULE=hat.settings
+    jupyter notebook -y --no-browser --ip=0.0.0.0
+  ;;
+  "manage" )
     ./manage.py "${@:2}"
   ;;
-  bash)
-    bash
+  "eval" )
+    eval "${@:2}"
   ;;
-  *)
+  * )
     show_help
   ;;
 esac

@@ -38,10 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hat.rq',
-    'hat.couchdb',
-    'hat.home',
-    'hat.historic',
-    'hat.dashboard',
+    'hat.couchdb'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -137,6 +134,12 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
 
+
 # RQ
 
 QUEUES = ['default']
+
+
+# Files
+
+SHARED_DIR = '/opt/shared'

@@ -4,3 +4,15 @@ __pycache__
 celerybeat-schedule.db
 .ipynb_checkpoints
 shared
+
+# Deployment
+build_scripts/nginx.hf_registry.conf
+build_scripts/nginx.kanoconnect.conf
+build_scripts/Dockerrun.aws.json
+build_scripts/deploy.zip
+
+# Elastic Beanstalk Files
+#.elasticbeanstalk/*
+#!.elasticbeanstalk/*.cfg.yml
+#!.elasticbeanstalk/*.global.yml
+.elasticbeanstalk/config.yml 

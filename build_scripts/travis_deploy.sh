@@ -16,7 +16,7 @@ if [ -z $TAG ]; then
     echo "No tags, tagging as: $COMMIT"
     TAG=$COMMIT
 else
-    TAG=$TAG:$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    TAG=$TAG
 fi
 
 # if this is on the master/dev branch and is not a PR, deploy it
@@ -27,7 +27,7 @@ then
   docker tag django:latest $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG 
   docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
 
-  envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/conf/Dockerrun.aws.json
+  envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json
 
   case "$BRANCH" in
     "master")

@@ -27,8 +27,9 @@ services:
     environment:
       - DEBUG=true
       - SECRET_KEY=secret
-    #command: start_devweb
-    command: start
+      - RDS_HOSTNAME=db
+    command: start_devweb
+    #command: start
 
   # the worker container of the task runner
   rq:

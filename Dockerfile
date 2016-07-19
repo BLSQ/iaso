@@ -10,6 +10,10 @@ ADD build_scripts/nginx.conf /etc/nginx/sites-enabled/default
 ADD build_scripts/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
 
+RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb
+RUN dpkg -i dumb-init_*.deb
+RUN rm dumb-init_*.deb
+
 ################################################################################
 # install nodejs, taken from:
 # https://github.com/nodejs/docker-node/blob/bf93fccf8e127824cd2478f491502c7d3ad0e1aa/4.4/Dockerfile
@@ -46,9 +50,6 @@ RUN pip install -v -r build_scripts/pip-requirements.txt
 
 RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH
-
-RUN mkdir -p /etc/supervisor/conf.d && mkdir -p /var/log/supervisor
-RUN ln -sf /opt/app/build_scripts/supervisord.conf /etc/supervisor/supervisord.conf
 
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
  

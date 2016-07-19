@@ -1,8 +1,0 @@
-[program:hat]
-command=/usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
-directory=/opt/app/
-autostart=true
-autorestart=true
-stdout_logfile=/var/log/hat.log
-redirect_stderr=True
-environment=RDS_HOSTNAME="${RDS_HOSTNAME}s",RDS_USERNAME="${ENV_RDS_USERNAME}",RDS_PASSWORD="${ENV_RDS_PASSWORD}",RDS_PORT="${ENV_RDS_PORT}",STATIC_ROOT="${ENV_STATIC_ROOT}",RDS_DB_NAME="${ENV_RDS_DB_NAME}",SECRET_KEY="${ENV_SECRET_KEY}",COUCHDB_URL="${ENV_COUCHDB_URL}",REDIS_HOST="${ENV_REDIS_HOST}",REDIS_PASSWORD="${ENV_REDIS_PASSWORD}"

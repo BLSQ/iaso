@@ -15,11 +15,11 @@
       "essential": true,
       "memory": 512,
       "hostname": "historical-web",
-      "command": [ "start_devweb" ],
+      "command": [ "start" ],
       "portMappings": [
         {
           "hostPort": 80,
-          "containerPort": 8000
+          "containerPort": 80
         }
       ],
       "mountPoints": [
@@ -28,12 +28,6 @@
           "containerPath": "/opt/shared",
           "readOnly": false
         }
-      ],
-      "environment": [
-        {
-          "name": "DEBUG",
-          "value": "True"
-        }
       ]
     },
     {
@@ -41,7 +35,7 @@
       "image": "redis:3.2",
       "essential": true,
       "memory": 512,
-      "hostname": "historical-redis"
+      "hostname": "redis"
     },
     {
       "name": "historical-rq",
@@ -57,14 +51,8 @@
           "readOnly": false
         }
       ],
-      "environment": [
-        {
-          "name": "DEBUG",
-          "value": "True"
-        }
-      ],
       "links": [
-        "logstash"
+        "redis"
       ]
     }
   ]

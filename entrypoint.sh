@@ -22,9 +22,10 @@ case "$1" in
     ./manage.py test
   ;;
   "start" )
-    envsubst < /opt/app/build_scripts/supervisor.hat.conf.tmpl > /etc/supervisor/conf.d/hat.conf
-    /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-    nginx -g "daemon off;"
+    python manage.py migrate
+    python manage.py collectstatic --noinput
+    dumb-init nginx -g "daemon off;" &
+    dumb-init /usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
   ;;
   "start_devweb" )
     until psql -h "db" -U "postgres" -c '\l'; do

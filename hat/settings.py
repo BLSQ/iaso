@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hat.rq',
-    'hat.couchdb'
+    'hat.couchdb',
+    'hat.participants',
+    'hat.historic',
 ]
 
 MIDDLEWARE_CLASSES = [

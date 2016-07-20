@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Sense HAT</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <h1>Historic data</h1>
+    <ul>
+      <li><a href={% url "historic:upload" %}>Upload</a></li>
+      <li><a href={% url "historic:download" %}>Download</a></li>
+    </ul>
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>

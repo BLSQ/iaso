@@ -24,8 +24,7 @@ before_install:
   - pip install awscli awsebcli
 
 script:
-  - docker-compose run web manage migrate
   - docker-compose run web test
-    
+
 after_success:
   - "./build_scripts/travis_deploy.sh"

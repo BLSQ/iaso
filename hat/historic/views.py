@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -13,6 +13,13 @@ from .tasks import import_mdbfiles, export_csv
 
 
 @login_required()
+@require_http_methods(['GET'])
+def index(request):
+    return render(request, 'historic.html')
+
+
+@login_required()
+@permission_required('participants.import_mdb')
 @require_http_methods(['GET', 'POST'])
 def upload(request):
     if request.method == 'POST':
@@ -36,6 +43,7 @@ def upload(request):
 
 
 @login_required()
+@permission_required('participants.import_mdb')
 @require_http_methods(['GET'])
 def upload_state(request, task_id):
     with Connection(redis_conn) as conn:
@@ -53,6 +61,7 @@ def upload_state(request, task_id):
 
 
 @login_required()
+@permission_required('participants.import_mdb')
 @require_http_methods(['GET'])
 def upload_done(request, task_id):
     import json
@@ -63,6 +72,7 @@ def upload_done(request, task_id):
 
 
 @login_required()
+@permission_required('participants.export_full')
 @require_http_methods(['GET', 'POST'])
 def download(request):
     if request.method == 'POST':
@@ -77,6 +87,7 @@ def download(request):
 
 
 @login_required()
+@permission_required('participants.export_full')
 @require_http_methods(['GET'])
 def download_state(request, task_id):
     with Connection(redis_conn) as conn:
@@ -94,6 +105,7 @@ def download_state(request, task_id):
 
 
 @login_required()
+@permission_required('participants.export_full')
 @require_http_methods(['GET'])
 def download_done(request, task_id):
     url = reverse('historic:download_get', args=(task_id,))
@@ -101,6 +113,7 @@ def download_done(request, task_id):
 
 
 @login_required()
+@permission_required('participants.export_full')
 @require_http_methods(['GET'])
 def download_get(request, task_id):
     with Connection(redis_conn) as conn:

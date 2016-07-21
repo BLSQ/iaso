@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'hat.rq',
     'hat.couchdb',
     'hat.participants',
+    'hat.home',
     'hat.historic',
 ]
 
@@ -129,6 +130,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+
+LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = '/'
 
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
 COUCHDB_DB = 'hat'

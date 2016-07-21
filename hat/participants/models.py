@@ -44,3 +44,10 @@ class HatParticipant(models.Model):
         ('unknown', 'Unknown')
     )
     PL_test_result = models.CharField(max_length=16, choices=PL_TEST_RESULT_CHOICES)
+
+    class Meta:
+        permissions = (
+            ("import_mdb", "Can import mdb files"),
+            ("export_full", "Can export the full dataset as csv"),
+            ("export_anon", "Can export anonymized data as csv"),
+        )

@@ -10,17 +10,10 @@
     {% endblock %}
   </head>
   <body>
-    <a href="{% url 'logout' %}">logout</a>
-    <h1>Historic data</h1>
-    <ul>
-      {% if perms.participants.import_mdb %}
-        <li><a href={% url "historic:upload" %}>Upload</a></li>
-      {% endif %}
-      {% if perms.participants.export_full %}
-        <li><a href={% url "historic:download" %}>Download</a></li>
-      {% endif %}
-    </ul>
     {% block content %}
+      <ul>
+        <li><a href={% url "historic:start" %}>Historic data</a></li>
+      </ul>
     {% endblock %}
   </body>
 </html>

@@ -25,6 +25,6 @@ before_install:
 
 script:
   - docker-compose run web test
-    
+
 after_success:
   - "./build_scripts/travis_deploy.sh"

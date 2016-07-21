@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Sense HAT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <a href="{% url 'logout' %}">logout</a>
+    <h1>Historic data</h1>
+    <ul>
+      {% if perms.participants.import_mdb %}
+        <li><a href={% url "historic:upload" %}>Upload</a></li>
+      {% endif %}
+      {% if perms.participants.export_full %}
+        <li><a href={% url "historic:download" %}>Download</a></li>
+      {% endif %}
+    </ul>
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>

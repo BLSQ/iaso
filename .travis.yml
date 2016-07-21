@@ -1,18 +1,30 @@
-language: generic
+language: python
+
+python:
+  - '2.7'
+
 sudo: required
+
 services:
   - docker
 env:
-  DOCKER_COMPOSE_VERSION: 1.7.1
+  global:
+    - DOCKER_COMPOSE_VERSION: 1.7.1
+    - DOCKER_IMAGE_REPO: 387526361725.dkr.ecr.eu-west-1.amazonaws.com # the url of the repo where we push/pull the image from
+    - DOCKER_IMAGE_NAME: hat-historical # the name of the image
+
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -qq --yes --force-yes docker-engine
+  - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -qq --yes --force-yes docker-engine gettext-base
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - sudo service docker restart
-before_script:
-  - docker-compose up -d db
+  - pip install awscli awsebcli
+
 script:
   - docker-compose run web test
+    
+after_success:
+  - "./build_scripts/travis_deploy.sh"

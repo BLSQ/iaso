@@ -1,0 +1,5 @@
+postgresql-client
+mdbtools
+curl
+vim
+nginx

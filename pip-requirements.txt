@@ -5,3 +5,4 @@ flake8==3.0.0b2
 rq==0.6.0
 redis==2.10.5
 jupyter==1.0.0
+uwsgi

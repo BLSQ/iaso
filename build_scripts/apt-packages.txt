@@ -1,7 +1,5 @@
-gettext-base
 postgresql-client
 mdbtools
 curl
 vim
-supervisor
 nginx

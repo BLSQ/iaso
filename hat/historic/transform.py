@@ -14,13 +14,12 @@ screening_tests = [
 ]
 
 
-def isCattDilutionPositive(value):
-    # TODO implement
-    return False
+def isCattDilutionPositive(x):
+    return x is not None and 1 >= x >= 5
 
 
-def isMdPositive(value):
-    return value == -1
+def isMdPositive(x):
+    return x == -1
 
 
 confirmation_tests = [
@@ -47,14 +46,14 @@ confirmation_tests = [
 
 # pl tests
 
-def parse_pl_result(val):
+def parse_pl_result(x):
     enum = {1: 'stage1', 2: 'stage2', 3: 'unknown'}
-    return enum.get(val, 'none')
+    return enum.get(x, 'none')
 
 
-def parse_sex(val):
+def parse_sex(x):
     enum = {'Féminin': 'female', 'Masculin': 'male'}
-    return enum.get(val, 'unknown')
+    return enum.get(x, 'unknown')
 
 
 def create_docid(row):

@@ -3,44 +3,44 @@ from hashlib import md5
 from pandas import DataFrame
 
 
-def getTestResult(tests, row):
+def reduce_results(tests, row):
     results = [f(row[col]) for (col, f) in tests if col in row]
     return 'positive' if any(results) else 'negative'
 
 
 screening_tests = [
-    ('D_CATT_TOTAL_BLOOD', lambda x: x != 0),
+    ('D_CATT_TOTAL_BLOOD', lambda x: x < 0),
     ('D_TDR', lambda x: x == -1)
 ]
 
 
-def isCattDilutionPositive(x):
-    return x is not None and 1 >= x >= 5
+def is_cattdilution_positive(x):
+    return x is not None and 1 <= x <= 5
 
 
-def isMdPositive(x):
+def is_md_positive(x):
     return x == -1
 
 
 confirmation_tests = [
-    ('D_CATT_DILUTION', isCattDilutionPositive),
-    ('MD_LYMPH_NODE_PUNCTURE', isMdPositive),
-    ('MD_SF', isMdPositive),
-    ('MD_GE', isMdPositive),
-    ('MD_WOO', isMdPositive),
-    ('MD_MAEC', isMdPositive),
-    ('MD_MAECT', isMdPositive),
-    ('MD_MAECT_BC', isMdPositive),
-    ('MD_LCR', isMdPositive),
-    ('MD_LCR_FR', isMdPositive),
-    ('MD_LCR_SCM', isMdPositive),
-    ('MD_DIL', isMdPositive),
-    ('MD_PARASIT', isMdPositive),
-    ('MD_STERNAL_PUNCTURE13', isMdPositive),
-    ('MD_IFAT', isMdPositive),
-    ('MD_CATT', isMdPositive),
-    ('MD_CLINICAL_SICKNESS', isMdPositive),
-    ('MD_OTHER', isMdPositive)
+    ('D_CATT_DILUTION', is_cattdilution_positive),
+    ('MD_LYMPH_NODE_PUNCTURE', is_md_positive),
+    ('MD_SF', is_md_positive),
+    ('MD_GE', is_md_positive),
+    ('MD_WOO', is_md_positive),
+    ('MD_MAEC', is_md_positive),
+    ('MD_MAECT', is_md_positive),
+    ('MD_MAECT_BC', is_md_positive),
+    ('MD_LCR', is_md_positive),
+    ('MD_LCR_FR', is_md_positive),
+    ('MD_LCR_SCM', is_md_positive),
+    ('MD_DIL', is_md_positive),
+    ('MD_PARASIT', is_md_positive),
+    ('MD_STERNAL_PUNCTURE13', is_md_positive),
+    ('MD_IFAT', is_md_positive),
+    ('MD_CATT', is_md_positive),
+    ('MD_CLINICAL_SICKNESS', is_md_positive),
+    ('MD_OTHER', is_md_positive)
 ]
 
 
@@ -69,7 +69,7 @@ def transform_cards(df):
     # It's important to check for missing values before using them.
     df2 = DataFrame()
 
-    df2['entry_date'] = df['F_TIMESTAMP'].apply(lambda x: x and x.isoformat() or None)
+    df2['entry_date'] = df['F_TIMESTAMP']
 
     df2['mobile_unit'] = df['IF_UM']
     df2['treatment_center'] = df['IM_UM_CT']
@@ -87,7 +87,7 @@ def transform_cards(df):
     df2['ZS'] = df['IM_AD_HEALTH_ZONE']
     df2['AZ'] = df['IM_AD_HEALTH_AREA']
 
-    df2['document_date'] = df['D_DATE'].apply(lambda x: x and x.isoformat() or None)
+    df2['document_date'] = df['D_DATE']
     df2['document_id'] = df2.apply(create_docid, axis=1)
 
     df2['hat_id'] = (
@@ -99,8 +99,8 @@ def transform_cards(df):
     )
 
     df2['screening_test_result'] = df.apply(
-        partial(getTestResult, screening_tests), axis=1)
+        partial(reduce_results, screening_tests), axis=1)
     df2['confirmation_test_result'] = df.apply(
-       partial(getTestResult, confirmation_tests), axis=1)
+       partial(reduce_results, confirmation_tests), axis=1)
     df2['PL_test_result'] = df['DS_PL_RESULT'].apply(parse_pl_result)
     return df2

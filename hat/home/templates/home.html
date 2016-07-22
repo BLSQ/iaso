@@ -1,19 +1,19 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
-    <title>Sense HAT</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="keywords" content="">
-    {% block head %}
-    {% endblock %}
-  </head>
-  <body>
-    {% block content %}
-      <ul>
-        <li><a href={% url "historic:start" %}>Historic data</a></li>
-      </ul>
-    {% endblock %}
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block nav %}
+  {% if perms.participants.import_mdb %}
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href={% url "historic:start" %}>Historic</a>
+    </li>
+  {% endif %}
+  <li class="pure-menu-item">
+    <a href={% url 'logout' %} class="pure-menu-link">Logout</a>
+  </li>
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <h1>Sense HAT</h1>
+    <h2>Historic data</h2>
+  </div>
+{% endblock %}

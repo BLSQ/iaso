@@ -1,30 +1,46 @@
-{% extends "home.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-<h1>Login</h1>
 
-{% if forms.errors %}
-  <p>Login error. Try again!</p>
-{% endif %}
+  <div class="header">
+    <h1>Sense HAT</h1>
+    <h2>Login</h2>
+  </div>
 
-{% if next %}
-  {% if user.is_authenticated %}
-    <p>Your account does not have permission to access this page. Please login with an account that has access.</p>
-  {% else %}
-    <p>Please login to see this page</p>
-  {% endif %}
-{% endif %}
+  <div class="content">
+    <br>
+    {% if form.errors %}
+      <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
 
-<form method="post" action="{% url 'login' %}">
-  {% csrf_token %}
-  <table>
-    {{ form }}
-  </table>
+    {% if next %}
+      {% if user.is_authenticated %}
+        <p>Your account doesn't have access to this page. To proceed,
+          please login with an account that has access.</p>
+        {% else %}
+          <p>Please login to see this page.</p>
+        {% endif %}
+      {% endif %}
 
-  <input type="submit" value="login"/>
-  <input type="hidden" name="next" value="{{ next }}">
-</form>
+    <form class="pure-form pure-form-aligned" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <fieldset>
+        <div class="pure-control-group">
+          {{ form.username.label_tag }}
+          {{ form.username }}
+        </div>
 
-<!-- <p><a href="{% url 'password_reset' %}">Lost password?</a></p> -->
+        <div class="pure-control-group">
+          {{ form.password.label_tag }}
+          {{ form.password }}
+        </div>
 
+        <div class="pure-controls">
+          <button type="submit" class="pure-button pure-button-primary">Login</button>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+      </fieldset>
+    </form>
+
+  </div>
 {% endblock %}

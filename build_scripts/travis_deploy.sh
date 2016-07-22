@@ -20,7 +20,7 @@ else
 fi
 
 # if this is on the master/dev branch and is not a PR, deploy it
-if [ $PR = "false" ] #&& [ $BRANCH = "development" -o $BRANCH = "master" -o $BRANCH = "staging" ];
+if [ $PR = "false" ] && [ $BRANCH = "development" -o $BRANCH = "master" -o $BRANCH = "staging" ];
 then
   aws ecr get-login --region eu-west-1 | bash
 

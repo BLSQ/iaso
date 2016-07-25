@@ -1,3 +1,4 @@
+from uuid import uuid4
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect
@@ -29,10 +30,10 @@ def upload(request):
             shared_files = []
             for file in form_files:
                 # write files to shared data
-                dest_path = settings.SHARED_DIR + '/' + file.name
+                dest_path = '{}/{}.mdb'.format(settings.SHARED_DIR, str(uuid4()))
                 with open(dest_path, 'wb') as dest_file:
                     dest_file.write(file.read())
-                shared_files.append(dest_path)
+                shared_files.append((file.name, dest_path))
             # run import task
             r = import_mdbfiles.delay(shared_files)
             url = reverse('historic:upload_state', args=(r.id,))

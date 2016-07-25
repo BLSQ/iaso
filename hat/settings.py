@@ -136,6 +136,8 @@ LOGIN_REDIRECT_URL = '/'
 
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
 COUCHDB_DB = 'hat'
+COUCHDB_USER = os.environ.get('COUCHDB_USER', '')
+COUCHDB_PASSWORD = os.environ.get('COUCHDB_PASSWORD', '')
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_PORT = 6379

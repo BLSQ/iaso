@@ -22,6 +22,7 @@ case "$1" in
     ./manage.py test
   ;;
   "start" )
+    envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
     python manage.py migrate
     python manage.py collectstatic --noinput
     dumb-init nginx -g "daemon off;" &

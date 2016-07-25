@@ -6,9 +6,9 @@ ENV PYTHONUNBUFFERED true
 ENV NPM_CONFIG_LOGLEVEL info
 ENV NODE_VERSION 4.4.7
 
-ADD build_scripts/nginx.conf /etc/nginx/sites-enabled/default
 ADD build_scripts/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
+ADD build_scripts/nginx.conf /etc/nginx/sites-available/default
 
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb
 RUN dpkg -i dumb-init_*.deb

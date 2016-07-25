@@ -25,6 +25,7 @@ case "$1" in
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
     ./manage.py migrate
     ./manage.py collectstatic --noinput
+    ./manage.py setupcouchdb
     dumb-init nginx -g "daemon off;" &
     dumb-init /usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
   ;;
@@ -34,6 +35,7 @@ case "$1" in
       sleep 1
     done
     ./manage.py migrate
+    ./manage.py setupcouchdb
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )

@@ -4,6 +4,9 @@ services:
     image: postgres:9.5
   couchdb:
     image: couchdb:1.6
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: secret
   redis:
     image: redis:3.2
 
@@ -13,39 +16,30 @@ services:
       context: .
     image: django
     ports:
-      - "8000:8000"
-      - "8080:80"
-    volumes:
+      - "80:8080"
+    volumes: &web_volumes
       - .:/opt/app
       # preserve node_modules from the image
       - /opt/app/node_modules
       # shared dir between containers
       - ./shared:/opt/shared
-    links:
+    links: &web_links
       - db
       - couchdb
-    environment:
+      - redis
+    environment: &web_environment
       DEBUG: 'true'
       SECRET_KEY: secret
-      RDS_HOSTNAME: db
-      COUCHDB_URL: 'http://couchdb:5984'
-    command: start_devweb
-    #command: start
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: secret
+    command: start_dev
 
   # the worker container of the task runner
   rq:
     image: django
-    volumes:
-      - .:/opt/app
-      # shared dir between containers
-      - ./shared:/opt/shared
-    links:
-      - db
-      - couchdb
-      - redis
-    environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
+    volumes: *web_volumes
+    links: *web_links
+    environment: *web_environment
     command: start_rq
 
   # the jupyter server
@@ -53,14 +47,7 @@ services:
     image: django
     ports:
       - "8888:8888"
-    volumes:
-      - .:/opt/app
-      # shared dir between containers
-      - ./shared:/opt/shared
-    links:
-      - db
-      - couchdb
-    environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
+    volumes: *web_volumes
+    links: *web_links
+    environment: *web_environment
     command: start_jupyter

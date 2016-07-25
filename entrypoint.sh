@@ -5,8 +5,8 @@ show_help() {
   echo """
   Commands
   test          : run tests
-  start         : start django supervisor + uwsgi
-  start_devweb  : start django devserver
+  start         : start django + uwsgi
+  start_dev     : start django devserver
   start_rq      : start rq worker
   start_jupyter : start jupyter notebook
   celery        : run celery commands
@@ -23,17 +23,18 @@ case "$1" in
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
-    python manage.py migrate
-    python manage.py collectstatic --noinput
+    ./manage.py migrate
+    ./manage.py collectstatic --noinput
     dumb-init nginx -g "daemon off;" &
     dumb-init /usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
   ;;
-  "start_devweb" )
+  "start_dev" )
     until psql -h "db" -U "postgres" -c '\l'; do
       >&2 echo "Waiting for db..."
       sleep 1
     done
-    ./manage.py runserver 0.0.0.0:8000
+    ./manage.py migrate
+    ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )
     ./manage.py rq_worker

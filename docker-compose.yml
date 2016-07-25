@@ -25,9 +25,10 @@ services:
       - db
       - couchdb
     environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
-      - RDS_HOSTNAME=db
+      DEBUG: 'true'
+      SECRET_KEY: secret
+      RDS_HOSTNAME: db
+      COUCHDB_URL: 'http://couchdb:5984'
     command: start_devweb
     #command: start
 

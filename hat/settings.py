@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get("DEBUG", "false") == "true")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hat.rq',
-    'hat.couchdb'
+    'hat.couchdb',
+    'hat.participants',
+    'hat.home',
+    'hat.historic',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -128,8 +131,13 @@ STATIC_URL = '/static/'
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 
+LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = '/'
+
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
 COUCHDB_DB = 'hat'
+COUCHDB_USER = os.environ.get('COUCHDB_USER', None)
+COUCHDB_PASSWORD = os.environ.get('COUCHDB_PASSWORD', None)
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_PORT = 6379

@@ -4,7 +4,7 @@
     {
       "name": "historical-shared",
       "host": {
-        "sourcePath": "/var/"
+        "sourcePath": "/opt/shared"
       }
     }
   ],
@@ -28,6 +28,9 @@
           "containerPath": "/opt/shared",
           "readOnly": false
         }
+      ],
+      "links": [
+        "redis"
       ]
     },
     {

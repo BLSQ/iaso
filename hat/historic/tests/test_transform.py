@@ -77,7 +77,7 @@ class TransformTests(TestCase):
             'DS_PL_RESULT': [2],
         })
 
-        df2 = transform.transform_cards(df)
+        df2 = transform.transform(df)
 
         self.assertRegex(str(df2['entry_date'].dtype), r'datetime')
 

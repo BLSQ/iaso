@@ -45,3 +45,7 @@ def extract_mdbtable_via_db(mdb_path, mdb_table_name):
         df2 = pandas.read_sql_query('SELECT * from "{}";'.format(table_name), conn)
         conn.execute('DROP TABLE IF EXISTS "{}";'.format(table_name))
         return df2
+
+
+def extract(mdb_file):
+    return extract_mdbtable_via_db(mdb_file, 'T_CARDS')

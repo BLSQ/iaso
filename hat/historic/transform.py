@@ -64,7 +64,7 @@ def create_docid(row):
     return h.hexdigest()
 
 
-def transform_cards(df):
+def transform(df):
     # Extract data from the mdb's dataframe.
     # It's important to check for missing values before using them.
     df2 = DataFrame()

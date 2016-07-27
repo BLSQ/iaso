@@ -8,3 +8,4 @@ jupyter==1.0.0
 pandas==0.18.1
 SQLAlchemy==1.1.0b2
 uwsgi==2.0.13
+newrelic==2.68.0.50

@@ -45,8 +45,8 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 ADD . /opt/app
 WORKDIR /opt/app
 
-RUN pip install --upgrade pip==8.1.2
-RUN pip install -v -r pip-requirements.txt
+RUN pip install --quiet --upgrade pip==8.1.2
+RUN pip install --quiet -r pip-requirements.txt
 
 RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH

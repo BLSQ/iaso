@@ -26,8 +26,7 @@ case "$1" in
     ./manage.py migrate
     ./manage.py collectstatic --noinput
     ./manage.py setupcouchdb
-    dumb-init nginx -g "daemon off;" &
-    dumb-init /usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
+    ./start.sh
   ;;
   "start_dev" )
     until psql -h "db" -U "postgres" -c '\l'; do
@@ -52,7 +51,6 @@ case "$1" in
     eval "${@:2}"
   ;;
   "bash" )
-    envsubst < /opt/app/build_scripts/supervisor.hat.conf.tmpl > /etc/supervisor/conf.d/hat.conf
     bash
   ;;
   * )

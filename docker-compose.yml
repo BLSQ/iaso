@@ -32,6 +32,7 @@ services:
     environment: &web_environment
       DEBUG: 'true'
       SECRET_KEY: secret
+      COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
     command: start_dev

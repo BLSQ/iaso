@@ -28,6 +28,7 @@ then
   docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
 
   envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json
+  envsubst < build_scripts/conf/logstash.conf.tmpl > .ebextensions/logstash/logstash.conf
 
   case "$BRANCH" in
     "master")

@@ -11,7 +11,7 @@ from rq.job import Job
 from rq.exceptions import NoSuchJobError
 from hat.rq.connection import redis_conn
 from .forms import UploadMdbFilesForm, DownloadCsvForm
-from hat.historic.tasks import import_files, export
+from hat.import_export.tasks import import_files, export
 
 
 @login_required()

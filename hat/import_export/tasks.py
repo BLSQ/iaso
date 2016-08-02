@@ -12,10 +12,8 @@ def import_files(fileinfos):
     for (name, filename) in fileinfos:
         suffix = PurePath(filename).suffix.lower()
         if any(suffix in s for s in ['.mdb', '.accdb']):
-            print('IMPORT HISTORIC')
             stats.append(import_historic(name, filename))
         elif suffix in '.enc':
-            print('IMPORT BACKUP')
             stats.append(import_backup(name, filename))
         else:
             raise Exception('Cannot import unkown filetype: {}'.format(suffix))

@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'hat.rq',
     'hat.couchdb',
     'hat.participants',
-    'hat.historic',
+    'hat.import_export',
     'hat.dashboard',
 ]
 

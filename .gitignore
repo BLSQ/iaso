@@ -4,6 +4,7 @@ celerybeat-schedule.db
 shared
 *.swp
 static/
+privatekey.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -86,4 +87,4 @@ build_scripts/deploy.zip
 #.elasticbeanstalk/*
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
-.elasticbeanstalk/config.yml 
+.elasticbeanstalk/config.yml

@@ -1,4 +1,4 @@
-{% extends "historic.html" %}
+{% extends "dashboard/base.html" %}
 
 {% block content %}
   <div class="header">
@@ -6,7 +6,7 @@
     <h2>Historic data download</h2>
   </div>
   <div class="content">
-    <h2 class="content-subhead">Download ready</h2>
-    <p><a href="{{ download_link }}">HAT historic CSV file</a></p>
+    <h2 class="content-subhead">Export ready</h2>
+    <p><a href="{{ download_link }}">HAT historic data file</a></p>
   </div>
 {% endblock %}

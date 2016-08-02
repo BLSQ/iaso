@@ -18,7 +18,7 @@ show_help() {
 case "$1" in
   "test" )
     export TESTING=true
-    flake8
+    flake8 ./hat
     ./manage.py test
   ;;
   "start" )

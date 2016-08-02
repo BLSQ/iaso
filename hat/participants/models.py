@@ -2,12 +2,18 @@ from django.db import models
 
 
 class HatParticipant(models.Model):
-    # To generate the id, we currently md5 hash the
-    # complete row from the historic import.
-    document_id = models.CharField(max_length=32, unique=True)
+    SOURCE_CHOICES = (
+        ('historic', 'Historic'),
+        ('mobile_backup', 'Mobile backup')
+    )
+    source = models.CharField(max_length=16, choices=SOURCE_CHOICES, null=True)
+
     document_date = models.DateTimeField(null=True)
-    entry_date = models.DateTimeField(null=True)
+    # The id is currently a hash over the row to be able to
+    # catch duplicates
+    document_id = models.CharField(max_length=32)
     hat_id = models.CharField(max_length=64)
+    entry_date = models.DateTimeField(null=True)
 
     name = models.CharField(max_length=128, null=True)
     lastname = models.CharField(max_length=128, null=True)
@@ -30,20 +36,48 @@ class HatParticipant(models.Model):
     mobile_unit = models.CharField(max_length=128, null=True)
     treatment_center = models.CharField(max_length=128, null=True)
 
-    RESULT_CHOICES = (
-        ('negative', 'Negative'),
-        ('positive', 'Positive'),
-        ('unknown', 'Unknown')
-    )
-    screening_test_result = models.CharField(max_length=16, choices=RESULT_CHOICES)
-    confirmation_test_result = models.CharField(max_length=16, choices=RESULT_CHOICES)
+    # mobile and historic data sources
+    test_rdt = models.NullBooleanField(null=True)
+    test_catt = models.NullBooleanField(null=True)
+    test_maect = models.NullBooleanField(null=True)
+    test_ge = models.NullBooleanField(null=True)
+
+    # from mobile data
+    test_pg = models.NullBooleanField(null=True)
+    test_ctcwoo = models.NullBooleanField(null=True)
+    test_pl = models.NullBooleanField(null=True)
+
+    # from historic data
+    test_catt_total_blood = models.NullBooleanField(null=True)
+
+    test_catt_dilution = models.NullBooleanField(null=True)
+    test_lymph_node_puncture = models.NullBooleanField(null=True)
+    test_sf = models.NullBooleanField(null=True)
+    test_woo = models.NullBooleanField(null=True)
+    test_maec = models.NullBooleanField(null=True)
+    test_maect_bc = models.NullBooleanField(null=True)
+    test_lcr = models.NullBooleanField(null=True)
+    test_lcr_fr = models.NullBooleanField(null=True)
+    test_lcr_scm = models.NullBooleanField(null=True)
+    test_dil = models.NullBooleanField(null=True)
+    test_parasit = models.NullBooleanField(null=True)
+    test_sternal_puncture = models.NullBooleanField(null=True)
+    test_ifat = models.NullBooleanField(null=True)
+
+    test_clinical_sickness = models.NullBooleanField(null=True)
+    test_other = models.NullBooleanField(null=True)
+    test_pl_liquid = models.NullBooleanField(null=True)
+    test_pl_trypanosome = models.CharField(max_length=128, null=True)
+    test_pl_gb_mm3 = models.CharField(max_length=128, null=True)
+    test_pl_albumine = models.CharField(max_length=128, null=True)
+    test_pl_lcr = models.NullBooleanField(null=True)
+    test_pl_comments = models.CharField(max_length=128, null=True)
     PL_TEST_RESULT_CHOICES = (
-        ('none', 'None'),
         ('stage1', 'Stage1'),
         ('stage2', 'Stage2'),
         ('unknown', 'Unknown')
     )
-    PL_test_result = models.CharField(max_length=16, choices=PL_TEST_RESULT_CHOICES)
+    test_pl_result = models.CharField(max_length=16, choices=PL_TEST_RESULT_CHOICES, null=True)
 
     class Meta:
         permissions = (

@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'hat.rq',
     'hat.couchdb',
     'hat.participants',
-    'hat.home',
     'hat.historic',
+    'hat.dashboard',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -60,7 +60,7 @@ ROOT_URLCONF = 'hat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['./hat/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

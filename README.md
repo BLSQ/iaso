@@ -10,7 +10,7 @@ The local dev setup uses [docker-compose](https://docs.docker.com/compose/) to s
 
 `docker-compose up`
 
-This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should than be reachable at `http://<docker-host>:8080`. This also runs a [Jupyter](http://jupyter.org/) iPython notebook server at port `8888` that can be used for exploration in development. No local setup is needed apart from docker.
+This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should then be reachable at `http://<docker-host>:8080`. This also runs a [Jupyter](http://jupyter.org/) iPython notebook server at port `8888` that can be used for exploration in development. No local setup is needed apart from docker.
 
 ### Create a user
 
@@ -19,6 +19,10 @@ To login to the app or the django admin, a superuser needs to be created with:
 `docker-compose run web manage createsuperuser`
 
 Then additional users with custom groups and permissions can be added through the django admin at `http://<docker-host>:8080`
+
+### Import mobile backups
+
+For the app to be able to decrypt mobile backups, it needs a privatekey. The key must be exported as env var `$HAT_MOBILE_KEY` and will be picked up by docker-compose. It can be found in Lastpass under `Backup private key`.
 
 ## Run commands on the server
 

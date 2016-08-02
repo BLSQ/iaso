@@ -35,7 +35,7 @@ services:
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
-      MOBILE_KEY: "${MOBILE_KEY}"
+      HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
     command: start_dev
 
   # the worker container of the task runner

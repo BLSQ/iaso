@@ -20,15 +20,6 @@ def import_files(fileinfos):
     return stats
 
 
-# @job('default', connection=redis_conn)
-# def reimport():
-#     # reimport everything from couch
-#     # 1. empty postgres tables
-#     # 2. batchwise import documents
-#     # 3. everything is new again
-#     pass
-
-
 @job('default', connection=redis_conn)
 def export():
     return export_csv()

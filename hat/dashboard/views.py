@@ -32,7 +32,7 @@ def upload(request):
             for file in form_files:
                 # write files to shared data
                 suffix = PurePath(file.name).suffix.lower()
-                dest_path = '{}/{}.{}'.format(
+                dest_path = '{}/{}{}'.format(
                     settings.SHARED_DIR, str(uuid4()), suffix)
                 with open(dest_path, 'wb') as dest_file:
                     dest_file.write(file.read())
@@ -102,20 +102,6 @@ def download_state(request, task_id):
     return check_task(request, task_id,
                       'dashboard/download_state.html',
                       'dashboard:download_done')
-    # with Connection(redis_conn) as conn:
-    #     try:
-    #         job = Job.fetch(task_id, conn)
-    #     except NoSuchJobError:
-    #         return render(request, 'dashboard/download_state.html',
-    #                       {'status': 'job not found error'})
-    #     if job.status == 'failed':
-    #         return render(request, 'dashboard/download_state.html',
-    #                       {'status': 'job failed'})
-    #     if job.status == 'finished':
-    #         url = reverse('dashboard:download_done', args=(task_id,))
-    #         return HttpResponseRedirect(url)
-    #     return render(request, 'dashboard/download_state.html',
-    #                   {'status': job.status})
 
 
 @login_required()

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract(filename):
-    r = run_cmd(['./scripts/decrypt_mobilebackup.js', './privatekey.json', filename])
+    r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     data = json.loads(r)
     return json_normalize(data)
 

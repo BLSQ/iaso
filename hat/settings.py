@@ -153,3 +153,6 @@ QUEUES = ['default']
 # Files
 
 SHARED_DIR = '/opt/shared'
+
+
+MOBILE_KEY = os.environ.get('MOBILE_KEY', None)

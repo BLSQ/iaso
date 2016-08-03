@@ -28,7 +28,7 @@ case "$1" in
     ./manage.py migrate
     ./manage.py collectstatic --noinput
     ./manage.py setupcouchdb
-    ./start.sh
+    ./scripts/start_web.sh
   ;;
   "start_dev" )
     ./scripts/wait_for_dbs.sh
@@ -37,7 +37,7 @@ case "$1" in
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )
-    ./start_rq.sh
+    ./scripts/start_rq.sh
   ;;
   "start_jupyter" )
     export DJANGO_SETTINGS_MODULE=hat.settings

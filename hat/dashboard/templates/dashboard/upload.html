@@ -1,0 +1,19 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+  <div class="header">
+    <h1>Sense HAT</h1>
+    <h2>Historic data upload</h2>
+  </div>
+
+  <div class="content">
+    <h2 class="content-subhead">Import file</h2>
+    <p>
+      <form method="POST" action="{% url 'dashboard:upload' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="pure-button pure-button-primary">Import</button>
+      </form>
+    </p>
+  </div>
+{% endblock %}

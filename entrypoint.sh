@@ -18,7 +18,9 @@ show_help() {
 case "$1" in
   "test" )
     export TESTING=true
-    flake8
+    flake8 ./hat
+    ./scripts/wait_for_dbs.sh
+    ./manage.py setupcouchdb
     ./manage.py test
   ;;
   "start" )
@@ -29,10 +31,7 @@ case "$1" in
     ./start.sh
   ;;
   "start_dev" )
-    until psql -h "db" -U "postgres" -c '\l'; do
-      >&2 echo "Waiting for db..."
-      sleep 1
-    done
+    ./scripts/wait_for_dbs.sh
     ./manage.py migrate
     ./manage.py setupcouchdb
     ./manage.py runserver 0.0.0.0:8080

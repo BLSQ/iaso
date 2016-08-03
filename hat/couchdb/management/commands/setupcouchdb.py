@@ -1,7 +1,7 @@
-from subprocess import run, CalledProcessError
 from urllib.parse import urlparse
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.conf import settings
+from hat.common.utils import run_cmd
 
 
 class Command(BaseCommand):
@@ -14,9 +14,5 @@ class Command(BaseCommand):
             settings.COUCHDB_USER, settings.COUCHDB_PASSWORD,
             o.netloc
         )
-        try:
-            run(['couchdb-bootstrap', couchdb_url, './couchdb'], check=True)
-        except CalledProcessError as ex:
-            self.stderr.write('Error setting up couchdb \n{}'.format(ex.output))
-            raise CommandError('Error setting up couchdb')
+        run_cmd(['couchdb-bootstrap', couchdb_url, './couchdb'])
         self.stdout.write('Successfully setup couchdb.')

@@ -1,4 +1,4 @@
-{% extends "historic.html" %}
+{% extends "dashboard/base.html" %}
 
 {% block head %}
   <meta http-equiv="refresh" content="2">
@@ -10,7 +10,7 @@
     <h2>Historic data download</h2>
   </div>
   <div class="content">
-    <h2 class="content-subhead">Preparing CSV download...</h2>
+    <h2 class="content-subhead">Preparing export...</h2>
     <p>Status: {{ status }}</p>
   </div>
 {% endblock %}

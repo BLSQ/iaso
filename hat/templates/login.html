@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <div id="main">
+
+    <div class="header">
+      <h1>Sense HAT</h1>
+      <h2>Login</h2>
+    </div>
+
+    <div class="content">
+      <br>
+      {% if form.errors %}
+        <p>Your username and password didn't match. Please try again.</p>
+      {% endif %}
+
+      {% if next %}
+        {% if user.is_authenticated %}
+          <p>Your account doesn't have access to this page. To proceed,
+            please login with an account that has access.</p>
+          {% else %}
+            <p>Please login to see this page.</p>
+          {% endif %}
+        {% endif %}
+
+        <form class="pure-form pure-form-aligned" method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          <fieldset>
+            <div class="pure-control-group">
+              {{ form.username.label_tag }}
+              {{ form.username }}
+            </div>
+
+            <div class="pure-control-group">
+              {{ form.password.label_tag }}
+              {{ form.password }}
+            </div>
+
+            <div class="pure-controls">
+              <button type="submit" class="pure-button pure-button-primary">Login</button>
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+          </fieldset>
+        </form>
+
+    </div>
+  </div>
+{% endblock %}

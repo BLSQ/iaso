@@ -1,6 +1,7 @@
+from typing import List, Tuple
 from io import StringIO
 import re
-import pandas
+from pandas import read_csv, read_sql_query, DataFrame
 from .utils import run_cmd
 from .sqlalchemy import engine
 
@@ -10,7 +11,7 @@ Functions to extract info from mdb files via mdb-tools https://github.com/brianb
 '''
 
 
-def get_schema(mdb_file, table=None, namespace=None):
+def get_schema(mdb_file: str, table=None, namespace=None) -> str:
     '''Get the schema of the mdb file as sql'''
     cmd = ['mdb-schema', '--no-indexes', mdb_file, 'postgres']
     if table is not None:
@@ -20,17 +21,17 @@ def get_schema(mdb_file, table=None, namespace=None):
     return run_cmd(cmd)
 
 
-def get_tablenames(mdb_file):
+def get_tablenames(mdb_file: str) -> List[str]:
     '''Get the names of the tables in the mdb file'''
     return run_cmd(['mdb-tables', mdb_file]).strip().split(' ')
 
 
-def get_table_csv(mdb_file, table):
+def get_table_csv(mdb_file: str, table: str) -> str:
     '''Get the table contents as csv'''
     return run_cmd(['mdb-export', mdb_file, table])
 
 
-def convert_intbool_cols(df, sql_schema):
+def convert_intbool_cols(df: DataFrame, sql_schema: str) -> None:
     '''Convert bool columns from 0/1 values to False/True
     MS SQL Server uses 0/1 bit fields for booleans. We have
     to convert those values to True/False for postgres to
@@ -42,15 +43,15 @@ def convert_intbool_cols(df, sql_schema):
         df[col] = df[col].apply(lambda b: b == 1)
 
 
-def extract_mdbtable(mdb_path, table_name):
+def extract_mdbtable(mdb_path: str, table_name: str) -> Tuple[DataFrame, str]:
     schema = get_schema(mdb_path, table=table_name)
     csv = get_table_csv(mdb_path, table_name)
-    df = pandas.read_csv(StringIO(csv))
+    df = read_csv(StringIO(csv))
     convert_intbool_cols(df, schema)
     return (df, schema)
 
 
-def extract_mdbtable_via_db(mdb_path, mdb_table_name):
+def extract_mdbtable_via_db(mdb_path: str, mdb_table_name: str) -> DataFrame:
     (df, schema) = extract_mdbtable(mdb_path, mdb_table_name)
     table_name = mdb_table_name.lower()
 
@@ -67,6 +68,6 @@ def extract_mdbtable_via_db(mdb_path, mdb_table_name):
         # create the table from the extracted schema
         conn.execute(schema, conn)
         df.to_sql(table_name, conn, if_exists='append', index=False)
-        df2 = pandas.read_sql_query('SELECT * from "{}";'.format(table_name), conn)
+        df2 = read_sql_query('SELECT * from "{}";'.format(table_name), conn)
         conn.execute('DROP TABLE IF EXISTS "{}";'.format(table_name))
         return df2

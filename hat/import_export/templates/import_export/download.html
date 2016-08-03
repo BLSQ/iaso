@@ -1,4 +1,4 @@
-{% extends "dashboard/base.html" %}
+{% extends "app.html" %}
 
 {% block content %}
   <div class="header">
@@ -9,7 +9,7 @@
   <div class="content">
     <h2 class="content-subhead">Export data</h2>
     <p>
-      <form method="POST" action="{% url 'dashboard:download' %}" enctype="multipart/form-data">
+      <form method="POST" action="{% url 'import_export:download' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
         <button type="submit" class="pure-button pure-button-primary">Prepare download</button>

@@ -1,25 +1,23 @@
-from pathlib import PurePath
+from typing import List, Tuple
 from rq.decorators import job
-from hat.rq.connection import redis_conn
-from .import_historic import import_historic
-from .import_backup import import_backup
+from hat.rq import redis_conn
 from .export_csv import export_csv
+from .import_data import import_file, reimport
 
 
 @job('default', connection=redis_conn)
-def import_files(fileinfos):
-    stats = []
+def import_files_task(fileinfos: List[Tuple[str, str]], *args, **kwargs):
+    results = []
     for (name, filename) in fileinfos:
-        suffix = PurePath(filename).suffix.lower()
-        if any(suffix in s for s in ['.mdb', '.accdb']):
-            stats.append(import_historic(name, filename))
-        elif suffix in '.enc':
-            stats.append(import_backup(name, filename))
-        else:
-            raise Exception('Cannot import unkown filetype: {}'.format(suffix))
-    return stats
+        results.append(import_file(name, filename, store=True))
+    return results
 
 
 @job('default', connection=redis_conn)
-def export():
+def export_task():
     return export_csv()
+
+
+@job('default', connection=redis_conn)
+def reimport_task():
+    return reimport()

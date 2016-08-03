@@ -3,7 +3,7 @@ import pandas
 import numpy
 
 
-def tz_localize_cd(s):
+def tz_localize_cd(s: pandas.Series) -> pandas.Series:
     ''' Add a DR Congo timezone to the pandas series '''
     def localize(x):
         if pandas.isnull(x):
@@ -12,7 +12,7 @@ def tz_localize_cd(s):
     return pandas.to_datetime(s).apply(localize)
 
 
-def hash_df_row(row):
+def hash_df_row(row: pandas.Series) -> str:
     ''' Return a hash of a pandas dataframe row '''
     t = tuple(row)
     h = md5()

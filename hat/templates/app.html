@@ -9,16 +9,21 @@
 
   <div id="menu">
     <div class="pure-menu">
-      <a class="pure-menu-heading" href={% url "dashboard:index" %}>Sense HAT</a>
+      <a class="pure-menu-heading" href={% url "index" %}>Sense HAT</a>
       <ul class="pure-menu-list">
         {% if perms.participants.import_mdb %}
           <li class="pure-menu-item">
-            <a class="pure-menu-link" href={% url "dashboard:upload" %}>Upload</a>
+            <a class="pure-menu-link" href={% url "import_export:upload" %}>Upload</a>
           </li>
         {% endif %}
         {% if perms.participants.export_full %}
           <li class="pure-menu-item">
-            <a class="pure-menu-link" href={% url "dashboard:download" %}>Download</a>
+            <a class="pure-menu-link" href={% url "import_export:download" %}>Download</a>
+          </li>
+        {% endif %}
+        {% if user.is_superuser %}
+          <li class="pure-menu-item">
+            <a class="pure-menu-link" href={% url "maintenance:index" %}>Maintenance</a>
           </li>
         {% endif %}
 
@@ -30,6 +35,14 @@
   </div>
 
   <div id="main">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
     {% block content %}
       <div class="header">
         <h1>Sense HAT</h1>

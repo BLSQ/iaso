@@ -1,8 +1,27 @@
+from base64 import b64encode
+from pandas import DataFrame
+from django.conf import settings
 from hat.participants.models import HatParticipant
-import pandas
+from hat.common.sqlalchemy import engine
+from hat import couchdb
 
 
-def load(df):
+def store_file(doc: dict, filename: str, mimetype: str) -> str:
+    with open(filename, 'rb') as file:
+        doc['_attachments'] = {
+            'file': {
+                'content_type': mimetype,
+                'data': b64encode(file.read()).decode('ascii')
+            }
+        }
+    r = couchdb.post(settings.COUCHDB_DB, json=doc)
+    r.raise_for_status()
+    return r.json()['id']
+
+
+def load_into_db(df: DataFrame) -> DataFrame:
+    '''Load the dataframe into postgres'''
+
     # remove rows with existing ids from the data
     ids = list(df['document_id'])
     existing_ids = HatParticipant.objects \
@@ -13,9 +32,7 @@ def load(df):
     if len(df) == 0:
         return df
 
-    # replace NaN with None to be compatible with DB null fields
-    df = df.where(pandas.notnull(df), None)
-
-    for col, row in df.iterrows():
-        HatParticipant(**dict(row)).save()
+    table_name = HatParticipant.objects.model._meta.db_table
+    with engine.begin() as conn:
+        df.to_sql(table_name, conn, if_exists='append', index=False)
     return df

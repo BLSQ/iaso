@@ -1,12 +1,9 @@
 import logging
-from base64 import b64encode
 import pandas
 from pandas import DataFrame
-from django.conf import settings
-from hat import couchdb
 from hat.common.mdb import extract_mdbtable_via_db
-from .load import load
-from .utils import hash_df_row, tz_localize_cd
+from .load import load_into_db, store_file
+from .utils import hash_df_row
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +13,7 @@ def extract(mdb_file: str):
     return extract_mdbtable_via_db(mdb_file, 'T_CARDS')
 
 
-def transform_tests(df):
+def transform_tests(df: DataFrame):
     df2 = DataFrame()
 
     def identity(x):
@@ -75,13 +72,13 @@ def transform_tests(df):
     return df2
 
 
-def transform_participants(df):
+def transform_participants(df: DataFrame):
     df2 = DataFrame()
 
-    df2['source'] = 'historic'
     df2['document_id'] = df.apply(hash_df_row, axis=1)
-    df2['document_date'] = tz_localize_cd(df['D_DATE'])
-    df2['entry_date'] = tz_localize_cd(df['F_TIMESTAMP'])
+
+    df2['document_date'] = df['D_DATE']
+    df2['entry_date'] = df['F_TIMESTAMP']
 
     df2['mobile_unit'] = df['IF_UM']
     df2['treatment_center'] = df['IM_UM_CT']
@@ -91,7 +88,7 @@ def transform_participants(df):
     df2['prename'] = df['IM_PRENAME']
 
     def parse_sex(x):
-        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, None)
+        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, 'unknown')
     df2['sex'] = df['IM_SEX'].apply(parse_sex)
 
     df2['age'] = df['IM_AGE']
@@ -99,22 +96,23 @@ def transform_participants(df):
     df2['mothers_surname'] = df['IM_MERE']
 
     df2['hat_id'] = (
-        df2['lastname'].fillna('').str[0:2] +
-        df2['name'].fillna('').str[0:2] +
-        df2['prename'].fillna('').str[0:2] +
+        df2['lastname'].fillna('XX').str[0:2] +
+        df2['name'].fillna('XX').str[0:2] +
+        df2['prename'].fillna('XX').str[0:2] +
         df2['year_of_birth'].fillna(1900).astype('str') +
-        df2['mothers_surname'].fillna('').str[0:1]
-    )
+        df2['mothers_surname'].fillna('XX').str[0:1]
+    ).str.upper()
 
     df2['village'] = df['IM_AD_VILLAGE']
     df2['province'] = df['IM_AD_PROVINCE']
     df2['ZS'] = df['IM_AD_HEALTH_ZONE']
     df2['AZ'] = df['IM_AD_HEALTH_AREA']
 
+    df2['source'] = 'historic'
     return df2
 
 
-def transform(df):
+def transform(df: DataFrame):
     cs = transform_participants(df)
     ts = transform_tests(df)
     return pandas.concat([cs, ts], axis=1)
@@ -129,13 +127,14 @@ def read_entry_name(orgname: str) -> str:
     return ' '.join(parts)
 
 
-def import_historic(orgname, filename):
-    logger.info('Importing historic mdb-file: ' + orgname)
+def import_historic(orgname: str, filename: str, store=False):
+    logger.info('Importing historic file: ' + orgname)
     stats = {
         'type': 'historic_import',
         'version': 1,
         'orgname': orgname,
         'filename': filename,
+        'stored': store,
         'num_total': 0,
         'num_imported': 0,
         'errors': [],
@@ -147,24 +146,20 @@ def import_historic(orgname, filename):
         e = extract(filename)
         t = transform(e)
         t['entry_name'] = entry_name
-        l = load(t)
+        l = load_into_db(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
     except Exception as exc:
         stats['errors'].append(str(exc))
         logger.exception(exc)
-    try:
+
+    if store:
         # Store the files in couch to reparse them on demand
-        doc = stats.copy()
-        with open(filename, 'rb') as file:
-            doc['_attachments'] = {
-                'file': {
-                    'content_type': 'application/x-msaccess',
-                    'data': b64encode(file.read()).decode('ascii')
-                }
-            }
-        couchdb.post(settings.COUCHDB_DB, json=doc)
-    except Exception as exc:
-        stats['errors'].append(str(exc))
-        logger.exception(exc)
+        try:
+            doc = stats.copy()
+            id = store_file(doc, filename, 'application/x-msaccess')
+            stats['store_id'] = id
+        except Exception as exc:
+            stats['errors'].append(str(exc))
+            logger.exception(exc)
     return stats

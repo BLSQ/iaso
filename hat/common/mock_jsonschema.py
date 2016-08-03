@@ -1,15 +1,16 @@
+from typing import List, Any
 import random
 import string
 from datetime import datetime
 from uuid import uuid4
 
 
-def randstr(minlen=2, maxlen=10):
+def randstr(minlen=2, maxlen=10) -> str:
     n = min(24, random.randint(minlen, maxlen))
     return ''.join(random.sample(string.ascii_lowercase, n))
 
 
-def mock_ref(schema, defs):
+def mock_ref(schema: dict, defs: dict) -> dict:
     ref = schema['$ref']
     # only internal definitions are supported
     if ref[:14] == '#/definitions/':
@@ -18,17 +19,17 @@ def mock_ref(schema, defs):
             return mock_schema(defs[d], defs)
 
 
-def mock_enum(schema):
+def mock_enum(schema: dict) -> Any:
     return random.choice(schema['enum'])
 
 
-def mock_object(schema, defs=None):
+def mock_object(schema: dict, defs=None) -> dict:
     if 'properties' in schema:
         return {p: mock_schema(s, defs)
                 for p, s in schema['properties'].items()}
 
 
-def mock_array(schema, defs=None):
+def mock_array(schema: dict, defs=None) -> List[Any]:
     if 'minItems' in schema:
         minimum = schema['minItems']
     else:
@@ -43,7 +44,7 @@ def mock_array(schema, defs=None):
         return [mock_schema(s, defs) for i in range(n)]
 
 
-def mock_integer(schema):
+def mock_integer(schema: dict) -> int:
     if 'minimum' in schema:
         minimum = schema['minimum']
     else:
@@ -55,7 +56,7 @@ def mock_integer(schema):
     return random.randint(minimum, maximum)
 
 
-def mock_number(schema):
+def mock_number(schema: dict) -> float:
     if 'minimum' in schema:
         minimum = schema['minimum']
     else:
@@ -67,7 +68,7 @@ def mock_number(schema):
     return minimum + random.random() * (maximum - minimum)
 
 
-def mock_string(schema):
+def mock_string(schema: dict) -> str:
     if 'minLength' in schema:
         minlen = schema['minLength']
     else:
@@ -79,7 +80,7 @@ def mock_string(schema):
     return randstr(minlen, maxlen)
 
 
-def mock_format(schema):
+def mock_format(schema: dict) -> Any:
     f = schema['format']
     if f == 'date-time':
         y = datetime.today().year
@@ -104,7 +105,7 @@ def mock_format(schema):
         return 'village'
 
 
-def mock_schema(schema, definitions=None):
+def mock_schema(schema: dict, definitions=None) -> dict:
     defs = definitions
     if defs is None:
         defs = {}

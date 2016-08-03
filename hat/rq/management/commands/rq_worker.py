@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from rq import Worker, Connection
-from hat.rq.connection import redis_conn
+from hat.rq import redis_conn
 
 
 class Command(BaseCommand):
@@ -12,6 +12,6 @@ class Command(BaseCommand):
         try:
             with Connection(redis_conn):
                 w = Worker(settings.QUEUES)
-                w.work()
+                w.work(logging_level=settings.LOGGING_LEVEL)
         except Exception as ex:
             self.stderr.write('Error in rq worker: ' + ex)

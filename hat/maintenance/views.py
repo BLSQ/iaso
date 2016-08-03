@@ -1,0 +1,47 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, redirect
+from hat.rq import get_task_status
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def index(request):
+    return render(request, 'maintenance/index.html')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def status(request, task_id: str):
+    from django.contrib import messages
+    status = get_task_status(task_id)
+    if status != 'finished':
+        return render(request, 'maintenance/status.html', {'status': status})
+    messages.add_message(request, messages.INFO, 'Task done.')
+    return redirect('maintenance:index')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def delete_data(request):
+    from django.contrib import messages
+    from hat.participants.models import HatParticipant
+    try:
+        HatParticipant.objects.all().delete()
+    except Exception as e:
+        messages.add_message(request, messages.ERROR, 'Error: {}'.format(e))
+    else:
+        messages.add_message(request, messages.INFO, 'Task done.')
+    return redirect('maintenance:index')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def reimport(request):
+    from hat.import_export.tasks import reimport_task
+    task = reimport_task.delay()
+    return redirect('maintenance:status', task_id=task.id)

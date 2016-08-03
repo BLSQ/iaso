@@ -37,7 +37,7 @@ case "$1" in
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )
-    ./manage.py rq_worker
+    ./start_rq.sh
   ;;
   "start_jupyter" )
     export DJANGO_SETTINGS_MODULE=hat.settings

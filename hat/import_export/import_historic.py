@@ -119,12 +119,15 @@ def transform(df):
     ts = transform_tests(df)
     return pandas.concat([cs, ts], axis=1)
 
-def read_entry_name(orgname):
-    # removes last section of filename,
-    # assuming the beginning is name of the entry clerk
+
+def read_entry_name(orgname: str) -> str:
+    """
+    removes last section of filename, assuming the beginning is name of the entry clerk
+    """
     parts = orgname.split('-')
     parts.pop()
     return ' '.join(parts)
+
 
 def import_historic(orgname, filename):
     logger.info('Importing historic mdb-file: ' + orgname)

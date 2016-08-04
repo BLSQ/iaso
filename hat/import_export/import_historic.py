@@ -120,6 +120,15 @@ def transform(df):
     return pandas.concat([cs, ts], axis=1)
 
 
+def read_entry_name(orgname: str) -> str:
+    """
+    removes last section of filename, assuming the beginning is name of the entry clerk
+    """
+    parts = orgname.split('-')
+    parts.pop()
+    return ' '.join(parts)
+
+
 def import_historic(orgname, filename):
     logger.info('Importing historic mdb-file: ' + orgname)
     stats = {
@@ -132,9 +141,12 @@ def import_historic(orgname, filename):
         'errors': [],
     }
     try:
+        # get entry name
+        entry_name = read_entry_name(orgname)
         # import the data
         e = extract(filename)
         t = transform(e)
+        t['entry_name'] = entry_name
         l = load(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)

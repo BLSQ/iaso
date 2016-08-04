@@ -14,6 +14,7 @@ class HatParticipant(models.Model):
     document_id = models.CharField(max_length=32)
     hat_id = models.CharField(max_length=64)
     entry_date = models.DateTimeField(null=True)
+    entry_name = models.CharField(max_length=128, null=True)
 
     name = models.CharField(max_length=128, null=True)
     lastname = models.CharField(max_length=128, null=True)

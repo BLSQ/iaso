@@ -28,6 +28,7 @@ class ImportBackupTests(TestCase):
         self.assertEqual(stats['num_total'], 6)
         self.assertEqual(stats['num_imported'], 6)
         self.assertEqual(HatParticipant.objects.count(), 6)
+        self.assertGreater(HatParticipant.objects.filter(followup_done=True).count(), 0)
         r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
         r.raise_for_status()
         self.assertEqual(r.json()['type'], 'historic_import')

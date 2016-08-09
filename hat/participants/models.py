@@ -80,6 +80,20 @@ class HatParticipant(models.Model):
     )
     test_pl_result = models.CharField(max_length=16, choices=PL_TEST_RESULT_CHOICES, null=True)
 
+    followup_done = models.NullBooleanField(null=True)
+
+    # fields for followup tests
+    test_followup_pg = models.CharField(max_length=128, null=True)
+    test_followup_sf = models.CharField(max_length=128, null=True)
+    test_followup_ge = models.CharField(max_length=128, null=True)
+    test_followup_woo = models.CharField(max_length=128, null=True)
+    test_followup_maect = models.CharField(max_length=128, null=True)
+    test_followup_woo_maect = models.CharField(max_length=128, null=True)
+    test_followup_pl = models.CharField(max_length=128, null=True)
+    test_followup_pl_trypanosome = models.CharField(max_length=128, null=True)
+    test_followup_pl_gb = models.CharField(max_length=128, null=True)
+    test_followup_decision = models.CharField(max_length=128, null=True)
+
     class Meta:
         permissions = (
             ("import_mdb", "Can import mdb files"),

@@ -1,4 +1,4 @@
-{% extends "dashboard/base.html" %}
+{% extends "app.html" %}
 
 {% block head %}
   <meta http-equiv="refresh" content="2">
@@ -7,10 +7,11 @@
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Historic data download</h2>
+    <h2>Historic data upload</h2>
   </div>
+
   <div class="content">
-    <h2 class="content-subhead">Preparing export...</h2>
+    <h2 class="content-subhead">Importing...</h2>
     <p>Status: {{ status }}</p>
   </div>
 {% endblock %}

@@ -1,26 +1,24 @@
 import logging
-from base64 import b64encode
 import json
 import pandas
 from pandas import DataFrame
 from pandas.io.json import json_normalize
 from django.conf import settings
-from hat import couchdb
 from hat.common.utils import run_cmd
-from .load import load
-from .utils import hash_df_row, tz_localize_cd
+from .load import load_into_db, store_file
+from .utils import hash_df_row
 
 
 logger = logging.getLogger(__name__)
 
 
-def extract(filename):
+def extract(filename: str):
     r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     data = json.loads(r)
     return json_normalize(data)
 
 
-def transform_tests(df):
+def transform_tests(df: DataFrame):
     def get_result(x):
         if pandas.isnull(x):
             return None
@@ -44,21 +42,31 @@ def transform_tests(df):
     return df2
 
 
-def transform_participants(df):
+def transform_participants(df: DataFrame):
     df2 = DataFrame()
 
-    df2['source'] = 'mobile_backup'
     df2['document_id'] = df.apply(hash_df_row, axis=1)
-    df2['document_date'] = tz_localize_cd(df['dateModified'])
-    df2['entry_date'] = tz_localize_cd(df['dateCreated'])
     df2['hat_id'] = df['participant.hatId']
 
-    df2['name'] = df['person.postname']
+    df2['document_date'] = df['dateModified']
+    df2['entry_date'] = df['dateCreated']
+
+    # middlename changed to postname with v3
+    if 'person.middlename' in df:
+        df2['name'] = df['person.middlename']
+    if 'person.postname' in df:
+        df2['name'] = df['person.postname']
+
     df2['lastname'] = df['person.surname']
     df2['prename'] = df['person.forename']
-    df2['mothers_surname'] = df['person.mothersSurname']
 
-    df2['sex'] = df['person.gender']
+    # mothersForename changed to mothersSurname with v4
+    if 'person.mothersSurname' in df:
+        df2['mothers_surname'] = df['person.mothersSurname']
+    if 'person.mothersForename' in df:
+        df2['mothers_surname'] = df['person.mothersForename']
+
+    df2['sex'] = df['person.gender'].str.lower()
 
     age_years = 0
     age_months = 0
@@ -75,22 +83,24 @@ def transform_participants(df):
     df2['AZ'] = df['person.location.area']
     df2['village'] = df['person.location.village']
 
+    df2['source'] = 'mobile_backup'
     return df2
 
 
-def transform(df):
+def transform(df: DataFrame):
     ps = transform_participants(df)
     ts = transform_tests(df)
     return pandas.concat([ps, ts], axis=1)
 
 
-def import_backup(orgname, filename):
-    logger.info('Importing encrypted backup: ' + orgname)
+def import_backup(orgname: str, filename: str, store=False):
+    logger.info('Importing backup: ' + orgname)
     stats = {
         'type': 'backup_import',
         'version': 1,
         'orgname': orgname,
         'filename': filename,
+        'stored': store,
         'num_total': 0,
         'num_imported': 0,
         'errors': [],
@@ -99,24 +109,20 @@ def import_backup(orgname, filename):
         # import the data
         e = extract(filename)
         t = transform(e)
-        l = load(t)
+        l = load_into_db(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
     except Exception as exc:
         stats['errors'].append(str(exc))
         logger.exception(exc)
-    try:
+
+    if store:
         # Store the files in couch to reparse them on demand
-        doc = stats.copy()
-        with open(filename, 'rb') as file:
-            doc['_attachments'] = {
-                'file': {
-                    'content_type': 'application/x-hatbackup',
-                    'data': b64encode(file.read()).decode('ascii')
-                }
-            }
-        couchdb.post(settings.COUCHDB_DB, json=doc)
-    except Exception as exc:
-        stats['errors'].append(str(exc))
-        logger.exception(exc)
+        try:
+            doc = stats.copy()
+            id = store_file(doc, filename, 'application/x-hatbackup')
+            stats['store_id'] = id
+        except Exception as exc:
+            stats['errors'].append(str(exc))
+            logger.exception(exc)
     return stats

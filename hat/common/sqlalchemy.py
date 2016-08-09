@@ -1,19 +1,19 @@
-import sys
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from django.conf import settings
 
 
-def create_sqlengine():
+def create_sqlengine() -> Engine:
     db = settings.DATABASES['default']
     userpass = db['USER'] + ((':' + db['PASSWORD']) if db['PASSWORD'] else '')
-    name = db['NAME']
+    dbname = db['NAME']
 
     # During testing django prefixes the db name with 'test_'.
-    if 'test' in sys.argv:
-        name = 'test_' + name
+    if settings.TESTING:
+        dbname = 'test_' + dbname
 
     pg = 'postgresql+psycopg2://{}@{}:{}/{}'.format(
-        userpass, db['HOST'], db['PORT'], name
+        userpass, db['HOST'], db['PORT'], dbname
     )
     return create_engine(pg)
 

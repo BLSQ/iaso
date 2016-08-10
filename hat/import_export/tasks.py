@@ -5,7 +5,7 @@ from .export_csv import export_csv
 from .import_data import import_file, reimport
 
 
-@job('default', connection=redis_conn)
+@job('default', connection=redis_conn, result_ttl=3600)
 def import_files_task(fileinfos: List[Tuple[str, str]], *args, **kwargs):
     results = []
     for (name, filename) in fileinfos:

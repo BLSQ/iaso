@@ -9,6 +9,7 @@ from .forms import UploadMdbFilesForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
 from hat.import_export.tasks import import_files_task, export_task
 from hat.rq import get_task_status, get_task_result
+from hat.import_export.errors import error_helper
 
 
 @login_required()
@@ -54,6 +55,9 @@ def upload_done(request, task_id):
     results = get_task_result(task_id)
     for result in results:
         result['ok'] = len(result['errors']) == 0
+        # needs to be a list to be converted to JSON
+        errs = list(map(error_helper, result['errors']))
+        result['errors'] = errs
     resultJSON = json.dumps(results, indent=2)
     return render(request, 'import_export/upload_done.html', {
         'results': results,

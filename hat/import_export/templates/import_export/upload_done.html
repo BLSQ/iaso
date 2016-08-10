@@ -38,7 +38,7 @@
              {{ file.num_imported }}/{{ file.num_total}} imported
             {% else %}
               {% for error in file.errors %}
-                {{error | truncatechars:60}}
+                {{error.short_message}}
               {% endfor %}
             {% endif %}
             </td>

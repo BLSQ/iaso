@@ -4,7 +4,7 @@ from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-
+import hat.import_export.errors as errors
 
 logger = logging.getLogger(__name__)
 
@@ -140,17 +140,21 @@ def import_historic(orgname: str, filename: str, store=False):
         'errors': [],
     }
     try:
+        # set error origin for reporting
+        origin = errors.READFILE
         # get entry name
         entry_name = read_entry_name(orgname)
         # import the data
         e = extract(filename)
+        # set error origin for reporting
+        origin = errors.INSERT
         t = transform(e)
         t['entry_name'] = entry_name
         l = load_into_db(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
     except Exception as exc:
-        stats['errors'].append(str(exc))
+        stats['errors'].append({'origin': origin, 'message': str(exc)})
         logger.exception(exc)
 
     if store:
@@ -160,6 +164,6 @@ def import_historic(orgname: str, filename: str, store=False):
             id = store_file(doc, filename, 'application/x-msaccess')
             stats['store_id'] = id
         except Exception as exc:
-            stats['errors'].append(str(exc))
+            stats['errors'].append({'origin': errors.COUCHDB, 'message': str(exc)})
             logger.exception(exc)
     return stats

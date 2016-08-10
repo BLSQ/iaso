@@ -53,9 +53,12 @@ def upload_state(request, task_id):
 def upload_done(request, task_id):
     results = get_task_result(task_id)
     for result in results:
-      result['ok'] = len(result['errors']) == 0
+        result['ok'] = len(result['errors']) == 0
     resultJSON = json.dumps(results, indent=2)
-    return render(request, 'import_export/upload_done.html', {'results': results, 'resultJSON': resultJSON})
+    return render(request, 'import_export/upload_done.html', {
+        'results': results,
+        'resultJSON': resultJSON
+    })
 
 
 @login_required()

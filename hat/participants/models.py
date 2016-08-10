@@ -35,7 +35,20 @@ class HatParticipant(models.Model):
     AZ = models.CharField(max_length=64, null=True)
 
     mobile_unit = models.CharField(max_length=128, null=True)
+
     treatment_center = models.CharField(max_length=128, null=True)
+    treatment_start_date = models.DateTimeField(null=True)
+    treatment_end_date = models.DateTimeField(null=True)
+    TREATMENT_RESULT_CHOICES = (
+        ('recovered','Recovered'),
+        ('healthy','Healthy'),
+        ('relapse','Relapse'),
+        ('disappeared','Disappeared'),
+        ('died','Died'),
+        ('transferred','Transferred'),
+        ('other','Other'),
+    )
+    treatment_result = models.CharField(max_length=16, choices=TREATMENT_RESULT_CHOICES, null=True)
 
     # mobile and historic data sources
     test_rdt = models.NullBooleanField(null=True)

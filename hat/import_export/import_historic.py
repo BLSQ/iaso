@@ -101,6 +101,19 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
 
 
 def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
+
+    def get_treatment_result(x):
+        r = {
+            1:  'recovered',
+            2:  'healthy',
+            3:  'relapse',
+            4:  'disappeared',
+            5:  'died',
+            6:  'transferred',
+            7:  'other',
+        }.get(x, None)
+        return r
+
     result = DataFrame()
 
     result['document_id'] = cards.apply(hash_df_row, axis=1)
@@ -109,7 +122,11 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['entry_date'] = cards['F_TIMESTAMP']
 
     result['mobile_unit'] = cards['IF_UM']
+
     result['treatment_center'] = cards['IM_UM_CT']
+    result['treatment_start_date'] = cards['TP_DATE']
+    result['treatment_end_date'] = cards['TP_DATE_END']
+    result['treatment_result'] = cards['TP_RESULT'].apply(get_treatment_result)
 
     result['name'] = cards['IM_NAME']
     result['lastname'] = cards['IM_LASTNAME']

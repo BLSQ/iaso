@@ -40,13 +40,13 @@ class HatParticipant(models.Model):
     treatment_start_date = models.DateTimeField(null=True)
     treatment_end_date = models.DateTimeField(null=True)
     TREATMENT_RESULT_CHOICES = (
-        ('recovered','Recovered'),
-        ('healthy','Healthy'),
-        ('relapse','Relapse'),
-        ('disappeared','Disappeared'),
-        ('died','Died'),
-        ('transferred','Transferred'),
-        ('other','Other'),
+        ('recovered', 'Recovered'),
+        ('healthy', 'Healthy'),
+        ('relapse', 'Relapse'),
+        ('disappeared', 'Disappeared'),
+        ('died', 'Died'),
+        ('transferred', 'Transferred'),
+        ('other', 'Other'),
     )
     treatment_result = models.CharField(max_length=16, choices=TREATMENT_RESULT_CHOICES, null=True)
 
@@ -62,9 +62,9 @@ class HatParticipant(models.Model):
     test_pl = models.NullBooleanField(null=True)
 
     # from historic data
-    test_catt_total_blood = models.NullBooleanField(null=True)
+    test_catt_total_blood = models.CharField(max_length=16, null=True)
 
-    test_catt_dilution = models.NullBooleanField(null=True)
+    test_catt_dilution = models.CharField(max_length=16, null=True)
     test_lymph_node_puncture = models.NullBooleanField(null=True)
     test_sf = models.NullBooleanField(null=True)
     test_woo = models.NullBooleanField(null=True)
@@ -80,11 +80,11 @@ class HatParticipant(models.Model):
 
     test_clinical_sickness = models.NullBooleanField(null=True)
     test_other = models.NullBooleanField(null=True)
-    test_pl_liquid = models.NullBooleanField(null=True)
+    test_pl_liquid = models.CharField(max_length=16, null=True)
     test_pl_trypanosome = models.CharField(max_length=128, null=True)
     test_pl_gb_mm3 = models.CharField(max_length=128, null=True)
     test_pl_albumine = models.CharField(max_length=128, null=True)
-    test_pl_lcr = models.NullBooleanField(null=True)
+    test_pl_lcr = models.CharField(max_length=16, null=True)
     test_pl_comments = models.CharField(max_length=128, null=True)
     PL_TEST_RESULT_CHOICES = (
         ('stage1', 'Stage1'),
@@ -109,7 +109,7 @@ class HatParticipant(models.Model):
 
     class Meta:
         permissions = (
-            ("import_mdb", "Can import mdb files"),
+            ("import", "Can import data"),
+            ("export", "Can export data"),
             ("export_full", "Can export the full dataset as csv"),
-            ("export_anon", "Can export anonymized data as csv"),
         )

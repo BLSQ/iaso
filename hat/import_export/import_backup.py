@@ -94,7 +94,7 @@ def transform(df: DataFrame):
 
 
 def import_backup(orgname: str, filename: str, store=False):
-    logger.info('Importing backup: ' + orgname)
+    logger.info('Importing backup: ' + orgname + ' from: ' + filename)
     stats = {
         'type': 'backup_import',
         'version': 1,

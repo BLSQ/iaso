@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Dict
 import logging
 import pandas
 from functools import reduce
@@ -16,6 +16,7 @@ def extract(mdb_file: str) -> Dict[str, DataFrame]:
         'cards': extract_mdbtable_via_db(mdb_file, 'T_CARDS'),
         'followups': extract_mdbtable_via_db(mdb_file, 'T_FOLLOWUPS')
     }
+
 
 def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
     # Reduce multiple followups for one card into a single followup.
@@ -45,12 +46,35 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
         return x < 0
 
     def get_catt_dil_result(x):
-        if pandas.isnull(x) or x == 99:
-            return None
-        return 1 <= x <= 5
+        return {
+            1: '1/2',
+            2: '1/4',
+            3: '1/8',
+            4: '1/16',
+            5: '1/32',
+        }.get(x, None)
 
     def get_pl_result(x):
         return {1: 'stage1', 2: 'stage2', 3: 'unknown'}.get(x, None)
+
+    def get_pl_liquid_result(x):
+        return {
+            1: 'clear',
+            2: 'unclear',
+            3: 'hemorrhagic',
+        }.get(x, None)
+
+    def get_pl_lcr_result(x):
+        return {
+            1: '1/8',
+            2: '1/16',
+            3: '1/32',
+            4: '1/64',
+            5: '1/128',
+            6: '1/256',
+            7: '1/512',
+            8: '1/1024',
+        }.get(x, None)
 
     fields = [
         # card test fields
@@ -74,25 +98,25 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
         ("MD_CATT", int, 'catt', get_result),
         ("MD_CLINICAL_SICKNESS", int, 'clinical_sickness', get_result),
         ("MD_OTHER", int, 'other', get_result),
-        ("DS_PL_LIQUID", int, 'pl_liquid', get_result),
+        ("DS_PL_LIQUID", int, 'pl_liquid', get_pl_liquid_result),
         ("DS_PL_TRYPANOSOME", str, 'pl_trypanosome', identity),
         ("DS_PL_GB_MM3", str, 'pl_gb_mm3', identity),
         ("DS_PL_ALBUMINE", str, 'pl_albumine', identity),
-        ("DS_PL_LCR", int, 'pl_lcr', get_result),
+        ("DS_PL_LCR", int, 'pl_lcr', get_pl_lcr_result),
         ("DS_PL_RESULT", int, 'pl_result', get_pl_result),
         ("DS_PL_COMMENTS", str, 'pl_comments', identity),
 
         # followup test fields
- 	("S_PG", str, 'followup_pg', identity),
-	("S_SF", str, 'followup_sf', identity),
-	("S_GE", str, 'followup_ge', identity),
-	("S_WOO", str, 'followup_woo', identity),
-	("S_MAECT", str, 'followup_maect', identity),
-	("S_WOO_MAECT", str, 'followup_woo_maect', identity),
-	("S_PL", str, 'followup_pl', identity),
-	("S_PL_TRYP", str, 'followup_pl_trypanosome', identity),
-	("S_PL_GB", str, 'followup_pl_gb', identity),
-	("S_DECISION", str, 'followup_decision', identity),
+        ("S_PG", str, 'followup_pg', identity),
+        ("S_SF", str, 'followup_sf', identity),
+        ("S_GE", str, 'followup_ge', identity),
+        ("S_WOO", str, 'followup_woo', identity),
+        ("S_MAECT", str, 'followup_maect', identity),
+        ("S_WOO_MAECT", str, 'followup_woo_maect', identity),
+        ("S_PL", str, 'followup_pl', identity),
+        ("S_PL_TRYP", str, 'followup_pl_trypanosome', identity),
+        ("S_PL_GB", str, 'followup_pl_gb', identity),
+        ("S_DECISION", str, 'followup_decision', identity),
     ]
     for (src_col, _, dest_col, f) in fields:
         if src_col in source:
@@ -175,7 +199,7 @@ def read_entry_name(orgname: str) -> str:
 
 
 def import_historic(orgname: str, filename: str, store=False):
-    logger.info('Importing historic file: ' + orgname)
+    logger.info('Importing historic: ' + orgname + ' from: ' + filename)
     stats = {
         'type': 'historic_import',
         'version': 1,

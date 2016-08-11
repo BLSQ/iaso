@@ -2,6 +2,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
+    url(r'^$', views.index, name='index'),
     url(r'^upload$', views.upload, name='upload'),
     url(r'^upload-state/(?P<task_id>[a-z0-9-]+)$', views.upload_state, name='upload_state'),
     url(r'^upload-done/(?P<task_id>[a-z0-9-]+)$', views.upload_done, name='upload_done'),

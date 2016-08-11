@@ -24,7 +24,13 @@ default_messages = {
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@require_http_methods(['GET', 'POST'])
+def index(request):
+    return render(request, 'app.html')
+
+
+@login_required()
+@permission_required('participants.import')
 @require_http_methods(['GET', 'POST'])
 def upload(request):
     if request.method == 'POST':
@@ -50,7 +56,7 @@ def upload(request):
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@permission_required('participants.import')
 @require_http_methods(['GET'])
 def upload_state(request, task_id):
     try:
@@ -66,7 +72,7 @@ def upload_state(request, task_id):
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@permission_required('participants.import')
 @require_http_methods(['GET'])
 def upload_done(request, task_id):
     try:
@@ -90,13 +96,14 @@ def upload_done(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET', 'POST'])
 def download(request):
     if request.method == 'POST':
         form = DownloadCsvForm(request.POST)
         if form.is_valid():
-            r = export_task.delay()
+            anon = not request.user.has_perm('participants.export_full')
+            r = export_task.delay(anon)
             return redirect('import_export:download_state', task_id=r.id)
     else:
         form = DownloadCsvForm()
@@ -104,7 +111,7 @@ def download(request):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_state(request, task_id):
     try:
@@ -123,7 +130,7 @@ def download_state(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_done(request, task_id):
     url = reverse('import_export:download_get', args=(task_id,))
@@ -132,7 +139,7 @@ def download_done(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_get(request, task_id):
     try:

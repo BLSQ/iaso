@@ -37,8 +37,6 @@ def reimport() -> List[dict]:
         if not type == 'historic_import' and not type == 'backup_import':
             return
 
-        logger.info('reimporting: ' + c['doc']['orgname'])
-
         # get the attached file
         r = couchdb.get(settings.COUCHDB_DB + '/' + c['id'] + '/file')
         if r.status_code >= 400:

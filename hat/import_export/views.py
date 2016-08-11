@@ -5,7 +5,6 @@ from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
 from .forms import UploadMdbFilesForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
 from hat.import_export.tasks import import_files_task, export_task
@@ -19,9 +18,8 @@ default_messages = {
     'download_expired':  '''The download job you\'re looking for
                             has expired.  You can create a new download
                             with the button below.''',
-    'upload_expired': '''The upload job you\'re looking for
-                        has expired.  You can download the data from the
-                         <a href="{}">download section</a>.''',
+    'upload_expired': '''The upload job you\'re looking for has expired.
+                        It is done but the result can't be viewed any more.'''
 }
 
 
@@ -58,8 +56,8 @@ def upload_state(request, task_id):
     try:
         status = get_task_status(task_id)
     except NoSuchJobError:
-        message = default_messages['upload_expired'].format(reverse('import_export:download'))
-        messages.add_message(request, messages.INFO, mark_safe(message))
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
         return redirect('import_export:upload')
 
     if status != 'finished':
@@ -74,8 +72,8 @@ def upload_done(request, task_id):
     try:
         results = get_task_result(task_id)
     except NoSuchJobError:
-        message = default_messages['upload_expired'].format(reverse('import_export:download'))
-        messages.add_message(request, messages.INFO, mark_safe(message))
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
         return redirect('import_export:upload')
 
     for result in results:

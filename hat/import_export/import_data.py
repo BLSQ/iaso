@@ -3,7 +3,7 @@ from typing import List
 from pathlib import PurePath
 from .import_historic import import_historic
 from .import_backup import import_backup
-import hat.import_export.errors as errors
+from hat.import_export import errors
 
 from django.conf import settings
 from hat.participants.models import HatParticipant

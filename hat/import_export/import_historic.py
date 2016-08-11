@@ -4,7 +4,7 @@ from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-import hat.import_export.errors as errors
+from hat.import_export import errors
 
 logger = logging.getLogger(__name__)
 

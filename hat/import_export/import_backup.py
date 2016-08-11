@@ -7,7 +7,7 @@ from django.conf import settings
 from hat.common.utils import run_cmd
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-import hat.import_export.errors as errors
+from hat.import_export import errors
 
 logger = logging.getLogger(__name__)
 

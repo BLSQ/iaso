@@ -2,6 +2,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from hat.rq import get_task_status
+from rq.exceptions import NoSuchJobError
+from django.contrib import messages
 
 
 @login_required()
@@ -15,11 +17,19 @@ def index(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def status(request, task_id: str):
-    from django.contrib import messages
-    status = get_task_status(task_id)
+    try:
+        status = get_task_status(task_id)
+    except NoSuchJobError:
+        messages.add_message(
+            request,
+            messages.INFO,
+            'This task is expired, you can start a new job below'
+        )
+        return redirect('maintenance:index')
+
     if status != 'finished':
         return render(request, 'maintenance/status.html', {'status': status})
-    messages.add_message(request, messages.INFO, 'Task done.')
+    messages.add_message(request, messages.SUCCESS, 'Task done.')
     return redirect('maintenance:index')
 
 
@@ -27,14 +37,13 @@ def status(request, task_id: str):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def delete_data(request):
-    from django.contrib import messages
     from hat.participants.models import HatParticipant
     try:
         HatParticipant.objects.all().delete()
     except Exception as e:
         messages.add_message(request, messages.ERROR, 'Error: {}'.format(e))
     else:
-        messages.add_message(request, messages.INFO, 'Task done.')
+        messages.add_message(request, messages.SUCCESS, 'Task done.')
     return redirect('maintenance:index')
 
 

@@ -81,12 +81,13 @@ def upload_done(request, task_id):
     for result in results:
         result['ok'] = len(result['errors']) == 0
         # needs to be a list to be converted to JSON
-        errs = list(map(error_helper, result['errors']))
-        result['errors'] = errs
+        result['errors'] = list(map(error_helper, result['errors']))
+    error_count = len([res for res in results if res['errors']])
     resultJSON = json.dumps(results, indent=2)
     return render(request, 'import_export/upload_done.html', {
         'results': results,
-        'resultJSON': resultJSON
+        'resultJSON': resultJSON,
+        'error_count': error_count
     })
 
 

@@ -8,6 +8,13 @@
 
   <div class="content">
     <h2 class="content-subhead">Import done.</h2>
+
+    {% if error_count > 0 %}
+    <div>
+        {{error_count}} file{{error_count|pluralize}} resulted in errors, please review the file{{error_count|pluralize}} marked below and try again!
+    </div>
+    {% endif %}
+
     <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
       <thead>
         <tr>

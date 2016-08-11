@@ -7,7 +7,7 @@ from django.conf import settings
 from hat.common.utils import run_cmd
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-
+from hat.import_export import errors
 
 logger = logging.getLogger(__name__)
 
@@ -106,14 +106,18 @@ def import_backup(orgname: str, filename: str, store=False):
         'errors': [],
     }
     try:
+        # set error origin for reporting
+        origin = errors.READFILE
         # import the data
         e = extract(filename)
+        # set error origin for reporting
+        origin = errors.INSERT
         t = transform(e)
         l = load_into_db(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
     except Exception as exc:
-        stats['errors'].append(str(exc))
+        stats['errors'].append({'origin': origin, 'message': str(exc)})
         logger.exception(exc)
 
     if store:
@@ -123,6 +127,6 @@ def import_backup(orgname: str, filename: str, store=False):
             id = store_file(doc, filename, 'application/x-hatbackup')
             stats['store_id'] = id
         except Exception as exc:
-            stats['errors'].append(str(exc))
+            stats['errors'].append({'origin': errors.COUCHDB, 'message': str(exc)})
             logger.exception(exc)
     return stats

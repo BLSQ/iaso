@@ -1,7 +1,6 @@
 from redis import Redis
 from rq import Connection
 from rq.job import Job
-from rq.exceptions import NoSuchJobError
 from django.conf import settings
 
 
@@ -23,10 +22,7 @@ def get_task_status(id: str) -> str:
     - deferred
     '''
     with Connection(redis_conn) as conn:
-        try:
-            job = Job.fetch(id, conn)
-        except NoSuchJobError:
-            return 'notfound'
+        job = Job.fetch(id, conn)
         return job.status
 
 

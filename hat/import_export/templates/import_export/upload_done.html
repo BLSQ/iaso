@@ -8,6 +8,58 @@
 
   <div class="content">
     <h2 class="content-subhead">Import done.</h2>
-    <p>Result: <pre>{{ result }}</pre></p>
+
+    {% if error_count > 0 %}
+    <div>
+        {{error_count}} file{{error_count|pluralize}} resulted in errors, please review the file{{error_count|pluralize}} marked below and try again!
+    </div>
+    {% endif %}
+
+    <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Type</th>
+          <th>Result</th>
+          <th>Info</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in results %}
+        {# type historic_import, import_error, backup_import #}
+        <tr class="{% if file.ok %}job-result-ok{% else %}job-result-error{% endif %}">
+            <td>{{ file.orgname }}</td>
+
+            <td>{{ file.type }}</td>
+
+             <td>
+            {% if file.ok %}
+              &#x2713;
+            {% else %}
+              &#x274c;
+            {% endif %}
+            </td>
+
+            <td>
+            {% if file.ok %}
+             {{ file.num_imported }}/{{ file.num_total}} imported
+            {% else %}
+              {% for error in file.errors %}
+                {{error.short_message}}
+              {% endfor %}
+            {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>
+      <small>Full results are available in the dev console</small>
+    </p>
+
+    <script>
+      var fullData = {{resultJSON|safe}};
+      console.log(JSON.stringify(fullData, null, 2))
+    </script>
   </div>
 {% endblock %}

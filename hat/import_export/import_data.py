@@ -3,6 +3,7 @@ from typing import List
 from pathlib import PurePath
 from .import_historic import import_historic
 from .import_backup import import_backup
+from hat.import_export import errors
 
 from django.conf import settings
 from hat.participants.models import HatParticipant
@@ -21,7 +22,10 @@ def import_file(name: str, filename: str, store=False) -> dict:
     else:
         err_msg = 'Cannot import unkown filetype: {}'.format(suffix)
         logger.error(err_msg)
-        return {'type': 'import_error', 'errors': [err_msg]}
+        return {
+            'type': 'import_error',
+            'errors': [{'origin': errors.FILETYPE, 'message': err_msg}]
+        }
 
 
 def reimport() -> List[dict]:
@@ -40,7 +44,10 @@ def reimport() -> List[dict]:
         if r.status_code >= 400:
             err_msg = 'Could not get attachement for doc id: ' + id
             logger.error(err_msg)
-            results.append({'type': 'import_error', 'errors': [err_msg]})
+            results.append({
+                'type': 'import_error',
+                'errors': [{'origin': errors.FILETYPE, 'message': err_msg}]
+            })
             return
 
         # write the file to disk

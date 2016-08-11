@@ -9,6 +9,18 @@ from .forms import UploadMdbFilesForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
 from hat.import_export.tasks import import_files_task, export_task
 from hat.rq import get_task_status, get_task_result
+from rq.exceptions import NoSuchJobError
+from hat.import_export.errors import error_helper
+from django.contrib import messages
+
+
+default_messages = {
+    'download_expired':  '''The download job you\'re looking for
+                            has expired.  You can create a new download
+                            with the button below.''',
+    'upload_expired': '''The upload job you\'re looking for has expired.
+                        It is done but the result can't be viewed any more.'''
+}
 
 
 @login_required()
@@ -41,7 +53,13 @@ def upload(request):
 @permission_required('participants.import_mdb')
 @require_http_methods(['GET'])
 def upload_state(request, task_id):
-    status = get_task_status(task_id)
+    try:
+        status = get_task_status(task_id)
+    except NoSuchJobError:
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
+        return redirect('import_export:upload')
+
     if status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
     return redirect('import_export:upload_done', task_id=task_id)
@@ -51,8 +69,24 @@ def upload_state(request, task_id):
 @permission_required('participants.import_mdb')
 @require_http_methods(['GET'])
 def upload_done(request, task_id):
-    result = json.dumps(get_task_result(task_id), indent=2)
-    return render(request, 'import_export/upload_done.html', {'result': result})
+    try:
+        results = get_task_result(task_id)
+    except NoSuchJobError:
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
+        return redirect('import_export:upload')
+
+    for result in results:
+        result['ok'] = len(result['errors']) == 0
+        # needs to be a list to be converted to JSON
+        result['errors'] = list(map(error_helper, result['errors']))
+    error_count = len([res for res in results if res['errors']])
+    resultJSON = json.dumps(results, indent=2)
+    return render(request, 'import_export/upload_done.html', {
+        'results': results,
+        'resultJSON': resultJSON,
+        'error_count': error_count
+    })
 
 
 @login_required()
@@ -73,7 +107,16 @@ def download(request):
 @permission_required('participants.export_full')
 @require_http_methods(['GET'])
 def download_state(request, task_id):
-    status = get_task_status(task_id)
+    try:
+        status = get_task_status(task_id)
+    except NoSuchJobError:
+        messages.add_message(
+            request,
+            messages.INFO,
+            default_messages['download_expired']
+        )
+        return redirect('import_export:download')
+
     if status != 'finished':
         return render(request, 'import_export/download_state.html', {'status': status})
     return redirect('import_export:download_done', task_id=task_id)
@@ -92,7 +135,16 @@ def download_done(request, task_id):
 @permission_required('participants.export_full')
 @require_http_methods(['GET'])
 def download_get(request, task_id):
-    result = get_task_result(task_id)
+    try:
+        result = get_task_result(task_id)
+    except NoSuchJobError:
+        messages.add_message(
+            request,
+            messages.INFO,
+            default_messages['download_expired']
+        )
+        return redirect('import_export:download')
+
     response = HttpResponse(result, content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hat.csv"'
     return response

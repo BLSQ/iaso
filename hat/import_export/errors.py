@@ -34,9 +34,9 @@ def handle_import_stage(stage: ImportStage):
 
 messages = dict([
     (ImportStage.filetype.name, 'Unknown file type. Only .mdb, .accdb and .enc accepted'),
-    (ImportStage.extract.name, 'Could extract data from file for import'),
+    (ImportStage.extract.name, 'Could not extract data from file for import'),
     (ImportStage.transform.name, 'File is missing values, can not be automatically imported'),
-    (ImportStage.load.name, 'Could load data into database'),
+    (ImportStage.load.name, 'Could not load data into database'),
     (ImportStage.store.name, 'Could not store file for re-import'),
     (ImportStage.other.name, 'An unforseen error occurred'),
 ])

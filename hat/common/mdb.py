@@ -57,8 +57,16 @@ def extract_mdbtable_via_db(mdb_path: str, mdb_table_name: str) -> DataFrame:
 
     # We want to create a temporary table
     schema = re.sub('CREATE TABLE', 'CREATE TEMPORARY TABLE', schema, flags=re.M)
+
     # lowercase table name
     schema = re.sub('"{}"'.format(mdb_table_name), '"{}"'.format(table_name.lower()), schema)
+
+    # Remove any alter statements which are used to add relationsships.
+    # The related table will not exist and the statement would fail.
+    schema = re.sub(r'^\s*ALTER\sTABLE.+$', '', schema, flags=re.M)
+
+    # Remove unneeded comments
+    schema = re.sub(r'\s*COMMENT\s.+$', '', schema, flags=re.M)
 
     # We put the data into the table once, and then read it back.
     # That might sound like a noop, but this way pandas will adapt

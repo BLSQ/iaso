@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
-from hat.rq import get_task_status
+from hat.rq.utils import run_task, get_task_status
 from rq.exceptions import NoSuchJobError
 from django.contrib import messages
 
@@ -18,7 +18,7 @@ def index(request):
 @require_http_methods(['GET'])
 def status(request, task_id: str):
     try:
-        status = get_task_status(task_id)
+        status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         messages.add_message(
             request,
@@ -52,5 +52,5 @@ def delete_data(request):
 @require_http_methods(['POST'])
 def reimport(request):
     from hat.import_export.tasks import reimport_task
-    task = reimport_task.delay()
+    task = run_task(reimport_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)

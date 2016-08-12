@@ -11,12 +11,12 @@
     <div class="pure-menu">
       <a class="pure-menu-heading" href={% url "index" %}>Sense HAT</a>
       <ul class="pure-menu-list">
-        {% if perms.participants.import_mdb %}
+        {% if perms.participants.import %}
           <li class="pure-menu-item">
             <a class="pure-menu-link" href={% url "import_export:upload" %}>Upload</a>
           </li>
         {% endif %}
-        {% if perms.participants.export_full %}
+        {% if perms.participants.export %}
           <li class="pure-menu-item">
             <a class="pure-menu-link" href={% url "import_export:download" %}>Download</a>
           </li>

@@ -7,8 +7,8 @@ from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from .forms import UploadMdbFilesForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
-from hat.import_export.tasks import import_files_task, export_task
-from hat.rq import get_task_status, get_task_result
+from hat.import_export.tasks import import_task, export_task
+from hat.rq.utils import run_task, get_task_status, get_task_result
 from rq.exceptions import NoSuchJobError
 from hat.import_export.errors import error_helper
 from django.contrib import messages
@@ -24,7 +24,13 @@ default_messages = {
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@require_http_methods(['GET', 'POST'])
+def index(request):
+    return render(request, 'app.html')
+
+
+@login_required()
+@permission_required('participants.import')
 @require_http_methods(['GET', 'POST'])
 def upload(request):
     if request.method == 'POST':
@@ -42,7 +48,8 @@ def upload(request):
                 fileinfos.append((file.name, filename))
 
             # run import task
-            task = import_files_task.delay(fileinfos, store=True)
+            task = run_task(import_task, args=[fileinfos],
+                            permission='participants.import')
             return redirect('import_export:upload_state', task_id=task.id)
     else:
         form = UploadMdbFilesForm()
@@ -50,11 +57,11 @@ def upload(request):
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@permission_required('participants.import')
 @require_http_methods(['GET'])
 def upload_state(request, task_id):
     try:
-        status = get_task_status(task_id)
+        status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
         messages.add_message(request, messages.INFO, message)
@@ -66,11 +73,11 @@ def upload_state(request, task_id):
 
 
 @login_required()
-@permission_required('participants.import_mdb')
+@permission_required('participants.import')
 @require_http_methods(['GET'])
 def upload_done(request, task_id):
     try:
-        results = get_task_result(task_id)
+        results = get_task_result(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
         messages.add_message(request, messages.INFO, message)
@@ -90,25 +97,30 @@ def upload_done(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET', 'POST'])
 def download(request):
     if request.method == 'POST':
         form = DownloadCsvForm(request.POST)
         if form.is_valid():
-            r = export_task.delay()
-            return redirect('import_export:download_state', task_id=r.id)
+            if request.user.has_perm('participants.export_full'):
+                task = run_task(export_task,
+                                permission='participants.export_full')
+            else:
+                task = run_task(export_task, kwargs={'anon': True},
+                                permission='participants.export')
+            return redirect('import_export:download_state', task_id=task.id)
     else:
         form = DownloadCsvForm()
     return render(request, 'import_export/download.html', {'form': form})
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_state(request, task_id):
     try:
-        status = get_task_status(task_id)
+        status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         messages.add_message(
             request,
@@ -123,7 +135,7 @@ def download_state(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_done(request, task_id):
     url = reverse('import_export:download_get', args=(task_id,))
@@ -132,11 +144,11 @@ def download_done(request, task_id):
 
 
 @login_required()
-@permission_required('participants.export_full')
+@permission_required('participants.export')
 @require_http_methods(['GET'])
 def download_get(request, task_id):
     try:
-        result = get_task_result(task_id)
+        result = get_task_result(task_id, request.user)
     except NoSuchJobError:
         messages.add_message(
             request,

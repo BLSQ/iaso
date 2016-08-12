@@ -14,9 +14,7 @@ services:
 
   # the django dev server container
   web:
-    build:
-      context: .
-    image: django
+    build: .
     ports:
       - "8080:8080"
     volumes: &web_volumes
@@ -40,7 +38,7 @@ services:
 
   # the worker container of the task runner
   rq:
-    image: django
+    build: .
     volumes: *web_volumes
     links: *web_links
     environment: *web_environment
@@ -48,7 +46,7 @@ services:
 
   # the jupyter server
   jupyter:
-    image: django
+    build: .
     ports:
       - "8888:8888"
     volumes: *web_volumes

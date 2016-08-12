@@ -9,9 +9,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Starting rq worker')
-        try:
-            with Connection(redis_conn):
-                w = Worker(settings.QUEUES)
-                w.work(logging_level=settings.LOGGING_LEVEL)
-        except Exception as ex:
-            self.stderr.write('Error in rq worker: ' + ex)
+        with Connection(redis_conn):
+            w = Worker(settings.QUEUES)
+            w.work(logging_level=settings.LOGGING_LEVEL)

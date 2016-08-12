@@ -3,7 +3,7 @@ from typing import List
 from pathlib import PurePath
 from .import_historic import import_historic
 from .import_backup import import_backup
-from hat.import_export import errors
+from hat.import_export.errors import ImportStage
 
 from django.conf import settings
 from hat.participants.models import HatParticipant
@@ -24,7 +24,7 @@ def import_file(name: str, filename: str, store=False) -> dict:
         logger.error(err_msg)
         return {
             'type': 'import_error',
-            'errors': [{'origin': errors.FILETYPE, 'message': err_msg}]
+            'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
         }
 
 
@@ -44,7 +44,7 @@ def reimport() -> List[dict]:
             logger.error(err_msg)
             results.append({
                 'type': 'import_error',
-                'errors': [{'origin': errors.FILETYPE, 'message': err_msg}]
+                'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
             })
             return
 

@@ -6,7 +6,7 @@ from .import_data import import_file, reimport
 
 
 @job('default', connection=redis_conn)
-def import_files_task(fileinfos: List[Tuple[str, str]], *args, **kwargs) -> dict:
+def import_task(fileinfos: List[Tuple[str, str]]) -> dict:
     results = []
     for (name, filename) in fileinfos:
         results.append(import_file(name, filename, store=True))
@@ -14,7 +14,7 @@ def import_files_task(fileinfos: List[Tuple[str, str]], *args, **kwargs) -> dict
 
 
 @job('default', connection=redis_conn)
-def export_task(anon: bool) -> str:
+def export_task(anon=False) -> str:
     return export_csv(anon)
 
 

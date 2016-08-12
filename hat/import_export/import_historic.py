@@ -6,11 +6,12 @@ from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-from hat.import_export import errors
+from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
 
 
+@handle_import_stage(ImportStage.extract)
 def extract(mdb_file: str) -> Dict[str, DataFrame]:
     return {
         'cards': extract_mdbtable_via_db(mdb_file, 'T_CARDS'),
@@ -183,12 +184,6 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     return result
 
 
-def transform(tables: Dict[str, DataFrame]):
-    cs = transform_participants(tables['cards'], tables['followups'])
-    ts = transform_tests(tables['cards'], tables['followups'])
-    return pandas.concat([cs, ts], axis=1)
-
-
 def read_entry_name(orgname: str) -> str:
     """
     removes last section of filename, assuming the beginning is name of the entry clerk
@@ -198,8 +193,17 @@ def read_entry_name(orgname: str) -> str:
     return ' '.join(parts)
 
 
+@handle_import_stage(ImportStage.transform)
+def transform(tables: Dict[str, DataFrame], orgname):
+    cs = transform_participants(tables['cards'], tables['followups'])
+    ts = transform_tests(tables['cards'], tables['followups'])
+    result = pandas.concat([cs, ts], axis=1)
+    result['entry_name'] = read_entry_name(orgname)
+    return result
+
+
 def import_historic(orgname: str, filename: str, store=False):
-    logger.info('Importing historic: ' + orgname + ' from: ' + filename)
+    logger.info('Importing historic file: ' + orgname)
     stats = {
         'type': 'historic_import',
         'version': 1,
@@ -211,30 +215,18 @@ def import_historic(orgname: str, filename: str, store=False):
         'errors': [],
     }
     try:
-        # set error origin for reporting
-        origin = errors.READFILE
-        # get entry name
-        entry_name = read_entry_name(orgname)
-        # import the data
         e = extract(filename)
-        # set error origin for reporting
-        origin = errors.INSERT
-        t = transform(e)
-        t['entry_name'] = entry_name
+        t = transform(e, orgname)
         l = load_into_db(t)
-        stats['num_total'] = len(es['cards'])
+        stats['num_total'] = len(e['cards'])
         stats['num_imported'] = len(l)
-    except Exception as exc:
-        stats['errors'].append({'origin': origin, 'message': str(exc)})
+        if store:
+            store_id = store_file(stats.copy(), filename, 'application/x-msaccess')
+            stats['store_id'] = store_id
+    except ImportStageException as exc:
+        stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})
         logger.exception(exc)
-
-    if store:
-        # Store the files in couch to reparse them on demand
-        try:
-            doc = stats.copy()
-            id = store_file(doc, filename, 'application/x-msaccess')
-            stats['store_id'] = id
-        except Exception as exc:
-            stats['errors'].append({'origin': errors.COUCHDB, 'message': str(exc)})
-            logger.exception(exc)
+    except Exception as exc:
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
+        logger.exception(exc)
     return stats

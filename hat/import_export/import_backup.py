@@ -7,11 +7,12 @@ from django.conf import settings
 from hat.common.utils import run_cmd
 from .load import load_into_db, store_file
 from .utils import hash_df_row
-from hat.import_export import errors
+from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
 
 
+@handle_import_stage(ImportStage.extract)
 def extract(filename: str):
     r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     data = json.loads(r)
@@ -87,6 +88,7 @@ def transform_participants(df: DataFrame):
     return df2
 
 
+@handle_import_stage(ImportStage.transform)
 def transform(df: DataFrame):
     ps = transform_participants(df)
     ts = transform_tests(df)
@@ -106,27 +108,18 @@ def import_backup(orgname: str, filename: str, store=False):
         'errors': [],
     }
     try:
-        # set error origin for reporting
-        origin = errors.READFILE
-        # import the data
         e = extract(filename)
-        # set error origin for reporting
-        origin = errors.INSERT
         t = transform(e)
         l = load_into_db(t)
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
-    except Exception as exc:
-        stats['errors'].append({'origin': origin, 'message': str(exc)})
+        if store:
+            store_id = store_file(stats.copy(), filename, 'application/x-hatbackup')
+            stats['store_id'] = store_id
+    except ImportStageException as exc:
+        stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})
         logger.exception(exc)
-
-    if store:
-        # Store the files in couch to reparse them on demand
-        try:
-            doc = stats.copy()
-            id = store_file(doc, filename, 'application/x-hatbackup')
-            stats['store_id'] = id
-        except Exception as exc:
-            stats['errors'].append({'origin': errors.COUCHDB, 'message': str(exc)})
-            logger.exception(exc)
+    except Exception as exc:
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
+        logger.exception(exc)
     return stats

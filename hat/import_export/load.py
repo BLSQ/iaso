@@ -4,8 +4,10 @@ from django.conf import settings
 from hat.participants.models import HatParticipant
 from hat.common.sqlalchemy import engine
 from hat import couchdb
+from hat.import_export.errors import handle_import_stage, ImportStage
 
 
+@handle_import_stage(ImportStage.store)
 def store_file(doc: dict, filename: str, mimetype: str) -> str:
     with open(filename, 'rb') as file:
         doc['_attachments'] = {
@@ -19,6 +21,7 @@ def store_file(doc: dict, filename: str, mimetype: str) -> str:
     return r.json()['id']
 
 
+@handle_import_stage(ImportStage.load)
 def load_into_db(df: DataFrame) -> DataFrame:
     '''Load the dataframe into postgres'''
 

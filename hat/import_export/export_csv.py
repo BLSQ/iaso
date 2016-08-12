@@ -34,6 +34,8 @@ def export_csv(anon: bool) -> str:
         'treatment_center',
         'treatment_start_date',
         'treatment_end_date',
+        'treatment_prescribed',
+        'treatment_secondary_effects',
         'treatment_result',
     ]
     test_fields = [
@@ -92,18 +94,18 @@ def export_csv(anon: bool) -> str:
         *generic_fields,
         *location_fields,
         *person_fields,
-        *treatment_fields,
         *test_fields,
-        *followup_fields
+        *followup_fields,
+        *treatment_fields,
     ]
     anon_fields = [
         'source',
         *generic_fields,
         *location_fields,
         *anon_person_fields,
-        *treatment_fields,
         *test_fields,
-        *followup_fields
+        *followup_fields,
+        *treatment_fields,
     ]
 
     table_name = HatParticipant.objects.model._meta.db_table

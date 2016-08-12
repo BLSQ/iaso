@@ -121,7 +121,6 @@ def download(request):
 def download_state(request, task_id):
     try:
         status = get_task_status(task_id, user=request.user)
-        print("GET DOWNLOAD STATEF", status)
     except NoSuchJobError:
         messages.add_message(
             request,

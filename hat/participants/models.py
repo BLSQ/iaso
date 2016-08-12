@@ -39,6 +39,8 @@ class HatParticipant(models.Model):
     treatment_center = models.CharField(max_length=128, null=True)
     treatment_start_date = models.DateTimeField(null=True)
     treatment_end_date = models.DateTimeField(null=True)
+    treatment_prescribed = models.CharField(max_length=128, null=True)
+    treatment_secondary_effects = models.NullBooleanField()
     TREATMENT_RESULT_CHOICES = (
         ('recovered', 'Recovered'),
         ('healthy', 'Healthy'),

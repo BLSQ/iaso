@@ -1,12 +1,13 @@
 {% extends "app.html" %}
+{% load i18n %}
 
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Historic data download</h2>
+    <h2>{% trans "Historic data download" %}</h2>
   </div>
   <div class="content">
-    <h2 class="content-subhead">Export ready</h2>
-    <p><a href="{{ download_link }}">HAT historic data file</a></p>
+    <h2 class="content-subhead">{% trans "Export ready" %}</h2>
+    <p><a href="{{ download_link }}">{% trans "HAT historic data file" %}</a></p>
   </div>
 {% endblock %}

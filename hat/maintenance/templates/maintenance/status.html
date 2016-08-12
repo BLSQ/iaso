@@ -1,4 +1,5 @@
 {% extends "app.html" %}
+{% load i18n %}
 
 {% block head %}
   <meta http-equiv="refresh" content="2">
@@ -7,10 +8,10 @@
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Maintenance</h2>
+    <h2>{% trans "Maintenance" %}</h2>
   </div>
   <div class="content">
-    <h2 class="content-subhead">Task running...</h2>
-    <p>Status: {{ status }}</p>
+    <h2 class="content-subhead">{% trans "Task running..." %}</h2>
+    <p>{% trans "Status:" %} {{ status }}</p>
   </div>
 {% endblock %}

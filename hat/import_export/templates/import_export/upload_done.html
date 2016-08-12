@@ -1,27 +1,32 @@
 {% extends "app.html" %}
+{% load i18n %}
 
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Historic data upload</h2>
+    <h2>{% trans "Historic data upload" %}</h2>
   </div>
 
   <div class="content">
-    <h2 class="content-subhead">Import done.</h2>
+      <h2 class="content-subhead">{% trans "Import done." %}</h2>
 
     {% if error_count > 0 %}
     <div>
-        {{error_count}} file{{error_count|pluralize}} resulted in errors, please review the file{{error_count|pluralize}} marked below and try again!
+        {% blocktrans count error_count=error_count %}
+        {{error_count}} file resulted in errors, please review the file marked below and try again!
+        {% plural %}
+        {{error_count}} files resulted in errors, please review the files marked below and try again!
+        {% endblocktrans %}
     </div>
     {% endif %}
 
     <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
       <thead>
         <tr>
-          <th>File</th>
-          <th>Type</th>
-          <th>Result</th>
-          <th>Info</th>
+          <th>{% trans "File" %}</th>
+          <th>{% trans "Type" %}</th>
+          <th>{% trans "Result" %}</th>
+          <th>{% trans "Info" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -54,7 +59,7 @@
       </tbody>
     </table>
     <p>
-      <small>Full results are available in the dev console</small>
+    <small>{% trans "Full results are available in the dev console" %}</small>
     </p>
 
     <script>

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block body %}
   <!-- Menu toggle -->
@@ -13,22 +14,22 @@
       <ul class="pure-menu-list">
         {% if perms.participants.import %}
           <li class="pure-menu-item">
-            <a class="pure-menu-link" href={% url "import_export:upload" %}>Upload</a>
+          <a class="pure-menu-link" href={% url "import_export:upload" %}>{% trans "Upload" %}</a>
           </li>
         {% endif %}
         {% if perms.participants.export %}
           <li class="pure-menu-item">
-            <a class="pure-menu-link" href={% url "import_export:download" %}>Download</a>
+          <a class="pure-menu-link" href={% url "import_export:download" %}>{% trans "Download" %}</a>
           </li>
         {% endif %}
         {% if user.is_superuser %}
           <li class="pure-menu-item">
-            <a class="pure-menu-link" href={% url "maintenance:index" %}>Maintenance</a>
+          <a class="pure-menu-link" href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
           </li>
         {% endif %}
 
         <li class="pure-menu-item">
-          <a href={% url 'logout' %} class="pure-menu-link">Logout</a>
+        <a href={% url 'logout' %} class="pure-menu-link">{% trans "Logout" %}</a>
         </li>
       </ul>
     </div>

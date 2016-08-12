@@ -1,27 +1,28 @@
 {% extends "app.html" %}
+{% load i18n %}
 
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Maintenance</h2>
+    <h2>{% trans "Maintenance" %}</h2>
   </div>
 
   <div class="content">
     <p>
-      Delete the data.
+      {% trans "Delete the data." %}
       <form method="POST" action="{% url 'maintenance:delete_data' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
-        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('Are you sure?')">Delete Data</button>
+        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Data" %}</button>
       </form>
     </p>
     <br>
     <p>
-      Delete the data and reimport.
+      {% trans "Delete the data and reimport." %}
       <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
-        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('Are you sure?')">Reimport</button>
+        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
       </form>
     </p>
   </div>

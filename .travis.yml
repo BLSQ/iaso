@@ -21,9 +21,12 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - sudo service docker restart
   - pip install awscli awsebcli
+  # need to happen before first build
+  - "./build_scripts/tfx_download.sh"
 
 script:
   - docker-compose run web test
 
 after_success:
+  - "./build_scripts/tfx_upload.sh"
   - "./build_scripts/travis_deploy.sh"

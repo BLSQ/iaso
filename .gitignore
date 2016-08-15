@@ -77,6 +77,9 @@ local_settings.py
 db.sqlite3
 media
 
+### Translations ###
+locale/
+
 # Deployment
 build_scripts/nginx.hf_registry.conf
 build_scripts/nginx.kanoconnect.conf

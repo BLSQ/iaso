@@ -108,5 +108,5 @@ def setup_couchdb():
         logger.info('setting up couchdb: ' + db_name)
         if settings.TESTING:
             db_name = db_name + '_test'
-            config = load_config(str(db_dir))
-            setup_db(db_name, config)
+        config = load_config(str(db_dir))
+        setup_db(db_name, config)

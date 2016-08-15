@@ -7,7 +7,8 @@ from hat.import_export.errors import ImportStage
 
 from django.conf import settings
 from hat.participants.models import HatParticipant
-import hat.couchdb as couchdb
+import hat.couchdb.api as couchdb
+from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
 
 logger = logging.getLogger(__name__)
@@ -60,6 +61,6 @@ def reimport() -> List[dict]:
         results.append(stats)
 
     HatParticipant.objects.all().delete()
-    couchdb.walk_changes(settings.COUCHDB_DB, import_change, params={'include_docs': 'true'})
+    walk_changes(settings.COUCHDB_DB, import_change, params={'include_docs': 'true'})
     logger.info('reimport finished')
     return results

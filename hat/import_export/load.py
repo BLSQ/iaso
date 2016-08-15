@@ -3,7 +3,7 @@ from pandas import DataFrame
 from django.conf import settings
 from hat.participants.models import HatParticipant
 from hat.common.sqlalchemy import engine
-from hat import couchdb
+import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
 
 

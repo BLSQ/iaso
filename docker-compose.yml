@@ -15,6 +15,7 @@ services:
   # the django dev server container
   web:
     build: .
+    image: sense-hat
     ports:
       - "8080:8080"
     volumes: &web_volumes
@@ -38,18 +39,24 @@ services:
 
   # the worker container of the task runner
   rq:
-    build: .
-    volumes: *web_volumes
+    depends_on:
+      - web
+    image: sense-hat
+    volumes_from:
+      - web
     links: *web_links
     environment: *web_environment
     command: start_rq
 
   # the jupyter server
   jupyter:
-    build: .
+    depends_on:
+      - web
+    image: sense-hat
     ports:
       - "8888:8888"
-    volumes: *web_volumes
+    volumes_from:
+      - web
     links: *web_links
     environment: *web_environment
     command: start_jupyter

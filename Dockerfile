@@ -46,12 +46,12 @@ ADD . /opt/app
 WORKDIR /opt/app
 
 RUN pip install --quiet --upgrade pip==8.1.2
-RUN pip install --quiet -r pip-requirements.txt
+RUN pip install --quiet -r requirements.txt
 
 RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
- 
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN npm prune

@@ -1,6 +1,13 @@
 from hashlib import md5
+from string import capwords
 import pandas
 import numpy
+
+
+def capitalize(x: str) -> str:
+    if x is None:
+        return None
+    return capwords(x)
 
 
 def tz_localize_cd(s: pandas.Series) -> pandas.Series:
@@ -12,9 +19,21 @@ def tz_localize_cd(s: pandas.Series) -> pandas.Series:
     return pandas.to_datetime(s).apply(localize)
 
 
-def hash_df_row(row: pandas.Series) -> str:
-    ''' Return a hash of a pandas dataframe row '''
-    t = tuple(row)
+def create_documentid(row: pandas.Series) -> str:
+    ''' Hash some columns to create the document id '''
+    COLUMNS = [
+        'name',
+        'lastname',
+        'prename',
+        'sex',
+        'year_of_birth',
+        'mothers_surname',
+        'village',
+        'province',
+        'ZS',
+        'AZ'
+    ]
+    t = tuple(row[COLUMNS])
     h = md5()
     for x in t:
         h.update(str(x).encode())

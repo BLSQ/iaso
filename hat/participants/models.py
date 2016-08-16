@@ -22,9 +22,8 @@ class HatParticipant(models.Model):
     SEX_CHOICES = (
         ('female', 'Female'),
         ('male', 'Male'),
-        ('unknown', 'Unknown'),
     )
-    sex = models.TextField(choices=SEX_CHOICES)
+    sex = models.TextField(choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField(null=True)
     year_of_birth = models.PositiveSmallIntegerField(null=True)
     mothers_surname = models.TextField(null=True)

@@ -5,7 +5,7 @@ from functools import reduce
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
-from .utils import hash_df_row
+from .utils import capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
@@ -141,12 +141,10 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
 
     result = DataFrame()
 
-    result['document_id'] = cards.apply(hash_df_row, axis=1)
-
     result['document_date'] = cards['D_DATE']
     result['entry_date'] = cards['F_TIMESTAMP']
 
-    result['mobile_unit'] = cards['IF_UM']
+    result['mobile_unit'] = cards['IF_UM'].apply(capitalize)
 
     result['treatment_center'] = cards['IM_UM_CT']
     result['treatment_start_date'] = cards['TP_DATE']
@@ -161,7 +159,7 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['prename'] = cards['IM_PRENAME']
 
     def parse_sex(x):
-        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, 'unknown')
+        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, None)
     result['sex'] = cards['IM_SEX'].apply(parse_sex)
 
     result['age'] = cards['IM_AGE']
@@ -176,14 +174,15 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
         result['mothers_surname'].fillna('XX').str[0:1]
     ).str.upper()
 
-    result['village'] = cards['IM_AD_VILLAGE']
-    result['province'] = cards['IM_AD_PROVINCE']
-    result['ZS'] = cards['IM_AD_HEALTH_ZONE']
-    result['AZ'] = cards['IM_AD_HEALTH_AREA']
+    result['village'] = cards['IM_AD_VILLAGE'].apply(capitalize)
+    result['province'] = cards['IM_AD_PROVINCE'].apply(capitalize)
+    result['ZS'] = cards['IM_AD_HEALTH_ZONE'].apply(capitalize)
+    result['AZ'] = cards['IM_AD_HEALTH_AREA'].apply(capitalize)
 
     result['source'] = 'historic'
     result['followup_done'] = cards['F_ID'].isin(list(followups['F_ID']))
 
+    result['document_id'] = result.apply(create_documentid, axis=1)
     return result
 
 

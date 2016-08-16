@@ -12,14 +12,15 @@ from hat.rq.utils import run_task, get_task_status, get_task_result
 from rq.exceptions import NoSuchJobError
 from hat.import_export.errors import error_helper
 from django.contrib import messages
+from django.utils.translation import ugettext as _
 
 
 default_messages = {
-    'download_expired':  '''The download job you\'re looking for
+    'download_expired':  _('''The download job you\'re looking for
                             has expired.  You can create a new download
-                            with the button below.''',
-    'upload_expired': '''The upload job you\'re looking for has expired.
-                        It is done but the result can't be viewed any more.'''
+                            with the button below.'''),
+    'upload_expired': _('''The upload job you\'re looking for has expired.
+                        It is done but the result can't be viewed any more.''')
 }
 
 

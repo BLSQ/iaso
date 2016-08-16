@@ -1,9 +1,10 @@
 {% extends "app.html" %}
+{% load i18n %}
 
 {% block content %}
   <div class="header">
     <h1>Sense HAT</h1>
-    <h2>Historic data upload</h2>
+    <h2>{% trans "Historic data upload" %}</h2>
   </div>
 
   <div class="content">
@@ -12,7 +13,7 @@
       <form method="POST" action="{% url 'import_export:upload' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
-        <button type="submit" class="pure-button pure-button-primary">Import</button>
+        <button type="submit" class="pure-button pure-button-primary">{% trans "Import" %}</button>
       </form>
     </p>
   </div>

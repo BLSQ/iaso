@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from hat.rq.utils import run_task, get_task_status
 from rq.exceptions import NoSuchJobError
 from django.contrib import messages
+from django.utils.translation import ugettext as _
 
 
 @login_required()
@@ -23,13 +24,13 @@ def status(request, task_id: str):
         messages.add_message(
             request,
             messages.INFO,
-            'This task is expired, you can start a new job below'
+            _('This task is expired, you can start a new job below')
         )
         return redirect('maintenance:index')
 
     if status != 'finished':
         return render(request, 'maintenance/status.html', {'status': status})
-    messages.add_message(request, messages.SUCCESS, 'Task done.')
+    messages.add_message(request, messages.SUCCESS, _('Task done.'))
     return redirect('maintenance:index')
 
 
@@ -41,9 +42,9 @@ def delete_data(request):
     try:
         HatParticipant.objects.all().delete()
     except Exception as e:
-        messages.add_message(request, messages.ERROR, 'Error: {}'.format(e))
+        messages.add_message(request, messages.ERROR, _('Error: %(error)') % {'error': e})
     else:
-        messages.add_message(request, messages.SUCCESS, 'Task done.')
+        messages.add_message(request, messages.SUCCESS, _('Task done.'))
     return redirect('maintenance:index')
 
 

@@ -51,6 +51,10 @@ RUN pip install --quiet -r requirements.txt
 RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
+ARG git_commit
+
+ENV HAT_COMMIT "$git_commit"
+
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

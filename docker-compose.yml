@@ -14,7 +14,10 @@ services:
 
   # the django dev server container
   web:
-    build: .
+    build:
+      context: .
+      args:
+        git_commit: "${TRAVIS_COMMIT}"
     image: sense-hat
     ports:
       - "8080:8080"
@@ -35,7 +38,6 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
-      HAT_COMMIT: "${TRAVIS_COMMIT}"
     command: start_dev
 
   # the worker container of the task runner

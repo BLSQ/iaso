@@ -6,7 +6,7 @@ from pandas.io.json import json_normalize
 from django.conf import settings
 from hat.common.utils import run_cmd
 from .load import load_into_db, store_file
-from .utils import capitalize, hash_df_row
+from .utils import capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
@@ -46,9 +46,7 @@ def transform_tests(df: DataFrame):
 def transform_participants(df: DataFrame):
     df2 = DataFrame()
 
-    df2['document_id'] = df.apply(hash_df_row, axis=1)
     df2['hat_id'] = df['participant.hatId']
-
     df2['document_date'] = df['dateModified']
     df2['entry_date'] = df['dateCreated']
 
@@ -85,6 +83,7 @@ def transform_participants(df: DataFrame):
     df2['village'] = df['person.location.village'].apply(capitalize)
 
     df2['source'] = 'mobile_backup'
+    df2['document_id'] = df2.apply(create_documentid, axis=1)
     return df2
 
 

@@ -13,12 +13,12 @@ class UtilsTests(TestCase):
         r = utils.tz_localize_cd(s)
         self.assertRegex(str(r.dtype), r'datetime.+Africa/Kinshasa')
 
-    def test_hash_df_row(self):
+    def test_create_documentid(self):
         df = pandas.DataFrame({
-            'a': [11, 11, 11],
-            'b': [12, 12, 13]
+            'prename': [11, 11, 11],
+            'lastname': [12, 12, None]
         })
         self.assertEqual(
-            utils.hash_df_row(df.loc[0]), utils.hash_df_row(df.loc[1]))
+            utils.create_documentid(df.loc[0]), utils.create_documentid(df.loc[1]))
         self.assertNotEqual(
-            utils.hash_df_row(df.loc[0]), utils.hash_df_row(df.loc[2]))
+            utils.create_documentid(df.loc[0]), utils.create_documentid(df.loc[2]))

@@ -5,7 +5,7 @@ from functools import reduce
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
-from .utils import capitalize, hash_df_row
+from .utils import capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
@@ -141,8 +141,6 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
 
     result = DataFrame()
 
-    result['document_id'] = cards.apply(hash_df_row, axis=1)
-
     result['document_date'] = cards['D_DATE']
     result['entry_date'] = cards['F_TIMESTAMP']
 
@@ -184,6 +182,7 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['source'] = 'historic'
     result['followup_done'] = cards['F_ID'].isin(list(followups['F_ID']))
 
+    result['document_id'] = result.apply(create_documentid, axis=1)
     return result
 
 

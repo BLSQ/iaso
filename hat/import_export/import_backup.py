@@ -6,7 +6,7 @@ from pandas.io.json import json_normalize
 from django.conf import settings
 from hat.common.utils import run_cmd
 from .load import load_into_db, store_file
-from .utils import hash_df_row
+from .utils import capitalize, hash_df_row
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 logger = logging.getLogger(__name__)
@@ -79,10 +79,10 @@ def transform_participants(df: DataFrame):
     df2['year_of_birth'] = df['person.birthYear']
 
     if 'person.location.province' in df:
-        df2['province'] = df['person.location.province']
-    df2['ZS'] = df['person.location.zone']
-    df2['AZ'] = df['person.location.area']
-    df2['village'] = df['person.location.village']
+        df2['province'] = df['person.location.province'].apply(capitalize)
+    df2['ZS'] = df['person.location.zone'].apply(capitalize)
+    df2['AZ'] = df['person.location.area'].apply(capitalize)
+    df2['village'] = df['person.location.village'].apply(capitalize)
 
     df2['source'] = 'mobile_backup'
     return df2

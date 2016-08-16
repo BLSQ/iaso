@@ -1,6 +1,13 @@
 from hashlib import md5
+from string import capwords
 import pandas
 import numpy
+
+
+def capitalize(x: str) -> str:
+    if x is None:
+        return None
+    return capwords(x)
 
 
 def tz_localize_cd(s: pandas.Series) -> pandas.Series:

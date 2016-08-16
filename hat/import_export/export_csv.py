@@ -106,6 +106,8 @@ ANON_FIELDS = [
     *TREATMENT_FIELDS,
 ]
 
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 
 def export_csv(
         anon=False,
@@ -126,6 +128,6 @@ def export_csv(
 
     if len(df):
         columns = ANON_FIELDS if anon else ALL_FIELDS
-        return df.to_csv(index=False, columns=columns, sep=';')
+        return df.to_csv(index=False, columns=columns, sep=';', date_format=DATE_FORMAT)
     else:
         return ''

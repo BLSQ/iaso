@@ -104,11 +104,16 @@ def download(request):
     if request.method == 'POST':
         form = DownloadCsvForm(request.POST)
         if form.is_valid():
+            options = {
+                'start_date': form.cleaned_data['start_date'],
+                'end_date': form.cleaned_data['end_date'],
+                'sources': form.cleaned_data['sources'],
+            }
             if request.user.has_perm('participants.export_full'):
-                task = run_task(export_task,
+                task = run_task(export_task, kwargs=options,
                                 permission='participants.export_full')
             else:
-                task = run_task(export_task, kwargs={'anon': True},
+                task = run_task(export_task, kwargs={'anon': True, **options},
                                 permission='participants.export')
             return redirect('import_export:download_state', task_id=task.id)
     else:

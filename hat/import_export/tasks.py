@@ -14,8 +14,8 @@ def import_task(fileinfos: List[Tuple[str, str]]) -> dict:
 
 
 @job('default', connection=redis_conn)
-def export_task(anon=False) -> str:
-    return export_csv(anon)
+def export_task(**kwargs) -> str:
+    return export_csv(**kwargs)
 
 
 @job('default', connection=redis_conn)

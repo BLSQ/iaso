@@ -152,10 +152,9 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['treatment_start_date'] = cards['TP_DATE']
     result['treatment_end_date'] = cards['TP_DATE_END']
     result['treatment_prescribed'] = cards['TP_TREATMENT']
-    result['treatment_secondary_effects'] = cards['TP_ADVERSE_EVENTS'] == 1
+    if 'TP_ADVERSE_EVENTS' in cards:
+        result['treatment_secondary_effects'] = cards['TP_ADVERSE_EVENTS'] == 1
     result['treatment_result'] = cards['TP_RESULT'].apply(get_treatment_result)
-
-    # `prescribed treatment`  and `secondary effects`
 
     result['name'] = cards['IM_NAME']
     result['lastname'] = cards['IM_LASTNAME']

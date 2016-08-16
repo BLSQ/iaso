@@ -35,6 +35,7 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
+      HAT_COMMIT: "${TRAVIS_COMMIT}"
     command: start_dev
 
   # the worker container of the task runner

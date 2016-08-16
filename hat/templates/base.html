@@ -104,6 +104,10 @@ appears on the left side of the page.
     background: #191818;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* Put footer at the bottom */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
     /*
     All anchors inside the menu should be styled like this.
@@ -215,6 +219,12 @@ small screens.
             margin-top: 0.6em;
         }
 
+    /*
+    For revision number, etc
+    */
+    #menu .menu-footer {
+      padding: 0.6em 0 0.6em 0.6em;
+    }
 
 /* -- Responsive Styles (Media Queries) ------------------------------------- */
 

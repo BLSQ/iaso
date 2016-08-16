@@ -107,6 +107,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'hat.common.context_processors.appversions',
             ],
         },
     },
@@ -199,3 +200,7 @@ SHARED_DIR = '/opt/shared'
 
 
 MOBILE_KEY = os.environ.get('HAT_MOBILE_KEY', None)
+
+
+# Version Display
+HAT_COMMIT = os.environ.get('HAT_COMMIT', None)

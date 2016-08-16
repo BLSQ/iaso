@@ -11,7 +11,20 @@ from django.utils.translation import ugettext as _
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def index(request):
-    return render(request, 'maintenance/index.html')
+    from django.conf import settings
+    from hat.participants.models import HatParticipant
+    import hat.couchdb.api as couchdb
+    num_transformed = HatParticipant.objects.count()
+    r = couchdb.get(settings.COUCHDB_DB)
+    r.raise_for_status()
+    print('json', r.json())
+    num_raw = r.json()['doc_count']
+    # To account for the design doc we simply subtract one. These is just
+    # an assummption. If we will have non raw docs or more than one design
+    # doc in couchdb, it will be incorrect.
+    num_raw = num_raw - 1
+    context = {'num_transformed': num_transformed, 'num_raw': num_raw}
+    return render(request, 'maintenance/index.html', context)
 
 
 @login_required()
@@ -37,12 +50,29 @@ def status(request, task_id: str):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def delete_data(request):
+def delete_db_data(request):
     from hat.participants.models import HatParticipant
     try:
         HatParticipant.objects.all().delete()
     except Exception as e:
-        messages.add_message(request, messages.ERROR, _('Error: %(error)') % {'error': e})
+        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
+    else:
+        messages.add_message(request, messages.SUCCESS, _('Task done.'))
+    return redirect('maintenance:index')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def delete_couchdb_data(request):
+    from django.conf import settings
+    import hat.couchdb.api as couchdb
+    from hat.couchdb.setup import setup_couchdb
+    try:
+        couchdb.delete(settings.COUCHDB_DB)
+        setup_couchdb()
+    except Exception as e:
+        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:
         messages.add_message(request, messages.SUCCESS, _('Task done.'))
     return redirect('maintenance:index')

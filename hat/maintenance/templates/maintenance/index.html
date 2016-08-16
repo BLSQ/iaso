@@ -7,21 +7,51 @@
   </div>
 
   <div class="content">
+    <h3>{% trans "Stats" %}</h3>
+    <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
+      <thead>
+        <tr>
+          <th>{% trans "Store" %}</th>
+          <th>{% trans "Number of records" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{% trans "Raw" %}</td>
+          <td>{{ num_raw }}</td>
+        </tr>
+        <tr>
+          <td>{% trans "Transformed" %}</td>
+          <td>{{ num_transformed }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h3>{% trans "Actions" %}</h3>
     <p>
-      {% trans "Delete the data." %}
-      <form method="POST" action="{% url 'maintenance:delete_data' %}" enctype="multipart/form-data">
+      {% trans "Delete the transformed data." %}
+      <form method="POST" action="{% url 'maintenance:delete_db_data' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
-        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Data" %}</button>
+        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Transformed" %}</button>
       </form>
     </p>
     <br>
     <p>
-      {% trans "Delete the data and reimport." %}
+      {% trans "Delete the raw data. This is not recoverable!" %}
+      <form method="POST" action="{% url 'maintenance:delete_couchdb_data' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Raw" %}</button>
+      </form>
+    </p>
+    <br>
+    <p>
+      {% trans "Delete the transformed data and reimport from raw." %}
       <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
-        <button type="submit" class="pure-button pure-button-primary" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
+        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
       </form>
     </p>
   </div>

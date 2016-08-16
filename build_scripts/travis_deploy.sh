@@ -29,7 +29,6 @@ then
 
   envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json
   envsubst < build_scripts/logstash.conf.tmpl > .ebextensions/logstash/logstash.conf
-  envsubst < build_scripts/options.config.tmpl > .ebextensions/options.config
 
   case "$BRANCH" in
     "master")

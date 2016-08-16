@@ -161,7 +161,7 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['prename'] = cards['IM_PRENAME']
 
     def parse_sex(x):
-        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, 'unknown')
+        return {'Féminin': 'female', 'Masculin': 'male'}.get(x, None)
     result['sex'] = cards['IM_SEX'].apply(parse_sex)
 
     result['age'] = cards['IM_AGE']

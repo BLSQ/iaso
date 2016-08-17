@@ -1,0 +1,11 @@
+Django==1.9.8
+psycopg2==2.6.2
+requests==2.10.0
+flake8==3.0.2
+rq==0.6.0
+redis==2.10.5
+jupyter==1.0.0
+pandas==0.18.1
+SQLAlchemy==1.1.0b3
+uwsgi==2.0.13.1
+newrelic==2.68.0.50

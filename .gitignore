@@ -4,6 +4,7 @@ celerybeat-schedule.db
 shared
 *.swp
 static/
+privatekey.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -76,6 +77,9 @@ local_settings.py
 db.sqlite3
 media
 
+### Translations ###
+locale/
+
 # Deployment
 build_scripts/nginx.hf_registry.conf
 build_scripts/nginx.kanoconnect.conf
@@ -86,4 +90,4 @@ build_scripts/deploy.zip
 #.elasticbeanstalk/*
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
-.elasticbeanstalk/config.yml 
+.elasticbeanstalk/config.yml

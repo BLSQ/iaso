@@ -2,7 +2,13 @@
   "AWSEBDockerrunVersion": 2,
   "volumes": [
     {
-      "name": "historical-shared",
+      "name": "logstash-conf",
+      "host": {
+        "sourcePath": "/etc/logstash"
+      }
+    },
+    {
+      "name": "sense-shared",
       "host": {
         "sourcePath": "/opt/shared"
       }
@@ -10,11 +16,31 @@
   ],
   "containerDefinitions": [
     {
-      "name": "historical-web",
+      "name": "logstash",
+      "image": "387526361725.dkr.ecr.us-east-1.amazonaws.com/logstash:latest",
+      "entryPoint": ["logstash", "agent", "-f", "/src/logstash.conf"],
+      "essential": true,
+      "memory": 512,
+      "mountPoints": [
+      {
+        "sourceVolume": "logstash-conf",
+        "containerPath": "/src/",
+        "readOnly": true
+      }
+      ],
+        "portMappings": [
+        {
+          "hostPort": 5044,
+          "containerPort": 5044
+        }
+      ]
+    },
+    {
+      "name": "sense-web",
       "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/hat-historical:${TAG}",
       "essential": true,
       "memory": 512,
-      "hostname": "historical-web",
+      "hostname": "sense-web",
       "command": [ "start" ],
       "portMappings": [
         {
@@ -24,11 +50,18 @@
       ],
       "mountPoints": [
         {
-          "sourceVolume": "historical-shared",
+          "sourceVolume": "sense-shared",
           "containerPath": "/opt/shared",
           "readOnly": false
         }
       ],
+      "logConfiguration": {
+        "logDriver": "syslog",
+        "options":{
+          "syslog-address": "tcp://localhost:5044",
+          "tag": "sense-web"
+        }
+      },
       "links": [
         "redis"
       ]
@@ -38,22 +71,36 @@
       "image": "redis:3.2",
       "essential": true,
       "memory": 512,
-      "hostname": "redis"
+      "hostname": "redis",
+      "logConfiguration": {
+        "logDriver": "syslog",
+        "options":{
+          "syslog-address": "tcp://localhost:5044",
+          "tag": "sense-redis"
+        }
+      }
     },
     {
-      "name": "historical-rq",
+      "name": "sense-rq",
       "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/hat-historical:${TAG}",
       "essential": true,
       "memory": 512,
-      "hostname": "historical-rq",
+      "hostname": "sense-rq",
       "command": [ "start_rq" ],
       "mountPoints": [
         {
-          "sourceVolume": "historical-shared",
+          "sourceVolume": "sense-shared",
           "containerPath": "/opt/shared",
           "readOnly": false
         }
       ],
+      "logConfiguration": {
+        "logDriver": "syslog",
+        "options":{
+          "syslog-address": "tcp://localhost:5044",
+          "tag": "sense-rq"
+        }
+      },
       "links": [
         "redis"
       ]

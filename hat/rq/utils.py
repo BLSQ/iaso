@@ -1,0 +1,62 @@
+import logging
+from typing import Any
+from rq import Connection
+from rq.job import Job
+from rq.exceptions import NoSuchJobError
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
+from . import redis_conn
+
+logger = logging.getLogger(__name__)
+
+
+def run_task(task, args=None, kwargs=None, permission=None, superuser=False):
+    if args is None:
+        args = []
+    if kwargs is None:
+        kwargs = {}
+    job = task.delay(*args, **kwargs)
+    if permission or superuser:
+        if permission:
+            job.meta['permission_required'] = permission
+            job.meta['superuser_required'] = superuser
+        job.save()
+    return job
+
+
+def raise_on_permission(job, user: User):
+    require_superuser = job.meta.get('superuser_required', None)
+    if require_superuser and (not user or not user.is_superuser):
+        raise PermissionDenied()
+    perm = job.meta.get('permission_required', None)
+    if (perm and
+        (not user or
+         (not user.has_perm(perm) and not user.is_superuser))):
+        # User does not have permission
+        raise PermissionDenied()
+
+
+def get_task_status(id: str, user: User=None) -> str:
+    '''
+    Return the status, can be one of:
+    - queued
+    - finished
+    - failed
+    - started
+    - deferred
+    '''
+    with Connection(redis_conn) as conn:
+        try:
+            job = Job.fetch(id, conn)
+            raise_on_permission(job, user)
+        except NoSuchJobError:
+            return 'notfound'
+        return job.status
+
+
+def get_task_result(id: str, user: User=None) -> Any:
+    '''Return the tasks return value which is stored in redis.'''
+    with Connection(redis_conn) as conn:
+        job = Job.fetch(id, conn)
+        raise_on_permission(job, user)
+        return job.result

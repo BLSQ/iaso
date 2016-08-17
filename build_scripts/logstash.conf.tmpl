@@ -1,0 +1,16 @@
+input {
+  tcp {
+		port => 5044
+	}
+}
+
+output {
+  amazon_es {
+    hosts => ["search-elk-logging-wybsq67ih4e3oyxwbd724mj4pu.eu-west-1.es.amazonaws.com"]
+    region => "eu-west-1"
+    # aws_access_key_id, aws_secret_access_key optional if instance profile is configured
+    aws_access_key_id => '${AWS_LOGGER_KEY}'
+    aws_secret_access_key => '${AWS_LOGGER_SECRET}'
+    index => "sense-hat-${BRANCH}-%{+YYYY.MM.dd}"
+  }
+}

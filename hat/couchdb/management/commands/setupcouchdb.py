@@ -1,16 +1,10 @@
-from django.core.management.base import BaseCommand, CommandError
-from subprocess import run, CalledProcessError
-from django.conf import settings
+from django.core.management.base import BaseCommand
+from ...setup import setup_couchdb
 
 
 class Command(BaseCommand):
     help = 'Setup couchdb'
 
     def handle(self, *args, **options):
-        try:
-            run(['couchdb-bootstrap', settings.COUCHDB_URL, './couchdb'],
-                check=True)
-        except CalledProcessError as ex:
-            self.stderr.write('Error setting up couchdb \n{}'.format(ex.output))
-            raise CommandError('Error setting up couchdb')
-        self.stdout.write('Successfully setup couchdb.')
+        setup_couchdb()
+        self.stdout.write('Couchdb setup done.')

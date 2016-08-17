@@ -4,6 +4,11 @@ services:
     image: postgres:9.5
   couchdb:
     image: couchdb:1.6
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: secret
   redis:
     image: redis:3.2
 
@@ -11,56 +16,50 @@ services:
   web:
     build:
       context: .
-    image: django
+      args:
+        git_commit: "${TRAVIS_COMMIT}"
+    image: sense-hat
     ports:
-      - "8000:8000"
-      - "8080:80"
-    volumes:
+      - "8080:8080"
+    volumes: &web_volumes
       - .:/opt/app
       # preserve node_modules from the image
       - /opt/app/node_modules
       # shared dir between containers
       - ./shared:/opt/shared
-    links:
-      - db
-      - couchdb
-    environment:
-      DEBUG: 'true'
-      SECRET_KEY: secret
-      RDS_HOSTNAME: db
-      COUCHDB_URL: 'http://couchdb:5984'
-    command: start_devweb
-    #command: start
-
-  # the worker container of the task runner
-  rq:
-    image: django
-    volumes:
-      - .:/opt/app
-      # shared dir between containers
-      - ./shared:/opt/shared
-    links:
+    links: &web_links
       - db
       - couchdb
       - redis
-    environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
+    environment: &web_environment
+      DEBUG: 'true'
+      SECRET_KEY: secret
+      COUCHDB_URL: "http://couchdb:5984"
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: secret
+      HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
+    command: start_dev
+
+  # the worker container of the task runner
+  rq:
+    depends_on:
+      - web
+    image: sense-hat
+    volumes_from:
+      - web
+    links: *web_links
+    environment: *web_environment
     command: start_rq
 
   # the jupyter server
   jupyter:
-    image: django
+    depends_on:
+      - web
+    image: sense-hat
     ports:
       - "8888:8888"
-    volumes:
-      - .:/opt/app
-      # shared dir between containers
-      - ./shared:/opt/shared
-    links:
-      - db
-      - couchdb
-    environment:
-      - DEBUG=true
-      - SECRET_KEY=secret
+    volumes_from:
+      - web
+    links: *web_links
+    environment: *web_environment
     command: start_jupyter

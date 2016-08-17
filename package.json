@@ -16,7 +16,8 @@
     "url": "https://github.com/eHealthAfrica/sense-hat/issues"
   },
   "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
-  "devDependencies": {
-    "couchdb-bootstrap": "^1.13.2"
+  "dependencies": {
+    "couchdb-bootstrap": "^1.14.0",
+    "node-jose": "^0.9.0"
   }
 }

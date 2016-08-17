@@ -24,10 +24,11 @@ if [ $PR = "false" ] && [ $BRANCH = "development" -o $BRANCH = "master" -o $BRAN
 then
   aws ecr get-login --region eu-west-1 | bash
 
-  docker tag django:latest $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG 
+  docker tag sense-hat:latest $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
   docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
 
   envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json
+  envsubst < build_scripts/logstash.conf.tmpl > .ebextensions/logstash/logstash.conf
 
   case "$BRANCH" in
     "master")

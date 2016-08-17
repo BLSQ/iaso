@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+TESTING = (os.environ.get("TESTING", '').lower() == "true")
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,9 +25,46 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = (os.environ.get("DEBUG", "false") == "true")
+DEBUG = (os.environ.get("DEBUG", '').lower() == "true")
 
 ALLOWED_HOSTS = ['*']
+
+
+# Logging
+
+LOGGING_LEVEL = os.getenv('DJANGO_LOGGING_LEVEL', 'INFO')
+if TESTING:
+    LOGGING_LEVEL = 'WARN'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(name)s -- %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': LOGGING_LEVEL,
+        },
+        'hat': {
+            'handlers': ['console'],
+            'level': LOGGING_LEVEL
+        },
+        'rq': {
+            'handlers': ['console'],
+            'level': LOGGING_LEVEL
+        },
+    },
+}
 
 
 # Application definition
@@ -40,8 +79,8 @@ INSTALLED_APPS = [
     'hat.rq',
     'hat.couchdb',
     'hat.participants',
-    'hat.home',
-    'hat.historic',
+    'hat.import_export',
+    'hat.maintenance',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -60,7 +99,7 @@ ROOT_URLCONF = 'hat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['./hat/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,6 +107,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'hat.common.context_processors.appversions',
             ],
         },
     },
@@ -135,9 +175,13 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
 
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
-COUCHDB_DB = 'hat'
+if TESTING:
+    COUCHDB_DB = 'hat_test'
+else:
+    COUCHDB_DB = 'hat'
 COUCHDB_USER = os.environ.get('COUCHDB_USER', None)
 COUCHDB_PASSWORD = os.environ.get('COUCHDB_PASSWORD', None)
+COUCHDB_DIR = './couchdb'
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_PORT = 6379
@@ -153,3 +197,10 @@ QUEUES = ['default']
 # Files
 
 SHARED_DIR = '/opt/shared'
+
+
+MOBILE_KEY = os.environ.get('HAT_MOBILE_KEY', None)
+
+
+# Version Display
+HAT_COMMIT = os.environ.get('HAT_COMMIT', None)

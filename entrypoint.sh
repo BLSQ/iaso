@@ -5,8 +5,8 @@ show_help() {
   echo """
   Commands
   test          : run tests
-  start         : start django supervisor + uwsgi
-  start_devweb  : start django devserver
+  start         : start django + uwsgi
+  start_dev     : start django devserver
   start_rq      : start rq worker
   start_jupyter : start jupyter notebook
   celery        : run celery commands
@@ -18,25 +18,26 @@ show_help() {
 case "$1" in
   "test" )
     export TESTING=true
-    flake8
+    flake8 ./hat
+    ./scripts/wait_for_dbs.sh
+    ./manage.py setupcouchdb
     ./manage.py test
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
-    python manage.py migrate
-    python manage.py collectstatic --noinput
-    dumb-init nginx -g "daemon off;" &
-    dumb-init /usr/local/bin/uwsgi --ini /opt/app/build_scripts/uwsgi.ini
+    ./manage.py migrate
+    ./manage.py collectstatic --noinput
+    ./manage.py setupcouchdb
+    ./scripts/start_web.sh
   ;;
-  "start_devweb" )
-    until psql -h "db" -U "postgres" -c '\l'; do
-      >&2 echo "Waiting for db..."
-      sleep 1
-    done
-    ./manage.py runserver 0.0.0.0:8000
+  "start_dev" )
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate
+    ./manage.py setupcouchdb
+    ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )
-    ./manage.py rq_worker
+    ./scripts/start_rq.sh
   ;;
   "start_jupyter" )
     export DJANGO_SETTINGS_MODULE=hat.settings
@@ -49,7 +50,6 @@ case "$1" in
     eval "${@:2}"
   ;;
   "bash" )
-    envsubst < /opt/app/build_scripts/supervisor.hat.conf.tmpl > /etc/supervisor/conf.d/hat.conf
     bash
   ;;
   * )

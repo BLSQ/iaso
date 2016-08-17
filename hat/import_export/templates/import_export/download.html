@@ -1,0 +1,40 @@
+{% extends "app.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="header">
+    <h2>{% trans "Data download" %}</h2>
+  </div>
+
+  <div class="content">
+      <h2 class="content-subhead">{% trans "Export data" %}</h2>
+    <p>
+      <form class="pure-form pure-form-stacked" method="POST" action="{% url 'import_export:download' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset>
+          <div class="pure-control-group">
+            {{ form.start_date.errors }}
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+          </div>
+          <br>
+          <div class="pure-control-group">
+            {{ form.end_date.errors }}
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+          </div>
+          <br>
+          <div class="pure-control-group">
+            {{ form.sources.errors }}
+            {{ form.sources.label_tag }}
+            {{ form.sources }}
+          </div>
+          <br>
+          <div class="pure-controls">
+            <button type="submit" class="pure-button pure-button-primary">{% trans "Prepare download" %}</button>
+          </div>
+        </fieldset>
+      </form>
+    </p>
+  </div>
+{% endblock %}

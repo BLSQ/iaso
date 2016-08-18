@@ -11,6 +11,7 @@ from . import DBTestCase, TEST_DATA
 class ExportTests(DBTestCase):
     def setUp(self):
         import_historic('historic', TEST_DATA['historic']['file'], store=True)
+        import_pv('pv', TEST_DATA['pv']['file'], store=True)
         import_backup('backup', TEST_DATA['mobile_backup']['file'], store=True)
 
     def test_export(self):
@@ -27,6 +28,10 @@ class ExportTests(DBTestCase):
         csv = export_csv(sources=['historic'])
         df = pandas.read_csv(StringIO(csv))
         self.assertEqual(len(df), TEST_DATA['historic']['count'])
+
+        csv = export_csv(sources=['pv'])
+        df = pandas.read_csv(StringIO(csv))
+        self.assertEqual(len(df), TEST_DATA['pv']['count'])
 
         csv = export_csv(sources=['mobile_backup'])
         df = pandas.read_csv(StringIO(csv))

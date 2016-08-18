@@ -1,25 +1,42 @@
 import logging
 from typing import List
 from pathlib import PurePath
-from .import_historic import import_historic
-from .import_backup import import_backup
-from hat.import_export.errors import ImportStage
-
 from django.conf import settings
 from hat.participants.models import HatParticipant
 import hat.couchdb.api as couchdb
 from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
+from hat.common.mdb import get_tablenames
+from .import_historic import import_historic, HISTORIC_TABLE_NAME
+from .import_pv import import_pv, PV_TABLE_NAME
+from .import_backup import import_backup
+from hat.import_export.errors import ImportStage
+
 
 logger = logging.getLogger(__name__)
 
 
 def import_file(name: str, filename: str, store=False) -> dict:
     suffix = PurePath(filename).suffix.lower()
+
     if any(suffix in s for s in ['.mdb', '.accdb']):
-        return import_historic(name, filename, store=store)
+        # We infer what kind of MDB file we have by the table names
+        tables = get_tablenames(filename)
+        if HISTORIC_TABLE_NAME in tables:
+            return import_historic(name, filename, store=store)
+        elif PV_TABLE_NAME in tables:
+            return import_pv(name, filename, store=store)
+        else:
+            err_msg = 'Cannot import unkown mdb file: {}'.format(name)
+            logger.error(err_msg)
+            return {
+                'type': 'import_error',
+                'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
+            }
+
     elif suffix in '.enc':
         return import_backup(name, filename, store=store)
+
     else:
         err_msg = 'Cannot import unkown filetype: {}'.format(suffix)
         logger.error(err_msg)

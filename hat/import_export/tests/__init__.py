@@ -8,11 +8,15 @@ TEST_DATA = {
         'file': 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb',
         'count': 6
     },
+    'pv': {
+        'file': 'testdata/PNLTHA_pharmacovigilance.mdb',
+        'count': 1
+    }
     'mobile_backup': {
         'file': 'testdata/backup-v4.enc',
         'count': 4
     },
-    'total_count': 10
+    'total_count': 11
 }
 
 

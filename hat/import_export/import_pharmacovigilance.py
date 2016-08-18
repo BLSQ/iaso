@@ -5,43 +5,31 @@ from functools import reduce
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
-from .utils import capitalize, create_documentid, groupreduce
+from .utils import capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
-'''
-Extraction, transformation and loading of the historic MDB files. UCLA digitizes
-paper forms of screened cases via MSAccess forms and uploads the database files.
-'''
-
 logger = logging.getLogger(__name__)
-
-HISTORIC_TABLE_NAME = 'T_CARDS'
 
 
 @handle_import_stage(ImportStage.extract)
 def extract(mdb_file: str) -> Dict[str, DataFrame]:
     return {
-        'cards': extract_mdbtable_via_db(mdb_file, HISTORIC_TABLE_NAME),
+        'cards': extract_mdbtable_via_db(mdb_file, 'T_CARDS'),
         'followups': extract_mdbtable_via_db(mdb_file, 'T_FOLLOWUPS')
     }
 
 
-
-
 def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
-    # reduced_followups = followups.sort_values(by='S_DATE_RV') \
-    #                              .groupby('F_ID') \
-    #                              .agg(lambda s: reduce(lambda r, x: x or r, s))
-
     # Reduce multiple followups for one card into a single followup.
     # In case there is more than one followup for one card, all followups
     # for that card will be merged into a single followup where the most
     # recent value wins, that is not None.
-    red_followups = groupreduce(followups, 'F_ID', sortby='S_DATE_RV')
+    reduced_followups = followups.sort_values(by='S_DATE_RV') \
+                                 .groupby('F_ID') \
+                                 .agg(lambda s: reduce(lambda r, x: x or r, s))
 
     # The reduced followups can now be merged into the cards
-    source = pandas.merge(cards, red_followups,
-                          how='left', left_on='F_ID', right_index=True)
+    source = pandas.merge(cards, reduced_followups, how='left', left_on='F_ID', right_index=True)
 
     result = DataFrame()
 
@@ -208,7 +196,7 @@ def read_entry_name(orgname: str) -> str:
 
 
 @handle_import_stage(ImportStage.transform)
-def transform(tables: Dict[str, DataFrame], orgname: str) -> DataFrame:
+def transform(tables: Dict[str, DataFrame], orgname):
     cs = transform_participants(tables['cards'], tables['followups'])
     ts = transform_tests(tables['cards'], tables['followups'])
     result = pandas.concat([cs, ts], axis=1)
@@ -216,7 +204,7 @@ def transform(tables: Dict[str, DataFrame], orgname: str) -> DataFrame:
     return result
 
 
-def import_historic(orgname: str, filename: str, store=False):
+def import_ucla(orgname: str, filename: str, store=False):
     logger.info('Importing historic file: ' + orgname)
     stats = {
         'type': 'historic_import',

@@ -58,3 +58,21 @@ def groupreduce(df: DataFrame, column: str, sortby=None) -> DataFrame:
     result = df.sort_values(by=sortby) if sortby else df
     return result.groupby(column) \
                  .agg(lambda x: reduce(lambda a, b: b or a, x))
+
+def hat_id(row: Series) -> str:
+    empty = 'XX'
+    if numpy.isnan(row['year_of_birth']):
+        yob = 1900
+    else:
+        yob = row['year_of_birth']
+
+    return (
+        (row['lastname'] or empty)[0:2] +
+        (row['name'] or empty)[0:2] +
+        (row['prename'] or empty)[0:2] +
+        (row['sex'] or empty)[0:1] +
+        # had a problem with YOB being read as float
+        str(yob)[0:4] +
+        (row['mothers_surname'] or empty)[0:1]
+    ).upper()
+

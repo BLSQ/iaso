@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'hat.participants',
     'hat.import_export',
     'hat.maintenance',
+    'webpack_loader'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -169,7 +170,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets')
 
 LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
@@ -204,3 +205,11 @@ MOBILE_KEY = os.environ.get('HAT_MOBILE_KEY', None)
 
 # Version Display
 HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
+
+# Javascript/CSS Files:
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'bundles/',
+        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
+    }
+}

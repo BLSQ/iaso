@@ -18,6 +18,7 @@ services:
       context: .
       args:
         git_commit: "${TRAVIS_COMMIT}"
+        NODE_ENV: "${NODE_ENV}"
     image: sense-hat
     ports:
       - "8080:8080"
@@ -25,6 +26,8 @@ services:
       - .:/opt/app
       # preserve node_modules from the image
       - /opt/app/node_modules
+      # preserve static files build
+      - /opt/app/hat/assets/bundles
       # shared dir between containers
       - ./shared:/opt/shared
     links: &web_links

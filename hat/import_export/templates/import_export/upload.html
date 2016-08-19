@@ -1,5 +1,6 @@
 {% extends "app.html" %}
 {% load i18n %}
+{% load render_bundle from webpack_loader %}
 
 {% block content %}
   <div class="header">
@@ -16,4 +17,6 @@
       </form>
     </p>
   </div>
+
+  {% render_bundle 'import' %}
 {% endblock %}

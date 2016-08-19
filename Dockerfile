@@ -48,14 +48,16 @@ WORKDIR /opt/app
 RUN pip install --quiet --upgrade pip==8.1.2
 RUN pip install --quiet -r requirements.txt
 
-RUN npm install --loglevel silent
+# NODE Deps, JS/CSS production build
+# NODE_ENV production removes devDependencies after build
+ARG NODE_ENV=development
+RUN npm install --loglevel silent && npm run build && npm prune
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
+# display git commit
 ARG git_commit
-
 ENV HAT_COMMIT "$git_commit"
 
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN npm prune

@@ -52,7 +52,9 @@ def reimport() -> List[dict]:
     def import_change(c):
         nonlocal results
         type = c['doc'].get('type', None)
-        if not type == 'historic_import' and not type == 'backup_import':
+        if not type == 'historic_import' and \
+           not type == 'backup_import' and \
+           not type == 'pv_import':
             return
 
         # get the attached file

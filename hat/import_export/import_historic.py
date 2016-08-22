@@ -1,7 +1,6 @@
 from typing import Dict
 import logging
 import pandas
-from functools import reduce
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
@@ -26,13 +25,7 @@ def extract(mdb_file: str) -> Dict[str, DataFrame]:
     }
 
 
-
-
 def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
-    # reduced_followups = followups.sort_values(by='S_DATE_RV') \
-    #                              .groupby('F_ID') \
-    #                              .agg(lambda s: reduce(lambda r, x: x or r, s))
-
     # Reduce multiple followups for one card into a single followup.
     # In case there is more than one followup for one card, all followups
     # for that card will be merged into a single followup where the most

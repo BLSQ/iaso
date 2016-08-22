@@ -1,7 +1,6 @@
 from typing import Dict
 import logging
 import pandas
-import datetime
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
@@ -25,61 +24,64 @@ def extract(mdb_file: str) -> Dict[str, DataFrame]:
         'treatments': extract_mdbtable_via_db(mdb_file, 'tblTraitementPrescrit'),
     }
 
-# TODO: Refactor and maybe merge with import_historic
-def year_to_date(year: int):
-    return datetime.datetime.strptime(str(year), '%Y')
 
+# These should not be re-used, since they are specific to PharmaCO
 def identity(x):
     return x
+
 
 def get_result(x):
     if pandas.isnull(x):
         return None
-    # 0, +, NF, Null
+    # 0, +, NF
     return x == '+'
+
 
 def get_catt_blood_result(x):
     if pandas.isnull(x):
         return None
-    # Null, POS+, POS++, POS+++
+    if x == 'NEG':
+        return False
+    # POS+, POS++, POS+++
     return True
 
-def get_catt_dil_result(x):
-    return {
-        1: '1/2',
-        2: '1/4',
-        3: '1/8',
-        4: '1/16',
-        5: '1/32',
-        5: '>1/32',
-    }.get(x, None)
 
 def get_pl_result(x):
-    return {1: 'STADE 1', 2: 'STADE 2', 3: 'INCONNU(non faite)'}.get(x, None)
+    # convert to same as historic
+    return {
+        'STADE 1': 'stage1',
+        'STADE 2': 'stage2',
+        'INCONNU(non faite)': 'unknown'
+    }.get(x, None)
+
 
 def get_pl_liquid_result(x):
+    # convert to same as historic
     return {
-        1: 'clair',
-        2: 'trouble',
-        3: 'hémorragique',
+        'clair': 'clear',
+        'trouble': 'unclear',
+        'hémorragique': 'hemorrhagic',
     }.get(x, None)
 
-def get_pl_lcr_result(x):
-    return {
-        1: '1/8',
-        2: '1/16',
-        3: '1/32',
-        4: '1/64',
-        5: '1/128',
-        6: '1/256',
-        7: '1/512',
-        8: '1/1024',
-    }.get(x, None)
+
+def get_treatment(row: pandas.Series) -> str:
+    # Is there a nicer way to do this in python?
+    if not row['Traitement_Prescrit2']:
+        return None
+    if not row['Traitement_Prescrit_specifique2']:
+        return row['Traitement_Prescrit2']
+
+    return (
+        row['Traitement_Prescrit2'] +
+        ' - ' +
+        row['Traitement_Prescrit_specifique2']
+    )
+
 
 test_fields = [
     # card test fields
     ("CATT_sang_total", int, 'catt_total_blood', get_catt_blood_result),
-    ("CATT_dilution", int, 'catt_dilution', get_catt_dil_result),
+    ("CATT_dilution", int, 'catt_dilution', identity),  # already has converted values, 1/32 etc
     ("Suc_ganglionnaire", int, 'lymph_node_puncture', get_result),
     ("Sang_SF", int, 'sf', get_result),
     ("Sang_GE", int, 'ge', get_result),
@@ -89,7 +91,7 @@ test_fields = [
     ("Aspect_LCR", int, 'pl_liquid', get_pl_liquid_result),
     ("Présence_trypanosomes", str, 'pl_trypanosome', identity),
     ("GB_mm3", str, 'pl_gb_mm3', identity),
-    ("Latex_LCR", int, 'pl_lcr', get_pl_lcr_result),
+    ("Latex_LCR", int, 'pl_lcr', identity),  # already converted
     ("Stade", int, 'pl_result', get_pl_result),
 
     # followup test fields
@@ -103,11 +105,12 @@ test_fields = [
     ("Décision_médicale", str, 'followup_decision', identity),
 ]
 
+
 @handle_import_stage(ImportStage.transform)
 def transform(tables: Dict[str, DataFrame]):
     # Reduce related tables and join them into the forms
-    red_followups = groupreduce(tables['followups'], 'PersId') #sortby
-    red_treatments = groupreduce(tables['treatments'], 'PersID') #sortby
+    red_followups = groupreduce(tables['followups'], 'PersId')  # sortby
+    red_treatments = groupreduce(tables['treatments'], 'PersID')  # sortby
     source = pandas.merge(tables['forms'], red_followups,
                           how='left', left_on='PersID', right_index=True)
     source = pandas.merge(source, red_treatments,
@@ -140,16 +143,17 @@ def transform(tables: Dict[str, DataFrame]):
 
     result['document_date'] = source['Date_de_diagnostique']
     result['mobile_unit'] = source['UM'].apply(capitalize)
-    # TODO: entry_date
-    # result['entry_date'] = source['Année'].apply(year_to_date)
-    # TODO: Form number
+
+    # Form numbers/month/year
+    result['form_number'] = source['Numero_du_cas']
+    result['form_month'] = source['Mois']
+    result['form_year'] = source['Année']
 
     # TREATMENT
     result['treatment_center'] = source['Centre_recommandé2']
     result['treatment_start_date'] = source['Date_début_réel']
     result['treatment_end_date'] = source['Date_fin']
-    # Traitement Prescrit2 AND Traitement Prescrit specifique2
-    result['treatment_prescribed'] = source['Traitement_Prescrit2']
+    result['treatment_prescribed'] = source.apply(get_treatment, axis=1)
 
     result['treatment_secondary_effects'] = source['Effets_Secondaires_'] == 'Oui'
     # TODO
@@ -170,10 +174,10 @@ def transform(tables: Dict[str, DataFrame]):
     result['mothers_surname'] = source['Nom_de_la_mère']
 
     # LOCATION
-    result['village'] = source['Village']
-    result['province'] = source['Provence']
-    result['ZS'] = source['ZS']
-    result['AZ'] = source['AS']
+    result['village'] = source['Village'].apply(capitalize)
+    result['province'] = source['Provence'].apply(capitalize)
+    result['ZS'] = source['ZS'].apply(capitalize)
+    result['AZ'] = source['AS'].apply(capitalize)
 
     # TEST RESULTS & FOLLOWUP
     for (src_col, _, dest_col, f) in test_fields:
@@ -184,7 +188,7 @@ def transform(tables: Dict[str, DataFrame]):
     result['followup_done'] = tables['forms']['PersID'].isin(list(tables['followups']['PersId']))
 
     # MORE META
-    result['source'] = 'pharmacovigilance'
+    result['source'] = 'pv'
     result['hat_id'] = result.apply(hat_id, axis=1)
     result['document_id'] = result.apply(create_documentid, axis=1)
     return result
@@ -220,7 +224,7 @@ def import_pv(orgname: str, filename: str, store=False):
     return stats
 
 
-'''
+''' # noqa
 Description of the tables:
 ========
 
@@ -418,11 +422,11 @@ Fréq_pouls                        ----
 Température                       ----
 Tension_artériel                  ----
 Fréq_respiratoire                 ----
-Dose_j_nombre_de_j                treatment_prescribed***
+Dose_j_nombre_de_j                ---- #treatment_prescribed***
 Traitement_spécifique             ----
 Observation                       ----
-Traitement_Prescrit               treatment_prescribed***
-Traitement_Prescrit_specifique    treatment_prescribed***
+Traitement_Prescrit               ---- #treatment_prescribed***
+Traitement_Prescrit_specifique    ---- #treatment_prescribed***
 Date_de_prescription              ----
 Centre_recommandé                 ----
 
@@ -431,4 +435,3 @@ Centre_recommandé                 ----
 the field treatment prescribed seems to be all over the place,
 i suggest joining all those fields together and see what we get out of it
 '''
-

@@ -59,6 +59,7 @@ def groupreduce(df: DataFrame, column: str, sortby=None) -> DataFrame:
     return result.groupby(column) \
                  .agg(lambda x: reduce(lambda a, b: b or a, x))
 
+
 def hat_id(row: Series) -> str:
     empty = 'XX'
     if numpy.isnan(row['year_of_birth']):
@@ -75,4 +76,3 @@ def hat_id(row: Series) -> str:
         str(yob)[0:4] +
         (row['mothers_surname'] or empty)[0:1]
     ).upper()
-

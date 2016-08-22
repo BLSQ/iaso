@@ -8,6 +8,9 @@ GENERIC_FIELDS = [
     'entry_date',
     'entry_name',
     'mobile_unit',
+    'form_number',
+    'form_month',
+    'form_year',
 ]
 LOCATION_FIELDS = [
     'village',

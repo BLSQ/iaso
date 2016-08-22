@@ -4,7 +4,7 @@ import pandas
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
-from .utils import capitalize, create_documentid, groupreduce
+from .utils import hat_id, capitalize, create_documentid, groupreduce
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
 '''
@@ -171,14 +171,6 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['year_of_birth'] = cards['IM_BIRTHYEAR']
     result['mothers_surname'] = cards['IM_MERE']
 
-    result['hat_id'] = (
-        result['lastname'].fillna('XX').str[0:2] +
-        result['name'].fillna('XX').str[0:2] +
-        result['prename'].fillna('XX').str[0:2] +
-        result['year_of_birth'].fillna(1900).astype('str') +
-        result['mothers_surname'].fillna('XX').str[0:1]
-    ).str.upper()
-
     result['village'] = cards['IM_AD_VILLAGE'].apply(capitalize)
     result['province'] = cards['IM_AD_PROVINCE'].apply(capitalize)
     result['ZS'] = cards['IM_AD_HEALTH_ZONE'].apply(capitalize)
@@ -187,6 +179,7 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['source'] = 'historic'
     result['followup_done'] = cards['F_ID'].isin(list(followups['F_ID']))
 
+    result['hat_id'] = result.apply(hat_id, axis=1)
     result['document_id'] = result.apply(create_documentid, axis=1)
     return result
 

@@ -9,7 +9,7 @@ TEST_DATA = {
         'count': 6
     },
     'mobile_backup': {
-        'file': 'testdata/backup-v4.enc',
+        'file': 'testdata/backup-v5.enc',
         'count': 4
     },
     'total_count': 10

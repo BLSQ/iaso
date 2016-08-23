@@ -25,6 +25,12 @@ def extract(mdb_file: str) -> Dict[str, DataFrame]:
     }
 
 
+def to_int(x):
+    if pandas.isnull(x):
+        return x
+    return int(float(x))
+
+
 def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
     # Reduce multiple followups for one card into a single followup.
     # In case there is more than one followup for one card, all followups
@@ -150,6 +156,10 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['entry_date'] = cards['F_TIMESTAMP']
 
     result['mobile_unit'] = cards['IF_UM'].apply(capitalize)
+    # Form numbers/month/year
+    result['form_number'] = cards['IF_NBR'].apply(to_int)
+    result['form_month'] = cards['IF_MONTH'].apply(to_int)
+    result['form_year'] = cards['IF_YEAR'].apply(to_int)
 
     result['treatment_center'] = cards['IM_UM_CT']
     result['treatment_start_date'] = cards['TP_DATE']

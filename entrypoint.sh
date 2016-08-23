@@ -34,6 +34,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate
     ./manage.py setupcouchdb
+    npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )

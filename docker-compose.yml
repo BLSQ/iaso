@@ -22,6 +22,7 @@ services:
     image: sense-hat
     ports:
       - "8080:8080"
+      - "3000:3000"
     volumes: &web_volumes
       - .:/opt/app
       # preserve node_modules from the image

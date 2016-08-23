@@ -202,7 +202,12 @@ HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_URL = '/bundles/'
+# TODO: prod static files
+# STATIC_URL = '/bundles/'
+# This is for dev static files:
+STATIC_URL = 'http://localhost:3000/bundles/'
+
+
 STATICFILES_DIRS = (
     os.path.join(PROJECT_ROOT, 'assets/bundles'),
 )

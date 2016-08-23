@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config ./hat/webpack.prod.js"
+    "build": "webpack --config ./hat/webpack.prod.js",
+    "webpack-server": "node ./hat/webpack.server.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,9 @@
     "node-jose": "^0.9.0"
   },
   "devDependencies": {
+    "react-hot-loader": "^1.3.0",
     "webpack": "^1.13.2",
-    "webpack-bundle-tracker": "0.0.93"
+    "webpack-bundle-tracker": "0.0.93",
+    "webpack-dev-server": "^1.15.0"
   }
 }

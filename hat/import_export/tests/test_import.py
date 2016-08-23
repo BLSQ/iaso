@@ -7,7 +7,7 @@ from ..import_data import reimport
 from . import DBTestCase, TEST_DATA
 
 mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
-enc_file = 'testdata/backup-v4.enc'
+enc_file = 'testdata/backup-v5.enc'
 
 
 class ImportTests(DBTestCase):

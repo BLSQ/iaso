@@ -28,12 +28,12 @@ module.exports = {
     }),
   ],
 
-  // module: {
-    // loaders: [
+  module: {
+    loaders: [
       // we pass the output from babel loader to react-hot loader
-      // { test: /\.jsx?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel'], },
-    //  ],
-  // },
+      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] },
+     ],
+  },
 
   resolve: {
     modulesDirectories: ['node_modules'],

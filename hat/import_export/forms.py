@@ -21,6 +21,7 @@ class DownloadCsvForm(forms.Form):
     SOURCE_CHOICES = (
         ('historic', _('Historic data')),
         ('mobile_backup', _('Mobile backup data')),
+        ('pv', _('Pharmacovigilance data')),
     )
     sources = forms.MultipleChoiceField(
         required=False,

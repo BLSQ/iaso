@@ -1,7 +1,6 @@
-var path = require("path")
+var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
-
 
 module.exports = {
   context: __dirname,
@@ -19,9 +18,9 @@ module.exports = {
   },
 
   output: {
-      path: path.resolve(__dirname, './assets/bundles/'),
-      filename: '[name]-[hash].js',
-      publicPath: 'http://localhost:3000/bundles/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+    path: path.resolve(__dirname, './assets/bundles/'),
+    filename: '[name]-[hash].js',
+    publicPath: 'http://localhost:3000/bundles/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
   },
 
   plugins: [
@@ -30,14 +29,14 @@ module.exports = {
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
-    }),
+    })
   ],
 
   module: {
     loaders: [
       // we pass the output from babel loader to react-hot loader
-      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] },
-     ],
+      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] }
+    ]
   },
 
   resolve: {

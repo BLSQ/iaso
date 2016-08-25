@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
 import { Route, Redirect, useRouterHistory } from 'react-router'
 import { createHistory } from 'history'
@@ -8,8 +8,8 @@ import App from './apps/App'
 import { Comp1, Comp2 } from './apps/testapp'
 
 const routes = [
-  <Route path='comp1' component={Comp1}/>,
-  <Route path='comp2' component={Comp2}/>,
+  <Route path='comp1' component={Comp1} />,
+  <Route path='comp2' component={Comp2} />,
   <Redirect path='*' to='comp1' />
 ]
 

@@ -1,5 +1,4 @@
 var path = require('path')
-var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 
 module.exports = {
@@ -25,8 +24,8 @@ module.exports = {
   module: {
     loaders: [
       // we pass the output from babel loader to react-hot loader
-      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] },
-     ],
+      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] }
+    ]
   },
 
   resolve: {

@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 // 1. in a separate file
 // 2. extend the Component interface
 // for HMR to work!
-export default class Import extends Component{
+export default class Import extends Component {
   render () {
     return (
       <div>

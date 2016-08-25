@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='import_export:index'), name='index'),
     url(r'^import_export/', include('hat.import_export.urls', 'import_export')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
+    url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
 ]

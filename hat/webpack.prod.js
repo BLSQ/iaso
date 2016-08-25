@@ -7,6 +7,7 @@ module.exports = {
 
   entry: {
     'import': './assets/js/import',
+    'testapp': './assets/js/testapp'
   },
 
   output: {

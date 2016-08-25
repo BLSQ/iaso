@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'hat.couchdb',
     'hat.participants',
     'hat.import_export',
+    'hat.dashboard',
     'hat.maintenance',
     'webpack_loader'
 ]

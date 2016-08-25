@@ -10,6 +10,11 @@ module.exports = {
       'webpack-dev-server/client?http://localhost:3000',
       'webpack/hot/only-dev-server',
       './assets/js/import'
+    ],
+    'testapp': [
+      'webpack-dev-server/client?http://localhost:3000',
+      'webpack/hot/only-dev-server',
+      './assets/js/testapp'
     ]
   },
 

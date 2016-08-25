@@ -30,6 +30,7 @@ module.exports = {
 
   resolve: {
     modulesDirectories: ['node_modules'],
-    extensions: ['.js']
+    // empty needs to be there to find external modules
+    extensions: ['', '.js']
   }
 }

@@ -1,13 +1,5 @@
-import React from 'react'
-
-
-const Import = () => {
-  return (
-    <div>
-      <h1>I am the import app</h1>
-    </div>
-  )
-}
-
+import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
+import Import from './components/import/import'
 
 ReactDOM.render(<Import />, document.getElementById('import'))

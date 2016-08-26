@@ -1,11 +1,14 @@
 var path = require('path')
+var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require("extract-text-webpack-plugin")
+var CommonsPlugin = require("webpack/lib/optimize/CommonsChunkPlugin")
 
 module.exports = {
   context: __dirname,
 
   entry: {
+    'common': ['react'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
     'styles': './assets/css/index.css'
@@ -17,11 +20,24 @@ module.exports = {
   },
 
   plugins: [
+    new webpack.optimize.DedupePlugin(),
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
     }),
-    new ExtractTextPlugin("[name]-[chunkhash].css")
+    new ExtractTextPlugin("[name]-[chunkhash].css"),
+    new CommonsPlugin({
+      minChunks: 3,
+      name: "common"
+    }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        // This has effect on the react lib size
+        'NODE_ENV': 'production'
+      }
+    }),
+    // Minification
+    new webpack.optimize.UglifyJsPlugin()
   ],
 
   module: {

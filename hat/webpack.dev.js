@@ -1,7 +1,12 @@
 var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
-var ExtractTextPlugin = require("extract-text-webpack-plugin")
+var ExtractTextPlugin = require('extract-text-webpack-plugin')
+// Switch here for french
+// remeber to switch in webpack.prod.js and
+// djanog settings as well
+// var LOCALE='fr'
+var LOCALE = 'en'
 
 module.exports = {
   context: __dirname,
@@ -26,13 +31,25 @@ module.exports = {
   },
 
   plugins: [
+    // provide intl modules depending on locale
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/localeData$/,
+      'react-intl/locale-data/' + LOCALE
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/messages$/,
+      '../translations/' + LOCALE + '.json'
+    ),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(), // don't reload if there is an error
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
     }),
-    new ExtractTextPlugin("[name]-[chunkhash].css")
+    new ExtractTextPlugin('[name]-[chunkhash].css'),
+    new webpack.DefinePlugin({
+      '__LOCALE': JSON.stringify(LOCALE)
+    })
   ],
 
   module: {
@@ -45,12 +62,17 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
       },
       // Extract Sass files
       {
         test: /\.sass$/,
-        loader: ExtractTextPlugin.extract("style-loader", "css-loader!sass-loader")
+        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
+      },
+      // JSON loader for translations
+      {
+        test: /\.json$/,
+        loader: 'json'
       }
     ]
   },

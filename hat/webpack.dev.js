@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
+var ExtractTextPlugin = require("extract-text-webpack-plugin")
 
 module.exports = {
   context: __dirname,
@@ -14,7 +15,8 @@ module.exports = {
       'webpack-dev-server/client?http://localhost:3000',
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
-    ]
+    ],
+    'styles': './assets/css/index.css'
   },
 
   output: {
@@ -29,13 +31,27 @@ module.exports = {
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
-    })
+    }),
+    new ExtractTextPlugin("[name]-[chunkhash].css")
   ],
 
   module: {
     loaders: [
       // we pass the output from babel loader to react-hot loader
-      { test: /\.js?$/, exclude: /node_modules/, loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react'] }
+      {
+        test: /\.js?$/,
+        exclude: /node_modules/,
+        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react']
+      },
+      {
+        test: /\.css$/,
+        loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+      },
+      // Extract Sass files
+      {
+        test: /\.sass$/,
+        loader: ExtractTextPlugin.extract("style-loader", "css-loader!sass-loader")
+      }
     ]
   },
 

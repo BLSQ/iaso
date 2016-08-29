@@ -11,6 +11,8 @@ var LOCALE = 'en'
 module.exports = {
   context: __dirname,
   entry: {
+    // Empty module stand-in for Prod Bundle
+    'common': [],
     'import': [
       'webpack-dev-server/client?http://localhost:3000',
       'webpack/hot/only-dev-server',

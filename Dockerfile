@@ -51,7 +51,9 @@ RUN pip install --quiet -r requirements.txt
 # NODE Deps, JS/CSS production build
 # NODE_ENV production removes devDependencies after build
 ARG NODE_ENV=development
-RUN npm install --loglevel silent && npm run build && npm prune
+RUN npm install --loglevel silent
+RUN npm run build
+
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
 # display git commit

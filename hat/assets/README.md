@@ -13,6 +13,10 @@ Frontend assets are mounted on the pages via the [django-webpack-loader](https:/
 
 * the `start_dev` entry point starts a webpack development server, that watches assets, rebuilds and does hot reloading of JS Components.
 
+### Adding new assets in package.json
+
+Unfortunately, for now you need to do a `docker-compose rm web && docker-compose build web` after adding packages in `package.json`
+
 ### Testing the production build
 
 1. Remove the old mounted container with `docker-compose rm web`

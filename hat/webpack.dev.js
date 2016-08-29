@@ -23,7 +23,7 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
     ],
-    'styles': './assets/css/index.css'
+    'styles': './assets/css/index.scss'
   },
 
   output: {
@@ -68,8 +68,8 @@ module.exports = {
       },
       // Extract Sass files
       {
-        test: /\.sass$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style-loader', 'css-loader', 'sass-loader')
       },
       // JSON loader for translations
       {

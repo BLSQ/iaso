@@ -49,7 +49,6 @@ RUN pip install --quiet --upgrade pip==8.1.2
 RUN pip install --quiet -r requirements.txt
 
 # NODE Deps, JS/CSS production build
-# NODE_ENV production removes devDependencies after build
 ARG NODE_ENV=development
 RUN npm install --loglevel silent
 RUN npm run build

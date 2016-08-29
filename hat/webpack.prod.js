@@ -16,7 +16,7 @@ module.exports = {
     'common': ['react', 'react-dom', 'react-intl'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
-    'styles': './assets/css/index.css'
+    'styles': './assets/css/index.scss'
   },
 
   output: {
@@ -81,8 +81,8 @@ module.exports = {
       },
       // Extract Sass files
       {
-        test: /\.sass$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader')
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style-loader', 'css-loader', 'sass-loader')
       },
       // JSON loader for translations
       {

@@ -7,7 +7,7 @@ import React, { Component } from 'react'
 export default class Import extends Component {
   render () {
     return (
-      <div className='js_import_app'></div>
+      <div className='js_import_app' />
     )
   }
 }

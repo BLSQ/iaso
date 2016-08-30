@@ -7,9 +7,7 @@ import React, { Component } from 'react'
 export default class Import extends Component {
   render () {
     return (
-      <div>
-        <h1>I am the import application!</h1>
-      </div>
+      <div className='js_import_app'></div>
     )
   }
 }

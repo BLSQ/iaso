@@ -18,10 +18,14 @@ show_help() {
 case "$1" in
   "test" )
     export TESTING=true
+    # Linting tasks first
     flake8 ./hat
+    npm run lint
+    # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
     ./manage.py test
+    npm run mocha
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
@@ -34,6 +38,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate
     ./manage.py setupcouchdb
+    npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )

@@ -1,0 +1,18 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block content %}
+  <div class="header">
+    <h2>{% trans "Test React App" %}</h2>
+  </div>
+
+  <div class="content">
+      <h2 class="content-subhead">React TestApp with Router:</h2>
+    <div id='app'></div>
+  </div>
+
+
+  {% render_bundle 'common' %}
+  {% render_bundle 'testapp' %}
+{% endblock %}

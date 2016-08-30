@@ -20,10 +20,10 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - sudo service docker restart
-  - pip install awscli awsebcli
   # need to happen before first build
   - "./build_scripts/tfx_download.sh"
-
+install:
+  - pip install awscli awsebcli
 script:
   - docker-compose run web test
 

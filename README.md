@@ -54,3 +54,7 @@ Tests can be executed with `docker-compose run web test`. This also runs [flake8
 ## Code reloading
 
 In development the django dev server will restart when it detects a file change. The task runner currently doesn't detect changes and will not automaticall restart. Restart the `redis` and `rq` containers to load the new code: `docker-compose restart redis rq`.
+
+## Frontend Assets:
+
+[See separate README](https://github.com/eHealthAfrica/sense-hat/blob/development/hat/assets/README.md)

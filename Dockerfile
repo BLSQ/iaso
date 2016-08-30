@@ -6,9 +6,9 @@ ENV PYTHONUNBUFFERED true
 ENV NPM_CONFIG_LOGLEVEL info
 ENV NODE_VERSION 4.4.7
 
-ADD build_scripts/apt-packages.txt /tmp/apt-packages.txt
+COPY build_scripts/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
-ADD build_scripts/nginx.conf /etc/nginx/sites-available/default
+COPY build_scripts/nginx.conf /etc/nginx/sites-available/default
 
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb
 RUN dpkg -i dumb-init_*.deb
@@ -42,20 +42,26 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 
 ################################################################################
 
-ADD . /opt/app
+RUN pip install --quiet --upgrade pip==8.1.2
+
 WORKDIR /opt/app
 
-RUN pip install --quiet --upgrade pip==8.1.2
+COPY requirements.txt /opt/app/requirements.txt
 RUN pip install --quiet -r requirements.txt
 
+# NODE Deps, JS/CSS production build
+ARG NODE_ENV=development
+COPY package.json /opt/app/package.json
 RUN npm install --loglevel silent
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
+# display git commit
 ARG git_commit
-
 ENV HAT_COMMIT "$git_commit"
+
+COPY . /opt/app
+RUN npm run build
 
 ENTRYPOINT ["/opt/app/entrypoint.sh"]
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN npm prune

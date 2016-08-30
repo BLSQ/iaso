@@ -1,4 +1,5 @@
 var path = require('path')
+var url = require('url')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -8,18 +9,28 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 // var LOCALE='fr'
 var LOCALE = 'en'
 
+// When DOCKER_HOST is set we'll use its hostname for the webpack url
+var WEBPACK_URL = process.env.DOCKER_HOST
+    ? url.format({
+      protocol: 'http',
+      hostname: url.parse(process.env.DOCKER_HOST).hostname,
+      port: 3000
+    })
+    : 'http://localhost:3000'
+
+
 module.exports = {
   context: __dirname,
   entry: {
     // Empty module stand-in for Prod Bundle
     'common': [],
     'import': [
-      'webpack-dev-server/client?http://localhost:3000',
+      'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/import'
     ],
     'testapp': [
-      'webpack-dev-server/client?http://localhost:3000',
+      'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
     ],
@@ -29,7 +40,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, './assets/bundles/'),
     filename: '[name]-[hash].js',
-    publicPath: 'http://localhost:3000/bundles/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+    publicPath: WEBPACK_URL + '/bundles/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
   },
 
   plugins: [

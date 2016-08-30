@@ -205,16 +205,7 @@ HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 STATIC_URL = '/static/'
-
-if DEBUG:
-    # This is for dev static files:
-    STATICFILES_DIRS = (
-        os.path.join(PROJECT_ROOT, 'assets/bundles'),
-    )
-else:
-    # Prod static files:
-    STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
-
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {

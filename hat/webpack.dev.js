@@ -18,7 +18,6 @@ var WEBPACK_URL = process.env.DOCKER_HOST
     })
     : 'http://localhost:3000'
 
-
 module.exports = {
   context: __dirname,
   entry: {

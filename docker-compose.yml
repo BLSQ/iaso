@@ -24,13 +24,7 @@ services:
       - "8080:8080"
       - "3000:3000"
     volumes: &web_volumes
-      - .:/opt/app
-      # preserve node_modules from the image
-      - /opt/app/node_modules
-      # preserve static files build
-      - /opt/app/hat/assets/bundles
-      # shared dir between containers
-      - ./shared:/opt/shared
+      - ./hat:/opt/app/hat
     links: &web_links
       - db
       - couchdb

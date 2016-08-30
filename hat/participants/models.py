@@ -16,6 +16,10 @@ class HatParticipant(models.Model):
     entry_date = models.DateTimeField(null=True)
     entry_name = models.TextField(null=True)
 
+    form_number = models.PositiveSmallIntegerField(null=True)
+    form_year = models.PositiveSmallIntegerField(null=True)
+    form_month = models.PositiveSmallIntegerField(null=True)
+
     name = models.TextField(null=True)
     lastname = models.TextField(null=True)
     prename = models.TextField(null=True)

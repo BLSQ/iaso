@@ -8,6 +8,9 @@ GENERIC_FIELDS = [
     'entry_date',
     'entry_name',
     'mobile_unit',
+    'form_number',
+    'form_month',
+    'form_year',
 ]
 LOCATION_FIELDS = [
     'village',
@@ -128,6 +131,6 @@ def export_csv(
 
     if len(df):
         columns = ANON_FIELDS if anon else ALL_FIELDS
-        return df.to_csv(index=False, columns=columns, sep=';', date_format=DATE_FORMAT)
+        return df.to_csv(index=False, columns=columns, sep=',', date_format=DATE_FORMAT)
     else:
         return ''

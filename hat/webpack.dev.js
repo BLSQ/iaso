@@ -50,7 +50,9 @@ module.exports = {
     ),
     new webpack.NormalModuleReplacementPlugin(
       /^__intl\/messages$/,
-      '../translations/' + LOCALE + '.json'
+      // Don't include the english translations, it will
+      // mess up text updates via hot module reloading
+      '../translations/' + (LOCALE === 'en' ? 'empty' : LOCALE) + '.json'
     ),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(), // don't reload if there is an error

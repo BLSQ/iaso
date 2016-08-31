@@ -10,6 +10,8 @@ var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
 var LOCALE = 'en'
 
 module.exports = {
+  // fail the entire build on 'module not found'
+  bail: true,
   context: __dirname,
 
   entry: {

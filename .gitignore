@@ -94,5 +94,4 @@ build_scripts/deploy.zip
 
 ### Built JS ###
 hat/assets/bundles/
-en.json
 hat/assets/messages/**/*.json

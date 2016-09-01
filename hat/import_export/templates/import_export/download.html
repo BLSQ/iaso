@@ -1,11 +1,12 @@
 {% extends "app.html" %}
 {% load i18n %}
 
-{% block content %}
-  <div class="header">
-    <h2>{% trans "Data download" %}</h2>
-  </div>
+{% block header %}
+  <h1 class="header__title">{% trans "Data download" %}</h1>
+{% endblock %}
 
+{% block content %}
+  
   <div class="content">
       <h2 class="content-subhead">{% trans "Export data" %}</h2>
     <p>

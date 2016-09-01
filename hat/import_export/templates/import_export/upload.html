@@ -2,11 +2,12 @@
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
-{% block content %}
-  <div class="header">
-    <h2>{% trans "Data upload" %}</h2>
-  </div>
+{% block header %}
+  <h1 class="header__title">{% trans "Data upload" %}</h1>
+{% endblock %}
 
+{% block content %}
+  
   <div class="content">
     <h2 class="content-subhead">Import file</h2>
     <p>

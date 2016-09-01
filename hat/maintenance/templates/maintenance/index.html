@@ -1,11 +1,11 @@
 {% extends "app.html" %}
 {% load i18n %}
 
-{% block content %}
-  <div class="header">
-    <h2>{% trans "Maintenance" %}</h2>
-  </div>
+{% block header %}
+  <h1 class="header__title">{% trans "Maintenance" %}</h1>
+{% endblock %}
 
+{% block content %}
   <div class="content">
     <h3>{% trans "Stats" %}</h3>
     <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">

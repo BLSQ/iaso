@@ -18,7 +18,7 @@ def extract(filename: str):
     data = json.loads(r)
     # keep cases only for this import,
     # (might be locations in the data as well)
-    data = list(filter(lambda doc: doc['type'] == 'participant', data))
+    data = [doc for doc in data if 'type' in doc and doc['type'] == 'participant']
     return json_normalize(data)
 
 

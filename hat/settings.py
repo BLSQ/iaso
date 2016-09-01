@@ -210,7 +210,7 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
     'DEFAULT': {
-        'BUNDLE_DIR_NAME': '/static/',  # used in prod
+        'BUNDLE_DIR_NAME': '/',  # used in prod
         'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
     }
 }

@@ -19,6 +19,9 @@ docker-compose run web manage makemessages -l en
 url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-historicalpo/content"
 curl -i -L --user "$TRANSIFEX_USER:$TRANSIFEX_PASSWORD" -F file=@./hat/locale/en/LC_MESSAGES/django.po -X PUT "$url"
 
+# Overwrite en.json with the strings extracted in the JS build
+docker run sense-hat eval "cat hat/assets/js/translations/en.json" > hat/assets/js/translations/en.json
+
 # Upload JS strings (creating in npm run build)
-url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-dashboard-en/content"
+url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-dashboard-enjson/content"
 curl -i -L --user "$TRANSIFEX_USER:$TRANSIFEX_PASSWORD" -F file=@./hat/assets/js/translations/en.json -X PUT "$url"

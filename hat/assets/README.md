@@ -28,7 +28,7 @@ Unfortunately, for now you need to do a `docker-compose rm web && docker-compose
       `#if ($http_x_forwarded_proto != 'https') {` etc...
 
 3. Change `docker-compose.yml`
-  - comment out DEBUG: 'true' from env
+  - comment the volume `- ./hat:/opt/app/hat`
   - change 'command' to 'start' instead of 'start_dev'
 
 4. `docker-compose up`

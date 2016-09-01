@@ -2,7 +2,6 @@ var path = require('path')
 var url = require('url')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
 // Switch here for french
 // remeber to switch in webpack.prod.js and
 // djanog settings as well
@@ -33,7 +32,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
     ],
-    'styles': './assets/css/index.scss'
+    'styles': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/css/index.scss'
+    ]
   },
 
   output: {
@@ -60,7 +63,6 @@ module.exports = {
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
     }),
-    new ExtractTextPlugin('[name]-[chunkhash].css'),
     new webpack.DefinePlugin({
       '__LOCALE': JSON.stringify(LOCALE)
     })
@@ -76,12 +78,12 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
+        loaders: ['style-loader', 'css-loader']
       },
       // Extract Sass files
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css-loader', 'sass-loader')
+        loaders: ['style-loader', 'css-loader', 'sass-loader']
       },
       // JSON loader for translations
       {

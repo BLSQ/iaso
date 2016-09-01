@@ -38,6 +38,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate
     ./manage.py setupcouchdb
+    export DEV_SERVER='true'
     npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
   ;;

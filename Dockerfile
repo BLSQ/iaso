@@ -1,10 +1,8 @@
 FROM python:3.5
 
-# Do not buffer stdout so we see log output immediatly
 ENV DEBIAN_FRONTEND noninteractive
+# Do not buffer stdout so we see log output immediatly
 ENV PYTHONUNBUFFERED true
-ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 4.4.7
 
 COPY build_scripts/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
@@ -15,9 +13,7 @@ RUN dpkg -i dumb-init_*.deb
 RUN rm dumb-init_*.deb
 
 ################################################################################
-# install nodejs, taken from:
-# https://github.com/nodejs/docker-node/blob/bf93fccf8e127824cd2478f491502c7d3ad0e1aa/4.4/Dockerfile
-
+# install nodejs, taken from the official docker nodejs Dockerfile
 # gpg keys listed at https://github.com/nodejs/node
 RUN set -ex \
   && for key in \
@@ -32,6 +28,9 @@ RUN set -ex \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
+
+ENV NPM_CONFIG_LOGLEVEL info
+ENV NODE_VERSION 6.5.0
 
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \

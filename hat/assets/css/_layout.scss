@@ -1,0 +1,15 @@
+.layout {
+  display: flex;
+  /*border: 1px solid red;*/
+}
+
+
+.content {
+  padding-left: $padding-unit;
+  padding-right: $padding-unit;
+}
+
+.container--main {
+  /*border: 1px solid red;*/
+  flex: 1;
+}

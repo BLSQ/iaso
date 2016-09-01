@@ -9,9 +9,9 @@ show_help() {
   start_dev     : start django devserver
   start_rq      : start rq worker
   start_jupyter : start jupyter notebook
-  celery        : run celery commands
   manage        : run django manage.py
   eval          : eval shell command
+  bash          : run bash
   """
 }
 

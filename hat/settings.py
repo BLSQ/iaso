@@ -79,7 +79,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'hat.rq',
     'hat.couchdb',
-    'hat.participants',
+    'hat.cases',
     'hat.import_export',
     'hat.dashboard',
     'hat.maintenance',

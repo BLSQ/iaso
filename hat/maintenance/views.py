@@ -12,9 +12,9 @@ from django.utils.translation import ugettext as _
 @require_http_methods(['GET'])
 def index(request):
     from django.conf import settings
-    from hat.participants.models import HatParticipant
+    from hat.cases.models import HatCase
     import hat.couchdb.api as couchdb
-    num_transformed = HatParticipant.objects.count()
+    num_transformed = HatCase.objects.count()
     r = couchdb.get(settings.COUCHDB_DB)
     r.raise_for_status()
     print('json', r.json())
@@ -51,9 +51,9 @@ def status(request, task_id: str):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def delete_db_data(request):
-    from hat.participants.models import HatParticipant
+    from hat.cases.models import HatCase
     try:
-        HatParticipant.objects.all().delete()
+        HatCase.objects.all().delete()
     except Exception as e:
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:

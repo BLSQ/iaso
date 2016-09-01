@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from hat.participants.models import HatParticipant
+from hat.cases.models import HatCase
 
 
 GENERIC_FIELDS = [
@@ -126,7 +126,7 @@ def export_csv(
     if sources:
         filters['source__in'] = sources
 
-    qs = HatParticipant.objects.filter(**filters).order_by('document_date')
+    qs = HatCase.objects.filter(**filters).order_by('document_date')
     df = DataFrame(list(qs.values()))
 
     if len(df):

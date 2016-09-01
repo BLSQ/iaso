@@ -12,12 +12,12 @@
     <div class="pure-menu">
       <a class="pure-menu-heading" href={% url "index" %}>Sense HAT</a>
       <ul class="pure-menu-list">
-        {% if perms.participants.import %}
+        {% if perms.cases.import %}
           <li class="pure-menu-item">
           <a class="pure-menu-link" href={% url "import_export:upload" %}>{% trans "Upload" %}</a>
           </li>
         {% endif %}
-        {% if perms.participants.export %}
+        {% if perms.cases.export %}
           <li class="pure-menu-item">
           <a class="pure-menu-link" href={% url "import_export:download" %}>{% trans "Download" %}</a>
           </li>

@@ -10,12 +10,12 @@ var LOCALE = 'en'
 
 // When DOCKER_HOST is set we'll use its hostname for the webpack url
 var WEBPACK_URL = process.env.DOCKER_HOST
-    ? url.format({
-      protocol: 'http',
-      hostname: url.parse(process.env.DOCKER_HOST).hostname,
-      port: 3000
-    })
-    : 'http://localhost:3000'
+  ? url.format({
+    protocol: 'http',
+    hostname: url.parse(process.env.DOCKER_HOST).hostname,
+    port: 3000
+  })
+  : 'http://localhost:3000'
 
 module.exports = {
   context: __dirname,
@@ -84,6 +84,27 @@ module.exports = {
       {
         test: /\.scss$/,
         loaders: ['style-loader', 'css-loader', 'sass-loader']
+      },
+      // font files
+      {
+        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=application/font-woff'
+      },
+      {
+        test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=application/font-woff'
+      },
+      {
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=application/octet-stream'
+      },
+      {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'file'
+      },
+      {
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/svg+xml'
       },
       // JSON loader for translations
       {

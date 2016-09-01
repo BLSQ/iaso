@@ -1,10 +1,11 @@
 from django.db import models
 
 
-class HatParticipant(models.Model):
+class HatCase(models.Model):
     SOURCE_CHOICES = (
         ('historic', 'Historic'),
-        ('mobile_backup', 'Mobile backup')
+        ('mobile_backup', 'Mobile backup'),
+        ('pv', 'Pharamcovigilance'),
     )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 

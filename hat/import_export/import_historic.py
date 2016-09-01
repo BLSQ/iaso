@@ -136,7 +136,7 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
     return result
 
 
-def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
+def transform_cases(cards: DataFrame, followups: DataFrame) -> DataFrame:
 
     def get_treatment_result(x):
         r = {
@@ -205,7 +205,7 @@ def read_entry_name(orgname: str) -> str:
 
 @handle_import_stage(ImportStage.transform)
 def transform(tables: Dict[str, DataFrame], orgname: str) -> DataFrame:
-    cs = transform_participants(tables['cards'], tables['followups'])
+    cs = transform_cases(tables['cards'], tables['followups'])
     ts = transform_tests(tables['cards'], tables['followups'])
     result = pandas.concat([cs, ts], axis=1)
     result['entry_name'] = read_entry_name(orgname)

@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 def extract(filename: str):
     r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     data = json.loads(r)
-    # keep participants only for this import,
+    # keep cases only for this import,
     # (might be locations in the data as well)
-    data = list(filter(lambda doc: doc['type'] == 'participant', data))
+    data = [doc for doc in data if 'type' in doc and doc['type'] == 'participant']
     return json_normalize(data)
 
 

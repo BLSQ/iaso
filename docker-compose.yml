@@ -25,6 +25,7 @@ services:
       - "3000:3000"
     volumes: &web_volumes
       - ./hat:/opt/app/hat
+      - ./entrypoint.sh:/opt/app/entrypoint.sh
       # shared dir between containers
       - ./shared:/opt/shared
     links: &web_links

@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class HatCase(models.Model):
+class Case(models.Model):
     SOURCE_CHOICES = (
         ('historic', 'Historic'),
         ('mobile_backup', 'Mobile backup'),
@@ -118,4 +118,5 @@ class HatCase(models.Model):
             ("import", "Can import data"),
             ("export", "Can export data"),
             ("export_full", "Can export the full dataset as csv"),
+            ("view", "Can view data"),
         )

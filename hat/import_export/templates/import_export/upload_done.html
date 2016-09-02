@@ -13,16 +13,18 @@
       </div>
       <div class="widget__content">
         {% if error_count > 0 %}
-          <div>
+          <div class="block--margin-bottom--tiny">
+            <h2 class="text--error">
             {% blocktrans count error_count=error_count %}
             {{error_count}} file resulted in errors, please review the file marked below and try again!
             {% plural %}
             {{error_count}} files resulted in errors, please review the files marked below and try again!
             {% endblocktrans %}
+            </h2>
           </div>
         {% endif %}
 
-        <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
+        <table class="job-result-table" style="width: 100%">
           <thead>
             <tr>
               <th>{% trans "File" %}</th>
@@ -60,7 +62,7 @@
             {% endfor %}
           </tbody>
         </table>
-        <p>
+        <p class="block--margin-top--tiny">
           <small>{% trans "Full results are available in the dev console" %}</small>
         </p>
       </div>

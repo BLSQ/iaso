@@ -12,25 +12,26 @@
       <!-- Hamburger icon -->
       <span></span>
     </a>
-
+    {% with request.resolver_match.url_name as url_name %}
     <ul class="navigation__menu">
       {% if perms.participants.import %}
-        <li class="navigation__menu__item">
+        <li class="navigation__menu__item{% if url_name == 'upload' %}--active{% endif %}">
           <a class="" href={% url "import_export:upload" %}>{% trans "Upload" %}</a>
         </li>
       {% endif %}
       {% if perms.participants.export %}
-        <li class="navigation__menu__item">
-          <a class="" href={% url "import_export:download" %}>{% trans "Download" %}</a>
+        <li class="navigation__menu__item{% if url_name == 'download' %}--active{% endif %}">
+          <a {% if request.path == "import_export:download" %} class="active"{% endif %} href={% url "import_export:download" %}>{% trans "Download" %}</a>
         </li>
       {% endif %}
       {% if user.is_superuser %}
-        <li class="navigation__menu__item navigation__menu__item--active">
+        <li class="navigation__menu__item{% if url_name == 'index' %}--active{% endif %}">
           <a class="" href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
         </li>
       {% endif %}
 
     </ul>
+    {% endwith %}
 
     <div class="navigation__footer">
       <span class="label--user">Logged in as '{{ user }}'</span>
@@ -55,7 +56,7 @@
         <h1 class="header__title">Sense HAT</h1>
       {% endblock %}
     </header>
-    
+
     {% block content %}
     {% endblock %}
   </div>

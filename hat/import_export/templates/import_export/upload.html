@@ -7,20 +7,24 @@
 {% endblock %}
 
 {% block content %}
-  
   <div class="content">
-    <h2 class="content-subhead">Import file</h2>
-    <p>
-      <form method="POST" action="{% url 'import_export:upload' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit" class="pure-button pure-button-primary">{% trans "Import" %}</button>
-      </form>
-    </p>
-  </div>
-
-  <div id='import'>
-
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+      </div>
+      <div class="widget__content">
+        <form method="POST" action="{% url 'import_export:upload' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form }}
+          <div class="block--margin-top--nano">
+            <button type="submit" class="button">{% trans "Import" %}</button>
+          </div>
+          
+          <div id='import'>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   {% render_bundle 'common' %}

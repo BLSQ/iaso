@@ -6,13 +6,18 @@
 {% endblock %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Data upload" %}</h1>
+  <h1 class="header__title">{% trans "Importing..." %}</h1>
 {% endblock %}
 
 {% block content %}
-
   <div class="content">
-    <h2 class="content-subhead">{% trans "Importing..." %}</h2>
-    <p>{% trans "Status:" %} {{ status }}</p>
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>{% trans "Status:" %} {{ status }}</p>
+      </div>
+    </div>
   </div>
 {% endblock %}

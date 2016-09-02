@@ -8,34 +8,40 @@
 {% block content %}
   
   <div class="content">
-      <h2 class="content-subhead">{% trans "Export data" %}</h2>
-    <p>
-      <form class="pure-form pure-form-stacked" method="POST" action="{% url 'import_export:download' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <fieldset>
-          <div class="pure-control-group">
-            {{ form.start_date.errors }}
-            {{ form.start_date.label_tag }}
-            {{ form.start_date }}
-          </div>
-          <br>
-          <div class="pure-control-group">
-            {{ form.end_date.errors }}
-            {{ form.end_date.label_tag }}
-            {{ form.end_date }}
-          </div>
-          <br>
-          <div class="pure-control-group">
-            {{ form.sources.errors }}
-            {{ form.sources.label_tag }}
-            {{ form.sources }}
-          </div>
-          <br>
-          <div class="pure-controls">
-            <button type="submit" class="pure-button pure-button-primary">{% trans "Prepare download" %}</button>
-          </div>
-        </fieldset>
-      </form>
-    </p>
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Export data" %}</h2>
+      </div>
+      <div class="widget__content">
+        <form method="POST" action="{% url 'import_export:download' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <fieldset>
+            <div class="form__wrapper">
+              {{ form.start_date.errors }}
+              {{ form.start_date.label_tag }}
+              {{ form.start_date }}
+            </div>
+            
+            <div class="form__wrapper">
+              {{ form.end_date.errors }}
+              {{ form.end_date.label_tag }}
+              {{ form.end_date }}
+            </div>
+            
+            <div class="form__wrapper">
+              {{ form.sources.errors }}
+              {{ form.sources.label_tag }}
+              {{ form.sources }}
+            </div>
+            
+            <div class="">
+              <button type="submit" class="button">
+                {% trans "Prepare download" %}
+              </button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
   </div>
 {% endblock %}

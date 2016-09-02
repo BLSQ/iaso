@@ -1,15 +1,37 @@
 .layout {
   display: flex;
-  /*border: 1px solid red;*/
 }
 
-
 .content {
-  padding-left: $padding-unit;
-  padding-right: $padding-unit;
+  padding: $padding-unit;
 }
 
 .container--main {
-  /*border: 1px solid red;*/
   flex: 1;
+}
+
+/* margin classes */
+$directions: left right top bottom;
+@each $direction in $directions {
+  .block__margin-#{$direction}-none {
+    margin-#{$direction}: 0;
+  }
+  .block--margin-#{$direction}--nano {
+    margin-#{$direction}: $padding-unit/2;
+  }
+  .block--margin-#{$direction}--tiny {
+    margin-#{$direction}: $padding-unit;
+  }
+  .block--margin-#{$direction}--small {
+    margin-#{$direction}: $padding-unit*2;
+  }
+  .block--margin-#{$direction}--mid {
+    margin-#{$direction}: $padding-unit*4;
+  }
+  .block--margin-#{$direction}--med {
+    margin-#{$direction}: $padding-unit*4;
+  }
+  .block--margin-#{$direction}--large {
+    margin-#{$direction}: $padding-unit*6;
+  }
 }

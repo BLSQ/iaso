@@ -1,0 +1,32 @@
+@mixin button-text-style {
+  font-family: $body-font-family;
+  font-size: $font-size-standard;
+  font-weight: bold;
+  line-height: 1;
+  text-decoration: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+[class^='button'] {
+  display: inline-block;
+  width: auto;
+  padding: 0.75em 1.75em;
+  border: none;
+  border-bottom: 2px solid darken($blue, 10%);
+  border-radius: 4px;
+  background: $blue;
+  color: white;
+  @include button-text-style;
+  transition: all .25s cubic-bezier(0.250, 0.460, 0.450, 0.940); 
+  cursor: pointer;
+  &:hover {
+    background: darken($blue, 10%);
+  }
+}
+
+.button {
+  &--reduced {
+    padding: 0.5em 1em;
+  }
+}
+

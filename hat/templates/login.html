@@ -26,24 +26,12 @@
           {% endif %}
         {% endif %}
 
-        <form class="pure-form pure-form-aligned" method="post" action="{% url 'login' %}">
+        <form method="post" action="{% url 'login' %}">
           {% csrf_token %}
-          <fieldset>
-            <div class="pure-control-group">
-              {{ form.username.label_tag }}
-              {{ form.username }}
-            </div>
-
-            <div class="pure-control-group">
-              {{ form.password.label_tag }}
-              {{ form.password }}
-            </div>
-
-            <div class="pure-controls">
-              <button type="submit" class="pure-button pure-button-primary">{% trans "Login" %}</button>
-            </div>
-            <input type="hidden" name="next" value="{{ next }}">
-          </fieldset>
+          {{ form }}
+          <div class="block--margin-top--nano">
+            <button type="submit" class="button">{% trans "Login" %}</button>
+          </div>
         </form>
 
     </div>

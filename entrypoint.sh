@@ -29,18 +29,19 @@ case "$1" in
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
-    ./manage.py migrate
+    ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
     ./manage.py setupcouchdb
     ./scripts/start_web.sh
   ;;
   "start_dev" )
     ./scripts/wait_for_dbs.sh
-    ./manage.py migrate
+    ./manage.py migrate --noinput
     ./manage.py setupcouchdb
-    export DEV_SERVER='true'
-    npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
+  ;;
+  "start_webpack" )
+    npm run webpack-server
   ;;
   "start_rq" )
     ./scripts/start_rq.sh

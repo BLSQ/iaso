@@ -1,0 +1,46 @@
+$input-inner-shadow: inset 0px 1px 3px 0px rgba(black,.2);
+
+input[type="text"], input[type="number"],
+input[type="email"], input[type="password"],
+input[type="date"] {
+  width: 320px;
+  padding: 0.5em;
+  background: $background-gray;
+  border: 1px solid $gray;
+  box-shadow: $input-inner-shadow;
+  border-radius: 4px;
+  font-family: $body-font-family;
+  font-size: $font-size-standard;
+  color: $dark-blue;
+  line-height: 1;
+  &:focus {
+    outline: 0;
+    border: 1px solid $blue;
+    box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
+  }
+}
+
+input[type="date"] {
+  width: 200px;
+}
+
+form {
+  margin: 0;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+label {
+  display: block;
+  font-size: $font-size-s;
+  font-weight: bold;
+  margin-bottom: $padding-unit/4;
+}
+
+.form__wrapper {
+  margin-bottom: $padding-unit;
+}
+

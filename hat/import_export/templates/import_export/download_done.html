@@ -1,12 +1,19 @@
 {% extends "app.html" %}
 {% load i18n %}
 
+{% block header %}
+  <h1 class="header__title">{% trans "Data download" %}</h1>
+{% endblock %}
+
 {% block content %}
-  <div class="header">
-    <h2>{% trans "Data download" %}</h2>
-  </div>
   <div class="content">
-    <h2 class="content-subhead">{% trans "Export ready" %}</h2>
-    <p><a href="{{ download_link }}">{% trans "HAT historic data file" %}</a></p>
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Export ready" %}</h2>
+      </div>
+      <div class="widget__content">
+        <a class="button" href="{{ download_link }}">{% trans "HAT historic data file" %}</a>
+      </div>
+    </div>
   </div>
 {% endblock %}

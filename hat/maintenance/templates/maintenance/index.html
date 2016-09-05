@@ -1,58 +1,79 @@
 {% extends "app.html" %}
 {% load i18n %}
 
+{% block header %}
+  <h1 class="header__title">{% trans "Maintenance" %}</h1>
+{% endblock %}
+
 {% block content %}
-  <div class="header">
-    <h2>{% trans "Maintenance" %}</h2>
+  <div class="content">
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Stats" %}</h2>
+      </div>
+      <div class="widget__content">
+        <table class="table--stats">
+          <thead>
+            <tr>
+              <th>{% trans "Store" %}</th>
+              <th>{% trans "Number of records" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{% trans "Raw" %}</td>
+              <td>{{ num_raw }}</td>
+            </tr>
+            <tr>
+              <td>{% trans "Transformed" %}</td>
+              <td>{{ num_transformed }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Actions" %}</h2>
+      </div>
+
+      <div class="widget__content">
+        <table class="table--stats">
+          <tbody>
+            <tr>
+              <td>{% trans "Delete the transformed data." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:delete_db_data' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Transformed" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Delete the raw data. This is not recoverable!" %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:delete_couchdb_data' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Raw" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Delete the transformed data and reimport from raw." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <div class="content">
-    <h3>{% trans "Stats" %}</h3>
-    <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
-      <thead>
-        <tr>
-          <th>{% trans "Store" %}</th>
-          <th>{% trans "Number of records" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>{% trans "Raw" %}</td>
-          <td>{{ num_raw }}</td>
-        </tr>
-        <tr>
-          <td>{% trans "Transformed" %}</td>
-          <td>{{ num_transformed }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <br>
-    <h3>{% trans "Actions" %}</h3>
-    <p>
-      {% trans "Delete the transformed data." %}
-      <form method="POST" action="{% url 'maintenance:delete_db_data' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Transformed" %}</button>
-      </form>
-    </p>
-    <br>
-    <p>
-      {% trans "Delete the raw data. This is not recoverable!" %}
-      <form method="POST" action="{% url 'maintenance:delete_couchdb_data' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Raw" %}</button>
-      </form>
-    </p>
-    <br>
-    <p>
-      {% trans "Delete the transformed data and reimport from raw." %}
-      <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit" class="pure-button" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
-      </form>
-    </p>
-  </div>
 {% endblock %}

@@ -12,21 +12,22 @@
       <!-- Hamburger icon -->
       <span></span>
     </a>
-    {% with request.resolver_match.url_name as url_name %}
+
+    {% with request.resolver_match.namespace as ns %}
     <ul class="navigation__menu">
       {% if perms.participants.import %}
-        <li class="navigation__menu__item{% if url_name == 'upload' %}--active{% endif %}">
-          <a class="" href={% url "import_export:upload" %}>{% trans "Upload" %}</a>
+        <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
+          <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
         </li>
       {% endif %}
       {% if perms.participants.export %}
-        <li class="navigation__menu__item{% if url_name == 'download' %}--active{% endif %}">
-          <a {% if request.path == "import_export:download" %} class="active"{% endif %} href={% url "import_export:download" %}>{% trans "Download" %}</a>
+        <li class="navigation__menu__item{% if ns == 'export' %}--active{% endif %}">
+          <a href={% url "export:download" %}>{% trans "Download" %}</a>
         </li>
       {% endif %}
       {% if user.is_superuser %}
-        <li class="navigation__menu__item{% if url_name == 'index' %}--active{% endif %}">
-          <a class="" href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
+        <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
+          <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
         </li>
       {% endif %}
 

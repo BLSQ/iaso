@@ -102,6 +102,7 @@ def download(request):
                 'start_date': form.cleaned_data['start_date'],
                 'end_date': form.cleaned_data['end_date'],
                 'sources': form.cleaned_data['sources'],
+                'sep': form.cleaned_data['sep'],
             }
             if request.user.has_perm('cases.export_full'):
                 task = run_task(export_task, kwargs=options,

@@ -116,7 +116,8 @@ def export_csv(
         anon=False,
         start_date=None,
         end_date=None,
-        sources=None
+        sources=None,
+        sep=','
 ) -> str:
     filters = {}
     if start_date:
@@ -131,6 +132,6 @@ def export_csv(
 
     if len(df):
         columns = ANON_FIELDS if anon else ALL_FIELDS
-        return df.to_csv(index=False, columns=columns, sep=',', date_format=DATE_FORMAT)
+        return df.to_csv(index=False, columns=columns, sep=sep, date_format=DATE_FORMAT)
     else:
         return ''

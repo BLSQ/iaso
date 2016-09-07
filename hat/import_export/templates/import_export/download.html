@@ -27,13 +27,19 @@
               {{ form.end_date.label_tag }}
               {{ form.end_date }}
             </div>
-            
+
             <div class="form__wrapper">
               {{ form.sources.errors }}
               {{ form.sources.label_tag }}
               {{ form.sources }}
             </div>
-            
+
+            <div class="form__wrapper">
+              {{ form.sep.errors }}
+              {{ form.sep.label_tag }}
+              {{ form.sep }}
+            </div>
+
             <div class="">
               <button type="submit" class="button">
                 {% trans "Prepare download" %}

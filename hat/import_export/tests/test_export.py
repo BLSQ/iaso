@@ -44,3 +44,14 @@ class ExportTests(DBTestCase):
         csv = export_csv(start_date=d, end_date=d)
         df = pandas.read_csv(StringIO(csv))
         self.assertTrue(len(df), TEST_DATA['historic']['count'])
+
+    def test_export_sep(self):
+        csv_default = export_csv()
+        csv_comma = export_csv(sep=',')
+        csv_custom = export_csv(sep='$')
+
+        self.assertEqual(csv_default, csv_comma)
+        self.assertNotEqual(csv_default, csv_custom)
+
+        self.assertTrue(',' in csv_comma)
+        self.assertTrue('$' in csv_custom)

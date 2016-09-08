@@ -1,0 +1,27 @@
+/* lato-regular - latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/Lato/lato-v11-latin-regular.eot');
+  src: local('Lato Regular'), local('Lato-Regular'),
+       url('../fonts/Lato/lato-v11-latin-regular.eot?#iefix') format('embedded-opentype'),
+       url('../fonts/Lato/lato-v11-latin-regular.woff2') format('woff2'),
+       url('../fonts/Lato/lato-v11-latin-regular.woff') format('woff'),
+       url('../fonts/Lato/lato-v11-latin-regular.ttf') format('truetype'),
+       url('../fonts/Lato/lato-v11-latin-regular.svg#Lato') format('svg');
+}
+
+/* lato-700 - latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/Lato/lato-v11-latin-700.eot');
+  src: local('Lato Bold'), local('Lato-Bold'),
+       url('../fonts/Lato/lato-v11-latin-700.eot?#iefix') format('embedded-opentype'),
+       url('../fonts/Lato/lato-v11-latin-700.woff2') format('woff2'),
+       url('../fonts/Lato/lato-v11-latin-700.woff') format('woff'),
+       url('../fonts/Lato/lato-v11-latin-700.ttf') format('truetype'),
+       url('../fonts/Lato/lato-v11-latin-700.svg#Lato') format('svg');
+}

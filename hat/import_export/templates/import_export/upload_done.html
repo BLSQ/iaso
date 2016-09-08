@@ -1,69 +1,77 @@
 {% extends "app.html" %}
 {% load i18n %}
 
+{% block header %}
+  <h1 class="header__title">{% trans "Data upload" %}</h1>
+{% endblock %}
+
 {% block content %}
-  <div class="header">
-    <h2>{% trans "Data upload" %}</h2>
-  </div>
-
   <div class="content">
-      <h2 class="content-subhead">{% trans "Import done." %}</h2>
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import done" %}</h2>
+      </div>
+      <div class="widget__content">
+        {% if error_count > 0 %}
+          <div class="block--margin-bottom--tiny">
+            <h2 class="text--error">
+            {% blocktrans count error_count=error_count %}
+            {{error_count}} file resulted in errors, please review the file marked below and try again!
+            {% plural %}
+            {{error_count}} files resulted in errors, please review the files marked below and try again!
+            {% endblocktrans %}
+            </h2>
+          </div>
+        {% endif %}
 
-    {% if error_count > 0 %}
-    <div>
-        {% blocktrans count error_count=error_count %}
-        {{error_count}} file resulted in errors, please review the file marked below and try again!
-        {% plural %}
-        {{error_count}} files resulted in errors, please review the files marked below and try again!
-        {% endblocktrans %}
+        <table class="job-result-table" style="width: 100%">
+          <thead>
+            <tr>
+              <th>{% trans "File" %}</th>
+              <th>{% trans "Type" %}</th>
+              <th>{% trans "Result" %}</th>
+              <th>{% trans "Info" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for file in results %}
+            {# type historic_import, import_error, backup_import #}
+            <tr class="{% if file.ok %}job-result-ok{% else %}job-result-error{% endif %}">
+              <td>{{ file.orgname }}</td>
+
+              <td>{{ file.type }}</td>
+
+               <td>
+              {% if file.ok %}
+                &#x2713;
+              {% else %}
+                &#x274c;
+              {% endif %}
+              </td>
+
+              <td>
+              {% if file.ok %}
+               {{ file.num_imported }}/{{ file.num_total}} imported
+              {% else %}
+                {% for error in file.errors %}
+                  {{error.short_message}}
+                {% endfor %}
+              {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p class="block--margin-top--tiny">
+          <small>{% trans "Full results are available in the dev console" %}</small>
+        </p>
+      </div>
     </div>
-    {% endif %}
-
-    <table class="pure-table pure-table-horizontal job-result-table" style="width: 100%">
-      <thead>
-        <tr>
-          <th>{% trans "File" %}</th>
-          <th>{% trans "Type" %}</th>
-          <th>{% trans "Result" %}</th>
-          <th>{% trans "Info" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file in results %}
-        {# type historic_import, import_error, backup_import #}
-        <tr class="{% if file.ok %}job-result-ok{% else %}job-result-error{% endif %}">
-            <td>{{ file.orgname }}</td>
-
-            <td>{{ file.type }}</td>
-
-             <td>
-            {% if file.ok %}
-              &#x2713;
-            {% else %}
-              &#x274c;
-            {% endif %}
-            </td>
-
-            <td>
-            {% if file.ok %}
-             {{ file.num_imported }}/{{ file.num_total}} imported
-            {% else %}
-              {% for error in file.errors %}
-                {{error.short_message}}
-              {% endfor %}
-            {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <p>
-    <small>{% trans "Full results are available in the dev console" %}</small>
-    </p>
-
-    <script>
-      var fullData = {{resultJSON|safe}};
-      console.log(JSON.stringify(fullData, null, 2))
-    </script>
   </div>
+
+  <script>
+    var fullData = {{resultJSON|safe}};
+    console.log(JSON.stringify(fullData, null, 2))
+  </script>
+  
 {% endblock %}

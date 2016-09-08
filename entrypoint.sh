@@ -9,19 +9,23 @@ show_help() {
   start_dev     : start django devserver
   start_rq      : start rq worker
   start_jupyter : start jupyter notebook
-  celery        : run celery commands
   manage        : run django manage.py
   eval          : eval shell command
+  bash          : run bash
   """
 }
 
 case "$1" in
   "test" )
     export TESTING=true
+    # Linting tasks first
     flake8 ./hat
+    npm run lint
+    # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
     ./manage.py test
+    npm run mocha
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
@@ -34,6 +38,8 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate
     ./manage.py setupcouchdb
+    export DEV_SERVER='true'
+    npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
   ;;
   "start_rq" )

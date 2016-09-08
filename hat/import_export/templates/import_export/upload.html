@@ -1,19 +1,32 @@
 {% extends "app.html" %}
 {% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Data upload" %}</h1>
+{% endblock %}
 
 {% block content %}
-  <div class="header">
-    <h2>{% trans "Data upload" %}</h2>
+  <div class="content">
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+      </div>
+      <div class="widget__content">
+        <form method="POST" action="{% url 'import:upload' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form }}
+          <div class="block--margin-top--nano">
+            <button type="submit" class="button">{% trans "Import" %}</button>
+          </div>
+
+          <div id='import'>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
-  <div class="content">
-    <h2 class="content-subhead">Import file</h2>
-    <p>
-      <form method="POST" action="{% url 'import_export:upload' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <button type="submit" class="pure-button pure-button-primary">{% trans "Import" %}</button>
-      </form>
-    </p>
-  </div>
+  {% render_bundle 'common' %}
+  {% render_bundle 'import' %}
 {% endblock %}

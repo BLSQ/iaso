@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from hat.participants.models import HatParticipant
+from hat.cases.models import HatCase
 
 
 GENERIC_FIELDS = [
@@ -8,6 +8,9 @@ GENERIC_FIELDS = [
     'entry_date',
     'entry_name',
     'mobile_unit',
+    'form_number',
+    'form_month',
+    'form_year',
 ]
 LOCATION_FIELDS = [
     'village',
@@ -113,7 +116,8 @@ def export_csv(
         anon=False,
         start_date=None,
         end_date=None,
-        sources=None
+        sources=None,
+        sep=','
 ) -> str:
     filters = {}
     if start_date:
@@ -123,11 +127,11 @@ def export_csv(
     if sources:
         filters['source__in'] = sources
 
-    qs = HatParticipant.objects.filter(**filters).order_by('document_date')
+    qs = HatCase.objects.filter(**filters).order_by('document_date')
     df = DataFrame(list(qs.values()))
 
     if len(df):
         columns = ANON_FIELDS if anon else ALL_FIELDS
-        return df.to_csv(index=False, columns=columns, sep=';', date_format=DATE_FORMAT)
+        return df.to_csv(index=False, columns=columns, sep=sep, date_format=DATE_FORMAT)
     else:
         return ''

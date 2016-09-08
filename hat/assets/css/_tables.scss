@@ -1,0 +1,35 @@
+table {
+  width: 100%;
+  margin: 0;
+}
+
+@mixin table-cell-styles {
+  text-overflow: ellipsis;
+  padding: 10px 12px;
+  border-right: 1px solid $light-gray;
+  text-align: left;
+  vertical-align: center;
+  line-height: 1rem;
+  &:first-child {
+    border-left: 1px solid $light-gray;
+  }
+}
+th {
+  @include table-cell-styles;
+  background: $light-gray;
+  
+}
+td {
+  @include table-cell-styles;
+  overflow: hidden;
+  border-bottom: 1px solid $light-gray;
+  background: $background-highlight-gray;
+
+}
+tr:first-child td {
+  border-top:1px solid $light-gray;
+}
+
+.row--right {
+  width: 200px;
+}

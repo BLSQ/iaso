@@ -1,22 +1,34 @@
 from typing import Dict
 import logging
 import pandas
-from functools import reduce
 from pandas import DataFrame
 from hat.common.mdb import extract_mdbtable_via_db
 from .load import load_into_db, store_file
-from .utils import capitalize, create_documentid
+from .utils import hat_id, capitalize, create_documentid, groupreduce
 from hat.import_export.errors import handle_import_stage, ImportStage, ImportStageException
 
+'''
+Extraction, transformation and loading of the historic MDB files. UCLA digitizes
+paper forms of screened cases via MSAccess forms and uploads the database files.
+'''
+
 logger = logging.getLogger(__name__)
+
+HISTORIC_TABLE_NAME = 'T_CARDS'
 
 
 @handle_import_stage(ImportStage.extract)
 def extract(mdb_file: str) -> Dict[str, DataFrame]:
     return {
-        'cards': extract_mdbtable_via_db(mdb_file, 'T_CARDS'),
+        'cards': extract_mdbtable_via_db(mdb_file, HISTORIC_TABLE_NAME),
         'followups': extract_mdbtable_via_db(mdb_file, 'T_FOLLOWUPS')
     }
+
+
+def to_int(x):
+    if pandas.isnull(x):
+        return x
+    return int(float(x))
 
 
 def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
@@ -24,12 +36,11 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
     # In case there is more than one followup for one card, all followups
     # for that card will be merged into a single followup where the most
     # recent value wins, that is not None.
-    reduced_followups = followups.sort_values(by='S_DATE_RV') \
-                                 .groupby('F_ID') \
-                                 .agg(lambda s: reduce(lambda r, x: x or r, s))
+    red_followups = groupreduce(followups, 'F_ID', sortby='S_DATE_RV')
 
     # The reduced followups can now be merged into the cards
-    source = pandas.merge(cards, reduced_followups, how='left', left_on='F_ID', right_index=True)
+    source = pandas.merge(cards, red_followups,
+                          how='left', left_on='F_ID', right_index=True)
 
     result = DataFrame()
 
@@ -125,7 +136,7 @@ def transform_tests(cards: DataFrame, followups: DataFrame) -> DataFrame:
     return result
 
 
-def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
+def transform_cases(cards: DataFrame, followups: DataFrame) -> DataFrame:
 
     def get_treatment_result(x):
         r = {
@@ -145,6 +156,10 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['entry_date'] = cards['F_TIMESTAMP']
 
     result['mobile_unit'] = cards['IF_UM'].apply(capitalize)
+    # Form numbers/month/year
+    result['form_number'] = cards['IF_NBR'].apply(to_int)
+    result['form_month'] = cards['IF_MONTH'].apply(to_int)
+    result['form_year'] = cards['IF_YEAR'].apply(to_int)
 
     result['treatment_center'] = cards['IM_UM_CT']
     result['treatment_start_date'] = cards['TP_DATE']
@@ -166,14 +181,6 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['year_of_birth'] = cards['IM_BIRTHYEAR']
     result['mothers_surname'] = cards['IM_MERE']
 
-    result['hat_id'] = (
-        result['lastname'].fillna('XX').str[0:2] +
-        result['name'].fillna('XX').str[0:2] +
-        result['prename'].fillna('XX').str[0:2] +
-        result['year_of_birth'].fillna(1900).astype('str') +
-        result['mothers_surname'].fillna('XX').str[0:1]
-    ).str.upper()
-
     result['village'] = cards['IM_AD_VILLAGE'].apply(capitalize)
     result['province'] = cards['IM_AD_PROVINCE'].apply(capitalize)
     result['ZS'] = cards['IM_AD_HEALTH_ZONE'].apply(capitalize)
@@ -182,6 +189,7 @@ def transform_participants(cards: DataFrame, followups: DataFrame) -> DataFrame:
     result['source'] = 'historic'
     result['followup_done'] = cards['F_ID'].isin(list(followups['F_ID']))
 
+    result['hat_id'] = result.apply(hat_id, axis=1)
     result['document_id'] = result.apply(create_documentid, axis=1)
     return result
 
@@ -196,8 +204,8 @@ def read_entry_name(orgname: str) -> str:
 
 
 @handle_import_stage(ImportStage.transform)
-def transform(tables: Dict[str, DataFrame], orgname):
-    cs = transform_participants(tables['cards'], tables['followups'])
+def transform(tables: Dict[str, DataFrame], orgname: str) -> DataFrame:
+    cs = transform_cases(tables['cards'], tables['followups'])
     ts = transform_tests(tables['cards'], tables['followups'])
     result = pandas.concat([cs, ts], axis=1)
     result['entry_name'] = read_entry_name(orgname)

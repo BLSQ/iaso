@@ -18,13 +18,14 @@ services:
       context: .
       args:
         git_commit: "${TRAVIS_COMMIT}"
+        NODE_ENV: "${NODE_ENV}"
     image: sense-hat
     ports:
       - "8080:8080"
+      - "3000:3000"
     volumes: &web_volumes
-      - .:/opt/app
-      # preserve node_modules from the image
-      - /opt/app/node_modules
+      - ./hat:/opt/app/hat
+      - ./entrypoint.sh:/opt/app/entrypoint.sh
       # shared dir between containers
       - ./shared:/opt/shared
     links: &web_links
@@ -38,6 +39,7 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
+      DOCKER_HOST: "${DOCKER_HOST}"
     command: start_dev
 
   # the worker container of the task runner

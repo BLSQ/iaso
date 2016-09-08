@@ -21,10 +21,24 @@ class DownloadCsvForm(forms.Form):
     SOURCE_CHOICES = (
         ('historic', _('Historic data')),
         ('mobile_backup', _('Mobile backup data')),
+        ('pv', _('Pharmacovigilance data')),
     )
     sources = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple,
         choices=SOURCE_CHOICES,
         label=_('Sources')
+    )
+
+    SEP_CHOICES = (
+        (',', _('Comma ","')),
+        (';', _('Semicolon ";"')),
+        ('\t', _('Tab "\\t"'))
+    )
+    sep = forms.ChoiceField(
+        required=True,
+        widget=forms.RadioSelect,
+        choices=SEP_CHOICES,
+        label=_('Fields separator'),
+        initial=','
     )

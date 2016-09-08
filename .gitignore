@@ -91,3 +91,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
+
+### Built JS ###
+hat/assets/bundles/
+hat/assets/messages/**/*.json

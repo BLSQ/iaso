@@ -5,12 +5,14 @@ from django.utils import timezone
 from ..export_csv import export_csv
 from ..import_backup import import_backup
 from ..import_historic import import_historic
+from ..import_pv import import_pv
 from . import DBTestCase, TEST_DATA
 
 
 class ExportTests(DBTestCase):
     def setUp(self):
         import_historic('historic', TEST_DATA['historic']['file'], store=True)
+        import_pv('pv', TEST_DATA['pv']['file'], store=True)
         import_backup('backup', TEST_DATA['mobile_backup']['file'], store=True)
 
     def test_export(self):
@@ -28,6 +30,10 @@ class ExportTests(DBTestCase):
         df = pandas.read_csv(StringIO(csv))
         self.assertEqual(len(df), TEST_DATA['historic']['count'])
 
+        csv = export_csv(sources=['pv'])
+        df = pandas.read_csv(StringIO(csv))
+        self.assertEqual(len(df), TEST_DATA['pv']['count'])
+
         csv = export_csv(sources=['mobile_backup'])
         df = pandas.read_csv(StringIO(csv))
         self.assertEqual(len(df), TEST_DATA['mobile_backup']['count'])
@@ -38,3 +44,14 @@ class ExportTests(DBTestCase):
         csv = export_csv(start_date=d, end_date=d)
         df = pandas.read_csv(StringIO(csv))
         self.assertTrue(len(df), TEST_DATA['historic']['count'])
+
+    def test_export_sep(self):
+        csv_default = export_csv()
+        csv_comma = export_csv(sep=',')
+        csv_custom = export_csv(sep='$')
+
+        self.assertEqual(csv_default, csv_comma)
+        self.assertNotEqual(csv_default, csv_custom)
+
+        self.assertTrue(',' in csv_comma)
+        self.assertTrue('$' in csv_custom)

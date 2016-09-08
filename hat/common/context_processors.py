@@ -2,6 +2,8 @@ from django.conf import settings
 
 
 def appversions(request):
+    prefix = 'D-' if settings.DEBUG else ''
     return {
-            'version_commit': settings.HAT_COMMIT[0:7] or 'local-dev'
+            'DEV_SERVER': settings.DEV_SERVER,
+            'version_commit': prefix + (settings.HAT_COMMIT[0:7] or 'local-dev')
     }

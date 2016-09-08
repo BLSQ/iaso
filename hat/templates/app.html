@@ -15,12 +15,12 @@
 
     {% with request.resolver_match.namespace as ns %}
     <ul class="navigation__menu">
-      {% if perms.participants.import %}
+      {% if perms.cases.import %}
         <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
           <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
         </li>
       {% endif %}
-      {% if perms.participants.export %}
+      {% if perms.cases.export %}
         <li class="navigation__menu__item{% if ns == 'export' %}--active{% endif %}">
           <a href={% url "export:download" %}>{% trans "Download" %}</a>
         </li>

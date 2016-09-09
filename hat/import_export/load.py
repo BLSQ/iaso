@@ -32,27 +32,28 @@ def load_into_db(df: DataFrame) -> DataFrame:
                           .values_list('document_id', flat=True)
 
     # Filter out items that already exist in database
-    duplicate_ids = df['document_id'].isin(existing_ids)
+    duplicate_ids_in_db = df['document_id'].isin(existing_ids)
+    duplicates_in_db = df[duplicate_ids_in_db]
+    df = df[~duplicate_ids_in_db]
 
     # Filter out items that are entered 2x in the data to be inserted
-    duplicate_in_new_data = df.duplicated('document_id')
+    duplicate_ids_in_new_data = df.duplicated('document_id')
+    duplicates_in_new_data = df[duplicate_ids_in_new_data]
+    df = df[~duplicate_ids_in_new_data]
 
     # create a dataframe with all duplicate data
     # + drop rows that are exactly the same, since duplicate_ids
     # and duplicate_in_new_data might overlap
-    duplicates = pandasconcat([df[duplicate_ids], df[duplicate_in_new_data]], axis=0) \
+    duplicates = pandasconcat([duplicates_in_db, duplicates_in_new_data], axis=0) \
         .drop_duplicates()
 
-    # Only insert new docs via pandas
-    # TODO: This raises a warning
-    df = df[~duplicate_ids]
-    df = df[~duplicate_in_new_data]
-
+    # Insert new docs
     table_name = HatCase.objects.model._meta.db_table
     if len(df) > 0:
         with engine.begin() as conn:
             df.to_sql(table_name, conn, if_exists='append', index=False)
 
+    # Update duplicates
     if len(duplicates) > 0:
         update_entries(duplicates)
 

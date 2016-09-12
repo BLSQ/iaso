@@ -4,7 +4,7 @@ from hat.cases.models import HatCase
 from ..import_backup import import_backup
 from ..import_historic import import_historic
 from ..import_pv import import_pv
-from ..import_data import reimport
+from ..import_data import reimport, import_file
 from . import DBTestCase, TEST_DATA
 
 mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
@@ -62,3 +62,11 @@ class ImportTests(DBTestCase):
         HatCase.objects.all().delete()
         reimport()
         self.assertEqual(HatCase.objects.count(), count)
+
+    def test_import_existing_file(self):
+        stats1 = import_file('backup', enc_file, store=True)
+        stats2 = import_file('backup', enc_file, store=True)
+
+        self.assertEqual(stats1['type'], 'backup_import')
+        self.assertEqual(stats2['type'], 'import_error')
+        self.assertEqual(stats2['orgname'], 'backup')

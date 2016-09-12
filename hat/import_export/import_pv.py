@@ -194,7 +194,7 @@ def transform(tables: Dict[str, DataFrame]):
     return result
 
 
-def import_pv(orgname: str, filename: str, store=False):
+def import_pv(orgname: str, filename: str, store=False, file_hash=''):
     logger.info('Importing pharmacovigilance file: ' + orgname)
     stats = {
         'type': 'pv_import',
@@ -213,7 +213,11 @@ def import_pv(orgname: str, filename: str, store=False):
         stats['num_total'] = len(e['forms'])
         stats['num_imported'] = len(l)
         if store:
-            store_id = store_file(stats.copy(), filename, 'application/x-msaccess')
+            doc = stats.copy()
+            # use file hash as id for easy lookup of existing files
+            if file_hash:
+                doc['_id'] = file_hash
+            store_id = store_file(doc, filename, 'application/x-msaccess')
             stats['store_id'] = store_id
     except ImportStageException as exc:
         stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})

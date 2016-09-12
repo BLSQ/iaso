@@ -11,21 +11,44 @@ from .import_historic import import_historic, HISTORIC_TABLE_NAME
 from .import_pv import import_pv, PV_TABLE_NAME
 from .import_backup import import_backup
 from hat.import_export.errors import ImportStage
+from hashlib import md5
 
 
 logger = logging.getLogger(__name__)
 
 
 def import_file(name: str, filename: str, store=False) -> dict:
+
+    # skip existing files when not doing re-import
+    if store:
+        hasher = md5()
+
+        with open(filename, 'rb') as file:
+            hasher.update(file.read())
+
+        file_hash = hasher.hexdigest()
+        existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
+        if existing.status_code == 200:
+            return {
+                'orgname': name,
+                'type': 'import_error',
+                'errors': [{
+                    'stage': ImportStage.exists.name,
+                    'message': 'This file has already been imported'
+                }]
+            }
+    else:
+        file_hash = ''
+
     suffix = PurePath(filename).suffix.lower()
 
     if any(suffix in s for s in ['.mdb', '.accdb']):
         # We infer what kind of MDB file we have by the table names
         tables = get_tablenames(filename)
         if HISTORIC_TABLE_NAME in tables:
-            return import_historic(name, filename, store=store)
+            return import_historic(name, filename, store=store, file_hash=file_hash)
         elif PV_TABLE_NAME in tables:
-            return import_pv(name, filename, store=store)
+            return import_pv(name, filename, store=store, file_hash=file_hash)
         else:
             err_msg = 'Cannot import unkown mdb file: {}'.format(name)
             logger.error(err_msg)
@@ -35,7 +58,7 @@ def import_file(name: str, filename: str, store=False) -> dict:
             }
 
     elif suffix in '.enc':
-        return import_backup(name, filename, store=store)
+        return import_backup(name, filename, store=store, file_hash=file_hash)
 
     else:
         err_msg = 'Cannot import unkown filetype: {}'.format(suffix)

@@ -10,6 +10,7 @@ class ImportStage(Enum):
     transform = 3
     load = 4
     store = 5
+    exists = 6
     other = 99
 
 
@@ -38,6 +39,7 @@ messages = dict([
     (ImportStage.transform.name, 'File is missing values, can not be automatically imported'),
     (ImportStage.load.name, 'Could not load data into database'),
     (ImportStage.store.name, 'Could not store file for re-import'),
+    (ImportStage.exists.name, 'File has already been uploaded'),
     (ImportStage.other.name, 'An unforseen error occurred'),
 ])
 

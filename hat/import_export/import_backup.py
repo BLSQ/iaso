@@ -97,7 +97,7 @@ def transform(df: DataFrame):
     return pandas.concat([ps, ts], axis=1)
 
 
-def import_backup(orgname: str, filename: str, store=False):
+def import_backup(orgname: str, filename: str, store=False, file_hash=''):
     logger.info('Importing backup: ' + orgname + ' from: ' + filename)
     stats = {
         'type': 'backup_import',
@@ -116,7 +116,11 @@ def import_backup(orgname: str, filename: str, store=False):
         stats['num_total'] = len(e)
         stats['num_imported'] = len(l)
         if store:
-            store_id = store_file(stats.copy(), filename, 'application/x-hatbackup')
+            doc = stats.copy()
+            # use file hash as id for easy lookup of existing files
+            if file_hash:
+                doc['_id'] = file_hash
+            store_id = store_file(doc, filename, 'application/x-hatbackup')
             stats['store_id'] = store_id
     except ImportStageException as exc:
         stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})

@@ -1,5 +1,5 @@
 from base64 import b64encode
-from pandas import DataFrame
+from pandas import DataFrame, concat as pandasconcat
 from django.conf import settings
 from hat.cases.models import HatCase
 from hat.common.sqlalchemy import engine
@@ -30,12 +30,75 @@ def load_into_db(df: DataFrame) -> DataFrame:
     existing_ids = HatCase.objects \
                           .filter(document_id__in=ids) \
                           .values_list('document_id', flat=True)
-    df = df[~df['document_id'].isin(existing_ids)]
 
-    if len(df) == 0:
-        return df
+    # Filter out items that already exist in database
+    duplicate_ids_in_db = df['document_id'].isin(existing_ids)
+    duplicates_in_db = df[duplicate_ids_in_db]
+    df = df[~duplicate_ids_in_db]
 
+    # Filter out items that are entered 2x in the data to be inserted
+    duplicate_ids_in_new_data = df.duplicated('document_id')
+    duplicates_in_new_data = df[duplicate_ids_in_new_data]
+    df = df[~duplicate_ids_in_new_data]
+
+    # create a dataframe with all duplicate data
+    # + drop rows that are exactly the same, since duplicate_ids
+    # and duplicate_in_new_data might overlap
+    duplicates = pandasconcat([duplicates_in_db, duplicates_in_new_data], axis=0) \
+        .drop_duplicates()
+
+    # Insert new docs
     table_name = HatCase.objects.model._meta.db_table
-    with engine.begin() as conn:
-        df.to_sql(table_name, conn, if_exists='append', index=False)
+    if len(df) > 0:
+        with engine.begin() as conn:
+            df.to_sql(table_name, conn, if_exists='append', index=False)
+
+    # Update duplicates
+    if len(duplicates) > 0:
+        update_entries(duplicates)
+
     return df
+
+
+def update_entries(duplicates):
+    ids = list(duplicates['document_id'])
+
+    # remove unwanted columns
+    # we only want to add test results:
+    duplicates.drop(
+        [
+            # meta fields, keep original
+            'source',
+            'entry_date',
+            'document_date',
+            'entry_name',
+            'mobile_unit',
+            'form_number',
+            'form_month',
+            'form_year',
+            # already the same
+            'village',
+            'province',
+            'ZS',
+            'AZ',
+            'hat_id',
+            'name',
+            'lastname',
+            'prename',
+            'sex',
+            'age',
+            'year_of_birth',
+            'mothers_surname',
+        ],
+        inplace=True,
+        axis=1,
+        # ignore if some columns dont exist
+        errors='ignore'
+    )
+
+    records = HatCase.objects.filter(document_id__in=ids)
+
+    for index, row in duplicates.iterrows():
+        records \
+            .filter(document_id=row['document_id']) \
+            .update(**row.dropna().to_dict())

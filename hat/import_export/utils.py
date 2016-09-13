@@ -24,6 +24,7 @@ def tz_localize_cd(s: Series) -> Series:
 def create_documentid(row: Series) -> str:
     ''' Hash some columns to create the document id '''
     COLUMNS = [
+        # 'document_date',
         'name',
         'lastname',
         'prename',

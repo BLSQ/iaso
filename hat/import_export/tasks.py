@@ -18,6 +18,6 @@ def export_task(**kwargs) -> str:
     return export_csv(**kwargs)
 
 
-@job('default', connection=redis_conn)
+@job('default', connection=redis_conn, timeout=1000, result_ttl=2000)
 def reimport_task() -> dict:
     return reimport()

@@ -29,4 +29,4 @@ script:
 
 after_success:
   - "./build_scripts/tfx_upload.sh"
-  - "./build_scripts/travis_deploy.sh"
+  - "./build_scripts/docker-build.sh"

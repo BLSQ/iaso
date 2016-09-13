@@ -24,7 +24,9 @@
   "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
   "dependencies": {
     "couchdb-bootstrap": "^1.14.0",
-    "node-jose": "^0.9.0"
+    "node-jose": "^0.9.0",
+    "vega": "^2.6.0",
+    "vega-lite": "^1.2.0"
   },
   "standard": {
     "ignore": [

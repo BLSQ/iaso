@@ -1,0 +1,46 @@
+[
+  {
+    "model": "cases.case",
+    "pk": 1,
+    "fields": {
+      "document_id": "1",
+      "document_date": "2016-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 2,
+    "fields": {
+      "document_id": "2",
+      "document_date": "2016-01-02T00:00:00Z",
+      "test_rdt": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 3,
+    "fields": {
+      "document_id": "3",
+      "document_date": "2016-01-03T00:00:00Z",
+      "test_catt": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 4,
+    "fields": {
+      "document_id": "4",
+      "document_date": "2016-01-04T00:00:00Z",
+      "test_maect": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 5,
+    "fields": {
+      "document_id": "5",
+      "document_date": "2016-01-05T00:00:00Z",
+      "test_ge": true
+    }
+  }
+]

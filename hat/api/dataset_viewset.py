@@ -24,11 +24,11 @@ CONFIRMATION_FIELDS = [
 
 Q_screening = Q()
 for field in SCREENING_FIELDS:
-    Q_screening |= Q(**{field: True})
+    Q_screening |= Q(**{field + '__isnull': False})
 
 Q_confirmation = Q()
 for field in CONFIRMATION_FIELDS:
-    Q_confirmation |= Q(**{field: True})
+    Q_confirmation |= Q(**{field + '__isnull': False})
 
 
 datasets = {}

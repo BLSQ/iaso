@@ -22,24 +22,33 @@
     "fields": {
       "document_id": "3",
       "document_date": "2016-01-03T00:00:00Z",
-      "test_catt": true
+      "test_rdt": false
     }
   },
   {
     "model": "cases.case",
     "pk": 4,
     "fields": {
-      "document_id": "4",
+      "document_id": "3",
       "document_date": "2016-01-04T00:00:00Z",
-      "test_maect": true
+      "test_catt": true
     }
   },
   {
     "model": "cases.case",
     "pk": 5,
     "fields": {
-      "document_id": "5",
+      "document_id": "4",
       "document_date": "2016-01-05T00:00:00Z",
+      "test_maect": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 6,
+    "fields": {
+      "document_id": "5",
+      "document_date": "2016-01-06T00:00:00Z",
       "test_ge": true
     }
   }

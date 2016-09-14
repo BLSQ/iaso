@@ -31,7 +31,7 @@ class ResourceList extends Component {
     const {title} = this.props
     const {items, value} = this.state
 
-    return <div className='vis'>
+    return <div>
       <label>{title}:</label>
       <select value={value} onChange={this.handleSelect}>
         <option key='none' value=''>None</option>

@@ -10,6 +10,7 @@ import JsonSchema from './apps/playground/json-schema'
 import ResourceList from './apps/playground/resource-list'
 import VegaLiteVis from './components/vega-lite-vis'
 import ValueVis from './components/value-vis'
+import VISUALIZATIONS from '../json/visualizations.json'
 
 function createQueryString (params) {
   return Object.keys(params)
@@ -22,7 +23,7 @@ class Playground extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      visConfig: null,
+      visName: '',
       datasetConfig: null,
       dataset: null,
       params: null
@@ -32,12 +33,8 @@ class Playground extends Component {
     this.handleParamsChange = this.handleParamsChange.bind(this)
   }
 
-  handleVisSelect (config) {
-    window.fetch(config.url, {headers: {'Accept': 'application/json'}, credentials: 'include'})
-      .then((resp) => resp.json())
-      .then((json) => {
-        this.setState({visConfig: json})
-      })
+  handleVisSelect (event) {
+    this.setState({visName: event.target.value})
   }
 
   handleDataSelect (config) {
@@ -61,20 +58,29 @@ class Playground extends Component {
   }
 
   render () {
-    const {visConfig, datasetConfig, dataset} = this.state
+    const {visName, datasetConfig, dataset} = this.state
     let paramsSchema
     if (datasetConfig && datasetConfig.params_schema) {
       paramsSchema = datasetConfig.params_schema
     }
     let vis
-    if (dataset && visConfig) {
+    if (dataset && visName) {
+      const visConfig = VISUALIZATIONS[visName]
       switch (visConfig.type) {
-        case 'vega-lite': vis = <VegaLiteVis data={dataset} spec={visConfig.spec} />; break
+        case 'vega-lite': vis = <VegaLiteVis data={dataset} spec={VISUALIZATIONS[visName].spec} />; break
         case 'value': vis = <ValueVis data={dataset} />; break
       }
     }
     return <div>
-      <ResourceList title='Visualizations' url='/api/visualizations' onSelect={this.handleVisSelect} />
+      <div>
+        <label>Visualizations:</label>
+        <select value={visName} onChange={this.handleVisSelect}>
+          <option key='none' value=''>None</option>
+          {Object.keys(VISUALIZATIONS).map((name, i) => {
+            return <option key={i} value={name}>{name}</option>
+          })}
+        </select>
+      </div>
       <br />
       <ResourceList title='Datasets' url='/api/datasets' onSelect={this.handleDataSelect} />
       <br />

@@ -79,6 +79,10 @@ def count_tested(params):
     'additionalProperties': False,
 })
 def list_screened(params):
+    # We want to group by some part of the date and get a count of records that match the
+    # filter. For that we select on the date truncated by postgres `date_trunc` function to
+    # the date precision we like to group on.
+    # `RawSQL` is used, because we call the Postgres builtin `date_trunc` function.
     return Case.objects \
                .filter(Q_screening) \
                .annotate(date=RawSQL('date_trunc(%s, document_date)', (params['date_trunc'],))) \

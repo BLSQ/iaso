@@ -7,9 +7,3 @@ from django.shortcuts import render
 @require_http_methods(['GET'])
 def testapp(request):
     return render(request, 'dashboard/testapp.html')
-
-
-@login_required()
-@require_http_methods(['GET'])
-def visapp(request):
-    return render(request, 'dashboard/visapp.html')

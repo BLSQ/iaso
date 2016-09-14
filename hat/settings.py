@@ -30,6 +30,9 @@ DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
 
 ALLOWED_HOSTS = ['*']
 
+FIXTURE_DIRS = (
+    'hat/fixtures/',
+)
 
 # Logging
 

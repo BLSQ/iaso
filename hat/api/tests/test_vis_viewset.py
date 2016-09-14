@@ -4,6 +4,11 @@ from rest_framework.test import APITestCase
 
 
 class VisualizationsTests(APITestCase):
+    fixtures = ['users']
+
+    def setUp(self):
+        self.assertTrue(self.client.login(username='admin', password='adminadmin'))
+
     def test_list_visualizations(self):
         url = reverse('api:visualizations-list')
         response = self.client.get(url, format='json')

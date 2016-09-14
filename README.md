@@ -51,6 +51,14 @@ Postgresql uses Django models for table configuration and migrations. CouchDB is
 
 Tests can be executed with `docker-compose run web test`. This also runs [flake8](http://flake8.pycqa.org/en/latest/) to check the code.
 
+### Fixtures
+
+User fixtures can be loaded when testing. This is the list(<name>:<password>) of users:
+- `admin:adminadmin`
+- `importer:importer`
+- `full-exporter:exporterexporter`
+- `anon-exporter:exporterexporter`
+
 ## Code reloading
 
 In development the django dev server will restart when it detects a file change. The task runner currently doesn't detect changes and will not automaticall restart. Restart the `redis` and `rq` containers to load the new code: `docker-compose restart redis rq`.

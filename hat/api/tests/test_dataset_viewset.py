@@ -4,7 +4,10 @@ from rest_framework.test import APITestCase
 
 
 class DatasetTests(APITestCase):
-    fixtures = ['api_cases.json']
+    fixtures = ['users', 'api_cases.json']
+
+    def setUp(self):
+        self.assertTrue(self.client.login(username='admin', password='adminadmin'))
 
     def test_list_datasets(self):
         url = reverse('api:datasets-list')
@@ -37,13 +40,15 @@ class DatasetTests(APITestCase):
         self.assertEqual(response.data, {'value': 4})
 
     def test_screened_per_date_day(self):
-        url = '{}?date_trunc=day'.format(reverse('api:datasets-detail', args=['list_screened']))
+        url = '{}?date_trunc=day'.format(
+            reverse('api:datasets-detail', args=['list_screened']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
     def test_screened_per_date_month(self):
-        url = '{}?date_trunc=month'.format(reverse('api:datasets-detail', args=['list_screened']))
+        url = '{}?date_trunc=month'.format(
+            reverse('api:datasets-detail', args=['list_screened']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)

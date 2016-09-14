@@ -4,7 +4,10 @@ from rest_framework.test import APITestCase
 
 
 class CasesTests(APITestCase):
-    fixtures = ['api_cases.json']
+    fixtures = ['users', 'api_cases.json']
+
+    def setUp(self):
+        self.assertTrue(self.client.login(username='admin', password='adminadmin'))
 
     def test_list_cases(self):
         url = reverse('api:cases-list')

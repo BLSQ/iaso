@@ -33,7 +33,7 @@ class Playground extends Component {
   }
 
   handleVisSelect (config) {
-    window.fetch(config.url, {headers: {'Accept': 'application/json'}})
+    window.fetch(config.url, {headers: {'Accept': 'application/json'}, credentials: 'include'})
       .then((resp) => resp.json())
       .then((json) => {
         this.setState({visConfig: json})
@@ -42,7 +42,7 @@ class Playground extends Component {
 
   handleDataSelect (config) {
     this.setState({datasetConfig: config})
-    window.fetch(config.url, {headers: {'Accept': 'application/json'}})
+    window.fetch(config.url, {headers: {'Accept': 'application/json'}, credentials: 'include'})
       .then((resp) => resp.json())
       .then((json) => {
         this.setState({dataset: json})
@@ -53,7 +53,7 @@ class Playground extends Component {
     this.setState({params: params})
     const qs = createQueryString(params)
     const url = this.state.datasetConfig.url + '?' + qs
-    window.fetch(url, {headers: {'Accept': 'application/json'}})
+    window.fetch(url, {headers: {'Accept': 'application/json'}, credentials: 'include'})
       .then((resp) => resp.json())
       .then((json) => {
         this.setState({dataset: json})

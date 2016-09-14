@@ -20,7 +20,7 @@ class ResourceList extends Component {
   }
 
   componentDidMount () {
-    window.fetch(this.props.url, {headers: {'Accept': 'application/json'}})
+    window.fetch(this.props.url, {headers: {'Accept': 'application/json'}, credentials: 'include'})
       .then((resp) => resp.json())
       .then((json) => {
         this.setState({items: json})

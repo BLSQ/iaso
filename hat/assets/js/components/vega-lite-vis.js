@@ -3,7 +3,13 @@ import Vega from 'vega'
 import VegaLite from 'vega-lite'
 
 class VegaLiteVis extends Component {
-  componentDidUpdate (props) {
+  componentDidMount () {
+    this.updateChart()
+  }
+  componentDidUpdate () {
+    this.updateChart()
+  }
+  updateChart () {
     const {data, spec} = this.props
     if (!data || !spec) {
       return
@@ -20,7 +26,7 @@ class VegaLiteVis extends Component {
         console.log(err)
         return
       }
-      chart({el: this.container}).update()
+      chart({el: this.container, renderer: 'svg'}).update()
     })
   }
   render () {

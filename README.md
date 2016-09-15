@@ -1,6 +1,6 @@
 # Sense HAT
 
-[![Build Status](https://travis-ci.com/eHealthAfrica/sense-hat.png)](https://travis-ci.com/eHealthAfrica/sense-hat)
+[![Build Status](https://travis-ci.com/eHealthAfrica/sense-hat.svg)](https://travis-ci.com/eHealthAfrica/sense-hat)
 
 This is the webapp for Sense HAT. The mobile companion app can be found [here](https://github.com/eHealthAfrica/sense-hat-mobile).
 

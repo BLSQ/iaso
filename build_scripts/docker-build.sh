@@ -11,6 +11,7 @@ echo $TAG
 echo $BRANCH
 echo $PR
 export TAG
+export BRANCH
 
 if [ -z $TAG ]; then
     echo "No tags, tagging as: $COMMIT"
@@ -27,23 +28,22 @@ then
   docker tag sense-hat:latest $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
   docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
 
+  git clone git@github.com:eHealthAfrica/beanstalk-deploy.git .ebextensions/common
+  mv .ebextensions/common/* .ebextensions/
+
   envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json
-  envsubst < build_scripts/logstash.conf.tmpl > .ebextensions/logstash/logstash.conf
+
+  zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
+  zip -r build_scripts/deploy.zip .ebextensions/
 
   case "$BRANCH" in
     "master")
-      zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
-      zip -r build_scripts/deploy.zip .ebextensions/
       eb deploy hat-historical-prod -l $TAG
     ;;
     "staging")
-      zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
-      zip -r build_scripts/deploy.zip .ebextensions/
       eb deploy hat-historical-staging -l $TAG
     ;;
     "development")
-      zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
-      zip -r build_scripts/deploy.zip .ebextensions/
       eb deploy hat-historical-dev -l $TAG
     ;;
     *)

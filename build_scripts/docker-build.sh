@@ -28,7 +28,7 @@ then
   docker tag sense-hat:latest $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
   docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$TAG
 
-  git clone git@github.com:eHealthAfrica/beanstalk-deploy.git .ebextensions/common
+  git clone https://${GH_USER}:${GH_TOKEN}@github.com/eHealthAfrica/beanstalk-deploy .ebextensions/common
   mv .ebextensions/common/* .ebextensions/
 
   envsubst < build_scripts/Dockerrun.aws.json.tmpl > build_scripts/Dockerrun.aws.json

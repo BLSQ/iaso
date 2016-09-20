@@ -1,7 +1,7 @@
 from base64 import b64encode
 from pandas import DataFrame, concat as pandasconcat
 from django.conf import settings
-from hat.cases.models import HatCase
+from hat.cases.models import Case
 from hat.common.sqlalchemy import engine
 import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
@@ -27,9 +27,9 @@ def load_into_db(df: DataFrame) -> DataFrame:
 
     # remove rows with existing ids from the data
     ids = list(df['document_id'])
-    existing_ids = HatCase.objects \
-                          .filter(document_id__in=ids) \
-                          .values_list('document_id', flat=True)
+    existing_ids = Case.objects \
+                       .filter(document_id__in=ids) \
+                       .values_list('document_id', flat=True)
 
     # Filter out items that already exist in database
     duplicate_ids_in_db = df['document_id'].isin(existing_ids)
@@ -48,7 +48,7 @@ def load_into_db(df: DataFrame) -> DataFrame:
         .drop_duplicates()
 
     # Insert new docs
-    table_name = HatCase.objects.model._meta.db_table
+    table_name = Case.objects.model._meta.db_table
     if len(df) > 0:
         with engine.begin() as conn:
             df.to_sql(table_name, conn, if_exists='append', index=False)
@@ -96,7 +96,7 @@ def update_entries(duplicates):
         errors='ignore'
     )
 
-    records = HatCase.objects.filter(document_id__in=ids)
+    records = Case.objects.filter(document_id__in=ids)
 
     for index, row in duplicates.iterrows():
         records \

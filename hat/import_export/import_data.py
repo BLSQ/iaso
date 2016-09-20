@@ -2,7 +2,7 @@ import logging
 from typing import List
 from pathlib import PurePath
 from django.conf import settings
-from hat.cases.models import HatCase
+from hat.cases.models import Case
 import hat.couchdb.api as couchdb
 from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
@@ -102,7 +102,7 @@ def reimport() -> List[dict]:
         stats = import_file(c['doc']['orgname'], filename)
         results.append(stats)
 
-    HatCase.objects.all().delete()
+    Case.objects.all().delete()
     walk_changes(settings.COUCHDB_DB, import_change, params={'include_docs': 'true'})
     logger.info('reimport finished')
     return results

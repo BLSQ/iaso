@@ -30,7 +30,11 @@
           <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
         </li>
       {% endif %}
-
+      {% if user.is_superuser %}
+        <li class="navigation__menu__item{% if ns == 'playground' %}--active{% endif %}">
+          <a href={% url "playground:index" %}>{% trans "Playground" %}</a>
+        </li>
+      {% endif %}
     </ul>
     {% endwith %}
 

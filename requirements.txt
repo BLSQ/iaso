@@ -10,3 +10,6 @@ SQLAlchemy==1.1.0b3
 uwsgi==2.0.13.1
 newrelic==2.68.0.50
 django-webpack-loader==0.3.3
+djangorestframework==3.4.6
+django-filter==0.14.0
+jsonschema==2.5.1

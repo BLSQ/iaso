@@ -18,6 +18,7 @@ module.exports = {
     'common': ['react', 'react-dom', 'react-intl'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
+    'playground': './assets/js/playground',
     'styles': './assets/css/index.scss'
   },
 

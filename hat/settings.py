@@ -30,6 +30,9 @@ DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
 
 ALLOWED_HOSTS = ['*']
 
+FIXTURE_DIRS = (
+    'hat/fixtures/',
+)
 
 # Logging
 
@@ -77,13 +80,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'webpack_loader',
     'hat.rq',
     'hat.couchdb',
     'hat.cases',
     'hat.import_export',
     'hat.dashboard',
+    'hat.playground',
     'hat.maintenance',
-    'webpack_loader'
+    'hat.api'
 ]
 
 MIDDLEWARE = [
@@ -213,4 +219,14 @@ WEBPACK_LOADER = {
         'BUNDLE_DIR_NAME': '/',  # used in prod
         'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
     }
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }

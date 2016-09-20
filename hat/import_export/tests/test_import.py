@@ -1,6 +1,6 @@
 from django.conf import settings
 import hat.couchdb.api as couchdb
-from hat.cases.models import HatCase
+from hat.cases.models import Case
 from ..import_backup import import_backup
 from ..import_historic import import_historic
 from ..import_pv import import_pv
@@ -19,8 +19,8 @@ class ImportTests(DBTestCase):
         self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
-        self.assertEqual(HatCase.objects.count(), count)
-        self.assertGreater(HatCase.objects.filter(followup_done=True).count(), 0)
+        self.assertEqual(Case.objects.count(), count)
+        self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
         r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
         r.raise_for_status()
         self.assertEqual(r.json()['type'], 'historic_import')
@@ -33,8 +33,8 @@ class ImportTests(DBTestCase):
         self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
-        self.assertEqual(HatCase.objects.count(), count)
-        self.assertGreater(HatCase.objects.filter(followup_done=True).count(), 0)
+        self.assertEqual(Case.objects.count(), count)
+        self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
         r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
         r.raise_for_status()
         self.assertEqual(r.json()['type'], 'pv_import')
@@ -47,7 +47,7 @@ class ImportTests(DBTestCase):
         self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
-        self.assertEqual(HatCase.objects.count(), count)
+        self.assertEqual(Case.objects.count(), count)
         r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
         r.raise_for_status()
         self.assertEqual(r.json()['type'], 'backup_import')
@@ -61,11 +61,11 @@ class ImportTests(DBTestCase):
         import_backup('backup-3', TEST_DATA['mobile_backup_duplicates_3']['file'], store=True)
         # only one object in db
         self.assertEqual(
-            HatCase.objects.count(),
+            Case.objects.count(),
             TEST_DATA['mobile_backup_duplicates_1']['count']
         )
 
-        merged = HatCase.objects.first()
+        merged = Case.objects.first()
         # Merges in all test results
         self.assertEqual(merged.hat_id, 'AAXXBBF1999C')
         self.assertEqual(merged.test_rdt, True)
@@ -84,11 +84,11 @@ class ImportTests(DBTestCase):
         import_historic('historic', mdb_file, store=True)
         import_backup('backup', enc_file, store=True)
         import_pv('pv', TEST_DATA['pv']['file'], store=True)
-        count = HatCase.objects.count()
+        count = Case.objects.count()
         self.assertEqual(count, TEST_DATA['total_count'])
-        HatCase.objects.all().delete()
+        Case.objects.all().delete()
         reimport()
-        self.assertEqual(HatCase.objects.count(), count)
+        self.assertEqual(Case.objects.count(), count)
 
     def test_import_existing_file(self):
         stats1 = import_file('backup', enc_file, store=True)

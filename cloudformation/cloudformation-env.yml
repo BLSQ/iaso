@@ -114,14 +114,12 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow access to CouchDB instances.
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: '5984'
         ToPort: '5984'
-        SourceSecurityGroupId:
-          Ref: BeanstalkSecurityGroup
+        SourceSecurityGroupId: !Ref BeanstalkSecurityGroup
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: '0'
@@ -131,8 +129,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow access to Elastic Beanstalk instances.
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: '80'
@@ -150,73 +147,44 @@ Resources:
   BeanstalkEnvironment:
     Type: AWS::ElasticBeanstalk::Environment
     Properties:
-      ApplicationName:
-        Ref: Application
+      ApplicationName: !Ref Application
       EnvironmentName:
         Fn::Join:
         - "-"
-        - - Ref: ProjectName
-          - Ref: Environment
+        - - !Ref ProjectName
+          - !Ref Environment
       Description: Beanstalk environment
-      VersionLabel:
-        Ref: ApplicationVersion
-      TemplateName:
-        Ref: ConfigurationTemplate
+      VersionLabel: !Ref ApplicationVersion
+      TemplateName: !Ref ConfigurationTemplate
       OptionSettings:
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: SecurityGroups
         Value: !Ref BeanstalkSecurityGroup
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: InstanceType
-        Value:
-          Fn::FindInMap:
-          - InstanceType
-          - Ref: Environment
-          - InstanceType
+        Value: !Fn::FindInMap [InstanceType, !Ref Environment, InstanceType]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: SPOT_PRICE
-        Value:
-          Fn::FindInMap:
-          - Variables
-          - Ref: Environment
-          - SpotPrice
+        Value: !Fn::FindInMap [Variables, !Ref Environment, SpotPrice]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: kazana_backend__location
-        Value:
-          Fn::FindInMap:
-          - Variables
-          - Ref: Environment
-          - KazanaBackendLocation
+        Value: !Fn::FindInMap [Variables, !Ref Environment, KazanaBackendLocation]
   CouchDBInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId:
-        Fn::FindInMap:
-        - CouchDBInstance
-        - Ref: Environment
-        - AMI
-      InstanceType:
-        Fn::FindInMap:
-        - CouchDBInstance
-        - Ref: Environment
-        - InstanceType
-      KeyName:
-        Ref: KeyName
+      ImageId: !Fn::FindInMap [CouchDBInstance, !Ref Environment, AMI]
+      InstanceType: !Fn::FindInMap [CouchDBInstance, !Ref Environment, InstanceType]
+      KeyName: !Ref KeyName
       InstanceInitiatedShutdownBehavior: stop
       NetworkInterfaces:
       - AssociatePublicIpAddress: 'true'
         DeviceIndex: '0'
         GroupSet:
-        - Ref: CouchDBSecurityGroup
-        SubnetId:
-          Ref: Subnet
+        - !Ref CouchDBSecurityGroup
+        SubnetId: !Ref Subnet
       Tags:
       - Key: Name
-        Value:
-          Fn::FindInMap:
-          - CouchDBInstance
-          - Ref: Environment
-          - Name
+        Value: !Fn::FindInMap [CouchDBInstance, !Ref Environment, Name]
   CouchDBDNSRecord:
     Type: AWS::Route53::RecordSet
     DependsOn: CouchDBInstance
@@ -224,7 +192,7 @@ Resources:
       HostedZoneName:
         Fn::Join:
         - ''
-        - - Ref: HostedZone
+        - - !Ref HostedZone
           - "."
       Comment: CouchDB DNS name
       Name:
@@ -234,17 +202,15 @@ Resources:
           - "-couchdb"
           - Fn::FindInMap:
             - DomainNameSuffix
-            - Ref: Environment
+            - !Ref Environment
             - DomainNameSuffix
           - "."
-          - Ref: HostedZone
+          - !Ref HostedZone
           - "."
       Type: A
       TTL: '60'
       ResourceRecords:
-      - Fn::GetAtt:
-        - CouchDBInstance
-        - PrivateIp
+      - !Fn::GetAtt [CouchDBInstance, PrivateIp]
   DNSRecord:
     Type: AWS::Route53::RecordSet
     DependsOn: BeanstalkEnvironment
@@ -252,58 +218,50 @@ Resources:
       HostedZoneName:
         Fn::Join:
         - ''
-        - - Ref: HostedZone
+        - - !Ref HostedZone
           - "."
       Comment: DNS name
       Name:
         Fn::Join:
         - ''
-        - - Ref: ProjectName
+        - - !Ref ProjectName
           - Fn::FindInMap:
             - DomainNameSuffix
-            - Ref: Environment
+            - !Ref Environment
             - DomainNameSuffix
           - "."
-          - Ref: HostedZone
+          - !Ref HostedZone
           - "."
       Type: A
       AliasTarget:
-        HostedZoneId:
-          Fn::FindInMap:
-          - Beanstalk2Route53HostedZoneId
-          - Ref: AWS::Region
-          - HostedZoneId
-        DNSName:
-          Fn::GetAtt:
-          - BeanstalkEnvironment
-          - EndpointURL
+        HostedZoneId: !Fn::FindInMap [Beanstalk2Route53HostedZoneId, !Ref AWS::Region, HostedZoneId]
+        DNSName: !Fn::GetAtt [BeanstalkEnvironment, EndpointURL]
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:
         Fn::Join:
         - ''
-        - - Ref: ProjectName
+        - - !Ref ProjectName
           - "-"
-          - Ref: Environment
+          - !Ref Environment
       RetentionInDays: 180
   BytesTransferredMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName:
-        Ref: LogGroup
+      LogGroupName: !Ref LogGroup
       FilterPattern: "[]"
       MetricTransformations:
       - MetricValue: "$size"
         MetricNamespace:
           Fn::Join:
           - ''
-          - - Ref: ProjectName
+          - - !Ref ProjectName
             - "/"
         MetricName:
           Fn::Join:
           - ''
-          - - Ref: Environment
+          - - !Ref Environment
             - "-"
             - BytesTransferred
   BandwidthAlarm:
@@ -313,20 +271,20 @@ Resources:
       MetricName:
         Fn::Join:
         - ''
-        - - Ref: Environment
+        - - !Ref Environment
           - "-"
           - BytesTransferred
       Namespace:
         Fn::Join:
         - ''
-        - - Ref: ProjectName
+        - - !Ref ProjectName
           - "/"
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '2'
       Threshold: '3500'
       AlarmActions:
-      - Ref: SNSTopic
+      - !Ref SNSTopic
       ComparisonOperator: GreaterThanThreshold
 Outputs:
   DNSName:

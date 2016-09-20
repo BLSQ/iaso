@@ -87,37 +87,26 @@ Resources:
     - PublicRouteTable
     - PublicNetworkAcl
     Properties:
-      ServiceToken:
-        Ref: RenameResourcesLambda
+      ServiceToken: !Ref RenameResourcesLambda
       Resources:
-      - Ref: VPC
-      - Fn::GetAtt:
-        - VPC
-        - DefaultSecurityGroup
-      - Fn::GetAtt:
-        - VPC
-        - DefaultNetworkAcl
-      - Ref: PublicSubnetA
-      - Ref: PublicSubnetB
-      - Ref: PublicSubnetC
-      - Ref: InternetGateway
-      - Ref: PublicRouteTable
-      - Ref: PublicNetworkAcl
-      Name:
-        Ref: ProjectName
+      - !Ref VPC
+      - !Fn::GetAtt [VPC, DefaultSecurityGroup]
+      - !Fn::GetAtt [VPC, DefaultNetworkAcl]
+      - !Ref PublicSubnetA
+      - !Ref PublicSubnetB
+      - !Ref PublicSubnetC
+      - !Ref InternetGateway
+      - !Ref PublicRouteTable
+      - !Ref PublicNetworkAcl
+      Name: !Ref ProjectName
   ECR:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName:
-        Ref: ProjectName
+      RepositoryName: !Ref ProjectName
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock:
-        Fn::FindInMap:
-        - SubnetConfig
-        - VPC
-        - CIDR
+      CidrBlock: !Fn::FindInMap [SubnetConfig, VPC, CIDR]
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -126,13 +115,8 @@ Resources:
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: VPC
-      CidrBlock:
-        Fn::FindInMap:
-        - SubnetConfig
-        - PublicSubnetA
-        - CIDR
+      VpcId: !Ref VPC
+      CidrBlock: !Fn::FindInMap [SubnetConfig, PublicSubnetA, CIDR]
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -145,13 +129,8 @@ Resources:
   PublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: VPC
-      CidrBlock:
-        Fn::FindInMap:
-        - SubnetConfig
-        - PublicSubnetB
-        - CIDR
+      VpcId: !Ref VPC
+      CidrBlock: !Fn::FindInMap [SubnetConfig, PublicSubnetB, CIDR]
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -164,13 +143,8 @@ Resources:
   PublicSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: VPC
-      CidrBlock:
-        Fn::FindInMap:
-        - SubnetConfig
-        - PublicSubnetC
-        - CIDR
+      VpcId: !Ref VPC
+      CidrBlock: !Fn::FindInMap [SubnetConfig, PublicSubnetC, CIDR]
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -191,15 +165,12 @@ Resources:
   GatewayToInternet:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId:
-        Ref: VPC
-      InternetGatewayId:
-        Ref: InternetGateway
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -209,37 +180,28 @@ Resources:
     Type: AWS::EC2::Route
     DependsOn: GatewayToInternet
     Properties:
-      RouteTableId:
-        Ref: PublicRouteTable
+      RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId:
-        Ref: InternetGateway
+      GatewayId: !Ref InternetGateway
   PublicSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetA
-      RouteTableId:
-        Ref: PublicRouteTable
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
   PublicSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetB
-      RouteTableId:
-        Ref: PublicRouteTable
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
   PublicSubnetCRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetC
-      RouteTableId:
-        Ref: PublicRouteTable
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
   PublicNetworkAcl:
     Type: AWS::EC2::NetworkAcl
     Properties:
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC
       Tags:
       - Key: Application
         Value: !Ref AWS::StackId
@@ -248,8 +210,7 @@ Resources:
   InboundAllPublicNetworkAclEntry:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
-      NetworkAclId:
-        Ref: PublicNetworkAcl
+      NetworkAclId: !Ref PublicNetworkAcl
       RuleNumber: '110'
       Protocol: '6'
       RuleAction: allow
@@ -261,8 +222,7 @@ Resources:
   OutboundAllPublicNetworkAclEntry:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
-      NetworkAclId:
-        Ref: PublicNetworkAcl
+      NetworkAclId: !Ref PublicNetworkAcl
       RuleNumber: '110'
       Protocol: '6'
       RuleAction: allow
@@ -274,24 +234,18 @@ Resources:
   PublicSubnetANetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetA
-      NetworkAclId:
-        Ref: PublicNetworkAcl
+      SubnetId: !Ref PublicSubnetA
+      NetworkAclId: !Ref PublicNetworkAcl
   PublicSubnetBNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetB
-      NetworkAclId:
-        Ref: PublicNetworkAcl
+      SubnetId: !Ref PublicSubnetB
+      NetworkAclId: !Ref PublicNetworkAcl
   PublicSubnetCNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId:
-        Ref: PublicSubnetC
-      NetworkAclId:
-        Ref: PublicNetworkAcl
+      SubnetId: !Ref PublicSubnetC
+      NetworkAclId: !Ref PublicNetworkAcl
   WebServerRole:
     Type: AWS::IAM::Role
     Properties:
@@ -299,11 +253,7 @@ Resources:
         Statement:
         - Effect: Allow
           Principal:
-            Service:
-            - Fn::FindInMap:
-              - Region2Principal
-              - Ref: AWS::Region
-              - EC2Principal
+            Service: !Fn::FindInMap [Region2Principal, !Ref AWS::Region, EC2Principal]
           Action:
           - sts:AssumeRole
       Path: "/"
@@ -349,38 +299,32 @@ Resources:
           - Fn::Join:
             - ''
             - - 'arn:aws:s3:::'
-              - Ref: S3Bucket
+              - !Ref S3Bucket
       Roles:
-      - Ref: WebServerRole
+      - !Ref WebServerRole
   WebServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: "/"
       Roles:
-      - Ref: WebServerRole
+      - !Ref WebServerRole
   Application:
     Type: AWS::ElasticBeanstalk::Application
     Properties:
-      Description:
-        Ref: ProjectName
-      ApplicationName:
-        Ref: ProjectName
+      Description: !Ref ProjectName
+      ApplicationName: !Ref ProjectName
   ApplicationVersion:
     Type: AWS::ElasticBeanstalk::ApplicationVersion
     Properties:
       Description: Version 1.0
-      ApplicationName:
-        Ref: Application
+      ApplicationName: !Ref Application
       SourceBundle:
-        S3Bucket:
-          Ref: S3Bucket
-        S3Key:
-          Ref: S3ZipFile
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3ZipFile
   ConfigurationTemplate:
     Type: AWS::ElasticBeanstalk::ConfigurationTemplate
     Properties:
-      ApplicationName:
-        Ref: Application
+      ApplicationName: !Ref Application
       Description: Default Configuration
       SolutionStackName: 64bit Amazon Linux 2016.03 v2.1.6 running Multi-container
         Docker 1.11.2 (Generic)
@@ -402,17 +346,17 @@ Resources:
         Value:
           Fn::Join:
           - ","
-          - - Ref: PublicSubnetA
-            - Ref: PublicSubnetB
-            - Ref: PublicSubnetC
+          - - !Ref PublicSubnetA
+            - !Ref PublicSubnetB
+            - !Ref PublicSubnetC
       - Namespace: aws:ec2:vpc
         OptionName: ELBSubnets
         Value:
           Fn::Join:
           - ","
-          - - Ref: PublicSubnetA
-            - Ref: PublicSubnetB
-            - Ref: PublicSubnetC
+          - - !Ref PublicSubnetA
+            - !Ref PublicSubnetB
+            - !Ref PublicSubnetC
       - Namespace: aws:ec2:vpc
         OptionName: AssociatePublicIpAddress
         Value: 'true'
@@ -437,31 +381,22 @@ Resources:
     Properties:
       Parameters:
         Environment: dev
-        ProjectName:
-          Ref: ProjectName
-        HostedZone:
-          Ref: HostedZone
-        SNSTopic:
-          Ref: SNSTopic
-        ConfigurationTemplate:
-          Ref: ConfigurationTemplate
-        ApplicationVersion:
-          Ref: ApplicationVersion
-        Application:
-          Ref: Application
-        VPC:
-          Ref: VPC
-        Subnet:
-          Ref: PublicSubnetA
-        KeyName:
-          Ref: KeyName
+        ProjectName: !Ref ProjectName
+        HostedZone: !Ref HostedZone
+        SNSTopic: !Ref SNSTopic
+        ConfigurationTemplate: !Ref ConfigurationTemplate
+        ApplicationVersion: !Ref ApplicationVersion
+        Application: !Ref Application
+        VPC: !Ref VPC
+        Subnet: !Ref PublicSubnetA
+        KeyName: !Ref KeyName
       TemplateURL:
         Fn::Join:
         - ''
         - - https://
-          - Ref: S3Bucket
+          - !Ref S3Bucket
           - ".s3.amazonaws.com/"
-          - Ref: ProjectName
+          - !Ref ProjectName
           - "-cloudformation-env.json"
   StageEnv:
     Type: AWS::CloudFormation::Stack
@@ -472,31 +407,22 @@ Resources:
     Properties:
       Parameters:
         Environment: staging
-        ProjectName:
-          Ref: ProjectName
-        HostedZone:
-          Ref: HostedZone
-        SNSTopic:
-          Ref: SNSTopic
-        ConfigurationTemplate:
-          Ref: ConfigurationTemplate
-        ApplicationVersion:
-          Ref: ApplicationVersion
-        Application:
-          Ref: Application
-        VPC:
-          Ref: VPC
-        Subnet:
-          Ref: PublicSubnetA
-        KeyName:
-          Ref: KeyName
+        ProjectName: !Ref ProjectName
+        HostedZone: !Ref HostedZone
+        SNSTopic: !Ref SNSTopic
+        ConfigurationTemplate: !Ref ConfigurationTemplate
+        ApplicationVersion: !Ref ApplicationVersion
+        Application: !Ref Application
+        VPC: !Ref VPC
+        Subnet: !Ref PublicSubnetA
+        KeyName: !Ref KeyName
       TemplateURL:
         Fn::Join:
         - ''
         - - https://
-          - Ref: S3Bucket
+          - !Ref S3Bucket
           - ".s3.amazonaws.com/"
-          - Ref: ProjectName
+          - !Ref ProjectName
           - "-cloudformation-env.json"
   ProdEnv:
     Type: AWS::CloudFormation::Stack
@@ -507,48 +433,30 @@ Resources:
     Properties:
       Parameters:
         Environment: prod
-        ProjectName:
-          Ref: ProjectName
-        HostedZone:
-          Ref: HostedZone
-        SNSTopic:
-          Ref: SNSTopic
-        ConfigurationTemplate:
-          Ref: ConfigurationTemplate
-        ApplicationVersion:
-          Ref: ApplicationVersion
-        Application:
-          Ref: Application
-        VPC:
-          Ref: VPC
-        Subnet:
-          Ref: PublicSubnetA
-        KeyName:
-          Ref: KeyName
+        ProjectName: !Ref ProjectName
+        HostedZone: !Ref HostedZone
+        SNSTopic: !Ref SNSTopic
+        ConfigurationTemplate: !Ref ConfigurationTemplate
+        ApplicationVersion: !Ref ApplicationVersion
+        Application: !Ref Application
+        VPC: !Ref VPC
+        Subnet: !Ref PublicSubnetA
+        KeyName: !Ref KeyName
       TemplateURL:
         Fn::Join:
         - ''
         - - https://
-          - Ref: S3Bucket
+          - !Ref S3Bucket
           - ".s3.amazonaws.com/"
-          - Ref: ProjectName
+          - !Ref ProjectName
           - "-cloudformation-env.json"
 Outputs:
   DevDns:
     Description: Developmnet DNS Name
-    Value:
-      Fn::GetAtt:
-      - DevEnv
-      - Outputs.DNSName
+    Value: !Fn::GetAtt [DevEnv, Outputs.DNSName]
   StageDns:
     Description: Staging DNS Name
-    Value:
-      Fn::GetAtt:
-      - StageEnv
-      - Outputs.DNSName
+    Value: !Fn::GetAtt [StageEnv, Outputs.DNSName]
   ProdDns:
     Description: Production DNS Name
-    Value:
-      Fn::GetAtt:
-      - ProdEnv
-      - Outputs.DNSName
+    Value: !Fn::GetAtt [ProdEnv, Outputs.DNSName]

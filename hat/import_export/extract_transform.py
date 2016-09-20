@@ -1,0 +1,1090 @@
+from io import StringIO
+from functools import reduce
+from typing import Dict
+import pandas
+from pandas import DataFrame, Series
+from pandas.io.json import json_normalize
+import hat.common.mdb as mdb
+from .utils import hat_id, capitalize, create_documentid
+from hat.import_export.errors import handle_import_stage, ImportStage
+
+
+# This file contains the extraction and transformation functions.
+#
+# The extraction is straight forward and will convert mdb files or json data to
+# pandas dataframes.
+#
+# The transformation uses a mapping data structure that groups related source
+# and import fields. The transformation will walk over that list and grab the
+# source values, apply optional transformations and assign these as columns to
+# to a single result DataFrame that contains all the import values.
+
+
+################################################################################
+# Historic transform helper functions
+################################################################################
+
+
+def historic_get_sex(x):
+    return {'Féminin': 'female', 'Masculin': 'male'}.get(x, None)
+
+
+def historic_get_result(x):
+    if pandas.isnull(x) or x == 99:
+        return None
+    return x == -1
+
+
+def historic_get_catt_blood_result(x):
+    if pandas.isnull(x) or x == 99:
+        return None
+    return x < 0
+
+
+def historic_get_catt_dil_result(x):
+    return {
+        1: '1/2',
+        2: '1/4',
+        3: '1/8',
+        4: '1/16',
+        5: '1/32',
+    }.get(x, None)
+
+
+def historic_get_pl_result(x):
+    return {1: 'stage1', 2: 'stage2', 3: 'unknown'}.get(x, None)
+
+
+def historic_get_pl_liquid_result(x):
+    return {
+        1: 'clear',
+        2: 'unclear',
+        3: 'hemorrhagic',
+    }.get(x, None)
+
+
+def historic_get_pl_lcr_result(x):
+    return {
+        1: '1/8',
+        2: '1/16',
+        3: '1/32',
+        4: '1/64',
+        5: '1/128',
+        6: '1/256',
+        7: '1/512',
+        8: '1/1024',
+    }.get(x, None)
+
+
+def historic_get_followup_done(main_table, related_table, field):
+    return Series(main_table.index, index=main_table.index).isin(related_table.index)
+
+
+def historic_get_secondary_effects(x):
+    if pandas.isnull(x) or x == 99:
+        return None
+    return x == 1
+
+
+def historic_get_followup_result(main_table, related_table, field):
+    groups = related_table[field].groupby(related_table.index)
+    return groups.agg(lambda series: ','.join(series.dropna().values))
+
+
+################################################################################
+# Mobile transform helper functions
+################################################################################
+
+
+def mobile_get_sex(x):
+    if pandas.isnull(x):
+        return None
+    return x.lower()
+
+
+def mobile_get_result(x):
+    if pandas.isnull(x):
+        return None
+    return x == 'positive'
+
+
+def mobile_get_age(table, field):
+    age_years = 0
+    age_months = 0
+    if 'person.age.years' in table:
+        age_years = table['person.age.years'].fillna(0).astype(float)
+    if 'person.age.months' in table:
+        age_months = table['person.age.months'].fillna(0).astype(float) / 12
+    return age_years + age_months
+
+
+################################################################################
+# Pharmacovigilance transform helper functions
+################################################################################
+
+
+def pv_get_sex(value) -> str:
+    return {'Feminin': 'female', 'Masculin': 'male'}.get(value, None)
+
+
+def pv_get_result(x):
+    if pandas.isnull(x):
+        return None
+    # 0, +, NF
+    return x == '+'
+
+
+def pv_get_catt_blood_result(x):
+    if pandas.isnull(x):
+        return None
+    if x == 'NEG':
+        return False
+    # POS+, POS++, POS+++
+    return True
+
+
+def pv_get_pl_result(x):
+    # convert to same as historic
+    return {
+        'STADE 1': 'stage1',
+        'STADE 2': 'stage2',
+        'INCONNU(non faite)': 'unknown'
+    }.get(x, None)
+
+
+def pv_get_pl_liquid_result(x):
+    # convert to same as historic
+    return {
+        'clair': 'clear',
+        'trouble': 'unclear',
+        'hémorragique': 'hemorrhagic',
+    }.get(x, None)
+
+
+def pv_get_treatment_date(main_table, related_table, field) -> Series:
+    groups = related_table[field].groupby(related_table.index)
+    return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
+
+
+def pv_get_treatment(row: pandas.Series) -> str:
+    # Is there a nicer way to do this in python?
+    if not row['Traitement Prescrit2'] or pandas.isnull(row['Traitement Prescrit2']):
+        return None
+    if not row['Traitement Prescrit specifique2'] \
+       or pandas.isnull(row['Traitement Prescrit specifique2']):
+        return row['Traitement Prescrit2']
+
+    return (
+        row['Traitement Prescrit2'] +
+        ' - ' +
+        row['Traitement Prescrit specifique2']
+    )
+
+
+def pv_has_secondary_effects(main_table, related_table, field) -> Series:
+    df_yes = related_table[related_table[field] == 'Qui']
+    return Series(main_table.index, index=main_table.index).isin(df_yes.index)
+
+
+def pv_get_followup_done(main_table, related_table, field) -> Series:
+    return Series(main_table.index, index=main_table.index).isin(related_table.index)
+
+
+def pv_get_followup_result(main_table, related_table, field) -> Series:
+    groups = related_table[field].groupby(related_table.index)
+    return groups.agg(lambda series: ','.join(series.dropna().values))
+
+
+################################################################################
+# Mapping from source fields to import fields
+#
+# In some cases this can be a one-to-one mapping, but in others we need to apply a
+# function to transform from the source value to the import value.
+#
+# Each source field can be either a two element tuple of the form:
+# `(table_name, field_name)`
+# Or a dict with a `field` property and an optional apply function.
+# The supported apply functions are:
+#
+# - `apply_to_column(x: Value) -> t`
+#   Gets called on each item in the source column and should return a single value
+#
+# - `apply_to_row(row: Series) -> t`
+#   Gets called on each row in the source table and should return a single value
+#
+# - `apply_to_table(table, field) -> Series(t)`
+#   Gets called once for the tables and should return a Series of values
+#
+# - `apply_to_table(main_table, related_table, field) -> Series(t)`
+#   If the table specified in `field` is not the main table as set in the import
+#   options, the transformation will call this variant of the function which gets
+#   called once and receives the main table and the related table as parameters.
+#   The related table is the one specified in the `field` property
+#
+MAPPING = [
+    # meta fields
+    {
+        "import": "document_date",
+        "pv": ("tblFishedeDeclaration", "Date de diagnostique"),
+        "historic": ("T_CARDS", "D_DATE"),
+        "mobile": ("main", "dateModified",)
+    },
+    {
+        "import": "entry_date",
+        "pv": None,
+        "historic": ("T_CARDS", "F_TIMESTAMP"),
+        "mobile": ("main", "dateCreated",)
+    },
+    {
+        "import": "entry_name",
+        "pv": None,
+        "historic": None,
+        "mobile": None
+    },
+    {
+        "import": "mobile_unit",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "UM"),
+            "apply_to_column": capitalize
+        },
+        "historic": {
+            "field": ("T_CARDS", "IF_UM"),
+            "apply_to_column": capitalize
+        },
+        "mobile": None
+    },
+    {
+        "import": "form_number",
+        "pv": ("tblFishedeDeclaration", "Numero du cas"),
+        "historic": ("T_CARDS", "IF_NBR"),
+        "mobile": None
+    },
+    {
+        "import": "form_month",
+        "pv": ("tblFishedeDeclaration", "Mois"),
+        "historic": ("T_CARDS", "IF_MONTH"),
+        "mobile": None
+    },
+    {
+        "import": "form_year",
+        "pv": ("tblFishedeDeclaration", "Année"),
+        "historic": ("T_CARDS", "IF_YEAR"),
+        "mobile": None
+    },
+    # person fields
+    {
+        "import": "name",
+        "pv": ("tblFishedeDeclaration", "Nom"),
+        "historic": ("T_CARDS", "IM_NAME"),
+        "mobile": ("main", "person.postname")
+    },
+    {
+        "import": "lastname",
+        "pv": ("tblFishedeDeclaration", "Postnom"),
+        "historic": ("T_CARDS", "IM_LASTNAME"),
+        "mobile": ("main", "person.surname")
+    },
+    {
+        "import": "prename",
+        "pv": ("tblFishedeDeclaration", "Prénom"),
+        "historic": ("T_CARDS", "IM_PRENAME"),
+        "mobile": ("main", "person.forename"),
+    },
+    {
+        "import": "mothers_surname",
+        "pv": ("tblFishedeDeclaration", "Nom de la mère"),
+        "historic": ("T_CARDS", "IM_MERE"),
+        "mobile": ("main", "person.mothersSurname")
+    },
+    {
+        "import": "sex",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sexe"),
+            "apply_to_column": pv_get_sex
+        },
+        "historic": {
+            "field": ("T_CARDS", "IM_SEX"),
+            "apply_to_column": historic_get_sex
+        },
+        "mobile": {
+            "field": ("main", "person.gender"),
+            "apply_to_column": mobile_get_sex
+        }
+    },
+    {
+        "import": "year_of_birth",
+        "pv": ("tblFishedeDeclaration", "Année de naissance"),
+        "historic": ("T_CARDS", "IM_BIRTHYEAR"),
+        "mobile": ("main", "person.birthYear")
+    },
+    {
+        "import": "age",
+        "pv": ("tblFishedeDeclaration", "Age"),
+        "historic": ("T_CARDS", "IM_AGE"),
+        "mobile": {
+            "field": ("main", "person.age.years"),
+            "apply_to_table": mobile_get_age
+        }
+    },
+    # location fields
+    {
+        "import": "province",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Provence"),
+            "apply_to_column": capitalize
+        },
+        "historic": {
+            "field": ("T_CARDS", "IM_AD_PROVINCE"),
+            "apply_to_column": capitalize
+        },
+        "mobile": None
+    },
+    {
+        "import": "ZS",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "ZS"),
+            "apply_to_column": capitalize
+        },
+        "historic": {
+            "field": ("T_CARDS", "IM_AD_HEALTH_ZONE"),
+            "apply_to_column": capitalize,
+        },
+        "mobile": {
+            "field": ("main", "person.location.zone"),
+            "apply_to_column": capitalize,
+        },
+    },
+    {
+        "import": "AZ",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "AS"),
+            "apply_to_column": capitalize
+        },
+        "historic": {
+            "field": ("T_CARDS", "IM_AD_HEALTH_AREA"),
+            "apply_to_column": capitalize,
+        },
+        "mobile": {
+            "field": ("main", "person.location.area"),
+            "apply_to_column": capitalize,
+        },
+    },
+    {
+        "import": "village",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Village"),
+            "apply_to_column": capitalize
+        },
+        "historic": {
+            "field": ("T_CARDS", "IM_AD_VILLAGE"),
+            "apply_to_column": capitalize,
+        },
+        "mobile": {
+            "field": ("main", "person.location.village"),
+            "apply_to_column": capitalize,
+        },
+    },
+    # treatment fields
+    {
+        "import": "treatment_center",
+        "pv": ("tblFishedeDeclaration", "Centre recommandé2"),
+        "historic": ("T_CARDS", "IM_UM_CT"),
+        "mobile": None
+    },
+    {
+        "import": "treatment_start_date",
+        "pv": {
+            "field": ("tblTraitementPrescrit", "Date début réel"),
+            "apply_to_table": pv_get_treatment_date
+        },
+        "historic": ("T_CARDS", "TP_DATE"),
+        "mobile": None
+    },
+    {
+        "import": "treatment_end_date",
+        "pv": {
+            "field": ("tblTraitementPrescrit", "Date fin"),
+            "apply_to_table": pv_get_treatment_date
+        },
+        "historic": ("T_CARDS", "TP_DATE_END"),
+        "mobile": None
+    },
+    {
+        "import": "treatment_prescribed",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Traitement Prescrit2"),
+            "apply_to_row": pv_get_treatment
+        },
+        "historic": ("T_CARDS", "TP_TREATMENT"),
+        "mobile": None
+    },
+    {
+        "import": "treatment_secondary_effects",
+        "pv": {
+            "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
+            "apply_to_table": pv_has_secondary_effects
+        },
+        "historic": {
+            "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
+            "apply_to_column": historic_get_secondary_effects
+        },
+        "mobile": None
+    },
+    {
+        "import": "treatment_result",
+        "pv": None,
+        "historic": ("T_CARDS", "TP_RESULT"),
+        "mobile": None
+    },
+    # test fields
+    {
+        "import": "test_rdt",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "D_TDR"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": {
+            "field": ("main", "participant.screenings.rdt.result"),
+            "apply_to_column": mobile_get_result
+        },
+    },
+    {
+        "import": "test_catt",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_CATT"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": {
+            "field": ("main", "participant.screenings.catt.result"),
+            "apply_to_column": mobile_get_result
+        },
+    },
+    {
+        "import": "test_maect",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sang mAECT"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_MAECT"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": {
+            "field": ("main", "participant.screenings.maect.result"),
+            "apply_to_column": mobile_get_result
+        },
+    },
+    {
+        "import": "test_ge",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sang GE"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_GE"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": {
+            "field": ("main", "participant.screenings.ge.result"),
+            "apply_to_column": mobile_get_result
+        }
+    },
+    {
+        "import": "test_pg",
+        "pv": None,
+        "historic": None,
+        "mobile": {
+            "field": ("main", "participant.screenings.pg.result"),
+            "apply_to_column": mobile_get_result
+        }
+    },
+    {
+        "import": "test_ctcwoo",
+        "pv": None,
+        "historic": None,
+        "mobile": {
+            "field": ("main", "participant.screenings.ctcwoo.result"),
+            "apply_to_column": mobile_get_result
+        }
+    },
+    {
+        "import": "test_pl",
+        "pv": None,
+        "historic": None,
+        "mobile": {
+            "field": ("main", "participant.screenings.pl.result"),
+            "apply_to_column": mobile_get_result
+        }
+    },
+    {
+        "import": "test_catt_total_blood",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "CATT sang total"),
+            "apply_to_column": pv_get_catt_blood_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
+            "apply_to_column": historic_get_catt_blood_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_catt_dilution",
+        "pv": ("tblFishedeDeclaration", "CATT dilution"),
+        "historic": {
+            "field": ("T_CARDS", "D_CATT_DILUTION"),
+            "apply_to_column": historic_get_catt_dil_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_lymph_node_puncture",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Suc ganglionnaire"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_sf",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sang SF"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_SF"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_woo",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sang W00"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_WOO"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_maec",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_MAEC"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_maect_bc",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_MAECT_BC"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_lcr",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "LCR"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_LCR"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_lcr_fr",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_LCR_FR"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_lcr_scm",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_LCR_SCM"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_dil",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_DIL"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_parasit",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_PARASIT"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_sternal_puncture",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_ifat",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_IFAT"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_clinical_sickness",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_other",
+        "pv": None,
+        "historic": {
+            "field": ("T_CARDS", "MD_OTHER"),
+            "apply_to_column": historic_get_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_pl_liquid",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Aspect LCR"),
+            "apply_to_column": pv_get_pl_liquid_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "DS_PL_LIQUID"),
+            "apply_to_column": historic_get_pl_liquid_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_pl_trypanosome",
+        "pv": ("tblFishedeDeclaration", "Présence trypanosomes"),
+        "historic": ("T_CARDS", "DS_PL_TRYPANOSOME"),
+        "mobile": None
+    },
+    {
+        "import": "test_pl_gb_mm3",
+        "pv": ("tblFishedeDeclaration", "GB/mm3"),
+        "historic": ("T_CARDS", "DS_PL_GB_MM3"),
+        "mobile": None
+    },
+    {
+        "import": "test_pl_albumine",
+        "pv": None,
+        "historic": ("T_CARDS", "DS_PL_ALBUMINE"),
+        "mobile": None
+    },
+    {
+        "import": "test_pl_lcr",
+        "pv": ("tblFishedeDeclaration", "Latex LCR"),
+        "historic": {
+            "field": ("T_CARDS", "DS_PL_LCR"),
+            "apply_to_column": historic_get_pl_lcr_result
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_pl_comments",
+        "pv": None,
+        "historic": ("T_CARDS", "DS_PL_COMMENTS"),
+        "mobile": None
+    },
+    {
+        "import": "test_pl_result",
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Stade"),
+            "apply_to_column": pv_get_pl_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "DS_PL_RESULT"),
+            "apply_to_column": historic_get_pl_result
+        },
+        "mobile": None
+    },
+    # followup fields
+    {
+        "import": "followup_done",
+        "pv": {
+            "field": ("tblSuivi", "PersID"),
+            "apply_to_column_to_tables": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "F_ID"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_pg",
+        "pv": {
+            "field": ("tblSuivi", "PG"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_PG"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_sf",
+        "pv": {
+            "field": ("tblSuivi", "SF"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_SF"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_ge",
+        "pv": {
+            "field": ("tblSuivi", "GE"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_GE"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_woo",
+        "pv": {
+            "field": ("tblSuivi", "Woo"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_WOO"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_maect",
+        "pv": {
+            "field": ("tblSuivi", "mAECT"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_MAECT"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_woo_maect",
+        "pv": None,
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_pl",
+        "pv": None,
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_PL"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_pl_trypanosome",
+        "pv": {
+            "field": ("tblSuivi", "PL Tryp"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_pl_gb",
+        "pv": {
+            "field": ("tblSuivi", "PL GB"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_PL_GB"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+    {
+        "import": "test_followup_decision",
+        "pv": {
+            "field": ("tblSuivi", "Décision médicale"),
+            "apply_to_table": pv_get_followup_done
+        },
+        "historic": {
+            "field": ("T_FOLLOWUPS", "S_DECISION"),
+            "apply_to_table": historic_get_followup_done
+        },
+        "mobile": None
+    },
+]
+
+
+def extract_mdb(filename: str, import_options: Dict) -> Dict[str, DataFrame]:
+    result = {}
+    for table_name, options in import_options.items():
+        csv = mdb.get_table_csv(filename, table_name)
+        kwargs = {'sep': ';', **options}
+        df = pandas.read_csv(StringIO(csv), **kwargs)
+        if "parse_dates" in options:
+            # Add utc timezone to dates. The dates in the data are naive and have no timezone.
+            # The datebases requires timezones to be set on dates.
+            for date_field in options["parse_dates"]:
+                df[date_field] = df[date_field].dt.tz_localize('UTC')
+        result[table_name] = df
+    return result
+
+
+def extract_backup(filename: str, import_options=None) -> Dict[str, DataFrame]:
+    import json
+    from django.conf import settings
+    from hat.common.utils import run_cmd
+    r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
+    data = json.loads(r)
+    # keep cases only for this import,
+    # (might be locations in the data as well)
+    data = [doc for doc in data if 'type' in doc and doc['type'] == 'participant']
+    df = json_normalize(data)
+
+    # TODO: We upgrade some fields manually here until we have the versioning module
+    #       ready that is supposed to provide upgrade functions for mobile data.
+    if 'person.mothersForename' in df:
+        if 'person.mothersSurname' not in df:
+            df['person.mothersSurname'] = df['person.mothersForename']
+        else:
+            df['person.mothersSurname'].fillna(df['person.mothersForename'], inplace=True)
+    if 'person.middlename' in df:
+        if 'person.postname' not in df:
+            df['person.postname'] = df['person.middlename']
+        else:
+            df['person.postname'].fillna(df['person.middlename'], inplace=True)
+
+    # the transformation supports multiple tables -- here we only have one that we call 'main'
+    return {"main": df}
+
+
+def historic_post_process(transformed: DataFrame, orgname: str) -> DataFrame:
+    parts = orgname.split('-')
+    parts.pop()
+    entry_name = ' '.join(parts)
+    transformed['entry_name'] = entry_name
+    return transformed
+
+
+################################################################################
+# Configuration for importing from different sources
+#
+# `type` - The value that will be set as `source` on the model
+# `mapping_field` - the field in the mapping
+# `extract` - the function used for extracting the data from the file
+# `main_table` - name of the table with the cases/persons
+# `import_options` - Dict of tables to extract from the files.
+#                    In the case of mdb files, those are options passed to pandas.
+# `post_process` - Optional function to do additional transformations after the
+#                  mapping has been applied.
+#
+IMPORT_CONFIG = {
+    "historic": {
+        "type": "historic",
+        "mapping_field": "historic",
+        "extract": extract_mdb,
+        "main_table": "T_CARDS",
+        "import_options": {
+            "T_CARDS": {
+                "index_col": 0,
+                "parse_dates": ['F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
+                "infer_datetime_format": True,
+            },
+            "T_FOLLOWUPS": {
+                "index_col": 1,
+                "infer_datetime_format": True,
+            }
+        },
+        "post_process": historic_post_process
+    },
+    "pv": {
+        "type": "pv",
+        "mapping_field": "pv",
+        "extract": extract_mdb,
+        "main_table": "tblFishedeDeclaration",
+        "import_options": {
+            "tblFishedeDeclaration": {
+                "index_col": 0,
+                "parse_dates": ['Date de diagnostique'],
+                "dtype": {
+                    'Années': 'str',           # nan, year(2006) or year range(2006-2007)
+                    'Latex LCR': 'str',        # nan, string('1/16')
+                    'Qualification de la personne2': 'str',  # can be nan or string
+                    'UM/CT_FchDecede': 'str',  # nan or string
+                    'Date du décès': 'str',    # nan or '02/01/09 00:00:00' datetime
+                    'Autre cause:': 'str',     # nan or string
+                    'Autres signes': 'str',    # nan or string
+                    'Autres signes1': 'str',   # nan or string
+                    'Autres signes2': 'str',   # nan or string
+                    'Autres signes3': 'str',   # nan or string
+                    "Infection du site d'injection": 'str',   # nan or string
+                },
+                "infer_datetime_format": True,
+            },
+            "tblTraitementPrescrit": {
+                "index_col": 1,
+                "parse_dates": ["Date début réel", "Date fin"],
+                "dtype": {
+                    "DDR": 'str',                   # nan and datetime
+                    "Fréq pouls": 'str',            # numbers and dates
+                    "Température": 'str',           # numbers, strings like "normal", nan
+                    "Tension artériel": "str",      # fractions(9/8) and nan
+                    "Fréq respiratoire": 'str',     # numbers, dates, strings, "NF"
+                    "Traitement Prescrit": "str",   # strings and nan
+                    "Traitement Prescrit specifique": 'str',  # strings and nan
+                    "Date de prescription": 'str',  # datetimes and nan
+                    "Centre recommandé": 'str',     # nan and strings
+                },
+                "infer_datetime_format": True,
+            },
+            "tblSuivi": {
+                "index_col": 1
+            }
+        }
+    },
+    "backup": {
+        "type": "mobile_backup",
+        "mapping_field": "mobile",
+        "extract": extract_backup,
+        "main_table": "main",
+    }
+}
+
+
+def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFrame]) -> DataFrame:
+    '''
+    Transforms the data in the source tables to it's import representation.
+    It will loop over every field specified in the `MAPPING` and convert from
+    the source field to the import field.
+    '''
+    result = DataFrame(index=tables[main_table_name].index)
+
+    for field_mapping in MAPPING:
+        if mapping_field not in field_mapping:
+            # This source cannot map to the field
+            continue
+
+        target_field = field_mapping['import']
+        source_field = field_mapping[mapping_field]
+        try:
+            if isinstance(source_field, tuple):
+                # source field is the field name, just transfer the value
+                (table_name, field) = source_field
+                if table_name != main_table_name:
+                    raise Exception('Use apply_to_table for foreign fields: {}#{}'.format(
+                        table_name, field))
+                result[target_field] = tables[table_name][field]
+
+            elif isinstance(source_field, dict):
+                # source field has options and potentially functions to apply
+                if "field" not in source_field:
+                    raise Exception('Specify a field')
+                (table_name, field) = source_field['field']
+
+                # Skip fields which do not exist.
+                if field not in tables[table_name]:
+                    continue
+
+                # Fields in different tables than the main one need to define `apply_to_table`
+                # Because we cannot automatically handle relations.
+                if table_name != main_table_name and "apply_to_table" not in source_field:
+                    raise Exception('Use apply_to_table for foreign fields: {}#{}'.format(
+                        table_name, field))
+
+                table = tables[table_name]
+
+                if "apply_to_column" in source_field:
+                    r = table[field].apply(source_field['apply_to_column'])
+                    result[target_field] = r
+
+                elif "apply_to_row" in source_field:
+                    r = table.apply(source_field['apply_to_row'], axis=1)
+                    result[target_field] = r
+
+                elif "apply_to_table" in source_field:
+                    if table_name == main_table_name:
+                        r = source_field['apply_to_table'](table, field)
+                    else:
+                        # source field is in a related table
+                        main_table = tables[main_table_name]
+                        r = source_field['apply_to_table'](main_table, table, field)
+                    result[target_field] = r
+
+                elif "field" in source_field:
+                    result[target_field] = tables[table_name][field]
+
+                else:
+                    raise Exception("Unable to map: " + field + ' in table: ' + table_name)
+
+        except Exception as e:
+            raise Exception('Error mapping to: ' + target_field + ' from: ' + mapping_field) from e
+    return result
+
+
+@handle_import_stage(ImportStage.extract)
+def extract_file(config: Dict, filename: str) -> Dict[str, DataFrame]:
+    return config['extract'](filename, config.get('import_options', None))
+
+
+@handle_import_stage(ImportStage.transform)
+def transform_source(config: Dict, extracted: Dict[str, DataFrame], orgname: str):
+    transformed = transform(config['mapping_field'], config['main_table'], extracted)
+
+    # add common fields
+    transformed['source'] = config['type']
+    transformed['hat_id'] = transformed.apply(hat_id, axis=1)
+    transformed['document_id'] = transformed.apply(create_documentid, axis=1)
+
+    if 'post_process' in config:
+        transformed = config['post_process'](transformed, orgname)
+
+    return transformed

@@ -51,7 +51,11 @@
       "date_joined": "2016-09-14T10:39:43Z",
       "groups": [],
       "user_permissions": [
-        22
+        [
+          "import",
+          "cases",
+          "case"
+        ]
       ]
     }
   },
@@ -71,8 +75,16 @@
       "date_joined": "2016-09-14T10:40:51Z",
       "groups": [],
       "user_permissions": [
-        23,
-        24
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ]
       ]
     }
   },
@@ -92,7 +104,11 @@
       "date_joined": "2016-09-14T10:41:25Z",
       "groups": [],
       "user_permissions": [
-        23
+        [
+          "export",
+          "cases",
+          "case"
+        ]
       ]
     }
   }

@@ -1,0 +1,554 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: sense-hat
+Parameters:
+  ProjectName:
+    Description: name of deployed project
+    Type: String
+    MinLength: 3
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the Elastic
+      Beanstalk hosts
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  HostedZone:
+    Description: Hosted zone name
+    Type: String
+    MinLength: 3
+  S3Bucket:
+    Description: S3 bucket with initial configuration zip file
+    Type: String
+    MinLength: 3
+  S3ZipFile:
+    Description: Zip file stored in S3Bucket with sample EB application to be deployed
+    Type: String
+    AllowedPattern: ".*\\.zip"
+    ConstraintDescription: File .zip expected
+  RenameResourcesLambda:
+    Description: ARN of Lambda function to rename resources
+    Type: String
+    AllowedPattern: arn:aws:lambda:.*
+    ConstraintDescription: Expected valid Lambda ARN.
+  SNSTopic:
+    Description: ARN of SNS Topic for alarms
+    Type: String
+    AllowedPattern: arn:aws:sns:.*
+    ConstraintDescription: Expected valid SNS ARN.
+  SSLCertARN:
+    Description: ARN of SSL certificate to be applied to ELB
+    Type: String
+    AllowedPattern: arn:aws:.*
+    ConstraintDescription: Expected valid ARN.
+  ImageId:
+    Description: Image ID to be used by Beanstalk
+    Type: AWS::EC2::Image::Id
+Mappings:
+  SubnetConfig:
+    VPC:
+      CIDR: 172.30.0.0/16
+    PublicSubnetA:
+      CIDR: 172.30.1.0/24
+    PublicSubnetB:
+      CIDR: 172.30.2.0/24
+    PublicSubnetC:
+      CIDR: 172.30.3.0/24
+  Region2Principal:
+    us-east-1:
+      EC2Principal: ec2.amazonaws.com
+    us-west-2:
+      EC2Principal: ec2.amazonaws.com
+    us-west-1:
+      EC2Principal: ec2.amazonaws.com
+    eu-west-1:
+      EC2Principal: ec2.amazonaws.com
+    ap-southeast-1:
+      EC2Principal: ec2.amazonaws.com
+    ap-northeast-1:
+      EC2Principal: ec2.amazonaws.com
+    ap-northeast-2:
+      EC2Principal: ec2.amazonaws.com
+    ap-southeast-2:
+      EC2Principal: ec2.amazonaws.com
+    sa-east-1:
+      EC2Principal: ec2.amazonaws.com
+    cn-north-1:
+      EC2Principal: ec2.amazonaws.com.cn
+    eu-central-1:
+      EC2Principal: ec2.amazonaws.com
+Resources:
+  RenameResources:
+    Type: Custom::RenameResources
+    DependsOn:
+    - VPC
+    - PublicSubnetA
+    - PublicSubnetB
+    - PublicSubnetC
+    - InternetGateway
+    - PublicRouteTable
+    - PublicNetworkAcl
+    Properties:
+      ServiceToken:
+        Ref: RenameResourcesLambda
+      Resources:
+      - Ref: VPC
+      - Fn::GetAtt:
+        - VPC
+        - DefaultSecurityGroup
+      - Fn::GetAtt:
+        - VPC
+        - DefaultNetworkAcl
+      - Ref: PublicSubnetA
+      - Ref: PublicSubnetB
+      - Ref: PublicSubnetC
+      - Ref: InternetGateway
+      - Ref: PublicRouteTable
+      - Ref: PublicNetworkAcl
+      Name:
+        Ref: ProjectName
+  ECR:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName:
+        Ref: ProjectName
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - SubnetConfig
+        - VPC
+        - CIDR
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Fn::FindInMap:
+        - SubnetConfig
+        - PublicSubnetA
+        - CIDR
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+      AvailabilityZone:
+        Fn::Select:
+        - '0'
+        - Fn::GetAZs: ''
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Fn::FindInMap:
+        - SubnetConfig
+        - PublicSubnetB
+        - CIDR
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+      AvailabilityZone:
+        Fn::Select:
+        - '1'
+        - Fn::GetAZs: ''
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Fn::FindInMap:
+        - SubnetConfig
+        - PublicSubnetC
+        - CIDR
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+      AvailabilityZone:
+        Fn::Select:
+        - '2'
+        - Fn::GetAZs: ''
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+  GatewayToInternet:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetA
+      RouteTableId:
+        Ref: PublicRouteTable
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetB
+      RouteTableId:
+        Ref: PublicRouteTable
+  PublicSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetC
+      RouteTableId:
+        Ref: PublicRouteTable
+  PublicNetworkAcl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Application
+        Value: !Ref AWS::StackId
+      - Key: Network
+        Value: Public
+  InboundAllPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+      RuleNumber: '110'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '0'
+        To: '65535'
+  OutboundAllPublicNetworkAclEntry:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+      RuleNumber: '110'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '0'
+        To: '65535'
+  PublicSubnetANetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetA
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+  PublicSubnetBNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetB
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+  PublicSubnetCNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetC
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+  WebServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - Fn::FindInMap:
+              - Region2Principal
+              - Ref: AWS::Region
+              - EC2Principal
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+  WebServerRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: WebServerRole
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          NotAction: iam:*
+          Resource: "*"
+        - Effect: Allow
+          Action:
+          - ecs:StartTask
+          - ecs:StopTask
+          - ecs:RegisterContainerInstance
+          - ecs:DeregisterContainerInstance
+          - ecs:DescribeContainerInstances
+          - ecs:DiscoverPollEndpoint
+          - ecs:Submit*
+          - ecs:Poll
+          - ecs:CreateCluster
+          - ecs:StartTelemetrySession
+          - ecr:GetAuthorizationToken
+          - ecr:BatchCheckLayerAvailability
+          - ecr:GetDownloadUrlForLayer
+          - ecr:BatchGetImage
+          - logs:CreateLogStream
+          - logs:CreateLogGroup
+          - logs:PutLogEvents
+          Resource:
+          - "*"
+        - Effect: Allow
+          Action: s3:PutObject
+          Resource: arn:aws:s3:::elasticbeanstalk-*/resources/environments/logs/*
+        - Effect: Allow
+          Action: s3:ListAllMyBuckets
+          Resource: arn:aws:s3:::*
+        - Effect: Allow
+          Action: s3:*
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+      Roles:
+      - Ref: WebServerRole
+  WebServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: WebServerRole
+  Application:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      Description:
+        Ref: ProjectName
+      ApplicationName:
+        Ref: ProjectName
+  ApplicationVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      Description: Version 1.0
+      ApplicationName:
+        Ref: Application
+      SourceBundle:
+        S3Bucket:
+          Ref: S3Bucket
+        S3Key:
+          Ref: S3ZipFile
+  ConfigurationTemplate:
+    Type: AWS::ElasticBeanstalk::ConfigurationTemplate
+    Properties:
+      ApplicationName:
+        Ref: Application
+      Description: Default Configuration
+      SolutionStackName: 64bit Amazon Linux 2016.03 v2.1.6 running Multi-container
+        Docker 1.11.2 (Generic)
+      OptionSettings:
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: EC2KeyName
+        Value: !Ref KeyName
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: IamInstanceProfile
+        Value: !Ref WebServerInstanceProfile
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: ImageId
+        Value: !Ref ImageId
+      - Namespace: aws:ec2:vpc
+        OptionName: VPCId
+        Value: !Ref VPC
+      - Namespace: aws:ec2:vpc
+        OptionName: Subnets
+        Value:
+          Fn::Join:
+          - ","
+          - - Ref: PublicSubnetA
+            - Ref: PublicSubnetB
+            - Ref: PublicSubnetC
+      - Namespace: aws:ec2:vpc
+        OptionName: ELBSubnets
+        Value:
+          Fn::Join:
+          - ","
+          - - Ref: PublicSubnetA
+            - Ref: PublicSubnetB
+            - Ref: PublicSubnetC
+      - Namespace: aws:ec2:vpc
+        OptionName: AssociatePublicIpAddress
+        Value: 'true'
+      - Namespace: aws:elb:listener
+        OptionName: ListenerProtocol
+        Value: HTTP
+      - Namespace: aws:elb:listener:443
+        OptionName: SSLCertificateId
+        Value: !Ref SSLCertARN
+      - Namespace: aws:elb:listener:443
+        OptionName: InstancePort
+        Value: 80
+      - Namespace: aws:elb:listener:443
+        OptionName: ListenerProtocol
+        Value: HTTPS
+  DevEnv:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+    - VPC
+    - ApplicationVersion
+    - ConfigurationTemplate
+    Properties:
+      Parameters:
+        Environment: dev
+        ProjectName:
+          Ref: ProjectName
+        HostedZone:
+          Ref: HostedZone
+        SNSTopic:
+          Ref: SNSTopic
+        ConfigurationTemplate:
+          Ref: ConfigurationTemplate
+        ApplicationVersion:
+          Ref: ApplicationVersion
+        Application:
+          Ref: Application
+        VPC:
+          Ref: VPC
+        Subnet:
+          Ref: PublicSubnetA
+        KeyName:
+          Ref: KeyName
+      TemplateURL:
+        Fn::Join:
+        - ''
+        - - https://
+          - Ref: S3Bucket
+          - ".s3.amazonaws.com/"
+          - Ref: ProjectName
+          - "-cloudformation-env.json"
+  StageEnv:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+    - VPC
+    - ApplicationVersion
+    - ConfigurationTemplate
+    Properties:
+      Parameters:
+        Environment: staging
+        ProjectName:
+          Ref: ProjectName
+        HostedZone:
+          Ref: HostedZone
+        SNSTopic:
+          Ref: SNSTopic
+        ConfigurationTemplate:
+          Ref: ConfigurationTemplate
+        ApplicationVersion:
+          Ref: ApplicationVersion
+        Application:
+          Ref: Application
+        VPC:
+          Ref: VPC
+        Subnet:
+          Ref: PublicSubnetA
+        KeyName:
+          Ref: KeyName
+      TemplateURL:
+        Fn::Join:
+        - ''
+        - - https://
+          - Ref: S3Bucket
+          - ".s3.amazonaws.com/"
+          - Ref: ProjectName
+          - "-cloudformation-env.json"
+  ProdEnv:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+    - VPC
+    - ApplicationVersion
+    - ConfigurationTemplate
+    Properties:
+      Parameters:
+        Environment: prod
+        ProjectName:
+          Ref: ProjectName
+        HostedZone:
+          Ref: HostedZone
+        SNSTopic:
+          Ref: SNSTopic
+        ConfigurationTemplate:
+          Ref: ConfigurationTemplate
+        ApplicationVersion:
+          Ref: ApplicationVersion
+        Application:
+          Ref: Application
+        VPC:
+          Ref: VPC
+        Subnet:
+          Ref: PublicSubnetA
+        KeyName:
+          Ref: KeyName
+      TemplateURL:
+        Fn::Join:
+        - ''
+        - - https://
+          - Ref: S3Bucket
+          - ".s3.amazonaws.com/"
+          - Ref: ProjectName
+          - "-cloudformation-env.json"
+Outputs:
+  DevDns:
+    Description: Developmnet DNS Name
+    Value:
+      Fn::GetAtt:
+      - DevEnv
+      - Outputs.DNSName
+  StageDns:
+    Description: Staging DNS Name
+    Value:
+      Fn::GetAtt:
+      - StageEnv
+      - Outputs.DNSName
+  ProdDns:
+    Description: Production DNS Name
+    Value:
+      Fn::GetAtt:
+      - ProdEnv
+      - Outputs.DNSName

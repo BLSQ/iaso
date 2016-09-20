@@ -38,13 +38,13 @@ then
 
   case "$BRANCH" in
     "master")
-      eb deploy hat-historical-prod -l $TAG
+      eb deploy sense-hat-prod -l $TAG
     ;;
     "staging")
-      eb deploy hat-historical-staging -l $TAG
+      eb deploy sense-hat-staging -l $TAG
     ;;
     "development")
-      eb deploy hat-historical-dev -l $TAG
+      eb deploy sense-hat-dev -l $TAG
     ;;
     *)
     echo "cannot find environment for $BRANCH"

@@ -81,7 +81,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'webpack_loader',
     'hat.rq',
     'hat.couchdb',
     'hat.cases',
@@ -90,6 +89,8 @@ INSTALLED_APPS = [
     'hat.playground',
     'hat.maintenance',
     'hat.api'
+    'hat.integration_tests',
+    'webpack_loader',
 ]
 
 MIDDLEWARE = [

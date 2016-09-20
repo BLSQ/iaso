@@ -39,6 +39,8 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
+      SAUCE_USERNAME: "${SAUCE_USERNAME}"
+      SAUCE_ACCESS_KEY: "${SAUCE_ACCESS_KEY}"
       DOCKER_HOST: "${DOCKER_HOST}"
     command: start_dev
 

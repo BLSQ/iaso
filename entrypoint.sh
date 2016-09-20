@@ -24,8 +24,16 @@ case "$1" in
     # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
-    ./manage.py test
+    ./manage.py test --exclude-tag selenium
     npm run mocha
+  ;;
+  "test_integration" )
+    export TESTING=true
+    ./scripts/wait_for_dbs.sh
+    ./manage.py setupcouchdb
+    # create static files
+    npm run webpack
+    ./manage.py test --tag=selenium
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default

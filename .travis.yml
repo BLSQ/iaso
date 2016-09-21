@@ -28,8 +28,7 @@ before_install:
 install:
   - pip install awscli awsebcli
 script:
-  - docker-compose run web test
-  - docker-compose run -p 8081:8081 web test_integration
+  - "docker-compose run web test && docker-compose run -p 8081:8081 web test_integration"
 
 after_success:
   - "./build_scripts/tfx_upload.sh"

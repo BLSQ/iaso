@@ -40,6 +40,12 @@ services:
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
       DOCKER_HOST: "${DOCKER_HOST}"
+      SAUCE_USERNAME: "${SAUCE_USERNAME}"
+      SAUCE_ACCESS_KEY: "${SAUCE_ACCESS_KEY}"
+      # This is needed to connect to the tunnel on Saucelabs
+      TRAVIS_JOB_NUMBER: "${TRAVIS_JOB_NUMBER}"
+      # This is needed to group our build on Saucelabs
+      TRAVIS_BUILD_NUMBER: "${TRAVIS_BUILD_NUMBER}"
     command: start_dev
 
   # the webpack dev server

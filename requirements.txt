@@ -13,3 +13,5 @@ django-webpack-loader==0.3.3
 djangorestframework==3.4.6
 django-filter==0.14.0
 jsonschema==2.5.1
+selenium==2.45.0
+sauceclient==0.2.1

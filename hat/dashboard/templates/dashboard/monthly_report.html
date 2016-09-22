@@ -1,0 +1,40 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block content %}
+  <div class="header">
+    <h2>{% trans "Monthly Report" %}</h2>
+  </div>
+
+  <div class="content">
+    <div id='app'></div>
+  </div>
+
+  <script>
+  {% comment %}
+    The idea is that this will be filled in with data
+    from our django models
+  {% endcomment %}
+    window.appConfig = {
+      dates: [
+        '2016-04',
+        '2016-05',
+        '2016-06'
+      ],
+      sources: [
+        'all',
+        'pv',
+        'mobilebackup',
+        'historic'
+      ],
+      locations: [
+        'Location 1',
+        'Location 2',
+        'Location 3'
+      ]
+    }
+  </script>
+  {% render_bundle 'common' %}
+  {% render_bundle 'monthly_report' %}
+{% endblock %}

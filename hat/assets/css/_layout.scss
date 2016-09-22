@@ -1,6 +1,3 @@
-.layout {
-  display: flex;
-}
 
 .content {
   padding: $padding-unit;
@@ -8,6 +5,7 @@
 
 .container--main {
   flex: 1;
+  padding-left: $navigation-width;
 }
 
 /* margin classes */

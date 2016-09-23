@@ -32,7 +32,7 @@ export const DataTable = ({ data: { total, screening, confirmation, meta } }) =>
   var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
 
   return (
-    <div>
+    <div data-qa='monthly-report-data-loaded'>
       <section>
         <h3>Campaign</h3>
         <ul>

@@ -33,7 +33,7 @@ case "$1" in
     ./manage.py setupcouchdb
     # create static files
     npm run webpack
-    ./manage.py test --tag=selenium
+    ./manage.py test --tag=selenium --failfast
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default

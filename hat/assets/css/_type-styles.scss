@@ -1,6 +1,6 @@
 body {
   font-family: $body-font-family;
-  color: $dark-blue;
+  color: $text-color;
 }
 
 a {
@@ -41,4 +41,17 @@ h4, h5, h6 {
 
 .text--success {
   color: $green;
+}
+
+@mixin text--standard { /* useful for resetting text in form elements */
+  font-family: $body-font-family;
+  font-size: $font-size-xs;
+  color: $text-color;
+}
+
+@mixin text--label {
+  font-size: $font-size-xs;
+  color: $mid-gray;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
 }

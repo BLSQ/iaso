@@ -1,4 +1,3 @@
-
 .content {
   padding: $padding-unit;
 }
@@ -11,7 +10,7 @@
 /* margin classes */
 $directions: left right top bottom;
 @each $direction in $directions {
-  .block__margin-#{$direction}-none {
+  .block--margin-#{$direction}-none {
     margin-#{$direction}: 0;
   }
   .block--margin-#{$direction}--nano {

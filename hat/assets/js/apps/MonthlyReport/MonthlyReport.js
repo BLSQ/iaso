@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { push } from 'react-router-redux'
+import { FormattedMessage } from 'react-intl'
 
 function createUrl ({date, source, location}) {
   let url = '/charts'
@@ -57,11 +58,15 @@ export default class MonthlyReport extends Component {
           </select>
           <label htmlFor='location'>Location:</label>
           <select disabled={loading} name='location' value={location} onChange={this.locationHandler}>
-            <option key='all' value=''>All</option>
+            <option key='all' value=''>
+              <FormattedMessage
+                id='monthlyreport.labels.national'
+                defaultMessage='National' />
+              </option>
             {locations.map((loc) => {
-              var val = `${loc.ZS}-${loc.AZ}`
+              var val = `${loc.ZS}`
               return (
-                <option key={val} value={JSON.stringify(loc)}>
+                <option key={val} value={val}>
                   {val}
                 </option>
               )

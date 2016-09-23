@@ -19,7 +19,7 @@ export default function monthlyReportApp (appConfig, element, baseUrl) {
   {
     dates: ['2016-04', '2016-05', '2016-06'],
     sources: ['all', 'pv', 'mobilebackup', 'historic'],
-    locations: [{ 'ZS': 'Mosango', 'AZ': 'Muwanda-koso'}]
+    locations: [{ 'ZS': 'Mosango' }]
   }
   */
   const defaultRoute = (config) => {

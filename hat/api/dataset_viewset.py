@@ -1,5 +1,5 @@
 from functools import wraps
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Min, Max
 from django.db.models.expressions import RawSQL
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -26,10 +26,17 @@ Q_screening = Q()
 for field in SCREENING_FIELDS:
     Q_screening |= Q(**{field + '__isnull': False})
 
+Q_screening_positive = Q()
+for field in SCREENING_FIELDS:
+    Q_screening_positive |= Q(**{field: True})
+
 Q_confirmation = Q()
 for field in CONFIRMATION_FIELDS:
     Q_confirmation |= Q(**{field + '__isnull': False})
 
+Q_confirmation_positive = Q()
+for field in CONFIRMATION_FIELDS:
+    Q_confirmation_positive |= Q(**{field: True})
 
 datasets = {}
 
@@ -53,22 +60,37 @@ def dataset(params_schema=None):
 
 @dataset()
 def count_total(params):
-    return {'value': Case.objects.all().count()}
+    cases = Case.objects.all()
+    tested = cases.filter(Q_screening | Q_confirmation)
+    return {'registered': cases.count(),
+            'tested': tested.count(),
+            'male': tested.filter(sex='male').count(),
+            'female': tested.filter(sex='female').count()}
 
 
 @dataset()
 def count_screened(params):
-    return {'value': Case.objects.filter(Q_screening).count()}
+    cases = Case.objects.filter(Q_screening)
+    return {'total': cases.count(),
+            'positive': cases.filter(Q_screening_positive).count(),
+            'negative': cases.exclude(Q_screening_positive).count()}
 
 
 @dataset()
 def count_confirmed(params):
-    return {'value': Case.objects.filter(Q_confirmation).count()}
+    cases = Case.objects.filter(Q_confirmation)
+    return {'total': cases.count(),
+            'positive': cases.filter(Q_confirmation_positive).count(),
+            'negative': cases.exclude(Q_confirmation_positive).count()}
 
 
 @dataset()
-def count_tested(params):
-    return {'value': Case.objects.filter(Q_screening | Q_confirmation).count()}
+def campaign_meta(params):
+    cases = Case.objects.all()
+    return {'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
+            'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
+            'az_visited': cases.values('AZ').distinct().count(),
+            'villages_visited': cases.values('village').distinct().count()}
 
 
 @dataset(params_schema={

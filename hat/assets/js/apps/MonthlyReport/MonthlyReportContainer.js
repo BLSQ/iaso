@@ -14,8 +14,9 @@ import { LOAD, LOAD_SUCCESS, LOAD_ERROR } from '../../redux/load'
 // the order is used in the success handler below
 const urls = [
   '/api/datasets/count_total/',
-  '/api/datasets/count_tested/',
-  '/api/datasets/count_screened/'
+  '/api/datasets/count_screened/',
+  '/api/datasets/count_confirmed/',
+  '/api/datasets/campaign_meta/'
 ]
 
 // Assume all the URls are gonna use the same filters
@@ -61,13 +62,13 @@ export class MonthlyReportContainer extends Component {
 
     this._currentFilters = JSON.stringify(params)
     Promise.all(urls.map(fetchAndParse, params))
-      .then(([total, tested, screened]) => {
+      .then(([total, screening, confirmation, meta]) => {
         // Collect all responses in one action
         dispatch({
           type: LOAD_SUCCESS,
           // destructure responses array into object here,
           // since its dependent on URL order above
-          payload: { total, tested, screened }
+          payload: { total, screening, confirmation, meta }
         })
       })
       .catch((err) => {

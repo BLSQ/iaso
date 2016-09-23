@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { push } from 'react-router-redux'
-import { FormattedMessage } from 'react-intl'
+import { FormattedMessage, FormattedDate } from 'react-intl'
 
 function createUrl ({date, source, location}) {
   let url = '/charts'
@@ -17,6 +17,99 @@ function createUrl ({date, source, location}) {
   }
 
   return url
+}
+
+const Row = ({ className, label, value }) => {
+  return (
+    <li className={className}>
+      <div>{label}</div>
+      <div>{value}</div>
+    </li>
+  )
+}
+
+export const DataTable = ({ data: { total, screening, confirmation, meta } }) => {
+  var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
+
+  return (
+    <div>
+      <section>
+        <h3>Campaign</h3>
+        <ul>
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.startdate' defaultMessage='First Entry Date' />}
+            value={<FormattedDate value={new Date(meta.startdate)} />} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.enddate' defaultMessage='Last Entry Date' />}
+            value={<FormattedDate value={new Date(meta.enddate)} />} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aire de Santé (AS) Visited' />}
+            value={meta.az_visited} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.villages_visited' defaultMessage='Villages Visited' />}
+            value={meta.villages_visited} />
+        </ul>
+      </section>
+
+      <section>
+        <h3>Tests</h3>
+        <ul>
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.tested' defaultMessage='Participants With Tests' />}
+            value={total.tested} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.not_tested' defaultMessage='Participants With No Tests' />}
+            value={total.registered - total.tested} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.female' defaultMessage='Tested by Gender (female)' />}
+            value={total.female} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.male' defaultMessage='Tested by Gender (male)' />}
+            value={total.male} />
+        </ul>
+      </section>
+
+      <section>
+        <h3>Screening</h3>
+        <ul>
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.screened' defaultMessage='Participants with Screening Tests' />}
+            value={screening.total} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.suspected' defaultMessage='Participants With Positive Screening Tests' />}
+            value={screening.positive} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.daily_screened' defaultMessage='Avg. number of screenings per day' />}
+            value={Math.round(screening.total / daysOut)} />
+        </ul>
+      </section>
+
+      <section>
+        <h3>Confirmation</h3>
+        <ul>
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.confirmedpositive' defaultMessage='Participants with Positive Confirmation Tests' />}
+            value={confirmation.positive} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.confirmednegative' defaultMessage='Participants With Negative Confirmation Tests' />}
+            value={confirmation.negative} />
+
+          <Row className='example_class'
+            label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants Positive Screening Tests Missing Confirmation Tests' />}
+            value={screening.positive - confirmation.total} />
+        </ul>
+      </section>
+    </div>
+  )
 }
 
 export default class MonthlyReport extends Component {
@@ -62,7 +155,7 @@ export default class MonthlyReport extends Component {
               <FormattedMessage
                 id='monthlyreport.labels.national'
                 defaultMessage='National' />
-              </option>
+            </option>
             {locations.map((loc) => {
               var val = `${loc.ZS}`
               return (
@@ -77,7 +170,7 @@ export default class MonthlyReport extends Component {
           <h2>Results:</h2>
           {error && <div>Error: {error}</div>}
           {loading && <div>Loading...</div>}
-          {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+          {data && <DataTable data={data} />}
         </div>
       </div>
     )

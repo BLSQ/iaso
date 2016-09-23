@@ -71,9 +71,13 @@ def count_total(params):
 @dataset()
 def count_screened(params):
     cases = Case.objects.filter(Q_screening)
-    return {'total': cases.count(),
-            'positive': cases.filter(Q_screening_positive).count(),
-            'negative': cases.exclude(Q_screening_positive).count()}
+    return {
+        'total': cases.count(),
+        'positive': cases.filter(Q_screening_positive).count(),
+        'negative': cases.exclude(Q_screening_positive).count(),
+        'missing_confirmation': cases.filter(Q_screening_positive)
+                                     .exclude(Q_confirmation).count()
+    }
 
 
 @dataset()

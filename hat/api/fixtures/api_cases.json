@@ -21,7 +21,8 @@
       "AZ": "Muluma",
       "village": "Kisala-lupa",
       "sex": "male",
-      "test_rdt": true
+      "test_rdt": true,
+      "test_maect": false
     }
   },
   {

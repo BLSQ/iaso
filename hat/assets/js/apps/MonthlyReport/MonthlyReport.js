@@ -105,7 +105,7 @@ export const DataTable = ({ data: { total, screening, confirmation, meta } }) =>
 
           <Row className='example_class'
             label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants Positive Screening Tests Missing Confirmation Tests' />}
-            value={screening.positive - confirmation.total} />
+            value={screening.missing_confirmation} />
         </ul>
       </section>
     </div>

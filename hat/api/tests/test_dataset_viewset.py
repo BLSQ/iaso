@@ -26,13 +26,15 @@ class DatasetTests(APITestCase):
         url = reverse('api:datasets-detail', args=['count_screened'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'negative': 1, 'positive': 2, 'total': 3})
+        self.assertEqual(
+            response.data,
+            {'negative': 1, 'positive': 2, 'total': 3, 'missing_confirmation': 1})
 
     def test_confirmed_count(self):
         url = reverse('api:datasets-detail', args=['count_confirmed'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'negative': 0, 'positive': 2, 'total': 2})
+        self.assertEqual(response.data, {'negative': 1, 'positive': 2, 'total': 3})
 
     def test_campaign_meta(self):
         url = reverse('api:datasets-detail', args=['campaign_meta'])

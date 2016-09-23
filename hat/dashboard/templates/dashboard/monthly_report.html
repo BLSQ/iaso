@@ -2,10 +2,11 @@
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
+{% block header %}
+  <h1 class="header__title">{% trans "Monthly reports" %}</h1>
+{% endblock %}
+
 {% block content %}
-  <div class="header">
-    <h2>{% trans "Monthly Report" %}</h2>
-  </div>
 
   <div class="content">
     <div id='app'></div>

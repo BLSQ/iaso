@@ -38,6 +38,12 @@
   }
 }
 
+.list__item__definition {
+  @include text--caption;
+  display: block;
+  margin-top: 0.75em;
+}
+
 .list__header {
   padding: 0 $padding-unit;
   color: $mid-gray;

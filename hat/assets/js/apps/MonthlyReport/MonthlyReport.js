@@ -19,11 +19,14 @@ function createUrl ({date, source, location}) {
   return url
 }
 
-const Row = ({ className, label, value }) => {
+const Row = ({ className, label, value, definition }) => {
   return (
     <li className={className}>
-      <div>{label}</div>
-      <div>{value}</div>
+      <span>
+        {label}
+        {definition && <em className="list__item__definition">* {definition}</em>}
+      </span>
+      <span>{value}</span>
     </li>
   )
 }
@@ -32,80 +35,90 @@ export const DataTable = ({ data: { total, screening, confirmation, meta } }) =>
   var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
 
   return (
-    <div data-qa='monthly-report-data-loaded'>
+
+    <div className="widget__container" data-qa='monthly-report-data-loaded'>
+      <div className="widget__header">
+        <h2 className="widget__heading">Results</h2>
+      </div>
       <section>
-        <h3>Campaign</h3>
-        <ul>
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.startdate' defaultMessage='First Entry Date' />}
-            value={<FormattedDate value={new Date(meta.startdate)} />} />
-
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.enddate' defaultMessage='Last Entry Date' />}
-            value={<FormattedDate value={new Date(meta.enddate)} />} />
-
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aire de Santé (AS) Visited' />}
+        <h3 className="list__header block--margin-top--small">Campaign activity</h3>
+        <ul className="list--stats">
+          <Row className='list__item--stats--important list__item--stats--blue'
+            label={<FormattedMessage id='monthlyreport.items.villages_visited' defaultMessage='Number of villages visited' />}
+            value={meta.villages_visited} />
+          
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Number of Aires de Santé visited' />}
             value={meta.az_visited} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.villages_visited' defaultMessage='Villages Visited' />}
-            value={meta.villages_visited} />
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.startdate' defaultMessage='Data collection period' />}
+            definition={<FormattedMessage id='monthlyreport.items.startdate.definition' defaultMessage='Taken from date of first entry and date of last entry' />}
+            value={
+              <span>
+                <FormattedDate value={new Date(meta.startdate)} />
+                &nbsp;&mdash;&nbsp;
+                <FormattedDate value={new Date(meta.enddate)} />
+              </span>
+            } 
+            />
+        </ul>
+      </section>
+      
+      <section>
+        <h3 className="list__header">Case information</h3>
+        <ul className="list--stats">
+          <Row className='list__item--stats--important list__item--stats--yellow'
+            label={<FormattedMessage id='monthlyreport.items.confirmedpositive' defaultMessage='Number of confirmed cases' />}
+            definition={<FormattedMessage id='monthlyreport.items.confirmedpositive.definition' defaultMessage='Participants with positive confirmation tests' />}
+            value={confirmation.positive} />
+
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.confirmednegative' defaultMessage='Participants with negative confirmation tests' />}
+            value={confirmation.negative} />
+
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants missing confirmation tests' />}
+            definition={<FormattedMessage id='monthlyreport.items.confirmedmissing.definition' defaultMessage='Participants with a positive screening test, and without a confirmation test' />}
+            value={screening.missing_confirmation} />
         </ul>
       </section>
 
       <section>
-        <h3>Tests</h3>
-        <ul>
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.tested' defaultMessage='Participants With Tests' />}
+        <h3 className="list__header">Tests</h3>
+        <ul className="list--stats">
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.tested' defaultMessage='Participants with tests' />}
             value={total.tested} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.not_tested' defaultMessage='Participants With No Tests' />}
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.not_tested' defaultMessage='Participants with no tests' />}
             value={total.registered - total.tested} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.female' defaultMessage='Tested by Gender (female)' />}
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.female' defaultMessage='Tested by gender (female)' />}
             value={total.female} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.male' defaultMessage='Tested by Gender (male)' />}
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.male' defaultMessage='Tested by gender (male)' />}
             value={total.male} />
         </ul>
       </section>
 
       <section>
-        <h3>Screening</h3>
-        <ul>
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.screened' defaultMessage='Participants with Screening Tests' />}
+        <h3 className="list__header">Screening tests</h3>
+        <ul className="list--stats">
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.screened' defaultMessage='Participants with screening tests' />}
             value={screening.total} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.suspected' defaultMessage='Participants With Positive Screening Tests' />}
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.suspected' defaultMessage='Participants with positive screening tests' />}
             value={screening.positive} />
 
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.daily_screened' defaultMessage='Avg. number of screenings per day' />}
+          <Row className='list__item--stats'
+            label={<FormattedMessage id='monthlyreport.items.daily_screened' defaultMessage='Average number of screening tests per day' />}
             value={Math.round(screening.total / daysOut)} />
-        </ul>
-      </section>
-
-      <section>
-        <h3>Confirmation</h3>
-        <ul>
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.confirmedpositive' defaultMessage='Participants with Positive Confirmation Tests' />}
-            value={confirmation.positive} />
-
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.confirmednegative' defaultMessage='Participants With Negative Confirmation Tests' />}
-            value={confirmation.negative} />
-
-          <Row className='example_class'
-            label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants Positive Screening Tests Missing Confirmation Tests' />}
-            value={screening.missing_confirmation} />
         </ul>
       </section>
     </div>
@@ -139,35 +152,39 @@ export default class MonthlyReport extends Component {
 
     return (
       <div>
-        <div>
-          <h2>Filters:</h2>
-          <label htmlFor='date'>Month:</label>
-          <select disabled={loading} name='date' value={date} onChange={this.dateHandler}>
-            {dates.map((date) => (
-              <option key={date} value={date}>
-                {date}
-              </option>
-            ))}
-          </select>
-          <label htmlFor='location'>Location:</label>
-          <select disabled={loading} name='location' value={location} onChange={this.locationHandler}>
-            <option key='all' value=''>
-              <FormattedMessage
-                id='monthlyreport.labels.national'
-                defaultMessage='National' />
-            </option>
-            {locations.map((loc) => {
-              var val = `${loc.ZS}`
-              return (
-                <option key={val} value={val}>
-                  {val}
+        <div className="filter__container">
+          <h2 className="filter__label">Select:</h2>
+          <div className="filter__container__select">
+            <label htmlFor='date' className="filter__container__select__label">Month</label>
+            <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className="select--minimised">
+              {dates.map((date) => (
+                <option key={date} value={date}>
+                  {date}
                 </option>
-              )
-            })}
-          </select>
+              ))}
+            </select>
+          </div>
+          <div className="filter__container__select">
+            <label htmlFor='location' className="filter__container__select__label">Location</label>
+            <select disabled={loading} name='location' value={location} onChange={this.locationHandler} className="select--minimised">
+              <option key='all' value=''>
+                <FormattedMessage
+                  id='monthlyreport.labels.national'
+                  defaultMessage='National' />
+                </option>
+              {locations.map((loc) => {
+                var val = `${loc.ZS}`
+                return (
+                  <option key={val} value={val}>
+                    {val}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
         </div>
         <div>
-          <h2>Results:</h2>
+          
           {error && <div>Error: {error}</div>}
           {loading && <div>Loading...</div>}
           {data && <DataTable data={data} />}

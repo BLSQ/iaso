@@ -18,7 +18,9 @@ from hat.import_export.errors import handle_import_stage, ImportStage
 # and import fields. The transformation will walk over that list and grab the
 # source values, apply optional transformations and assign these as columns to
 # to a single result DataFrame that contains all the import values.
-
+# For the transformations to return the right result, it is important to use the
+# foreign keys of related tables as DataFrame indices, so that columns of Series
+# assigned to the DataFrame end up in the correct row.
 
 ################################################################################
 # Historic transform helper functions
@@ -86,9 +88,9 @@ def historic_get_secondary_effects(x):
     return x == 1
 
 
-def historic_get_followup_result(main_table, related_table, field):
-    groups = related_table[field].groupby(related_table.index)
-    return groups.agg(lambda series: ','.join(series.dropna().values))
+def historic_get_followup_test_result(main_table, related_table, field):
+    groups = related_table[field].groupby(related_table.index.values)
+    return groups.agg(lambda series: str(series.dropna().values))
 
 
 ################################################################################
@@ -162,23 +164,18 @@ def pv_get_pl_liquid_result(x):
 
 
 def pv_get_treatment_date(main_table, related_table, field) -> Series:
-    groups = related_table[field].groupby(related_table.index)
+    groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
-def pv_get_treatment(row: pandas.Series) -> str:
-    # Is there a nicer way to do this in python?
-    if not row['Traitement Prescrit2'] or pandas.isnull(row['Traitement Prescrit2']):
-        return None
-    if not row['Traitement Prescrit specifique2'] \
-       or pandas.isnull(row['Traitement Prescrit specifique2']):
-        return row['Traitement Prescrit2']
+def pv_get_treatment(main_table, related_table, field) -> Series:
+    groups = related_table[field].groupby(related_table.index.values)
+    return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
-    return (
-        row['Traitement Prescrit2'] +
-        ' - ' +
-        row['Traitement Prescrit specifique2']
-    )
+
+def pv_get_treatment_result(main_table, related_table, field) -> Series:
+    groups = related_table[field].groupby(related_table.index.values)
+    return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
 def pv_has_secondary_effects(main_table, related_table, field) -> Series:
@@ -190,9 +187,22 @@ def pv_get_followup_done(main_table, related_table, field) -> Series:
     return Series(main_table.index, index=main_table.index).isin(related_table.index)
 
 
-def pv_get_followup_result(main_table, related_table, field) -> Series:
-    groups = related_table[field].groupby(related_table.index)
-    return groups.agg(lambda series: ','.join(series.dropna().values))
+def pv_get_followup_test_result(main_table, related_table, field) -> Series:
+    groups = related_table[field].groupby(related_table.index.values)
+    return groups.agg(lambda series: str(series.dropna().values))
+
+
+################################################################################
+# Common transform helper functions
+################################################################################
+
+
+def reduce_test_result(a, b):
+    # Values can be True, False or null. We have to handle null explicitely
+    # to accidentially have this return null in favor of False.
+    if pandas.isnull(b):
+        return a
+    return a or b
 
 
 ################################################################################
@@ -203,7 +213,7 @@ def pv_get_followup_result(main_table, related_table, field) -> Series:
 #
 # Each source field can be either a two element tuple of the form:
 # `(table_name, field_name)`
-# Or a dict with a `field` property and an optional apply function.
+# Or a dict with a `field` or `fields` property and an optional apply function.
 # The supported apply functions are:
 #
 # - `apply_to_column(x: Value) -> t`
@@ -220,6 +230,11 @@ def pv_get_followup_result(main_table, related_table, field) -> Series:
 #   options, the transformation will call this variant of the function which gets
 #   called once and receives the main table and the related table as parameters.
 #   The related table is the one specified in the `field` property
+#
+# Multiple source fields can be specified for a single import field via the `fields`
+# property. The value must be a list of dicts, where each item has to a `field`
+# configuration like described above. Additional a reduce function must be given,
+# that will combine the series from the multiple source fields input the import field.
 #
 MAPPING = [
     # meta fields
@@ -291,12 +306,6 @@ MAPPING = [
         "mobile": ("main", "person.forename"),
     },
     {
-        "import": "mothers_surname",
-        "pv": ("tblFishedeDeclaration", "Nom de la mère"),
-        "historic": ("T_CARDS", "IM_MERE"),
-        "mobile": ("main", "person.mothersSurname")
-    },
-    {
         "import": "sex",
         "pv": {
             "field": ("tblFishedeDeclaration", "Sexe"),
@@ -325,6 +334,12 @@ MAPPING = [
             "field": ("main", "person.age.years"),
             "apply_to_table": mobile_get_age
         }
+    },
+    {
+        "import": "mothers_surname",
+        "pv": ("tblFishedeDeclaration", "Nom de la mère"),
+        "historic": ("T_CARDS", "IM_MERE"),
+        "mobile": ("main", "person.mothersSurname")
     },
     # location fields
     {
@@ -412,8 +427,8 @@ MAPPING = [
     {
         "import": "treatment_prescribed",
         "pv": {
-            "field": ("tblFishedeDeclaration", "Traitement Prescrit2"),
-            "apply_to_row": pv_get_treatment
+            "field": ("tblTraitementPrescrit", "Traitement"),
+            "apply_to_table": pv_get_treatment
         },
         "historic": ("T_CARDS", "TP_TREATMENT"),
         "mobile": None
@@ -432,7 +447,10 @@ MAPPING = [
     },
     {
         "import": "treatment_result",
-        "pv": None,
+        "pv":  {
+            "field": ('tblTraitementPrescrit', 'Compliance du traitement'),
+            "apply_to_table": pv_get_treatment_result
+        },
         "historic": ("T_CARDS", "TP_RESULT"),
         "mobile": None
     },
@@ -451,10 +469,22 @@ MAPPING = [
     },
     {
         "import": "test_catt",
-        "pv": None,
+        "pv": {
+            "field": ("tblFishedeDeclaration", "CATT sang total"),
+            "apply_to_column": pv_get_catt_blood_result
+        },
         "historic": {
-            "field": ("T_CARDS", "MD_CATT"),
-            "apply_to_column": historic_get_result
+            "fields": [
+                {
+                    "field": ("T_CARDS", "MD_CATT"),
+                    "apply_to_column": historic_get_result
+                },
+                {
+                    "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
+                    "apply_to_column": historic_get_catt_blood_result
+                }
+            ],
+            "reduce": reduce_test_result
         },
         "mobile": {
             "field": ("main", "participant.screenings.catt.result"),
@@ -468,8 +498,21 @@ MAPPING = [
             "apply_to_column": pv_get_result
         },
         "historic": {
-            "field": ("T_CARDS", "MD_MAECT"),
-            "apply_to_column": historic_get_result
+            "fields": [
+                {
+                    "field": ("T_CARDS", "MD_MAEC"),
+                    "apply_to_column": historic_get_result
+                },
+                {
+                    "field": ("T_CARDS", "MD_MAECT"),
+                    "apply_to_column": historic_get_result
+                },
+                {
+                    "field": ("T_CARDS", "MD_MAECT_BC"),
+                    "apply_to_column": historic_get_result
+                }
+            ],
+            "reduce": reduce_test_result
         },
         "mobile": {
             "field": ("main", "participant.screenings.maect.result"),
@@ -502,8 +545,14 @@ MAPPING = [
     },
     {
         "import": "test_ctcwoo",
-        "pv": None,
-        "historic": None,
+        "pv": {
+            "field": ("tblFishedeDeclaration", "Sang W00"),
+            "apply_to_column": pv_get_result
+        },
+        "historic": {
+            "field": ("T_CARDS", "MD_WOO"),
+            "apply_to_column": historic_get_result
+        },
         "mobile": {
             "field": ("main", "participant.screenings.ctcwoo.result"),
             "apply_to_column": mobile_get_result
@@ -517,18 +566,6 @@ MAPPING = [
             "field": ("main", "participant.screenings.pl.result"),
             "apply_to_column": mobile_get_result
         }
-    },
-    {
-        "import": "test_catt_total_blood",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "CATT sang total"),
-            "apply_to_column": pv_get_catt_blood_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
-            "apply_to_column": historic_get_catt_blood_result
-        },
-        "mobile": None
     },
     {
         "import": "test_catt_dilution",
@@ -564,62 +601,27 @@ MAPPING = [
         "mobile": None
     },
     {
-        "import": "test_woo",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sang W00"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "MD_WOO"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
-    },
-    {
-        "import": "test_maec",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_MAEC"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
-    },
-    {
-        "import": "test_maect_bc",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_MAECT_BC"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
-    },
-    {
         "import": "test_lcr",
         "pv": {
             "field": ("tblFishedeDeclaration", "LCR"),
             "apply_to_column": pv_get_result
         },
         "historic": {
-            "field": ("T_CARDS", "MD_LCR"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
-    },
-    {
-        "import": "test_lcr_fr",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_LCR_FR"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
-    },
-    {
-        "import": "test_lcr_scm",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_LCR_SCM"),
-            "apply_to_column": historic_get_result
+            "fields": [
+                {
+                    "field": ("T_CARDS", "MD_LCR"),
+                    "apply_to_column": historic_get_result
+                },
+                {
+                    "field": ("T_CARDS", "MD_LCR_FR"),
+                    "apply_to_column": historic_get_result
+                },
+                {
+                    "field": ("T_CARDS", "MD_LCR_SCM"),
+                    "apply_to_column": historic_get_result
+                }
+            ],
+            "reduce": reduce_test_result
         },
         "mobile": None
     },
@@ -738,11 +740,11 @@ MAPPING = [
     {
         "import": "followup_done",
         "pv": {
-            "field": ("tblSuivi", "PersID"),
-            "apply_to_column_to_tables": pv_get_followup_done
+            "field": ("tblSuivi", "SuiviId"),
+            "apply_to_table": pv_get_followup_done
         },
         "historic": {
-            "field": ("T_FOLLOWUPS", "F_ID"),
+            "field": ("T_FOLLOWUPS", "S_ID"),
             "apply_to_table": historic_get_followup_done
         },
         "mobile": None
@@ -751,11 +753,11 @@ MAPPING = [
         "import": "test_followup_pg",
         "pv": {
             "field": ("tblSuivi", "PG"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_PG"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -763,11 +765,11 @@ MAPPING = [
         "import": "test_followup_sf",
         "pv": {
             "field": ("tblSuivi", "SF"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_SF"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -775,11 +777,11 @@ MAPPING = [
         "import": "test_followup_ge",
         "pv": {
             "field": ("tblSuivi", "GE"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_GE"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -787,11 +789,11 @@ MAPPING = [
         "import": "test_followup_woo",
         "pv": {
             "field": ("tblSuivi", "Woo"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_WOO"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -799,11 +801,11 @@ MAPPING = [
         "import": "test_followup_maect",
         "pv": {
             "field": ("tblSuivi", "mAECT"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_MAECT"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -812,7 +814,7 @@ MAPPING = [
         "pv": None,
         "historic": {
             "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -821,7 +823,7 @@ MAPPING = [
         "pv": None,
         "historic": {
             "field": ("T_FOLLOWUPS", "S_PL"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -829,11 +831,11 @@ MAPPING = [
         "import": "test_followup_pl_trypanosome",
         "pv": {
             "field": ("tblSuivi", "PL Tryp"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -841,11 +843,11 @@ MAPPING = [
         "import": "test_followup_pl_gb",
         "pv": {
             "field": ("tblSuivi", "PL GB"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_PL_GB"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -853,11 +855,11 @@ MAPPING = [
         "import": "test_followup_decision",
         "pv": {
             "field": ("tblSuivi", "Décision médicale"),
-            "apply_to_table": pv_get_followup_done
+            "apply_to_table": pv_get_followup_test_result
         },
         "historic": {
             "field": ("T_FOLLOWUPS", "S_DECISION"),
-            "apply_to_table": historic_get_followup_done
+            "apply_to_table": historic_get_followup_test_result
         },
         "mobile": None
     },
@@ -902,6 +904,8 @@ def extract_backup(filename: str, import_options=None) -> Dict[str, DataFrame]:
             df['person.postname'] = df['person.middlename']
         else:
             df['person.postname'].fillna(df['person.middlename'], inplace=True)
+    if 'person.postname' not in df:
+        df['person.postname'] = ''
 
     # the transformation supports multiple tables -- here we only have one that we call 'main'
     return {"main": df}
@@ -936,7 +940,7 @@ IMPORT_CONFIG = {
         "import_options": {
             "T_CARDS": {
                 "index_col": 0,
-                "parse_dates": ['F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
+                "parse_dates": ['D_DATE', 'F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
                 "infer_datetime_format": True,
             },
             "T_FOLLOWUPS": {
@@ -1000,6 +1004,70 @@ IMPORT_CONFIG = {
 }
 
 
+def transform_field(source_field, main_table_name, tables) -> Series:
+    if isinstance(source_field, tuple):
+        # source field is the field name, just transfer the value
+        (table_name, field) = source_field
+        if table_name != main_table_name:
+            raise ValueError('Use apply_to_table for foreign field: ' + field +
+                             ' from: ' + table_name)
+        return tables[table_name][field]
+
+    elif isinstance(source_field, dict):
+        if "fields" in source_field:
+            # We have multiple source fields that must be reduced to a single import field
+            reduce_func = source_field.get('reduce', None)
+            if reduce_func is None:
+                raise ValueError('Multifield: ' + field + ' in: ' + table_name +
+                                 ' must have a "reduce" property')
+            result_series = []
+            for acc_field in source_field["fields"]:
+                if 'field' not in acc_field:
+                    raise ValueError('Multifield: ' + field + ' in: ' + table_name +
+                                     ' must have a "field" property')
+                result_series.append(transform_field(acc_field, main_table_name, tables))
+            r = reduce(lambda s1, s2: s1.combine(s2, reduce_func), result_series)
+            return r
+
+        # We have a single source field that maps to a single import field
+        if "field" not in source_field:
+            raise ValueError('Specify a field')
+
+        (table_name, field) = source_field['field']
+
+        # Skip fields which do not exist.
+        if field not in tables[table_name]:
+            return None
+
+        # Fields in tables different from the main one need to define `apply_to_table`
+        # That needs to resolve the relation and transform the column accordingly
+        if table_name != main_table_name and "apply_to_table" not in source_field:
+            raise ValueError('Use apply_to_table for foreign fields: {}#{}'.format(
+                table_name, field))
+
+        table = tables[table_name]
+
+        if "apply_to_column" in source_field:
+            return table[field].apply(source_field['apply_to_column'])
+
+        elif "apply_to_row" in source_field:
+            return table.apply(source_field['apply_to_row'], axis=1)
+
+        elif "apply_to_table" in source_field:
+            if table_name == main_table_name:
+                return source_field['apply_to_table'](table, field)
+            else:
+                # source field is in a related table
+                main_table = tables[main_table_name]
+                return source_field['apply_to_table'](main_table, table, field)
+
+        elif "field" in source_field:
+            return tables[table_name][field]
+
+        else:
+            raise ValueError("Unable to map: " + field + ' in table: ' + table_name)
+
+
 def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFrame]) -> DataFrame:
     '''
     Transforms the data in the source tables to it's import representation.
@@ -1015,58 +1083,17 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
 
         target_field = field_mapping['import']
         source_field = field_mapping[mapping_field]
+        if source_field is None:
+            continue
+
         try:
-            if isinstance(source_field, tuple):
-                # source field is the field name, just transfer the value
-                (table_name, field) = source_field
-                if table_name != main_table_name:
-                    raise Exception('Use apply_to_table for foreign fields: {}#{}'.format(
-                        table_name, field))
-                result[target_field] = tables[table_name][field]
-
-            elif isinstance(source_field, dict):
-                # source field has options and potentially functions to apply
-                if "field" not in source_field:
-                    raise Exception('Specify a field')
-                (table_name, field) = source_field['field']
-
-                # Skip fields which do not exist.
-                if field not in tables[table_name]:
-                    continue
-
-                # Fields in different tables than the main one need to define `apply_to_table`
-                # Because we cannot automatically handle relations.
-                if table_name != main_table_name and "apply_to_table" not in source_field:
-                    raise Exception('Use apply_to_table for foreign fields: {}#{}'.format(
-                        table_name, field))
-
-                table = tables[table_name]
-
-                if "apply_to_column" in source_field:
-                    r = table[field].apply(source_field['apply_to_column'])
-                    result[target_field] = r
-
-                elif "apply_to_row" in source_field:
-                    r = table.apply(source_field['apply_to_row'], axis=1)
-                    result[target_field] = r
-
-                elif "apply_to_table" in source_field:
-                    if table_name == main_table_name:
-                        r = source_field['apply_to_table'](table, field)
-                    else:
-                        # source field is in a related table
-                        main_table = tables[main_table_name]
-                        r = source_field['apply_to_table'](main_table, table, field)
-                    result[target_field] = r
-
-                elif "field" in source_field:
-                    result[target_field] = tables[table_name][field]
-
-                else:
-                    raise Exception("Unable to map: " + field + ' in table: ' + table_name)
-
+            r = transform_field(source_field, main_table_name, tables)
+            if r is None:
+                continue
+            result[target_field] = r
         except Exception as e:
-            raise Exception('Error mapping to: ' + target_field + ' from: ' + mapping_field) from e
+            raise ValueError('Error mapping to: ' + target_field +
+                             ' from: ' + mapping_field) from e
     return result
 
 

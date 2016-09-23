@@ -2,18 +2,19 @@ from datetime import datetime
 from io import StringIO
 import pandas
 from django.utils import timezone
+from ..import_data import import_file
 from ..export_csv import export_csv
-from ..import_backup import import_backup
-from ..import_historic import import_historic
-from ..import_pv import import_pv
+# from ..import_backup import import_backup
+# from ..import_historic import import_historic
+# from ..import_pv import import_pv
 from . import DBTestCase, TEST_DATA
 
 
 class ExportTests(DBTestCase):
     def setUp(self):
-        import_historic('historic', TEST_DATA['historic']['file'], store=True)
-        import_pv('pv', TEST_DATA['pv']['file'], store=True)
-        import_backup('backup', TEST_DATA['mobile_backup']['file'], store=True)
+        import_file('historic', TEST_DATA['historic']['file'], store=True)
+        import_file('pv', TEST_DATA['pv']['file'], store=True)
+        import_file('backup', TEST_DATA['mobile_backup']['file'], store=True)
 
     def test_export(self):
         csv = export_csv()

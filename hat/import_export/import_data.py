@@ -144,7 +144,6 @@ def import_file_new(orgname: str, filename: str, store=False) -> dict:
 
         if store:
             doc = stats.copy()
-            doc['type'] = doc['type'] + '_import'
             # use file hash as id for easy lookup of existing files
             if file_hash:
                 doc['_id'] = file_hash

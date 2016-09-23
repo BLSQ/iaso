@@ -4,22 +4,12 @@ from functools import reduce
 import re
 import pandas
 from pandas import Series, DataFrame
-import numpy
 
 
 def capitalize(x: str) -> str:
     if pandas.isnull(x):
         return None
     return capwords(x)
-
-
-def tz_localize_cd(s: Series) -> Series:
-    ''' Add a DR Congo timezone to the pandas series '''
-    def localize(x):
-        if pandas.isnull(x):
-            return numpy.datetime64('nat')
-        return x.tz_localize('Africa/Kinshasa')
-    return pandas.to_datetime(s).apply(localize)
 
 
 def create_documentid(row: Series) -> str:

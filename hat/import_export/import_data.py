@@ -8,11 +8,6 @@ import hat.couchdb.api as couchdb
 from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
 from hat.common.mdb import get_tablenames
-
-from .import_historic import import_historic, HISTORIC_TABLE_NAME
-from .import_pv import import_pv, PV_TABLE_NAME
-from .import_backup import import_backup
-
 from hat.import_export.errors import ImportStageException
 from .load import load_into_db, store_file
 from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
@@ -22,59 +17,7 @@ from hat.import_export.errors import ImportStage
 logger = logging.getLogger(__name__)
 
 
-def import_file_old(name: str, filename: str, store=False) -> dict:
-
-    # skip existing files when not doing re-import
-    if store:
-        hasher = md5()
-
-        with open(filename, 'rb') as file:
-            hasher.update(file.read())
-
-        file_hash = hasher.hexdigest()
-        existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
-        if existing.status_code == 200:
-            return {
-                'orgname': name,
-                'type': 'import_error',
-                'errors': [{
-                    'stage': ImportStage.exists.name,
-                    'message': 'This file has already been imported'
-                }]
-            }
-    else:
-        file_hash = ''
-
-    suffix = PurePath(filename).suffix.lower()
-
-    if any(suffix in s for s in ['.mdb', '.accdb']):
-        # We infer what kind of MDB file we have by the table names
-        tables = get_tablenames(filename)
-        if HISTORIC_TABLE_NAME in tables:
-            return import_historic(name, filename, store=store, file_hash=file_hash)
-        elif PV_TABLE_NAME in tables:
-            return import_pv(name, filename, store=store, file_hash=file_hash)
-        else:
-            err_msg = 'Cannot import unkown mdb file: {}'.format(name)
-            logger.error(err_msg)
-            return {
-                'type': 'import_error',
-                'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
-            }
-
-    elif suffix in '.enc':
-        return import_backup(name, filename, store=store, file_hash=file_hash)
-
-    else:
-        err_msg = 'Cannot import unkown filetype: {}'.format(suffix)
-        logger.error(err_msg)
-        return {
-            'type': 'import_error',
-            'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
-        }
-
-
-def import_file_new(orgname: str, filename: str, store=False) -> dict:
+def import_file(orgname: str, filename: str, store=False) -> dict:
 
     # skip existing files when not doing re-import
     if store:
@@ -101,9 +44,9 @@ def import_file_new(orgname: str, filename: str, store=False) -> dict:
     if suffix in ['.mdb', '.accdb']:
         # We infer what kind of MDB file we have by the table names
         tables = get_tablenames(filename)
-        if HISTORIC_TABLE_NAME in tables:
+        if IMPORT_CONFIG['historic']['main_table'] in tables:
             source_type = 'historic'
-        elif PV_TABLE_NAME in tables:
+        elif IMPORT_CONFIG['pv']['main_table'] in tables:
             source_type = 'pv'
         else:
             err_msg = 'Cannot import unkown mdb file: {}'.format(orgname)
@@ -158,9 +101,6 @@ def import_file_new(orgname: str, filename: str, store=False) -> dict:
         logger.exception(exc)
 
     return stats
-
-
-import_file = import_file_new
 
 
 def reimport() -> List[dict]:

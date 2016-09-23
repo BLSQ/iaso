@@ -4,9 +4,6 @@ import pandas
 from django.utils import timezone
 from ..import_data import import_file
 from ..export_csv import export_csv
-# from ..import_backup import import_backup
-# from ..import_historic import import_historic
-# from ..import_pv import import_pv
 from . import DBTestCase, TEST_DATA
 
 

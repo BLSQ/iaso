@@ -1,9 +1,6 @@
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from hat.cases.models import Case
-# from ..import_backup import import_backup
-# from ..import_historic import import_historic
-# from ..import_pv import import_pv
 from ..import_data import reimport, import_file
 from . import DBTestCase, TEST_DATA
 import datetime

@@ -50,6 +50,8 @@ module.exports = {
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles/'),
     filename: '[name]-[hash].js',
     publicPath: WEBPACK_URL + '/static/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name

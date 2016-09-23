@@ -24,6 +24,8 @@ module.exports = {
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles'),
     filename: '[name]-[chunkhash].js'
   },

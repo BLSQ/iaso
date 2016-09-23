@@ -48,7 +48,7 @@ export default class MonthlyReport extends Component {
         <div>
           <h2>Filters:</h2>
           <label htmlFor='date'>Month:</label>
-          <select name='date' value={date} onChange={this.dateHandler}>
+          <select disabled={loading} name='date' value={date} onChange={this.dateHandler}>
             {dates.map((date) => (
               <option key={date} value={date}>
                 {date}
@@ -56,13 +56,16 @@ export default class MonthlyReport extends Component {
             ))}
           </select>
           <label htmlFor='location'>Location:</label>
-          <select name='location' value={location} onChange={this.locationHandler}>
+          <select disabled={loading} name='location' value={location} onChange={this.locationHandler}>
             <option key='all' value=''>All</option>
-            {locations.map((date) => (
-              <option key={date} value={date}>
-                {date}
-              </option>
-            ))}
+            {locations.map((loc) => {
+              var val = `${loc.ZS}-${loc.AZ}`
+              return (
+                <option key={val} value={JSON.stringify(loc)}>
+                  {val}
+                </option>
+              )
+            })}
           </select>
         </div>
         <div>

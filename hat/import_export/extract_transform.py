@@ -208,7 +208,7 @@ def reduce_test_result(a, b):
 ################################################################################
 # Mapping for import and export fields
 #
-# For the export every field needs to define a `export_group` property that
+# For the export every field needs to define a `export_level` property that
 # is used to collect the export fields for `anon` and `full` export.
 #
 # For the import each field must define the `import_field` property and a
@@ -244,6 +244,11 @@ def reduce_test_result(a, b):
 
 EXPORT_LEVEL_ANON = 'anon'
 EXPORT_LEVEL_FULL = 'full'
+
+SCREENING_TEST = 'screening'
+CONFIRMATION_TEST = 'confirmation'
+STAGING_TEST = 'staging'
+UNKNOWN_TEST = 'unknown'
 
 MAPPING = [
     # meta fields
@@ -561,7 +566,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.rdt.result"),
                 "apply_to_column": mobile_get_result
             },
-        }
+        },
+        "test_type": SCREENING_TEST
     },
     {
         "import_field": "test_catt",
@@ -588,7 +594,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.catt.result"),
                 "apply_to_column": mobile_get_result
             },
-        }
+        },
+        "test_type": SCREENING_TEST
     },
     {
         "import_field": "test_maect",
@@ -619,7 +626,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.maect.result"),
                 "apply_to_column": mobile_get_result
             },
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_ge",
@@ -637,7 +645,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.ge.result"),
                 "apply_to_column": mobile_get_result
             }
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_pg",
@@ -649,7 +658,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.pg.result"),
                 "apply_to_column": mobile_get_result
             }
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_ctcwoo",
@@ -667,7 +677,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.ctcwoo.result"),
                 "apply_to_column": mobile_get_result
             }
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_pl",
@@ -679,7 +690,8 @@ MAPPING = [
                 "field": ("main", "participant.screenings.pl.result"),
                 "apply_to_column": mobile_get_result
             }
-        }
+        },
+        "test_type": STAGING_TEST
     },
     {
         "import_field": "test_catt_dilution",
@@ -691,7 +703,8 @@ MAPPING = [
                 "apply_to_column": historic_get_catt_dil_result
             },
             "mobile": None
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_lymph_node_puncture",
@@ -706,7 +719,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_sf",
@@ -721,7 +735,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_lcr",
@@ -749,7 +764,8 @@ MAPPING = [
                 "reduce": reduce_test_result
             },
             "mobile": None
-        }
+        },
+        "test_type": CONFIRMATION_TEST
     },
     {
         "import_field": "test_dil",
@@ -761,7 +777,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_parasit",
@@ -773,7 +790,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_sternal_puncture",
@@ -785,7 +803,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_ifat",
@@ -797,7 +816,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_clinical_sickness",
@@ -809,7 +829,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_other",
@@ -821,7 +842,8 @@ MAPPING = [
                 "apply_to_column": historic_get_result
             },
             "mobile": None
-        }
+        },
+        "test_type": UNKNOWN_TEST
     },
     {
         "import_field": "test_pl_liquid",
@@ -836,7 +858,7 @@ MAPPING = [
                 "apply_to_column": historic_get_pl_liquid_result
             },
             "mobile": None
-        }
+        },
     },
     {
         "import_field": "test_pl_trypanosome",
@@ -899,7 +921,8 @@ MAPPING = [
                 "apply_to_column": historic_get_pl_result
             },
             "mobile": None
-        }
+        },
+        "test_type": STAGING_TEST
     },
     # followup fields
     {
@@ -1065,8 +1088,18 @@ MAPPING = [
 
 ANON_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
                       if f['export_level'] == EXPORT_LEVEL_ANON]
+
 FULL_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
                       if f['export_level'] in [EXPORT_LEVEL_ANON, EXPORT_LEVEL_FULL]]
+
+SCREENING_TEST_FIELDS = [f['import_field'] for f in MAPPING
+                         if 'test_type' in f and f['test_type'] == SCREENING_TEST]
+
+CONFIRMATION_TEST_FIELDS = [f['import_field'] for f in MAPPING
+                            if 'test_type' in f and f['test_type'] == CONFIRMATION_TEST]
+
+STAGING_TEST_FIELDS = [f['import_field'] for f in MAPPING
+                       if 'test_type' in f and f['test_type'] == STAGING_TEST]
 
 
 def extract_mdb(filename: str, import_options: Dict) -> Dict[str, DataFrame]:

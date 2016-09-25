@@ -206,8 +206,13 @@ def reduce_test_result(a, b):
 
 
 ################################################################################
-# Mapping from source fields to import fields
+# Mapping for import and export fields
 #
+# For the export every field needs to define a `export_group` property that
+# is used to collect the export fields for `anon` and `full` export.
+#
+# For the import each field must define the `import_field` property and a
+# `sources` property that contains the field configuration for each import source.
 # In some cases this can be a one-to-one mapping, but in others we need to apply a
 # function to transform from the source value to the import value.
 #
@@ -236,634 +241,832 @@ def reduce_test_result(a, b):
 # configuration like described above. Additional a reduce function must be given,
 # that will combine the series from the multiple source fields input the import field.
 #
+
+EXPORT_LEVEL_ANON = 'anon'
+EXPORT_LEVEL_FULL = 'full'
+
 MAPPING = [
     # meta fields
     {
-        "import": "document_date",
-        "pv": ("tblFishedeDeclaration", "Date de diagnostique"),
-        "historic": ("T_CARDS", "D_DATE"),
-        "mobile": ("main", "dateModified",)
+        "import_field": "source",
+        "export_level": EXPORT_LEVEL_ANON
     },
     {
-        "import": "entry_date",
-        "pv": None,
-        "historic": ("T_CARDS", "F_TIMESTAMP"),
-        "mobile": ("main", "dateCreated",)
+        "import_field": "document_id",
+        "export_level": EXPORT_LEVEL_ANON,
     },
     {
-        "import": "entry_name",
-        "pv": None,
-        "historic": None,
-        "mobile": None
-    },
-    {
-        "import": "mobile_unit",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "UM"),
-            "apply_to_column": capitalize
+        "import_field": "document_date",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Date de diagnostique"),
+            "historic": ("T_CARDS", "D_DATE"),
+            "mobile": ("main", "dateModified",)
         },
-        "historic": {
-            "field": ("T_CARDS", "IF_UM"),
-            "apply_to_column": capitalize
-        },
-        "mobile": None
     },
     {
-        "import": "form_number",
-        "pv": ("tblFishedeDeclaration", "Numero du cas"),
-        "historic": ("T_CARDS", "IF_NBR"),
-        "mobile": None
+        "import_field": "entry_date",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": ("T_CARDS", "F_TIMESTAMP"),
+            "mobile": ("main", "dateCreated",)
+        }
     },
     {
-        "import": "form_month",
-        "pv": ("tblFishedeDeclaration", "Mois"),
-        "historic": ("T_CARDS", "IF_MONTH"),
-        "mobile": None
+        "import_field": "entry_name",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": None,
+            "mobile": None
+        }
     },
     {
-        "import": "form_year",
-        "pv": ("tblFishedeDeclaration", "Année"),
-        "historic": ("T_CARDS", "IF_YEAR"),
-        "mobile": None
+        "import_field": "mobile_unit",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "UM"),
+                "apply_to_column": capitalize
+            },
+            "historic": {
+                "field": ("T_CARDS", "IF_UM"),
+                "apply_to_column": capitalize
+            },
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "form_number",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Numero du cas"),
+            "historic": ("T_CARDS", "IF_NBR"),
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "form_month",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Mois"),
+            "historic": ("T_CARDS", "IF_MONTH"),
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "form_year",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Année"),
+            "historic": ("T_CARDS", "IF_YEAR"),
+            "mobile": None
+        }
     },
     # person fields
     {
-        "import": "name",
-        "pv": ("tblFishedeDeclaration", "Nom"),
-        "historic": ("T_CARDS", "IM_NAME"),
-        "mobile": ("main", "person.postname")
+        "import_field": "hat_id",
+        "export_level": EXPORT_LEVEL_FULL
     },
     {
-        "import": "lastname",
-        "pv": ("tblFishedeDeclaration", "Postnom"),
-        "historic": ("T_CARDS", "IM_LASTNAME"),
-        "mobile": ("main", "person.surname")
-    },
-    {
-        "import": "prename",
-        "pv": ("tblFishedeDeclaration", "Prénom"),
-        "historic": ("T_CARDS", "IM_PRENAME"),
-        "mobile": ("main", "person.forename"),
-    },
-    {
-        "import": "sex",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sexe"),
-            "apply_to_column": pv_get_sex
-        },
-        "historic": {
-            "field": ("T_CARDS", "IM_SEX"),
-            "apply_to_column": historic_get_sex
-        },
-        "mobile": {
-            "field": ("main", "person.gender"),
-            "apply_to_column": mobile_get_sex
+        "import_field": "name",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Nom"),
+            "historic": ("T_CARDS", "IM_NAME"),
+            "mobile": ("main", "person.postname")
         }
     },
     {
-        "import": "year_of_birth",
-        "pv": ("tblFishedeDeclaration", "Année de naissance"),
-        "historic": ("T_CARDS", "IM_BIRTHYEAR"),
-        "mobile": ("main", "person.birthYear")
-    },
-    {
-        "import": "age",
-        "pv": ("tblFishedeDeclaration", "Age"),
-        "historic": ("T_CARDS", "IM_AGE"),
-        "mobile": {
-            "field": ("main", "person.age.years"),
-            "apply_to_table": mobile_get_age
+        "import_field": "lastname",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Postnom"),
+            "historic": ("T_CARDS", "IM_LASTNAME"),
+            "mobile": ("main", "person.surname")
         }
     },
     {
-        "import": "mothers_surname",
-        "pv": ("tblFishedeDeclaration", "Nom de la mère"),
-        "historic": ("T_CARDS", "IM_MERE"),
-        "mobile": ("main", "person.mothersSurname")
+        "import_field": "prename",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Prénom"),
+            "historic": ("T_CARDS", "IM_PRENAME"),
+            "mobile": ("main", "person.forename"),
+        }
+    },
+    {
+        "import_field": "sex",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Sexe"),
+                "apply_to_column": pv_get_sex
+            },
+            "historic": {
+                "field": ("T_CARDS", "IM_SEX"),
+                "apply_to_column": historic_get_sex
+            },
+            "mobile": {
+                "field": ("main", "person.gender"),
+                "apply_to_column": mobile_get_sex
+            }
+        }
+    },
+    {
+        "import_field": "year_of_birth",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Année de naissance"),
+            "historic": ("T_CARDS", "IM_BIRTHYEAR"),
+            "mobile": ("main", "person.birthYear")
+        }
+    },
+    {
+        "import_field": "age",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Age"),
+            "historic": ("T_CARDS", "IM_AGE"),
+            "mobile": {
+                "field": ("main", "person.age.years"),
+                "apply_to_table": mobile_get_age
+            }
+        }
+    },
+    {
+        "import_field": "mothers_surname",
+        "export_level": EXPORT_LEVEL_FULL,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Nom de la mère"),
+            "historic": ("T_CARDS", "IM_MERE"),
+            "mobile": ("main", "person.mothersSurname")
+        }
     },
     # location fields
     {
-        "import": "province",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Provence"),
-            "apply_to_column": capitalize
-        },
-        "historic": {
-            "field": ("T_CARDS", "IM_AD_PROVINCE"),
-            "apply_to_column": capitalize
-        },
-        "mobile": None
+        "import_field": "province",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Provence"),
+                "apply_to_column": capitalize
+            },
+            "historic": {
+                "field": ("T_CARDS", "IM_AD_PROVINCE"),
+                "apply_to_column": capitalize
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "ZS",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "ZS"),
-            "apply_to_column": capitalize
-        },
-        "historic": {
-            "field": ("T_CARDS", "IM_AD_HEALTH_ZONE"),
-            "apply_to_column": capitalize,
-        },
-        "mobile": {
-            "field": ("main", "person.location.zone"),
-            "apply_to_column": capitalize,
-        },
+        "import_field": "ZS",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "ZS"),
+                "apply_to_column": capitalize
+            },
+            "historic": {
+                "field": ("T_CARDS", "IM_AD_HEALTH_ZONE"),
+                "apply_to_column": capitalize,
+            },
+            "mobile": {
+                "field": ("main", "person.location.zone"),
+                "apply_to_column": capitalize,
+            },
+        }
     },
     {
-        "import": "AZ",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "AS"),
-            "apply_to_column": capitalize
-        },
-        "historic": {
-            "field": ("T_CARDS", "IM_AD_HEALTH_AREA"),
-            "apply_to_column": capitalize,
-        },
-        "mobile": {
-            "field": ("main", "person.location.area"),
-            "apply_to_column": capitalize,
-        },
+        "import_field": "AZ",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "AS"),
+                "apply_to_column": capitalize
+            },
+            "historic": {
+                "field": ("T_CARDS", "IM_AD_HEALTH_AREA"),
+                "apply_to_column": capitalize,
+            },
+            "mobile": {
+                "field": ("main", "person.location.area"),
+                "apply_to_column": capitalize,
+            },
+        }
     },
     {
-        "import": "village",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Village"),
-            "apply_to_column": capitalize
-        },
-        "historic": {
-            "field": ("T_CARDS", "IM_AD_VILLAGE"),
-            "apply_to_column": capitalize,
-        },
-        "mobile": {
-            "field": ("main", "person.location.village"),
-            "apply_to_column": capitalize,
-        },
+        "import_field": "village",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Village"),
+                "apply_to_column": capitalize
+            },
+            "historic": {
+                "field": ("T_CARDS", "IM_AD_VILLAGE"),
+                "apply_to_column": capitalize,
+            },
+            "mobile": {
+                "field": ("main", "person.location.village"),
+                "apply_to_column": capitalize,
+            },
+        }
     },
     # treatment fields
     {
-        "import": "treatment_center",
-        "pv": ("tblFishedeDeclaration", "Centre recommandé2"),
-        "historic": ("T_CARDS", "IM_UM_CT"),
-        "mobile": None
+        "import_field": "treatment_center",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Centre recommandé2"),
+            "historic": ("T_CARDS", "IM_UM_CT"),
+            "mobile": None
+        }
     },
     {
-        "import": "treatment_start_date",
-        "pv": {
-            "field": ("tblTraitementPrescrit", "Date début réel"),
-            "apply_to_table": pv_get_treatment_date
-        },
-        "historic": ("T_CARDS", "TP_DATE"),
-        "mobile": None
+        "import_field": "treatment_start_date",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblTraitementPrescrit", "Date début réel"),
+                "apply_to_table": pv_get_treatment_date
+            },
+            "historic": ("T_CARDS", "TP_DATE"),
+            "mobile": None
+        }
     },
     {
-        "import": "treatment_end_date",
-        "pv": {
-            "field": ("tblTraitementPrescrit", "Date fin"),
-            "apply_to_table": pv_get_treatment_date
-        },
-        "historic": ("T_CARDS", "TP_DATE_END"),
-        "mobile": None
+        "import_field": "treatment_end_date",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblTraitementPrescrit", "Date fin"),
+                "apply_to_table": pv_get_treatment_date
+            },
+            "historic": ("T_CARDS", "TP_DATE_END"),
+            "mobile": None
+        }
     },
     {
-        "import": "treatment_prescribed",
-        "pv": {
-            "field": ("tblTraitementPrescrit", "Traitement"),
-            "apply_to_table": pv_get_treatment
-        },
-        "historic": ("T_CARDS", "TP_TREATMENT"),
-        "mobile": None
+        "import_field": "treatment_prescribed",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblTraitementPrescrit", "Traitement"),
+                "apply_to_table": pv_get_treatment
+            },
+            "historic": ("T_CARDS", "TP_TREATMENT"),
+            "mobile": None
+        }
     },
     {
-        "import": "treatment_secondary_effects",
-        "pv": {
-            "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
-            "apply_to_table": pv_has_secondary_effects
-        },
-        "historic": {
-            "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
-            "apply_to_column": historic_get_secondary_effects
-        },
-        "mobile": None
+        "import_field": "treatment_secondary_effects",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
+                "apply_to_table": pv_has_secondary_effects
+            },
+            "historic": {
+                "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
+                "apply_to_column": historic_get_secondary_effects
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "treatment_result",
-        "pv":  {
-            "field": ('tblTraitementPrescrit', 'Compliance du traitement'),
-            "apply_to_table": pv_get_treatment_result
-        },
-        "historic": ("T_CARDS", "TP_RESULT"),
-        "mobile": None
+        "import_field": "treatment_result",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv":  {
+                "field": ('tblTraitementPrescrit', 'Compliance du traitement'),
+                "apply_to_table": pv_get_treatment_result
+            },
+            "historic": ("T_CARDS", "TP_RESULT"),
+            "mobile": None
+        }
     },
     # test fields
     {
-        "import": "test_rdt",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "D_TDR"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": {
-            "field": ("main", "participant.screenings.rdt.result"),
-            "apply_to_column": mobile_get_result
-        },
-    },
-    {
-        "import": "test_catt",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "CATT sang total"),
-            "apply_to_column": pv_get_catt_blood_result
-        },
-        "historic": {
-            "fields": [
-                {
-                    "field": ("T_CARDS", "MD_CATT"),
-                    "apply_to_column": historic_get_result
-                },
-                {
-                    "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
-                    "apply_to_column": historic_get_catt_blood_result
-                }
-            ],
-            "reduce": reduce_test_result
-        },
-        "mobile": {
-            "field": ("main", "participant.screenings.catt.result"),
-            "apply_to_column": mobile_get_result
-        },
-    },
-    {
-        "import": "test_maect",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sang mAECT"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "fields": [
-                {
-                    "field": ("T_CARDS", "MD_MAEC"),
-                    "apply_to_column": historic_get_result
-                },
-                {
-                    "field": ("T_CARDS", "MD_MAECT"),
-                    "apply_to_column": historic_get_result
-                },
-                {
-                    "field": ("T_CARDS", "MD_MAECT_BC"),
-                    "apply_to_column": historic_get_result
-                }
-            ],
-            "reduce": reduce_test_result
-        },
-        "mobile": {
-            "field": ("main", "participant.screenings.maect.result"),
-            "apply_to_column": mobile_get_result
-        },
-    },
-    {
-        "import": "test_ge",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sang GE"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "MD_GE"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": {
-            "field": ("main", "participant.screenings.ge.result"),
-            "apply_to_column": mobile_get_result
+        "import_field": "test_rdt",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "D_TDR"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.result"),
+                "apply_to_column": mobile_get_result
+            },
         }
     },
     {
-        "import": "test_pg",
-        "pv": None,
-        "historic": None,
-        "mobile": {
-            "field": ("main", "participant.screenings.pg.result"),
-            "apply_to_column": mobile_get_result
+        "import_field": "test_catt",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "CATT sang total"),
+                "apply_to_column": pv_get_catt_blood_result
+            },
+            "historic": {
+                "fields": [
+                    {
+                        "field": ("T_CARDS", "MD_CATT"),
+                        "apply_to_column": historic_get_result
+                    },
+                    {
+                        "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
+                        "apply_to_column": historic_get_catt_blood_result
+                    }
+                ],
+                "reduce": reduce_test_result
+            },
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.result"),
+                "apply_to_column": mobile_get_result
+            },
         }
     },
     {
-        "import": "test_ctcwoo",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sang W00"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "MD_WOO"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": {
-            "field": ("main", "participant.screenings.ctcwoo.result"),
-            "apply_to_column": mobile_get_result
+        "import_field": "test_maect",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Sang mAECT"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "fields": [
+                    {
+                        "field": ("T_CARDS", "MD_MAEC"),
+                        "apply_to_column": historic_get_result
+                    },
+                    {
+                        "field": ("T_CARDS", "MD_MAECT"),
+                        "apply_to_column": historic_get_result
+                    },
+                    {
+                        "field": ("T_CARDS", "MD_MAECT_BC"),
+                        "apply_to_column": historic_get_result
+                    }
+                ],
+                "reduce": reduce_test_result
+            },
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.result"),
+                "apply_to_column": mobile_get_result
+            },
         }
     },
     {
-        "import": "test_pl",
-        "pv": None,
-        "historic": None,
-        "mobile": {
-            "field": ("main", "participant.screenings.pl.result"),
-            "apply_to_column": mobile_get_result
+        "import_field": "test_ge",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Sang GE"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "MD_GE"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": {
+                "field": ("main", "participant.screenings.ge.result"),
+                "apply_to_column": mobile_get_result
+            }
         }
     },
     {
-        "import": "test_catt_dilution",
-        "pv": ("tblFishedeDeclaration", "CATT dilution"),
-        "historic": {
-            "field": ("T_CARDS", "D_CATT_DILUTION"),
-            "apply_to_column": historic_get_catt_dil_result
-        },
-        "mobile": None
+        "import_field": "test_pg",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": None,
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.result"),
+                "apply_to_column": mobile_get_result
+            }
+        }
     },
     {
-        "import": "test_lymph_node_puncture",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Suc ganglionnaire"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_ctcwoo",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Sang W00"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "MD_WOO"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.result"),
+                "apply_to_column": mobile_get_result
+            }
+        }
     },
     {
-        "import": "test_sf",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Sang SF"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "MD_SF"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_pl",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": None,
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.result"),
+                "apply_to_column": mobile_get_result
+            }
+        }
     },
     {
-        "import": "test_lcr",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "LCR"),
-            "apply_to_column": pv_get_result
-        },
-        "historic": {
-            "fields": [
-                {
-                    "field": ("T_CARDS", "MD_LCR"),
-                    "apply_to_column": historic_get_result
-                },
-                {
-                    "field": ("T_CARDS", "MD_LCR_FR"),
-                    "apply_to_column": historic_get_result
-                },
-                {
-                    "field": ("T_CARDS", "MD_LCR_SCM"),
-                    "apply_to_column": historic_get_result
-                }
-            ],
-            "reduce": reduce_test_result
-        },
-        "mobile": None
+        "import_field": "test_catt_dilution",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "CATT dilution"),
+            "historic": {
+                "field": ("T_CARDS", "D_CATT_DILUTION"),
+                "apply_to_column": historic_get_catt_dil_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_dil",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_DIL"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_lymph_node_puncture",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Suc ganglionnaire"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_parasit",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_PARASIT"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_sf",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Sang SF"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "MD_SF"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_sternal_puncture",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_lcr",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "LCR"),
+                "apply_to_column": pv_get_result
+            },
+            "historic": {
+                "fields": [
+                    {
+                        "field": ("T_CARDS", "MD_LCR"),
+                        "apply_to_column": historic_get_result
+                    },
+                    {
+                        "field": ("T_CARDS", "MD_LCR_FR"),
+                        "apply_to_column": historic_get_result
+                    },
+                    {
+                        "field": ("T_CARDS", "MD_LCR_SCM"),
+                        "apply_to_column": historic_get_result
+                    }
+                ],
+                "reduce": reduce_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_ifat",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_IFAT"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_dil",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_DIL"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_clinical_sickness",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_parasit",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_PARASIT"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_other",
-        "pv": None,
-        "historic": {
-            "field": ("T_CARDS", "MD_OTHER"),
-            "apply_to_column": historic_get_result
-        },
-        "mobile": None
+        "import_field": "test_sternal_puncture",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_liquid",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Aspect LCR"),
-            "apply_to_column": pv_get_pl_liquid_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "DS_PL_LIQUID"),
-            "apply_to_column": historic_get_pl_liquid_result
-        },
-        "mobile": None
+        "import_field": "test_ifat",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_IFAT"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_trypanosome",
-        "pv": ("tblFishedeDeclaration", "Présence trypanosomes"),
-        "historic": ("T_CARDS", "DS_PL_TRYPANOSOME"),
-        "mobile": None
+        "import_field": "test_clinical_sickness",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_gb_mm3",
-        "pv": ("tblFishedeDeclaration", "GB/mm3"),
-        "historic": ("T_CARDS", "DS_PL_GB_MM3"),
-        "mobile": None
+        "import_field": "test_other",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_CARDS", "MD_OTHER"),
+                "apply_to_column": historic_get_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_albumine",
-        "pv": None,
-        "historic": ("T_CARDS", "DS_PL_ALBUMINE"),
-        "mobile": None
+        "import_field": "test_pl_liquid",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Aspect LCR"),
+                "apply_to_column": pv_get_pl_liquid_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "DS_PL_LIQUID"),
+                "apply_to_column": historic_get_pl_liquid_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_lcr",
-        "pv": ("tblFishedeDeclaration", "Latex LCR"),
-        "historic": {
-            "field": ("T_CARDS", "DS_PL_LCR"),
-            "apply_to_column": historic_get_pl_lcr_result
-        },
-        "mobile": None
+        "import_field": "test_pl_trypanosome",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Présence trypanosomes"),
+            "historic": ("T_CARDS", "DS_PL_TRYPANOSOME"),
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_comments",
-        "pv": None,
-        "historic": ("T_CARDS", "DS_PL_COMMENTS"),
-        "mobile": None
+        "import_field": "test_pl_gb_mm3",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "GB/mm3"),
+            "historic": ("T_CARDS", "DS_PL_GB_MM3"),
+            "mobile": None
+        }
     },
     {
-        "import": "test_pl_result",
-        "pv": {
-            "field": ("tblFishedeDeclaration", "Stade"),
-            "apply_to_column": pv_get_pl_result
-        },
-        "historic": {
-            "field": ("T_CARDS", "DS_PL_RESULT"),
-            "apply_to_column": historic_get_pl_result
-        },
-        "mobile": None
+        "import_field": "test_pl_albumine",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": ("T_CARDS", "DS_PL_ALBUMINE"),
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "test_pl_lcr",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": ("tblFishedeDeclaration", "Latex LCR"),
+            "historic": {
+                "field": ("T_CARDS", "DS_PL_LCR"),
+                "apply_to_column": historic_get_pl_lcr_result
+            },
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "test_pl_comments",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": ("T_CARDS", "DS_PL_COMMENTS"),
+            "mobile": None
+        }
+    },
+    {
+        "import_field": "test_pl_result",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "Stade"),
+                "apply_to_column": pv_get_pl_result
+            },
+            "historic": {
+                "field": ("T_CARDS", "DS_PL_RESULT"),
+                "apply_to_column": historic_get_pl_result
+            },
+            "mobile": None
+        }
     },
     # followup fields
     {
-        "import": "followup_done",
-        "pv": {
-            "field": ("tblSuivi", "SuiviId"),
-            "apply_to_table": pv_get_followup_done
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_ID"),
-            "apply_to_table": historic_get_followup_done
-        },
-        "mobile": None
+        "import_field": "followup_done",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "SuiviId"),
+                "apply_to_table": pv_get_followup_done
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_ID"),
+                "apply_to_table": historic_get_followup_done
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_pg",
-        "pv": {
-            "field": ("tblSuivi", "PG"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_PG"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_pg",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "PG"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_PG"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_sf",
-        "pv": {
-            "field": ("tblSuivi", "SF"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_SF"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_sf",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "SF"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_SF"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_ge",
-        "pv": {
-            "field": ("tblSuivi", "GE"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_GE"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_ge",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "GE"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_GE"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None,
+        }
     },
     {
-        "import": "test_followup_woo",
-        "pv": {
-            "field": ("tblSuivi", "Woo"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_WOO"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_woo",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "Woo"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_WOO"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_maect",
-        "pv": {
-            "field": ("tblSuivi", "mAECT"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_MAECT"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_maect",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "mAECT"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_MAECT"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_woo_maect",
-        "pv": None,
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_woo_maect",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_pl",
-        "pv": None,
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_PL"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_pl",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": None,
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_PL"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_pl_trypanosome",
-        "pv": {
-            "field": ("tblSuivi", "PL Tryp"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_pl_trypanosome",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "PL Tryp"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_pl_gb",
-        "pv": {
-            "field": ("tblSuivi", "PL GB"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_PL_GB"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_pl_gb",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "PL GB"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_PL_GB"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
     {
-        "import": "test_followup_decision",
-        "pv": {
-            "field": ("tblSuivi", "Décision médicale"),
-            "apply_to_table": pv_get_followup_test_result
-        },
-        "historic": {
-            "field": ("T_FOLLOWUPS", "S_DECISION"),
-            "apply_to_table": historic_get_followup_test_result
-        },
-        "mobile": None
+        "import_field": "test_followup_decision",
+        "export_level": EXPORT_LEVEL_ANON,
+        "sources": {
+            "pv": {
+                "field": ("tblSuivi", "Décision médicale"),
+                "apply_to_table": pv_get_followup_test_result
+            },
+            "historic": {
+                "field": ("T_FOLLOWUPS", "S_DECISION"),
+                "apply_to_table": historic_get_followup_test_result
+            },
+            "mobile": None
+        }
     },
 ]
+
+ANON_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
+                      if f['export_level'] == EXPORT_LEVEL_ANON]
+FULL_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
+                      if f['export_level'] in [EXPORT_LEVEL_ANON, EXPORT_LEVEL_FULL]]
 
 
 def extract_mdb(filename: str, import_options: Dict) -> Dict[str, DataFrame]:
@@ -1077,12 +1280,12 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
     result = DataFrame(index=tables[main_table_name].index)
 
     for field_mapping in MAPPING:
-        if mapping_field not in field_mapping:
-            # This source cannot map to the field
+        if 'sources' not in field_mapping or mapping_field not in field_mapping['sources']:
+            # Not mapping this field
             continue
 
-        target_field = field_mapping['import']
-        source_field = field_mapping[mapping_field]
+        import_field = field_mapping['import_field']
+        source_field = field_mapping['sources'][mapping_field]
         if source_field is None:
             continue
 
@@ -1090,9 +1293,9 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
             r = transform_field(source_field, main_table_name, tables)
             if r is None:
                 continue
-            result[target_field] = r
+            result[import_field] = r
         except Exception as e:
-            raise ValueError('Error mapping to: ' + target_field +
+            raise ValueError('Error mapping to: ' + import_field +
                              ' from: ' + mapping_field) from e
     return result
 

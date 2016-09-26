@@ -1,6 +1,7 @@
 from base64 import b64encode
 from pandas import DataFrame, concat as pandasconcat
 from django.conf import settings
+from django.db import transaction
 from hat.cases.models import Case
 import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
@@ -93,7 +94,6 @@ def update_entries(duplicates):
     )
 
     # Use a transaction to bundle updates for better performance
-    from django.db import transaction
     with transaction.atomic():
         for index, row in duplicates.iterrows():
             Case.objects.filter(document_id=row['document_id']) \

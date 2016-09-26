@@ -18,9 +18,11 @@ from hat.import_export.errors import handle_import_stage, ImportStage
 # and import fields. The transformation will walk over that list and grab the
 # source values, apply optional transformations and assign these as columns to
 # to a single result DataFrame that contains all the import values.
-# For the transformations to return the right result, it is important to use the
-# foreign keys of related tables as DataFrame indices, so that columns of Series
-# assigned to the DataFrame end up in the correct row.
+#
+# Some of the data is in multiple related tables. For the transformations to
+# return the right result, it is important to use the foreign keys of related
+# tables as DataFrame indices, so that columns of Series assigned to the
+# DataFrame end up in the correct row.
 
 ################################################################################
 # Historic transform helper functions
@@ -163,6 +165,17 @@ def pv_get_pl_liquid_result(x):
     }.get(x, None)
 
 
+# The following apply functions for treatment and followup fields all
+# operate on two tables, the main table and some related table like "followups"
+# or "treatments". Each of these is very similar or even the same, it
+# groups the related data by the index, which is the foreign key(PersID)
+# and the aggregates each group to a single value for each group.
+# Those values are then returned as a Series with the foreign key as index.
+# Because the result DataFrame they are merged into uses the same index
+# values, all the fields will be assigned to the right rows automatically.
+# It might make sense to combine some of these in the future.
+
+
 def pv_get_treatment_date(main_table, related_table, field) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
@@ -237,8 +250,8 @@ def reduce_test_result(a, b):
 #   The related table is the one specified in the `field` property
 #
 # Multiple source fields can be specified for a single import field via the `fields`
-# property. The value must be a list of dicts, where each item has to a `field`
-# configuration like described above. Additional a reduce function must be given,
+# property. The value must be a list of dicts, where each item has to have a `field`
+# configuration like described above. Additionaly a reduce function must be given,
 # that will combine the series from the multiple source fields input the import field.
 #
 
@@ -1156,14 +1169,14 @@ def historic_post_process(transformed: DataFrame, orgname: str) -> DataFrame:
 
 
 ################################################################################
-# Configuration for importing from different sources
+# Configuration for the different sources
 #
 # `type` - The value that will be set as `source` on the model
 # `mapping_field` - the field in the mapping
 # `extract` - the function used for extracting the data from the file
 # `main_table` - name of the table with the cases/persons
 # `import_options` - Dict of tables to extract from the files.
-#                    In the case of mdb files, those are options passed to pandas.
+#                    In the case of mdb files, those are the options passed to pandas.
 # `post_process` - Optional function to do additional transformations after the
 #                  mapping has been applied.
 #

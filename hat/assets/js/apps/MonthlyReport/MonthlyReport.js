@@ -24,31 +24,32 @@ const Row = ({ className, label, value, definition }) => {
     <li className={className}>
       <span>
         {label}
-        {definition && <em className="list__item__definition">* {definition}</em>}
+        {definition && <em className='list__item__definition'>* {definition}</em>}
       </span>
       <span>{value}</span>
     </li>
   )
 }
 
-export const DataTable = ({ data: { total, screening, confirmation, meta } }) => {
+export const DataTable = ({ data: { total, screening, confirmation, meta, location } }) => {
   var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
 
   return (
 
-    <div className="widget__container" data-qa='monthly-report-data-loaded'>
-      <div className="widget__header">
-        <h2 className="widget__heading">Results</h2>
+    <div className='widget__container' data-qa='monthly-report-data-loaded'>
+      <div className='widget__header'>
+        <h2 className='widget__heading'>
+          Results
+        </h2>
       </div>
       <section>
-        <h3 className="list__header block--margin-top--small">
+        <h3 className='list__header block--margin-top--small'>
           <FormattedMessage id='monthlyreport.header.campaign_activity' defaultMessage='Campaign activity' />
         </h3>
-        <ul className="list--stats">
+        <ul className='list--stats'>
           <Row className='list__item--stats--important list__item--stats--blue'
             label={<FormattedMessage id='monthlyreport.items.villages_visited' defaultMessage='Villages visited' />}
             value={meta.villages_visited} />
-          
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aires de Santé visited' />}
             value={meta.az_visited} />
@@ -70,16 +71,15 @@ export const DataTable = ({ data: { total, screening, confirmation, meta } }) =>
                 &nbsp;&mdash;&nbsp;
                 <FormattedDate value={new Date(meta.enddate)} />
               </span>
-            } 
+            }
             />
         </ul>
       </section>
-      
       <section>
-        <h3 className="list__header">
+        <h3 className='list__header'>
           <FormattedMessage id='monthlyreport.header.cases' defaultMessage='Case information' />
         </h3>
-        <ul className="list--stats">
+        <ul className='list--stats'>
           <Row className='list__item--stats--important list__item--stats--yellow'
             label={<FormattedMessage id='monthlyreport.items.confirmedpositive' defaultMessage='Confirmed cases' />}
             definition={<FormattedMessage id='monthlyreport.items.confirmedpositive.definition' defaultMessage='Participants with a positive confirmation test' />}
@@ -103,11 +103,10 @@ export const DataTable = ({ data: { total, screening, confirmation, meta } }) =>
       </section>
 
       <section>
-        <h3 className="list__header">
+        <h3 className='list__header'>
           <FormattedMessage id='monthlyreport.header.tests' defaultMessage='Test details' />
         </h3>
-        <ul className="list--stats">
-          
+        <ul className='list--stats'>
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.not_tested' defaultMessage='Participants missing test results' />}
             definition={<FormattedMessage id='montlyreport.items.not_tested.definition' defaultMessage='Participants’ details registered but no test result was added' />}
@@ -153,11 +152,11 @@ export default class MonthlyReport extends Component {
 
     return (
       <div>
-        <div className="filter__container">
-          <h2 className="filter__label">Select:</h2>
-          <div className="filter__container__select">
-            <label htmlFor='date' className="filter__container__select__label">Month</label>
-            <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className="select--minimised">
+        <div className='filter__container'>
+          <h2 className='filter__label'>Select:</h2>
+          <div className='filter__container__select'>
+            <label htmlFor='date' className='filter__container__select__label'>Month</label>
+            <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className='select--minimised'>
               {dates.map((date) => (
                 <option key={date} value={date}>
                   {date}
@@ -165,14 +164,14 @@ export default class MonthlyReport extends Component {
               ))}
             </select>
           </div>
-          <div className="filter__container__select">
-            <label htmlFor='location' className="filter__container__select__label">Location</label>
-            <select disabled={loading} name='location' value={location} onChange={this.locationHandler} className="select--minimised">
+          <div className='filter__container__select'>
+            <label htmlFor='location' className='filter__container__select__label'>Location</label>
+            <select disabled={loading} name='location' value={location} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 <FormattedMessage
                   id='monthlyreport.labels.national'
                   defaultMessage='National' />
-                </option>
+              </option>
               {locations.map((loc) => {
                 var val = `${loc.ZS}`
                 return (
@@ -185,7 +184,6 @@ export default class MonthlyReport extends Component {
           </div>
         </div>
         <div>
-          
           {error && <div>Error: {error}</div>}
           {loading && <div>Loading...</div>}
           {data && <DataTable data={data} />}

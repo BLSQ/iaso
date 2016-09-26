@@ -34,11 +34,18 @@ const Row = ({ className, label, value, definition, download }) => {
   )
 }
 
-export const DataTable = ({ data: { total, screening, confirmation, meta, location } }) => {
+export const DataTable = ({
+  data: {
+    total,
+    screening,
+    confirmation,
+    meta,
+    location
+  }
+}) => {
   var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
 
   return (
-
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
@@ -142,9 +149,10 @@ export default class MonthlyReport extends Component {
 
   render () {
     // source, sources also available
-    let { date, location } = this.props.params
-    let { dates, locations } = this.props.config
-    let { loading, data, error } = this.props.report
+    const { date, location } = this.props.params
+    const { dates } = this.props.config
+    const { loading, data, error } = this.props.report
+    const locations = data && data.locations || []
 
     return (
       <div>

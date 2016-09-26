@@ -13,10 +13,11 @@ import { LOAD, LOAD_SUCCESS, LOAD_ERROR } from '../../redux/load'
 // This is where we configure the app data urls:
 // the order is used in the success handler below
 const urls = [
-  '/api/datasets/count_total/',
-  '/api/datasets/count_screened/',
-  '/api/datasets/count_confirmed/',
-  '/api/datasets/campaign_meta/'
+  '/api/datasets/list_locations',
+  '/api/datasets/count_total',
+  '/api/datasets/count_screened',
+  '/api/datasets/count_confirmed',
+  '/api/datasets/campaign_meta'
 ]
 
 // Assume all the URls are gonna use the same filters
@@ -48,11 +49,15 @@ export class MonthlyReportContainer extends Component {
     // since it's only a mechanism
     // to prevent extra calls
     this._currentFilters = ''
-    this.loadData(props.params, props.dispatch)
+  }
+
+  componentDidMount () {
+    const {params, dispatch} = this.props
+    this.loadData(params, dispatch)
   }
 
   loadData (params, dispatch) {
-    if (this._currentFilters === JSON.stringify(params)) {
+    if (JSON.stringify(this._currentFilters) === JSON.stringify(params)) {
       return
     }
 
@@ -60,15 +65,20 @@ export class MonthlyReportContainer extends Component {
       type: LOAD
     })
 
-    this._currentFilters = JSON.stringify(params)
+    if (params.date !== this._currentFilters.date) {
+      // We reset the location when the date changes
+      params.location = ''
+    }
+    this._currentFilters = JSON.parse(JSON.stringify(params))
+
     Promise.all(urls.map(fetchAndParse, params))
-      .then(([total, screening, confirmation, meta]) => {
+      .then(([locations, total, screening, confirmation, meta]) => {
         // Collect all responses in one action
         dispatch({
           type: LOAD_SUCCESS,
           // destructure responses array into object here,
           // since its dependent on URL order above
-          payload: { total, screening, confirmation, meta }
+          payload: { locations, total, screening, confirmation, meta }
         })
       })
       .catch((err) => {

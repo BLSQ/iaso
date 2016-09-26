@@ -72,13 +72,21 @@ filtered_schema = {
 }
 
 
-def get_cases_filtered(params):
+def get_cases_filtered(params, ignore_params=None):
     '''
     Takes the requests parameters as args and returns a filtered Case QuerySet.
     '''
+    def get_param_value(key):
+        if ignore_params is not None and key in ignore_params:
+            return None
+        else:
+            value = params.get(key, None)
+            return value if value != '' else None
+
     cases = Case.objects
-    date = params.get('date', None)
-    if date is not None and date is not '':
+
+    date = get_param_value('date')
+    if date is not None:
         # Parse time with manually added UTC timezone offset
         date_from = datetime.strptime(date + "-+0000", "%Y-%m-%z")
         # Get the last day of the month
@@ -87,14 +95,21 @@ def get_cases_filtered(params):
         date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC)
         cases = cases.filter(document_date__gte=date_from, document_date__lte=date_to)
 
-    location = params.get('location', None)
-    if location is not None and location is not '':
+    location = get_param_value('location')
+    if location is not None:
         cases = cases.filter(ZS=location)
 
-    source = params.get('source', None)
-    if source is not None and location is not '':
+    source = get_param_value('source')
+    if source is not None:
         cases = cases.filter(source=source)
+
     return cases
+
+
+@dataset(params_schema=filtered_schema)
+def list_locations(params):
+    cases = get_cases_filtered(params, ignore_params=['location'])
+    return cases.values('ZS').distinct()
 
 
 @dataset(params_schema=filtered_schema)

@@ -1,8 +1,8 @@
 from base64 import b64encode
 from pandas import DataFrame, concat as pandasconcat
 from django.conf import settings
+from django.db import transaction
 from hat.cases.models import Case
-from hat.common.sqlalchemy import engine
 import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
 
@@ -48,10 +48,9 @@ def load_into_db(df: DataFrame) -> DataFrame:
         .drop_duplicates()
 
     # Insert new docs
-    table_name = Case.objects.model._meta.db_table
     if len(df) > 0:
-        with engine.begin() as conn:
-            df.to_sql(table_name, conn, if_exists='append', index=False)
+        cases = [Case(**row.dropna().to_dict()) for _, row in df.iterrows()]
+        Case.objects.bulk_create(cases)
 
     # Update duplicates
     if len(duplicates) > 0:
@@ -61,8 +60,6 @@ def load_into_db(df: DataFrame) -> DataFrame:
 
 
 def update_entries(duplicates):
-    ids = list(duplicates['document_id'])
-
     # remove unwanted columns
     # we only want to add test results:
     duplicates.drop(
@@ -96,9 +93,8 @@ def update_entries(duplicates):
         errors='ignore'
     )
 
-    records = Case.objects.filter(document_id__in=ids)
-
-    for index, row in duplicates.iterrows():
-        records \
-            .filter(document_id=row['document_id']) \
-            .update(**row.dropna().to_dict())
+    # Use a transaction to bundle updates for better performance
+    with transaction.atomic():
+        for index, row in duplicates.iterrows():
+            Case.objects.filter(document_id=row['document_id']) \
+                        .update(**row.dropna().to_dict())

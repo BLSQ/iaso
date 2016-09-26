@@ -1,4 +1,7 @@
 from functools import wraps
+from datetime import datetime
+from calendar import monthrange
+import pytz
 from django.db.models import Q, Count, Min, Max
 from django.db.models.expressions import RawSQL
 from rest_framework import viewsets
@@ -58,19 +61,57 @@ def dataset(params_schema=None):
     return decorator
 
 
-@dataset()
+filtered_schema = {
+    'type': 'object',
+    'properties': {
+        'date': {'type': 'string'},
+        'location': {'type': 'string'},
+        'source': {'type': 'string'}
+    },
+    'additionalProperties': False,
+}
+
+
+def get_cases_filtered(params):
+    '''
+    Takes the requests parameters as args and returns a filtered Case QuerySet.
+    '''
+    cases = Case.objects
+    date = params.get('date', None)
+    if date is not None and date is not '':
+        # Parse time with manually added UTC timezone offset
+        date_from = datetime.strptime(date + "-+0000", "%Y-%m-%z")
+        # Get the last day of the month
+        (_, last_day) = monthrange(date_from.year, date_from.month)
+        # Construct the upper bound of our date range
+        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC)
+        cases = cases.filter(document_date__gte=date_from, document_date__lte=date_to)
+
+    location = params.get('location', None)
+    if location is not None and location is not '':
+        cases = cases.filter(ZS=location)
+
+    source = params.get('source', None)
+    if source is not None and location is not '':
+        cases = cases.filter(source=source)
+    return cases
+
+
+@dataset(params_schema=filtered_schema)
 def count_total(params):
-    cases = Case.objects.all()
+    cases = get_cases_filtered(params)
     tested = cases.filter(Q_screening | Q_confirmation)
-    return {'registered': cases.count(),
-            'tested': tested.count(),
-            'male': tested.filter(sex='male').count(),
-            'female': tested.filter(sex='female').count()}
+    return {
+        'registered': cases.count(),
+        'tested': tested.count(),
+        'male': tested.filter(sex='male').count(),
+        'female': tested.filter(sex='female').count()
+    }
 
 
-@dataset()
+@dataset(params_schema=filtered_schema)
 def count_screened(params):
-    cases = Case.objects.filter(Q_screening)
+    cases = get_cases_filtered(params).filter(Q_screening)
     return {
         'total': cases.count(),
         'positive': cases.filter(Q_screening_positive).count(),
@@ -80,21 +121,25 @@ def count_screened(params):
     }
 
 
-@dataset()
+@dataset(params_schema=filtered_schema)
 def count_confirmed(params):
-    cases = Case.objects.filter(Q_confirmation)
-    return {'total': cases.count(),
-            'positive': cases.filter(Q_confirmation_positive).count(),
-            'negative': cases.exclude(Q_confirmation_positive).count()}
+    cases = get_cases_filtered(params).filter(Q_confirmation)
+    return {
+        'total': cases.count(),
+        'positive': cases.filter(Q_confirmation_positive).count(),
+        'negative': cases.exclude(Q_confirmation_positive).count()
+    }
 
 
-@dataset()
+@dataset(params_schema=filtered_schema)
 def campaign_meta(params):
-    cases = Case.objects.all()
-    return {'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
-            'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
-            'az_visited': cases.values('AZ').distinct().count(),
-            'villages_visited': cases.values('village').distinct().count()}
+    cases = get_cases_filtered(params)
+    return {
+        'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
+        'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
+        'az_visited': cases.values('AZ').distinct().count(),
+        'villages_visited': cases.values('village').distinct().count()
+    }
 
 
 @dataset(params_schema={

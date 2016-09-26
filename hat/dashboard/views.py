@@ -16,9 +16,13 @@ def testapp(request):
 @login_required()
 @require_http_methods(['GET'])
 def monthly_report(request):
-    locations = Case.objects.order_by().values('ZS').distinct()
+    locations = Case.objects \
+                    .filter(ZS__isnull=False) \
+                    .values('ZS') \
+                    .distinct()
     sources = Case.objects.order_by().values('source').distinct()
     dates = Case.objects \
+                .filter(document_date__isnull=False) \
                 .annotate(date=RawSQL('date_trunc(%s, document_date)', ('month',))) \
                 .values('date') \
                 .order_by('date') \

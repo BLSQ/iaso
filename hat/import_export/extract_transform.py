@@ -8,7 +8,6 @@ import hat.common.mdb as mdb
 from .utils import hat_id, capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage
 
-
 # This file contains the extraction and transformation functions.
 #
 # The extraction is straight forward and will convert mdb files or json data to
@@ -23,6 +22,11 @@ from hat.import_export.errors import handle_import_stage, ImportStage
 # return the right result, it is important to use the foreign keys of related
 # tables as DataFrame indices, so that columns of Series assigned to the
 # DataFrame end up in the correct row.
+
+
+def series_to_str(s: Series) -> str:
+    return ', '.join(str(x) for x in s.dropna().values)
+
 
 ################################################################################
 # Historic transform helper functions
@@ -92,7 +96,7 @@ def historic_get_secondary_effects(x):
 
 def historic_get_followup_test_result(main_table, related_table, field):
     groups = related_table[field].groupby(related_table.index.values)
-    return groups.agg(lambda series: str(series.dropna().values))
+    return groups.agg(series_to_str)
 
 
 ################################################################################
@@ -192,7 +196,7 @@ def pv_get_treatment_result(main_table, related_table, field) -> Series:
 
 
 def pv_has_secondary_effects(main_table, related_table, field) -> Series:
-    df_yes = related_table[related_table[field] == 'Qui']
+    df_yes = related_table[related_table[field] == 'Oui']
     return Series(main_table.index, index=main_table.index).isin(df_yes.index)
 
 
@@ -202,7 +206,7 @@ def pv_get_followup_done(main_table, related_table, field) -> Series:
 
 def pv_get_followup_test_result(main_table, related_table, field) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
-    return groups.agg(lambda series: str(series.dropna().values))
+    return groups.agg(series_to_str)
 
 
 ################################################################################
@@ -1275,6 +1279,8 @@ def transform_field(source_field, main_table_name, tables) -> Series:
                     raise ValueError('Multifield: ' + field + ' in: ' + table_name +
                                      ' must have a "field" property')
                 result_series.append(transform_field(acc_field, main_table_name, tables))
+            # Reduce the result set by combining the result Series one by one after another
+            # The result of each combination is used for the next reduce iteration.
             r = reduce(lambda s1, s2: s1.combine(s2, reduce_func), result_series)
             return r
 

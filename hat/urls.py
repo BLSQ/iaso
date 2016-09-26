@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^playground/', include('hat.playground.urls', 'playground')),
 ]
 
-if settings.DEBUG:
+if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar
     urlpatterns += [
         url(r'^__debug__/', include(debug_toolbar.urls)),

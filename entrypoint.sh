@@ -43,6 +43,7 @@ case "$1" in
     ./scripts/start_web.sh
   ;;
   "start_dev" )
+    export SHOW_DEBUG_TOOLBAR=true
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
     ./manage.py setupcouchdb

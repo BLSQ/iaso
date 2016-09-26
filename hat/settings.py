@@ -240,6 +240,6 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     # Always show the debug toolbar when `DEBUG == True`
-    "SHOW_TOOLBAR_CALLBACK" : lambda request: DEBUG
+    "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG
 }
 DEBUG_TOOLBAR_PATCH_SETTINGS = False

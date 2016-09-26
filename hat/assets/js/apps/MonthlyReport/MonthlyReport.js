@@ -19,14 +19,17 @@ function createUrl ({date, source, location}) {
   return url
 }
 
-const Row = ({ className, label, value, definition }) => {
+const Row = ({ className, label, value, definition, download }) => {
   return (
     <li className={className}>
       <span>
         {label}
         {definition && <em className='list__item__definition'>* {definition}</em>}
       </span>
-      <span>{value}</span>
+      <span>
+        <span className='list__item__number'>{value}</span>
+        {download}
+      </span>
     </li>
   )
 }
@@ -39,7 +42,7 @@ export const DataTable = ({ data: { total, screening, confirmation, meta, locati
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          Results
+          <FormattedMessage id='monthlyreport.header.results' defaultMessage='Results' />
         </h2>
       </div>
       <section>
@@ -50,6 +53,7 @@ export const DataTable = ({ data: { total, screening, confirmation, meta, locati
           <Row className='list__item--stats--important list__item--stats--blue'
             label={<FormattedMessage id='monthlyreport.items.villages_visited' defaultMessage='Villages visited' />}
             value={meta.villages_visited} />
+
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aires de Santé visited' />}
             value={meta.az_visited} />

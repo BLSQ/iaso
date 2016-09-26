@@ -14,8 +14,8 @@
   display: flex;
   justify-content: space-between;
   padding: $padding-unit*.75 $padding-unit;
-  border-top: 1px solid $gray;
   font-size: $font-size-m;
+  border-top: 1px solid $gray;
   &:last-of-type {
     border-bottom: 1px solid $gray;
   }
@@ -36,12 +36,21 @@
   &--purple {
     background: rgba($purple, 0.1);
   }
+  [class^="button"] {
+    margin-top: 0.5em;
+    /*background: $orange;*/
+  }
 }
 
 .list__item__definition {
   @include text--caption;
   display: block;
   margin-top: 0.75em;
+}
+
+.list__item__number {
+  display: block;
+  text-align: right;
 }
 
 .list__header {

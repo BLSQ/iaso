@@ -10,35 +10,22 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 from hat.cases.models import Case
 from hat.common.jsonschema_validator import DefaultValidator
-
-
-SCREENING_FIELDS = [
-    "test_rdt",
-    "test_catt",
-]
-
-CONFIRMATION_FIELDS = [
-    "test_maect",
-    "test_ge",
-    "test_pg",
-    "test_ctcwoo",
-    "test_pl",
-]
+from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, CONFIRMATION_TEST_FIELDS
 
 Q_screening = Q()
-for field in SCREENING_FIELDS:
+for field in SCREENING_TEST_FIELDS:
     Q_screening |= Q(**{field + '__isnull': False})
 
 Q_screening_positive = Q()
-for field in SCREENING_FIELDS:
+for field in SCREENING_TEST_FIELDS:
     Q_screening_positive |= Q(**{field: True})
 
 Q_confirmation = Q()
-for field in CONFIRMATION_FIELDS:
+for field in CONFIRMATION_TEST_FIELDS:
     Q_confirmation |= Q(**{field + '__isnull': False})
 
 Q_confirmation_positive = Q()
-for field in CONFIRMATION_FIELDS:
+for field in CONFIRMATION_TEST_FIELDS:
     Q_confirmation_positive |= Q(**{field: True})
 
 datasets = {}

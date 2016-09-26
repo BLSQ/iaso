@@ -27,6 +27,11 @@
           </li>
         {% endif %}
         {% if user.is_superuser %}
+          <li class="navigation__menu__item{% if ns == 'dashboard' %}--active{% endif %}">
+            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly Report" %}</a>
+          </li>
+        {% endif %}
+        {% if user.is_superuser %}
           <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
             <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
           </li>

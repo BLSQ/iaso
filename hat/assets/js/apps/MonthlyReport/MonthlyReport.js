@@ -85,6 +85,11 @@ export const DataTable = ({ data: { total, screening, confirmation, meta, locati
         </h3>
         <ul className='list--stats'>
           <Row className='list__item--stats--important list__item--stats--yellow'
+            label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants missing confirmation tests' />}
+            definition={<FormattedMessage id='monthlyreport.items.confirmedmissing.definition' defaultMessage='Participants with a positive screening test, but without a confirmation test' />}
+            value={screening.missing_confirmation} />
+
+          <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.confirmedpositive' defaultMessage='Confirmed cases' />}
             definition={<FormattedMessage id='monthlyreport.items.confirmedpositive.definition' defaultMessage='Participants with a positive confirmation test' />}
             value={confirmation.positive} />
@@ -98,11 +103,6 @@ export const DataTable = ({ data: { total, screening, confirmation, meta, locati
             label={<FormattedMessage id='monthlyreport.items.confirmednegative' defaultMessage='Negative cases' />}
             definition={<FormattedMessage id='monthlyreport.items.confirmednegative.definition' defaultMessage='Participants with a negative confirmation test' />}
             value={confirmation.negative} />
-
-          <Row className='list__item--stats'
-            label={<FormattedMessage id='monthlyreport.items.confirmedmissing' defaultMessage='Participants missing confirmation tests' />}
-            definition={<FormattedMessage id='monthlyreport.items.confirmedmissing.definition' defaultMessage='Participants with a positive screening test, but without a confirmation test' />}
-            value={screening.missing_confirmation} />
         </ul>
       </section>
 
@@ -115,14 +115,6 @@ export const DataTable = ({ data: { total, screening, confirmation, meta, locati
             label={<FormattedMessage id='monthlyreport.items.not_tested' defaultMessage='Participants missing test results' />}
             definition={<FormattedMessage id='montlyreport.items.not_tested.definition' defaultMessage='Participants’ details registered but no test result was added' />}
             value={total.registered - total.tested} />
-
-          <Row className='list__item--stats'
-            label={<FormattedMessage id='monthlyreport.items.female' defaultMessage='Female participants tested' />}
-            value={total.female} />
-
-          <Row className='list__item--stats'
-            label={<FormattedMessage id='monthlyreport.items.male' defaultMessage='Male participants tested' />}
-            value={total.male} />
         </ul>
       </section>
     </div>

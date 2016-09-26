@@ -182,7 +182,9 @@ def pv_get_pl_liquid_result(x):
 
 def pv_get_treatment_date(main_table, related_table, field) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
-    return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
+    # need to drop invalid dates and start on 'none'
+    # otherwise invalid dates may be chosen over real dates
+    return groups.agg(lambda series: reduce(lambda a, x: x or a, series.dropna(), None))
 
 
 def pv_get_treatment(main_table, related_table, field) -> Series:

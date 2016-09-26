@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'rest_framework',
     'hat.rq',
     'hat.couchdb',
@@ -93,7 +94,8 @@ INSTALLED_APPS = [
     'webpack_loader',
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -231,3 +233,13 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+
+def show_toolbar(request):
+    return True
+
+DEBUG_TOOLBAR_CONFIG = {
+    # Always show the debug toolbar when `DEBUG == True`
+    "SHOW_TOOLBAR_CALLBACK" : lambda request: DEBUG
+}
+DEBUG_TOOLBAR_PATCH_SETTINGS = False

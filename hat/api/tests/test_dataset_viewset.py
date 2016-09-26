@@ -14,7 +14,7 @@ class DatasetTests(APITestCase):
         url = reverse('api:datasets-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data), 6)
 
     def test_total_count(self):
         url = reverse('api:datasets-detail', args=['count_total'])

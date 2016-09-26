@@ -74,7 +74,9 @@ class SeleniumTestCase(LiveServerTestCase):
     def run(self, result=None):
         # gets the 'full suite' result so we need to compare to prev value
         if result:
-            orig_err_fail = result.errors + result.failures
+            orig_err_fail = len(result.errors) + len(result.failures)
+        else:
+            orig_err_fail = 0
 
         super().run(result)
 
@@ -82,7 +84,7 @@ class SeleniumTestCase(LiveServerTestCase):
             return
 
         # new errors emerged from this test run:
-        if result.errors + result.failures > orig_err_fail:
+        if len(result.errors) + len(result.failures) > orig_err_fail:
             sauce_api.jobs.update_job(self.browser.session_id, passed=False)
         # passed
         else:
@@ -123,3 +125,16 @@ class SeleniumTestCase(LiveServerTestCase):
         self.browser.get('http://localhost:8081/login')
         # see https://github.com/eHealthAfrica/sense-hat#fixtures for available users
         self.login('admin', 'adminadmin')
+
+    def test_monthly_report(self):
+        self.browser.get('http://localhost:8081/login')
+        # see https://github.com/eHealthAfrica/sense-hat#fixtures for available users
+        self.login('admin', 'adminadmin')
+
+        self.browser.get('http://localhost:8081/dashboard/monthly-report')
+
+        # This element is there as a beacon to show
+        # that the report has loaded and data got rendered
+        wait = WebDriverWait(self.browser, 10)
+        wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, '[data-qa=monthly-report-data-loaded]')))

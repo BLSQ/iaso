@@ -2,11 +2,11 @@
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
-{% block content %}
-  <div class="header">
-    <h2>{% trans 'Playground' %}</h2>
-  </div>
+{% block header %}
+  <h1 class="header__title">{% trans "Playground" %}</h1>
+{% endblock %}
 
+{% block content %}
   <div class="content">
     <div id='app'></div>
   </div>

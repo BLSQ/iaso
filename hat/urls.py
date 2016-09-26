@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin, auth
 from django.views.generic import TemplateView
@@ -15,3 +16,9 @@ urlpatterns = [
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
     url(r'^playground/', include('hat.playground.urls', 'playground')),
 ]
+
+if settings.SHOW_DEBUG_TOOLBAR:
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]

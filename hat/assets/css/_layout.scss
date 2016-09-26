@@ -1,4 +1,3 @@
-
 .content {
   padding: $padding-unit;
 }
@@ -11,25 +10,19 @@
 /* margin classes */
 $directions: left right top bottom;
 @each $direction in $directions {
-  .block__margin-#{$direction}-none {
+  .block--margin-#{$direction}-none {
     margin-#{$direction}: 0;
   }
-  .block--margin-#{$direction}--nano {
+  .block--margin-#{$direction}--xxs {
+    margin-#{$direction}: $padding-unit/4;
+  }
+  .block--margin-#{$direction}--xs {
     margin-#{$direction}: $padding-unit/2;
   }
-  .block--margin-#{$direction}--tiny {
+  .block--margin-#{$direction}--small {
     margin-#{$direction}: $padding-unit;
   }
-  .block--margin-#{$direction}--small {
-    margin-#{$direction}: $padding-unit*2;
-  }
-  .block--margin-#{$direction}--mid {
-    margin-#{$direction}: $padding-unit*4;
-  }
   .block--margin-#{$direction}--med {
-    margin-#{$direction}: $padding-unit*4;
-  }
-  .block--margin-#{$direction}--large {
-    margin-#{$direction}: $padding-unit*6;
+    margin-#{$direction}: $padding-unit*2;
   }
 }

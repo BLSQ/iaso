@@ -107,6 +107,8 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 
 .label--user {
   @include footer-label-styles;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .label--version {

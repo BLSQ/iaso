@@ -1,0 +1,60 @@
+@mixin reset-list-style {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list--stats {
+  @include reset-list-style;
+  margin-top: $padding-unit*.5;
+  margin-bottom: $padding-unit*2;
+}
+
+[class*="list__item--stats"] {
+  display: flex;
+  justify-content: space-between;
+  padding: $padding-unit*.75 $padding-unit;
+  font-size: $font-size-m;
+  border-top: 1px solid $gray;
+  &:last-of-type {
+    border-bottom: 1px solid $gray;
+  }
+}
+
+.list__item--stats {
+  &--important {
+    font-weight: bold;
+    font-size: $font-size-l;
+    background: $background-gray;
+  }
+  &--blue {
+    background: rgba($blue, 0.08);
+  }
+  &--yellow {
+    background: rgba($yellow, 0.1);
+  }
+  &--purple {
+    background: rgba($purple, 0.1);
+  }
+  [class^="button"] {
+    margin-top: 0.5em;
+    /*background: $orange;*/
+  }
+}
+
+.list__item__definition {
+  @include text--caption;
+  display: block;
+  margin-top: 0.75em;
+}
+
+.list__item__number {
+  display: block;
+  text-align: right;
+}
+
+.list__header {
+  padding: 0 $padding-unit;
+  color: $mid-gray;
+  font-weight: normal;
+}

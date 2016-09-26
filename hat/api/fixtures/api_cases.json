@@ -4,7 +4,11 @@
     "pk": 1,
     "fields": {
       "document_id": "1",
-      "document_date": "2016-01-01T00:00:00Z"
+      "document_date": "2016-01-01T00:00:00Z",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "sex": "male"
     }
   },
   {
@@ -13,7 +17,12 @@
     "fields": {
       "document_id": "2",
       "document_date": "2016-01-02T00:00:00Z",
-      "test_rdt": true
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "sex": "male",
+      "test_rdt": true,
+      "test_maect": false
     }
   },
   {
@@ -22,6 +31,10 @@
     "fields": {
       "document_id": "3",
       "document_date": "2016-01-03T00:00:00Z",
+      "sex": "male",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
       "test_rdt": false
     }
   },
@@ -31,6 +44,10 @@
     "fields": {
       "document_id": "3",
       "document_date": "2016-01-04T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
       "test_catt": true
     }
   },
@@ -40,6 +57,10 @@
     "fields": {
       "document_id": "4",
       "document_date": "2016-01-05T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muwanda-koso",
+      "village": "Polongo",
       "test_maect": true
     }
   },
@@ -49,6 +70,10 @@
     "fields": {
       "document_id": "5",
       "document_date": "2016-01-06T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muwanda-koso",
+      "village": "Kindundu",
       "test_ge": true
     }
   }

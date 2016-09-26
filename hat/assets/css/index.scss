@@ -1,14 +1,19 @@
+$fa-font-path: "~font-awesome/fonts";
+@import "~font-awesome/scss/font-awesome";
 @import "./reset";
 @import "./settings";
 @import "./fonts";
+@import "./mixins";
 @import "./layout";
 @import "./type-styles";
 @import "./forms";
 @import "./buttons";
 @import "./tables";
+@import "./lists";
 @import "./navigation";
 @import "./header";
 @import "./widget";
+@import "./filtering";
 @import "./jsonschema";
 
 body {

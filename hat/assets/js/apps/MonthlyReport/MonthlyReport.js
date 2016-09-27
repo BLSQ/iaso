@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { push } from 'react-router-redux'
 import { FormattedMessage, FormattedDate } from 'react-intl'
+import VegaLiteVis from '../../components/vega-lite-vis'
+import VISUALIZATIONS from '../../../json/visualizations.json'
 
 function createUrl ({date, source, location}) {
   let url = '/charts'
@@ -128,6 +130,30 @@ export const DataTable = ({
   )
 }
 
+export const DataGraph = ({
+  data: {
+    testedPerDay
+  }
+}) => {
+  return (
+    <div className='widget__container' data-qa='monthly-report-data-loaded'>
+      <div className='widget__header'>
+        <h2 className='widget__heading'>
+          <FormattedMessage id='monthlyreport.header.graphs' defaultMessage='Graphs' />
+        </h2>
+      </div>
+      <section>
+        <h3 className='list__header block--margin-top--small'>
+          <FormattedMessage id='monthlyreport.header.graph_per_day' defaultMessage='Tested participants per day' />
+        </h3>
+        <div className='widget__content'>
+          <VegaLiteVis data={testedPerDay} spec={VISUALIZATIONS.count_per_day.spec} />
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export default class MonthlyReport extends Component {
   constructor () {
     super()
@@ -208,6 +234,7 @@ export default class MonthlyReport extends Component {
               </div>
           }
           {data && <DataTable data={data} />}
+          {data && <DataGraph data={data} />}
         </div>
       </div>
     )

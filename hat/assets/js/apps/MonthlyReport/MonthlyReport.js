@@ -219,7 +219,6 @@ export default class MonthlyReport extends Component {
                 </div>
               </div>
           }
-          
           {data && <DataTable data={data} />}
         </div>
       </div>

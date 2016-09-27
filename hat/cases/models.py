@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class HatCase(models.Model):
+class Case(models.Model):
     SOURCE_CHOICES = (
         ('historic', 'Historic'),
         ('mobile_backup', 'Mobile backup'),
@@ -45,47 +45,27 @@ class HatCase(models.Model):
     treatment_end_date = models.DateTimeField(null=True)
     treatment_prescribed = models.TextField(null=True)
     treatment_secondary_effects = models.NullBooleanField()
-    TREATMENT_RESULT_CHOICES = (
-        ('recovered', 'Recovered'),
-        ('healthy', 'Healthy'),
-        ('relapse', 'Relapse'),
-        ('disappeared', 'Disappeared'),
-        ('died', 'Died'),
-        ('transferred', 'Transferred'),
-        ('other', 'Other'),
-    )
-    treatment_result = models.TextField(choices=TREATMENT_RESULT_CHOICES, null=True)
+    treatment_result = models.TextField(null=True)
 
-    # mobile and historic data sources
     test_rdt = models.NullBooleanField(null=True)
     test_catt = models.NullBooleanField(null=True)
     test_maect = models.NullBooleanField(null=True)
     test_ge = models.NullBooleanField(null=True)
-
-    # from mobile data
     test_pg = models.NullBooleanField(null=True)
     test_ctcwoo = models.NullBooleanField(null=True)
     test_pl = models.NullBooleanField(null=True)
-
-    # from historic data
-    test_catt_total_blood = models.TextField(null=True)
-
     test_catt_dilution = models.TextField(null=True)
     test_lymph_node_puncture = models.NullBooleanField(null=True)
     test_sf = models.NullBooleanField(null=True)
-    test_woo = models.NullBooleanField(null=True)
-    test_maec = models.NullBooleanField(null=True)
-    test_maect_bc = models.NullBooleanField(null=True)
     test_lcr = models.NullBooleanField(null=True)
-    test_lcr_fr = models.NullBooleanField(null=True)
-    test_lcr_scm = models.NullBooleanField(null=True)
     test_dil = models.NullBooleanField(null=True)
     test_parasit = models.NullBooleanField(null=True)
     test_sternal_puncture = models.NullBooleanField(null=True)
     test_ifat = models.NullBooleanField(null=True)
-
     test_clinical_sickness = models.NullBooleanField(null=True)
     test_other = models.NullBooleanField(null=True)
+    # Some of these could be used for validating the correctness of the pl_result.
+    # The pl_result field is the only one of this that is actually used for aggregation.
     test_pl_liquid = models.TextField(null=True)
     test_pl_trypanosome = models.TextField(null=True)
     test_pl_gb_mm3 = models.TextField(null=True)
@@ -118,4 +98,5 @@ class HatCase(models.Model):
             ("import", "Can import data"),
             ("export", "Can export data"),
             ("export_full", "Can export the full dataset as csv"),
+            ("view", "Can view data"),
         )

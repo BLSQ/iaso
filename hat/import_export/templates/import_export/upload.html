@@ -16,7 +16,7 @@
         <form method="POST" action="{% url 'import:upload' %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form }}
-          <div class="block--margin-top--nano">
+          <div class="block--margin-top--xs">
             <button type="submit" class="button">{% trans "Import" %}</button>
           </div>
 

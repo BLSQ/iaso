@@ -18,11 +18,13 @@
 
     {% block head %}
     {% endblock %}
+
+    {% if user.is_authenticated %}
+    <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
+    {% endif %}
   </head>
   <body>
-    <div class="layout">
-      {% block body %}
-      {% endblock %}
-    </div>
+    {% block body %}
+    {% endblock %}
   </body>
 </html>

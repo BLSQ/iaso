@@ -24,23 +24,33 @@ case "$1" in
     # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
-    ./manage.py test
+    ./manage.py test --exclude-tag selenium
     npm run mocha
+  ;;
+  "test_integration" )
+    export TESTING=true
+    ./scripts/wait_for_dbs.sh
+    ./manage.py setupcouchdb
+    # create static files
+    npm run webpack
+    ./manage.py test --tag=selenium --failfast
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
-    ./manage.py migrate
+    ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
     ./manage.py setupcouchdb
     ./scripts/start_web.sh
   ;;
   "start_dev" )
+    export SHOW_DEBUG_TOOLBAR=true
     ./scripts/wait_for_dbs.sh
-    ./manage.py migrate
+    ./manage.py migrate --noinput
     ./manage.py setupcouchdb
-    export DEV_SERVER='true'
-    npm run webpack-server &
     ./manage.py runserver 0.0.0.0:8080
+  ;;
+  "start_webpack" )
+    npm run webpack-server
   ;;
   "start_rq" )
     ./scripts/start_rq.sh

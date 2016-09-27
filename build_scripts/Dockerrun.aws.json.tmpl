@@ -2,12 +2,6 @@
   "AWSEBDockerrunVersion": 2,
   "volumes": [
     {
-      "name": "logstash-conf",
-      "host": {
-        "sourcePath": "/etc/logstash"
-      }
-    },
-    {
       "name": "sense-shared",
       "host": {
         "sourcePath": "/opt/shared"
@@ -16,30 +10,10 @@
   ],
   "containerDefinitions": [
     {
-      "name": "logstash",
-      "image": "387526361725.dkr.ecr.us-east-1.amazonaws.com/logstash:latest",
-      "entryPoint": ["logstash", "agent", "-f", "/src/logstash.conf"],
-      "essential": true,
-      "memory": 512,
-      "mountPoints": [
-      {
-        "sourceVolume": "logstash-conf",
-        "containerPath": "/src/",
-        "readOnly": true
-      }
-      ],
-        "portMappings": [
-        {
-          "hostPort": 5044,
-          "containerPort": 5044
-        }
-      ]
-    },
-    {
       "name": "sense-web",
       "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/hat-historical:${TAG}",
       "essential": true,
-      "memory": 512,
+      "memory": 1024,
       "hostname": "sense-web",
       "command": [ "start" ],
       "portMappings": [
@@ -56,10 +30,11 @@
         }
       ],
       "logConfiguration": {
-        "logDriver": "syslog",
-        "options":{
-          "syslog-address": "tcp://localhost:5044",
-          "tag": "sense-web"
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "sense-hat-${BRANCH}",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "sense-hat"
         }
       },
       "links": [
@@ -73,10 +48,11 @@
       "memory": 512,
       "hostname": "redis",
       "logConfiguration": {
-        "logDriver": "syslog",
-        "options":{
-          "syslog-address": "tcp://localhost:5044",
-          "tag": "sense-redis"
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "sense-hat-${BRANCH}",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "sense-hat"
         }
       }
     },
@@ -95,10 +71,11 @@
         }
       ],
       "logConfiguration": {
-        "logDriver": "syslog",
-        "options":{
-          "syslog-address": "tcp://localhost:5044",
-          "tag": "sense-rq"
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "sense-hat-${BRANCH}",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "sense-hat"
         }
       },
       "links": [

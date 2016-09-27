@@ -16,18 +16,18 @@ class Command(BaseCommand):
         dir = options['directory']
         result = []
         files = [f for f in os.listdir(dir) if path.isfile(path.join(dir, f))]
-        self.stdout.write('Importing {} files from {}.'.format(len(files), options['directory']))
+        self.stdout.write('Importing {} files from {}'.format(len(files), options['directory']))
         for i, filename in enumerate(files):
+            self.stdout.write('-- #{}/{} - {}'.format(i+1, len(files), filename))
             r = import_file(filename, path.join(dir, filename), options['store'])
-            self.stdout.write('-- #{}/{} -- Imported {} of {} records.'.format(
-                i + 1, len(files), r['num_imported'], r['num_total']))
             if len(r['errors']) > 0:
-                self.stdout.write('-- ERROR:')
-                self.stdout.write('-- {}'.format(r['errors']))
+                self.stdout.write('-- ERROR: {}'.format(r['errors']))
+            else:
+                self.stdout.write('-- SUCCESS: Imported {} of {} records'.format(
+                    r['num_imported'], r['num_total']))
             result.append(r)
-
-        num_total = sum(r['num_total'] for r in result)
-        num_imported = sum(r['num_imported'] for r in result)
+        num_total = sum(r.get('num_total', 0) for r in result)
+        num_imported = sum(r.get('num_imported', 0) for r in result)
         num_errors = sum(len(r['errors']) for r in result)
         self.stdout.write('---------- Import done ----------')
         self.stdout.write('Total number of records:    {}'.format(num_total))

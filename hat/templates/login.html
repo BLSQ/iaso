@@ -26,10 +26,10 @@
           {% endif %}
         {% endif %}
 
-        <form method="post" action="{% url 'login' %}">
+        <form method="post" data-qa="login-form" action="{% url 'login' %}">
           {% csrf_token %}
           {{ form }}
-          <div class="block--margin-top--nano">
+          <div class="block--margin-top--xs">
             <button type="submit" class="button">{% trans "Login" %}</button>
           </div>
         </form>

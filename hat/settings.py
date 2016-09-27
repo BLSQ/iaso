@@ -14,6 +14,8 @@ import os
 
 TESTING = (os.environ.get("TESTING", '').lower() == "true")
 
+SHOW_DEBUG_TOOLBAR = os.environ.get("SHOW_DEBUG_TOOLBAR", '').lower() == 'true'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,6 +32,9 @@ DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
 
 ALLOWED_HOSTS = ['*']
 
+FIXTURE_DIRS = (
+    'hat/fixtures/',
+)
 
 # Logging
 
@@ -77,16 +82,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
+    'rest_framework',
     'hat.rq',
     'hat.couchdb',
     'hat.cases',
     'hat.import_export',
     'hat.dashboard',
+    'hat.playground',
     'hat.maintenance',
-    'webpack_loader'
+    'hat.api',
+    'hat.integration_tests',
+    'webpack_loader',
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -214,3 +225,19 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
     }
 }
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'hat.api.permissions.UserAccessPermission',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda _: SHOW_DEBUG_TOOLBAR
+}
+DEBUG_TOOLBAR_PATCH_SETTINGS = False

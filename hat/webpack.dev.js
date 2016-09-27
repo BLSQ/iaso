@@ -32,6 +32,16 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
     ],
+    'playground': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/playground'
+    ],
+    'monthly_report': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/monthlyReport'
+    ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -40,6 +50,8 @@ module.exports = {
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles/'),
     filename: '[name]-[hash].js',
     publicPath: WEBPACK_URL + '/static/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
@@ -74,7 +86,7 @@ module.exports = {
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react']
+        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react&presets[]=stage-2']
       },
       {
         test: /\.css$/,

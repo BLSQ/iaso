@@ -1,5 +1,7 @@
 # Sense HAT
 
+[![Build Status](https://api.travis-ci.com/eHealthAfrica/sense-hat.svg?token=zzNmUS8bNZp7na7r13qk)](https://travis-ci.com/eHealthAfrica/sense-hat)
+
 This is the webapp for Sense HAT. The mobile companion app can be found [here](https://github.com/eHealthAfrica/sense-hat-mobile).
 
 ## Run
@@ -50,6 +52,21 @@ Postgresql uses Django models for table configuration and migrations. CouchDB is
 ## Tests and linting
 
 Tests can be executed with `docker-compose run web test`. This also runs [flake8](http://flake8.pycqa.org/en/latest/) to check the code.
+
+### Fixtures
+
+User fixtures can be loaded when testing. This is the list(<name>:<password>) of users:
+- `admin:adminadmin`
+- `supervisor:supervisorsupervisor`
+- `importer:importerimporter`
+- `full-exporter:exporterexporter`
+- `anon-exporter:exporterexporter`
+
+To export some data from the database to create fixtures run e.g.:
+`docker-compose run web manage dumpdata auth.User --indent 2`
+
+To load some fixture into the database manually run e.g.:
+`docker-compose run web manage loaddata users`
 
 ## Code reloading
 

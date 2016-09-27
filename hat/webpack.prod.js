@@ -18,10 +18,14 @@ module.exports = {
     'common': ['react', 'react-dom', 'react-intl'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
+    'playground': './assets/js/playground',
+    'monthly_report': './assets/js/monthlyReport',
     'styles': './assets/css/index.scss'
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles'),
     filename: '[name]-[chunkhash].js'
   },
@@ -68,7 +72,8 @@ module.exports = {
         loaders: ['react-hot', 'babel?' + JSON.stringify({
           presets: [
             'es2015',
-            'react'
+            'react',
+            'stage-2'
           ],
           plugins: [
             ['react-intl', {

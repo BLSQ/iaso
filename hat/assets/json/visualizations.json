@@ -1,0 +1,15 @@
+{
+    "count_by_date": {
+        "type": "vega-lite",
+        "spec": {
+            "mark": "bar",
+            "encoding": {
+                "y": {"field": "count", "type": "quantitative"},
+                "x": {"field": "date", "type": "nominal"}
+            }
+        }
+    },
+    "single_value": {
+        "type": "value"
+    }
+}

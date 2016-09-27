@@ -12,12 +12,14 @@ $blue: #2A89E8;
 $green: #45D288;
 $orange: #FFA400;
 $yellow: #F3D110;
+$purple: #8448FD;
 $dark-blue: #333645;
 $dark-green: #22955A;
 
 $danger: $red;
 $warning: $orange;
 $success: $green;
+$text-color: $dark-blue;
 
 /* type */
 $body-font-family: "Lato", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
@@ -32,3 +34,4 @@ $font-size-xxl: 2.25rem; // 36px
 
 
 $padding-unit: 32px;
+$navigation-width: 220px;

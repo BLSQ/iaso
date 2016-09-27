@@ -4,7 +4,7 @@ import { FormattedMessage, FormattedDate } from 'react-intl'
 import VegaLiteVis from '../../components/vega-lite-vis'
 import VISUALIZATIONS from '../../../json/visualizations.json'
 
-function createUrl ({date, source, location}) {
+export const createUrl = ({date, source, location}) => {
   let url = '/charts'
   if (location) {
     url = `${url}/location/${location}`
@@ -183,7 +183,7 @@ export default class MonthlyReport extends Component {
           </div>
           <div className='filter__container__select'>
             <label htmlFor='location' className='filter__container__select__label'>Location</label>
-            <select disabled={loading} name='location' value={location} onChange={this.locationHandler} className='select--minimised'>
+            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 <FormattedMessage
                   id='monthlyreport.labels.national'

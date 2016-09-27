@@ -17,7 +17,8 @@ const urls = [
   '/api/datasets/count_total',
   '/api/datasets/count_screened',
   '/api/datasets/count_confirmed',
-  '/api/datasets/campaign_meta'
+  '/api/datasets/campaign_meta',
+  '/api/datasets/tested_per_day'
 ]
 
 // Assume all the URls are gonna use the same filters
@@ -72,13 +73,13 @@ export class MonthlyReportContainer extends Component {
     this._currentFilters = JSON.parse(JSON.stringify(params))
 
     Promise.all(urls.map(fetchAndParse, params))
-      .then(([locations, total, screening, confirmation, meta]) => {
+      .then(([locations, total, screening, confirmation, meta, testedPerDay]) => {
         // Collect all responses in one action
         dispatch({
           type: LOAD_SUCCESS,
           // destructure responses array into object here,
           // since its dependent on URL order above
-          payload: { locations, total, screening, confirmation, meta }
+          payload: { locations, total, screening, confirmation, meta, testedPerDay }
         })
       })
       .catch((err) => {

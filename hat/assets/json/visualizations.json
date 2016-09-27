@@ -1,15 +1,33 @@
 {
-    "count_by_date": {
-        "type": "vega-lite",
-        "spec": {
-            "mark": "bar",
-            "encoding": {
-                "y": {"field": "count", "type": "quantitative"},
-                "x": {"field": "date", "type": "nominal"}
-            }
-        }
-    },
-    "single_value": {
-        "type": "value"
+  "count_by_date": {
+    "type": "vega-lite",
+    "spec": {
+      "mark": "bar",
+      "encoding": {
+        "y": {"field": "count", "type": "quantitative"},
+        "x": {"field": "date", "type": "nominal"}
+      }
     }
+  },
+  "count_per_day": {
+    "type": "vega-lite",
+    "spec": {
+      "mark": "bar",
+      "encoding": {
+        "y": {
+          "field": "count",
+          "type": "quantitative",
+          "title": "${numParticipants}"
+        },
+        "x": {
+          "field": "day",
+          "type": "nominal",
+          "title": "${dayOfMonth}"
+        }
+      }
+    }
+  },
+  "single_value": {
+    "type": "value"
+  }
 }

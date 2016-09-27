@@ -42,7 +42,8 @@ export const DataTable = ({
     screening,
     confirmation,
     meta,
-    location
+    location,
+    testedPerDay
   }
 }) => {
   var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
@@ -73,6 +74,7 @@ export const DataTable = ({
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.daily_screened' defaultMessage='Average number of participants screened per day' />}
+            definition={<FormattedMessage id='monthlyreport.items.daily_screened.definition' defaultMessage='Participants with a screening test' />}
             value={Math.round(screening.total / daysOut)} />
 
           <Row className='list__item--stats'
@@ -86,6 +88,14 @@ export const DataTable = ({
               </span>
             }
             />
+
+          <div className='widget__content list__item--graph' data-qa='monthly-report-data-loaded'>
+            <p>
+              <FormattedMessage id='monthlyreport.header.graphs' defaultMessage='Number of participants tested on each day' />
+            </p>
+            <VegaLiteVis data={testedPerDay} spec={VISUALIZATIONS.count_per_day.spec} />
+          </div>
+
         </ul>
       </section>
       <section>
@@ -117,7 +127,7 @@ export const DataTable = ({
 
       <section>
         <h3 className='list__header'>
-          <FormattedMessage id='monthlyreport.header.tests' defaultMessage='Test details' />
+          <FormattedMessage id='monthlyreport.header.tests' defaultMessage='Missing tests' />
         </h3>
         <ul className='list--stats'>
           <Row className='list__item--stats'
@@ -125,30 +135,6 @@ export const DataTable = ({
             definition={<FormattedMessage id='montlyreport.items.not_tested.definition' defaultMessage='Participants’ details registered but no test result was added' />}
             value={total.registered - total.tested} />
         </ul>
-      </section>
-    </div>
-  )
-}
-
-export const DataGraph = ({
-  data: {
-    testedPerDay
-  }
-}) => {
-  return (
-    <div className='widget__container' data-qa='monthly-report-data-loaded'>
-      <div className='widget__header'>
-        <h2 className='widget__heading'>
-          <FormattedMessage id='monthlyreport.header.graphs' defaultMessage='Graphs' />
-        </h2>
-      </div>
-      <section>
-        <h3 className='list__header block--margin-top--small'>
-          <FormattedMessage id='monthlyreport.header.graph_per_day' defaultMessage='Tested participants per day' />
-        </h3>
-        <div className='widget__content'>
-          <VegaLiteVis data={testedPerDay} spec={VISUALIZATIONS.count_per_day.spec} />
-        </div>
       </section>
     </div>
   )
@@ -233,8 +219,8 @@ export default class MonthlyReport extends Component {
                 </div>
               </div>
           }
+          
           {data && <DataTable data={data} />}
-          {data && <DataGraph data={data} />}
         </div>
       </div>
     )

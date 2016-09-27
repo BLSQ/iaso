@@ -35,15 +35,31 @@ h4, h5, h6 {
   font-size: $font-size-standard;
 }
 
-.text--error {
+@mixin text--error {
   color: $red;
 }
 
-.text--success {
+@mixin text--warning {
+  color: $orange;
+}
+
+@mixin text--success {
   color: $green;
 }
 
-@mixin text--standard { /* useful for resetting text in form elements */
+.text--error {
+  @include text--error;
+}
+
+.text--warning {
+  @include text--warning;
+}
+
+.text--success {
+  @include text--success;
+}
+
+@mixin text--standard { /* useful for resetting text in e.g. form elements */
   font-family: $body-font-family;
   font-size: $font-size-standard;
   color: $text-color;

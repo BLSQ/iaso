@@ -46,7 +46,8 @@ export const DataTable = ({
     testedPerDay
   }
 }) => {
-  var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
+  // Minimum one day out, otherwise we'll get more participants screened per day than we actually screened
+  var daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
 
   return (
     <div className='widget__container' data-qa='monthly-report-data-loaded'>

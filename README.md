@@ -57,9 +57,16 @@ Tests can be executed with `docker-compose run web test`. This also runs [flake8
 
 User fixtures can be loaded when testing. This is the list(<name>:<password>) of users:
 - `admin:adminadmin`
+- `supervisor:supervisorsupervisor`
 - `importer:importerimporter`
 - `full-exporter:exporterexporter`
 - `anon-exporter:exporterexporter`
+
+To export some data from the database to create fixtures run e.g.:
+`docker-compose run web manage dumpdata auth.User --indent 2`
+
+To load some fixture into the database manually run e.g.:
+`docker-compose run web manage loaddata users`
 
 ## Code reloading
 

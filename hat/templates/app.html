@@ -26,7 +26,7 @@
             <a href={% url "export:download" %}>{% trans "Download" %}</a>
           </li>
         {% endif %}
-        {% if user.is_superuser %}
+        {% if perms.cases.view %}
           <li class="navigation__menu__item{% if ns == 'dashboard' %}--active{% endif %}">
             <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly Report" %}</a>
           </li>

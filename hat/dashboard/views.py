@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 from django.db.models.expressions import RawSQL
@@ -14,6 +14,7 @@ def testapp(request):
 
 
 @login_required()
+@permission_required('cases.view')
 @require_http_methods(['GET'])
 def monthly_report(request):
     locations = Case.objects \

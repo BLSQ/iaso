@@ -1,16 +1,18 @@
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
 from django.db.models import Q, Count, Min, Max
 from django.db.models.expressions import RawSQL
+from django.core.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 from hat.cases.models import Case
 from hat.common.jsonschema_validator import DefaultValidator
-from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, CONFIRMATION_TEST_FIELDS
+from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
+    CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
 
 Q_screening = Q()
 for field in SCREENING_TEST_FIELDS:
@@ -27,6 +29,14 @@ for field in CONFIRMATION_TEST_FIELDS:
 Q_confirmation_positive = Q()
 for field in CONFIRMATION_TEST_FIELDS:
     Q_confirmation_positive |= Q(**{field: True})
+
+Q_staging = Q()
+for field in STAGING_TEST_FIELDS:
+    Q_staging |= Q(**{field + '__isnull': False})
+
+Q_staging_positive = Q()
+for field in STAGING_TEST_FIELDS:
+    Q_staging_positive |= Q(**{field: True})
 
 datasets = {}
 
@@ -79,8 +89,9 @@ def get_cases_filtered(params, ignore_params=None):
         # Get the last day of the month
         (_, last_day) = monthrange(date_from.year, date_from.month)
         # Construct the upper bound of our date range
-        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC)
-        cases = cases.filter(document_date__gte=date_from, document_date__lte=date_to)
+        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC) \
+            + timedelta(days=1)
+        cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
     location = get_param_value('location')
     if location is not None:
@@ -144,23 +155,25 @@ def campaign_meta(params):
     }
 
 
-@dataset(params_schema={
-    'type': 'object',
-    'properties': {
-        'date_trunc': {'enum': ['year', 'month', 'day'], 'default': 'month'},
-    },
-    'additionalProperties': False,
-})
-def list_screened(params):
-    # We want to group by some part of the date and get a count of records that match the
-    # filter. For that we select on the date truncated by postgres `date_trunc` function to
-    # the date precision we like to group on.
-    # `RawSQL` is used, because we call the Postgres builtin `date_trunc` function.
-    return Case.objects \
-               .filter(Q_screening) \
-               .annotate(date=RawSQL('date_trunc(%s, document_date)', (params['date_trunc'],))) \
-               .values('date') \
-               .annotate(count=Count('document_id'))
+@dataset(params_schema=filtered_schema)
+def tested_per_day(params):
+    cases = get_cases_filtered(params)
+    tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
+                  .annotate(date=RawSQL('date_trunc(\'day\', document_date)', [])) \
+                  .values('date') \
+                  .annotate(count=Count('document_id'))
+    date = params.get('date', None)
+    if date is None or date == '':
+        raise ValidationError('Dataset requires date query string parameter')
+    # Generate a result list that includes every day in the month.
+    # Otherwise the list would only contain the days that have data.
+    (year, month) = [int(x) for x in date.split('-')]
+    (_, num_days) = monthrange(year, month)
+    result = [{'count': 0, 'day': i+1} for i in range(num_days)]
+    for t in tested:
+        day = t['date'].day
+        result[day - 1] = {'count': t['count'], 'day': day}
+    return result
 
 
 class DatasetViewSet(viewsets.ViewSet):
@@ -185,6 +198,5 @@ class DatasetViewSet(viewsets.ViewSet):
         # might mutate the params dict with default values.
         params = dict(request.GET.items())
         if not item['params_schema'] is None:
-            # validate(params, params_schema)
             DefaultValidator(item['params_schema']).validate(params)
         return Response(item['getter'](params))

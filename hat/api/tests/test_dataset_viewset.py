@@ -51,17 +51,10 @@ class DatasetTests(APITestCase):
             datetime(2016, 1, 6, 0, 0)
         )
 
-    def test_screened_per_date_day(self):
-        url = '{}?date_trunc=day'.format(
-            reverse('api:datasets-detail', args=['list_screened']))
+    def test_tested_per_day(self):
+        url = '{}?date=2016-01'.format(
+            reverse('api:datasets-detail', args=['tested_per_day']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
-
-    def test_screened_per_date_month(self):
-        url = '{}?date_trunc=month'.format(
-            reverse('api:datasets-detail', args=['list_screened']))
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['count'], 3)
+        self.assertEqual(len(response.data), 31)
+        self.assertEqual(response.data[2]['count'], 1)

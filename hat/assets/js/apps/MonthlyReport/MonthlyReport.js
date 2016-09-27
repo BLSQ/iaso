@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
 import { push } from 'react-router-redux'
 import { FormattedMessage, FormattedDate } from 'react-intl'
+import VegaLiteVis from '../../components/vega-lite-vis'
+import VISUALIZATIONS from '../../../json/visualizations.json'
 
-function createUrl ({date, source, location}) {
+export const createUrl = ({date, source, location}) => {
   let url = '/charts'
   if (location) {
     url = `${url}/location/${location}`
@@ -40,10 +42,12 @@ export const DataTable = ({
     screening,
     confirmation,
     meta,
-    location
+    location,
+    testedPerDay
   }
 }) => {
-  var daysOut = (new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24)
+  // Minimum one day out, otherwise we'll get more participants screened per day than we actually screened
+  var daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
 
   return (
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
@@ -71,6 +75,7 @@ export const DataTable = ({
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.daily_screened' defaultMessage='Average number of participants screened per day' />}
+            definition={<FormattedMessage id='monthlyreport.items.daily_screened.definition' defaultMessage='Participants with a screening test' />}
             value={Math.round(screening.total / daysOut)} />
 
           <Row className='list__item--stats'
@@ -84,6 +89,14 @@ export const DataTable = ({
               </span>
             }
             />
+
+          <div className='widget__content list__item--graph' data-qa='monthly-report-data-loaded'>
+            <p>
+              <FormattedMessage id='monthlyreport.header.graphs' defaultMessage='Number of participants tested on each day' />
+            </p>
+            <VegaLiteVis data={testedPerDay} spec={VISUALIZATIONS.count_per_day.spec} />
+          </div>
+
         </ul>
       </section>
       <section>
@@ -115,7 +128,7 @@ export const DataTable = ({
 
       <section>
         <h3 className='list__header'>
-          <FormattedMessage id='monthlyreport.header.tests' defaultMessage='Test details' />
+          <FormattedMessage id='monthlyreport.header.tests' defaultMessage='Missing tests' />
         </h3>
         <ul className='list--stats'>
           <Row className='list__item--stats'
@@ -170,7 +183,7 @@ export default class MonthlyReport extends Component {
           </div>
           <div className='filter__container__select'>
             <label htmlFor='location' className='filter__container__select__label'>Location</label>
-            <select disabled={loading} name='location' value={location} onChange={this.locationHandler} className='select--minimised'>
+            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 <FormattedMessage
                   id='monthlyreport.labels.national'

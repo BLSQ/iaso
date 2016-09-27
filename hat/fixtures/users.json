@@ -39,6 +39,29 @@
     "model": "auth.user",
     "pk": 3,
     "fields": {
+      "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "supervisor",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-27T09:32:59.863Z",
+      "groups": [],
+      "user_permissions": [
+        ["import", "cases", "case"],
+        ["export", "cases", "case"],
+        ["export_full", "cases", "case"],
+        ["view", "cases", "case"]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
       "password": "pbkdf2_sha256$30000$Kssgqh8F2e6j$D8LjWoRgIZmQSK/TUQdZVEw+owg13VYJz9l7akqTOI4=",
       "last_login": null,
       "is_superuser": false,
@@ -61,7 +84,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 4,
+    "pk": 5,
     "fields": {
       "password": "pbkdf2_sha256$30000$LNdX7mUjGH34$M3Qko0+uZPUW0nKg1C0hKWnp5yg5c56/ipXPokeN4vo=",
       "last_login": null,
@@ -90,7 +113,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 5,
+    "pk": 6,
     "fields": {
       "password": "pbkdf2_sha256$30000$sUaQXwEX35wG$/bKQ4BY0udmBX9QPIiUvfCLQNjmvsMzq8LqzEFQj184=",
       "last_login": null,

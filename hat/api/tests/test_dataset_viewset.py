@@ -8,7 +8,7 @@ class DatasetTests(APITestCase):
     fixtures = ['users', 'api_cases.json']
 
     def setUp(self):
-        self.assertTrue(self.client.login(username='admin', password='adminadmin'))
+        self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))
 
     def test_list_datasets(self):
         url = reverse('api:datasets-list')

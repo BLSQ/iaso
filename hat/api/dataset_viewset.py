@@ -1,5 +1,5 @@
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
 from django.db.models import Q, Count, Min, Max
@@ -89,8 +89,9 @@ def get_cases_filtered(params, ignore_params=None):
         # Get the last day of the month
         (_, last_day) = monthrange(date_from.year, date_from.month)
         # Construct the upper bound of our date range
-        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC)
-        cases = cases.filter(document_date__gte=date_from, document_date__lte=date_to)
+        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC) \
+            + timedelta(days=1)
+        cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
     location = get_param_value('location')
     if location is not None:

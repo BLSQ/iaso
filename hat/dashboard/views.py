@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
@@ -22,8 +23,13 @@ def monthly_report(request):
                     .values('ZS') \
                     .distinct()
     sources = Case.objects.order_by().values('source').distinct()
+
+    # Use the start of tomorrow as the maxium date to omit records with wrong future dates
+    today = datetime.today()
+    max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
     dates = Case.objects \
                 .filter(document_date__isnull=False) \
+                .filter(document_date__lt=max_date) \
                 .annotate(date=RawSQL('date_trunc(%s, document_date)', ('month',))) \
                 .values('date') \
                 .order_by('date') \

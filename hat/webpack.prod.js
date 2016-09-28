@@ -6,8 +6,7 @@ var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
 // Switch here for french
 // remeber to switch in webpack.dev.js and
 // djanog settings as well
-// var LOCALE='fr'
-var LOCALE = 'en'
+var LOCALE = 'fr'
 
 module.exports = {
   // fail the entire build on 'module not found'

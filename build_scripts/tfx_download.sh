@@ -13,7 +13,7 @@ curl -L --user "$TRANSIFEX_USER:$TRANSIFEX_PASSWORD" -X GET "$url" > "$target/dj
 target_js="hat/assets/js/translations"
 mkdir -p "$target"
 
-url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-dashboard-en/translation/fr?file=true"
+url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-dashboard-enjson/translation/fr?file=true"
 curl -L --user "$TRANSIFEX_USER:$TRANSIFEX_PASSWORD" -X GET "$url" > "$target_js/fr.json"
 
 # compile messages for django

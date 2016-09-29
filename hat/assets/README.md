@@ -22,7 +22,7 @@ Unfortunately, for now you need to do a `docker-compose rm web && docker-compose
 1. Stop any containers that might be currently running
 2. Start the containers with `TEST_PROD=true docker-compose up`
 
-When the setup is run with `TEST_PROD=true`, it will exit the unneeded containers `webpack` and `jupyter`. It will also run the webpack build on startup, which might take a while.
+When the setup is run with `TEST_PROD=true`, it will exit the unneeded containers `webpack` and `jupyter`. It will also run the webpack build during startup, so that there is no need to rebuild the image for that.
 
 JS Build
 ----------

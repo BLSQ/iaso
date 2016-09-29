@@ -23,7 +23,7 @@ def index(request):
     # an assummption. If we will have non raw docs or more than one design
     # doc in couchdb, it will be incorrect.
     num_raw = num_raw - 1
-    context = {'num_transformed': num_transformed, 'num_raw': num_raw}
+    context = {'num_transformed': num_transformed, 'num_raw': num_raw, 'show_raw_data_button': settings.DEBUG}
     return render(request, 'maintenance/index.html', context)
 
 
@@ -68,13 +68,16 @@ def delete_couchdb_data(request):
     from django.conf import settings
     import hat.couchdb.api as couchdb
     from hat.couchdb.setup import setup_couchdb
-    try:
-        couchdb.delete(settings.COUCHDB_DB)
-        setup_couchdb()
-    except Exception as e:
-        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
+    if settings.DEBUG:
+        try:
+            couchdb.delete(settings.COUCHDB_DB)
+            setup_couchdb()
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
+        else:
+            messages.add_message(request, messages.SUCCESS, _('Task done.'))
     else:
-        messages.add_message(request, messages.SUCCESS, _('Task done.'))
+        messages.add_message(request, messages.ERROR, _('Feature not available.'))
     return redirect('maintenance:index')
 
 

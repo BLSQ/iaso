@@ -37,6 +37,7 @@ case "$1" in
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
+    ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
     ./manage.py setupcouchdb
@@ -47,6 +48,7 @@ case "$1" in
     if [ -n "$TEST_PROD" ]; then
       envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
+      ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
       npm run webpack
       ./manage.py collectstatic --noinput

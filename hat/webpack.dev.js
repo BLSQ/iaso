@@ -5,7 +5,7 @@ var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remeber to switch in webpack.prod.js and
 // djanog settings as well
-var LOCALE='en'
+var LOCALE = 'en'
 
 // When DOCKER_HOST is set we'll use its hostname for the webpack url
 var WEBPACK_URL = process.env.DOCKER_HOST

@@ -28,7 +28,7 @@
         {% endif %}
         {% if perms.cases.view %}
           <li class="navigation__menu__item{% if ns == 'dashboard' %}--active{% endif %}">
-            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly Report" %}</a>
+            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly reports" %}</a>
           </li>
         {% endif %}
         {% if user.is_superuser %}

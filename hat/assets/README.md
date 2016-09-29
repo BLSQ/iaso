@@ -19,19 +19,10 @@ Unfortunately, for now you need to do a `docker-compose rm web && docker-compose
 
 ### Testing the production build
 
-1. Remove the old mounted container with `docker-compose rm web`
+1. Stop any containers that might be currently running
+2. Start the containers with `TEST_PROD=true docker-compose up`
 
-2. Modify nginx conf,
-  - change port to 8080
-      `listen      8080;`
-  - comment out https redirect
-      `#if ($http_x_forwarded_proto != 'https') {` etc...
-
-3. Change `docker-compose.yml`
-  - comment the volume `- ./hat:/opt/app/hat`
-  - change 'command' to 'start' instead of 'start_dev'
-
-4. `docker-compose up`
+When the setup is run with `TEST_PROD=true`, it will exit the unneeded containers `webpack` and `jupyter`. It will also run the webpack build on startup, which might take a while.
 
 JS Build
 ----------

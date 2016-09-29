@@ -43,19 +43,39 @@ case "$1" in
     ./scripts/start_web.sh
   ;;
   "start_dev" )
-    export SHOW_DEBUG_TOOLBAR=true
-    ./scripts/wait_for_dbs.sh
-    ./manage.py migrate --noinput
-    ./manage.py setupcouchdb
-    ./manage.py runserver 0.0.0.0:8080
+    # When TEST_PROD is set, start the container in prod mode
+    if [ -n "$TEST_PROD" ]; then
+      envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf.local > /etc/nginx/sites-available/default
+      ./scripts/wait_for_dbs.sh
+      ./manage.py migrate --noinput
+      npm run webpack
+      ./manage.py collectstatic --noinput
+      ./manage.py setupcouchdb
+      ./scripts/start_web.sh
+    else
+      export DEV_SERVER=true
+      export SHOW_DEBUG_TOOLBAR=true
+      ./scripts/wait_for_dbs.sh
+      ./manage.py migrate --noinput
+      ./manage.py setupcouchdb
+      ./manage.py runserver 0.0.0.0:8080
+    fi
   ;;
   "start_webpack" )
+    # We only run this server if DEBUG is set
+    if [ -n "$TEST_PROD" ]; then
+      exit 0
+    fi
     npm run webpack-server
   ;;
   "start_rq" )
     ./scripts/start_rq.sh
   ;;
   "start_jupyter" )
+    # We only run this server if DEBUG is set
+    if [ -n "$TEST_PROD" ]; then
+      exit 0
+    fi
     export DJANGO_SETTINGS_MODULE=hat.settings
     jupyter notebook -y --no-browser --ip=0.0.0.0
   ;;

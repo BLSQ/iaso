@@ -23,7 +23,11 @@ def index(request):
     # an assummption. If we will have non raw docs or more than one design
     # doc in couchdb, it will be incorrect.
     num_raw = num_raw - 1
-    context = {'num_transformed': num_transformed, 'num_raw': num_raw, 'show_raw_data_button': settings.DEBUG}
+    context = {
+            'num_transformed': num_transformed,
+            'num_raw': num_raw,
+            'show_raw_data_button': settings.DEBUG
+            }
     return render(request, 'maintenance/index.html', context)
 
 

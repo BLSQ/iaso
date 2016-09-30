@@ -1,7 +1,10 @@
 /* global describe, it, beforeEach, afterEach */
 import assert from 'assert'
-import { renderWithDOMNode } from '../../test/utils'
-import fetchMock from 'fetch-mock'
+import { renderWithDOMNode, renderWithStore } from '../../test/utils'
+import React from 'react'
+import {createStore} from 'redux'
+// import fetchMock from 'fetch-mock'
+import nock from 'nock'
 import sinon from 'sinon'
 import { CALL_HISTORY_METHOD } from 'react-router-redux'
 import { LOAD_SUCCESS } from '../../redux/load'
@@ -26,12 +29,19 @@ const appConfig = {
   ]
 }
 
-const checkAction = (calls, ACTION) => {
-  let call = calls.filter((args) => {
-    return args[0] && args[0].type === ACTION
-  })[0]
+// create a single nock scope chaining all requests
+function createNockScope () {
+  const ns = nock('http://localhost')
+  urls.forEach((config) => {
+    ns.get(new RegExp(`^${config.url}`)).reply(200, config.mock)
+  })
+  return ns
+}
 
-  return call && call[0]
+const checkAction = (calls, actionType) => {
+  return calls.some((args) => {
+    return args[0] && args[0].type === actionType
+  })
 }
 
 // Look for redirects in the dispatch spy calls
@@ -53,93 +63,88 @@ const checkSuccess = (calls) => checkAction(calls, LOAD_SUCCESS)
  */
 describe('MonthlyReportContainer Loading Data', () => {
   let oldHeaders = global.Headers
+  let reduxStore
   let defaultProps
-  beforeEach(() => {
+  let nockScope
+
+  beforeEach(function () {
     global.Headers = (h) => h
-
-    Object.keys(urls).forEach((url) => {
-      fetchMock.get(new RegExp(`^${url}`), urls[url])
-    })
-
     defaultProps = {
       config: appConfig,
       report: {},
       params: { date: appConfig.dates[1] },
       dispatch: sinon.spy()
     }
+    reduxStore = createStore((e) => e, {
+      config: appConfig,
+      report: {}
+    })
+    nockScope = createNockScope()
   })
 
-  afterEach(() => {
+  afterEach(function () {
     global.Headers = oldHeaders
-    fetchMock.restore()
+    // always cleanup in case any nocks have been leftover
+    nock.cleanAll()
   })
 
   it('loads data on initialization', () => {
-    const node = document.createElement('div')
-    renderWithDOMNode(MonthlyReportContainer, defaultProps, node)
-
-    Object.keys(urls).forEach((url) => {
-      assert(fetchMock.called(new RegExp('^' + url)), `called ${url}`)
-    })
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...defaultProps} />
+    )
+    assert(nockScope.isDone(), 'The urls have been requested')
   })
 
-  it('loads data when it filter params changes', function () {
+  it('loads data when the filter params change', function () {
     const node = document.createElement('div')
-    renderWithDOMNode(MonthlyReportContainer, defaultProps, node)
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...defaultProps} />, node
+    )
+    assert(nockScope.isDone(), 'The urls have been requested')
 
-    // rendering same component in same node triggers prop change
-    // http://stackoverflow.com/questions/30614454/how-to-test-a-prop-update-on-react-component
-    renderWithDOMNode(
-      MonthlyReportContainer,
-      {
-        ...defaultProps,
-        params: {
-          ...defaultProps.params,
-          date: appConfig.dates[2]
-        }
-      },
-      node
+    // we restore the nocks to test if they will be called again
+    nockScope = createNockScope()
+    assert(nockScope.isDone() == false, 'The fresh nock scope is not done')
+
+    const props2 = {
+      ...defaultProps,
+      params: {
+        ...defaultProps.params,
+        date: appConfig.dates[2]
+      }
+    }
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...props2} />, node
     )
 
-    Object.keys(urls).forEach((url) => {
-      assert.equal(
-        fetchMock.calls(new RegExp('^' + url)).length,
-        2,
-        `called ${url} once more on receiving props`
-      )
-    })
+    assert(nockScope.isDone(), 'The urls have been requested a second time')
+    nockScope = createNockScope()
 
-    renderWithDOMNode(
-      MonthlyReportContainer,
-      {
-        ...defaultProps,
-        params: {
-          ...defaultProps.params,
-          date: appConfig.dates[2]
-        }
-      },
-      node
+    const props3 = {
+      ...defaultProps,
+      params: {
+        ...defaultProps.params,
+        date: appConfig.dates[2]
+      }
+    }
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...props3} />, node
     )
 
-    Object.keys(urls).forEach((url) => {
-      assert.equal(
-        fetchMock.calls(new RegExp('^' + url)).length,
-        2,
-        `no additional calls when params are the same`
-      )
-    })
+    assert(nockScope.isDone() == false, 'The urls have not been requested again')
   })
 
   it('does not redirect on "national"', (done) => {
-    const node = document.createElement('div')
-    renderWithDOMNode(MonthlyReportContainer, {
+    const props ={
       ...defaultProps,
       params: {
         ...defaultProps.params,
         location: '' // national
       }
-    }, node)
-
+    }
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...props} />
+    )
     setTimeout(function () {
       let redirect = checkRedirect(defaultProps.dispatch.args)
       assert(!redirect, 'no redirect call was made')
@@ -151,15 +156,16 @@ describe('MonthlyReportContainer Loading Data', () => {
   })
 
   it('redirects to "national (location: \'\')" if location is not included in the selected date range', (done) => {
-    const node = document.createElement('div')
-    renderWithDOMNode(MonthlyReportContainer, {
+    const props = {
       ...defaultProps,
       params: {
         ...defaultProps.params,
         location: 'Unknown Location'
       }
-    }, node)
-
+    }
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...props} />
+    )
     setTimeout(function () {
       let redirect = checkRedirect(defaultProps.dispatch.args)
       assert(redirect, 'a redirect call was made')
@@ -168,15 +174,16 @@ describe('MonthlyReportContainer Loading Data', () => {
   })
 
   it('does not redirect if location is included in the selected date range', (done) => {
-    const node = document.createElement('div')
-    renderWithDOMNode(MonthlyReportContainer, {
+    const props = {
       ...defaultProps,
       params: {
         ...defaultProps.params,
         location: 'Yasa-bonga' // in mock data
       }
-    }, node)
-
+    }
+    renderWithStore(
+      reduxStore, <MonthlyReportContainer {...props} />
+    )
     setTimeout(function () {
       let redirect = checkRedirect(defaultProps.dispatch.args)
       assert(!redirect, 'no redirect call was made')

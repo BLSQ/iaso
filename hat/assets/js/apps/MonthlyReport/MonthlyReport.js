@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { FormattedMessage, FormattedDate } from 'react-intl'
 import VegaLiteVis from '../../components/vega-lite-vis'
@@ -141,7 +142,7 @@ export const DataTable = ({
   )
 }
 
-export default class MonthlyReport extends Component {
+export class MonthlyReport extends Component {
   constructor () {
     super()
     this.dateHandler = this.dateHandler.bind(this)
@@ -226,3 +227,8 @@ export default class MonthlyReport extends Component {
     )
   }
 }
+
+export default connect((state, ownProps) => ({
+  config: state.config,
+  report: state.report
+}))(MonthlyReport)

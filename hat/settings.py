@@ -122,6 +122,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'hat.common.context_processors.appversions',
+                'hat.common.context_processors.environment'
             ],
         },
     },

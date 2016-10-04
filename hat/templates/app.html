@@ -75,18 +75,6 @@
       {% endblock %}
     </header>
 
-    {% if environment == "staging" %}
-      <div class="banner--stage-warning--header">
-        <p>
-        {% trans "This is the staging site, only for testing purposes. Please note that data uploaded to this site may be incomplete or cleared from time to time." %}
-        </p>
-        <br />
-        <p>
-        {% trans "Please use the main site for non-testing usage:" %}
-        <br />
-        <a href="https://sense-hat.eocng.org">sense-hat.eocng.org</a>
-      </div>
-    {% endif %}
 
     {% block content %}
     {% endblock %}

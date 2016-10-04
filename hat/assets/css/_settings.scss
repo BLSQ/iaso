@@ -9,7 +9,6 @@ $mid-gray: #868486;
 $dark-gray: #333;
 $red: #FF3824;
 $blue: #2A89E8;
-$mid-blue: #3392F2;
 $green: #45D288;
 $orange: #FFA400;
 $yellow: #F3D110;
@@ -36,3 +35,8 @@ $font-size-xxl: 2.25rem; // 36px
 
 $padding-unit: 32px;
 $navigation-width: 220px;
+$banner-height: 38px;
+
+/* z-index stack */
+$z-index-triangle-mixin: 2;
+$z-index-banner--stage-warning: 3;

@@ -1,7 +1,7 @@
 .login__container {
+  @include height-if-body-has-banner-layout;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   justify-content: center;
   align-items: center;
   background: $dark-blue;
@@ -21,7 +21,7 @@
 
 .login__content {
   width: 100%;
-  max-width: 420px;
+  max-width: 320px;
   .errorlist {
     margin-top: 1em;
     font-size: $font-size-s;
@@ -46,21 +46,6 @@
   }
   button {
     margin-top: 1.25em;
-  }
-}
-
-.banner--stage-warning--login-page {
-  //@include banner--stage-warning;
-  font-size: .875rem;
-  color: #ffffff;
-  margin: -1px auto;
-  padding: 16px;
-  background-color: $mid-blue;
-  border-radius: 4px 4px 0 0;
-  line-height: 1.4;
-
-  a {
-    color: #ffffff;
   }
 }
 

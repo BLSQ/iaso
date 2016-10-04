@@ -11,14 +11,13 @@
       {% if environment == "staging" %}
         <div class="login__info">
           <p>
-          This is the staging site, only for testing purposes. Please note that data uploaded to this site may be incomplete or cleared from time to time.
+          {% trans "This is the staging site, only for testing purposes. Please note that data uploaded to this site may be incomplete or cleared from time to time." %}
           </p>
           <br />
           <p>
-          Please use the main site:
-          <a href="https://sense-hat.eocng.org">sense-hat.eocng.org</a>
+          {% trans "Please use the main site for non-testing usage:" %}
           <br />
-          for non-testing usage.
+          <a href="https://sense-hat.eocng.org">sense-hat.eocng.org</a>
         </div>
       {% endif %}
       <form method="post" data-qa="login-form" action="{% url 'login' %}" class="login__form">

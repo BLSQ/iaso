@@ -16,7 +16,12 @@ urlpatterns = [
             }
         }, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
-    url(r'^$', TemplateView.as_view(template_name='app.html'), name='index'),
+    url(r'^$', TemplateView.as_view(template_name='app.html'), 
+        {
+            'extra_context': {
+                'environment': settings.ENVIRONMENT
+            }
+        }, name='index'),
     url(r'^', include('hat.import_export.urls')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),

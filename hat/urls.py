@@ -16,7 +16,7 @@ urlpatterns = [
             }
         }, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
-    url(r'^$', TemplateView.as_view(template_name='app.html'), 
+    url(r'^$', TemplateView.as_view(template_name='app.html'),
         {
             'extra_context': {
                 'environment': settings.ENVIRONMENT

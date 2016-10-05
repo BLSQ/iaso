@@ -15,7 +15,11 @@ class CasesTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], Case.objects.all().count())
-        self.assertEqual(response.data['results'][0]['document_id'], '1')
+        # Newest document should come first
+        self.assertEqual(response.data['results'][0]['document_id'], '5')
+        # Check the reponse has our custom pagination keys
+        self.assertIn('limit', response.data)
+        self.assertIn('offset', response.data)
 
     def test_retrieve_case(self):
         url = reverse('api:cases-detail', args=['1'])

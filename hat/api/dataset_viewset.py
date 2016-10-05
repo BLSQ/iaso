@@ -13,6 +13,7 @@ from hat.cases.models import Case
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
     CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
+from .filters import resolve_dateperiod
 
 Q_screening = Q()
 for field in SCREENING_TEST_FIELDS:
@@ -58,10 +59,11 @@ def dataset(params_schema=None):
     return decorator
 
 
-filtered_schema = {
+params_schema = {
     'type': 'object',
     'properties': {
         'date': {'type': 'string'},
+        'dateperiod': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'}
     },
@@ -93,6 +95,11 @@ def get_cases_filtered(params, ignore_params=None):
             + timedelta(days=1)
         cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
+    dateperiod = get_param_value('dateperiod')
+    if dateperiod is not None:
+        (date_from, date_to) = resolve_dateperiod(dateperiod)
+        cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
+
     location = get_param_value('location')
     if location is not None:
         cases = cases.filter(ZS=location)
@@ -104,13 +111,13 @@ def get_cases_filtered(params, ignore_params=None):
     return cases
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def list_locations(params):
     cases = get_cases_filtered(params, ignore_params=['location'])
-    return cases.values('ZS').distinct()
+    return cases.order_by().values('ZS').distinct()
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def count_total(params):
     cases = get_cases_filtered(params)
     tested = cases.filter(Q_screening | Q_confirmation)
@@ -122,7 +129,7 @@ def count_total(params):
     }
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def count_screened(params):
     cases = get_cases_filtered(params).filter(Q_screening)
     return {
@@ -134,7 +141,7 @@ def count_screened(params):
     }
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def count_confirmed(params):
     cases = get_cases_filtered(params).filter(Q_confirmation)
     return {
@@ -144,18 +151,18 @@ def count_confirmed(params):
     }
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def campaign_meta(params):
     cases = get_cases_filtered(params)
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
         'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
-        'az_visited': cases.values('AZ').distinct().count(),
-        'villages_visited': cases.values('village').distinct().count()
+        'az_visited': cases.order_by().values('AZ').distinct().count(),
+        'villages_visited': cases.order_by().values('village').distinct().count()
     }
 
 
-@dataset(params_schema=filtered_schema)
+@dataset(params_schema=params_schema)
 def tested_per_day(params):
     cases = get_cases_filtered(params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \

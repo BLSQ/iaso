@@ -1,26 +1,22 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { FormattedMessage, FormattedDate } from 'react-intl'
+import {
+  FormattedMessage,
+  FormattedDate,
+  injectIntl,
+  defineMessages
+} from 'react-intl'
 import VegaLiteVis from '../../components/vega-lite-vis'
 import VISUALIZATIONS from '../../../json/visualizations.json'
+import { createUrl } from '../../utils/fetchData'
 
-export const createUrl = ({date, source, location}) => {
-  let url = '/charts'
-  if (location) {
-    url = `${url}/location/${location}`
+const MESSAGES = defineMessages({
+  'location-national': {
+    defaultMessage: 'National',
+    id: 'monthlyreport.labels.national'
   }
-
-  if (source) {
-    url = `${url}/source/${source}`
-  }
-
-  if (date) {
-    url = `${url}/date/${date}`
-  }
-
-  return url
-}
+})
 
 const Row = ({ className, label, value, definition, download }) => {
   return (
@@ -162,6 +158,7 @@ export class MonthlyReport extends Component {
   }
 
   render () {
+    const {formatMessage} = this.props.intl
     // source, sources also available
     const { date, location } = this.props.params
     const { dates } = this.props.config
@@ -186,17 +183,11 @@ export class MonthlyReport extends Component {
             <label htmlFor='location' className='filter__container__select__label'>Location</label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                <FormattedMessage
-                  id='monthlyreport.labels.national'
-                  defaultMessage='National' />
+                {formatMessage(MESSAGES['location-national'])}
               </option>
               {locations.map((loc) => {
-                var val = `${loc.ZS}`
-                return (
-                  <option key={val} value={val}>
-                    {val}
-                  </option>
-                )
+                var val = loc.ZS
+                return <option key={val} value={val}>{val}</option>
               })}
             </select>
           </div>
@@ -228,7 +219,9 @@ export class MonthlyReport extends Component {
   }
 }
 
+const MonthlyReportWithIntl = injectIntl(MonthlyReport)
+
 export default connect((state, ownProps) => ({
   config: state.config,
   report: state.report
-}))(MonthlyReport)
+}))(MonthlyReportWithIntl)

@@ -1,6 +1,6 @@
 /* global describe, it */
 import assert from 'assert'
-import {clone, deepEqual} from './index'
+import {clone, deepEqual, substituteVars} from './index'
 
 describe('clone', () => {
   it('should clone an obj', () => {
@@ -42,5 +42,31 @@ describe('deepEqual', () => {
     let b = {x: 1}
     assert(deepEqual(a, b, true), 'Should be equal without null values')
     assert(!deepEqual(a, b), 'Should not be equal with null values')
+  })
+})
+
+describe('substituteVars', () => {
+  it('should substitute values in an object', () => {
+    const templateObj = {
+      foo: 11,
+      bar: '${a}', // eslint-disable-line
+      baz: {
+        x: '${y}' // eslint-disable-line
+      }
+    }
+    const subs = {
+      a: 22,
+      y: 'hello'
+    }
+    const expectedObj = {
+      foo: 11,
+      bar: 22,
+      baz: {
+        x: 'hello'
+      }
+    }
+    const newObj = substituteVars(templateObj, subs)
+    assert.deepEqual(newObj, expectedObj)
+    assert(newObj !== templateObj)
   })
 })

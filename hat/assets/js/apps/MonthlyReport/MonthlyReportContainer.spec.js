@@ -1,9 +1,8 @@
 /* global describe, it, beforeEach, afterEach */
 import assert from 'assert'
-import { renderWithDOMNode, renderWithStore } from '../../test/utils'
+import { renderWithStore } from '../../test/utils'
 import React from 'react'
 import {createStore} from 'redux'
-// import fetchMock from 'fetch-mock'
 import nock from 'nock'
 import sinon from 'sinon'
 import { CALL_HISTORY_METHOD } from 'react-router-redux'
@@ -62,13 +61,11 @@ const checkSuccess = (calls) => checkAction(calls, LOAD_SUCCESS)
  *
  */
 describe('MonthlyReportContainer Loading Data', () => {
-  let oldHeaders = global.Headers
   let reduxStore
   let defaultProps
   let nockScope
 
   beforeEach(function () {
-    global.Headers = (h) => h
     defaultProps = {
       config: appConfig,
       report: {},
@@ -83,7 +80,6 @@ describe('MonthlyReportContainer Loading Data', () => {
   })
 
   afterEach(function () {
-    global.Headers = oldHeaders
     // always cleanup in case any nocks have been leftover
     nock.cleanAll()
   })
@@ -104,7 +100,7 @@ describe('MonthlyReportContainer Loading Data', () => {
 
     // we restore the nocks to test if they will be called again
     nockScope = createNockScope()
-    assert(nockScope.isDone() == false, 'The fresh nock scope is not done')
+    assert(nockScope.isDone() === false, 'The fresh nock scope is not done')
 
     const props2 = {
       ...defaultProps,
@@ -131,11 +127,11 @@ describe('MonthlyReportContainer Loading Data', () => {
       reduxStore, <MonthlyReportContainer {...props3} />, node
     )
 
-    assert(nockScope.isDone() == false, 'The urls have not been requested again')
+    assert(nockScope.isDone() === false, 'The urls have not been requested again')
   })
 
   it('does not redirect on "national"', (done) => {
-    const props ={
+    const props = {
       ...defaultProps,
       params: {
         ...defaultProps.params,

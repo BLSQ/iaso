@@ -1,30 +1,57 @@
-# import django_filters
-from rest_framework import viewsets, filters
+from collections import OrderedDict
+from rest_framework import viewsets
 from rest_framework.serializers import ModelSerializer
 from hat.cases.models import Case
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
+from .filters import resolve_dateperiod
 
 
-# This serves as an example and is currently not used
+class CasePagination(LimitOffsetPagination):
+    '''
+    We create our own Pagination class to supplement the response with
+    `limit` and `offset` values. The react frontend cannot use the links
+    directly and needs to construct it's own urls from limit and offset.
+    '''
+    def get_paginated_response(self, data):
+        return Response(OrderedDict([
+            ('count', self.count),
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('limit', self.limit),
+            ('offset', self.offset),
+            ('results', data)
+        ]))
 
 
 class CaseSerializer(ModelSerializer):
     class Meta:
         model = Case
-        fields = ['document_id', 'document_date']
-
-
-class CaseFilter(filters.FilterSet):
-    # min_foo = django_filters.NumberFilter(name="foo", lookup_expr='gte')
-    # max_foo = django_filters.NumberFilter(name="foo", lookup_expr='lte')
-    class Meta:
-        model = Case
-        # fields = {
-        #     'year_of_birth': ['gt', 'lt', 'lte', 'gte']
-        # }
-        # order_by = ['-document_date', 'document_date']
+        fields = [
+            'document_id',
+            'document_date',
+            'ZS',
+            'AZ',
+            'village'
+        ]
 
 
 class CaseViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Case.objects.all()
     serializer_class = CaseSerializer
-    filter_class = CaseFilter
+    pagination_class = CasePagination
+
+    def get_queryset(self):
+        ''' Filter by query parameters '''
+        queryset = Case.objects.all()
+
+        dateperiod = self.request.query_params.get('dateperiod', None)
+        if dateperiod is not None:
+            (date_from, date_to) = resolve_dateperiod(dateperiod)
+            queryset = queryset.filter(
+                document_date__gte=date_from, document_date__lt=date_to)
+
+        location = self.request.query_params.get('location', None)
+        if location is not None:
+            queryset = queryset.filter(ZS=location)
+
+        return queryset

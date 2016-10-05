@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     'hat.maintenance',
     'hat.api',
     'hat.integration_tests',
+    'hat.sync',
     'webpack_loader',
 ]
 

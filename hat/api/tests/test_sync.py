@@ -8,6 +8,7 @@ from oauth2client.client import VerifyJwtTokenError
 import mock
 
 from hat.sync.models import MobileUser
+from hat.sync.tests import clean_couch
 
 
 # Mocks for different scenarios
@@ -60,6 +61,10 @@ def http_error(token, client_id):
 @override_settings(GOOGLE_CLIENT_ID='test-client-id')
 class SyncTests(APITestCase):
     fixtures = ['api_mobileusers.json']
+
+    def tearDown(self):
+        super().tearDown()
+        clean_couch()
 
     def test_register_url(self):
         url = reverse('api:sync')

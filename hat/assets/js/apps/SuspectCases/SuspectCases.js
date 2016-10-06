@@ -85,8 +85,7 @@ export const DataTable = ({
     cases,
     location
   },
-  onNextClick,
-  onPrevClick
+  onDownloadClick
 }) => {
   return (
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
@@ -94,6 +93,7 @@ export const DataTable = ({
         <h2 className='widget__heading'>
           {cases && cases.count} <FormattedMessage id='suspectcases.header.results' defaultMessage='Results' />
         </h2>
+        <button className='button' onClick={onDownloadClick}>Download as CSV</button>
       </div>
       <section>
         <h3 className='list__header block--margin-top--small'>
@@ -146,45 +146,6 @@ const DATEPERIODS = [
   'since-three-years'
 ]
 
-// const DATEPERIOD_MESSAGES = {
-//   'current-month': {
-//     defaultMessage: 'Current month',
-//     id: 'suspectcases.dateperiod.current-month'
-//   },
-//   'current-trimester': {
-//     defaultMessage: 'Current trimester',
-//     id: 'suspectcases.dateperiod.{current-trimester'
-//   },
-//   'current-year': {
-//     defaultMessage: 'Current year',
-//     id: 'suspectcases.dateperiod.current-year'
-//   },
-//   'last-month': {
-//     defaultMessage: 'Last month',
-//     id: 'suspectcases.dateperiod.last-month'
-//   },
-//   'last-trimester': {
-//     defaultMessage: 'Last trimester',
-//     id: 'suspectcases.dateperiod.last-trimester'
-//   },
-//   'last-year': {
-//     defaultMessage: 'Last year',
-//     id: 'suspectcases.dateperiod.last-year'
-//   },
-//   'since-last-year': {
-//     defaultMessage: 'Since last year',
-//     id: 'suspectcases.dateperiod.since-last-year'
-//   },
-//   'since-two-years': {
-//     defaultMessage: 'Since two years',
-//     id: 'suspectcases.dateperiod.since-two-years'
-//   },
-//   'since-three-years': {
-//     defaultMessage: 'Since three years',
-//     id: 'suspectcases.dateperiod.since-three-years'
-//   },
-// }
-
 export class SuspectCases extends Component {
   constructor () {
     super()
@@ -192,6 +153,7 @@ export class SuspectCases extends Component {
     this.locationHandler = this.locationHandler.bind(this)
     this.nextHandler = this.nextHandler.bind(this)
     this.prevHandler = this.prevHandler.bind(this)
+    this.downloadHandler = this.downloadHandler.bind(this)
   }
 
   dateHandler (event) {
@@ -218,6 +180,10 @@ export class SuspectCases extends Component {
     const offset = cases.offset - cases.limit
     const url = createUrl({...this.props.params, offset})
     this.props.dispatch(push(url))
+  }
+
+  downloadHandler () {
+    console.log('download.......')
   }
 
   render () {
@@ -276,7 +242,7 @@ export class SuspectCases extends Component {
           }
           {
             data &&
-              <DataTable data={data} />
+              <DataTable data={data} onDownloadClick={this.downloadHandler} />
           }
           <div>
             {

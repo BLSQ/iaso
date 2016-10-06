@@ -10,8 +10,12 @@ logger = logging.getLogger(__name__)
 
 class MobileUser(models.Model):
     email = models.EmailField(unique=True)
-    db_name = models.TextField(null=True, help_text='Filled in automatically by sync endpoint')
-    couchdb_id = models.TextField(null=True, help_text='Filled in automatically by sync endpoint')
+    db_name = models.TextField(
+        null=True, blank=True,
+        help_text='Filled in automatically by sync endpoint')
+    couchdb_id = models.TextField(
+        null=True, blank=True,
+        help_text='Filled in automatically by sync endpoint')
 
 
 # When a Mobile User is deleted,

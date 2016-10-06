@@ -37,6 +37,7 @@ services:
       DEBUG: 'true'
       TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret

@@ -1,35 +1,22 @@
 from django.test import TestCase
 from hat.sync import credentials
 from hat.couchdb import api
-import re
 
-db_name_test = re.compile('^device_test_')
+from . import clean_couch
 
 
 class SyncCredentialsTestCase(TestCase):
     def tearDown(self):
         super().tearDown()
-        # get all users starting with test_
-        testusers = api \
-            .get('_users/_all_docs?' +
-                 'startkey="org.couchdb.user:test_"' +
-                 '&endkey="org.couchdb.user:test_%7B%7D"') \
-            .json()
-        for user in testusers['rows']:
-            api.delete('_users/{}?rev={}'.format(user['id'], user['value']['rev']))
-
-        # deleteing all the test dbs
-        testdbs = filter(db_name_test.match, api.get('_all_dbs').json())
-        for db in testdbs:
-            api.delete(db)
+        clean_couch()
 
     # start with the easy one:
     def test_generate_credentials(self):
-        creds = credentials.generate_credentials('karl.westin@gmail.com')
+        creds = credentials.generate_credentials('karl.westin@ehealthnigeria.org')
 
-        self.assertEqual(creds['user_name'], 'karl.westin@gmail.com')
+        self.assertEqual(creds['user_name'], 'karl.westin@ehealthnigeria.org')
         self.assertEqual(len(creds['password']), 100)
-        self.assertEqual(creds['db_name'], 'device_karlwestingmailcom')
+        self.assertEqual(creds['db_name'], 'device_karlwestinehealthnigeriaorg')
 
     def test_create_user_and_db(self):
         creds = credentials.generate_credentials('test_user@ehealthnigeria.org')

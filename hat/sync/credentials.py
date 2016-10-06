@@ -1,3 +1,11 @@
+'''
+Generate and update CouchDB credentials
+(for mobile users authenticating via their google token)
+
+This file contains tools to create and update CouchDB credentials.
+Use the create_or_update function, which either creates a new set of credentials/db,
+or generates a new password for an existing user (as an automatic 'forgot password' function)
+'''
 from hat.couchdb import setup, api
 import string
 import random
@@ -5,7 +13,13 @@ import re
 
 
 def generate_password():
-    # http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+    '''
+    Generate a long password string
+    These passwords are never intended to be typed by hand, but rather
+    used behind the scene to authenticate the mobile app
+
+    http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+    '''
     return ''.join(random.SystemRandom().choice(
             string.ascii_uppercase + string.digits + string.ascii_lowercase
         ) for _ in range(100))
@@ -16,9 +30,14 @@ def generate_user_id(user_name):
 
 
 def generate_credentials(email):
-    # filter according to
-    # http://docs.couchdb.org/en/master/api/database/common.html#put--db
-    # + remove some more special chars, since they're annoying
+    '''
+    Generate a complete set of credentials base on an email address,
+    including a new randomized password.
+
+    filter according to
+    http://docs.couchdb.org/en/master/api/database/common.html#put--db
+    + remove some more special chars, since they're annoying
+    '''
     filtered_email = re.sub('[^a-z0-9_-]', '', email)
     return {
         'user_name': email,
@@ -29,11 +48,11 @@ def generate_credentials(email):
 
 
 def create(user_name, password, db_name):
-    """
+    '''
     Generates a username from the email address.
     Creates a user for that username.
     Creates a couchdb database which only that user can access.
-    """
+    '''
     # couchdb stops empty username
     # should throw on invalid password,
     assert password, 'No password Provided!'
@@ -68,6 +87,9 @@ def create(user_name, password, db_name):
 
 
 def update(url, password, existing):
+    '''
+    Update existing user with new password
+    '''
     del existing['derived_key']
     del existing['salt']
     existing['password'] = password
@@ -75,6 +97,15 @@ def update(url, password, existing):
 
 
 def create_or_update(email):
+    '''
+    For emails not having a CouchDB user, creates a DB, and a couchdb user,
+    returns the credentials for that DB
+
+    For emails with an existing user, generate a new password, update
+    the user and return the new credentials set
+
+    This is the method to call from this module!
+    '''
     assert email, 'email needs to be defined'
 
     user_id = generate_user_id(email)

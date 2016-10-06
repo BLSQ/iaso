@@ -21,6 +21,13 @@ def mobile_user_post_delete(sender, **kwargs):
     deleted = kwargs['instance']
     # delete the CouchDB user to revoke sync access:
     if deleted.couchdb_id:
-        # FIXME: retreive user and add revision, otherwise this will just 409
-        r = couchdbapi.delete('_users/{}'.format(deleted.couchdb_id))
+        # We need to retreive the revision to delete user
+        user_url = '_users/{}'.format(deleted.couchdb_id)
+        get_user = couchdbapi.get(user_url)
+
+        if get_user.status_code != 200:
+            return
+
+        couch_user = get_user.json()
+        r = couchdbapi.delete(user_url + '?rev={}'.format(couch_user['_rev']))
         logger.info('Deleted CouchDB user: %s, response: %s', deleted.couchdb_id, r.status_code)

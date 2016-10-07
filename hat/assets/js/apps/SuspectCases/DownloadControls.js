@@ -40,11 +40,11 @@ class DownloadControls extends Component {
         </button>
       case 'loading':
         return <button className='button' disabled='true'>
-          <FormattedMessage id='download.prepare' defaultMessage='Preparing' />...
+          <FormattedMessage id='download.preparing' defaultMessage='Preparing' />...
         </button>
       case 'show-result-link':
         return <a href={resultUrl} className='button'>
-          <FormattedMessage id='download.prepare' defaultMessage='Download file' />
+          <FormattedMessage id='download.download' defaultMessage='Download file' />
         </a>
       default:
         return <span />

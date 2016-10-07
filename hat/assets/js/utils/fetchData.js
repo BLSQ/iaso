@@ -103,10 +103,11 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
   })
 
   const promises = urls.map((config) => {
+    const ps = {...config.defaultParams, ...params}
     return request([
       ['get', config.url],
       ['set', 'accept', 'application/json'],
-      ['query', params]
+      ['query', ps]
     ])
   })
   return Promise.all(promises)

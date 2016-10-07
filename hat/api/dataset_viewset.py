@@ -2,7 +2,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
-from django.db.models import Q, Count, Min, Max
+from django.db.models import Count, Min, Max
 from django.db.models.expressions import RawSQL
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets
@@ -11,33 +11,13 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 from hat.cases.models import Case
 from hat.common.jsonschema_validator import DefaultValidator
-from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
-    CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
-from .filters import resolve_dateperiod
-
-Q_screening = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening |= Q(**{field + '__isnull': False})
-
-Q_screening_positive = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening_positive |= Q(**{field: True})
-
-Q_confirmation = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation |= Q(**{field + '__isnull': False})
-
-Q_confirmation_positive = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation_positive |= Q(**{field: True})
-
-Q_staging = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging |= Q(**{field + '__isnull': False})
-
-Q_staging_positive = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging_positive |= Q(**{field: True})
+from hat.cases.filters import \
+    resolve_dateperiod, \
+    Q_screening, \
+    Q_screening_positive, \
+    Q_confirmation, \
+    Q_confirmation_positive, \
+    Q_staging \
 
 datasets = {}
 

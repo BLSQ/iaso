@@ -26,6 +26,7 @@ export const urls = [
   {
     name: 'cases',
     url: '/api/cases/',
+    defaultParams: {'only_suspects': true},
     mock: {
       count: 4,
       limit: 2,

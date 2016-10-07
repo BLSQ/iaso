@@ -4,7 +4,7 @@ from rest_framework.serializers import ModelSerializer
 from hat.cases.models import Case
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from .filters import resolve_dateperiod
+from hat.cases.filters import resolve_dateperiod, Q_confirmation, Q_screening_positive
 
 
 class CasePagination(LimitOffsetPagination):
@@ -54,4 +54,8 @@ class CaseViewSet(viewsets.ReadOnlyModelViewSet):
         if location is not None:
             queryset = queryset.filter(ZS=location)
 
+        only_suspects = self.request.query_params.get('only_suspects', None)
+        if only_suspects is not None:
+            queryset = queryset.filter(Q_screening_positive) \
+                               .exclude(Q_confirmation)
         return queryset

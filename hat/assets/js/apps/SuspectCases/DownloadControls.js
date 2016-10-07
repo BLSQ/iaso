@@ -14,7 +14,8 @@ class DownloadControls extends Component {
       type: 'download',
       options: {
         dateperiod: this.props.dateperiod,
-        // location: this.props.location
+        location: this.props.location,
+        only_suspects: true,
         sep: ';'
       }
     }, this.props.dispatch)

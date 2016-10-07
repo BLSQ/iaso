@@ -2,6 +2,34 @@ from enum import Enum
 from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
+from django.db.models import Q
+from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
+    CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
+
+
+Q_screening = Q()
+for field in SCREENING_TEST_FIELDS:
+    Q_screening |= Q(**{field + '__isnull': False})
+
+Q_screening_positive = Q()
+for field in SCREENING_TEST_FIELDS:
+    Q_screening_positive |= Q(**{field: True})
+
+Q_confirmation = Q()
+for field in CONFIRMATION_TEST_FIELDS:
+    Q_confirmation |= Q(**{field + '__isnull': False})
+
+Q_confirmation_positive = Q()
+for field in CONFIRMATION_TEST_FIELDS:
+    Q_confirmation_positive |= Q(**{field: True})
+
+Q_staging = Q()
+for field in STAGING_TEST_FIELDS:
+    Q_staging |= Q(**{field + '__isnull': False})
+
+Q_staging_positive = Q()
+for field in STAGING_TEST_FIELDS:
+    Q_staging_positive |= Q(**{field: True})
 
 
 class DatePeriod(Enum):

@@ -8,7 +8,6 @@ from hat.rq import redis_conn
 from rq import Queue
 from hat.rq.utils import run_task, get_task_status, get_task_result
 from hat.import_export.tasks import export_task
-from .filters import resolve_dateperiod
 
 
 class TaskViewSet(viewsets.ViewSet):
@@ -37,12 +36,6 @@ class TaskViewSet(viewsets.ViewSet):
             raise ValidationError('No task options specified')
 
         if taskType == 'download':
-            if 'dateperiod' in taskOptions:
-                (start_date, end_date) = resolve_dateperiod(taskOptions['dateperiod'])
-                del taskOptions['dateperiod']
-                taskOptions['start_date'] = start_date
-                taskOptions['end_date'] = end_date
-
             if request.user.has_perm('cases.export_full'):
                 task = run_task(export_task, kwargs=taskOptions,
                                 permission='cases.export_full')

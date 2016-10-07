@@ -8,7 +8,8 @@ import createStore from './redux/createStore'
 import App from './apps/App'
 
 import SuspectCasesContainer from './apps/SuspectCases/SuspectCasesContainer'
-import {loadReducer} from './redux/load'
+import { loadReducer } from './redux/load'
+import { downloadReducer } from './redux/download'
 
 export default function suspectCasesApp (appConfig, element, baseUrl) {
   /*
@@ -20,7 +21,6 @@ export default function suspectCasesApp (appConfig, element, baseUrl) {
   }
   */
   const defaultRoute = (config) => {
-    // var latestMonth = config.dates.slice(-1).pop()
     return `charts/dateperiod/current-month`
   }
 
@@ -38,10 +38,12 @@ export default function suspectCasesApp (appConfig, element, baseUrl) {
 
   const store = createStore({
     config: appConfig,
-    suspects: {}
+    suspects: {},
+    download: {}
   }, {
     config: (state = {}) => state,
-    suspects: loadReducer
+    suspects: loadReducer,
+    download: downloadReducer
   }, [
     routerMiddleware(history)
   ])

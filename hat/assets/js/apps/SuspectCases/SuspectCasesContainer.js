@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import SuspectCases from './SuspectCases'
 import { clone } from '../../utils'
-import fetchData, { checkLocation } from '../../utils/fetchData'
+import { fetchUrls, checkLocation } from '../../utils/fetchData'
 
 /*
  * Handles state
@@ -52,7 +52,7 @@ export class SuspectCasesContainer extends Component {
     const {dispatch} = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
-    fetchData(urls, params, oldParams, dispatch, checkLocation)
+    fetchUrls(urls, params, oldParams, dispatch, checkLocation)
   }
 
   componentDidMount () {

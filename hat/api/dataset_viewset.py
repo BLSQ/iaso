@@ -65,7 +65,8 @@ params_schema = {
         'date': {'type': 'string'},
         'dateperiod': {'type': 'string'},
         'location': {'type': 'string'},
-        'source': {'type': 'string'}
+        'source': {'type': 'string'},
+        'offset': {'type': 'string'}
     },
     'additionalProperties': False,
 }

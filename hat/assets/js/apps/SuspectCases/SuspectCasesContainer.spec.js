@@ -47,7 +47,8 @@ describe('SuspectCasesContainer Loading Data', () => {
     }
     reduxStore = createStore((e) => e, {
       config: appConfig,
-      suspects: {}
+      suspects: {},
+      download: {}
     })
     nockScope = createNockScope()
   })

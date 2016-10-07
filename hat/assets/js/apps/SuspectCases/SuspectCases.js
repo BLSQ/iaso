@@ -8,6 +8,8 @@ import {
   defineMessages
 } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
+import DownloadControls from './DownloadControls'
+import { DOWNLOAD_RESET } from '../../redux/download'
 
 const MESSAGES = defineMessages({
   // colum headers
@@ -84,53 +86,44 @@ export const DataTable = ({
   data: {
     cases,
     location
-  },
-  onDownloadClick
+  }
 }) => {
   return (
-    <div className='widget__container' data-qa='monthly-report-data-loaded'>
-      <div className='widget__header'>
-        <h2 className='widget__heading'>
-          {cases && cases.count} <FormattedMessage id='suspectcases.header.results' defaultMessage='Results' />
-        </h2>
-        <button className='button' onClick={onDownloadClick}>Download as CSV</button>
-      </div>
-      <section>
-        <h3 className='list__header block--margin-top--small'>
-          <FormattedMessage id='suspectcases.header.campaign_activity' defaultMessage='Suspect cases' />
-        </h3>
-        <table>
-          <thead>
-            <tr>
-              {
-                TABLE_COLUMNS.map((col) => {
-                  return <th key={col.message}><FormattedMessage {...MESSAGES[col.message]} /></th>
-                })
-              }
-            </tr>
-          </thead>
-          <tbody>
+    <section>
+      <h3 className='list__header block--margin-top--small'>
+        <FormattedMessage id='suspectcases.header.campaign_activity' defaultMessage='Suspect cases' />
+      </h3>
+      <table>
+        <thead>
+          <tr>
             {
-              cases.results.map((row) => {
-                return <tr key={row.document_id}>
-                  {
-                    TABLE_COLUMNS.map((col) => {
-                      const val = row[col.key]
-                      switch (col.type) {
-                        case 'date':
-                          return <td key={col.message}><FormattedDate value={val} /></td>
-                        default:
-                          return <td key={col.message}>{val}</td>
-                      }
-                    })
-                  }
-                </tr>
+              TABLE_COLUMNS.map((col) => {
+                return <th key={col.message}><FormattedMessage {...MESSAGES[col.message]} /></th>
               })
             }
-          </tbody>
-        </table>
-      </section>
-    </div>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            cases.results.map((row) => {
+              return <tr key={row.document_id}>
+                {
+                  TABLE_COLUMNS.map((col) => {
+                    const val = row[col.key]
+                    switch (col.type) {
+                      case 'date':
+                        return <td key={col.message}><FormattedDate value={val} /></td>
+                      default:
+                        return <td key={col.message}>{val}</td>
+                    }
+                  })
+                }
+              </tr>
+            })
+          }
+        </tbody>
+      </table>
+    </section>
   )
 }
 
@@ -153,18 +146,19 @@ export class SuspectCases extends Component {
     this.locationHandler = this.locationHandler.bind(this)
     this.nextHandler = this.nextHandler.bind(this)
     this.prevHandler = this.prevHandler.bind(this)
-    this.downloadHandler = this.downloadHandler.bind(this)
   }
 
   dateHandler (event) {
     const dateperiod = event.target.value
     const url = createUrl({...this.props.params, dateperiod})
+    this.props.dispatch({'type': DOWNLOAD_RESET})
     this.props.dispatch(push(url))
   }
 
   locationHandler (event) {
     const location = event.target.value
     const url = createUrl({...this.props.params, location})
+    this.props.dispatch({'type': DOWNLOAD_RESET})
     this.props.dispatch(push(url))
   }
 
@@ -182,16 +176,14 @@ export class SuspectCases extends Component {
     this.props.dispatch(push(url))
   }
 
-  downloadHandler () {
-    console.log('download.......')
-  }
-
   render () {
     const {formatMessage} = this.props.intl
     // source, sources also available
     const { dateperiod, location } = this.props.params
-    const { loading, data, error } = this.props.suspects
+    const { data, error } = this.props.suspects
     const locations = data && data.locations || []
+    const loading = this.props.suspects.loading || this.props.download.loading
+    const numResults = data && data.cases && data.cases.count || 0
 
     return (
       <div>
@@ -240,10 +232,15 @@ export class SuspectCases extends Component {
                 </div>
               </div>
           }
-          {
-            data &&
-              <DataTable data={data} onDownloadClick={this.downloadHandler} />
-          }
+        </div>
+        <div className='widget__container' data-qa='monthly-report-data-loaded'>
+          <div className='widget__header'>
+            <h2 className='widget__heading'>
+              {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='Suspect cases' />
+            </h2>
+            <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
+          </div>
+          { data && <DataTable data={data} /> }
           <div>
             {
               data && data.cases && data.cases.previous &&
@@ -264,5 +261,6 @@ const SuspectCasesWithIntl = injectIntl(SuspectCases)
 
 export default connect((state, ownProps) => ({
   config: state.config,
-  suspects: state.suspects
+  suspects: state.suspects,
+  download: state.download
 }))(SuspectCasesWithIntl)

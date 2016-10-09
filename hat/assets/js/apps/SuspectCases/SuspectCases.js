@@ -19,11 +19,11 @@ const MESSAGES = defineMessages({
   },
   'column-zs': {
     id: 'suspectcases.table.column.zs',
-    defaultMessage: 'ZS'
+    defaultMessage: 'Zone de Sante'
   },
   'column-az': {
     id: 'suspectcases.table.column.az',
-    defaultMessage: 'AZ'
+    defaultMessage: 'Aire de Sante'
   },
   'column-village': {
     id: 'suspectcases.table.column.village',
@@ -89,11 +89,11 @@ export const DataTable = ({
   }
 }) => {
   return (
-    <section>
-      <h3 className='list__header block--margin-top--small'>
-        <FormattedMessage id='suspectcases.header.campaign_activity' defaultMessage='Suspect cases' />
+    <section className='widget__content'>
+      <h3 className='block--margin-bottom--xxs'>
+        <FormattedMessage id='suspectcases.header.campaign_activity' defaultMessage='Anonymised list of suspect cases' />
       </h3>
-      <table>
+      <table className='table--minimised'>
         <thead>
           <tr>
             {
@@ -190,7 +190,7 @@ export class SuspectCases extends Component {
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'>Period</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar'></i> Timeframe</label>
             <select disabled={loading} name='date' value={dateperiod} onChange={this.dateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
@@ -200,7 +200,7 @@ export class SuspectCases extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'>Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe'></i> Location</label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
@@ -224,31 +224,47 @@ export class SuspectCases extends Component {
                 </div>
               </div>
           }
-          {
-            loading &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading'>Loading...</h2>
-                </div>
-              </div>
-          }
         </div>
         <div className='widget__container' data-qa='monthly-report-data-loaded'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
-              {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='Suspect cases' />
+              {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='suspect cases for this period' />
             </h2>
-            <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
           </div>
-          { data && <DataTable data={data} /> }
-          <div>
+          <span>
+            {
+              numResults
+                ? data && 
+                  <div className='widget__content'>
+                    <p className='text--small block--margin-bottom--xs'>
+                      <FormattedMessage 
+                        id='suspectcases.download.description' 
+                        defaultMessage='Results presented below as an anonymised list of suspect cases with date/location. You can download the full details of all suspected cases as a csv file.' />
+                    </p>
+                    <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
+                  </div>
+                : null
+            }
+            {
+              numResults
+                ? data && <DataTable data={data} />
+                : <div className='widget__content'><FormattedMessage id='suspectcases.data.noresults' defaultMessage='No results for this timeframe and location – use the controls above to select different parameters.' /></div>
+            }
+          </span>
+          <div className='widget__pagination'>
             {
               data && data.cases && data.cases.previous &&
-                <button className='button' onClick={this.prevHandler}>Previous</button>
+                <button className='button--minimised block--margin-right--xxs' onClick={this.prevHandler}>
+                  <i className='fa fa-arrow-left'></i>
+                  Previous page
+                </button>
             }
             {
               data && data.cases && data.cases.next &&
-                <button className='button' style={{marginLeft: '10px'}} onClick={this.nextHandler}>Next</button>
+                <button className='button--minimised' onClick={this.nextHandler}>
+                  Next page
+                  <i className='fa fa-arrow-right icon--right'></i>
+                </button>
             }
           </div>
         </div>

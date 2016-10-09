@@ -170,7 +170,7 @@ export class MonthlyReport extends Component {
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'>Month</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar'></i> Month</label>
             <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className='select--minimised'>
               {dates.map((date) => (
                 <option key={date} value={date}>
@@ -180,7 +180,7 @@ export class MonthlyReport extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'>Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe'></i> Location</label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}

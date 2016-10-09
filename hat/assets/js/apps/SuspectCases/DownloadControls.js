@@ -35,17 +35,17 @@ class DownloadControls extends Component {
 
     switch (state) {
       case 'show-prepare':
-        return <button className='button' onClick={this.downloadHandler}>
-          <FormattedMessage id='download.prepare' defaultMessage='Prepare download' />
-        </button>
+        return <button className='button button--big' onClick={this.downloadHandler}>
+                 <i className='fa fa-clock-o'></i>
+                 <FormattedMessage id='download.prepare' defaultMessage='Click here to prepare download' />
+               </button>
       case 'loading':
-        return <button className='button' disabled='true'>
-          <FormattedMessage id='download.prepare' defaultMessage='Preparing' />...
-        </button>
+        return <button className='button--pressed button--big animation--fade-in' disabled='true'>
+                 <i className='fa fa-cog fa-spin'></i>
+                 <FormattedMessage id='download.prepare' defaultMessage='Preparing the download file' />...
+               </button>
       case 'show-result-link':
-        return <a href={resultUrl} className='button'>
-          <FormattedMessage id='download.prepare' defaultMessage='Download file' />
-        </a>
+        return <a href={resultUrl} className='button--success button--big animation--fade-in'><i className='fa fa-download'></i> <FormattedMessage id='download.prepare' defaultMessage='Download all suspect cases' /></a>
       default:
         return <span />
     }

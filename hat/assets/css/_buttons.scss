@@ -26,8 +26,12 @@
 
 [class^='button'] {
   @include button;
-  .fa { /* give icons in buttons a margin */
+  .fa { /* give font awesome icons in buttons a margin */
     margin-right: 0.4em;
+  }
+  .icon--right { /* left margin for icons after text */
+    margin-right: 0;
+    margin-left: 0.4em;
   }
 }
 
@@ -38,6 +42,25 @@
   &--reduced {
     padding: 0.5em 1em;
     font-size: $font-size-s;
+  }
+  &--success {
+    @include button($green);
+  }
+  &--pressed {
+    @include button(darken($blue, 10%));
+    cursor: wait;
+    &:hover {
+      background: darken($blue, 10%);
+    }
+  }
+  &--minimised {
+    @include button(lighten($blue, 12%));
+    font-size: $font-size-s;
+  }
+  &--big {
+    font-size: $font-size-m;
+    padding-top: 1em;
+    padding-bottom: 1em;
   }
 }
 

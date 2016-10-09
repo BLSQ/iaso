@@ -46,6 +46,9 @@ $filter-container-height: 2rem;
   font-weight: normal;
   color: $mid-gray;
   font-size: $font-size-s;
+  .fa {
+    margin-right: 0.2em;
+  }
 }
 
 .select--minimised {

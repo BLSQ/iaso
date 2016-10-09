@@ -225,7 +225,7 @@ export class SuspectCases extends Component {
               </div>
           }
         </div>
-        <div className='widget__container' data-qa='monthly-report-data-loaded'>
+        <div className='widget__container' data-qa='suspect-cases-data-loaded'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
               {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='suspect cases for this period' />

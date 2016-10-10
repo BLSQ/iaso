@@ -1,12 +1,7 @@
 export const DOWNLOAD = 'hat/data/DOWNLOAD'
-// export const DOWNLOAD_STATUS = 'hat/data/DOWNLOAD_STATUS'
 export const DOWNLOAD_SUCCESS = 'hat/data/DOWNLOAD_SUCCESS'
 export const DOWNLOAD_ERROR = 'hat/data/DOWNLOAD_ERROR'
 export const DOWNLOAD_RESET = 'hat/data/DOWNLOAD_RESET'
-
-// export const STATUS_STARTED = 'started'
-// export const STATUS_SUCCESS = 'done'
-// export const STATUS_
 
 export const downloadReducer = function (state = {}, action = {}) {
   switch (action.type) {

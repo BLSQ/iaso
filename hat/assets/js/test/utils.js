@@ -31,5 +31,4 @@ export function renderWithStore (store, component, node = null) {
     node = document.createElement('div')
   }
   return ReactDOM.render(wrappedComp, node)
-  // return TestUtils.renderIntoDocument(wrappedComp)
 }

@@ -12,23 +12,11 @@ import { loadReducer } from './redux/load'
 import { downloadReducer } from './redux/download'
 
 export default function suspectCasesApp (appConfig, element, baseUrl) {
-  /*
-  This creates a default route using the parameters
-  in the 'appConfig' object from django
-  Example appConfig object:
-  {
-    sources: ['all', 'pv', 'mobilebackup', 'historic'],
-  }
-  */
-  const defaultRoute = (config) => {
-    return `charts/dateperiod/current-month`
-  }
-
   const routes = [
     <Route
       path='charts(/location/:location)(/source/:source)(/dateperiod/:dateperiod)(/offset/:offset)'
       component={SuspectCasesContainer} />,
-    <Redirect path='*' to={defaultRoute(appConfig)} />
+    <Redirect path='*' to='charts/dateperiod/current-month' />
   ]
 
   let history = useRouterHistory(createHistory)({

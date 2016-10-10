@@ -150,14 +150,16 @@ export class SuspectCases extends Component {
 
   dateHandler (event) {
     const dateperiod = event.target.value
-    const url = createUrl({...this.props.params, dateperiod})
+    // Reset offset when changing date/time
+    const url = createUrl({...this.props.params, dateperiod, offset: null})
     this.props.dispatch({'type': DOWNLOAD_RESET})
     this.props.dispatch(push(url))
   }
 
   locationHandler (event) {
     const location = event.target.value
-    const url = createUrl({...this.props.params, location})
+    // Reset offset when changing date/time
+    const url = createUrl({...this.props.params, location, offset: null})
     this.props.dispatch({'type': DOWNLOAD_RESET})
     this.props.dispatch(push(url))
   }

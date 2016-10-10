@@ -4,9 +4,12 @@ from oauth2client import client, crypt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
+import logging
 
 from hat.sync.credentials import create_or_update
 from hat.sync.models import MobileUser
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: add @throttle_classes
@@ -19,6 +22,7 @@ from hat.sync.models import MobileUser
 def setup_sync_user(request):
     try:
         token = request.data['idToken']
+
         assert token, 'No token set'
         assert settings.GOOGLE_CLIENT_ID, \
             'No Client ID Set, that means the token can come from anywhere!'
@@ -51,6 +55,6 @@ def setup_sync_user(request):
         return Response('User not allowed to sync', status.HTTP_403_FORBIDDEN)
     except AssertionError:
         return Response('Malformed Token.', status.HTTP_400_BAD_REQUEST)
-    except Exception:
-        # TODO Log this!
+    except Exception as err:
+        logger.exception(err)
         return Response('Internal server error', status.HTTP_500_INTERNAL_SERVER_ERROR)

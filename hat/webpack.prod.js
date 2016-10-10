@@ -19,6 +19,7 @@ module.exports = {
     'testapp': './assets/js/testapp',
     'playground': './assets/js/playground',
     'monthly_report': './assets/js/monthlyReport',
+    'suspect_cases': './assets/js/suspectCases',
     'styles': './assets/css/index.scss'
   },
 

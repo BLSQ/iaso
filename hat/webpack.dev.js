@@ -41,6 +41,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/monthlyReport'
     ],
+    'suspect_cases': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/suspectCases'
+    ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',

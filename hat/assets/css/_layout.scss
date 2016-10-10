@@ -10,7 +10,7 @@
 /* margin classes */
 $directions: left right top bottom;
 @each $direction in $directions {
-  .block--margin-#{$direction}-none {
+  .block--margin-#{$direction}--none {
     margin-#{$direction}: 0;
   }
   .block--margin-#{$direction}--xxs {

@@ -7,12 +7,12 @@ class Case(models.Model):
         ('mobile_backup', 'Mobile backup'),
         ('pv', 'Pharamcovigilance'),
     )
-    source = models.TextField(choices=SOURCE_CHOICES, null=True)
+    source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
 
-    document_date = models.DateTimeField(null=True)
+    document_date = models.DateTimeField(db_index=True, null=True)
     # The id is currently a hash over the row to be able to
     # catch duplicates
-    document_id = models.TextField()
+    document_id = models.TextField(db_index=True)
     hat_id = models.TextField()
     entry_date = models.DateTimeField(null=True)
     entry_name = models.TextField(null=True)
@@ -35,7 +35,7 @@ class Case(models.Model):
 
     village = models.TextField(null=True)
     province = models.TextField(null=True)
-    ZS = models.TextField(null=True)
+    ZS = models.TextField(db_index=True, null=True)
     AZ = models.TextField(null=True)
 
     mobile_unit = models.TextField(null=True)
@@ -94,6 +94,7 @@ class Case(models.Model):
     test_followup_decision = models.TextField(null=True)
 
     class Meta:
+        ordering = ['-document_date']
         permissions = (
             ("import", "Can import data"),
             ("export", "Can export data"),

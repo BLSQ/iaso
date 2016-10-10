@@ -184,9 +184,11 @@ export class SuspectCases extends Component {
     const locations = data && data.locations || []
     const loading = this.props.suspects.loading || this.props.download.loading
     const numResults = data && data.cases && data.cases.count || 0
+    // Used in integration test to check loading + rendering
+    const qaStatus = (data && !loading && !error) ? 'suspect-cases-data-loaded' : 'suspect-cases-loading'
 
     return (
-      <div>
+      <div data-qa={qaStatus}>
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
@@ -224,7 +226,7 @@ export class SuspectCases extends Component {
             </div>
           }
         </div>
-        <div className='widget__container' data-qa='suspect-cases-data-loaded'>
+        <div className='widget__container'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
               {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='suspect cases for this period' />

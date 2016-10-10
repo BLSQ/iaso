@@ -63,7 +63,7 @@
     "redux": "^3.5.2",
     "sass-loader": "^4.0.0",
     "sinon": "^1.17.6",
-    "standard": "^8.0.0",
+    "standard": "8.1.0",
     "style-loader": "^0.13.1",
     "superagent": "^2.3.0",
     "url-loader": "^0.5.7",

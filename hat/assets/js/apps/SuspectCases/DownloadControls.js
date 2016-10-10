@@ -35,17 +35,11 @@ class DownloadControls extends Component {
 
     switch (state) {
       case 'show-prepare':
-        return <button className='button button--big' onClick={this.downloadHandler}>
-                 <i className='fa fa-clock-o'></i>
-                 <FormattedMessage id='download.prepare' defaultMessage='Click here to prepare download' />
-               </button>
+        return <button className='button button--big' onClick={this.downloadHandler}><i className='fa fa-o-clock' /><FormattedMessage id='download.prepare' defaultMessage='Click here to prepare download' /></button>
       case 'loading':
-        return <button className='button--pressed button--big animation--fade-in' disabled='true'>
-                 <i className='fa fa-cog fa-spin'></i>
-                 <FormattedMessage id='download.preparing' defaultMessage='Preparing the download file' />...
-               </button>
+        return <button className='button--pressed button--big animation--fade-in' disabled='true'><i className='fa fa-cog fa-spin' /><FormattedMessage id='download.preparing' defaultMessage='Preparing the download file' />...</button>
       case 'show-result-link':
-        return <a href={resultUrl} className='button--success button--big animation--fade-in'><i className='fa fa-download'></i> <FormattedMessage id='download.download' defaultMessage='Download all suspect cases' /></a>
+        return <a href={resultUrl} className='button--success button--big animation--fade-in'><i className='fa fa-download' /><FormattedMessage id='download.download' defaultMessage='Download all suspect cases' /></a>
       default:
         return <span />
     }

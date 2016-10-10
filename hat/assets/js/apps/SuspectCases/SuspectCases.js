@@ -190,7 +190,7 @@ export class SuspectCases extends Component {
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar'></i> Timeframe</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /> Timeframe</label>
             <select disabled={loading} name='date' value={dateperiod} onChange={this.dateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
@@ -200,7 +200,7 @@ export class SuspectCases extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe'></i> Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /> Location</label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
@@ -234,11 +234,11 @@ export class SuspectCases extends Component {
           <span>
             {
               numResults
-                ? data && 
+                ? data &&
                   <div className='widget__content'>
                     <p className='text--small block--margin-bottom--xs'>
-                      <FormattedMessage 
-                        id='suspectcases.download.description' 
+                      <FormattedMessage
+                        id='suspectcases.download.description'
                         defaultMessage='Results presented below as an anonymised list of suspect cases with date/location. You can download the full details of all suspected cases as a csv file.' />
                     </p>
                     <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
@@ -255,7 +255,7 @@ export class SuspectCases extends Component {
             {
               data && data.cases && data.cases.previous &&
                 <button className='button--minimised block--margin-right--xxs' onClick={this.prevHandler}>
-                  <i className='fa fa-arrow-left'></i>
+                  <i className='fa fa-arrow-left' />
                   Previous page
                 </button>
             }
@@ -263,7 +263,7 @@ export class SuspectCases extends Component {
               data && data.cases && data.cases.next &&
                 <button className='button--minimised' onClick={this.nextHandler}>
                   Next page
-                  <i className='fa fa-arrow-right icon--right'></i>
+                  <i className='fa fa-arrow-right icon--right' />
                 </button>
             }
           </div>

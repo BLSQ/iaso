@@ -194,23 +194,21 @@ export class MonthlyReport extends Component {
         </div>
         <div>
           {
-            error &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading text--error'>Error:</h2>
-                </div>
-                <div className='widget__content'>
-                  {error}
-                </div>
+            error && <div className='widget__container'>
+              <div className='widget__header'>
+                <h2 className='widget__heading text--error'>Error:</h2>
               </div>
+              <div className='widget__content'>
+                {error}
+              </div>
+            </div>
           }
           {
-            loading &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading'>Loading...</h2>
-                </div>
+            loading && <div className='widget__container'>
+              <div className='widget__header'>
+                <h2 className='widget__heading'>Loading...</h2>
               </div>
+            </div>
           }
           {data && <DataTable data={data} />}
         </div>

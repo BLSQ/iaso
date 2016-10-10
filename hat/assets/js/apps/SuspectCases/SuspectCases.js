@@ -214,15 +214,14 @@ export class SuspectCases extends Component {
         </div>
         <div>
           {
-            error &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading text--error'>Error:</h2>
-                </div>
-                <div className='widget__content'>
-                  {error}
-                </div>
+            error && <div className='widget__container'>
+              <div className='widget__header'>
+                <h2 className='widget__heading text--error'>Error:</h2>
               </div>
+              <div className='widget__content'>
+                {error}
+              </div>
+            </div>
           }
         </div>
         <div className='widget__container' data-qa='suspect-cases-data-loaded'>
@@ -234,16 +233,15 @@ export class SuspectCases extends Component {
           <span>
             {
               numResults
-                ? data &&
-                  <div className='widget__content'>
-                    <p className='text--small block--margin-bottom--xs'>
-                      <FormattedMessage
-                        id='suspectcases.download.description'
-                        defaultMessage='Results presented below as an anonymised list of suspect cases with date/location. You can download the full details of all suspected cases as a csv file.' />
-                    </p>
-                    <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
-                  </div>
-                : null
+                ? data && <div className='widget__content'>
+                  <p className='text--small block--margin-bottom--xs'>
+                    <FormattedMessage
+                      id='suspectcases.download.description'
+                      defaultMessage='Results presented below as an anonymised list of suspect cases with date/location. You can download the full details of all suspected cases as a csv file.' />
+                  </p>
+                  <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
+                </div>
+              : null
             }
             {
               numResults
@@ -253,18 +251,16 @@ export class SuspectCases extends Component {
           </span>
           <div className='widget__pagination'>
             {
-              data && data.cases && data.cases.previous &&
-                <button className='button--minimised block--margin-right--xxs' onClick={this.prevHandler}>
-                  <i className='fa fa-arrow-left' />
-                  Previous page
-                </button>
+              data && data.cases && data.cases.previous && <button className='button--minimised block--margin-right--xxs' onClick={this.prevHandler}>
+                <i className='fa fa-arrow-left' />
+                Previous page
+              </button>
             }
             {
-              data && data.cases && data.cases.next &&
-                <button className='button--minimised' onClick={this.nextHandler}>
-                  Next page
-                  <i className='fa fa-arrow-right icon--right' />
-                </button>
+              data && data.cases && data.cases.next && <button className='button--minimised' onClick={this.nextHandler}>
+                Next page
+                <i className='fa fa-arrow-right icon--right' />
+              </button>
             }
           </div>
         </div>

@@ -238,12 +238,14 @@ export class SuspectCases extends Component {
             {
               numResults
                 ? data && <div className='widget__content'>
-                  <p className='text--small block--margin-bottom--xs'>
+                  <p className='text--small'>
                     <FormattedMessage
                       id='suspectcases.download.description'
                       defaultMessage='Results presented below as an anonymised list of suspect cases with date/location. You can download the full details of all suspected cases as a csv file.' />
                   </p>
-                  <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
+                  <div className='block--margin-top--xs'>
+                    <DownloadControls numResults={numResults} dateperiod={dateperiod} location={location} />
+                  </div>
                 </div>
               : null
             }

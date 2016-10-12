@@ -1,25 +1,22 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { FormattedMessage, FormattedDate } from 'react-intl'
+import {
+  FormattedMessage,
+  FormattedDate,
+  injectIntl,
+  defineMessages
+} from 'react-intl'
 import VegaLiteVis from '../../components/vega-lite-vis'
 import VISUALIZATIONS from '../../../json/visualizations.json'
+import { createUrl } from '../../utils/fetchData'
 
-export const createUrl = ({date, source, location}) => {
-  let url = '/charts'
-  if (location) {
-    url = `${url}/location/${location}`
+const MESSAGES = defineMessages({
+  'location-national': {
+    defaultMessage: 'National',
+    id: 'monthlyreport.labels.national'
   }
-
-  if (source) {
-    url = `${url}/source/${source}`
-  }
-
-  if (date) {
-    url = `${url}/date/${date}`
-  }
-
-  return url
-}
+})
 
 const Row = ({ className, label, value, definition, download }) => {
   return (
@@ -141,7 +138,7 @@ export const DataTable = ({
   )
 }
 
-export default class MonthlyReport extends Component {
+export class MonthlyReport extends Component {
   constructor () {
     super()
     this.dateHandler = this.dateHandler.bind(this)
@@ -161,6 +158,7 @@ export default class MonthlyReport extends Component {
   }
 
   render () {
+    const {formatMessage} = this.props.intl
     // source, sources also available
     const { date, location } = this.props.params
     const { dates } = this.props.config
@@ -172,7 +170,7 @@ export default class MonthlyReport extends Component {
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'>Month</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /> Month</label>
             <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className='select--minimised'>
               {dates.map((date) => (
                 <option key={date} value={date}>
@@ -182,43 +180,35 @@ export default class MonthlyReport extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'>Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /> Location</label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                <FormattedMessage
-                  id='monthlyreport.labels.national'
-                  defaultMessage='National' />
+                {formatMessage(MESSAGES['location-national'])}
               </option>
               {locations.map((loc) => {
-                var val = `${loc.ZS}`
-                return (
-                  <option key={val} value={val}>
-                    {val}
-                  </option>
-                )
+                var val = loc.ZS
+                return <option key={val} value={val}>{val}</option>
               })}
             </select>
           </div>
         </div>
         <div>
           {
-            error &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading text--error'>Error:</h2>
-                </div>
-                <div className='widget__content'>
-                  {error}
-                </div>
+            error && <div className='widget__container'>
+              <div className='widget__header'>
+                <h2 className='widget__heading text--error'>Error:</h2>
               </div>
+              <div className='widget__content'>
+                {error}
+              </div>
+            </div>
           }
           {
-            loading &&
-              <div className='widget__container'>
-                <div className='widget__header'>
-                  <h2 className='widget__heading'>Loading...</h2>
-                </div>
+            loading && <div className='widget__container'>
+              <div className='widget__header'>
+                <h2 className='widget__heading'>Loading...</h2>
               </div>
+            </div>
           }
           {data && <DataTable data={data} />}
         </div>
@@ -226,3 +216,10 @@ export default class MonthlyReport extends Component {
     )
   }
 }
+
+const MonthlyReportWithIntl = injectIntl(MonthlyReport)
+
+export default connect((state, ownProps) => ({
+  config: state.config,
+  report: state.report
+}))(MonthlyReportWithIntl)

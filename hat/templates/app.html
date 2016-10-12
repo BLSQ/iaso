@@ -14,7 +14,7 @@
         <span></span>
       </a>
 
-      {% with request.resolver_match.namespace as ns %}
+      {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
       <ul class="navigation__menu">
         {% if perms.cases.import %}
           <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
@@ -27,8 +27,13 @@
           </li>
         {% endif %}
         {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if ns == 'dashboard' %}--active{% endif %}">
-            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly Report" %}</a>
+          <li class="navigation__menu__item{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
+            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly reports" %}</a>
+          </li>
+        {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:suspect_cases' %}--active{% endif %}">
+            <a href={% url "dashboard:suspect_cases" %}>{% trans "Suspect cases" %}</a>
           </li>
         {% endif %}
         {% if user.is_superuser %}
@@ -69,6 +74,7 @@
         <h1 class="header__title">Sense HAT</h1>
       {% endblock %}
     </header>
+
 
     {% block content %}
     {% endblock %}

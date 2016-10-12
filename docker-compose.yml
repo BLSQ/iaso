@@ -27,13 +27,16 @@ services:
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       # shared dir between containers
       - ./shared:/opt/shared
+      # build scripts for testing prod version
+      - ./build_scripts:/opt/app/build_scripts
     links: &web_links
       - db
       - couchdb
       - redis
     environment: &web_environment
+      SENSE_HAT_ENVIRONMENT: 'development'
       DEBUG: 'true'
-      DEV_SERVER: 'true'
+      TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin

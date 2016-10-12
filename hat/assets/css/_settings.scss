@@ -35,3 +35,8 @@ $font-size-xxl: 2.25rem; // 36px
 
 $padding-unit: 32px;
 $navigation-width: 220px;
+$banner-height: 38px;
+
+/* z-index stack */
+$z-index-triangle-mixin: 2;
+$z-index-banner--stage-warning: 3;

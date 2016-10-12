@@ -29,6 +29,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get("DEBUG", '').lower() == "true")
 DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
+ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", 'development').lower()
 
 ALLOWED_HOSTS = ['*']
 
@@ -121,6 +122,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'hat.common.context_processors.appversions',
+                'hat.common.context_processors.environment'
             ],
         },
     },
@@ -167,7 +169,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 # switch webpack.dev and webpack.prod as well if changing here
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr'
+
+LOCALE_PATHS = [
+    '/opt/app/hat/locale/',
+]
 
 TIME_ZONE = 'UTC'
 
@@ -232,8 +238,7 @@ REST_FRAMEWORK = {
         'hat.api.permissions.UserAccessPermission',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'PAGE_SIZE': 50
 }
 
 

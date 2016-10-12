@@ -7,10 +7,34 @@
   padding-left: $navigation-width;
 }
 
+.body--banner {
+  padding-top: $banner-height;
+}
+
+.banner--stage-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-index-banner--stage-warning;
+  height: $banner-height;
+  line-height: $banner-height;
+  font-size: $font-size-s;
+  color: white;
+  padding: 0 $padding-unit;
+  background-color: $orange;
+  text-align: center;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  a {
+    color: white;
+  }
+}
+
 /* margin classes */
 $directions: left right top bottom;
 @each $direction in $directions {
-  .block--margin-#{$direction}-none {
+  .block--margin-#{$direction}--none {
     margin-#{$direction}: 0;
   }
   .block--margin-#{$direction}--xxs {

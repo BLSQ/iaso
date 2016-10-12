@@ -35,6 +35,15 @@ h4, h5, h6 {
   font-size: $font-size-standard;
 }
 
+p {
+  max-width: 40em; /* maybe this is too much of a blunt instrument? rethink if problematic */
+  line-height: 1.4;
+  margin-bottom: 1em;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
 @mixin text--error {
   color: $red;
 }
@@ -45,18 +54,6 @@ h4, h5, h6 {
 
 @mixin text--success {
   color: $green;
-}
-
-.text--error {
-  @include text--error;
-}
-
-.text--warning {
-  @include text--warning;
-}
-
-.text--success {
-  @include text--success;
 }
 
 @mixin text--standard { /* useful for resetting text in e.g. form elements */
@@ -76,4 +73,20 @@ h4, h5, h6 {
   font-size: $font-size-xs;
   font-style: normal;
   font-weight: normal;
+}
+
+.text--error {
+  @include text--error;
+}
+
+.text--warning {
+  @include text--warning;
+}
+
+.text--success {
+  @include text--success;
+}
+
+.text--small {
+  font-size: $font-size-s;
 }

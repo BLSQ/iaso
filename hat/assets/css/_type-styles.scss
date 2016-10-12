@@ -36,8 +36,12 @@ h4, h5, h6 {
 }
 
 p {
-  line-height: 1.5;
   max-width: 40em; /* maybe this is too much of a blunt instrument? rethink if problematic */
+  line-height: 1.4;
+  margin-bottom: 1em;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 @mixin text--error {

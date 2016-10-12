@@ -33,10 +33,10 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 }
 
 .navigation__content {
+  @include height-if-body-has-banner-layout;
   display: flex;
   flex-direction: column;
   width: $navigation-width;
-  min-height: 100vh;
   background: $dark-blue;
   -webkit-font-smoothing: antialiased;
 }

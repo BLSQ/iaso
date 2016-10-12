@@ -7,3 +7,9 @@ def appversions(request):
             'DEV_SERVER': settings.DEV_SERVER,
             'version_commit': prefix + (settings.HAT_COMMIT[0:7] or 'local-dev')
     }
+
+
+def environment(request):
+    return {
+            'environment': settings.ENVIRONMENT
+            }

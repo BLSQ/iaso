@@ -10,7 +10,7 @@
   width: 0;
   height: 0;
   content: '';
-  z-index: 2;
+  z-index: $z-index-triangle-mixin;
   @if $direction == top {
     border-bottom: ($size * 1.5) solid $color;
   }
@@ -40,4 +40,13 @@
 
 .animation--fade-in {
   animation: fade-in 1s;
+}
+
+/* where elements use 100vh layouts, adjusts for 
+  presence of fixed-position staging site warning */
+@mixin height-if-body-has-banner-layout { 
+  min-height: 100vh;
+  .body--banner & {
+    min-height: calc(100vh - #{$banner-height});
+  }
 }

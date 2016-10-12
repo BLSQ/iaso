@@ -29,6 +29,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get("DEBUG", '').lower() == "true")
 DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
+ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", 'development').lower()
 
 ALLOWED_HOSTS = ['*']
 
@@ -121,6 +122,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'hat.common.context_processors.appversions',
+                'hat.common.context_processors.environment'
             ],
         },
     },

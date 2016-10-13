@@ -149,7 +149,11 @@ def tested_per_day(params):
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
                   .annotate(date=RawSQL('date_trunc(\'day\', document_date)', [])) \
                   .values('date') \
-                  .annotate(count=Count('document_id'))
+                  .annotate(count=Count('document_id')) \
+                  .order_by('date')
+    # order_by is needed to remove 'document_date' from the GROUP BY statement
+    # see comment on https://jira.ehealthafrica.org/browse/HAT-262
+
     date = params.get('date', None)
     if date is None or date == '':
         raise ValidationError('Dataset requires date query string parameter')

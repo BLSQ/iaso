@@ -6,6 +6,9 @@ services:
     image: couchdb:1.6
     ports:
       - "5984:5984"
+    volumes:
+      # enable cors for mobile app in-browser development:
+      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
     environment:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret

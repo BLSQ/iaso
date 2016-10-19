@@ -1,0 +1,91 @@
+.leaflet-container {
+  font-family: $body-font-family;
+}
+
+.leaflet-clickable {
+  cursor: pointer !important;
+  color: $blue;
+}
+
+.leaflet-non-clickable {
+  cursor: default !important;
+  color: $dark-gray;
+}
+
+.leaflet-container {
+  cursor: default !important;
+  margin: 0 auto;
+}
+
+.map-container {
+  height: 700px;
+  width: 100%;
+}
+
+path.map-layer {
+  fill-opacity: 0;
+  fill: transparent;
+  stroke: $mid-gray;
+  stroke-dasharray: 3,3;
+  stroke-opacity: 1;
+  stroke-width: 1;
+
+  &:hover {
+    stroke-dasharray: 1,0;
+    stroke-width: 2;
+  }
+}
+
+path.map-layer-with-data {
+  fill-opacity: 0;
+  fill: transparent;
+  stroke: $red;
+  stroke-dasharray: 6,6;
+  stroke-opacity: 1;
+  stroke-width: 2;
+
+  &:hover {
+    stroke-dasharray: 1,0;
+    stroke-width: 3;
+  }
+}
+
+path.map-marker {
+  fill-opacity: 0.2;
+  fill: $gray;
+  stroke: $mid-gray;
+  stroke-dasharray: 2,2;
+  stroke-opacity: 1;
+  stroke-width: 1;
+
+  &:hover {
+    fill-opacity: 0.5;
+    fill: $dark-gray;
+    stroke: $light-gray;
+    stroke-dasharray: 1,0;
+    stroke-width: 2;
+  }
+}
+
+path.map-marker-with-data {
+  fill-opacity: 0.2;
+  fill: $red;
+  stroke: $red;
+  stroke-dasharray: 2,2;
+  stroke-opacity: 1;
+  stroke-width: 1;
+
+  &:hover {
+    stroke-dasharray: 1,0;
+    stroke-width: 2;
+  }
+}
+
+path.map-marker-buffer {
+  fill-opacity: 0;
+  fill: transparent;
+  stroke: $red;
+  stroke-dasharray: 2,2;
+  stroke-opacity: 1;
+  stroke-width: 1;
+}

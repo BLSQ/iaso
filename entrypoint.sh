@@ -27,6 +27,14 @@ case "$1" in
     ./manage.py test --exclude-tag selenium
     npm run mocha
   ;;
+  "test_mocha" )
+    export TESTING=true
+    # Linting tasks first
+    flake8 ./hat
+    npm run lint
+    # Then tests
+    npm run mocha
+  ;;
   "test_integration" )
     export TESTING=true
     ./scripts/wait_for_dbs.sh

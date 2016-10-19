@@ -1,0 +1,106 @@
+/* global describe, it, beforeEach, afterEach */
+import assert from 'assert'
+import { renderWithStore } from '../../test/utils'
+import React from 'react'
+import {createStore} from 'redux'
+import nock from 'nock'
+import sinon from 'sinon'
+
+import { urls, GisToolsContainer } from './GisToolsContainer'
+
+const appConfig = {
+  'sources': [
+    'mobile_backup'
+  ]
+}
+
+// create a single nock scope chaining all requests
+function createNockScope () {
+  const ns = nock('http://localhost')
+  urls.forEach((config) => {
+    ns.get(new RegExp(`^${config.url}`)).reply(200, config.mock)
+  })
+  return ns
+}
+
+/*
+ * The GisToolsContainer is responsible for loading data
+ * for the GIS tools
+ *
+ * it has a few behaviors:
+ * - load data when mounted
+ * - make sure only filter params changing triggers a new data load
+ * - emit success/fail events
+ *
+ */
+describe('GisToolsContainer Loading Data', () => {
+  let reduxStore
+  let defaultProps
+  let nockScope
+
+  beforeEach(function () {
+    defaultProps = {
+      config: appConfig,
+      geoData: {},
+      params: { dateperiod: 'since-last-year' },
+      dispatch: sinon.spy()
+    }
+    reduxStore = createStore((e) => e, {
+      config: appConfig,
+      geoData: {}
+    })
+    nockScope = createNockScope()
+  })
+
+  afterEach(function () {
+    // always cleanup in case any nocks have been leftover
+    nock.cleanAll()
+  })
+
+  it('loads data on initialization', () => {
+    renderWithStore(
+      reduxStore, <GisToolsContainer {...defaultProps} />
+    )
+    assert(nockScope.isDone(), 'The urls have been requested')
+  })
+
+  it('loads data when the filter params change', function () {
+    this.timeout(5000) // increase timeout ->  make leaflet work and render SVG
+    const node = document.createElement('div')
+    renderWithStore(
+      reduxStore, <GisToolsContainer {...defaultProps} />, node
+    )
+    assert(nockScope.isDone(), 'The urls have been requested')
+
+    // we restore the nocks to test if they will be called again
+    nockScope = createNockScope()
+    assert(nockScope.isDone() === false, 'The fresh nock scope is not done')
+
+    const props2 = {
+      ...defaultProps,
+      params: {
+        ...defaultProps.params,
+        dateperiod: 'since-five-years'
+      }
+    }
+    renderWithStore(
+      reduxStore, <GisToolsContainer {...props2} />, node
+    )
+
+    assert(nockScope.isDone(), 'The urls have been requested a second time')
+    nockScope = createNockScope()
+
+    const props3 = {
+      ...defaultProps,
+      params: {
+        ...defaultProps.params,
+        dateperiod: 'since-five-years'
+      }
+    }
+    renderWithStore(
+      reduxStore, <GisToolsContainer {...props3} />, node
+    )
+
+    assert(nockScope.isDone() === false, 'The urls have not been requested again')
+  })
+})

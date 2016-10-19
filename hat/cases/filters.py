@@ -42,6 +42,7 @@ class DatePeriod(Enum):
     since_last_year = 'since-last-year'
     since_two_years = 'since-two-years'
     since_three_years = 'since-three-years'
+    since_five_years = 'since-five-years'
 
 
 def resolve_dateperiod(value):
@@ -110,6 +111,12 @@ def resolve_dateperiod(value):
         date_from = datetime(td.year - 3, 1, 1, tzinfo=pytz.UTC)
         date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
             + timedelta(days=1)
+
+    elif value == DatePeriod.since_five_years.value:
+        date_from = datetime(td.year - 5, 1, 1, tzinfo=pytz.UTC)
+        date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
+            + timedelta(days=1)
+
     else:
         raise ValueError('Unkown date period: ' + value)
 

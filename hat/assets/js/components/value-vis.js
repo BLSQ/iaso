@@ -1,8 +1,9 @@
 import React, {Component, PropTypes} from 'react'
+import { FormattedMessage } from 'react-intl'
 
 class ValueVis extends Component {
   render () {
-    return <p>Value: {this.props.data.value}</p>
+    return <p><FormattedMessage id='value_vis.value' defaultMessage='Value:' /> {this.props.data.value}</p>
   }
 }
 

@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from 'react'
+import { FormattedMessage } from 'react-intl'
 
 class ResourceList extends Component {
   constructor (props) {
@@ -34,7 +35,7 @@ class ResourceList extends Component {
     return <div>
       <label>{title}:</label>
       <select value={value} onChange={this.handleSelect}>
-        <option key='none' value=''>None</option>
+        <option key='none' value=''><FormattedMessage id='resourcelist.none' defaultMessage='None' /></option>
         {items.map((item, i) => {
           return <option key={i} value={item.name}>{item.name}</option>
         })}

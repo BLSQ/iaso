@@ -246,7 +246,10 @@ REST_FRAMEWORK = {
         'hat.api.permissions.UserAccessPermission',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 50
+    'PAGE_SIZE': 50,
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/day'
+    }
 }
 
 

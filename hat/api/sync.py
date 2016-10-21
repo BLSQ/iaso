@@ -2,7 +2,13 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from oauth2client import client, crypt
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    authentication_classes,
+    throttle_classes
+)
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 import logging
 
@@ -12,11 +18,12 @@ from hat.sync.models import MobileUser
 logger = logging.getLogger(__name__)
 
 
-# TODO: add @throttle_classes
-# This view is accessed from the mobile app,
-# is there a way to do csrf or do we just have to accept exempt?
+# Sync credentials endpoint
+# Needs to be open since the mobile app doesn't have any creds
+# is throttled
 @csrf_exempt
 @api_view(http_method_names=['POST'])
+@throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def setup_sync_user(request):

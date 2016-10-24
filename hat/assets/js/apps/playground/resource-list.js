@@ -29,11 +29,11 @@ class ResourceList extends Component {
   }
 
   render () {
-    const {title} = this.props
+    // const {title} = this.props
     const {items, value} = this.state
 
     return <div>
-      <label><FormattedMessage id='resourcelist.none' defaultMessage={title} /></label>
+      <label><FormattedMessage id='resourcelist.none' defaultMessage='Datasets:' /></label>
       <select value={value} onChange={this.handleSelect}>
         <option key='none' value=''><FormattedMessage id='resourcelist.none' defaultMessage='None' /></option>
         {items.map((item, i) => {

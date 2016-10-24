@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import { FormattedMessage } from 'react-intl'
 
 class InputLabel extends Component {
   constructor (props) {
@@ -96,7 +97,7 @@ class ArrayInput extends Component {
     })
     return <fieldset className='array-input'>
       <InputLabel title={name} description={schema.description} />
-      <button onClick={this.handleAppend}>Append</button>
+      <button onClick={this.handleAppend}><FormattedMessage id='jsonschema.arrayinput.append' defaultMessage='Append' /></button>
       {items}
     </fieldset>
   }

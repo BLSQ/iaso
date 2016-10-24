@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { FormattedMessage } from 'react-intl'
 
 import JsonSchema from './json-schema'
 import ResourceList from './resource-list'
@@ -67,9 +68,9 @@ export default class Playground extends Component {
     }
     return <div>
       <div>
-        <label>Visualizations:</label>
+        <label><FormattedMessage id='playground.visualizations' defaultMessage='Visualizations:' /></label>
         <select value={visName} onChange={this.handleVisSelect}>
-          <option key='none' value=''>None</option>
+          <option key='none' value=''><FormattedMessage id='playground.none' defaultMessage='None' /></option>
           {Object.keys(VISUALIZATIONS).map((name, i) => {
             return <option key={i} value={name}>{name}</option>
           })}

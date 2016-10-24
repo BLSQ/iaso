@@ -50,7 +50,7 @@
       {% endwith %}
 
       <div class="navigation__footer">
-        <span class="label--user">Logged in as '{{ user }}'</span>
+        <span class="label--user">{% trans "Logged in as" %} '{{ user }}'</span>
         <a href={% url 'logout' %} class="navigation__logout-link">
           {% trans "Log out" %}
           <i class="fa fa-sign-out"></i>
@@ -71,7 +71,7 @@
 
     <header class="header">
       {% block header %}
-        <h1 class="header__title">Sense HAT</h1>
+        <h1 class="header__title">{% trans "Sense HAT" %}</h1>
       {% endblock %}
     </header>
 

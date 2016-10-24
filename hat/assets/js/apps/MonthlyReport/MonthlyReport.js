@@ -180,7 +180,7 @@ export class MonthlyReport extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.select.location' defaultMessage='Location' /></label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}

@@ -33,9 +33,9 @@ class ResourceList extends Component {
     const {items, value} = this.state
 
     return <div>
-      <label><FormattedMessage id='resourcelist.none' defaultMessage='Datasets:' /></label>
+      <label><FormattedMessage id='resourcelist.none.label' defaultMessage='Datasets:' /></label>
       <select value={value} onChange={this.handleSelect}>
-        <option key='none' value=''><FormattedMessage id='resourcelist.none' defaultMessage='None' /></option>
+        <option key='none' value=''><FormattedMessage id='resourcelist.none.option' defaultMessage='None' /></option>
         {items.map((item, i) => {
           return <option key={i} value={item.name}>{item.name}</option>
         })}

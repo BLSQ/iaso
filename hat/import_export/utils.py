@@ -96,7 +96,7 @@ def hat_id(row: Series) -> str:
     if 'year_of_birth' in r2:
         yob = str(r2['year_of_birth'])
     else:
-        yob = '1900'
+        yob = 'XXXX'
 
     if 'mothers_surname' in r2:
         mothers = strip_accents(r2['mothers_surname'])

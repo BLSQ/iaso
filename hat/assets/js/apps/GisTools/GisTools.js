@@ -45,12 +45,6 @@ const MESSAGES = defineMessages({
   'since-five-years': {
     defaultMessage: 'Since five years',
     id: 'gistools.dateperiod.since-five-years'
-  },
-
-  // misc
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'gistools.labels.national'
   }
 })
 
@@ -62,18 +56,9 @@ const TABLE_COLUMNS = [
   {message: 'column-date', key: 'last_confirmed_date', type: 'date'}
 ]
 
-const mapConfirmed = (item) => ({
-  zone: item.ZS,
-  area: item.AZ,
-  village: item.village,
-  cases: item.confirmed_cases,
-  date: item.last_confirmed_date
-})
-
 export const DataTable = ({
   data: {
-    confirmedByLocation,
-    location
+    confirmedByLocation
   }
 }) => {
   return (
@@ -126,7 +111,6 @@ export class GisTools extends Component {
   constructor () {
     super()
     this.dateHandler = this.dateHandler.bind(this)
-    this.locationHandler = this.locationHandler.bind(this)
   }
 
   dateHandler (event) {
@@ -136,28 +120,25 @@ export class GisTools extends Component {
     this.props.dispatch(push(url))
   }
 
-  locationHandler (event) {
-    const location = event.target.value
-    // Reset offset when changing date/time
-    const url = createUrl({...this.props.params, location, offset: null})
-    this.props.dispatch(push(url))
-  }
-
   render () {
     const {formatMessage} = this.props.intl
     // source, sources also available
-    const { dateperiod, location } = this.props.params
+    const { dateperiod } = this.props.params
     const { data, error } = this.props.geoData
-    const locations = data && data.locations || []
     const loading = this.props.geoData.loading
     const numResults = data && data.confirmedByLocation && data.confirmedByLocation.length || 0
+
+    const mapConfirmed = (item) => ({
+      zone: item.ZS,
+      area: item.AZ,
+      village: item.village,
+      cases: item.confirmed_cases,
+      date: item.last_confirmed_date
+    })
     const points = (numResults > 0) ? data.confirmedByLocation.map(mapConfirmed) : []
 
-    // Used in integration test to check loading + rendering
-    const qaStatus = (data && !loading && !error) ? 'gis-tools-data-loaded' : 'gis-tools-loading'
-
     return (
-      <div data-qa={qaStatus}>
+      <div>
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
@@ -168,18 +149,6 @@ export class GisTools extends Component {
                   {formatMessage(MESSAGES[period])}
                 </option>
               ))}
-            </select>
-          </div>
-          <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /> Location</label>
-            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
-              <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
-              </option>
-              {locations.map((loc) => {
-                var val = loc.ZS
-                return <option key={val} value={val}>{val}</option>
-              })}
             </select>
           </div>
         </div>

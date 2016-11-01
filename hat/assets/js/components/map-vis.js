@@ -1,67 +1,27 @@
 import React, {Component, PropTypes} from 'react'
 import ReactDOM from 'react-dom'
-
 import chroma from 'chroma-js'
-import * as topojson from 'topojson'
 import L from 'leaflet'
 import mapData from '../utils/mapData'
 
+// using OSM layers
 const TILES_LAYER = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 
-//
-// Copyright (c) 2013 Ryan Clark (https://gist.github.com/rclark/5779673)
-//
-L.TopoJSON = L.GeoJSON.extend({
-  addData: function (jsonData) {
-    if (jsonData.type === 'Topology') {
-      for (let key in jsonData.objects) {
-        const geojson = topojson.feature(jsonData, jsonData.objects[key])
-        L.GeoJSON.prototype.addData.call(this, geojson)
-      }
-    } else {
-      L.GeoJSON.prototype.addData.call(this, jsonData)
-    }
-  }
-})
-
-L.topoJson = function (data, options) {
-  return new L.TopoJSON(data, options)
-}
-//
-// Copyright (c) 2013 Ryan Clark (https://gist.github.com/rclark/5779673)
-//
-
-const last = (a, b) => (a >= b ? a : b)
-const cleanString = (a) => a.toUpperCase().replace(/[^A-Z0-9]/g, '')
-const compareStrings = (a, b) => (cleanString(a) === cleanString(b))
-const findInData = (data, item, keys) => {
-  const entries = data.filter((entry) => {
-    let found = true
-    keys.forEach((key) => {
-      found = found && compareStrings(entry[key], item[key])
-    })
-    return found
-  })
-
-  const cases = entries.reduce((prev, curr) => (prev + curr.cases), 0)
-  const date = entries.reduce((prev, curr) => last(prev, curr.date), '')
-  const tooltip = keys.map((key) => item[key]).join(' / ') +
-    (cases ? ' (' + cases + ', ' + date.substring(0, 10) + ')' : '')
-
-  return {cases, date, tooltip}
-}
-
-// color scales for zones (blues) and villages (reds)
+// Create legend for both zones (blues) and villages (reds)
+// check https://github.com/gka/chroma.js/wiki/Color-Scales
 const ZONES_LIMIT = 15
 const zonesScale = chroma.scale('Blues')
 
-const VILLAGES_LIMIT = 5
+const VILLAGES_LIMIT = 15
 const villagesScale = chroma.scale('Reds')
 
-const createScale = (container, scale, label, max) => {
+const createLegendScale = (container, scale, label, max) => {
   container.innerHTML += '<div>'
 
   container.innerHTML += '<ul>'
+  // we assume that the scale goes from 0 to 100% so we only create
+  // squares starting in 10% (1 case) to 100% (max value accepted)
+  // the step is 10%
   for (let i = 0.1; i < 1.1; i += 0.1) {
     container.innerHTML += '<li style="background-color: ' + scale(i).hex() + '"></li>'
   }
@@ -74,13 +34,45 @@ const createScale = (container, scale, label, max) => {
   container.innerHTML += '</div>'
 }
 
+// this creates the legend but doesn't add it to the map
 const legend = L.control({ position: 'bottomright' })
 legend.onAdd = (map) => {
   const div = L.DomUtil.create('div', 'info legend')
   div.innerHTML = ''
-  createScale(div, zonesScale, 'Zones de Santè', ZONES_LIMIT) // FIXME!!! translate labels
-  createScale(div, villagesScale, 'Villages', VILLAGES_LIMIT)
+  createLegendScale(div, zonesScale, 'Zones de Santè', ZONES_LIMIT) // FIXME!!! translate labels
+  createLegendScale(div, villagesScale, 'Villages', VILLAGES_LIMIT)
   return div
+}
+
+// find all the entries in the list that match exact
+// with the item values in the indicated keys list
+//
+// keys: [ 'a', 'b', 'c' ]
+// item: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
+// one matched value could be: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
+const findInData = (list, item, keys) => {
+  // taken from sense-hat-mobile
+  const stripAccents = (word) => {
+    return word.toUpperCase()
+      .replace(/[ÀÁÂÄ]/, 'A')
+      .replace(/[ÈÉÊ]/, 'E')
+      .replace('Ç', 'C')
+      .replace('Û', 'U')
+      .replace(/[^A-Z0-9]/g, '')
+  }
+
+  const matched = list.filter((entry) => (
+    keys.every((key) => stripAccents(entry[key]) === stripAccents(item[key]))
+  ))
+
+  // find out the number of cases and the onset date of the last case
+  const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
+  const date = matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), '')
+  // create a simple tooltip with this info
+  const tooltip = keys.map((key) => item[key]).join(' / ') +
+    (cases ? ' (' + cases + ', ' + date.substring(0, 10) + ')' : '')
+
+  return {cases, date, tooltip}
 }
 
 class MapVis extends Component {
@@ -115,17 +107,34 @@ class MapVis extends Component {
 
     // tiles layer
     L.tileLayer(TILES_LAYER).addTo(this.map)
-    L.control.scale({ imperial: false }).addTo(this.map) // show scale
+    L.control.scale({ imperial: false }).addTo(this.map) // show metric scale
 
-    // this layer group is used to plot the zones boundaries without confirmed cases
+    // this layer group is used to plot the zones boundaries
     this.zonesGroup = new L.FeatureGroup().addTo(this.map)
+    // plot the ALL zones
+    L.geoJson(mapData.zones, {
+      style: (feature) => ({className: 'map-layer'}),
+      onEachFeature: (feature, layer) => {
+        layer.bindTooltip(feature.properties.zone, {sticky: true})
+        this.zonesGroup.addLayer(layer)
+      }
+    })
 
-    // this layer group is used to plot the villages (sense-hat-locations) without confirmed cases
-    this.villagesMobileGroup = new L.FeatureGroup().addTo(this.map)
+    // this layer group is used to plot the villages
+    this.villagesGroup = new L.FeatureGroup().addTo(this.map)
+    // plot ALL the villages as a gray circle
+    mapData.villages.forEach((item) => {
+      const marker = L.circle(L.latLng(item.lat, item.lon), {
+        radius: 200, // metres
+        className: 'map-marker'
+      })
+      marker.bindTooltip(item.village, {sticky: true})
+      this.villagesGroup.addLayer(marker)
+    })
 
     // these layers group are used to plot the villages&zones with confirmed cases
     this.casesZonesGroup = new L.FeatureGroup().addTo(this.map)
-    this.casesGroup = new L.FeatureGroup().addTo(this.map)
+    this.casesVillagesGroup = new L.FeatureGroup().addTo(this.map)
 
     // Add legend
     legend.addTo(this.map)
@@ -134,45 +143,45 @@ class MapVis extends Component {
   updateMap () {
     const data = this.props.data || []
 
-    // remove the previous layers
-    this.zonesGroup.clearLayers()
-    this.villagesMobileGroup.clearLayers()
-    this.casesGroup.clearLayers()
-    this.casesZonesGroup.clearLayers()
-
     this.map.whenReady(() => {
-      // plot the zones
-      L.topoJson(mapData.zones, {
-        style: (feature) => {
-          const matched = findInData(data, feature.properties, ['zone'])
-          if (matched.cases === 0) {
-            return {className: 'map-layer'}
-          } else {
-            const color = zonesScale(Math.min(matched.cases / ZONES_LIMIT, 1.0)).hex()
-            return {
+      // plot ONLY the zones with confirmed cases
+      this.casesZonesGroup.clearLayers()
+      mapData.zones.features.forEach((item) => {
+        const matched = findInData(data, item.properties, ['zone'])
+        if (matched.cases) {
+          // build color depending on number of cases in the zone
+          const color = zonesScale(Math.min(matched.cases / ZONES_LIMIT, 1.0)).hex()
+          L.geoJson(item, {
+            style: (feature) => ({
               className: 'map-layer-with-data',
               fillColor: color,
               color: color
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.bindTooltip(matched.tooltip, {sticky: true})
+              this.casesZonesGroup.addLayer(layer)
             }
-          }
-        },
-        onEachFeature: (feature, layer) => {
-          const matched = findInData(data, feature.properties, ['zone'])
-          layer.bindTooltip(matched.tooltip, {sticky: true})
-
-          if (matched.cases > 0) {
-            this.casesZonesGroup.addLayer(layer)
-          } else {
-            this.zonesGroup.addLayer(layer)
-          }
+          })
         }
       })
 
-      // plot the villages (mobile source)
-      mapData.villages.mobile.forEach((item) => {
+      // remove and add the villages layer
+      // (order matters, always above boundaries)
+      this.map.removeLayer(this.villagesGroup)
+      this.map.addLayer(this.villagesGroup)
+
+      // plot ONLY the villages with confirmed cases
+      this.casesVillagesGroup.clearLayers()
+      // this should be the other way around
+      // once we have "reconciliation" the data list should contain
+      // the matching villages with its geopoints
+      // expected: data.forEach((item) => { ... })
+      mapData.villages.forEach((item) => {
         const matched = findInData(data, item, ['zone', 'area', 'village'])
         if (matched.cases) {
+          // build color depending on number of cases in the village
           const color = villagesScale(Math.min(matched.cases / VILLAGES_LIMIT, 1.0)).hex()
+
           const marker = L.circle(L.latLng(item.lat, item.lon), {
             radius: 400, // metres
             className: 'map-marker-with-data',
@@ -180,21 +189,14 @@ class MapVis extends Component {
             color: color
           })
           marker.bindTooltip(matched.tooltip, {sticky: true})
-          this.casesGroup.addLayer(marker)
-        } else {
-          const marker = L.circle(L.latLng(item.lat, item.lon), {
-            radius: 200, // metres
-            className: 'map-marker'
-          })
-          marker.bindTooltip(matched.tooltip, {sticky: true})
-          this.villagesMobileGroup.addLayer(marker)
+          this.casesVillagesGroup.addLayer(marker)
         }
       })
 
       // fit to data or zones
       setTimeout(() => {
-        if (this.casesGroup.getLayers().length) {
-          this.map.fitBounds(this.casesGroup.getBounds())
+        if (this.casesVillagesGroup.getLayers().length) {
+          this.map.fitBounds(this.casesVillagesGroup.getBounds())
         } else {
           this.map.fitBounds(this.zonesGroup.getBounds())
         }

@@ -4,14 +4,17 @@ set -e
 show_help() {
   echo """
   Commands
-  test          : run tests
-  start         : start django + uwsgi
-  start_dev     : start django devserver
-  start_rq      : start rq worker
-  start_jupyter : start jupyter notebook
-  manage        : run django manage.py
-  eval          : eval shell command
-  bash          : run bash
+  test             : run tests
+  test_js          : run javascript tests
+  test_integration : run integration tests
+  start            : start django + uwsgi
+  start_dev        : start django devserver
+  start_webpack    : start webpack server (only in DEV mode)
+  start_rq         : start rq worker
+  start_jupyter    : start jupyter notebook
+  manage           : run django manage.py
+  eval             : eval shell command
+  bash             : run bash
   """
 }
 
@@ -27,13 +30,8 @@ case "$1" in
     ./manage.py test --exclude-tag selenium
     npm run mocha
   ;;
-  "test_mocha" )
-    export TESTING=true
-    # Linting tasks first
-    flake8 ./hat
-    npm run lint
-    # Then tests
-    npm run mocha
+  "test_js" )
+    npm run test
   ;;
   "test_integration" )
     export TESTING=true

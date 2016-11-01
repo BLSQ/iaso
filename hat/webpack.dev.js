@@ -46,6 +46,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/suspectCases'
     ],
+    'gis_tools': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/gisTools'
+    ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -126,6 +131,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

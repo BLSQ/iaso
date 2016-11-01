@@ -20,6 +20,7 @@ module.exports = {
     'playground': './assets/js/playground',
     'monthly_report': './assets/js/monthlyReport',
     'suspect_cases': './assets/js/suspectCases',
+    'gis_tools': './assets/js/gisTools',
     'styles': './assets/css/index.scss'
   },
 
@@ -116,6 +117,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

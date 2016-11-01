@@ -33,6 +33,7 @@
     ]
   },
   "devDependencies": {
+    "@ehealthafrica/sense-hat-locations": "^5.1.1",
     "babel-core": "^6.13.2",
     "babel-loader": "^6.2.5",
     "babel-plugin-react-intl": "^2.1.4",
@@ -40,6 +41,7 @@
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-2": "^6.13.0",
     "babel-register": "^6.14.0",
+    "chroma-js": "^1.1.1",
     "css-loader": "^0.24.0",
     "eslint-plugin-react": "6.3.0",
     "extract-text-webpack-plugin": "^1.0.1",
@@ -49,6 +51,7 @@
     "history": "^2.1.2",
     "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
+    "leaflet": "^1.0.1",
     "mocha": "^3.0.2",
     "nock": "^8.0.0",
     "node-sass": "^3.8.0",

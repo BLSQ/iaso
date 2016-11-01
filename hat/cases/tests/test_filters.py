@@ -50,5 +50,9 @@ class FilterTests(TestCase):
             self.assertEqual(date_from, datetime(2013, 1, 1, tzinfo=pytz.UTC))
             self.assertEqual(date_to, datetime(2016, 7, 12, tzinfo=pytz.UTC))
 
+            (date_from, date_to) = resolve_dateperiod(DatePeriod.since_five_years.value)
+            self.assertEqual(date_from, datetime(2011, 1, 1, tzinfo=pytz.UTC))
+            self.assertEqual(date_to, datetime(2016, 7, 12, tzinfo=pytz.UTC))
+
             # TODO: test edge cases where last-* is in last year
             # mock_datetime.today.return_value = datetime(2016, 1, 11)

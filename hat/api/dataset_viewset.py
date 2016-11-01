@@ -168,6 +168,17 @@ def tested_per_day(params):
     return result
 
 
+@dataset(params_schema=params_schema)
+def confirmed_by_location(params):
+    return get_cases_filtered(params) \
+        .filter(Q_confirmation) \
+        .filter(Q_confirmation_positive) \
+        .values('province', 'ZS', 'AZ', 'village') \
+        .annotate(confirmed_cases=Count('document_id')) \
+        .annotate(last_confirmed_date=Max('document_date')) \
+        .order_by('province', 'ZS', 'AZ', 'village')
+
+
 class DatasetViewSet(viewsets.ViewSet):
     '''
     View to list and retrieve registered datasets

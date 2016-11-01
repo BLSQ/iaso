@@ -36,6 +36,11 @@
             <a href={% url "dashboard:suspect_cases" %}>{% trans "Suspect cases" %}</a>
           </li>
         {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:gis_tools' %}--active{% endif %}">
+            <a href={% url "dashboard:gis_tools" %}>{% trans "GIS tools" %}</a>
+          </li>
+        {% endif %}
         {% if user.is_superuser %}
           <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
             <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>

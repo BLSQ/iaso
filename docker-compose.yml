@@ -50,6 +50,17 @@ services:
       TRAVIS_BUILD_NUMBER: "${TRAVIS_BUILD_NUMBER}"
     command: start_dev
 
+  web_ssl:
+    depends_on:
+      - web
+    image: sense-hat
+    ports:
+      - "8443:443"
+    volumes_from:
+      - web
+    environment: *web_environment
+    command: start_dev_ssl
+
   # the webpack dev server
   webpack:
     depends_on:

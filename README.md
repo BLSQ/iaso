@@ -12,7 +12,11 @@ The local dev setup uses [docker-compose](https://docs.docker.com/compose/) to s
 
 `docker-compose up`
 
-This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should then be reachable at `http://<docker-host>:8080`. This also runs a [Jupyter](http://jupyter.org/) iPython notebook server at port `8888` that can be used for exploration in development. No local setup is needed apart from docker.
+This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should then be reachable at `http://<docker-host>:8080`. We also run a nginx ssl proxy that under `http://<docker-host>:8443`.
+
+[Jupyter](http://jupyter.org/) iPython notebook server is run at port `8888` as well, that can be used for exploration in development.
+
+No local setup should be needed apart from docker.
 
 ### Create a user
 

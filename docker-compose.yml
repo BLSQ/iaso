@@ -42,7 +42,6 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
-      DOCKER_HOST: "${DOCKER_HOST}"
       SAUCE_USERNAME: "${SAUCE_USERNAME}"
       SAUCE_ACCESS_KEY: "${SAUCE_ACCESS_KEY}"
       # This is needed to connect to the tunnel on Saucelabs

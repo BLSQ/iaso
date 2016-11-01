@@ -57,7 +57,8 @@ describe('GisToolsContainer Loading Data', () => {
     nock.cleanAll()
   })
 
-  it('loads data on initialization', () => {
+  it('loads data on initialization', function () {
+    this.timeout(10000) // increase timeout -> load JSON files
     renderWithStore(
       reduxStore, <GisToolsContainer {...defaultProps} />
     )
@@ -65,7 +66,7 @@ describe('GisToolsContainer Loading Data', () => {
   })
 
   it('loads data when the filter params change', function () {
-    this.timeout(5000) // increase timeout ->  make leaflet work and render SVG
+    this.timeout(10000) // increase timeout -> load JSON files
     const node = document.createElement('div')
     renderWithStore(
       reduxStore, <GisToolsContainer {...defaultProps} />, node

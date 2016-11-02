@@ -1,5 +1,4 @@
 var path = require('path')
-var url = require('url')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings

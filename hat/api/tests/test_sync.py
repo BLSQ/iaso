@@ -139,7 +139,7 @@ class SyncTests(APITestCase):
         url = reverse('api:sync')
         response = self.client.post(url, {'idToken': 'Long JWT Token'}, format='json')
 
-        self.assertEqual(response.status_code, 400, 'returns bad request on no email')
+        self.assertEqual(response.status_code, 500, 'returns server error on no email')
 
     @override_settings(GOOGLE_CLIENT_ID='')
     @mock.patch('oauth2client.client.verify_id_token', side_effect=just_return)
@@ -148,7 +148,7 @@ class SyncTests(APITestCase):
         url = reverse('api:sync')
         response = self.client.post(url, {'idToken': 'Long JWT Token'}, format='json')
 
-        self.assertEqual(response.status_code, 400, 'returns bad request on no email')
+        self.assertEqual(response.status_code, 500, 'returns server error on no email')
 
     @mock.patch('oauth2client.client.verify_id_token', side_effect=http_error)
     def test_no_google_certs(self, valid_token_function):

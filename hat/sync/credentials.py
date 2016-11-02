@@ -55,9 +55,12 @@ def create(user_name, password, db_name):
     '''
     # couchdb stops empty username
     # should throw on invalid password,
-    assert password, 'No password Provided!'
+    if password is None or password == '':
+        raise ValueError('No password Provided')
+
     # should throw on invalid dbname
-    assert db_name, 'No db name Provided!'
+    if db_name is None or db_name == '':
+        raise ValueError('No db name provided')
 
     user_id = generate_user_id(user_name)
 
@@ -106,7 +109,8 @@ def create_or_update(email):
 
     This is the method to call from this module!
     '''
-    assert email, 'email needs to be defined'
+    if email is None or email == '':
+        raise ValueError('No email provided')
 
     user_id = generate_user_id(email)
     user_url = '_users/{}'.format(user_id)

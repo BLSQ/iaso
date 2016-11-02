@@ -5,6 +5,7 @@
 import * as topojson from 'topojson'
 import topoData from '../../json/ZS-Bandundu-topo.json'
 import locations from '@ehealthafrica/sense-hat-locations'
+import villagesATLAS from '../../json/HAT-ATLAS-villages.json'
 
 //
 // Leaflet doesn't support topoJSON format
@@ -40,5 +41,5 @@ export default {
   center: MAP_CENTER,
   zoom: MAP_ZOOM,
   zones: geoData.zones,
-  villages: villages
+  villages: villagesATLAS.concat(villages)
 }

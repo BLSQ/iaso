@@ -1,5 +1,6 @@
 #
 # USE THIS ONLY FOR LOCAL DEV
+# This ssl proxies to the devserver and couchdb.
 #
 server {
   listen      443 ssl;
@@ -27,7 +28,7 @@ server {
   }
 
   location / {
-    proxy_pass http://web:8080;
+    proxy_pass http://hat:8080;
   }
 
   location /_couchdb {

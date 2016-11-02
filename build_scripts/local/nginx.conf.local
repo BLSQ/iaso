@@ -1,5 +1,6 @@
 #
 # USE THIS ONLY FOR LOCAL DEV
+# This config mimics the production config and is meant for testing the production setup.
 #
 server {
   listen      8080;

@@ -12,8 +12,7 @@ services:
   redis:
     image: redis:3.2
 
-  # the django dev server container
-  web:
+  hat:
     build:
       context: .
       args:
@@ -22,18 +21,18 @@ services:
     image: sense-hat
     ports:
       - "8080:8080"
-    volumes: &web_volumes
+    volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       # shared dir between containers
       - ./shared:/opt/shared
       # build scripts for testing prod version
       - ./build_scripts:/opt/app/build_scripts
-    links: &web_links
+    links: &hat_links
       - db
       - couchdb
       - redis
-    environment: &web_environment
+    environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
       DEBUG: 'true'
       TEST_PROD: "${TEST_PROD}"
@@ -50,49 +49,49 @@ services:
       TRAVIS_BUILD_NUMBER: "${TRAVIS_BUILD_NUMBER}"
     command: start_dev
 
-  web_ssl:
+  nginx:
     depends_on:
-      - web
+      - hat
     image: sense-hat
     ports:
       - "8443:443"
     volumes_from:
-      - web
-    environment: *web_environment
-    command: start_dev_ssl
+      - hat
+    environment: *hat_environment
+    command: start_dev_nginx
 
   # the webpack dev server
   webpack:
     depends_on:
-      - web
+      - hat
     image: sense-hat
     ports:
       - "3000:3000"
     volumes_from:
-      - web
-    environment: *web_environment
+      - hat
+    environment: *hat_environment
     command: start_webpack
 
   # the worker container of the task runner
   rq:
     depends_on:
-      - web
+      - hat
     image: sense-hat
     volumes_from:
-      - web
-    links: *web_links
-    environment: *web_environment
+      - hat
+    links: *hat_links
+    environment: *hat_environment
     command: start_rq
 
   # the jupyter server
   jupyter:
     depends_on:
-      - web
+      - hat
     image: sense-hat
     ports:
       - "8888:8888"
     volumes_from:
-      - web
-    links: *web_links
-    environment: *web_environment
+      - hat
+    links: *hat_links
+    environment: *hat_environment
     command: start_jupyter

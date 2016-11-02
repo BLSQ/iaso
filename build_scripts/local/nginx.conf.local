@@ -1,8 +1,6 @@
 #
-# This configuration file is used to test the prod setup locally.
-# It should only differ from the prod conf file, in that it:
-# - listens on 8080 instead of 80
-# - does not redirect to https
+# USE THIS ONLY FOR LOCAL DEV
+# This config mimics the production config and is meant for testing the production setup.
 #
 server {
   listen      8080;

@@ -33,6 +33,10 @@ ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", 'development').lower()
 
 ALLOWED_HOSTS = ['*']
 
+# Tell django to view requests as secure(ssl) that have this header set
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 FIXTURE_DIRS = (
     'hat/fixtures/',
 )

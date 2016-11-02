@@ -50,9 +50,9 @@ case "$1" in
     ./scripts/start_web.sh
   ;;
   "start_dev" )
-    # When TEST_PROD is set, start the container in prod mode
     if [ -n "$TEST_PROD" ]; then
-      envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf.local > /etc/nginx/sites-available/default
+      # Test prod configuration
+      envsubst "\$COUCHDB_URL" < build_scripts/local/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
@@ -69,8 +69,15 @@ case "$1" in
       ./manage.py runserver 0.0.0.0:8080
     fi
   ;;
+  "start_dev_nginx" )
+    # ssl proxy to web
+    envsubst "\$COUCHDB_URL" < build_scripts/local/nginx-ssl.conf.local > /etc/nginx/sites-available/default
+    cp build_scripts/local/nginx.key.local /etc/nginx/cert.key
+    cp build_scripts/local/nginx.crt.local /etc/nginx/cert.crt
+    nginx -g "daemon off;"
+  ;;
   "start_webpack" )
-    # We only run this server if DEBUG is set
+    # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
@@ -80,7 +87,7 @@ case "$1" in
     ./scripts/start_rq.sh
   ;;
   "start_jupyter" )
-    # We only run this server if DEBUG is set
+    # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi

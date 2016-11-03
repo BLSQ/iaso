@@ -13,9 +13,9 @@ import { loadReducer } from './redux/load'
 export default function gisToolsApp (appConfig, element, baseUrl) {
   const routes = [
     <Route
-      path='maps(/dateperiod/:dateperiod)'
+      path='charts(/dateperiod/:dateperiod)'
       component={GisToolsContainer} />,
-    <Redirect path='*' to='maps/dateperiod/since-last-year' />
+    <Redirect path='*' to='charts/dateperiod/since-last-year' />
   ]
 
   let history = useRouterHistory(createHistory)({

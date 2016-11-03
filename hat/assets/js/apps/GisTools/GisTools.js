@@ -9,6 +9,7 @@ import {
 } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
 import MapVis from '../../components/map-vis'
+import ExportCSVButton from '../../components/export-csv-button'
 
 const MESSAGES = defineMessages({
   // colum headers
@@ -64,7 +65,9 @@ export const DataTable = ({
   return (
     <section className='widget__content'>
       <h3 className='block--margin-bottom--xxs'>
-        <FormattedMessage id='gistools.header.confirmed_cases' defaultMessage='List of villages with confirmed cases' />
+        <ExportCSVButton data={confirmedByLocation} columns={TABLE_COLUMNS} messages={MESSAGES} filename='villages.csv'>
+          <FormattedMessage id='gistools.header.confirmed_cases' defaultMessage='List of villages with confirmed cases' />
+        </ExportCSVButton>
       </h3>
 
       <table className='table--minimised'>
@@ -115,8 +118,7 @@ export class GisTools extends Component {
 
   dateHandler (event) {
     const dateperiod = event.target.value
-    // Reset offset when changing date/time
-    const url = createUrl({...this.props.params, dateperiod, offset: null})
+    const url = createUrl({...this.props.params, dateperiod})
     this.props.dispatch(push(url))
   }
 

@@ -25,7 +25,7 @@ const MESSAGES = defineMessages({
   },
   areasWithCases: {
     id: 'mapvis.areas.withcases',
-    defaultMessage: 'Aire de Sante with confirmed cases'
+    defaultMessage: 'Aires de Sante with confirmed cases'
   },
   villagesWithCases: {
     id: 'mapvis.villages.withcases',
@@ -52,6 +52,10 @@ const MESSAGES = defineMessages({
   lastDateCase: {
     id: 'mapvis.cases.date',
     defaultMessage: 'Last case date'
+  },
+  population: {
+    id: 'mapvis.population',
+    defaultMessage: 'Population'
   }
 })
 
@@ -92,7 +96,7 @@ const createLegendScale = (container, scale, label, max) => {
   container.innerHTML += '</div>'
 }
 
-const createTooltip = (intl, item, cases, date) => {
+const createTooltip = (intl, item) => {
   let tooltip = '<div class="tooltip"><table>'
 
   if (item.zone) {
@@ -113,14 +117,23 @@ const createTooltip = (intl, item, cases, date) => {
       '<td>' + item.village + '</td>' +
       '</tr>'
   }
-  if (cases) {
+  if (item.cases) {
     tooltip += '<tr>' +
       '<td><b>' + intl.formatMessage(MESSAGES.numberOfCases) + '</b></td>' +
-      '<td>' + cases + '<br/>' +
+      '<td>' + item.cases + '<br/>' +
       '</tr><tr>' +
       '<td><b>' + intl.formatMessage(MESSAGES.lastDateCase) + '</b></td>' +
-      '<td>' + intl.formatDate(date) +
+      '<td>' + intl.formatDate(item.date) +
       '</tr>'
+  }
+  if (item.population) {
+    tooltip += '<tr>' +
+      '<td><b>' + intl.formatMessage(MESSAGES.population) + '</b></td>' +
+      '<td>' + item.population + '</td>' +
+      '</tr>'
+  }
+  if (item.village) {
+    // include buffer option?
   }
 
   tooltip += '</table></div>'
@@ -133,7 +146,7 @@ const createTooltip = (intl, item, cases, date) => {
 // keys: [ 'a', 'b', 'c' ]
 // item: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
 // one matched value could be: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
-const findInData = (list, item, keys, intl) => {
+const findInData = (list, item, keys) => {
   // taken from sense-hat-mobile
   const stripAccents = (word) => {
     return word.toUpperCase()
@@ -144,16 +157,9 @@ const findInData = (list, item, keys, intl) => {
       .replace(/[^A-Z0-9]/g, '')
   }
 
-  const matched = list.filter((entry) => (
+  return list.filter((entry) => (
     keys.every((key) => stripAccents(entry[key]) === stripAccents(item[key]))
   ))
-
-  // find out the number of cases and the onset date of the last case
-  const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
-  const date = matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), '')
-  const tooltip = createTooltip(intl, item, cases, date)
-
-  return {cases, date, tooltip}
 }
 
 class MapVis extends Component {
@@ -195,6 +201,7 @@ class MapVis extends Component {
     this.map.createPane('boundaries')
     this.map.createPane('villages')
     this.map.createPane('cases')
+    this.map.createPane('selected')
 
     // show metric scale
     L.control.scale({ imperial: false }).addTo(this.map)
@@ -258,20 +265,26 @@ class MapVis extends Component {
       // plot ONLY the zones with confirmed cases
       this.casesZonesGroup.clearLayers()
       mapData.zones.features.forEach((item) => {
-        const matched = findInData(data, item.properties, ['zone'], this.props.intl)
-        if (matched.cases) {
+        const matched = findInData(data, item.properties, ['zone'])
+
+        // find out the number of cases and the onset date of the last case
+        const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
+        const date = matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), '')
+        const tooltip = createTooltip(this.props.intl, {...item.properties, cases, date})
+
+        if (cases) {
           // build color depending on number of cases in the zone
-          const color = zonesScale(Math.min(matched.cases / ZONES_LIMIT, 1.0)).hex()
+          const color = zonesScale(Math.min(cases / ZONES_LIMIT, 1.0))
           L.geoJson(item, {
             pane: 'boundaries',
             style: (feature) => ({
               className: 'map-layer-with-data',
-              fillColor: color,
-              color: color
+              fillColor: color.hex(),
+              color: color.darken().hex()
             }),
             onEachFeature: (feature, layer) => {
-              // layer.bindTooltip(matched.tooltip, {sticky: true})
-              layer.bindPopup(matched.tooltip, {closeButton: false})
+              // layer.bindTooltip(tooltip, {sticky: true})
+              layer.bindPopup(tooltip, {closeButton: false})
               this.casesZonesGroup.addLayer(layer)
             }
           })
@@ -280,25 +293,24 @@ class MapVis extends Component {
 
       // plot ONLY the villages with confirmed cases
       this.casesVillagesGroup.clearLayers()
-      // FIXME!!! Improve loop
-      // this should be the other way around
-      // once we have "reconciliation" tool, the data list should contain
-      // the matching villages with its geopoints
-      // expected: data.forEach((item) => { ... })
-      mapData.villages.forEach((item) => {
-        const matched = findInData(data, item, ['zone', 'area', 'village'], this.props.intl)
-        if (matched.cases) {
+      data.forEach((item) => {
+        const matched = findInData(mapData.villages, item, ['zone', 'area', 'village'])
+        if (matched.length > 0) {
           // build color depending on number of cases in the village
-          const color = villagesScale(Math.min(matched.cases / VILLAGES_LIMIT, 1.0)).hex()
+          const color = villagesScale(Math.min(item.cases / VILLAGES_LIMIT, 1.0))
+          const tooltip = createTooltip(this.props.intl, item)
+          const lat = parseFloat(matched[0].lat)
+          const lon = parseFloat(matched[0].lon)
 
-          const marker = L.circle(L.latLng(item.lat, item.lon), {
+          const marker = L.circle(L.latLng(lat, lon), {
             pane: 'cases',
             radius: 400, // metres
             className: 'map-marker-with-data',
-            fillColor: color,
-            color: color
+            fillColor: color.hex(),
+            color: color.darken().hex()
           })
-          marker.bindTooltip(matched.tooltip, {sticky: true})
+          // marker.bindTooltip(tooltip, {sticky: true})
+          marker.bindPopup(tooltip, {closeButton: false})
           this.casesVillagesGroup.addLayer(marker)
         }
       })

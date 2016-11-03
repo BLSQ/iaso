@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import GisTools from './GisTools'
 import { clone } from '../../utils'
-import { fetchUrls, checkLocation } from '../../utils/fetchData'
+import { fetchUrls } from '../../utils/fetchData'
 
 /*
  * Handles state
@@ -52,7 +52,7 @@ export class GisToolsContainer extends Component {
     const {dispatch} = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
-    fetchUrls(urls, params, oldParams, dispatch, checkLocation)
+    fetchUrls(urls, params, oldParams, dispatch)
   }
 
   componentDidMount () {

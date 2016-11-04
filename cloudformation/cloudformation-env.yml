@@ -1,11 +1,13 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
 Description: sense-hat environment
+
 Parameters:
   ProjectName:
     Description: name of deployed project
     Type: String
     MinLength: 3
+
   Environment:
     Description: Application environment
     Type: String
@@ -14,40 +16,64 @@ Parameters:
     - stage
     - prod
     ConstraintDescription: 'Allowed environment types: dev/stage/prod'
+    
   HostedZone:
     Description: Hosted zone name
     Type: String
     MinLength: 3
+    
   SNSTopic:
     Description: ARN of SNS Topic for alarms
     Type: String
     AllowedPattern: arn:aws:sns:.*
     ConstraintDescription: Expected valid SNS ARN (starting with arn:aws:sns:).
+
+  GetOrCreateRecordLambda:
+    Description: ARN of Lambda responsible for storing records
+    Type: String
+    AllowedPattern: arn:aws:lambda:.*
+    ConstraintDescription: Expected valid ARN (starting with arn:aws:lambda:)
+    
   ConfigurationTemplate:
     Description: Reference to Beanstalk ConfigurationTemplate
     Type: String
     MinLength: 3
+    
   Subnet:
     Description: Reference to VPC Subnet
     Type: String
     MinLength: 3
+    
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the Elastic
       Beanstalk hosts
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    
   ApplicationVersion:
     Description: Reference to Benastalk ApplicationVersion
     Type: String
     MinLength: 3
+    
   Application:
     Description: Reference to Beanstalk Application
     Type: String
     MinLength: 3
+
+  Subnets:
+    Description: Reference to VPC Subnets list
+    Type: CommaDelimitedList
+    
   VPC:
     Description: Reference to VPC
     Type: String
     MinLength: 3
+
+  KmsKey:
+    Description: KMS key for DB encryption
+    Type: String
+    MinLength: 3
+
 Mappings:
   InstanceType:
     dev:
@@ -56,6 +82,7 @@ Mappings:
       InstanceType: t2.small
     prod:
       InstanceType: t2.small
+
   CouchDBInstance:
     dev:
       AMI: ami-612f5412
@@ -69,18 +96,35 @@ Mappings:
       AMI: ami-ae2c57dd
       InstanceType: t2.small
       Name: sense-hat-couchdb-prod
+
   Variables:
     dev:
       SpotPrice: ''
-      KazanaBackendLocation: http://sense-hat-couchdb-dev.eocng.org:5984
+      CouchdbPassword: ''
+      SecretKey: ''
+      NewRelicLogLevel: 'info'
+      CouchDBUser: 'admin'
+      HatMobileKey: ''
+      GoogleClientId: ''
+
     stage:
       SpotPrice: ''
-      KazanaDbIntegratedData: sense-hat-integrated-data
-      KazanaBackendLocation: http://sense-hat-couchdb-stage.eocng.org:5984
+      CouchdbPassword: ''
+      SecretKey: ''
+      NewRelicLogLevel: 'info'
+      CouchDBUser: 'admin'
+      HatMobileKey: ''
+      GoogleClientId: ''
+
     prod:
       SpotPrice: ''
-      KazanaDbIntegratedData: sense-hat-integrated-data
-      KazanaBackendLocation: http://sense-hat-couchdb-prod.eocng.org:5984
+      CouchdbPassword: ''
+      SecretKey: ''
+      NewRelicLogLevel: 'info'
+      CouchDBUser: 'admin'
+      HatMobileKey: ''
+      GoogleClientId: ''
+
   DomainNameSuffix:
     dev:
       DomainNameSuffix: "-dev"
@@ -88,6 +132,7 @@ Mappings:
       DomainNameSuffix: "-stage"
     prod:
       DomainNameSuffix: "-prod"
+
   Beanstalk2Route53HostedZoneId:
     us-east-1:
       HostedZoneId: Z117KPS5GTRQ2G
@@ -109,7 +154,76 @@ Mappings:
       HostedZoneId: Z2PCDNR3VC2G1N
     sa-east-1:
       HostedZoneId: Z10X7K2B4QSOFV
+
 Resources:
+  GetOrCreateDbPassword:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_password]]
+
+  GetOrCreateDbUser:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_user]]
+      RecordValue: postgres
+
+  GetOrCreateDbName:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_name]]
+      RecordValue: saraapi
+
+  GetOrCreateDbPort:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_port]]
+      RecordValue: 5432
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Group of VPC subnets for DB
+      SubnetIds: !Ref Subnets
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      Engine: postgres
+      DBName: !If [DbFromSnapshot, !Ref 'AWS::NoValue', !GetAtt [GetOrCreateDbName, RecordValue]]
+      MasterUsername: !If [DbFromSnapshot, !Ref 'AWS::NoValue', !GetAtt [GetOrCreateDbUser, RecordValue]]
+      MasterUserPassword: !If [DbFromSnapshot, !Ref 'AWS::NoValue', !GetAtt [GetOrCreateDbPassword, RecordValue]]
+      Port: !If [DbFromSnapshot, !Ref 'AWS::NoValue', !GetAtt [GetOrCreateDbPort, RecordValue]]
+      DBInstanceClass: !FindInMap [Variables, !Ref Environment, DbInstanceType]
+      VPCSecurityGroups:
+        - !GetAtt [DBSecurityGroup, GroupId]
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      AllocatedStorage: !FindInMap [Variables, !Ref Environment, DbAllocatedStorage]
+      StorageType: gp2
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 35
+      DBInstanceIdentifier: !Join ['-', [!Ref ProjectName, !Ref Environment]]
+      StorageEncrypted: !If [DbEncryptionBool, true, !Ref 'AWS::NoValue']
+      KmsKeyId: !If [DbEncryptionBool, !Ref KmsKey, !Ref 'AWS::NoValue']
+      DBSnapshotIdentifier: !If [DbFromSnapshot, !FindInMap [Variables, !Ref Environment, DbSnapshot], !Ref 'AWS::NoValue']
+      MultiAZ: !If [DbMultiAzBool, 'true', 'false']
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: BeanstalkSecurityGroup
+    Properties:
+      GroupDescription: DB security group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !GetAtt [GetOrCreateDbPort, RecordValue]
+          ToPort: !GetAtt [GetOrCreateDbPort, RecordValue]
+          SourceSecurityGroupId: !Ref BeanstalkSecurityGroup
+
   CouchDBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -125,6 +239,7 @@ Resources:
         FromPort: '0'
         ToPort: '65535'
         CidrIp: 0.0.0.0/0
+
   BeanstalkSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -144,15 +259,12 @@ Resources:
         FromPort: '0'
         ToPort: '65535'
         CidrIp: 0.0.0.0/0
+
   BeanstalkEnvironment:
     Type: AWS::ElasticBeanstalk::Environment
     Properties:
       ApplicationName: !Ref Application
-      EnvironmentName:
-        Fn::Join:
-        - "-"
-        - - !Ref ProjectName
-          - !Ref Environment
+      EnvironmentName: !Join ['-', [!Ref ProjectName, !Ref Environment]]
       Description: Beanstalk environment
       VersionLabel: !Ref ApplicationVersion
       TemplateName: !Ref ConfigurationTemplate
@@ -162,18 +274,58 @@ Resources:
         Value: !Ref BeanstalkSecurityGroup
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: InstanceType
-        Value: !Fn::FindInMap [InstanceType, !Ref Environment, InstanceType]
+        Value: !FindInMap [InstanceType, !Ref Environment, InstanceType]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: SPOT_PRICE
-        Value: !Fn::FindInMap [Variables, !Ref Environment, SpotPrice]
+        Value: !FindInMap [Variables, !Ref Environment, SpotPrice]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: kazana_backend__location
-        Value: !Fn::FindInMap [Variables, !Ref Environment, KazanaBackendLocation]
+        Value: !FindInMap [Variables, !Ref Environment, KazanaBackendLocation]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_PASSWORD
+        Value: !GetAtt [GetOrCreateDbPassword, RecordValue]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_USERNAME
+        Value: !GetAtt [GetOrCreateDbUser, RecordValue]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_DB_NAME
+        Value: !GetAtt [GetOrCreateDbName, RecordValue]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_PORT
+        Value: !GetAtt [GetOrCreateDbPort, RecordValue]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: RDS_HOSTNAME
+        Value: !GetAtt [DBInstance, Endpoint.Address]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: COUCHDB_PASSWORD 
+        Value: !FindInMap [Variables, !Ref Environment, CouchdbPassword]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: SECRET_KEY 
+        Value: !FindInMap [Variables, !Ref Environment, SecretKey]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: NEW_RELIC_LOG_LEVEL 
+        Value: !FindInMap [Variables, !Ref Environment, NewRelicLogLevel]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: COUCHDB_USER 
+        Value: !FindInMap [Variables, !Ref Environment, CouchDBUser]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: HAT_MOBILE_KEY
+        Value: !FindInMap [Variables, !Ref Environment, HatMobileKey]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: GOOGLE_CLIENT_ID
+        Value: !FindInMap [Variables, !Ref Environment, GoogleClientId]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: NEW_RELIC_APP_NAME
+        Value: !Join ['', [!Ref ProjectName, !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix]]]
+      - Namespace: aws:elasticbeanstalk:application:environment
+        OptionName: COUCDB_URL
+        Value: !Join ['http://', [!Ref ProjectName, "-couchdb", !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, ':5984']]
+
   CouchDBInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !Fn::FindInMap [CouchDBInstance, !Ref Environment, AMI]
-      InstanceType: !Fn::FindInMap [CouchDBInstance, !Ref Environment, InstanceType]
+      ImageId: !FindInMap [CouchDBInstance, !Ref Environment, AMI]
+      InstanceType: !FindInMap [CouchDBInstance, !Ref Environment, InstanceType]
       KeyName: !Ref KeyName
       InstanceInitiatedShutdownBehavior: stop
       NetworkInterfaces:
@@ -184,68 +336,38 @@ Resources:
         SubnetId: !Ref Subnet
       Tags:
       - Key: Name
-        Value: !Fn::FindInMap [CouchDBInstance, !Ref Environment, Name]
+        Value: !FindInMap [CouchDBInstance, !Ref Environment, Name]
+
   CouchDBDNSRecord:
     Type: AWS::Route53::RecordSet
     DependsOn: CouchDBInstance
     Properties:
-      HostedZoneName:
-        Fn::Join:
-        - ''
-        - - !Ref HostedZone
-          - "."
+      HostedZoneName: !Join ['', [!Ref HostedZone, '.']]
       Comment: CouchDB DNS name
-      Name:
-        Fn::Join:
-        - ''
-        - - sense-hat
-          - "-couchdb"
-          - Fn::FindInMap:
-            - DomainNameSuffix
-            - !Ref Environment
-            - DomainNameSuffix
-          - "."
-          - !Ref HostedZone
-          - "."
+      Name: !Join ['', [!Ref ProjectName, "-couchdb", !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, '.']]
       Type: A
       TTL: '60'
       ResourceRecords:
-      - !Fn::GetAtt [CouchDBInstance, PrivateIp]
+      - !GetAtt [CouchDBInstance, PrivateIp]
+
   DNSRecord:
     Type: AWS::Route53::RecordSet
     DependsOn: BeanstalkEnvironment
     Properties:
-      HostedZoneName:
-        Fn::Join:
-        - ''
-        - - !Ref HostedZone
-          - "."
+      HostedZoneName: !Join ['', [!Ref HostedZone, '.']]
       Comment: DNS name
-      Name:
-        Fn::Join:
-        - ''
-        - - !Ref ProjectName
-          - Fn::FindInMap:
-            - DomainNameSuffix
-            - !Ref Environment
-            - DomainNameSuffix
-          - "."
-          - !Ref HostedZone
-          - "."
+      Name: !Join ['', [!Ref ProjectName, !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, '.']]
       Type: A
       AliasTarget:
-        HostedZoneId: !Fn::FindInMap [Beanstalk2Route53HostedZoneId, !Ref AWS::Region, HostedZoneId]
-        DNSName: !Fn::GetAtt [BeanstalkEnvironment, EndpointURL]
+        HostedZoneId: !FindInMap [Beanstalk2Route53HostedZoneId, !Ref 'AWS::Region', HostedZoneId]
+        DNSName: !GetAtt [BeanstalkEnvironment, EndpointURL]
+
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName:
-        Fn::Join:
-        - ''
-        - - !Ref ProjectName
-          - "-"
-          - !Ref Environment
+      LogGroupName: !Join ['', [!Ref ProjectName, '-', !Ref Environment]]
       RetentionInDays: 180
+
   BytesTransferredMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -253,32 +375,15 @@ Resources:
       FilterPattern: "[]"
       MetricTransformations:
       - MetricValue: "$size"
-        MetricNamespace:
-          Fn::Join:
-          - ''
-          - - !Ref ProjectName
-            - "/"
-        MetricName:
-          Fn::Join:
-          - ''
-          - - !Ref Environment
-            - "-"
-            - BytesTransferred
+        MetricNamespace: !Join ['', [!Ref ProjectName, '/']]
+        MetricName: !Join ['', [!Ref Environment, '-', BytesTransferred]]
+
   BandwidthAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: The average volume of traffic is greater 3500 KB over 10 minutes
-      MetricName:
-        Fn::Join:
-        - ''
-        - - !Ref Environment
-          - "-"
-          - BytesTransferred
-      Namespace:
-        Fn::Join:
-        - ''
-        - - !Ref ProjectName
-          - "/"
+      MetricName: !Join ['', [!Ref Environment, '-', BytesTransferred]]
+      Namespace: !Join ['', [!Ref ProjectName, '/']]
       Statistic: Average
       Period: '300'
       EvaluationPeriods: '2'
@@ -286,6 +391,7 @@ Resources:
       AlarmActions:
       - !Ref SNSTopic
       ComparisonOperator: GreaterThanThreshold
+
 Outputs:
   DNSName:
     Description: DNS name

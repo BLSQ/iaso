@@ -91,8 +91,9 @@ def setup_db(db_name: str, config: dict):
         r = api.put(db_name)
         r.raise_for_status()
 
-    ddoc_url = db_name + '/' + ddoc['_id']
-    force_put_doc(ddoc_url, ddoc)
+    if '_id' in ddoc:
+        ddoc_url = db_name + '/' + ddoc['_id']
+        force_put_doc(ddoc_url, ddoc)
 
     secdoc_url = db_name + '/_security'
     force_put_doc(secdoc_url, secdoc)

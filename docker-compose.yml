@@ -6,6 +6,9 @@ services:
     image: couchdb:1.6
     ports:
       - "5984:5984"
+    volumes:
+      # enable cors for mobile app in-browser development:
+      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
     environment:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
@@ -37,6 +40,7 @@ services:
       DEBUG: 'true'
       TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret

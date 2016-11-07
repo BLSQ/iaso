@@ -31,6 +31,9 @@ DEBUG = (os.environ.get("DEBUG", '').lower() == "true")
 DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
 ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", 'development').lower()
 
+# SECURITY WARNING: this should also be considered a secret:
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", '')
+
 ALLOWED_HOSTS = ['*']
 
 # Tell django to view requests as secure(ssl) that have this header set
@@ -45,7 +48,8 @@ FIXTURE_DIRS = (
 
 LOGGING_LEVEL = os.getenv('DJANGO_LOGGING_LEVEL', 'INFO')
 if TESTING:
-    LOGGING_LEVEL = 'WARN'
+    # We don't want to see log output when running tests
+    LOGGING_LEVEL = 'CRITICAL'
 
 LOGGING = {
     'version': 1,
@@ -98,6 +102,7 @@ INSTALLED_APPS = [
     'hat.maintenance',
     'hat.api',
     'hat.integration_tests',
+    'hat.sync',
     'webpack_loader',
 ]
 
@@ -242,7 +247,10 @@ REST_FRAMEWORK = {
         'hat.api.permissions.UserAccessPermission',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 50
+    'PAGE_SIZE': 50,
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/day'
+    }
 }
 
 

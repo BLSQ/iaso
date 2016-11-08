@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import GisTools from './GisTools'
+import Microplanning from './Microplanning'
 import { clone } from '../../utils'
 import { fetchUrls } from '../../utils/fetchData'
 
 /*
  * Handles state
  * and data loading
- * for the GIS tools page
+ * for the Microplanning page
  *
  * TODO: This is very similar to the MonthlyReportContainer.
  *       We might want refactor to both be the same Component.
@@ -42,7 +42,7 @@ export const urls = [
   }
 ]
 
-export class GisToolsContainer extends Component {
+export class MicroplanningContainer extends Component {
   constructor (props) {
     super(props)
     this.currentParams = ''
@@ -65,9 +65,9 @@ export class GisToolsContainer extends Component {
 
   render () {
     return (
-      <GisTools params={this.props.params} />
+      <Microplanning params={this.props.params} />
     )
   }
 }
 
-export default connect()(GisToolsContainer)
+export default connect()(MicroplanningContainer)

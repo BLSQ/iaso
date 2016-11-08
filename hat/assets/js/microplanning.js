@@ -7,14 +7,14 @@ import { createHistory } from 'history'
 import createStore from './redux/createStore'
 import App from './apps/App'
 
-import GisToolsContainer from './apps/GisTools/GisToolsContainer'
+import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
 import { loadReducer } from './redux/load'
 
-export default function gisToolsApp (appConfig, element, baseUrl) {
+export default function microplanningApp (appConfig, element, baseUrl) {
   const routes = [
     <Route
       path='charts(/dateperiod/:dateperiod)'
-      component={GisToolsContainer} />,
+      component={MicroplanningContainer} />,
     <Redirect path='*' to='charts/dateperiod/since-last-year' />
   ]
 

@@ -62,9 +62,9 @@ def suspect_cases(request):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def gis_tools(request):
+def microplanning(request):
     sources = Case.objects.order_by().values('source').distinct()
     json_data = json.dumps({
         'sources': [s['source'] for s in sources],
     })
-    return render(request, 'dashboard/gis_tools.html', {'json_data': json_data})
+    return render(request, 'dashboard/microplanning.html', {'json_data': json_data})

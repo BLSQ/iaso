@@ -37,10 +37,10 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/suspectCases'
     ],
-    'gis_tools': [
+    'microplanning': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
-      './assets/js/gisTools'
+      './assets/js/microplanning'
     ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,

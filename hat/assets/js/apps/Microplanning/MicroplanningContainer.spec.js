@@ -6,7 +6,7 @@ import {createStore} from 'redux'
 import nock from 'nock'
 import sinon from 'sinon'
 
-import { urls, GisToolsContainer } from './GisToolsContainer'
+import { urls, MicroplanningContainer } from './MicroplanningContainer'
 
 const appConfig = {
   'sources': [
@@ -24,8 +24,8 @@ function createNockScope () {
 }
 
 /*
- * The GisToolsContainer is responsible for loading data
- * for the GIS tools
+ * The MicroplanningContainer is responsible for loading data
+ * for the micro-planning
  *
  * it has a few behaviors:
  * - load data when mounted
@@ -33,7 +33,7 @@ function createNockScope () {
  * - emit success/fail events
  *
  */
-describe('GisToolsContainer Loading Data', () => {
+describe('MicroplanningContainer Loading Data', () => {
   let reduxStore
   let defaultProps
   let nockScope
@@ -60,7 +60,7 @@ describe('GisToolsContainer Loading Data', () => {
   it('loads data on initialization', function () {
     this.timeout(10000) // increase timeout -> load JSON files
     renderWithStore(
-      reduxStore, <GisToolsContainer {...defaultProps} />
+      reduxStore, <MicroplanningContainer {...defaultProps} />
     )
     assert(nockScope.isDone(), 'The urls have been requested')
   })
@@ -69,7 +69,7 @@ describe('GisToolsContainer Loading Data', () => {
     this.timeout(10000) // increase timeout -> load JSON files
     const node = document.createElement('div')
     renderWithStore(
-      reduxStore, <GisToolsContainer {...defaultProps} />, node
+      reduxStore, <MicroplanningContainer {...defaultProps} />, node
     )
     assert(nockScope.isDone(), 'The urls have been requested')
 
@@ -85,7 +85,7 @@ describe('GisToolsContainer Loading Data', () => {
       }
     }
     renderWithStore(
-      reduxStore, <GisToolsContainer {...props2} />, node
+      reduxStore, <MicroplanningContainer {...props2} />, node
     )
 
     assert(nockScope.isDone(), 'The urls have been requested a second time')
@@ -99,7 +99,7 @@ describe('GisToolsContainer Loading Data', () => {
       }
     }
     renderWithStore(
-      reduxStore, <GisToolsContainer {...props3} />, node
+      reduxStore, <MicroplanningContainer {...props3} />, node
     )
 
     assert(nockScope.isDone() === false, 'The urls have not been requested again')

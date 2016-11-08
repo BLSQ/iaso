@@ -14,38 +14,38 @@ import ExportCSVButton from '../../components/export-csv-button'
 const MESSAGES = defineMessages({
   // colum headers
   'column-zs': {
-    id: 'gistools.table.column.zs',
+    id: 'microplanning.table.column.zs',
     defaultMessage: 'Zone de Sante'
   },
   'column-az': {
-    id: 'gistools.table.column.az',
+    id: 'microplanning.table.column.az',
     defaultMessage: 'Aire de Sante'
   },
   'column-village': {
-    id: 'gistools.table.column.village',
+    id: 'microplanning.table.column.village',
     defaultMessage: 'Village'
   },
   'column-cases': {
-    id: 'gistools.table.column.cases',
+    id: 'microplanning.table.column.cases',
     defaultMessage: '# Cases'
   },
   'column-date': {
-    id: 'gistools.table.column.date',
+    id: 'microplanning.table.column.date',
     defaultMessage: 'Last case date'
   },
 
   // dateperiod messages
   'since-last-year': {
     defaultMessage: 'Since last year',
-    id: 'gistools.dateperiod.since-last-year'
+    id: 'microplanning.dateperiod.since-last-year'
   },
   'since-three-years': {
     defaultMessage: 'Since three years',
-    id: 'gistools.dateperiod.since-three-years'
+    id: 'microplanning.dateperiod.since-three-years'
   },
   'since-five-years': {
     defaultMessage: 'Since five years',
-    id: 'gistools.dateperiod.since-five-years'
+    id: 'microplanning.dateperiod.since-five-years'
   }
 })
 
@@ -66,7 +66,7 @@ export const DataTable = ({
     <section className='widget__content'>
       <h3 className='block--margin-bottom--xxs'>
         <ExportCSVButton data={confirmedByLocation} columns={TABLE_COLUMNS} messages={MESSAGES} filename='villages.csv'>
-          <FormattedMessage id='gistools.header.confirmed_cases' defaultMessage='List of villages with confirmed cases' />
+          <FormattedMessage id='microplanning.header.confirmed_cases' defaultMessage='List of villages with confirmed cases' />
         </ExportCSVButton>
       </h3>
 
@@ -110,7 +110,7 @@ const DATEPERIODS = [
   'since-five-years'
 ]
 
-export class GisTools extends Component {
+export class Microplanning extends Component {
   constructor () {
     super()
     this.dateHandler = this.dateHandler.bind(this)
@@ -169,15 +169,15 @@ export class GisTools extends Component {
         <div className='widget__container'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
-              <FormattedMessage id='gistools.header.map' defaultMessage='Map' />
+              <FormattedMessage id='microplanning.header.map' defaultMessage='Map' />
             </h2>
           </div>
-          <div className='widget__content list__item--map' data-qa='gis-tools-data-loaded'>
+          <div className='widget__content list__item--map' data-qa='microplanning-data-loaded'>
             <MapVis data={points} />
           </div>
           <div className='widget__header'>
             <h2 className='widget__heading'>
-              {numResults} <FormattedMessage id='gistools.header.results' defaultMessage='villages with confirmed cases for this period' />
+              {numResults} <FormattedMessage id='microplanning.header.results' defaultMessage='villages with confirmed cases for this period' />
             </h2>
           </div>
           <span>
@@ -191,9 +191,9 @@ export class GisTools extends Component {
   }
 }
 
-const GisToolsWithIntl = injectIntl(GisTools)
+const MicroplanningWithIntl = injectIntl(Microplanning)
 
 export default connect((state, ownProps) => ({
   config: state.config,
   geoData: state.geoData
-}))(GisToolsWithIntl)
+}))(MicroplanningWithIntl)

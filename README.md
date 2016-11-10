@@ -12,7 +12,7 @@ The local dev setup uses [docker-compose](https://docs.docker.com/compose/) to s
 
 `docker-compose up`
 
-This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should be reachable at `http://<docker-host>:8080`. We also run a nginx ssl proxy under `https://<docker-host>:8443`.
+This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should be reachable at `https://<docker-host>:8443`.
 
 [Jupyter](http://jupyter.org/) iPython notebook server is run at port `8888` as well, that can be used for exploration in development.
 
@@ -24,7 +24,7 @@ To login to the app or the django admin, a superuser needs to be created with:
 
 `docker-compose run hat manage createsuperuser`
 
-Then additional users with custom groups and permissions can be added through the django admin at `http://<docker-host>:8080`.
+Then additional users with custom groups and permissions can be added through the django admin at `https://<docker-host>:8443/admin`.
 
 ### Import mobile backups
 

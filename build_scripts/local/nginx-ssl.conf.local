@@ -23,10 +23,6 @@ server {
   proxy_set_header X-Forwarded-Host $http_host;
   proxy_set_header X-Forwarded-Proto $scheme;
 
-  location /static/ {
-    alias /opt/app/hat/assets/bundles/;
-  }
-
   location / {
     proxy_pass http://hat:8080;
   }

@@ -22,8 +22,9 @@ services:
         git_commit: "${TRAVIS_COMMIT}"
         NODE_ENV: "${NODE_ENV}"
     image: sense-hat
-    ports:
-      - "8080:8080"
+    # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
+    # ports:
+    #   - "8080:8080"
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./entrypoint.sh:/opt/app/entrypoint.sh

@@ -41,13 +41,15 @@ describe('MicroplanningContainer Loading Data', () => {
   beforeEach(function () {
     defaultProps = {
       config: appConfig,
-      geoData: {},
+      highlight: {},
+      microplanning: {},
       params: { dateperiod: 'since-last-year' },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
       config: appConfig,
-      geoData: {}
+      highlight: {},
+      microplanning: {}
     })
     nockScope = createNockScope()
   })

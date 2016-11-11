@@ -1,3 +1,5 @@
+$detailed-color: $blue;
+
 .leaflet-container {
   font-family: $body-font-family;
 }
@@ -17,65 +19,189 @@
   margin: 0 auto;
 }
 
+.map__panel_left {
+  display: inline-block;
+  height: 760px;
+  width: 69%;
+}
+
+.map__panel_right {
+  display: inline-block;
+  height: 760px;
+  vertical-align: top;
+  width: 29%;
+  overflow: hidden;
+}
+
 .map-container {
+  background: $background-highlight-gray;
   height: 700px;
   width: 100%;
 }
 
-path.map-layer {
-  fill-opacity: 0;
-  fill: transparent;
-  stroke: $mid-gray;
+.map-button {
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid $gray;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  cursor: pointer !important;
+  font-size: 16px;
+  height: 26px;
+  margin: 0;
+  padding: 2px 0 0 10px;
+  vertical-align: middle;
+  width: 24px;
+}
+
+.legend {
+  background: $background-highlight-gray;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  color: $text-color;
+  float: right;
+  font-family: $body-font-family;
+  font-size: $font-size-xs;
+  height: 32px;
+  margin: $padding-unit/4;
+  padding: 6px 8px;
+  width: 180px;
+
+  ul {
+    clear: both;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+  }
+  .min {
+    float: left;
+  }
+  .max {
+    float: right;
+  }
+}
+
+.details {
+  background-color: lighten($detailed-color, 25%);
+  border-radius: 5px;
+  padding: $padding-unit/4;
+
+  button.close {
+    background-color: white;
+    border-radius: 12px;
+    color: $detailed-color;
+    float: right;
+    height: 24px;
+    width: 24px;
+  }
+}
+
+.tooltip {
+  background: $background-highlight-gray;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  margin: $padding-unit/4;
+
+  div.property {
+    padding: 6px;
+
+    div.label {
+      display: inline-block;
+      width: 40%;
+    }
+    div.value {
+      display: inline-block;
+      width: 50%;
+      font-weight: bold;
+    }
+  }
+}
+
+.data-selected {
+  ul {
+    clear: both;
+    list-style-type: none;
+    margin: $padding-unit/4 0;
+    padding: 0;
+    span {
+      margin: $padding-unit/4;
+    }
+  }
+}
+
+
+/* boundaries */
+
+@mixin layer {
+  fill-opacity: 0.5;
   stroke-dasharray: 3,3;
   stroke-opacity: 1;
   stroke-width: 1;
 
   &:hover {
+    fill-opacity: 0.7;
     stroke-dasharray: 1,0;
+    stroke-width: 2;
+  }
+}
+
+path.map-layer {
+  @include layer;
+  fill: transparent;
+  stroke: $mid-gray;
+}
+
+path.map-layer-highlight {
+  @include layer;
+}
+
+path.map-layer-detailed {
+  @include layer;
+  fill: $detailed-color;
+  stroke: darken($detailed-color, 15%);
+}
+
+
+/* markers */
+
+@mixin marker($color: $gray) {
+  fill-opacity: 0.5;
+  fill: $color;
+  stroke: darken($color, 10%);
+  stroke-dasharray: 1,0;
+  stroke-opacity: 0.8;
+  stroke-width: 1;
+
+  &:hover {
+    fill-opacity: 0.8;
+    fill: darken($color, 15%);
+    stroke: $color;
     stroke-width: 2;
   }
 }
 
 path.map-marker {
-  fill-opacity: 0.2;
-  fill: $gray;
-  stroke: $mid-gray;
-  stroke-dasharray: 2,2;
-  stroke-opacity: 1;
-  stroke-width: 1;
+  @include marker($gray);
 
-  &:hover {
-    fill-opacity: 0.5;
-    fill: $dark-gray;
-    stroke: $light-gray;
-    stroke-dasharray: 1,0;
-    stroke-width: 2;
+  &.official {
+    @include marker($green);
   }
-}
-
-path.map-layer-with-data {
-  fill-opacity: 0.5;
-  stroke-dasharray: 6,6;
-  stroke-opacity: 1;
-  stroke-width: 2;
-
-  &:hover {
-    fill-opacity: 0.7;
-    stroke-dasharray: 1,0;
-    stroke-width: 3;
+  &.other {
+    @include marker($orange);
   }
-}
-
-path.map-marker-with-data {
-  fill-opacity: 0.5;
-  stroke-dasharray: 2,2;
-  stroke-opacity: 1;
-  stroke-width: 2;
-
-  &:hover {
-    fill-opacity: 0.7;
-    stroke-dasharray: 1,0;
-    stroke-width: 2;
+  &.highlight {
+    @include marker($purple);
+  }
+  &.selected {
+    @include marker($red);
+    fill-opacity: 1;
+  }
+  &.detailed {
+    @include marker($detailed-color);
   }
 }
 
@@ -86,32 +212,4 @@ path.map-marker-buffer {
   stroke-dasharray: 2,2;
   stroke-opacity: 1;
   stroke-width: 1;
-}
-
-.legend {
-  font-family: $body-font-family;
-  font-size: $font-size-xs;
-  color: $text-color;
-  padding: 6px 8px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  border-radius: 5px;
-
-  ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    clear: both;
-  }
-  li {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-  }
-  .min {
-    float: left;
-  }
-  .max {
-    float: right;
-  }
 }

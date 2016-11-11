@@ -8,6 +8,7 @@ import createStore from './redux/createStore'
 import App from './apps/App'
 
 import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
+import { microplanningReducer } from './apps/Microplanning/redux'
 import { loadReducer } from './redux/load'
 
 export default function microplanningApp (appConfig, element, baseUrl) {
@@ -25,10 +26,12 @@ export default function microplanningApp (appConfig, element, baseUrl) {
 
   const store = createStore({
     config: appConfig,
-    geoData: {}
+    highlight: {},
+    microplanning: {}
   }, {
     config: (state = {}) => state,
-    geoData: loadReducer
+    highlight: loadReducer,
+    microplanning: microplanningReducer
   }, [
     routerMiddleware(history)
   ])

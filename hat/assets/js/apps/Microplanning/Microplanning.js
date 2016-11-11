@@ -3,112 +3,68 @@ import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import {
   FormattedMessage,
-  FormattedDate,
   injectIntl,
   defineMessages
 } from 'react-intl'
+import chroma from 'chroma-js'
 import { createUrl } from '../../utils/fetchData'
-import MapVis from '../../components/map-vis'
-import ExportCSVButton from '../../components/export-csv-button'
+
+import {actions} from './redux'
+import geoData from './utils/geoData'
+import {Map, MapLegend, MapTooltip, DataSelected} from './components'
 
 const MESSAGES = defineMessages({
-  // colum headers
-  'column-zs': {
-    id: 'microplanning.table.column.zs',
-    defaultMessage: 'Zone de Sante'
-  },
-  'column-az': {
-    id: 'microplanning.table.column.az',
-    defaultMessage: 'Aire de Sante'
-  },
-  'column-village': {
-    id: 'microplanning.table.column.village',
-    defaultMessage: 'Village'
-  },
-  'column-cases': {
-    id: 'microplanning.table.column.cases',
-    defaultMessage: '# Cases'
-  },
-  'column-date': {
-    id: 'microplanning.table.column.date',
-    defaultMessage: 'Last case date'
-  },
-
   // dateperiod messages
   'since-last-year': {
-    defaultMessage: 'Since last year',
-    id: 'microplanning.dateperiod.since-last-year'
+    id: 'microplanning.dateperiod.since-last-year',
+    defaultMessage: 'Since last year'
   },
   'since-three-years': {
-    defaultMessage: 'Since three years',
-    id: 'microplanning.dateperiod.since-three-years'
+    id: 'microplanning.dateperiod.since-three-years',
+    defaultMessage: 'Since three years'
   },
   'since-five-years': {
-    defaultMessage: 'Since five years',
-    id: 'microplanning.dateperiod.since-five-years'
+    id: 'microplanning.dateperiod.since-five-years',
+    defaultMessage: 'Since five years'
+  },
+
+  // legend
+  'legend-areas': {
+    id: 'microplanning.legend.areas',
+    defaultMessage: 'Aires de Sante'
   }
 })
-
-const TABLE_COLUMNS = [
-  {message: 'column-zs', key: 'ZS'},
-  {message: 'column-az', key: 'AZ'},
-  {message: 'column-village', key: 'village'},
-  {message: 'column-cases', key: 'confirmed_cases', type: 'number'},
-  {message: 'column-date', key: 'last_confirmed_date', type: 'date'}
-]
-
-export const DataTable = ({
-  data: {
-    confirmedByLocation
-  }
-}) => {
-  return (
-    <section className='widget__content'>
-      <h3 className='block--margin-bottom--xxs'>
-        <ExportCSVButton data={confirmedByLocation} columns={TABLE_COLUMNS} messages={MESSAGES} filename='villages.csv'>
-          <FormattedMessage id='microplanning.header.confirmed_cases' defaultMessage='List of villages with confirmed cases' />
-        </ExportCSVButton>
-      </h3>
-
-      <table className='table--minimised'>
-        <thead>
-          <tr>
-            {
-              TABLE_COLUMNS.map((col) => {
-                return <th key={col.message}><FormattedMessage {...MESSAGES[col.message]} /></th>
-              })
-            }
-          </tr>
-        </thead>
-        <tbody>
-          {
-            confirmedByLocation.map((row) => {
-              return <tr key={row.village}>
-                {
-                  TABLE_COLUMNS.map((col) => {
-                    const val = row[col.key]
-                    switch (col.type) {
-                      case 'date':
-                        return <td key={col.message}><FormattedDate value={val} /></td>
-                      default:
-                        return <td key={col.message}>{val}</td>
-                    }
-                  })
-                }
-              </tr>
-            })
-          }
-        </tbody>
-      </table>
-    </section>
-  )
-}
 
 const DATEPERIODS = [
   'since-last-year',
   'since-three-years',
   'since-five-years'
 ]
+
+const areasScale = chroma.scale('Greens')
+const AREA_LIMIT = 15
+
+// find all the entries in the list that match exact
+// with the item values in the indicated keys list
+//
+// keys: [ 'a', 'b', 'c' ]
+// item: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
+// one matched value could be: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
+const findInData = (list, item, keys) => {
+  // taken from sense-hat-mobile
+  const stripAccents = (word) => {
+    return word.toUpperCase()
+      .replace(/[ÀÁÂÄ]/, 'A')
+      .replace(/[ÈÉÊ]/, 'E')
+      .replace('Ç', 'C')
+      .replace('Û', 'U')
+      .replace(/[^A-Z0-9]/g, '')
+  }
+
+  return list.filter((entry) => (
+    keys.every((key) => stripAccents(entry[key]) === stripAccents(item[key]))
+  ))
+}
 
 export class Microplanning extends Component {
   constructor () {
@@ -123,21 +79,86 @@ export class Microplanning extends Component {
   }
 
   render () {
-    const {formatMessage} = this.props.intl
-    // source, sources also available
+    const { formatMessage } = this.props.intl
     const { dateperiod } = this.props.params
-    const { data, error } = this.props.geoData
-    const loading = this.props.geoData.loading
-    const numResults = data && data.confirmedByLocation && data.confirmedByLocation.length || 0
+    const { data, error } = this.props.highlight
+    const loading = this.props.highlight.loading
+    const { plotted, selected, detailed } = this.props.microplanning
 
-    const mapConfirmed = (item) => ({
-      zone: item.ZS,
-      area: item.AZ,
-      village: item.village,
-      cases: item.confirmed_cases,
-      date: item.last_confirmed_date
+    const showDetails = (item) => {
+      this.props.dispatch(actions.showDetails(item))
+    }
+    const hideDetails = () => {
+      this.props.dispatch(actions.showDetails())
+    }
+    const showArea = () => {
+      this.props.dispatch(actions.showAreaVillages(detailed.zone, detailed.area))
+    }
+    const selectVillage = () => {
+      this.props.dispatch(actions.selectVillage(detailed))
+    }
+    const unselectVillage = (id) => {
+      this.props.dispatch(actions.unselectVillage(id))
+    }
+    const resetSelection = () => {
+      this.props.dispatch(actions.resetSelection())
+    }
+
+    // used to check which kind of button display: "select" or "unselect" village
+    const isDetailedSelected = detailed && detailed.isVillage && selected &&
+      selected.filter((entry) => entry._id === detailed._id).length > 0
+
+    // used to detect if the "show villages" button should be included
+    const isDetailedIncluded = detailed && !detailed.isVillage && plotted &&
+      plotted.filter((entry) => entry.zone === detailed.zone && entry.area === detailed.area).length > 0
+
+    const highlight = (data && data.confirmedByLocation || [])
+      // transform the objects from backend into the frontend format
+      .map((item) => ({
+        zone: item.ZS,
+        area: item.AZ,
+        village: item.village,
+        cases: item.confirmed_cases,
+        date: item.last_confirmed_date
+      }))
+      // remove not matched/reconciled villages (not in list)
+      .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
+
+    // filter the higlighted areas
+    const areas = geoData.areas.features
+      .filter((item) => {
+        return findInData(highlight, item.properties, ['zone', 'area']).length > 0
+      })
+      .map((item) => {
+        const matched = findInData(highlight, item.properties, ['zone', 'area'])
+
+        // find out the number of cases and the onset date of the last case
+        const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
+        const date = matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), '')
+        const color = areasScale(Math.min(cases / AREA_LIMIT, 1.0))
+
+        return {
+          ...item,
+          properties: {
+            ...item.properties,
+            cases,
+            date,
+            color
+          }
+        }
+      })
+
+    // mark the highlighted/selected villages in the list
+    const points = (plotted || []).map((item) => {
+      const matched = findInData(highlight, item, ['zone', 'area', 'village'])
+
+      return {
+        ...item,
+        cases: matched.reduce((prev, curr) => (prev + curr.cases), 0),
+        date: matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), ''),
+        selected: (selected || []).filter((entry) => entry._id === item._id).length > 0
+      }
     })
-    const points = (numResults > 0) ? data.confirmedByLocation.map(mapConfirmed) : []
 
     return (
       <div>
@@ -167,24 +188,50 @@ export class Microplanning extends Component {
           }
         </div>
         <div className='widget__container'>
-          <div className='widget__header'>
-            <h2 className='widget__heading'>
-              <FormattedMessage id='microplanning.header.map' defaultMessage='Map' />
-            </h2>
+          <div className='widget__content'>
+
+            <div className='map__panel_left'>
+              { /* map, on the left panel */ }
+              <Map areas={areas} points={points} detailed={detailed} showDetails={showDetails} />
+              { /* the legend, on the bottom-right side of the left panel, bellow the map */ }
+              <MapLegend scale={areasScale} max={AREA_LIMIT} label={formatMessage(MESSAGES['legend-areas'])} />
+            </div>
+
+            <div className='map__panel_right'>
+              { /* the selected list, on the right panel */ }
+              <DataSelected data={selected} remove={unselectVillage} reset={resetSelection} />
+
+              { /* TBD: the detailed view, bellow the selected list */ }
+              { detailed &&
+                <div className='details'>
+                  <button className='close' onClick={hideDetails}>
+                    <i className='fa fa-close' />
+                  </button>
+
+                  <MapTooltip item={detailed} />
+
+                  { /* AREA: plot its villages in map */ }
+                  { !detailed.isVillage && !isDetailedIncluded &&
+                    <button className='button' onClick={showArea}>
+                      <FormattedMessage id='microplanning.tooltip.villages.toggle' defaultMessage='Show villages in map' />
+                    </button>
+                  }
+
+                  { /* VILLAGE: select/unselect */ }
+                  { detailed.isVillage && !isDetailedSelected &&
+                    <button className='button' onClick={selectVillage}>
+                      <FormattedMessage id='microplanning.tooltip.village.select' defaultMessage='Select village' />
+                    </button>
+                  }
+                  { detailed.isVillage && isDetailedSelected &&
+                    <button className='button' onClick={() => unselectVillage(detailed._id)}>
+                      <FormattedMessage id='microplanning.tooltip.village.unselect' defaultMessage='Unselect village' />
+                    </button>
+                  }
+                </div>
+              }
+            </div>
           </div>
-          <div className='widget__content list__item--map' data-qa='microplanning-data-loaded'>
-            <MapVis data={points} />
-          </div>
-          <div className='widget__header'>
-            <h2 className='widget__heading'>
-              {numResults} <FormattedMessage id='microplanning.header.results' defaultMessage='villages with confirmed cases for this period' />
-            </h2>
-          </div>
-          <span>
-            {
-              data && <DataTable data={data} />
-            }
-          </span>
         </div>
       </div>
     )
@@ -195,5 +242,6 @@ const MicroplanningWithIntl = injectIntl(Microplanning)
 
 export default connect((state, ownProps) => ({
   config: state.config,
-  geoData: state.geoData
+  highlight: state.highlight,
+  microplanning: state.microplanning
 }))(MicroplanningWithIntl)

@@ -3,8 +3,8 @@
 //
 
 import * as topojson from 'topojson'
-import areasTopo from '../../json/areas.json'
-import villages from '../../json/villages.json'
+import areasTopo from '../../../../json/areas.json'
+import villages from '../../../../json/villages.json'
 
 const MAP_CENTER = [ -4.4233379, 16.2113064 ]
 const MAP_ZOOM = 7
@@ -14,12 +14,27 @@ const MAP_ZOOM = 7
 //
 const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
 
+// TO BE REMOVED AFTER WORKSHOP: show only PRIORITY zones
+const WORKSHOP = [
+  'MOSANGO',
+  'YASSA BONGA',
+  'BOKORO',
+  'KIKONGO',
+  'BULUNGU',
+  'KIMPUTU'
+]
+areas.features = areas.features.filter((item) => WORKSHOP.indexOf(item.properties.zone) > -1)
+const locations = villages.filter((item) => WORKSHOP.indexOf(item.zone) > -1)
+// !TO BE REMOVED AFTER WORKSHOP
+// const locations = villages
+
 //
 // modify villages list based on other properties
 //
-villages.forEach((item) => {
+locations.forEach((item) => {
   // create fake `_id` based on assumed uniqueness location
   item._id = item.lat.toString() + ':' + item.lon.toString()
+  item.isVillage = true // used in tooltip...
 
   // indicate `type` based on `official` and `village` values
   if (item.official === 'YES') {
@@ -39,7 +54,10 @@ villages.forEach((item) => {
 const aggregateBy = (keys) => {
   return (item) => {
     const props = item.properties
-    const list = villages.filter((entry) => (
+    // indicate that is not an village
+    props.isVillage = false // used in tooltip...
+
+    const list = locations.filter((entry) => (
       keys.every((key) => entry[key] === props[key])
     ))
 
@@ -62,5 +80,5 @@ export default {
   center: MAP_CENTER,
   zoom: MAP_ZOOM,
   areas: areas,
-  villages: villages
+  villages: locations
 }

@@ -75,6 +75,15 @@ p {
   font-weight: normal;
 }
 
+@mixin white-text-dark-background {
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+@mixin text--center {
+  text-align: center;
+}
+
 .text--error {
   @include text--error;
 }

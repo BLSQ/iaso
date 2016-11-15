@@ -16,6 +16,11 @@
 
       {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
       <ul class="navigation__menu">
+
+        <li class="navigation__menu__item{% if view == 'dashboard:home' %}--active{% endif %}">
+          <a href={% url "dashboard:home" %}>{% trans "Home" %}</a>
+        </li>
+        
         {% if perms.cases.import %}
           <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
             <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
@@ -74,12 +79,14 @@
       </ul>
     {% endif %}
 
-    <header class="header">
-      {% block header %}
-        <h1 class="header__title">{% trans "Sense HAT" %}</h1>
-      {% endblock %}
-    </header>
-
+    {% if not request.resolver_match.view_name == 'dashboard:home' %}
+      <header class="header">
+        {% block header %}
+          <h1 class="header__title">{% trans "Sense HAT" %}</h1>
+        {% endblock %}
+      </header>
+    {% endif %}
+    
 
     {% block content %}
     {% endblock %}

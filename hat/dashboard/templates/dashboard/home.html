@@ -1,0 +1,96 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+  {# welcome section #}
+  <section class="section--feature--welcome">
+    <div class="section__content">
+      <div class="section__content--welcome">
+        <h1>Welcome heading</h1>
+        <p>A brief description of HAT itself and this program</p>
+      </div>
+    </div>
+  </section>
+
+  {# highlight pilot areas #}
+  <section class="section--feature--pilot-area">
+    <div class="section__content--pilot-area">
+      <h2>The six health zones where research is currently being conducted in Bandundu</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur posuere lorem lacus, sed mattis diam pharetra at. Ut metus sapien, aliquet sed ultrices vitae, fermentum venenatis lacus. Duis urna lectus, molestie vel ante ac, lobortis sollicitudin ante. Mauris commodo mollis mauris at ultrices.</p>
+    </div>
+  </section>
+    
+  {# monthly reports #}
+  <section class="section--feature--reports">
+    <div class="section__content__image--reports">
+    </div>
+    <div class="section__content--reports">
+      <h2>See monthly campaign reports</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur posuere lorem lacus, sed mattis diam pharetra at. Ut metus sapien, aliquet sed ultrices vitae, fermentum venenatis lacus.</p>
+      {% if perms.cases.view %}
+        <a href={% url "dashboard:monthly_report" %} class="button--bright">
+          {% trans "Monthly reports" %} 
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  {# upload/download #}
+  <section class="section--feature--data">
+    <div class="section__content--data">
+      <h2>Upload and download data from the field</h2>
+      <div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        {% if perms.cases.import %}
+          <a href={% url "import:upload" %} class="button">{% trans "Go to data upload" %}</a>
+        {% endif %}
+      </div>
+      <div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        {% if perms.cases.export %}
+          <a href={% url "export:download" %} class="button">{% trans "Go to data download" %}</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {# suspect cases #}
+  <section class="section--feature--suspect">
+    <div class="section__content__image--suspect">
+    </div>
+    <div class="section__content--suspect">
+      <h2>Follow up on unconfirmed cases</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur posuere lorem lacus, sed mattis diam pharetra at. Ut metus sapien, aliquet sed ultrices vitae, fermentum venenatis lacus.</p>
+      {% if perms.cases.view %}
+        <a href={% url "dashboard:suspect_cases" %} class="button--bright">
+          {% trans "Go to HAT suspects" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  {# partners #}
+  <section class="section--feature--partners">
+    <div class="section__content--partners">
+      <h2>A proud partnership</h2>
+      <ul>
+        <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
+        <li>Institute of Tropical Medicine</li>
+        <li>University of California Los Angeles</li>
+        <li>Liverpool School of Tropical Medicine</li>
+        <li>Institute of Disease Modelling</li>
+        <li>Memisa</li>
+      </ul>
+    </div>
+  </section>
+    
+
+{% endblock %}

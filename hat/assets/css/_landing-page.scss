@@ -1,0 +1,92 @@
+/* landing page! this is all static (hard-coded) content */
+
+/* styles common to all sections */
+[class^="section--feature"] {
+  display: flex;
+  padding: $padding-unit*1.5 $padding-unit;
+  box-sizing: border-box;
+}
+
+/* specific section styles */
+.section--feature {
+  &--welcome {
+    flex-direction: column;
+    background: white;
+    /*padding: $padding-unit;*/
+  }
+  &--pilot-area {
+    background: $blue url('../images/map.png') no-repeat right top;
+    min-height: 374px; /* height of background image */
+  }
+  &--reports {
+    background: $light-gray;
+  }
+  &--data {
+    background: white;
+  }
+  &--suspect {
+    background: $light-gray;
+  }
+  &--partners {
+    flex-direction: column;
+    background-color: $bright-navy;
+    background-image: radial-gradient(at top, rgba(white, 0.2) 0%, $bright-navy 100%);
+  }
+  
+}
+
+[class^="section__content"] {
+  h2 {
+    line-height: 1.25;
+    margin-bottom: 1.25em;
+  }
+  [class^="button"] {
+    margin-top: 1.75em;
+  }
+
+}
+
+.section__content {
+  &--welcome {
+    @include text--center;
+    h1 {
+      margin-bottom: 1em;
+    }
+    p {
+      max-width: none;
+    }
+  }
+  &--pilot-area {
+    align-self: center;
+    @include white-text-dark-background;
+    max-width: 23em;
+  }
+  &--reports {
+    align-self: center;
+  }
+  &__image--reports {
+    background: url('../images/monthly-reports.png') no-repeat left center;
+    min-height: 268px;
+    width: 50%;
+    min-width: 509px;
+  }
+  &--data {
+    
+  }
+  &--suspect {
+    
+  }
+  &__image--suspect {
+    background: url('../images/monthly-reports.png') no-repeat left center;
+    min-height: 268px;
+    width: 50%;
+    min-width: 509px;
+    order: 2;
+  }
+  &--partners {
+    @include white-text-dark-background;
+    h2 {
+      @include text--center;
+    }
+  }
+}

@@ -46,6 +46,9 @@
   &--success {
     @include button($green);
   }
+  &--bright {
+    @include button($bright-navy);
+  }
   &--pressed {
     @include button(darken($blue, 10%));
     cursor: wait;

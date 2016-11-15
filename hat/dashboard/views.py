@@ -13,6 +13,10 @@ from hat.cases.models import Case
 def testapp(request):
     return render(request, 'dashboard/testapp.html')
 
+@login_required()
+@require_http_methods(['GET'])
+def home(request):
+    return render(request, 'dashboard/home.html')
 
 @login_required()
 @permission_required('cases.view')

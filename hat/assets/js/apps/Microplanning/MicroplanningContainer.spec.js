@@ -43,7 +43,7 @@ describe('MicroplanningContainer Loading Data', () => {
       config: appConfig,
       highlight: {},
       microplanning: {},
-      params: { dateperiod: 'since-last-year' },
+      params: { caseperiod: 'since-last-year', screeningperiod: 'since-last-year' },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
@@ -83,7 +83,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        dateperiod: 'since-five-years'
+        caseperiod: 'since-five-years'
       }
     }
     renderWithStore(
@@ -97,7 +97,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        dateperiod: 'since-five-years'
+        caseperiod: 'since-five-years'
       }
     }
     renderWithStore(

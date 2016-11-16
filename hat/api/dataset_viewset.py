@@ -46,7 +46,9 @@ params_schema = {
         'dateperiod': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'},
-        'offset': {'type': 'string'}
+        'offset': {'type': 'string'},
+        'caseperiod': {'type': 'string'},
+        'screeningperiod': {'type': 'string'},
     },
     'additionalProperties': False,
 }
@@ -170,13 +172,23 @@ def tested_per_day(params):
 
 @dataset(params_schema=params_schema)
 def confirmed_by_location(params):
-    return get_cases_filtered(params) \
+    params['dateperiod'] = params.get('caseperiod', None)
+
+    cases = get_cases_filtered(params, ignore_params=['caseperiod', 'screeningperiod']) \
         .filter(Q_confirmation) \
         .filter(Q_confirmation_positive) \
         .values('province', 'ZS', 'AZ', 'village') \
         .annotate(confirmed_cases=Count('document_id')) \
         .annotate(last_confirmed_date=Max('document_date')) \
         .order_by('province', 'ZS', 'AZ', 'village')
+
+    # visits = get_cases_filtered(params, ignore_params=['caseperiod', 'screeningperiod'])
+    # visits = visits.filter(Q_screening) \
+    #     .values('province', 'ZS', 'AZ', 'village') \
+    #     .annotate(last_screening_date=Max('document_date')) \
+    #     .order_by('province', 'ZS', 'AZ', 'village')
+
+    return cases
 
 
 class DatasetViewSet(viewsets.ViewSet):

@@ -66,7 +66,7 @@ class MapTooltip extends Component {
 
           <div key='property-villages-other' className='property'>
             <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.villages.other' defaultMessage='Other settlements' />
+              <FormattedMessage id='microplanning.tooltip.villages.other' defaultMessage='Non official' />
             </div>
             <div className='value'>
               {item.villages.other || 0}
@@ -105,13 +105,23 @@ class MapTooltip extends Component {
             </div>
           </div>
         }
-        { item.date && item.date !== '' &&
-          <div key='property-date' className='property'>
+        { item.caseDate && item.caseDate !== '' &&
+          <div key='property-case-date' className='property'>
             <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.date' defaultMessage='Last case date' />
+              <FormattedMessage id='microplanning.tooltip.case.date' defaultMessage='Last case date' />
             </div>
             <div className='value'>
-              <FormattedDate value={item.date} />
+              <FormattedDate value={item.caseDate} />
+            </div>
+          </div>
+        }
+        { item.visitDate && item.visitDate !== '' &&
+          <div key='property-visit-date' className='property'>
+            <div className='label'>
+              <FormattedMessage id='microplanning.tooltip.visit.date' defaultMessage='Last visit date' />
+            </div>
+            <div className='value'>
+              <FormattedDate value={item.visitDate} />
             </div>
           </div>
         }

@@ -8,59 +8,64 @@ import {
 import ExportCSVButton from '../../../components/export-csv-button'
 
 const MESSAGES = defineMessages({
-  'column-zs': {
-    id: 'microplanning.column.zone',
+  'export-zone': {
+    id: 'microplanning.export.zone',
     defaultMessage: 'Zone de Sante'
   },
-  'column-az': {
-    id: 'microplanning.column.area',
+  'export-area': {
+    id: 'microplanning.export.area',
     defaultMessage: 'Aire de Sante'
   },
-  'column-village': {
-    id: 'microplanning.column.village',
+  'export-village': {
+    id: 'microplanning.export.village',
     defaultMessage: 'Village'
   },
-  'column-type': {
-    id: 'microplanning.column.type',
+  'export-type': {
+    id: 'microplanning.export.type',
     defaultMessage: 'Official?'
   },
-  'column-latitude': {
-    id: 'microplanning.column.latitude',
+  'export-latitude': {
+    id: 'microplanning.export.latitude',
     defaultMessage: 'Latitude'
   },
-  'column-longitude': {
-    id: 'microplanning.column.longitude',
+  'export-longitude': {
+    id: 'microplanning.export.longitude',
     defaultMessage: 'Longitude'
   },
-  'column-population': {
-    id: 'microplanning.column.population',
+  'export-population': {
+    id: 'microplanning.export.population',
     defaultMessage: 'Population'
   },
-  'column-cases': {
-    id: 'microplanning.column.cases',
+  'export-cases': {
+    id: 'microplanning.export.cases',
     defaultMessage: '# Cases'
   },
-  'column-date': {
-    id: 'microplanning.column.date',
+  'export-case-date': {
+    id: 'microplanning.export.case.date',
     defaultMessage: 'Last case date'
+  },
+  'export-visit-date': {
+    id: 'microplanning.export.visit.date',
+    defaultMessage: 'Last visit date'
   }
 })
 
 const COLUMNS = [
-  { message: 'column-zs', key: 'zone' },
-  { message: 'column-az', key: 'area' },
-  { message: 'column-village', key: 'village' },
-  { message: 'column-type', key: 'official' },
-  { message: 'column-latitude', key: 'lat', type: 'number' },
-  { message: 'column-longitude', key: 'lon', type: 'number' },
-  { message: 'column-population', key: 'population', type: 'number' },
-  { message: 'column-cases', key: 'cases', type: 'number' },
-  { message: 'column-date', key: 'date', type: 'date' }
+  { message: 'export-zone', key: 'zone' },
+  { message: 'export-area', key: 'area' },
+  { message: 'export-village', key: 'village' },
+  { message: 'export-type', key: 'official' },
+  { message: 'export-latitude', key: 'lat', type: 'number' },
+  { message: 'export-longitude', key: 'lon', type: 'number' },
+  { message: 'export-population', key: 'population', type: 'number' },
+  { message: 'export-cases', key: 'cases', type: 'number' },
+  { message: 'export-case-date', key: 'caseDate', type: 'date' },
+  { message: 'export-visit-date', key: 'visitDate', type: 'date' }
 ]
 
 class DataSelected extends Component {
   render () {
-    const {data, show, remove, reset} = this.props
+    const {data, show, unselect} = this.props
 
     const sectionTitle = (
       <div className='title'>
@@ -91,101 +96,103 @@ class DataSelected extends Component {
 
     return (
       <div ref={(node) => (this.container = node)} className='data-selected'>
-        {sectionTitle}
+        <div className='content'>
+          {sectionTitle}
 
-        <div className='summary'>
-          <FormattedMessage
-            id='microplanning.selected.number'
-            defaultMessage='{
-                              number,
-                              plural,
-                              one {One village}
-                              other {{number} villages}
-                            } where {
-                              official,
-                              plural,
-                              =0 {none are official}
-                              one {one is official}
-                              other {{official} are official}
-                            }{
-                              other,
-                              plural,
-                              =0 {}
-                              one {, one is non official}
-                              other {, {other} are non official}
-                            } {
-                              unknown,
-                              plural,
-                              =0 {}
-                              one {and one is unknown}
-                              other {and {unknown} are unknown}
-                            }'
-            values={{number, official, other, unknown}}
-          />
-        </div>
-        <div className='summary'>
-          <FormattedMessage
-            id='microplanning.selected.population'
-            defaultMessage='{
-                              population,
-                              plural,
-                              =0 {Unknown population}
-                              other {{population} estimated population}
-                            }'
-            values={{population}}
-          />
-          <div className='text--warning'>
+          <div className='summary'>
             <FormattedMessage
-              id='microplanning.selected.population.warning'
-              defaultMessage='Please note:'
+              id='microplanning.selected.number'
+              defaultMessage='{
+                                number,
+                                plural,
+                                one {One village}
+                                other {{number} villages}
+                              } where {
+                                official,
+                                plural,
+                                =0 {none are official}
+                                one {one is official}
+                                other {{official} are official}
+                              }{
+                                other,
+                                plural,
+                                =0 {}
+                                one {, one is non official}
+                                other {, {other} are non official}
+                              } {
+                                unknown,
+                                plural,
+                                =0 {}
+                                one {and one is unknown}
+                                other {and {unknown} are unknown}
+                              }'
+              values={{number, official, other, unknown}}
             />
+          </div>
+          <div className='summary'>
+            <FormattedMessage
+              id='microplanning.selected.population'
+              defaultMessage='{
+                                population,
+                                plural,
+                                =0 {Unknown population}
+                                other {{population} estimated population}
+                              }'
+              values={{population}}
+            />
+            <div className='text--warning'>
+              <FormattedMessage
+                id='microplanning.selected.population.warning'
+                defaultMessage='Please note:'
+              />
+              <ul>
+                <li>
+                  <FormattedMessage
+                    id='microplanning.selected.population.warning1'
+                    defaultMessage='Only official villages have population data.'
+                  />
+                </li>
+                <li>
+                  <FormattedMessage
+                    id='microplanning.selected.population.warning2'
+                    defaultMessage='Population estimates may not be accurate.'
+                  />
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className='list'>
+            <h3>
+              <FormattedMessage id='microplanning.selected.list' defaultMessage='Full village list' />
+            </h3>
             <ul>
-              <li>
-                <FormattedMessage
-                  id='microplanning.selected.population.warning1'
-                  defaultMessage='Only official villages have population data.'
-                />
-              </li>
-              <li>
-                <FormattedMessage
-                  id='microplanning.selected.population.warning2'
-                  defaultMessage='Population estimates may not be accurate.'
-                />
-              </li>
+              {data.map((item) => {
+                return (
+                  <li key={item._id}>
+                    <span className='remove' onClick={() => unselect([item])}>
+                      <i className='fa fa-close' />
+                    </span>
+                    <span className='view' onClick={() => show(item, true)}>
+                      <i className='fa fa-map-marker' />
+                    </span>
+
+                    <span>
+                      {item.zone}
+                      {' - '}
+                      {item.area}
+                      {' - '}
+                      {item.village}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         </div>
 
-        <div className='list'>
-          <h3>
-            <FormattedMessage id='microplanning.selected.list' defaultMessage='Full village list' />
-          </h3>
-          <ul>
-            {data.map((item) => {
-              return (
-                <li key={item._id}>
-                  <span className='remove' onClick={() => remove(item._id)}>
-                    <i className='fa fa-close' />
-                  </span>
-                  <span className='view' onClick={() => show(item)}>
-                    <i className='fa fa-map-pin' />
-                  </span>
-
-                  <span>
-                    {item.zone}
-                    {' - '}
-                    {item.area}
-                    {' - '}
-                    {item.village}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-
         <div className='actions'>
-          <button className='button--warning' onClick={reset}>
+          <button className='button--warning' onClick={() => unselect([])}>
             <i className='fa fa-trash-o' />
             <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
           </button>
@@ -202,8 +209,7 @@ class DataSelected extends Component {
 DataSelected.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
-  remove: PropTypes.func,
-  reset: PropTypes.func,
+  unselect: PropTypes.func,
   intl: intlShape.isRequired
 }
 

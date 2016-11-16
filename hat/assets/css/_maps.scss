@@ -1,12 +1,15 @@
 /* COLOURS */
 $buffer: $yellow;
-$detailed: $blue;
+$details: $blue;
 $highlight: $purple;
 $selected: $red;
 
 $official: $green;
 $other: $orange;
 $unknown: $mid-gray;
+
+/* map size */
+$map-height: 720px;
 
 .official  { color: $official }
 .other     { color: $other; }
@@ -40,13 +43,13 @@ $unknown: $mid-gray;
 
 .map__panel_left {
   display: inline-block;
-  height: 760px;
+  height: ($map-height + 60);
   width: 70%;
 }
 
 .map__panel_right {
   display: inline-block;
-  height: 760px;
+  height: ($map-height + 60);
   vertical-align: top;
   width: 30%;
   overflow: auto;
@@ -54,7 +57,7 @@ $unknown: $mid-gray;
 
 .map-container {
   background: $background-highlight-gray;
-  height: 700px;
+  height: $map-height;
   width: 100%;
 }
 
@@ -126,7 +129,7 @@ $unknown: $mid-gray;
 }
 
 .details {
-  background-color: lighten($detailed, 15%);
+  background-color: lighten($details, 15%);
   padding: $padding-unit/4;
 
   span.close {
@@ -138,8 +141,9 @@ $unknown: $mid-gray;
   }
   button {
     background-color: white;
-    color: $detailed;
+    color: $details;
     &:hover { color: white; }
+    margin-right: $padding-unit/4;
   }
 }
 
@@ -163,8 +167,12 @@ $unknown: $mid-gray;
 }
 
 .data-selected {
-  margin: $padding-unit/5;
   font-size: $font-size-s;
+
+  .content {
+    padding: $padding-unit/5;
+    height: $map-height;
+  }
 
   .title {
     text-transform: uppercase;
@@ -182,7 +190,7 @@ $unknown: $mid-gray;
       padding-left: $padding-unit/3;
       font-style: italic;
     }
-    #text--warning {
+    .text--warning {
       font-size: $font-size-xs;
     }
   }
@@ -197,8 +205,8 @@ $unknown: $mid-gray;
       list-style-type: none;
       margin: 0;
       padding: 0;
-      height: 470px;
       overflow: auto;
+      max-height: ($map-height - 200);
 
       li {
         line-height: 1.3;
@@ -210,7 +218,7 @@ $unknown: $mid-gray;
           margin-right: $padding-unit/4;
         }
         span.view {
-          color: $detailed;
+          color: $details;
           cursor: pointer;
           margin-right: $padding-unit/4;
         }
@@ -219,10 +227,7 @@ $unknown: $mid-gray;
   }
 
   .actions {
-    margin: $padding-unit/5 0 0 0;
-    padding: $padding-unit/4;
-    border-top: solid 1px $gray;
-
+    padding: 0 $padding-unit/4;
     button {
       display: inline-block;
     }
@@ -259,9 +264,9 @@ path.map-layer {
   &.highlight {
     /* fill and stroke depend on the number of cases */
   }
-  &.detailed {
-    fill: $detailed;
-    stroke: darken($detailed, 15%);
+  &.details {
+    fill: $details;
+    stroke: darken($details, 15%);
   }
 }
 
@@ -304,8 +309,8 @@ path.map-marker {
   &.selected {
     @include marker($selected);
   }
-  &.detailed {
-    @include marker($detailed);
+  &.details {
+    @include marker($details);
   }
   &.buffer {
     @include marker($buffer);

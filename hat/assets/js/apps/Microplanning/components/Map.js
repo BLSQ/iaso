@@ -35,7 +35,7 @@ class Map extends Component {
 
   createMap () {
     const node = ReactDOM.findDOMNode(this)
-    const {showDetails} = this.props
+    const {show} = this.props
 
     // HACK: Work around for testing Leaflet in JSDOM
     // see: https://github.com/Leaflet/Leaflet/issues/4823
@@ -65,7 +65,7 @@ class Map extends Component {
     const fitToButton = L.control({position: 'topright'})
     fitToButton.onAdd = (map) => {
       const div = L.DomUtil.create('div', 'map-button')
-      div.innerHTML = '<i class="fa fa-arrows-alt"></i>'
+      div.innerHTML = '<i class="fa fa-map-marker"></i>'
       L.DomEvent.on(div, 'click', (event) => {
         L.DomEvent.stop(event)
         this.fitToBounds()
@@ -81,8 +81,8 @@ class Map extends Component {
       style: (feature) => ({className: 'map-layer transparent'}),
       onEachFeature: (feature, layer) => {
         layer.on({
-          click: () => { showDetails(feature.properties) },
-          contextmenu: () => { showDetails(feature.properties) }
+          click: () => { show(feature.properties) },
+          contextmenu: () => { show(feature.properties) }
         })
         layer.bindTooltip(
           feature.properties.zone + ' - ' + feature.properties.area,
@@ -93,6 +93,8 @@ class Map extends Component {
 
     // use for the dynamic points, areas...
     this.featureGroup = new L.FeatureGroup().addTo(this.map)
+    // use for the details area/point
+    this.detailsGroup = new L.FeatureGroup().addTo(this.map)
 
     L.control.layers(baseLayers).addTo(this.map)
   }
@@ -101,14 +103,16 @@ class Map extends Component {
     const {
       areas,
       points,
-      detailed,
+      details,
+      centered,
       buffer,
       select,
       unselect,
-      showDetails
+      show
     } = this.props
 
-    const RADIUS = { // metres
+    // circle size in metres depending on the village type
+    const RADIUS = {
       official: 130,
       other: 100,
       unknown: 100
@@ -116,6 +120,7 @@ class Map extends Component {
 
     // reset previous state
     this.featureGroup.clearLayers()
+    this.detailsGroup.clearLayers()
 
     this.map.whenReady(() => {
       if (areas && areas.length) {
@@ -129,8 +134,8 @@ class Map extends Component {
             }),
             onEachFeature: (feature, layer) => {
               layer.on({
-                click: () => { showDetails(feature.properties) },
-                contextmenu: () => { showDetails(feature.properties) }
+                click: () => { show(feature.properties) },
+                contextmenu: () => { show(feature.properties) }
               })
               layer.bindTooltip(
                 feature.properties.zone + ' - ' + feature.properties.area,
@@ -142,10 +147,11 @@ class Map extends Component {
 
       if (points && points.length) {
         points.forEach((item) => {
+          // take size from village type and increase it if there are cases
           const radius = RADIUS[item.type] + ((item.cases > 0) ? 10 : 0)
           const events = {
-            click: () => { showDetails(item) },
-            contextmenu: () => { showDetails(item) }
+            click: () => { show(item) },
+            contextmenu: () => { show(item) }
           }
 
           const options = {
@@ -183,7 +189,7 @@ class Map extends Component {
             bufferZone.on({
               dblclick: (event) => {
                 if (item.selected) {
-                  unselect(inBuffer.map((entry) => entry._id))
+                  unselect(inBuffer)
                 } else {
                   select(inBuffer)
                 }
@@ -195,42 +201,46 @@ class Map extends Component {
         })
       }
 
-      if (detailed) {
-        if (!detailed.isVillage) {
+      if (details) {
+        if (!details.isVillage) {
           const area = geoData.areas.features.find((item) =>
-            item.properties._id === detailed._id
+            item.properties._id === details._id
           )
           if (area) {
-            this.featureGroup.addLayer(L.geoJson(area, {
+            this.detailsGroup.addLayer(L.geoJson(area, {
               pane: 'custom-pane-layers',
-              style: (feature) => ({ className: 'map-layer detailed' }),
+              style: (feature) => ({ className: 'map-layer details' }),
               onEachFeature: (feature, layer) => {
                 layer.on({
-                  click: () => { showDetails() },
-                  contextmenu: () => { showDetails() }
+                  click: () => { show() },
+                  contextmenu: () => { show() }
                 })
               }
             }))
           }
         } else {
           // it's a village
-          const point = L.circle(detailed._latlon, {
+          const point = L.circle(details._latlon, {
             pane: 'custom-pane-markers',
-            radius: RADIUS[detailed.type],
-            className: 'map-marker detailed'
+            radius: RADIUS[details.type],
+            className: 'map-marker details'
           })
           point.on({
             dblclick: (event) => {
-              if (detailed.selected) {
-                unselect([detailed._id])
+              if (details.selected) {
+                unselect([details._id])
               } else {
-                select([detailed])
+                select([details])
               }
-              showDetails()
+              show()
               L.DomEvent.stop(event)
             }
           })
-          this.featureGroup.addLayer(point)
+          this.detailsGroup.addLayer(point)
+        }
+
+        if (centered) {
+          this.fitToBounds()
         }
       }
     })
@@ -239,7 +249,9 @@ class Map extends Component {
   fitToBounds () {
     this.map.whenReady(() => {
       setTimeout(() => {
-        if (this.featureGroup.getLayers().length) {
+        if (this.detailsGroup.getLayers().length) {
+          this.map.fitBounds(this.detailsGroup.getBounds(), { maxZoom: 13 })
+        } else if (this.featureGroup.getLayers().length) {
           this.map.fitBounds(this.featureGroup.getBounds(), { maxZoom: 13 })
         } else {
           this.map.setView(geoData.center, geoData.zoom)
@@ -253,9 +265,10 @@ class Map extends Component {
 Map.propTypes = {
   areas: PropTypes.arrayOf(PropTypes.object),
   buffer: PropTypes.number,
-  detailed: PropTypes.object,
+  details: PropTypes.object,
+  centered: PropTypes.bool,
   points: PropTypes.arrayOf(PropTypes.object),
-  showDetails: PropTypes.func,
+  show: PropTypes.func,
   select: PropTypes.func,
   unselect: PropTypes.func,
   intl: intlShape.isRequired

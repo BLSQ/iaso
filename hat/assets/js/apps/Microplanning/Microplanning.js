@@ -26,12 +26,6 @@ const MESSAGES = defineMessages({
   'since-five-years': {
     id: 'microplanning.dateperiod.since-five-years',
     defaultMessage: 'Since five years'
-  },
-
-  // legend
-  'legend-areas': {
-    id: 'microplanning.legend.areas',
-    defaultMessage: 'Aires de Sante'
   }
 })
 
@@ -41,7 +35,7 @@ const DATEPERIODS = [
   'since-five-years'
 ]
 
-const areasScale = chroma.scale('Greens')
+const areasScale = chroma.scale([ '#BB8FCE', '#5B2C6F' ])
 const AREA_LIMIT = 15
 
 // find all the entries in the list that match exact
@@ -84,6 +78,10 @@ export class Microplanning extends Component {
     const { data, error } = this.props.highlight
     const loading = this.props.highlight.loading
     const { plotted, selected, detailed } = this.props.microplanning
+    // buffer radius (m) around a highlighted point
+    const buffer = this.props.microplanning.buffer || 0
+    const bufferCheck = (buffer > 0)
+    const filter = this.props.microplanning.filter || { official: true, other: true }
 
     const showDetails = (item) => {
       this.props.dispatch(actions.showDetails(item))
@@ -97,11 +95,34 @@ export class Microplanning extends Component {
     const selectVillage = () => {
       this.props.dispatch(actions.selectVillage(detailed))
     }
+    const selectVillages = (list) => {
+      this.props.dispatch(actions.selectVillages(list))
+    }
     const unselectVillage = (id) => {
       this.props.dispatch(actions.unselectVillage(id))
     }
+    const unselectVillages = (list) => {
+      this.props.dispatch(actions.unselectVillages(list))
+    }
     const resetSelection = () => {
       this.props.dispatch(actions.resetSelection())
+    }
+    const filterChange = (event) => {
+      filter[event.target.name] = event.target.checked
+      this.props.dispatch(actions.filterVillages(filter))
+    }
+    const bufferChange = (event) => {
+      let value
+      if (event.target.name === 'buffer-check') {
+        if (!event.target.checked) {
+          value = 0
+        } else {
+          value = 5000 // default value
+        }
+      } else {
+        value = parseInt(event.target.value, 10)
+      }
+      this.props.dispatch(actions.setBuffer(value))
     }
 
     // used to check which kind of button display: "select" or "unselect" village
@@ -149,23 +170,32 @@ export class Microplanning extends Component {
       })
 
     // mark the highlighted/selected villages in the list
-    const points = (plotted || []).map((item) => {
-      const matched = findInData(highlight, item, ['zone', 'area', 'village'])
+    const points = (plotted || [])
+      .filter((item) =>
+        (filter.official && item.type === 'official') ||
+        (filter.other && item.type === 'other') ||
+        (filter.unknown && item.type === 'unknown')
+      )
+      .map((item) => {
+        const matched = findInData(highlight, item, ['zone', 'area', 'village'])
 
-      return {
-        ...item,
-        cases: matched.reduce((prev, curr) => (prev + curr.cases), 0),
-        date: matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), ''),
-        selected: (selected || []).filter((entry) => entry._id === item._id).length > 0
-      }
-    })
+        return {
+          ...item,
+          cases: matched.reduce((prev, curr) => (prev + curr.cases), 0),
+          date: matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), ''),
+          selected: (selected || []).filter((entry) => entry._id === item._id).length > 0
+        }
+      })
 
     return (
       <div>
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /> Timeframe</label>
+            <label htmlFor='date' className='filter__container__select__label'>
+              <i className='fa fa-calendar' />
+              <FormattedMessage id='microplanning.filter.timeframe' defaultMessage='Timeframe' />
+            </label>
             <select disabled={loading} name='date' value={dateperiod} onChange={this.dateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
@@ -189,24 +219,56 @@ export class Microplanning extends Component {
         </div>
         <div className='widget__container'>
           <div className='widget__content'>
+            <div className='widget__header'>
+              <form className='inline'>
+                <label htmlFor='official' className='underscore-official'>
+                  <input type='checkbox' name='official' checked={filter.official} onChange={filterChange} />
+                  <FormattedMessage id='microplanning.display.official' defaultMessage='Official villages' />
+                </label>
+                <label htmlFor='other' className='underscore-other'>
+                  <input type='checkbox' name='other' checked={filter.other} onChange={filterChange} />
+                  <FormattedMessage id='microplanning.display.other' defaultMessage='Non official villages' />
+                </label>
+                <label htmlFor='unknown' className='underscore-unknown'>
+                  <input type='checkbox' name='unknown' checked={filter.unknown} onChange={filterChange} />
+                  <FormattedMessage id='microplanning.display.unknown' defaultMessage='Unknown villages' />
+                </label>
+
+                <label htmlFor='buffer-check' className='underscore-buffer'>
+                  <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={bufferChange} />
+                  <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
+                  <input type='number' className='small' name='buffer-value' value={buffer} onChange={bufferChange} />
+                  {'m'}
+                </label>
+              </form>
+            </div>
 
             <div className='map__panel_left'>
-              { /* map, on the left panel */ }
-              <Map areas={areas} points={points} detailed={detailed} showDetails={showDetails} />
-              { /* the legend, on the bottom-right side of the left panel, bellow the map */ }
-              <MapLegend scale={areasScale} max={AREA_LIMIT} label={formatMessage(MESSAGES['legend-areas'])} />
+              { /* map */ }
+              <Map
+                areas={areas}
+                points={points}
+                detailed={detailed}
+                buffer={buffer}
+                select={selectVillages}
+                unselect={unselectVillages}
+                showDetails={showDetails}
+              />
+              { /* the legend */ }
+              <MapLegend
+                scale={areasScale}
+                min={1}
+                max={AREA_LIMIT}
+              />
             </div>
 
             <div className='map__panel_right'>
-              { /* the selected list, on the right panel */ }
-              <DataSelected data={selected} remove={unselectVillage} reset={resetSelection} />
-
-              { /* TBD: the detailed view, bellow the selected list */ }
+              { /* the details view */ }
               { detailed &&
                 <div className='details'>
-                  <button className='close' onClick={hideDetails}>
+                  <span className='close' onClick={hideDetails}>
                     <i className='fa fa-close' />
-                  </button>
+                  </span>
 
                   <MapTooltip item={detailed} />
 
@@ -230,6 +292,14 @@ export class Microplanning extends Component {
                   }
                 </div>
               }
+
+              { /* the selection panel */ }
+              <DataSelected
+                data={selected}
+                show={showDetails}
+                remove={unselectVillage}
+                reset={resetSelection}
+              />
             </div>
           </div>
         </div>

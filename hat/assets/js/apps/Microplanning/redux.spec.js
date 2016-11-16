@@ -16,10 +16,22 @@ describe('Microplanning actions', () => {
         {type: redux.SELECT_VILLAGE, payload: 'village'})
     })
 
+    it('should create the select villages action', () => {
+      assert.deepEqual(
+        redux.selectVillages([1, 2, 3]),
+        {type: redux.SELECT_VILLAGES, payload: [1, 2, 3]})
+    })
+
     it('should create the unselect village action', () => {
       assert.deepEqual(
         redux.unselectVillage('village'),
         {type: redux.UNSELECT_VILLAGE, payload: 'village'})
+    })
+
+    it('should create the unselect villages action', () => {
+      assert.deepEqual(
+        redux.unselectVillages([1, 2, 3]),
+        {type: redux.UNSELECT_VILLAGES, payload: [1, 2, 3]})
     })
 
     it('should create the reset selection action', () => {
@@ -82,6 +94,26 @@ describe('Microplanning actions', () => {
         { selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
     })
 
+    it('should include items in empty selected list in reverse order', () => {
+      assert.deepEqual(
+        reducer(undefined, {
+          type: redux.SELECT_VILLAGES,
+          payload: [{_id: 1}, {_id: 2}, {_id: 2}, {_id: 4}]
+        }),
+        { selected: [{_id: 4}, {_id: 2}, {_id: 1}] })
+    })
+
+    it('should include non repeated items in selected list in reverse order', () => {
+      assert.deepEqual(
+        reducer({
+          selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+        }, {
+          type: redux.SELECT_VILLAGES,
+          payload: [{_id: 5}, {_id: 2}, {_id: 8}, {_id: 5}]
+        }),
+        { selected: [{_id: 8}, {_id: 5}, {_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+    })
+
     it('should remove item from selected list', () => {
       assert.deepEqual(
         reducer({
@@ -107,6 +139,35 @@ describe('Microplanning actions', () => {
         }, {
           type: redux.UNSELECT_VILLAGE,
           payload: 9
+        }),
+        { selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+    })
+
+    it('should remove items from selected list', () => {
+      assert.deepEqual(
+        reducer({
+          selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+        }, {
+          type: redux.UNSELECT_VILLAGES,
+          payload: [1, 2]
+        }),
+        { selected: [{_id: 3}, {_id: 4}] })
+
+      assert.deepEqual(
+        reducer({
+          selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+        }, {
+          type: redux.UNSELECT_VILLAGES,
+          payload: [3, 3, 1]
+        }),
+        { selected: [{_id: 2}, {_id: 4}] })
+
+      assert.deepEqual(
+        reducer({
+          selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+        }, {
+          type: redux.UNSELECT_VILLAGES,
+          payload: [6, 7, 9]
         }),
         { selected: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
     })

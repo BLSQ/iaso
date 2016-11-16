@@ -17,15 +17,21 @@ const MESSAGES = defineMessages({
   // dateperiod messages
   'since-last-year': {
     id: 'microplanning.dateperiod.since-last-year',
-    defaultMessage: 'Since last year'
+    defaultMessage: 'One year'
   },
   'since-three-years': {
     id: 'microplanning.dateperiod.since-three-years',
-    defaultMessage: 'Since three years'
+    defaultMessage: 'Three years'
   },
   'since-five-years': {
     id: 'microplanning.dateperiod.since-five-years',
-    defaultMessage: 'Since five years'
+    defaultMessage: 'Five years'
+  },
+
+  // location messages
+  'location-national': {
+    defaultMessage: '--- ALL ---',
+    id: 'microplanning.location.national'
   }
 })
 
@@ -63,50 +69,70 @@ const findInData = (list, item, keys) => {
 export class Microplanning extends Component {
   constructor () {
     super()
-    this.dateHandler = this.dateHandler.bind(this)
+    this.caseDateHandler = this.caseDateHandler.bind(this)
+    this.screeningDateHandler = this.screeningDateHandler.bind(this)
+    this.locationHandler = this.locationHandler.bind(this)
   }
 
-  dateHandler (event) {
-    const dateperiod = event.target.value
-    const url = createUrl({...this.props.params, dateperiod})
+  caseDateHandler (event) {
+    const caseperiod = event.target.value
+    const url = createUrl({...this.props.params, caseperiod})
+    this.props.dispatch(push(url))
+  }
+
+  screeningDateHandler (event) {
+    const screeningperiod = event.target.value
+    const url = createUrl({...this.props.params, screeningperiod})
+    this.props.dispatch(push(url))
+  }
+
+  locationHandler (event) {
+    const location = event.target.value
+    const url = createUrl({...this.props.params, location})
     this.props.dispatch(push(url))
   }
 
   render () {
     const { formatMessage } = this.props.intl
-    const { dateperiod } = this.props.params
+    // TODO: const { caseperiod, screeningperiod, location } = this.props.params
+    const { caseperiod, location } = this.props.params
     const { data, error } = this.props.highlight
     const loading = this.props.highlight.loading
-    const { plotted, selected, detailed } = this.props.microplanning
+    const locations = data && data.locations || []
+    const { plotted, selected, details, centered } = this.props.microplanning
     // buffer radius (m) around a highlighted point
     const buffer = this.props.microplanning.buffer || 0
     const bufferCheck = (buffer > 0)
     const filter = this.props.microplanning.filter || { official: true, other: true }
 
-    const showDetails = (item) => {
-      this.props.dispatch(actions.showDetails(item))
+    const areaFilterCondition = (item) => (
+      item.zone === details.zone &&
+      (!details.area || item.area === details.area))
+
+    const showDetails = (item, centered) => {
+      this.props.dispatch(actions.showDetails(item, centered))
     }
-    const hideDetails = () => {
-      this.props.dispatch(actions.showDetails())
+    const unplotDetailsVillages = () => {
+      this.props.dispatch(actions.unplotDetailsVillages())
     }
-    const showArea = () => {
-      this.props.dispatch(actions.showAreaVillages(detailed.zone, detailed.area))
+    const plotDetailsVillages = () => {
+      this.props.dispatch(actions.plotDetailsVillages())
     }
-    const selectVillage = () => {
-      this.props.dispatch(actions.selectVillage(detailed))
-    }
+
     const selectVillages = (list) => {
-      this.props.dispatch(actions.selectVillages(list))
-    }
-    const unselectVillage = (id) => {
-      this.props.dispatch(actions.unselectVillage(id))
+      if (list) {
+        this.props.dispatch(actions.selectVillages(list))
+      } else if (details.isVillage) {
+        this.props.dispatch(actions.selectVillages([details]))
+      } else {
+        this.props.dispatch(actions.selectVillages(points.filter(areaFilterCondition)))
+      }
     }
     const unselectVillages = (list) => {
-      this.props.dispatch(actions.unselectVillages(list))
+      let ids = (list || points.filter(areaFilterCondition))
+      this.props.dispatch(actions.unselectVillages(ids))
     }
-    const resetSelection = () => {
-      this.props.dispatch(actions.resetSelection())
-    }
+
     const filterChange = (event) => {
       filter[event.target.name] = event.target.checked
       this.props.dispatch(actions.filterVillages(filter))
@@ -125,13 +151,58 @@ export class Microplanning extends Component {
       this.props.dispatch(actions.setBuffer(value))
     }
 
-    // used to check which kind of button display: "select" or "unselect" village
-    const isDetailedSelected = detailed && detailed.isVillage && selected &&
-      selected.filter((entry) => entry._id === detailed._id).length > 0
+    const detailsButtons = []
+    if (details) {
+      if (!details.isVillage) {
+        /* AREA: show/hide its villages in map */
+        const villagesPlotted = plotted && plotted.filter(areaFilterCondition).length > 0
+        const villagesSelected = selected && selected.filter(areaFilterCondition).length > 0
 
-    // used to detect if the "show villages" button should be included
-    const isDetailedIncluded = detailed && !detailed.isVillage && plotted &&
-      plotted.filter((entry) => entry.zone === detailed.zone && entry.area === detailed.area).length > 0
+        if (villagesPlotted) {
+          if (villagesSelected) {
+            detailsButtons.push(
+              <button key='unselect' className='button' onClick={() => unselectVillages()}>
+                <FormattedMessage id='microplanning.tooltip.villages.unselect' defaultMessage='Unselect ALL villages' />
+              </button>
+            )
+          } else {
+            detailsButtons.push(
+              <button key='plot' className='button' onClick={() => unplotDetailsVillages()}>
+                <FormattedMessage id='microplanning.tooltip.villages.hide' defaultMessage='Hide villages in map' />
+              </button>
+            )
+            detailsButtons.push(
+              <button key='select' className='button' onClick={() => selectVillages()}>
+                <FormattedMessage id='microplanning.tooltip.villages.select' defaultMessage='Select ALL villages' />
+              </button>
+            )
+          }
+        } else {
+          detailsButtons.push(
+            <button key='unplot' className='button' onClick={() => plotDetailsVillages()}>
+              <FormattedMessage id='microplanning.tooltip.villages.show' defaultMessage='Show villages in map' />
+            </button>
+          )
+        }
+      } else {
+        /* VILLAGE: select/unselect */
+        const isSelected = selected && selected.find((entry) => entry._id === details._id)
+
+        if (isSelected) {
+          detailsButtons.push(
+            <button key='unselect' className='button' onClick={() => unselectVillages()}>
+              <FormattedMessage id='microplanning.tooltip.village.unselect' defaultMessage='Unselect village' />
+            </button>
+          )
+        } else {
+          detailsButtons.push(
+            <button key='select' className='button' onClick={() => selectVillages()}>
+              <FormattedMessage id='microplanning.tooltip.village.select' defaultMessage='Select village' />
+            </button>
+          )
+        }
+      }
+    }
 
     const highlight = (data && data.confirmedByLocation || [])
       // transform the objects from backend into the frontend format
@@ -140,7 +211,8 @@ export class Microplanning extends Component {
         area: item.AZ,
         village: item.village,
         cases: item.confirmed_cases,
-        date: item.last_confirmed_date
+        caseDate: item.last_confirmed_date,
+        visitDate: item.last_screening_date
       }))
       // remove not matched/reconciled villages (not in list)
       .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
@@ -155,7 +227,8 @@ export class Microplanning extends Component {
 
         // find out the number of cases and the onset date of the last case
         const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
-        const date = matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), '')
+        const caseDate = matched.reduce((prev, curr) => (prev >= curr.caseDate ? prev : curr.caseDate), '')
+        const visitDate = matched.reduce((prev, curr) => (prev >= curr.visitDate ? prev : curr.visitDate), '')
         const color = areasScale(Math.min(cases / AREA_LIMIT, 1.0))
 
         return {
@@ -163,13 +236,14 @@ export class Microplanning extends Component {
           properties: {
             ...item.properties,
             cases,
-            date,
+            caseDate,
+            visitDate,
             color
           }
         }
       })
 
-    // mark the highlighted/selected villages in the list
+    // filter points and mark the highlighted/selected villages in the list
     const points = (plotted || [])
       .filter((item) =>
         (filter.official && item.type === 'official') ||
@@ -182,26 +256,56 @@ export class Microplanning extends Component {
         return {
           ...item,
           cases: matched.reduce((prev, curr) => (prev + curr.cases), 0),
-          date: matched.reduce((prev, curr) => (prev >= curr.date ? prev : curr.date), ''),
+          caseDate: matched.reduce((prev, curr) => (prev >= curr.caseDate ? prev : curr.caseDate), ''),
+          visitDate: matched.reduce((prev, curr) => (prev >= curr.visitDate ? prev : curr.visitDate), ''),
           selected: (selected || []).filter((entry) => entry._id === item._id).length > 0
         }
       })
 
     return (
-      <div>
+      <div ref={(node) => (this.container = node)}>
         <div className='filter__container'>
-          <h2 className='filter__label'>Select:</h2>
-          <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'>
-              <i className='fa fa-calendar' />
-              <FormattedMessage id='microplanning.filter.timeframe' defaultMessage='Timeframe' />
+          <h2 className='filter__label'>
+            <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages' />
+          </h2>
+          <div key='filter-case-date' className='filter__container__select'>
+            <label htmlFor='casedate' className='filter__container__select__label'>
+              <FormattedMessage id='microplanning.filter.cases.date' defaultMessage='with HAT cases in past' />
             </label>
-            <select disabled={loading} name='date' value={dateperiod} onChange={this.dateHandler} className='select--minimised'>
+            <select disabled={loading} name='casedate' value={caseperiod} onChange={this.caseDateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
                   {formatMessage(MESSAGES[period])}
                 </option>
               ))}
+            </select>
+          </div>
+          { /* TODO: first change django filters
+          <div key='filter-screening-date' className='filter__container__select'>
+            <label htmlFor='screeningperiod' className='filter__container__select__label'>
+              <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and not visited in past' />
+            </label>
+            <select disabled={loading} name='screeningperiod' value={screeningperiod} onChange={this.screeningDateHandler} className='select--minimised'>
+              {DATEPERIODS.map((period) => (
+                <option key={period} value={period}>
+                  {formatMessage(MESSAGES[period])}
+                </option>
+              ))}
+            </select>
+          </div>
+          */ }
+          <div key='filter-location' className='filter__container__select'>
+            <label htmlFor='location' className='filter__container__select__label'>
+              <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zone de Sante' />
+            </label>
+            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
+              <option key='all' value=''>
+                {formatMessage(MESSAGES['location-national'])}
+              </option>
+              {locations.map((loc) => {
+                var val = loc.ZS
+                return <option key={val} value={val}>{val}</option>
+              })}
             </select>
           </div>
         </div>
@@ -248,12 +352,14 @@ export class Microplanning extends Component {
               <Map
                 areas={areas}
                 points={points}
-                detailed={detailed}
+                details={details}
+                centered={centered}
                 buffer={buffer}
                 select={selectVillages}
                 unselect={unselectVillages}
-                showDetails={showDetails}
+                show={showDetails}
               />
+
               { /* the legend */ }
               <MapLegend
                 scale={areasScale}
@@ -264,32 +370,13 @@ export class Microplanning extends Component {
 
             <div className='map__panel_right'>
               { /* the details view */ }
-              { detailed &&
+              { details &&
                 <div className='details'>
-                  <span className='close' onClick={hideDetails}>
+                  <span className='close' onClick={() => showDetails()}>
                     <i className='fa fa-close' />
                   </span>
-
-                  <MapTooltip item={detailed} />
-
-                  { /* AREA: plot its villages in map */ }
-                  { !detailed.isVillage && !isDetailedIncluded &&
-                    <button className='button' onClick={showArea}>
-                      <FormattedMessage id='microplanning.tooltip.villages.toggle' defaultMessage='Show villages in map' />
-                    </button>
-                  }
-
-                  { /* VILLAGE: select/unselect */ }
-                  { detailed.isVillage && !isDetailedSelected &&
-                    <button className='button' onClick={selectVillage}>
-                      <FormattedMessage id='microplanning.tooltip.village.select' defaultMessage='Select village' />
-                    </button>
-                  }
-                  { detailed.isVillage && isDetailedSelected &&
-                    <button className='button' onClick={() => unselectVillage(detailed._id)}>
-                      <FormattedMessage id='microplanning.tooltip.village.unselect' defaultMessage='Unselect village' />
-                    </button>
-                  }
+                  <MapTooltip item={details} />
+                  {detailsButtons}
                 </div>
               }
 
@@ -297,8 +384,7 @@ export class Microplanning extends Component {
               <DataSelected
                 data={selected}
                 show={showDetails}
-                remove={unselectVillage}
-                reset={resetSelection}
+                unselect={unselectVillages}
               />
             </div>
           </div>

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Microplanning from './Microplanning'
 import { clone } from '../../utils'
-import { fetchUrls } from '../../utils/fetchData'
+import { fetchUrls, checkLocation } from '../../utils/fetchData'
 
 /*
  * Handles state
@@ -37,7 +37,8 @@ export const urls = [
       'AZ': 'Kimbwayamu',
       'village': 'Kintulu',
       'confirmed_cases': 2,
-      'last_confirmed_case': '2016-06-03T00:00:00.000Z'
+      'last_confirmed_case': '2016-06-03T00:00:00.000Z',
+      'last_screening_date': '2016-07-03T00:00:00.000Z'
     }]
   }
 ]
@@ -52,7 +53,7 @@ export class MicroplanningContainer extends Component {
     const {dispatch} = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
-    fetchUrls(urls, params, oldParams, dispatch)
+    fetchUrls(urls, params, oldParams, dispatch, checkLocation)
   }
 
   componentDidMount () {

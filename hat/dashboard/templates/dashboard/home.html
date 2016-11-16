@@ -20,6 +20,9 @@
 
   {# highlight pilot areas #}
   <section class="section--feature--pilot-area">
+    <div class="section__content__image--pilot-area">
+      <img src="{% static 'images/map-reduced.png' %}" alt='Map showing pilot health zones' />
+    </div>
     <div class="section__content--pilot-area">
       <h2>The six health zones where research is currently being conducted in Bandundu</h2>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur posuere lorem lacus, sed mattis diam pharetra at. Ut metus sapien, aliquet sed ultrices vitae, fermentum venenatis lacus. Duis urna lectus, molestie vel ante ac, lobortis sollicitudin ante. Mauris commodo mollis mauris at ultrices.</p>
@@ -29,6 +32,7 @@
   {# monthly reports #}
   <section class="section--feature--reports">
     <div class="section__content__image--reports">
+      <img src="{% static 'images/monthly-report.png' %}" alt='Monthly report example' />
     </div>
     <div class="section__content--reports">
       <h2>See monthly campaign reports</h2>
@@ -44,26 +48,34 @@
 
   {# upload/download #}
   <section class="section--feature--data">
-    <div class="section__content--data">
+    <div class="section__content__heading--data">
       <h2>Upload and download data from the field</h2>
-      <div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        {% if perms.cases.import %}
-          <a href={% url "import:upload" %} class="button">{% trans "Go to data upload" %}</a>
-        {% endif %}
-      </div>
-      <div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        {% if perms.cases.export %}
-          <a href={% url "export:download" %} class="button">{% trans "Go to data download" %}</a>
-        {% endif %}
-      </div>
+      <img src="{% static 'images/upload-download.png' %}" alt='Monthly report example' />
+    </div>
+    <div class="section__content--upload">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      {% if perms.cases.import %}
+        <a href={% url "import:upload" %} class="button">
+          {% trans "Go to data upload" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+    <div class="section__content--download">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      {% if perms.cases.export %}
+        <a href={% url "export:download" %} class="button">
+          {% trans "Go to data download" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
     </div>
   </section>
 
   {# suspect cases #}
   <section class="section--feature--suspect">
     <div class="section__content__image--suspect">
+      <img src="{% static 'images/suspects.png' %}" alt='HAT suspect example' />
     </div>
     <div class="section__content--suspect">
       <h2>Follow up on unconfirmed cases</h2>
@@ -79,16 +91,21 @@
 
   {# partners #}
   <section class="section--feature--partners">
-    <div class="section__content--partners">
+      
       <h2>A proud partnership</h2>
-      <ul>
+    <div class="section__content--partners">
+      
+      <ul class="section__list--partners">
         <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
         <li>Institute of Tropical Medicine</li>
         <li>University of California Los Angeles</li>
+      </ul>
+      <ul class="section__list--partners">
         <li>Liverpool School of Tropical Medicine</li>
         <li>Institute of Disease Modelling</li>
         <li>Memisa</li>
       </ul>
+      
     </div>
   </section>
     

@@ -5,6 +5,9 @@
   display: flex;
   padding: $padding-unit*1.5 $padding-unit;
   box-sizing: border-box;
+  img {
+    display: block;
+  }
 }
 
 /* specific section styles */
@@ -15,7 +18,10 @@
     /*padding: $padding-unit;*/
   }
   &--pilot-area {
-    background: $blue url('../images/map.png') no-repeat right top;
+    background: $blue;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
     min-height: 374px; /* height of background image */
   }
   &--reports {
@@ -31,19 +37,23 @@
     flex-direction: column;
     background-color: $bright-navy;
     background-image: radial-gradient(at top, rgba(white, 0.2) 0%, $bright-navy 100%);
+    @include white-text-dark-background;
+    h2 {
+      @include text--center;
+      margin-bottom: 1.5em;
+    }
   }
-  
 }
 
+/* common styles for content */
 [class^="section__content"] {
   h2 {
     line-height: 1.25;
     margin-bottom: 1.25em;
   }
   [class^="button"] {
-    margin-top: 1.75em;
+    margin-top: 1.5em;
   }
-
 }
 
 .section__content {
@@ -59,10 +69,16 @@
   &--pilot-area {
     align-self: center;
     @include white-text-dark-background;
-    max-width: 23em;
+    max-width: 30em;
+  }
+  &__image--pilot-area {
+    order: 2;
+    margin-left: auto;
   }
   &--reports {
     align-self: center;
+    flex-basis: 50%;
+    p { max-width: 26em; }
   }
   &__image--reports {
     background: url('../images/monthly-reports.png') no-repeat left center;
@@ -70,11 +86,29 @@
     width: 50%;
     min-width: 509px;
   }
-  &--data {
-    
+  &__heading--data {
+    order: 2;
+    flex-basis: 50%;
+    @include text--center;
+    img { display: initial; }
+    h2 {
+      margin-bottom: 5em;
+    }
+  }
+  &--upload,
+  &--download {
+    align-self: center;
+    flex-basis: 25%;
+    p { max-width: 20em; }
+  }
+  &--upload {
+    order: 1;
+  }
+  &--download {
+    order: 3;
   }
   &--suspect {
-    
+    align-self: center;
   }
   &__image--suspect {
     background: url('../images/monthly-reports.png') no-repeat left center;
@@ -84,9 +118,17 @@
     order: 2;
   }
   &--partners {
-    @include white-text-dark-background;
-    h2 {
-      @include text--center;
-    }
+    display: flex;
+    justify-content: center;
+    
+  }
+}
+
+.section__list--partners {
+  max-width: 20em;
+  li {
+    font-weight: bold;
+    margin-bottom: 1em;
+    line-height: 1.25;
   }
 }

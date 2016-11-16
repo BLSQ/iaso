@@ -2,6 +2,7 @@
 // build clean lists with areas boundaries and villages
 //
 
+import L from 'leaflet'
 import * as topojson from 'topojson'
 import areasTopo from '../../../../json/areas.json'
 import villages from '../../../../json/villages.json'
@@ -17,6 +18,7 @@ const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
 // TO BE REMOVED AFTER WORKSHOP: show only PRIORITY zones
 const WORKSHOP = [
   'MOSANGO',
+  'YASA BONGA',
   'YASSA BONGA',
   'BOKORO',
   'KIKONGO',
@@ -34,6 +36,7 @@ const locations = villages.filter((item) => WORKSHOP.indexOf(item.zone) > -1)
 locations.forEach((item) => {
   // create fake `_id` based on assumed uniqueness location
   item._id = item.lat.toString() + ':' + item.lon.toString()
+  item._latlon = L.latLng(item.lat, item.lon)
   item.isVillage = true // used in tooltip...
 
   // indicate `type` based on `official` and `village` values
@@ -54,8 +57,8 @@ locations.forEach((item) => {
 const aggregateBy = (keys) => {
   return (item) => {
     const props = item.properties
-    // indicate that is not an village
-    props.isVillage = false // used in tooltip...
+    // create fake `_id`
+    props._id = props.zone + ':' + props.area
 
     const list = locations.filter((entry) => (
       keys.every((key) => entry[key] === props[key])

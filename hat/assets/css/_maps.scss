@@ -1,17 +1,36 @@
-$detailed-color: $blue;
+/* COLOURS */
+$buffer: $yellow;
+$detailed: $blue;
+$highlight: $purple;
+$selected: $red;
+
+$official: $green;
+$other: $orange;
+$unknown: $mid-gray;
+
+.official  { color: $official }
+.other     { color: $other; }
+.unknown   { color: $unknown; }
+
+@mixin underscore-label ($color: $gray) {
+  /*border-bottom: solid 2px $color;*/
+  background-color: $color;
+  border-radius: 5px;
+  font-size: $font-size-s;
+  height: 24px;
+  padding: $padding-unit/4;
+  vertical-align: middle;
+}
+
+.underscore-official  { @include underscore-label($official); }
+.underscore-other     { @include underscore-label($other); }
+.underscore-unknown   { @include underscore-label($unknown); }
+.underscore-buffer    { @include underscore-label($buffer); }
 
 .leaflet-container {
+  color: $text-color;
   font-family: $body-font-family;
-}
-
-.leaflet-clickable {
-  cursor: pointer !important;
-  color: $blue;
-}
-
-.leaflet-non-clickable {
-  cursor: default !important;
-  color: $dark-gray;
+  font-weight: normal;
 }
 
 .leaflet-container {
@@ -22,15 +41,15 @@ $detailed-color: $blue;
 .map__panel_left {
   display: inline-block;
   height: 760px;
-  width: 69%;
+  width: 70%;
 }
 
 .map__panel_right {
   display: inline-block;
   height: 760px;
   vertical-align: top;
-  width: 29%;
-  overflow: hidden;
+  width: 30%;
+  overflow: auto;
 }
 
 .map-container {
@@ -54,17 +73,9 @@ $detailed-color: $blue;
 }
 
 .legend {
-  background: $background-highlight-gray;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
   color: $text-color;
-  float: right;
   font-family: $body-font-family;
   font-size: $font-size-xs;
-  height: 32px;
-  margin: $padding-unit/4;
-  padding: 6px 8px;
-  width: 180px;
 
   ul {
     clear: both;
@@ -72,38 +83,68 @@ $detailed-color: $blue;
     margin: 0;
     padding: 0;
   }
-  li {
+
+  .scale {
+    background: $background-highlight-gray;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
     display: inline-block;
-    height: 16px;
-    width: 16px;
-  }
-  .min {
-    float: left;
-  }
-  .max {
     float: right;
+    height: 32px;
+    margin: $padding-unit/4;
+    padding: 6px 8px;
+    width: 180px;
+
+    li {
+      display: inline-block;
+      height: 16px;
+      width: 16px;
+    }
+    .min {
+      float: left;
+    }
+    .max {
+      float: right;
+    }
+  }
+
+  .points {
+    display: inline-block;
+    vertical-align: top;
+
+    li {
+      display: inline-block;
+      margin: $padding-unit/4;
+      white-space: nowrap;
+    }
+    i {
+      margin-right: 3px;
+      &.selected  { color: $selected; }
+      &.highlight { color: $highlight; }
+    }
   }
 }
 
 .details {
-  background-color: lighten($detailed-color, 25%);
-  border-radius: 5px;
+  background-color: lighten($detailed, 15%);
   padding: $padding-unit/4;
 
-  button.close {
-    background-color: white;
-    border-radius: 12px;
-    color: $detailed-color;
+  span.close {
+    cursor: pointer;
+    color: white;
     float: right;
     height: 24px;
     width: 24px;
   }
+  button {
+    background-color: white;
+    color: $detailed;
+    &:hover { color: white; }
+  }
 }
 
 .tooltip {
-  background: $background-highlight-gray;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  color: white;
   margin: $padding-unit/4;
 
   div.property {
@@ -122,13 +163,72 @@ $detailed-color: $blue;
 }
 
 .data-selected {
-  ul {
-    clear: both;
-    list-style-type: none;
-    margin: $padding-unit/4 0;
-    padding: 0;
-    span {
-      margin: $padding-unit/4;
+  margin: $padding-unit/5;
+  font-size: $font-size-s;
+
+  .title {
+    text-transform: uppercase;
+    font-size: $font-size-m;
+    font-weight: bold;
+  }
+
+  .summary {
+    font-size: $font-size-s;
+    border-bottom: solid 1px $gray;
+    padding: $padding-unit/4 0;
+    line-height: 1.5;
+
+    li {
+      padding-left: $padding-unit/3;
+      font-style: italic;
+    }
+    #text--warning {
+      font-size: $font-size-xs;
+    }
+  }
+
+  .list {
+    padding: $padding-unit/3 0 0 0;
+    h3 {
+      padding: $padding-unit/4 0;
+    }
+    ul {
+      clear: both;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      height: 470px;
+      overflow: auto;
+
+      li {
+        line-height: 1.3;
+        white-space: nowrap;
+
+        span.remove {
+          @include text--error;
+          cursor: pointer;
+          margin-right: $padding-unit/4;
+        }
+        span.view {
+          color: $detailed;
+          cursor: pointer;
+          margin-right: $padding-unit/4;
+        }
+      }
+    }
+  }
+
+  .actions {
+    margin: $padding-unit/5 0 0 0;
+    padding: $padding-unit/4;
+    border-top: solid 1px $gray;
+
+    button {
+      display: inline-block;
+    }
+    div {
+      float: right;
+      display: inline-block;
     }
   }
 }
@@ -151,25 +251,25 @@ $detailed-color: $blue;
 
 path.map-layer {
   @include layer;
-  fill: transparent;
-  stroke: $mid-gray;
-}
 
-path.map-layer-highlight {
-  @include layer;
-}
-
-path.map-layer-detailed {
-  @include layer;
-  fill: $detailed-color;
-  stroke: darken($detailed-color, 15%);
+  &.transparent {
+    fill: transparent;
+    stroke: $mid-gray;
+  }
+  &.highlight {
+    /* fill and stroke depend on the number of cases */
+  }
+  &.detailed {
+    fill: $detailed;
+    stroke: darken($detailed, 15%);
+  }
 }
 
 
 /* markers */
 
 @mixin marker($color: $gray) {
-  fill-opacity: 0.5;
+  fill-opacity: 0.8;
   fill: $color;
   stroke: darken($color, 10%);
   stroke-dasharray: 1,0;
@@ -177,7 +277,7 @@ path.map-layer-detailed {
   stroke-width: 1;
 
   &:hover {
-    fill-opacity: 0.8;
+    fill-opacity: 1;
     fill: darken($color, 15%);
     stroke: $color;
     stroke-width: 2;
@@ -188,28 +288,30 @@ path.map-marker {
   @include marker($gray);
 
   &.official {
-    @include marker($green);
+    @include marker($official);
   }
   &.other {
-    @include marker($orange);
+    @include marker($other);
   }
+  &.unknown {
+    @include marker($unknown);
+  }
+
   &.highlight {
-    @include marker($purple);
+    @include marker($highlight);
+    stroke: pink;
   }
   &.selected {
-    @include marker($red);
-    fill-opacity: 1;
+    @include marker($selected);
   }
   &.detailed {
-    @include marker($detailed-color);
+    @include marker($detailed);
   }
-}
-
-path.map-marker-buffer {
-  fill-opacity: 0;
-  fill: transparent;
-  stroke: $red;
-  stroke-dasharray: 2,2;
-  stroke-opacity: 1;
-  stroke-width: 1;
+  &.buffer {
+    @include marker($buffer);
+    fill-opacity: 0.3;
+    &:hover {
+      fill-opacity: 0.5;
+    }
+  }
 }

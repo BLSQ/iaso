@@ -100,12 +100,8 @@ Mappings:
   Variables:
     development:
       SpotPrice: ''
-      CouchdbPassword: ''
-      SecretKey: ''
       NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
-      HatMobileKey: ''
-      GoogleClientId: ''
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
       DbEncryption: false
@@ -114,12 +110,8 @@ Mappings:
 
     staging:
       SpotPrice: ''
-      CouchdbPassword: ''
-      SecretKey: ''
       NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
-      HatMobileKey: ''
-      GoogleClientId: ''
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
       DbEncryption: false
@@ -128,12 +120,8 @@ Mappings:
 
     prod:
       SpotPrice: ''
-      CouchdbPassword: ''
-      SecretKey: ''
       NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
-      HatMobileKey: ''
-      GoogleClientId: ''
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
       DbEncryption: false
@@ -176,6 +164,31 @@ Conditions:
   DbMultiAzBool: !Equals [!FindInMap [Variables, !Ref Environment, DbMultiAz], 'true']
 
 Resources:
+
+  GetOrCreateCouchdbPassword:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, couchdb_password]]
+
+  GetOrCreateSecretKey:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, secret_key]]
+
+  GetOrCreateGoogleClientId:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, google_client_id]]
+
+  GetOrCreateHatMobileKey:
+    Type: Custom::GetOrCreateRecord
+    Properties:
+      ServiceToken: !Ref GetOrCreateRecordLambda
+      RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, hat_mobile_key]]
+
   GetOrCreateDbPassword:
     Type: Custom::GetOrCreateRecord
     Properties:
@@ -315,10 +328,10 @@ Resources:
         Value: !GetAtt [DBInstance, Endpoint.Address]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: COUCHDB_PASSWORD 
-        Value: !FindInMap [Variables, !Ref Environment, CouchdbPassword]
+        Value: !GetAtt [GetOrCreateCouchdbPassword, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: SECRET_KEY 
-        Value: !FindInMap [Variables, !Ref Environment, SecretKey]
+        Value: !GetAtt [GetOrCreateSecretKey, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: NEW_RELIC_LOG_LEVEL 
         Value: !FindInMap [Variables, !Ref Environment, NewRelicLogLevel]
@@ -327,10 +340,10 @@ Resources:
         Value: !FindInMap [Variables, !Ref Environment, CouchDBUser]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: HAT_MOBILE_KEY
-        Value: !FindInMap [Variables, !Ref Environment, HatMobileKey]
+        Value: !GetAtt [GetOrCreateHatMobileKey, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: GOOGLE_CLIENT_ID
-        Value: !FindInMap [Variables, !Ref Environment, GoogleClientId]
+        Value: !GetAtt [GetOrCreateGoogleClientId, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: NEW_RELIC_APP_NAME
         Value: !Join ['', [!Ref ProjectName, !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix]]]

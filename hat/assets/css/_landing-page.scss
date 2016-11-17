@@ -18,11 +18,11 @@
     /*padding: $padding-unit;*/
   }
   &--pilot-area {
-    background: $blue;
+    background: $blue linear-gradient(-180deg, rgba(black,0.2) 0%, transparent 100%);
     padding-top: 0;
     padding-bottom: 0;
     padding-right: 0;
-    min-height: 374px; /* height of background image */
+    min-height: 374px; /* height of map image */
   }
   &--reports {
     background: $light-gray;
@@ -64,12 +64,13 @@
     }
     p {
       max-width: none;
+      padding: 0 20%;
     }
   }
   &--pilot-area {
     align-self: center;
     @include white-text-dark-background;
-    max-width: 30em;
+    max-width: 32em;
   }
   &__image--pilot-area {
     order: 2;
@@ -81,7 +82,7 @@
     p { max-width: 26em; }
   }
   &__image--reports {
-    background: url('../images/monthly-reports.png') no-repeat left center;
+    
     min-height: 268px;
     width: 50%;
     min-width: 509px;
@@ -90,9 +91,12 @@
     order: 2;
     flex-basis: 50%;
     @include text--center;
-    img { display: initial; }
     h2 {
-      margin-bottom: 5em;
+      margin-bottom: 4em;
+    }
+    img { 
+      display: initial; 
+      margin-bottom: 1em;
     }
   }
   &--upload,
@@ -111,7 +115,6 @@
     align-self: center;
   }
   &__image--suspect {
-    background: url('../images/monthly-reports.png') no-repeat left center;
     min-height: 268px;
     width: 50%;
     min-width: 509px;

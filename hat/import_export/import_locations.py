@@ -4,7 +4,7 @@ from pandas import DataFrame
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from .load import load_locations_into_db
-from .utils import store_raw_file, transform_location_name
+from .utils import store_raw_file, capitalize
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +30,17 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         stats['num_total'] = len(df)
 
         df_locs = DataFrame()
-        df_locs['ZS'] = df['ZS'].apply(transform_location_name)
-        df_locs['AS'] = df['AS_'].apply(transform_location_name)
+        df_locs['ZS'] = df['ZS'].apply(capitalize)
+        df_locs['AS'] = df['AS_'].apply(capitalize)
         if 'Alt_AS' in df:
-            df_locs['AS_alt'] = df['Alt_AS'].apply(transform_location_name)
-        df_locs['village'] = df['VILLAGE_NA'].apply(transform_location_name)
+            df_locs['AS_alt'] = df['Alt_AS'].apply(capitalize)
+        df_locs['village'] = df['VILLAGE_NA'].apply(capitalize)
         if 'ALT_VILLAG'in df:
-            df_locs['village_alt'] = df['ALT_VILLAG'].apply(transform_location_name)
+            df_locs['village_alt'] = df['ALT_VILLAG'].apply(capitalize)
         if 'VILLAGE_TY' in df:
-            df_locs['village_type'] = df['VILLAGE_TY'].apply(transform_location_name)
+            df_locs['village_type'] = df['VILLAGE_TY']
         elif 'TYPE' in df:
-            df_locs['village_type'] = df['TYPE'].apply(transform_location_name)
+            df_locs['village_type'] = df['TYPE']
         df_locs['latitude'] = df['LAT']
         df_locs['longitude'] = df['LON']
         df_locs['population'] = df['POP_2016'].fillna(df['POP_2015'])

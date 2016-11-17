@@ -64,11 +64,25 @@
   }
 }
 
+.widget__section--columnar {
+  display: flex;
+  flex-direction: row;
+}
+
 .widget__content {
   padding: $padding-unit;
   &:empty {
     padding: 0;
   }
+}
+
+.widget__content--column1 {
+  width: 30%;
+}
+
+.widget__content--column2 {
+  width: 70%;
+  border-left: 1px solid lighten($gray, 5%);
 }
 
 .widget__content--flush {

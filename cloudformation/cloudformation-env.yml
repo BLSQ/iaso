@@ -12,10 +12,10 @@ Parameters:
     Description: Application environment
     Type: String
     AllowedValues:
-    - dev
-    - stage
+    - development
+    - staging
     - prod
-    ConstraintDescription: 'Allowed environment types: dev/stage/prod'
+    ConstraintDescription: 'Allowed environment types: development/staging/prod'
     
   HostedZone:
     Description: Hosted zone name
@@ -76,29 +76,29 @@ Parameters:
 
 Mappings:
   InstanceType:
-    dev:
-      InstanceType: t2.small
-    stage:
-      InstanceType: t2.small
+    development:
+      InstanceType: t2.medium
+    staging:
+      InstanceType: t2.medium
     prod:
-      InstanceType: t2.small
+      InstanceType: t2.medium
 
   CouchDBInstance:
-    dev:
-      AMI: ami-612f5412
+    development:
+      AMI: ami-e2afff91
       InstanceType: t2.small
-      Name: sense-hat-couchdb-dev
-    stage:
-      AMI: ami-e82d569b
+      Name: sense-hat-couchdb-development
+    staging:
+      AMI: ami-00aefe73
       InstanceType: t2.small
-      Name: sense-hat-couchdb-stage
+      Name: sense-hat-couchdb-staging
     prod:
-      AMI: ami-ae2c57dd
+      AMI: ami-9fafffec
       InstanceType: t2.small
       Name: sense-hat-couchdb-prod
 
   Variables:
-    dev:
+    development:
       SpotPrice: ''
       CouchdbPassword: ''
       SecretKey: ''
@@ -106,8 +106,13 @@ Mappings:
       CouchDBUser: 'admin'
       HatMobileKey: ''
       GoogleClientId: ''
+      DbAllocatedStorage: 100
+      DbInstanceType: db.t2.micro
+      DbEncryption: false
+      DbSnapshot: ''
+      DbMultiAz: false
 
-    stage:
+    staging:
       SpotPrice: ''
       CouchdbPassword: ''
       SecretKey: ''
@@ -115,6 +120,11 @@ Mappings:
       CouchDBUser: 'admin'
       HatMobileKey: ''
       GoogleClientId: ''
+      DbAllocatedStorage: 100
+      DbInstanceType: db.t2.micro
+      DbEncryption: false
+      DbSnapshot: ''
+      DbMultiAz: false
 
     prod:
       SpotPrice: ''
@@ -124,14 +134,19 @@ Mappings:
       CouchDBUser: 'admin'
       HatMobileKey: ''
       GoogleClientId: ''
+      DbAllocatedStorage: 100
+      DbInstanceType: db.t2.micro
+      DbEncryption: false
+      DbSnapshot: ''
+      DbMultiAz: false
 
   DomainNameSuffix:
-    dev:
+    development:
       DomainNameSuffix: "-dev"
-    stage:
-      DomainNameSuffix: "-stage"
+    staging:
+      DomainNameSuffix: "-staging"
     prod:
-      DomainNameSuffix: "-prod"
+      DomainNameSuffix: ""
 
   Beanstalk2Route53HostedZoneId:
     us-east-1:
@@ -155,6 +170,11 @@ Mappings:
     sa-east-1:
       HostedZoneId: Z10X7K2B4QSOFV
 
+Conditions:
+  DbEncryptionBool: !Equals [!FindInMap [Variables, !Ref Environment, DbEncryption], true]
+  DbFromSnapshot: !Not [!Equals [!FindInMap [Variables, !Ref Environment, DbSnapshot], '']]
+  DbMultiAzBool: !Equals [!FindInMap [Variables, !Ref Environment, DbMultiAz], 'true']
+
 Resources:
   GetOrCreateDbPassword:
     Type: Custom::GetOrCreateRecord
@@ -167,14 +187,14 @@ Resources:
     Properties:
       ServiceToken: !Ref GetOrCreateRecordLambda
       RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_user]]
-      RecordValue: postgres
+      RecordValue: hat
 
   GetOrCreateDbName:
     Type: Custom::GetOrCreateRecord
     Properties:
       ServiceToken: !Ref GetOrCreateRecordLambda
       RecordName: !Join ['-', [!Ref ProjectName, !Ref Environment, db_name]]
-      RecordValue: saraapi
+      RecordValue: hat
 
   GetOrCreateDbPort:
     Type: Custom::GetOrCreateRecord
@@ -279,9 +299,6 @@ Resources:
         OptionName: SPOT_PRICE
         Value: !FindInMap [Variables, !Ref Environment, SpotPrice]
       - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: kazana_backend__location
-        Value: !FindInMap [Variables, !Ref Environment, KazanaBackendLocation]
-      - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: RDS_PASSWORD
         Value: !GetAtt [GetOrCreateDbPassword, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
@@ -318,8 +335,8 @@ Resources:
         OptionName: NEW_RELIC_APP_NAME
         Value: !Join ['', [!Ref ProjectName, !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix]]]
       - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: COUCDB_URL
-        Value: !Join ['http://', [!Ref ProjectName, "-couchdb", !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, ':5984']]
+        OptionName: COUCHDB_URL
+        Value: !Join ['', ['http://', !Ref ProjectName, "-couchdb", !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, ':5984']]
 
   CouchDBInstance:
     Type: AWS::EC2::Instance

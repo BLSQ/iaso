@@ -157,7 +157,7 @@ Resources:
               - kms:DescribeKey
             Principal:
               Service: rds.amazonaws.com
-              Resource: "*"
+            Resource: "*"
 
   VPC:
     Type: AWS::EC2::VPC
@@ -428,7 +428,7 @@ Resources:
           OptionName: ListenerProtocol
           Value: HTTPS
 
-  DevEnv:
+  DevelopmentEnv:
     Type: AWS::CloudFormation::Stack
     DependsOn:
     - VPC
@@ -436,19 +436,22 @@ Resources:
     - ConfigurationTemplate
     Properties:
       Parameters:
-        Environment: dev
+        Environment: development
         ProjectName: !Ref ProjectName
         HostedZone: !Ref HostedZone
         SNSTopic: !Ref SNSTopic
+        GetOrCreateRecordLambda: !Ref GetOrCreateRecordLambda
         ConfigurationTemplate: !Ref ConfigurationTemplate
         ApplicationVersion: !Ref ApplicationVersion
         Application: !Ref Application
         VPC: !Ref VPC
         Subnet: !Ref PublicSubnetA
         KmsKey: !Ref KmsKey
+        KeyName: !Ref KeyName
+        Subnets: !Join [',', [!Ref PublicSubnetA, !Ref PublicSubnetB, !Ref PublicSubnetC]]
       TemplateURL: !Join ['', ['https://', !Ref S3Bucket, .s3.amazonaws.com/, !Ref ProjectName, -cloudformation-env.yml]]
 
-  StageEnv:
+  StagingEnv:
     Type: AWS::CloudFormation::Stack
     DependsOn:
     - VPC
@@ -460,12 +463,15 @@ Resources:
         ProjectName: !Ref ProjectName
         HostedZone: !Ref HostedZone
         SNSTopic: !Ref SNSTopic
+        GetOrCreateRecordLambda: !Ref GetOrCreateRecordLambda
         ConfigurationTemplate: !Ref ConfigurationTemplate
         ApplicationVersion: !Ref ApplicationVersion
         Application: !Ref Application
         VPC: !Ref VPC
         Subnet: !Ref PublicSubnetA
         KmsKey: !Ref KmsKey
+        KeyName: !Ref KeyName
+        Subnets: !Join [',', [!Ref PublicSubnetA, !Ref PublicSubnetB, !Ref PublicSubnetC]]
       TemplateURL: !Join ['', ['https://', !Ref S3Bucket, .s3.amazonaws.com/, !Ref ProjectName, -cloudformation-env.yml]]
 
   ProdEnv:
@@ -480,21 +486,24 @@ Resources:
         ProjectName: !Ref ProjectName
         HostedZone: !Ref HostedZone
         SNSTopic: !Ref SNSTopic
+        GetOrCreateRecordLambda: !Ref GetOrCreateRecordLambda
         ConfigurationTemplate: !Ref ConfigurationTemplate
         ApplicationVersion: !Ref ApplicationVersion
         Application: !Ref Application
         VPC: !Ref VPC
         Subnet: !Ref PublicSubnetA
         KmsKey: !Ref KmsKey
+        KeyName: !Ref KeyName
+        Subnets: !Join [',', [!Ref PublicSubnetA, !Ref PublicSubnetB, !Ref PublicSubnetC]]
       TemplateURL: !Join ['', ['https://', !Ref S3Bucket, .s3.amazonaws.com/, !Ref ProjectName, -cloudformation-env.yml]]
 
 Outputs:
-  DevDns:
-    Description: Developmnet DNS Name
-    Value: !GetAtt [DevEnv, Outputs.DNSName]
-  StageDns:
+  DevelopmentDns:
+    Description: Developmentelopment DNS Name
+    Value: !GetAtt [DevelopmentEnv, Outputs.DNSName]
+  StagingDns:
     Description: Staging DNS Name
-    Value: !GetAtt [StageEnv, Outputs.DNSName]
+    Value: !GetAtt [StagingEnv, Outputs.DNSName]
   ProdDns:
     Description: Production DNS Name
     Value: !GetAtt [ProdEnv, Outputs.DNSName]

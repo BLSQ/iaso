@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
     url(r'^$', TemplateView.as_view(template_name='app.html'), name='index'),
-    url(r'^', include('hat.import_export.urls')),
+    url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
     url(r'^playground/', include('hat.playground.urls', 'playground')),

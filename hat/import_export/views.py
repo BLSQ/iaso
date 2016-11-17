@@ -26,6 +26,13 @@ default_messages = {
 
 @login_required()
 @permission_required('cases.import')
+@require_http_methods(['GET'])
+def index(request):
+    return render(request, 'import_export/datasets.html')
+
+
+@login_required()
+@permission_required('cases.import')
 @require_http_methods(['GET', 'POST'])
 def upload(request):
     if request.method == 'POST':
@@ -45,7 +52,7 @@ def upload(request):
             # run import task
             task = run_task(import_task, args=[fileinfos],
                             permission='cases.import')
-            return redirect('import:state', task_id=task.id)
+            return redirect('datasets:import:state', task_id=task.id)
     else:
         form = UploadMdbFilesForm()
     return render(request, 'import_export/upload.html', {'form': form})
@@ -60,11 +67,11 @@ def upload_state(request, task_id):
     except NoSuchJobError:
         message = default_messages['upload_expired']
         messages.add_message(request, messages.INFO, message)
-        return redirect('import:upload')
+        return redirect('datasets:import:upload')
 
     if status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
-    return redirect('import:done', task_id=task_id)
+    return redirect('datasets:import:done', task_id=task_id)
 
 
 @login_required()
@@ -76,7 +83,7 @@ def upload_done(request, task_id):
     except NoSuchJobError:
         message = default_messages['upload_expired']
         messages.add_message(request, messages.INFO, message)
-        return redirect('import:upload')
+        return redirect('datasets:import:upload')
 
     for result in results:
         result['ok'] = len(result['errors']) == 0
@@ -110,7 +117,7 @@ def download(request):
             else:
                 task = run_task(export_task, kwargs={'anon': True, **options},
                                 permission='cases.export')
-            return redirect('export:state', task_id=task.id)
+            return redirect('datasets:export:state', task_id=task.id)
     else:
         form = DownloadCsvForm()
     return render(request, 'import_export/download.html', {'form': form})
@@ -128,18 +135,18 @@ def download_state(request, task_id):
             messages.INFO,
             default_messages['download_expired']
         )
-        return redirect('export:download')
+        return redirect('datasets:export:download')
 
     if status != 'finished':
         return render(request, 'import_export/download_state.html', {'status': status})
-    return redirect('export:done', task_id=task_id)
+    return redirect('datasets:export:done', task_id=task_id)
 
 
 @login_required()
 @permission_required('cases.export')
 @require_http_methods(['GET'])
 def download_done(request, task_id):
-    url = reverse('export:get', args=(task_id,))
+    url = reverse('datasets:export:get', args=(task_id,))
     return render(request, 'import_export/download_done.html',
                   {'download_link': url})
 
@@ -156,7 +163,7 @@ def download_get(request, task_id):
             messages.INFO,
             default_messages['download_expired']
         )
-        return redirect('export:download')
+        return redirect('datasets:export:download')
 
     response = HttpResponse(result, content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hat.csv"'

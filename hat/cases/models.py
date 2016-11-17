@@ -1,18 +1,18 @@
 from django.db import models
 
 
-class HatCase(models.Model):
+class Case(models.Model):
     SOURCE_CHOICES = (
         ('historic', 'Historic'),
         ('mobile_backup', 'Mobile backup'),
         ('pv', 'Pharamcovigilance'),
     )
-    source = models.TextField(choices=SOURCE_CHOICES, null=True)
+    source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
 
-    document_date = models.DateTimeField(null=True)
+    document_date = models.DateTimeField(db_index=True, null=True)
     # The id is currently a hash over the row to be able to
     # catch duplicates
-    document_id = models.TextField()
+    document_id = models.TextField(db_index=True)
     hat_id = models.TextField()
     entry_date = models.DateTimeField(null=True)
     entry_name = models.TextField(null=True)
@@ -35,7 +35,7 @@ class HatCase(models.Model):
 
     village = models.TextField(null=True)
     province = models.TextField(null=True)
-    ZS = models.TextField(null=True)
+    ZS = models.TextField(db_index=True, null=True)
     AZ = models.TextField(null=True)
 
     mobile_unit = models.TextField(null=True)
@@ -45,47 +45,27 @@ class HatCase(models.Model):
     treatment_end_date = models.DateTimeField(null=True)
     treatment_prescribed = models.TextField(null=True)
     treatment_secondary_effects = models.NullBooleanField()
-    TREATMENT_RESULT_CHOICES = (
-        ('recovered', 'Recovered'),
-        ('healthy', 'Healthy'),
-        ('relapse', 'Relapse'),
-        ('disappeared', 'Disappeared'),
-        ('died', 'Died'),
-        ('transferred', 'Transferred'),
-        ('other', 'Other'),
-    )
-    treatment_result = models.TextField(choices=TREATMENT_RESULT_CHOICES, null=True)
+    treatment_result = models.TextField(null=True)
 
-    # mobile and historic data sources
     test_rdt = models.NullBooleanField(null=True)
     test_catt = models.NullBooleanField(null=True)
     test_maect = models.NullBooleanField(null=True)
     test_ge = models.NullBooleanField(null=True)
-
-    # from mobile data
     test_pg = models.NullBooleanField(null=True)
     test_ctcwoo = models.NullBooleanField(null=True)
     test_pl = models.NullBooleanField(null=True)
-
-    # from historic data
-    test_catt_total_blood = models.TextField(null=True)
-
     test_catt_dilution = models.TextField(null=True)
     test_lymph_node_puncture = models.NullBooleanField(null=True)
     test_sf = models.NullBooleanField(null=True)
-    test_woo = models.NullBooleanField(null=True)
-    test_maec = models.NullBooleanField(null=True)
-    test_maect_bc = models.NullBooleanField(null=True)
     test_lcr = models.NullBooleanField(null=True)
-    test_lcr_fr = models.NullBooleanField(null=True)
-    test_lcr_scm = models.NullBooleanField(null=True)
     test_dil = models.NullBooleanField(null=True)
     test_parasit = models.NullBooleanField(null=True)
     test_sternal_puncture = models.NullBooleanField(null=True)
     test_ifat = models.NullBooleanField(null=True)
-
     test_clinical_sickness = models.NullBooleanField(null=True)
     test_other = models.NullBooleanField(null=True)
+    # Some of these could be used for validating the correctness of the pl_result.
+    # The pl_result field is the only one of this that is actually used for aggregation.
     test_pl_liquid = models.TextField(null=True)
     test_pl_trypanosome = models.TextField(null=True)
     test_pl_gb_mm3 = models.TextField(null=True)
@@ -114,8 +94,10 @@ class HatCase(models.Model):
     test_followup_decision = models.TextField(null=True)
 
     class Meta:
+        ordering = ['-document_date']
         permissions = (
             ("import", "Can import data"),
             ("export", "Can export data"),
             ("export_full", "Can export the full dataset as csv"),
+            ("view", "Can view data"),
         )

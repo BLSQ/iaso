@@ -1,5 +1,5 @@
 /***
-  (→_→)  first, define some styles used in a few places  (←_←)
+  (→_→)  first, define some styles used throughout nav  (←_←)
 ***/
 @mixin nav-link-styles {
   display: block;
@@ -25,10 +25,18 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   (→_→)  now let's use those styles  (←_←)
 ***/
 .navigation__container {
+  position: fixed;
+  flex-wrap: no-wrap;
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: auto;
+}
+
+.navigation__content {
+  @include height-if-body-has-banner-layout;
   display: flex;
   flex-direction: column;
-  width: 250px;
-  height: 100vh;
+  width: $navigation-width;
   background: $dark-blue;
   -webkit-font-smoothing: antialiased;
 }
@@ -42,6 +50,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   color: white;
   text-decoration: none;
 }
+
 .navigation__menu {
   flex: 1;
   margin: 0;
@@ -53,6 +62,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   @include nav-link-styles;
   border-bottom: $nav-border-style;
 }
+
 [class^='navigation__menu__item']:first-of-type a {
   border-top: $nav-border-style;
 }
@@ -61,6 +71,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 .navigation__menu__item--active a {
   @include active-nav-link-styles;
 }
+
 [class^='navigation__menu__item'] a:hover {
   border-left-color: darken($blue, 10%);
 }
@@ -69,6 +80,8 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   background-color: darken($dark-blue, 8%);
   padding: 1rem;
   padding-left: calc(1rem + 5px);
+  border-top: $nav-border-style;
+  margin-top: -1px;
 }
 
 .navigation__logout-link {
@@ -94,6 +107,8 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 
 .label--user {
   @include footer-label-styles;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .label--version {

@@ -14,6 +14,8 @@ import os
 
 TESTING = (os.environ.get("TESTING", '').lower() == "true")
 
+SHOW_DEBUG_TOOLBAR = os.environ.get("SHOW_DEBUG_TOOLBAR", '').lower() == 'true'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,15 +29,27 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get("DEBUG", '').lower() == "true")
 DEV_SERVER = (os.environ.get("DEV_SERVER", '').lower() == "true")
+ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", 'development').lower()
+
+# SECURITY WARNING: this should also be considered a secret:
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", '')
 
 ALLOWED_HOSTS = ['*']
 
+# Tell django to view requests as secure(ssl) that have this header set
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+FIXTURE_DIRS = (
+    'hat/fixtures/',
+)
 
 # Logging
 
 LOGGING_LEVEL = os.getenv('DJANGO_LOGGING_LEVEL', 'INFO')
 if TESTING:
-    LOGGING_LEVEL = 'WARN'
+    # We don't want to see log output when running tests
+    LOGGING_LEVEL = 'CRITICAL'
 
 LOGGING = {
     'version': 1,
@@ -77,16 +91,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
+    'rest_framework',
     'hat.rq',
     'hat.couchdb',
     'hat.cases',
     'hat.import_export',
     'hat.dashboard',
+    'hat.playground',
     'hat.maintenance',
-    'webpack_loader'
+    'hat.api',
+    'hat.integration_tests',
+    'hat.sync',
+    'webpack_loader',
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -110,6 +131,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'hat.common.context_processors.appversions',
+                'hat.common.context_processors.environment'
             ],
         },
     },
@@ -156,7 +178,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 # switch webpack.dev and webpack.prod as well if changing here
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr'
+
+LOCALE_PATHS = [
+    '/opt/app/hat/locale/',
+]
 
 TIME_ZONE = 'UTC'
 
@@ -214,3 +240,21 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
     }
 }
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'hat.api.permissions.UserAccessPermission',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/day'
+    }
+}
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda _: SHOW_DEBUG_TOOLBAR
+}
+DEBUG_TOOLBAR_PATCH_SETTINGS = False

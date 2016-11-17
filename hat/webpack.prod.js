@@ -6,8 +6,7 @@ var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
 // Switch here for french
 // remeber to switch in webpack.dev.js and
 // djanog settings as well
-// var LOCALE='fr'
-var LOCALE = 'en'
+var LOCALE = 'fr'
 
 module.exports = {
   // fail the entire build on 'module not found'
@@ -18,10 +17,16 @@ module.exports = {
     'common': ['react', 'react-dom', 'react-intl'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
+    'playground': './assets/js/playground',
+    'monthly_report': './assets/js/monthlyReport',
+    'suspect_cases': './assets/js/suspectCases',
+    'gis_tools': './assets/js/gisTools',
     'styles': './assets/css/index.scss'
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles'),
     filename: '[name]-[chunkhash].js'
   },
@@ -68,7 +73,8 @@ module.exports = {
         loaders: ['react-hot', 'babel?' + JSON.stringify({
           presets: [
             'es2015',
-            'react'
+            'react',
+            'stage-2'
           ],
           plugins: [
             ['react-intl', {
@@ -111,6 +117,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

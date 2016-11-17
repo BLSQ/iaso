@@ -1,0 +1,70 @@
+$filter-container-height: 2rem;
+
+.filter__container {
+  display: flex;
+  align-items: baseline;
+  padding: $padding-unit*.75 $padding-unit;
+  margin: -$padding-unit;
+  margin-bottom: $padding-unit;
+  background: $background-highlight-gray;
+  border-bottom: 1px solid $gray;
+}
+
+.filter__label {
+  @include text--label;
+  margin-right: $padding-unit/2;
+}
+
+.filter__container__select {
+  $triangle-size: 4px;
+  position: relative;
+  border: 1px solid $light-gray;
+  border-radius: 2px;
+  margin-right: $padding-unit/2;
+  &:last-of-type {
+    margin-right: 0;
+  }
+  &:after {
+    position: absolute;
+    right: 10px;
+    top: calc(#{$filter-container-height}/2 - #{$triangle-size}/2);
+    @include triangle(bottom, $dark-blue, $triangle-size);
+  }
+}
+
+.filter__container__select__label {
+  background: #F0F4F5;
+  border-right: 1px solid $light-gray;
+  display: inline-block;
+  vertical-align: middle;
+  width: auto;
+  height: $filter-container-height;
+  line-height: $filter-container-height;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0;
+  font-weight: normal;
+  color: $mid-gray;
+  font-size: $font-size-s;
+  .fa {
+    margin-right: 0.2em;
+  }
+}
+
+.select--minimised {
+  @include text--standard;
+  display: inline-block;
+  vertical-align: middle;
+  width: 200px;
+  height: $filter-container-height;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  background: white;
+  -webkit-appearance: none;
+  font-size: $font-size-s;
+  &:focus {
+    outline: #E0E5EB auto 4px;
+    outline-offset: -3px;
+  }
+}

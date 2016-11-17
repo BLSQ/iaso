@@ -1,21 +1,11 @@
 var path = require('path')
-var url = require('url')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
-// Switch here for french
+// Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remeber to switch in webpack.prod.js and
 // djanog settings as well
-// var LOCALE='fr'
 var LOCALE = 'en'
-
-// When DOCKER_HOST is set we'll use its hostname for the webpack url
-var WEBPACK_URL = process.env.DOCKER_HOST
-  ? url.format({
-    protocol: 'http',
-    hostname: url.parse(process.env.DOCKER_HOST).hostname,
-    port: 3000
-  })
-  : 'http://localhost:3000'
+var WEBPACK_URL = 'https://localhost:3000'
 
 module.exports = {
   context: __dirname,
@@ -32,6 +22,26 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
     ],
+    'playground': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/playground'
+    ],
+    'monthly_report': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/monthlyReport'
+    ],
+    'suspect_cases': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/suspectCases'
+    ],
+    'gis_tools': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/gisTools'
+    ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -40,6 +50,8 @@ module.exports = {
   },
 
   output: {
+    library: ['HAT', '[name]'],
+    libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/bundles/'),
     filename: '[name]-[hash].js',
     publicPath: WEBPACK_URL + '/static/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
@@ -55,7 +67,7 @@ module.exports = {
       /^__intl\/messages$/,
       // Don't include the english translations, it will
       // mess up text updates via hot module reloading
-      '../translations/' + (LOCALE === 'en' ? 'empty' : LOCALE) + '.json'
+      '../translations/' + LOCALE + '.json'
     ),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(), // don't reload if there is an error
@@ -74,7 +86,7 @@ module.exports = {
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react']
+        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react&presets[]=stage-2']
       },
       {
         test: /\.css$/,
@@ -110,6 +122,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

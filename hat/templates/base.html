@@ -1,4 +1,5 @@
 {% load render_bundle from webpack_loader %}
+{% load i18n %}
 <!DOCTYPE HTML>
 <html>
   <head>
@@ -18,11 +19,24 @@
 
     {% block head %}
     {% endblock %}
+
+    {% if user.is_authenticated %}
+    <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
+    {% endif %}
   </head>
-  <body>
-    <div class="layout">
-      {% block body %}
-      {% endblock %}
-    </div>
+  <body{% if environment == "staging" %} class="body--banner"{% endif %}>
+    {% if environment == "staging" %}
+      <div class="banner--stage-warning">
+        <span>
+        {% blocktrans %}
+        This is the staging site, which is for testing purposes only. Data may be periodically deleted.
+        Access main site at: <a href="https://sense-hat.eocng.org">sense-hat.eocng.org</a>
+        {% endblocktrans %}
+        </span>
+      </div>
+    {% endif %}
+
+    {% block body %}
+    {% endblock %}
   </body>
 </html>

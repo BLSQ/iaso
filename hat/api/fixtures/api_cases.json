@@ -1,0 +1,80 @@
+[
+  {
+    "model": "cases.case",
+    "pk": 1,
+    "fields": {
+      "document_id": "1",
+      "document_date": "2016-01-01T00:00:00Z",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "sex": "male"
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 2,
+    "fields": {
+      "document_id": "2",
+      "document_date": "2016-01-02T00:00:00Z",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "sex": "male",
+      "test_rdt": true,
+      "test_maect": false
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 3,
+    "fields": {
+      "document_id": "3",
+      "document_date": "2016-01-02T12:00:00Z",
+      "sex": "male",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "test_rdt": false
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 4,
+    "fields": {
+      "document_id": "3",
+      "document_date": "2016-01-04T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muluma",
+      "village": "Kisala-lupa",
+      "test_catt": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 5,
+    "fields": {
+      "document_id": "4",
+      "document_date": "2016-01-05T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muwanda-koso",
+      "village": "Polongo",
+      "test_maect": true
+    }
+  },
+  {
+    "model": "cases.case",
+    "pk": 6,
+    "fields": {
+      "document_id": "5",
+      "document_date": "2016-01-06T00:00:00Z",
+      "sex": "female",
+      "ZS": "Mosango",
+      "AZ": "Muwanda-koso",
+      "village": "Kindundu",
+      "test_ge": true
+    }
+  }
+]

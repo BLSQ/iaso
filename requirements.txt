@@ -1,4 +1,5 @@
 Django==1.10.0
+django-debug-toolbar==1.5
 psycopg2==2.6.2
 requests==2.11.1
 flake8==3.0.4
@@ -10,3 +11,9 @@ SQLAlchemy==1.1.0b3
 uwsgi==2.0.13.1
 newrelic==2.68.0.50
 django-webpack-loader==0.3.3
+djangorestframework==3.4.6
+jsonschema==2.5.1
+selenium==2.45.0
+sauceclient==0.2.1
+oauth2client==3.0.0
+mock==2.0.0

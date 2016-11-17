@@ -8,12 +8,14 @@ table {
   padding: 10px 12px;
   border-right: 1px solid $light-gray;
   text-align: left;
-  vertical-align: center;
-  line-height: 1rem;
+  vertical-align: middle;
+  line-height: 1em;
   &:first-child {
     border-left: 1px solid $light-gray;
   }
 }
+
+
 th {
   @include table-cell-styles;
   background: $light-gray;
@@ -32,4 +34,28 @@ tr:first-child td {
 
 .row--right {
   width: 200px;
+}
+
+@mixin list-like-table-cell-styles {
+  text-overflow: ellipsis;
+  padding: 10px 0;
+  text-align: left;
+  vertical-align: center;
+  line-height: 1rem;
+  background: transparent;
+  border-right: none;
+  font-size: $font-size-s;
+  &:first-child {
+    border-left: none;
+  }
+}
+
+.table--minimised {
+  th {
+    @include list-like-table-cell-styles;
+    color: $mid-gray;
+  }
+  td {
+    @include list-like-table-cell-styles;
+  }
 }

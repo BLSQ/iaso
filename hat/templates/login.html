@@ -2,38 +2,36 @@
 {% load i18n %}
 
 {% block body %}
-  <div id="main">
-
-    <div class="header">
-      <h1>Sense HAT</h1>
-      <h2>{% trans "Login" %}</h2>
-    </div>
-
-    <div class="content">
-      <br>
-      {% if form.errors %}
-      <p>{% trans "Your username and password didn't match. Please try again." %}</p>
-      {% endif %}
-
-      {% if next %}
-        {% if user.is_authenticated %}
-        <p>{% blocktrans %}
-        Your account doesn't have access to this page. To proceed,
-        please login with an account that has access.
-        {% endblocktrans %}</p>
+  <div class="login__container">
+    <div class="login__content">
+      <header class="login__header">
+        <h1 class="login__heading">{% trans "Sense HAT Dashboard" %}</h1>
+        <p>{% trans "Please log in to continue" %}
+      </header>
+      <form method="post" data-qa="login-form" action="{% url 'login' %}" class="login__form">
+        {% if next %}
+          {% if user.is_authenticated %}
+            <p class="login__text--warning">
+            {% blocktrans %}
+            Your account doesn't have access to this page. To proceed,
+            please login with an account that has access.
+            {% endblocktrans %}
+            </p>
           {% else %}
-          <p>{% trans "Please login to see this page." %}</p>
+            <p class="login__text--warning">
+              {% trans "Please login to see this page." %}
+            </p>
           {% endif %}
         {% endif %}
-
-        <form method="post" action="{% url 'login' %}">
-          {% csrf_token %}
-          {{ form }}
-          <div class="block--margin-top--nano">
-            <button type="submit" class="button">{% trans "Login" %}</button>
-          </div>
-        </form>
-
+        {% if form.errors %}
+          <p class="login__text--error">
+            {% trans "Your username and password didn't match. Please try again." %}
+          </p>
+        {% endif %}
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="button">{% trans "Login" %}</button>
+      </form>
     </div>
   </div>
 {% endblock %}

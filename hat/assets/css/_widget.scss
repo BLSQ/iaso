@@ -37,8 +37,15 @@
 
 .widget__content {
   padding: $padding-unit;
+  &:empty {
+    padding: 0;
+  }
 }
 
 .widget__content--flush {
   padding: $padding-unit 0;
+}
+
+.widget__pagination {
+  padding: 0 $padding-unit $padding-unit;
 }

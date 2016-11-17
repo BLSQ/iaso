@@ -1,24 +1,15 @@
 from hashlib import md5
 from string import capwords
 from functools import reduce
+import re
 import pandas
 from pandas import Series, DataFrame
-import numpy
 
 
 def capitalize(x: str) -> str:
-    if x is None:
+    if pandas.isnull(x):
         return None
     return capwords(x)
-
-
-def tz_localize_cd(s: Series) -> Series:
-    ''' Add a DR Congo timezone to the pandas series '''
-    def localize(x):
-        if pandas.isnull(x):
-            return numpy.datetime64('nat')
-        return x.tz_localize('Africa/Kinshasa')
-    return pandas.to_datetime(s).apply(localize)
 
 
 def create_documentid(row: Series) -> str:
@@ -61,19 +52,62 @@ def groupreduce(df: DataFrame, column: str, sortby=None) -> DataFrame:
                  .agg(lambda x: reduce(lambda a, b: b or a, x))
 
 
+def strip_accents(s: str) -> str:
+    s = re.sub(r'[ÀÁÂ]', 'A', s, flags=re.I)
+    s = re.sub(r'[ÈÉÊ]', 'E', s, flags=re.I)
+    s = re.sub(r'Û', 'U', s, flags=re.I)
+    s = re.sub(r'[^A-Z0-9]', '', s, flags=re.I)
+    if len(s) == 0:
+        return 'XX'
+    if len(s) == 1:
+        return s + 'X'
+    return s
+
+
 def hat_id(row: Series) -> str:
+    '''
+    This generates a HAT-Id from a couple of values.
+    It's important that it works the same as the function in sense-hat-mobile:
+    https://github.com/eHealthAfrica/sense-hat-mobile/blob/develop/src/data/mapping.js#L110-L117
+    '''
     empty = 'XX'
-    if numpy.isnan(row['year_of_birth']):
-        yob = 1900
+    r2 = row.dropna()
+
+    if 'lastname' in r2:
+        lastname = strip_accents(r2['lastname'])
     else:
-        yob = row['year_of_birth']
+        lastname = empty
+
+    if 'name' in r2:
+        name = strip_accents(r2['name'])
+    else:
+        name = empty
+
+    if 'prename' in r2:
+        prename = strip_accents(r2['prename'])
+    else:
+        prename = empty
+
+    if 'sex' in r2:
+        sex = r2['sex']
+    else:
+        sex = empty
+
+    if 'year_of_birth' in r2:
+        yob = str(r2['year_of_birth'])
+    else:
+        yob = 'XXXX'
+
+    if 'mothers_surname' in r2:
+        mothers = strip_accents(r2['mothers_surname'])
+    else:
+        mothers = empty
 
     return (
-        (row['lastname'] or empty)[0:2] +
-        (row['name'] or empty)[0:2] +
-        (row['prename'] or empty)[0:2] +
-        (row['sex'] or empty)[0:1] +
-        # had a problem with YOB being read as float
-        str(yob)[0:4] +
-        (row['mothers_surname'] or empty)[0:1]
+        lastname[0:2] +
+        name[0:2] +
+        prename[0:2] +
+        sex[0:1] +
+        yob[0:4] +
+        mothers[0:1]
     ).upper()

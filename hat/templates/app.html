@@ -3,43 +3,65 @@
 
 {% block body %}
   <div class="navigation__container">
-    <div class="brand">
-      <a class="brand__heading" href={% url "index" %}>Sense HAT Dashboard</a>
-    </div>
+    <div class="navigation__content">
+      <div class="brand">
+        <a class="brand__heading" href={% url "index" %}>Sense HAT Dashboard</a>
+      </div>
 
-    <!-- Menu toggle -->
-    <a href=".navigation" id="menuLink" class="menu-link">
-      <!-- Hamburger icon -->
-      <span></span>
-    </a>
-
-    {% with request.resolver_match.namespace as ns %}
-    <ul class="navigation__menu">
-      {% if perms.cases.import %}
-        <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
-          <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
-        </li>
-      {% endif %}
-      {% if perms.cases.export %}
-        <li class="navigation__menu__item{% if ns == 'export' %}--active{% endif %}">
-          <a href={% url "export:download" %}>{% trans "Download" %}</a>
-        </li>
-      {% endif %}
-      {% if user.is_superuser %}
-        <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
-          <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
-        </li>
-      {% endif %}
-
-    </ul>
-    {% endwith %}
-
-    <div class="navigation__footer">
-      <span class="label--user">Logged in as '{{ user }}'</span>
-      <a href={% url 'logout' %} class="navigation__logout-link">
-        {% trans "Log out" %}
+      <!-- Menu toggle -->
+      <a href=".navigation" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
       </a>
-      <span class="label--version">Rev: {{version_commit}}</span>
+
+      {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
+      <ul class="navigation__menu">
+        {% if perms.cases.import %}
+          <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
+            <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
+          </li>
+        {% endif %}
+        {% if perms.cases.export %}
+          <li class="navigation__menu__item{% if ns == 'export' %}--active{% endif %}">
+            <a href={% url "export:download" %}>{% trans "Download" %}</a>
+          </li>
+        {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
+            <a href={% url "dashboard:monthly_report" %}>{% trans "Monthly reports" %}</a>
+          </li>
+        {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:suspect_cases' %}--active{% endif %}">
+            <a href={% url "dashboard:suspect_cases" %}>{% trans "Suspect cases" %}</a>
+          </li>
+        {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:gis_tools' %}--active{% endif %}">
+            <a href={% url "dashboard:gis_tools" %}>{% trans "GIS tools" %}</a>
+          </li>
+        {% endif %}
+        {% if user.is_superuser %}
+          <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
+            <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
+          </li>
+        {% endif %}
+        {% if user.is_superuser %}
+          <li class="navigation__menu__item{% if ns == 'playground' %}--active{% endif %}">
+            <a href={% url "playground:index" %}>{% trans "Playground" %}</a>
+          </li>
+        {% endif %}
+      </ul>
+      {% endwith %}
+
+      <div class="navigation__footer">
+        <span class="label--user">{% trans "Logged in as" %} '{{ user }}'</span>
+        <a href={% url 'logout' %} class="navigation__logout-link">
+          {% trans "Log out" %}
+          <i class="fa fa-sign-out"></i>
+        </a>
+        <span class="label--version">Rev: {{version_commit}}</span>
+      </div>
     </div>
   </div>
 
@@ -54,9 +76,10 @@
 
     <header class="header">
       {% block header %}
-        <h1 class="header__title">Sense HAT</h1>
+        <h1 class="header__title">{% trans "Sense HAT" %}</h1>
       {% endblock %}
     </header>
+
 
     {% block content %}
     {% endblock %}

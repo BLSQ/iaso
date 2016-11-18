@@ -25,7 +25,7 @@
   {# highlight pilot areas #}
   <section class="section--feature--pilot-area">
     <div class="section__content__image--pilot-area">
-      <img src="{% static 'images/map-reduced.png' %}" alt='Map showing pilot health zones' />
+      <img src="{% static 'images/map-large.png' %}" alt='Map showing pilot health zones' />
     </div>
     <div class="section__content--pilot-area">
       <h2>{% trans "The World Health Organisation is targeting HAT for elimination by 2020, and interruption of transmission by 2030" %}</h2>
@@ -39,6 +39,11 @@
         Research is currently being conducted in six health zones in Bandundu Province: <strong>Mosango</strong>, <strong>Yasa Bonga</strong>, <strong>Bokoro</strong>, <strong>Kikongo</strong>, <strong>Bulungu</strong>, and <strong>Kimputu</strong>.
         {% endblocktrans %}
       </p>
+
+      <a href="" class="button--success">
+        {% trans "Use the microplanning tool" %} 
+        <i class='fa fa-arrow-right icon--right'></i>
+      </a>
     </div>
   </section>
     
@@ -77,7 +82,7 @@
       </p>
       {% if perms.cases.import %}
         <a href={% url "import:upload" %} class="button">
-          {% trans "Go to data upload" %}
+          {% trans "Data upload" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>
       {% endif %}
@@ -86,7 +91,7 @@
       <p>{% trans "Download data as a CSV file. Download all data from the database or selections." %}</p>
       {% if perms.cases.export %}
         <a href={% url "export:download" %} class="button">
-          {% trans "Go to data download" %}
+          {% trans "Data download" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>
       {% endif %}

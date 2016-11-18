@@ -4,7 +4,6 @@ celerybeat-schedule.db
 shared
 *.swp
 *~
-static/
 privatekey.json
 
 ### Python ###

@@ -41,12 +41,12 @@
       </p>
 
       <a href="" class="button--success">
-        {% trans "Use the microplanning tool" %} 
+        {% trans "Use the microplanning tool" %}
         <i class='fa fa-arrow-right icon--right'></i>
       </a>
     </div>
   </section>
-    
+
   {# monthly reports #}
   <section class="section--feature--reports">
     <div class="section__content__image--reports">
@@ -61,7 +61,7 @@
       </p>
       {% if perms.cases.view %}
         <a href={% url "dashboard:monthly_report" %} class="button--bright">
-          {% trans "Monthly reports" %} 
+          {% trans "Monthly reports" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>
       {% endif %}
@@ -81,7 +81,7 @@
         {% endblocktrans %}
       </p>
       {% if perms.cases.import %}
-        <a href={% url "import:upload" %} class="button">
+        <a href={% url "datasets:import:upload" %} class="button">
           {% trans "Data upload" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>
@@ -90,7 +90,7 @@
     <div class="section__content--download">
       <p>{% trans "Download data as a CSV file. Download all data from the database or selections." %}</p>
       {% if perms.cases.export %}
-        <a href={% url "export:download" %} class="button">
+        <a href={% url "datasets:export:download" %} class="button">
           {% trans "Data download" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>
@@ -123,7 +123,7 @@
   <section class="section--feature--partners">
     <h2>{% trans "A proud partnership" %}</h2>
     <div class="section__content--partners">
-      
+
       <ul class="section__list--partners">
         <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
         <li>Institute of Tropical Medicine</li>

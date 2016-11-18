@@ -24,10 +24,10 @@
             <a href={% url "datasets:index" %}>{% trans "Datasets" %}</a>
             {% if 'datasets' in ns %}
             <ul>
-              <li class="this-better-be-good">
+              <li class="navigation__menu__item--secondary{% if view == 'datasets:import:upload' %}--active{% endif %}">
                 <a href={% url "datasets:import:upload" %}>{% trans "Upload" %}</a>
               </li>
-              <li class="or-we-all-get-fired">
+              <li class="navigation__menu__item--secondary{% if view == 'datasets:export:download' %}--active{% endif %}">
                 <a href={% url "datasets:export:download" %}>{% trans "Download" %}</a>
               </li>
             </ul>

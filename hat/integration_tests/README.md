@@ -19,7 +19,7 @@ Selenium tests, always running on SauceLabs for now
 
 1. In one terminal, start Sauce tunnel: `[path-to-sauce-connect]/bin/sc` - you can leave this running the entire time you're working with tests
 
-2. `docker-compose run -p 8081:8081 web test_integration`
+2. `docker-compose run -p 8081:8081 hat test_integration`
 
 It's important that you expose the port, it's a different one than the main port so tests can run at the same time as the main app.
 

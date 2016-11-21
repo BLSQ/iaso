@@ -15,6 +15,7 @@ export_urlpatterns = [
 ]
 
 urlpatterns = [
+    url('^$', views.index, name='index'),
     url('^import/', include(import_urlpatterns, 'import')),
     url('^export/', include(export_urlpatterns, 'export')),
 ]

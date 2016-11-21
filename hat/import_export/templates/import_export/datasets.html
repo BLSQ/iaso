@@ -1,0 +1,34 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Datasets" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
+        <p><a href={% url "datasets:import:upload" %}>{% trans "Goto upload" %}</a></p>
+      </div>
+    </div>
+
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Export data" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
+        <p><a href={% url "datasets:export:download" %}>{% trans "Goto download" %}</a></p>
+      </div>
+    </div>
+  </div>
+
+  {% render_bundle 'common' %}
+  {% render_bundle 'import' %}
+{% endblock %}

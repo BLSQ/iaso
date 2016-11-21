@@ -1,0 +1,140 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+  {# welcome section #}
+  <section class="section--feature--welcome">
+    <div class="section__content">
+      <div class="section__content--welcome">
+        <h1>{% trans "Welcome to the SENSE HAT Dashboard" %}</h1>
+        <p>
+          {% blocktrans %}
+          Programme National de Lutte contre la Trypanosomiase Humaine Africaine (PNLTHA) of the DRC Ministry of Health drives the programme to diagnose, treat and reduce HAT cases in the DRC.
+          {% endblocktrans %}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {# highlight pilot areas #}
+  <section class="section--feature--pilot-area">
+    <div class="section__content__image--pilot-area">
+      <img src="{% static 'images/map-large.png' %}" alt='Map showing pilot health zones' />
+    </div>
+    <div class="section__content--pilot-area">
+      <h2>{% trans "The World Health Organisation is targeting HAT for elimination by 2020, and interruption of transmission by 2030" %}</h2>
+      <p>
+        {% blocktrans %}
+        HAT (or sleeping sickness) is a parasitic disease transmitted by the bite of a tsetse fly. It causes immense suffering in Sub-Saharan Africa.
+        {% endblocktrans %}
+      </p>
+      <p>
+        {% blocktrans %}
+        Research is currently being conducted in six health zones in Bandundu Province: <strong>Mosango</strong>, <strong>Yasa Bonga</strong>, <strong>Bokoro</strong>, <strong>Kikongo</strong>, <strong>Bulungu</strong>, and <strong>Kimputu</strong>.
+        {% endblocktrans %}
+      </p>
+
+      <a href="" class="button--success">
+        {% trans "Use the microplanning tool" %}
+        <i class='fa fa-arrow-right icon--right'></i>
+      </a>
+    </div>
+  </section>
+
+  {# monthly reports #}
+  <section class="section--feature--reports">
+    <div class="section__content__image--reports">
+      <img src="{% static 'images/monthly-report.png' %}" alt='Monthly report example' />
+    </div>
+    <div class="section__content--reports">
+      <h2>{% trans "See monthly campaign reports" %}</h2>
+      <p>
+        {% blocktrans %}
+        Report showing monthly statistics from active screening using the HAT mobile application. Statistics include: number of suspect and confirmed cases, participants missing tests, and more.
+        {% endblocktrans %}
+      </p>
+      {% if perms.cases.view %}
+        <a href={% url "dashboard:monthly_report" %} class="button--bright">
+          {% trans "Monthly reports" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  {# upload/download #}
+  <section class="section--feature--data">
+    <div class="section__content__heading--data">
+      <h2>{% trans "Upload and download data from the field" %}</h2>
+      <img src="{% static 'images/upload-download.png' %}" alt='Monthly report example' />
+    </div>
+    <div class="section__content--upload">
+      <p>
+        {% blocktrans %}
+        Upload historical data forms from the Microsoft Access template or encrypted backup files from the Mobile Application.
+        {% endblocktrans %}
+      </p>
+      {% if perms.cases.import %}
+        <a href={% url "datasets:import:upload" %} class="button">
+          {% trans "Data upload" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+    <div class="section__content--download">
+      <p>{% trans "Download data as a CSV file. Download all data from the database or selections." %}</p>
+      {% if perms.cases.export %}
+        <a href={% url "datasets:export:download" %} class="button">
+          {% trans "Data download" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  {# suspect cases #}
+  <section class="section--feature--suspect">
+    <div class="section__content__image--suspect">
+      <img src="{% static 'images/suspects.png' %}" alt='HAT suspect example' />
+    </div>
+    <div class="section__content--suspect">
+      <h2>{% trans "Follow up on unconfirmed cases" %}</h2>
+      <p>
+        {% blocktrans %}
+        Download a list of participants who screened positive for HAT, but <strong>did not</strong> have a follow-up test to confirm.
+        {% endblocktrans %}
+      </p>
+      {% if perms.cases.view %}
+        <a href={% url "dashboard:suspect_cases" %} class="button--bright">
+          {% trans "Go to HAT suspects" %}
+          <i class='fa fa-arrow-right icon--right'></i>
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  {# partners #}
+  <section class="section--feature--partners">
+    <h2>{% trans "A proud partnership" %}</h2>
+    <div class="section__content--partners">
+
+      <ul class="section__list--partners">
+        <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
+        <li>Institute of Tropical Medicine</li>
+        <li>University of California Los Angeles</li>
+      </ul>
+      <ul class="section__list--partners">
+        <li>Liverpool School of Tropical Medicine</li>
+        <li>Institute of Disease Modelling</li>
+        <li>Memisa</li>
+      </ul>
+    </div>
+  </section>
+
+{% endblock %}

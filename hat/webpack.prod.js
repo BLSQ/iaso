@@ -70,7 +70,7 @@ module.exports = {
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot', 'babel?' + JSON.stringify({
+        loaders: ['react-hot-loader/webpack', 'babel?' + JSON.stringify({
           presets: [
             'es2015',
             'react',

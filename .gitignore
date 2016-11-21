@@ -3,7 +3,7 @@ celerybeat-schedule.db
 .ipynb_checkpoints
 shared
 *.swp
-static/
+*~
 privatekey.json
 
 ### Python ###

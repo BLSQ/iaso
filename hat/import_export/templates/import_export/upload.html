@@ -13,7 +13,7 @@
         <h2 class="widget__heading">{% trans "Import file" %}</h2>
       </div>
       <div class="widget__content">
-        <form method="POST" action="{% url 'import:upload' %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'datasets:import:upload' %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form }}
           <div class="block--margin-top--xs">

@@ -16,14 +16,22 @@
 
       {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
       <ul class="navigation__menu">
-        {% if perms.cases.import %}
-          <li class="navigation__menu__item{% if ns == 'import' %}--active{% endif %}">
-            <a href={% url "import:upload" %}>{% trans "Upload" %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.export %}
-          <li class="navigation__menu__item{% if ns == 'export' %}--active{% endif %}">
-            <a href={% url "export:download" %}>{% trans "Download" %}</a>
+        <li class="navigation__menu__item{% if view == 'dashboard:home' %}--active{% endif %}">
+          <a href={% url "dashboard:home" %}>{% trans "Home" %}</a>
+        </li>
+        {% if perms.cases.import or perms.cases.export %}
+          <li class="navigation__menu__item{% if 'datasets' in ns %}--active{% endif %}">
+            <a href={% url "datasets:index" %}>{% trans "Datasets" %}</a>
+            {% if 'datasets' in ns %}
+            <ul>
+              <li class="navigation__menu__item--secondary{% if view == 'datasets:import:upload' %}--active{% endif %}">
+                <a href={% url "datasets:import:upload" %}>{% trans "Upload" %}</a>
+              </li>
+              <li class="navigation__menu__item--secondary{% if view == 'datasets:export:download' %}--active{% endif %}">
+                <a href={% url "datasets:export:download" %}>{% trans "Download" %}</a>
+              </li>
+            </ul>
+            {% endif %}
           </li>
         {% endif %}
         {% if perms.cases.view %}
@@ -74,11 +82,13 @@
       </ul>
     {% endif %}
 
-    <header class="header">
-      {% block header %}
-        <h1 class="header__title">{% trans "Sense HAT" %}</h1>
-      {% endblock %}
-    </header>
+    {% if not request.resolver_match.view_name == 'dashboard:home' %}
+      <header class="header">
+        {% block header %}
+          <h1 class="header__title">{% trans "Sense HAT" %}</h1>
+        {% endblock %}
+      </header>
+    {% endif %}
 
 
     {% block content %}

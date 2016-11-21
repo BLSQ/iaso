@@ -15,6 +15,12 @@ def testapp(request):
 
 
 @login_required()
+@require_http_methods(['GET'])
+def home(request):
+    return render(request, 'dashboard/home.html')
+
+
+@login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def monthly_report(request):

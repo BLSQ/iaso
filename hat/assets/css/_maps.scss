@@ -1,34 +1,128 @@
-/* COLOURS */
+
+/* colours */
 $buffer: $yellow;
 $details: $blue;
-$highlight: $purple;
-$selected: $red;
+$highlight: $bright-blue;
+$selected: $bright-yellow;
 
+/* village types */
 $official: $green;
 $other: $orange;
 $unknown: $mid-gray;
 
 /* map size */
 $map-height: 720px;
+$map-sidebar-width: 260px;
 
 .official  { color: $official }
 .other     { color: $other; }
 .unknown   { color: $unknown; }
 
-@mixin underscore-label ($color: $gray) {
-  /*border-bottom: solid 2px $color;*/
-  background-color: $color;
-  border-radius: 5px;
+
+
+
+.widget__toggle-group {
+  display: inline-block;
+  vertical-align: top;
+  margin-bottom: 20px;
+  margin-right: $padding-unit/2;
+  &:last-of-type {
+    margin-right: 0;
+  }
+}
+.widget__toggle-group__legend {
+  display: inline-block;
   font-size: $font-size-s;
-  height: 24px;
-  padding: $padding-unit/4;
-  vertical-align: middle;
+  font-weight: bold;
+  color: $mid-gray;
+  margin-bottom: 6px;
+  margin-right: $padding-unit/2;
 }
 
-.underscore-official  { @include underscore-label($official); }
-.underscore-other     { @include underscore-label($other); }
-.underscore-unknown   { @include underscore-label($unknown); }
-.underscore-buffer    { @include underscore-label($buffer); }
+/* legends/checkbox filters for charts */
+[class*="widget__filterpluslabel__item"],
+[class*="widget__filter__item"] {
+  position: relative;
+  display: inline-block;
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+
+.widget__filter__item {
+  margin-right: 16px;
+  margin-bottom: 0;
+  &:last-of-type {
+    margin-right: 0;
+  }
+}
+
+[class*="widget__filterpluslabel__text"] {
+  display: block;
+  padding: 6px;
+  padding-left: 27px;
+  border-radius: 3px;
+  background-color: $light-gray;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  color: $mid-gray;
+  cursor: pointer;
+  transition: all .1s ease-in-out;
+  input[type="checkbox"] {
+    margin-top: 0;
+  }
+}
+
+.widget__filterpluslabel__input {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  margin: 0;
+  &:checked + [class^="widget__filterpluslabel__text"] {
+    color: white;
+  }
+}
+
+.widget__filter__text {
+  display: inline-block;
+  vertical-align: middle;
+  font-weight: normal;
+}
+
+input.widget__filter__numberinput {
+  display: inline-block;
+  vertical-align: middle;
+  width: 3rem;
+  height: 1.5rem;
+  border: 1px solid $mid-gray;
+  box-shadow: inset 0 1px 2px 0 rgba(black,.4);
+  border-radius: 2px;
+  margin: 0 .25rem;
+  font-size: $font-size-s;
+}
+
+.widget__filter__input {
+  margin-top: 0;
+  vertical-align: middle;
+  &:checked + .widget__filter__text {
+    color: $dark-blue;
+    font-weight: bold;
+  }
+}
+/* end filters */
+
+$types: (
+  official: $green,
+  other: $orange, 
+  unknown: $mid-gray, 
+  buffer: $yellow
+);
+
+
+@each $type, $color in $types {
+  .widget__filterpluslabel__input:checked + .widget__filterpluslabel__text--#{$type} {
+    background-color: $color !important;
+  }
+}
 
 .leaflet-container {
   color: $text-color;
@@ -41,18 +135,36 @@ $map-height: 720px;
   margin: 0 auto;
 }
 
-.map__panel_left {
+.map__panel--left {
   display: inline-block;
   height: ($map-height + 60);
-  width: 70%;
+  width: calc(100% - #{$map-sidebar-width});
 }
 
-.map__panel_right {
+.map__panel--right {
+  position: relative;
   display: inline-block;
-  height: ($map-height + 60);
   vertical-align: top;
-  width: 30%;
-  overflow: auto;
+  width: $map-sidebar-width;
+  height: ($map-height + 60);
+  background: rgba(255,255,255,0.97);
+  border-left: 1px solid $gray;
+  box-shadow: -1px 0 1px 0 rgba(black, 0.08);
+  overflow-y: scroll;
+}
+
+.map__sidebar__export {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  padding: $padding-unit/2;
+  text-align: center;
+  background: white;
+  border-top: 1px solid $gray;
+  box-shadow: 0 -1px 1px 0 rgba(black, 0.13);
 }
 
 .map-container {
@@ -166,77 +278,84 @@ $map-height: 720px;
   }
 }
 
-.data-selected {
-  font-size: $font-size-s;
 
-  .content {
-    padding: $padding-unit/5;
-    height: $map-height;
+/* map sidebar with selection UI */
+
+.map__selection {
+  height: 100%;
+  overflow: hidden;
+}
+
+.map__selection__content {
+  height: $map-height;
+  padding: $padding-unit/2;
+}
+
+/* selection title and summary */
+.map__selection__title {
+  @include heading--medium;
+  margin-bottom: 1em;
+}
+
+.map__selection__summary--empty {
+  @include text--small;
+}
+
+.map__selection__summary {
+  margin: $padding-unit/2 0;
+}
+
+.map__selection__summary__heading {
+  @include heading--small;
+  margin-bottom: $padding-unit/2;
+}
+
+.map__selection__summary__item {
+  display: flex;
+  justify-content: space-between;
+  padding: $padding-unit/2 0;
+  border-top: 1px solid $gray;
+  border-bottom: 1px solid $gray;
+  margin-top: -1px;
+  @include text--small;
+}
+
+.map__selection__summary__number {
+  font-weight: bold;
+}
+
+.map__text--warning {
+  margin-top: $padding-unit/2;
+  @include text--x-small;
+  font-style: italic;
+}
+
+/* list of villages in selection */
+
+ul.map__selection__list {
+  @include reset-list-style;
+  clear: both;
+  overflow: auto;
+  max-height: ($map-height - 200);
+}
+.map__selection__list__item {
+  line-height: 1.3;
+  white-space: nowrap;
+  @include text--small;
+  span.remove {
+    @include text--error;
+    cursor: pointer;
+    margin-right: $padding-unit/4;
   }
-
-  .title {
-    text-transform: uppercase;
-    font-size: $font-size-m;
-    font-weight: bold;
-  }
-
-  .summary {
-    font-size: $font-size-s;
-    border-bottom: solid 1px $gray;
-    padding: $padding-unit/4 0;
-    line-height: 1.5;
-
-    li {
-      padding-left: $padding-unit/3;
-      font-style: italic;
-    }
-    .text--warning {
-      font-size: $font-size-xs;
-    }
-  }
-
-  .list {
-    padding: $padding-unit/3 0 0 0;
-    h3 {
-      padding: $padding-unit/4 0;
-    }
-    ul {
-      clear: both;
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: auto;
-      max-height: ($map-height - 200);
-
-      li {
-        line-height: 1.3;
-        white-space: nowrap;
-
-        span.remove {
-          @include text--error;
-          cursor: pointer;
-          margin-right: $padding-unit/4;
-        }
-        span.view {
-          color: $details;
-          cursor: pointer;
-          margin-right: $padding-unit/4;
-        }
-      }
-    }
-  }
-
-  .actions {
-    padding: 0 $padding-unit/4;
-    button {
-      display: inline-block;
-    }
-    div {
-      float: right;
-      display: inline-block;
-    }
+  span.view {
+    color: $details;
+    cursor: pointer;
+    margin-right: $padding-unit/4;
   }
 }
+
+
+
 
 
 /* boundaries */
@@ -273,19 +392,18 @@ path.map-layer {
 
 /* markers */
 
-@mixin marker($color: $gray) {
-  fill-opacity: 0.8;
+@mixin marker($color: $gray, $fill-opacity: 0.85, $stroke-color: darken($color, 15%), $stroke-width: 2) {
+  fill-opacity: $fill-opacity;
   fill: $color;
-  stroke: darken($color, 10%);
+  stroke: $stroke-color;
   stroke-dasharray: 1,0;
   stroke-opacity: 0.8;
-  stroke-width: 1;
-
+  stroke-width: $stroke-width;
   &:hover {
     fill-opacity: 1;
-    fill: darken($color, 15%);
-    stroke: $color;
-    stroke-width: 2;
+    fill: lighten($color, 10%);
+    stroke: $stroke-color;
+    stroke-width: $stroke-width;
   }
 }
 
@@ -303,11 +421,10 @@ path.map-marker {
   }
 
   &.highlight {
-    @include marker($highlight);
-    stroke: pink;
+    @include marker($highlight, 0.95, $bright-pink, 3);
   }
   &.selected {
-    @include marker($selected);
+    @include marker($selected, 0.95, $bright-pink, 3);
   }
   &.details {
     @include marker($details);

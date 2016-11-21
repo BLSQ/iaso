@@ -68,18 +68,17 @@ class DataSelected extends Component {
     const {data, show, unselect} = this.props
 
     const sectionTitle = (
-      <div className='title'>
+      <div className='map__selection__title'>
         <FormattedMessage id='microplanning.selected.title' defaultMessage='Village selection' />
       </div>
     )
 
     if (!data || data.length === 0) {
       return (
-        <div ref={(node) => (this.container = node)} className='data-selected'>
-          {sectionTitle}
-
-          <div className='summary'>
-            <div className='text--error'>
+        <div ref={(node) => (this.container = node)} className='map__selection'>
+          <div className='map__selection__content'>
+            {sectionTitle}
+            <div className='map__selection__summary--empty'>
               <FormattedMessage id='microplanning.selected.empty' defaultMessage='Nothing selected yet' />
             </div>
           </div>
@@ -95,108 +94,66 @@ class DataSelected extends Component {
     const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
 
     return (
-      <div ref={(node) => (this.container = node)} className='data-selected'>
-        <div className='content'>
+      <div ref={(node) => (this.container = node)} className='map__selection'>
+        <div className='map__selection__content'>
           {sectionTitle}
+          <div className='map__selection__summary'>
 
-          <div className='summary'>
-            <FormattedMessage
-              id='microplanning.selected.number'
-              defaultMessage='{
-                                number,
-                                plural,
-                                one {One village}
-                                other {{number} villages}
-                              } where {
-                                official,
-                                plural,
-                                =0 {none are official}
-                                one {one is official}
-                                other {{official} are official}
-                              }{
-                                other,
-                                plural,
-                                =0 {}
-                                one {, one is non official}
-                                other {, {other} are non official}
-                              } {
-                                unknown,
-                                plural,
-                                =0 {}
-                                one {and one is unknown}
-                                other {and {unknown} are unknown}
-                              }'
-              values={{number, official, other, unknown}}
-            />
-          </div>
-          <div className='summary'>
-            <FormattedMessage
-              id='microplanning.selected.population'
-              defaultMessage='{
-                                population,
-                                plural,
-                                =0 {Unknown population}
-                                other {{population} estimated population}
-                              }'
-              values={{population}}
-            />
-            <div className='text--warning'>
+            <h4 className='map__selection__summary__heading'>Your selection includes:</h4>
+
+            <div className='map__selection__summary__item'>
+              <FormattedMessage
+                id='microplanning.selected.number'
+                defaultMessage='Villages'
+              />
+              <span className='map__selection__summary__number'>{number}</span>
+            </div>
+            <div className='map__selection__summary__item'>
+              <FormattedMessage
+                id='microplanning.selected.population'
+                defaultMessage='Estimated population'
+              />
+              <span className='map__selection__summary__number'>{population}</span>
+            </div>
+
+            <div className='map__text--warning'>
               <FormattedMessage
                 id='microplanning.selected.population.warning'
-                defaultMessage='Please note:'
+                defaultMessage='Please note: Population estimates may not be accurate. '
               />
-              <ul>
-                <li>
-                  <FormattedMessage
-                    id='microplanning.selected.population.warning1'
-                    defaultMessage='Only official villages have population data.'
-                  />
-                </li>
-                <li>
-                  <FormattedMessage
-                    id='microplanning.selected.population.warning2'
-                    defaultMessage='Population estimates may not be accurate.'
-                  />
-                </li>
-              </ul>
+              <FormattedMessage
+                id='microplanning.selected.population.warning1'
+                defaultMessage='Only official villages have population data.'
+              />
             </div>
           </div>
 
-          <div className='list'>
-            <h3>
-              <FormattedMessage id='microplanning.selected.list' defaultMessage='Full village list' />
-            </h3>
-            <ul>
-              {data.map((item) => {
-                return (
-                  <li key={item._id}>
-                    <span className='remove' onClick={() => unselect([item])}>
-                      <i className='fa fa-close' />
-                    </span>
-                    <span className='view' onClick={() => show(item, true)}>
-                      <i className='fa fa-map-marker' />
-                    </span>
-
-                    <span>
-                      {item.zone}
-                      {' - '}
-                      {item.area}
-                      {' - '}
-                      {item.village}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
+          <h3>
+            <FormattedMessage id='microplanning.selected.list' defaultMessage='Villages in your selection:' />
+          </h3>
+          <ul className='map__selection__list'>
+            <a onClick={() => unselect([])}>
+              <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
+            </a>
+            {data.map((item) => {
+              return (
+                <li className='map__selection__list__item' key={item._id}>
+                  <span className='view' onClick={() => show(item, true)}>
+                    <i className='fa fa-map-marker' />
+                  </span>
+                  <span>
+                    {item.area}
+                    {' - '}
+                    {item.village}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+          
         </div>
 
-        <div className='actions'>
-          <button className='button--warning' onClick={() => unselect([])}>
-            <i className='fa fa-trash-o' />
-            <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
-          </button>
-
+        <div className='map__sidebar__export'>
           <ExportCSVButton data={data} delimiter=',' columns={COLUMNS} messages={MESSAGES} filename='microplanning.csv'>
             <FormattedMessage id='microplanning.selected.export' defaultMessage='Export list' />
           </ExportCSVButton>

@@ -84,6 +84,24 @@ p {
   text-align: center;
 }
 
+@mixin text--x-small {
+  font-size: $font-size-xs;
+}
+
+@mixin text--small {
+  font-size: $font-size-s;
+}
+
+@mixin heading--small {
+  font-size: $font-size-s;
+  font-weight: bold;
+}
+
+@mixin heading--medium {
+  font-size: $font-size-standard;
+  font-weight: bold;
+}
+
 .text--error {
   @include text--error;
 }

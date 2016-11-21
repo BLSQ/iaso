@@ -113,7 +113,7 @@ class Map extends Component {
 
     // circle size in metres depending on the village type
     const RADIUS = {
-      official: 130,
+      official: 350,
       other: 100,
       unknown: 100
     }
@@ -148,7 +148,7 @@ class Map extends Component {
       if (points && points.length) {
         points.forEach((item) => {
           // take size from village type and increase it if there are cases
-          const radius = RADIUS[item.type] + ((item.cases > 0) ? 10 : 0)
+          const radius = RADIUS[item.type] + ((item.cases > 0) ? 80 : 0)
           const events = {
             click: () => { show(item) },
             contextmenu: () => { show(item) }

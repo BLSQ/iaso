@@ -322,32 +322,42 @@ export class Microplanning extends Component {
           }
         </div>
         <div className='widget__container'>
-          <div className='widget__content'>
-            <div className='widget__header'>
-              <form className='inline'>
-                <label htmlFor='official' className='underscore-official'>
-                  <input type='checkbox' name='official' checked={filter.official} onChange={filterChange} />
+          <div className='widget__header'>
+            <form className='widget__toggle-group'>
+              <span className='widget__toggle-group__legend'>
+                <FormattedMessage id='microplanning.display.villages.types' defaultMessage='Village types' />
+              </span>
+              <label htmlFor='official' className='underscore-official widget__filterpluslabel__item--official'>
+                <input type='checkbox' name='official' checked={filter.official} onChange={filterChange} className='widget__filterpluslabel__input' />
+                <span className='widget__filterpluslabel__text--official'>
                   <FormattedMessage id='microplanning.display.official' defaultMessage='Official villages' />
-                </label>
-                <label htmlFor='other' className='underscore-other'>
-                  <input type='checkbox' name='other' checked={filter.other} onChange={filterChange} />
+                </span>
+              </label>
+              <label htmlFor='other' className='underscore-other widget__filterpluslabel__item--other'>
+                <input type='checkbox' name='other' checked={filter.other} onChange={filterChange} className='widget__filterpluslabel__input' />
+                <span className='widget__filterpluslabel__text--other'>
                   <FormattedMessage id='microplanning.display.other' defaultMessage='Non official villages' />
-                </label>
-                <label htmlFor='unknown' className='underscore-unknown'>
-                  <input type='checkbox' name='unknown' checked={filter.unknown} onChange={filterChange} />
+                </span>
+              </label>
+              <label htmlFor='unknown' className='underscore-unknown widget__filterpluslabel__item--unknown'>
+                <input type='checkbox' name='unknown' checked={filter.unknown} onChange={filterChange} className='widget__filterpluslabel__input' />
+                <span className='widget__filterpluslabel__text--unknown'>
                   <FormattedMessage id='microplanning.display.unknown' defaultMessage='Unknown villages' />
-                </label>
+                </span>
+              </label>
 
-                <label htmlFor='buffer-check' className='underscore-buffer'>
-                  <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={bufferChange} />
-                  <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
-                  <input type='number' className='small' name='buffer-value' value={buffer} onChange={bufferChange} />
-                  {'m'}
-                </label>
-              </form>
-            </div>
+              <label htmlFor='buffer-check' className='underscore-buffer'>
+                <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={bufferChange} />
+                <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
+                <input type='number' className='small' name='buffer-value' value={buffer} onChange={bufferChange} />
+                {'m'}
+              </label>
+            </form>
+          </div>
 
-            <div className='map__panel_left'>
+          <div className=''>
+
+            <div className='map__panel--left'>
               { /* map */ }
               <Map
                 areas={areas}
@@ -368,7 +378,7 @@ export class Microplanning extends Component {
               />
             </div>
 
-            <div className='map__panel_right'>
+            <div className='map__panel--right'>
               { /* the details view */ }
               { details &&
                 <div className='details'>

@@ -8,27 +8,41 @@
 
 {% block content %}
   <div class="content">
+    {% if perms.cases.import %}
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">{% trans "Import file" %}</h2>
       </div>
       <div class="widget__content">
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
-        <p><a href={% url "datasets:import:upload" %}>{% trans "Goto upload" %}</a></p>
+        <p><a href={% url "datasets:import_cases:upload" %}>{% trans "Goto upload" %}</a></p>
       </div>
     </div>
+    {% endif %}
 
+    {% if perms.cases.export %}
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">{% trans "Export data" %}</h2>
       </div>
       <div class="widget__content">
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
-        <p><a href={% url "datasets:export:download" %}>{% trans "Goto download" %}</a></p>
+        <p><a href={% url "datasets:export_cases:download" %}>{% trans "Goto download" %}</a></p>
       </div>
     </div>
-  </div>
+    {% endif %}
 
-  {% render_bundle 'common' %}
-  {% render_bundle 'import' %}
+    {% if perms.cases.import_locations %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import locations data" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
+        <p><a href={% url "datasets:import_locations:upload" %}>{% trans "Goto upload" %}</a></p>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
 {% endblock %}

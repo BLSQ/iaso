@@ -27,7 +27,8 @@ case "$1" in
     # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
-    ./manage.py test --exclude-tag selenium
+    # Run python tests and pass on any args to e.g. run individual tests
+    ./manage.py test --exclude-tag selenium "${@:2}"
     npm run mocha
   ;;
   "test_js" )

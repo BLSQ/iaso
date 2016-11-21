@@ -2,7 +2,7 @@ from base64 import b64encode
 from pandas import DataFrame, concat as pandasconcat
 from django.conf import settings
 from django.db import transaction
-from hat.cases.models import Case
+from hat.cases.models import Case, Location
 import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
 
@@ -22,7 +22,7 @@ def store_file(doc: dict, filename: str, mimetype: str) -> str:
 
 
 @handle_import_stage(ImportStage.load)
-def load_into_db(df: DataFrame) -> DataFrame:
+def load_cases_into_db(df: DataFrame) -> DataFrame:
     '''Load the dataframe into postgres'''
 
     # remove rows with existing ids from the data
@@ -56,6 +56,15 @@ def load_into_db(df: DataFrame) -> DataFrame:
     if len(duplicates) > 0:
         update_entries(duplicates)
 
+    return df
+
+
+def load_locations_into_db(df: DataFrame):
+    locations = [Location(**row.dropna().to_dict()) for _, row in df.iterrows()]
+    # Delete all rows from the table and replaced with the new ones
+    with transaction.atomic():
+        Location.objects.all().delete()
+        Location.objects.bulk_create(locations)
     return df
 
 

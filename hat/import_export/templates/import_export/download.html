@@ -13,7 +13,7 @@
         <h2 class="widget__heading">{% trans "Export data" %}</h2>
       </div>
       <div class="widget__content">
-        <form method="POST" action="{% url 'datasets:export:download' %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'datasets:export_cases:download' %}" enctype="multipart/form-data">
           {% csrf_token %}
           <fieldset>
             <div class="form__wrapper">

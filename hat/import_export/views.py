@@ -5,9 +5,11 @@ from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
-from .forms import UploadMdbFilesForm, UploadLocationsFileForm, DownloadCsvForm
+from .forms import \
+    UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
-from hat.import_export.tasks import import_task, export_task, import_locations_task
+from hat.import_export.tasks import \
+    import_task, export_task, import_locations_task, import_reconciled_task
 from hat.rq.utils import run_task, get_task_status, get_task_result
 from rq.exceptions import NoSuchJobError
 from hat.import_export.errors import error_helper
@@ -234,3 +236,59 @@ def upload_locations_done(request, task_id):
         messages.add_message(request, messages.INFO, message)
         return redirect('datasets:import_locations:upload')
     return render(request, 'import_export/upload_locations_done.html', {'result': result})
+
+
+################################################################################
+# Upload reconciled data
+################################################################################
+
+
+@login_required()
+@permission_required('cases.import_reconciled')
+@require_http_methods(['GET', 'POST'])
+def upload_reconciled(request):
+    if request.method == 'POST':
+        form = UploadReconciledFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form_files = request.FILES.getlist('file')
+            file = form_files[0]
+            suffix = PurePath(file.name).suffix.lower()
+            filename = create_shared_filename(suffix)
+            with open(filename, 'wb') as fd:
+                fd.write(file.read())
+            # run import task
+            task = run_task(import_reconciled_task, args=[file.name, filename],
+                            permission='cases.import_reconciled')
+            return redirect('datasets:import_reconciled:state', task_id=task.id)
+    else:
+        form = UploadReconciledFileForm()
+    return render(request, 'import_export/upload_reconciled.html', {'form': form})
+
+
+@login_required()
+@permission_required('cases.import_reconciled')
+@require_http_methods(['GET'])
+def upload_reconciled_state(request, task_id):
+    try:
+        status = get_task_status(task_id, user=request.user)
+    except NoSuchJobError:
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
+        return redirect('datasets:import_reconciled:upload')
+
+    if status != 'finished':
+        return render(request, 'import_export/upload_state.html', {'status': status})
+    return redirect('datasets:import_reconciled:done', task_id=task_id)
+
+
+@login_required()
+@permission_required('cases.import_reconciled')
+@require_http_methods(['GET'])
+def upload_reconciled_done(request, task_id):
+    try:
+        result = get_task_result(task_id, user=request.user)
+    except NoSuchJobError:
+        message = default_messages['upload_expired']
+        messages.add_message(request, messages.INFO, message)
+        return redirect('datasets:import_reconciled:upload')
+    return render(request, 'import_export/upload_reconciled_done.html', {'result': result})

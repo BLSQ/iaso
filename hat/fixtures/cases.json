@@ -8,6 +8,8 @@
       "ZS": "Mosango",
       "AZ": "Muluma",
       "village": "Kisala-lupa",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
       "sex": "male"
     }
   },
@@ -20,6 +22,8 @@
       "ZS": "Mosango",
       "AZ": "Muluma",
       "village": "Kisala-lupa",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
       "sex": "male",
       "test_rdt": true,
       "test_maect": false
@@ -35,6 +39,8 @@
       "ZS": "Mosango",
       "AZ": "Muluma",
       "village": "Kisala-lupa",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
       "test_rdt": false
     }
   },
@@ -42,12 +48,14 @@
     "model": "cases.case",
     "pk": 4,
     "fields": {
-      "document_id": "3",
+      "document_id": "4",
       "document_date": "2016-01-04T00:00:00Z",
       "sex": "female",
       "ZS": "Mosango",
       "AZ": "Muluma",
       "village": "Kisala-lupa",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
       "test_catt": true
     }
   },
@@ -55,12 +63,14 @@
     "model": "cases.case",
     "pk": 5,
     "fields": {
-      "document_id": "4",
+      "document_id": "5",
       "document_date": "2016-01-05T00:00:00Z",
       "sex": "female",
       "ZS": "Mosango",
       "AZ": "Muwanda-koso",
       "village": "Polongo",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
       "test_maect": true
     }
   },
@@ -68,12 +78,14 @@
     "model": "cases.case",
     "pk": 6,
     "fields": {
-      "document_id": "5",
+      "document_id": "6",
       "document_date": "2016-01-06T00:00:00Z",
       "sex": "female",
       "ZS": "Mosango",
       "AZ": "Muwanda-koso",
       "village": "Kindundu",
+      "latitude": "4.3871",
+      "longitude": "15.9700",
       "test_ge": true
     }
   }

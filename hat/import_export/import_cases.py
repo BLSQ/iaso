@@ -1,13 +1,13 @@
 import logging
-from hashlib import md5
 from pathlib import PurePath
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from hat.common.mdb import get_tablenames
 from hat.import_export.errors import ImportStageException
-from .load import load_cases_into_db, store_file
+from .load import load_cases_into_db
 from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
 from hat.import_export.errors import ImportStage
+from .utils import hash_file, store_raw_file
 
 logger = logging.getLogger(__name__)
 
@@ -15,13 +15,9 @@ logger = logging.getLogger(__name__)
 def import_cases_file(orgname: str, filename: str, store=False) -> dict:
 
     # skip existing files when not doing re-import
+    file_hash = None
     if store:
-        hasher = md5()
-
-        with open(filename, 'rb') as file:
-            hasher.update(file.read())
-
-        file_hash = hasher.hexdigest()
+        file_hash = hash_file(filename)
         existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
         if existing.status_code == 200:
             return {
@@ -32,8 +28,6 @@ def import_cases_file(orgname: str, filename: str, store=False) -> dict:
                     'message': 'This file has already been imported'
                 }]
             }
-    else:
-        file_hash = ''
 
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
@@ -83,9 +77,8 @@ def import_cases_file(orgname: str, filename: str, store=False) -> dict:
         if store:
             doc = stats.copy()
             # use file hash as id for easy lookup of existing files
-            if file_hash:
-                doc['_id'] = file_hash
-            store_id = store_file(doc, filename, 'application/x-msaccess')
+            doc['_id'] = file_hash
+            store_id = store_raw_file(doc, filename, 'application/x-msaccess')
             stats['store_id'] = store_id
 
     except ImportStageException as exc:

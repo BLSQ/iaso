@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class DatasetTests(APITestCase):
-    fixtures = ['users', 'api_cases.json']
+    fixtures = ['users', 'cases']
 
     def setUp(self):
         self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))

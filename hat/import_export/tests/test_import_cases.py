@@ -10,7 +10,7 @@ mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
 enc_file = 'testdata/backup-v5.enc'
 
 
-class ImportTests(DBTestCase):
+class ImportCasesTests(DBTestCase):
     def test_import_historic(self):
         count = TEST_DATA['historic']['count']
         stats = import_cases_file('historic', TEST_DATA['historic']['file'], store=True)

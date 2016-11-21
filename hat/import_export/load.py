@@ -1,24 +1,7 @@
-from base64 import b64encode
 from pandas import DataFrame, concat as pandasconcat
-from django.conf import settings
 from django.db import transaction
 from hat.cases.models import Case, Location
-import hat.couchdb.api as couchdb
 from hat.import_export.errors import handle_import_stage, ImportStage
-
-
-@handle_import_stage(ImportStage.store)
-def store_file(doc: dict, filename: str, mimetype: str) -> str:
-    with open(filename, 'rb') as file:
-        doc['_attachments'] = {
-            'file': {
-                'content_type': mimetype,
-                'data': b64encode(file.read()).decode('ascii')
-            }
-        }
-    r = couchdb.post(settings.COUCHDB_DB, json=doc)
-    r.raise_for_status()
-    return r.json()['id']
 
 
 @handle_import_stage(ImportStage.load)
@@ -66,6 +49,16 @@ def load_locations_into_db(df: DataFrame):
         Location.objects.all().delete()
         Location.objects.bulk_create(locations)
     return df
+
+
+def load_reconciled_into_db(df: DataFrame):
+    total = 0
+    with transaction.atomic():
+        for index, row in df.iterrows():
+            num = Case.objects.filter(document_id=row['document_id']) \
+                              .update(**row.dropna().to_dict())
+            total += num
+    return total
 
 
 def update_entries(duplicates):

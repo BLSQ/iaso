@@ -9,6 +9,8 @@ from hat.common.utils import create_shared_filename
 from hat.import_export.errors import ImportStage
 from .import_cases import import_cases_file
 from .import_locations import import_locations_file
+from .import_reconciled import import_reconciled_file
+from .import_csv import import_csv_file
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,9 @@ def reimport() -> List[dict]:
         if not type == 'historic_import' and \
            not type == 'backup_import' and \
            not type == 'pv_import' and \
-           not type == 'locations_import':
+           not type == 'csv_import' and \
+           not type == 'locations_import' and \
+           not type == 'reconciled_import':
             return
 
         # get the attached file
@@ -48,8 +52,12 @@ def reimport() -> List[dict]:
            type == 'backup_import' or \
            type == 'pv_import':
             stats = import_cases_file(c['doc']['orgname'], filename)
+        elif type == 'csv_import':
+            stats = import_csv_file(c['doc']['orgname'], filename)
         elif type == 'locations_import':
             stats = import_locations_file(c['doc']['orgname'], filename)
+        elif type == 'reconciled_import':
+            stats = import_reconciled_file(c['doc']['orgname'], filename)
 
         # Todo: remove the file after import
         results.append(stats)

@@ -5,18 +5,18 @@ from . import DBTestCase
 from ..import_locations import STORE_ID, import_locations_file
 from ..reimport import reimport
 
-dbf_file = 'testdata/YASA_BONGA_VILLAGES.dbf'
+dbf_file = 'testdata/locations_population.dbf'
 
 
-class ImportTests(DBTestCase):
+class ImportLocationsTests(DBTestCase):
     def test_import_locations(self):
         stats = import_locations_file('testdata', dbf_file, True)
 
         self.assertTrue(stats['success'])
         self.assertEqual(stats['orgname'], 'testdata')
-        self.assertEqual(stats['num_imported'], 643)
-        self.assertEqual(stats['num_total'], 643)
-        self.assertEqual(stats['num_with_population'], 292)
+        self.assertEqual(stats['num_imported'], 9)
+        self.assertEqual(stats['num_total'], 9)
+        self.assertEqual(stats['num_with_population'], 2)
         self.assertEqual(stats['error'], None)
         self.assertEqual(stats['store_id'], STORE_ID)
 
@@ -39,7 +39,7 @@ class ImportTests(DBTestCase):
     def test_reimport_locations(self):
         import_locations_file('testdata', dbf_file, True)
         count = Location.objects.count()
-        self.assertEqual(count, 643)
+        self.assertEqual(count, 9)
         Location.objects.all().delete()
         reimport()
         self.assertEqual(Location.objects.count(), count)

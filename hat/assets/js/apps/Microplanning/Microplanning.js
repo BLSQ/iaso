@@ -152,17 +152,9 @@ export class Microplanning extends Component {
       .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
       .map((item) => {
         const matched = findInData(geoData.villages, item, ['zone', 'area', 'village'])[0]
-        return {
-          ...matched,
-          ...item,
-          selected: (selected || []).filter((entry) => entry._id === matched._id).length > 0
-        }
+        return { ...item, ...matched }
       })
-      .filter((item) =>
-        (filter.official && item.type === 'official') ||
-        (filter.other && item.type === 'other') ||
-        (filter.unknown && item.type === 'unknown')
-      )
+      .filter((item) => filter[item.type])
 
     // filter the higlighted areas
     // const findInShape = (item) => (findInData(highlight, item.properties, item.properties._keys))
@@ -256,53 +248,45 @@ export class Microplanning extends Component {
               <span className='widget__toggle-group__legend'>
                 <FormattedMessage id='microplanning.display.villages.types' defaultMessage='Village types' />
               </span>
-              <label htmlFor='official' className='underscore-official widget__filterpluslabel__item--official'>
+              <label htmlFor='official' className='widget__filterpluslabel__item--official'>
                 <input type='checkbox' name='official' checked={filter.official} onChange={this.filterChange} className='widget__filterpluslabel__input' />
                 <span className='widget__filterpluslabel__text--official'>
                   <FormattedMessage id='microplanning.display.official' defaultMessage='Official villages' />
                 </span>
               </label>
-              <label htmlFor='other' className='underscore-other widget__filterpluslabel__item--other'>
+              <label htmlFor='other' className='widget__filterpluslabel__item--other'>
                 <input type='checkbox' name='other' checked={filter.other} onChange={this.filterChange} className='widget__filterpluslabel__input' />
                 <span className='widget__filterpluslabel__text--other'>
                   <FormattedMessage id='microplanning.display.other' defaultMessage='Non official villages' />
                 </span>
               </label>
-              <label htmlFor='unknown' className='underscore-unknown widget__filterpluslabel__item--unknown'>
+              <label htmlFor='unknown' className='widget__filterpluslabel__item--unknown'>
                 <input type='checkbox' name='unknown' checked={filter.unknown} onChange={this.filterChange} className='widget__filterpluslabel__input' />
                 <span className='widget__filterpluslabel__text--unknown'>
                   <FormattedMessage id='microplanning.display.unknown' defaultMessage='Unknown villages' />
                 </span>
               </label>
 
-              <label htmlFor='buffer-check' className='underscore-buffer'>
-                <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={this.bufferChange} />
-                <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
-                <input type='number' className='small' name='buffer-value' value={buffer} onChange={this.bufferChange} />
-                {'m'}
+              <label htmlFor='buffer-check' className='widget__filterpluslabel__item--buffer'>
+                <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={this.bufferChange} className='widget__filterpluslabel__input' />
+                <span className='widget__filterpluslabel__text--buffer'>
+                  <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
+                  <input type='number' className='small' disabled={!bufferCheck} name='buffer-value' value={buffer} onChange={this.bufferChange} />
+                  {'m'}
+                </span>
               </label>
+              <MapLegend />
             </form>
           </div>
 
           <div className=''>
-            <div className='map__panel--left'>
-              { /* map */ }
+            <div className='map__panel'>
               <Map
                 highlight={highlight}
                 selected={selected}
                 buffer={buffer}
                 filter={filter}
                 select={this.selectVillages}
-                unselect={this.unselectVillages}
-              />
-              { /* the legend */ }
-              <MapLegend />
-            </div>
-
-            <div className='map__panel--right'>
-              { /* the selection panel */ }
-              <DataSelected
-                data={selected}
                 unselect={this.unselectVillages}
               />
             </div>

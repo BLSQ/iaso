@@ -6,6 +6,7 @@ import {
   intlShape
 } from 'react-intl'
 import ExportCSVButton from '../../../components/export-csv-button'
+import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
   'export-zone': {
@@ -65,7 +66,7 @@ const COLUMNS = [
 
 class DataSelected extends Component {
   render () {
-    const {data, unselect} = this.props
+    const {data, show, unselect} = this.props
 
     const sectionTitle = (
       <div className='map__selection__title'>
@@ -135,17 +136,13 @@ class DataSelected extends Component {
             {data.map((item) => {
               return (
                 <li className='map__selection__list__item' key={item._id}>
-                  {
-                  /*
-                  <span className='view' onClick={() => show(item, true)}>
+                  <span className='view' onClick={() => show(item)}>
                     <i className='fa fa-map-marker' />
                   </span>
-                  */
-                  }
                   <span>
-                    {item.area}
+                    {capitalize(item.area)}
                     {' - '}
-                    {item.village}
+                    {capitalize(item.village)}
                   </span>
                 </li>
               )
@@ -165,6 +162,7 @@ class DataSelected extends Component {
 
 DataSelected.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
+  show: PropTypes.func,
   unselect: PropTypes.func,
   intl: intlShape.isRequired
 }

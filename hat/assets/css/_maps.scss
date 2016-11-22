@@ -14,12 +14,6 @@ $unknown: $mid-gray;
 $map-height: 720px;
 $map-sidebar-width: 260px;
 
-.official  { color: $official }
-.other     { color: $other; }
-.unknown   { color: $unknown; }
-
-
-
 
 .widget__toggle-group {
   display: inline-block;
@@ -135,6 +129,21 @@ $types: (
   margin: 0 auto;
 }
 
+.map__panel {
+  display: inline-block;
+  height: $map-height;
+  width: 100%;
+}
+.map__panel--selection {
+  margin: 0;
+  padding: 0;
+  .map__selection {
+    background-color: white;
+    height: $map-height;
+    width: $map-sidebar-width;
+  }
+}
+
 .map__panel--left {
   display: inline-block;
   height: ($map-height + 60);
@@ -173,7 +182,7 @@ $types: (
   width: 100%;
 }
 
-.map-button {
+.map__control--button {
   background-color: white;
   border-radius: 5px;
   border: 1px solid $gray;
@@ -185,6 +194,10 @@ $types: (
   text-align: center;
   vertical-align: middle;
   width: 26px;
+
+  .active {
+    color: $selected;
+  }
 }
 
 .legend {

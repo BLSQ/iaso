@@ -4,6 +4,7 @@ import {IntlProvider, injectIntl, intlShape} from 'react-intl'
 import L from 'leaflet'
 import geoData from '../utils/geoData'
 import {default as MapTooltip} from './MapTooltip'
+import {default as DataSelected} from './DataSelected'
 
 // map base layers (the `key` is the label used in the layers control)
 const baseLayers = {
@@ -27,11 +28,12 @@ const RADIUS = {
 class Map extends Component {
   componentDidMount () {
     this.createMap()
-    this.updateMap()
-    this.fitToBounds()
   }
   componentDidUpdate () {
-    this.updateMap()
+    this.map.whenReady(() => {
+      this.updateMap()
+    })
+    this.updateSelectionPanel()
   }
   componentWillUnmount () {
     if (this.map) {
@@ -70,10 +72,10 @@ class Map extends Component {
     // show metric scale
     L.control.scale({ imperial: false }).addTo(this.map)
 
-    // create new control to `fitToBounds`
+    // create control to `fitToBounds`
     const fitToButton = L.control({position: 'topleft'})
     fitToButton.onAdd = (map) => {
-      const div = L.DomUtil.create('div', 'map-button')
+      const div = L.DomUtil.create('div', 'map__control--button')
       div.innerHTML = '<i class="fa fa-map-marker"></i>'
       L.DomEvent.on(div, 'click', (event) => {
         L.DomEvent.stop(event)
@@ -84,13 +86,40 @@ class Map extends Component {
     }
     fitToButton.addTo(this.map)
 
-    L.control.layers(baseLayers).addTo(this.map)
+    // create control to `activate selection mode`
+    this.selectionMode = false
+    const selectionMode = L.control({position: 'topleft'})
+    selectionMode.onAdd = (map) => {
+      const div = L.DomUtil.create('div', 'map__control--button')
+      div.innerHTML = '<i class="fa fa-bullseye"></i>'
+      L.DomEvent.on(div, 'click', (event) => {
+        this.selectionMode = !this.selectionMode
+        this.updateSelectionPanel()
+        if (this.selectionMode) {
+          div.innerHTML = '<i class="fa fa-bullseye active"></i>'
+        } else {
+          div.innerHTML = '<i class="fa fa-bullseye"></i>'
+        }
+      })
+
+      return div
+    }
+    selectionMode.addTo(this.map)
+
+    this.selectionPanel = L.control({position: 'topright'})
+    this.selectionPanel.onAdd = (map) => {
+      return L.DomUtil.create('div', 'map__panel--selection')
+    }
+    this.selectionPanel.addTo(this.map)
+
+    // tiles control
+    L.control.layers(baseLayers, null, {position: 'topleft'}).addTo(this.map)
 
     const shapeOptions = {
       pane: 'custom-pane-layers',
       style: () => ({className: 'map-layer transparent'}),
       onEachFeature: (feature, layer) => {
-        this.layerCommons(layer, feature.properties)
+        this.addLayerEvents(layer, feature.properties)
       }
     }
 
@@ -103,8 +132,6 @@ class Map extends Component {
 
     // use for the markers
     this.featureGroup = new L.FeatureGroup().addTo(this.map)
-    // use for the shape/marker details
-    this.detailsGroup = new L.FeatureGroup().addTo(this.map)
 
     L.DomEvent.on(this.map, 'zoomend', (event) => {
       // plot the AREAS if the zoom is greater than 9
@@ -113,7 +140,9 @@ class Map extends Component {
           this.map.addLayer(zoomGroup)
         }
       } else {
-        this.map.removeLayer(zoomGroup)
+        if (this.map.hasLayer(this.zoomGroup)) {
+          this.map.removeLayer(zoomGroup)
+        }
       }
     })
 
@@ -123,18 +152,6 @@ class Map extends Component {
       other: new L.FeatureGroup(),
       unknown: new L.FeatureGroup()
     }
-
-    geoData.villages.forEach((item) => {
-      const options = {
-        pane: 'custom-pane-markers',
-        radius: RADIUS[item.type],
-        className: 'map-marker ' + item.type
-      }
-
-      const marker = L.circle(item._latlon, options)
-      this.layerCommons(marker, item)
-      this.markersGroup[item.type].addLayer(marker)
-    })
   }
 
   updateMap () {
@@ -149,107 +166,151 @@ class Map extends Component {
 
     // reset previous state
     this.featureGroup.clearLayers()
-    this.detailsGroup.clearLayers()
 
     // plot indicated villages
     Object.keys(filter).forEach((key) => {
-      const layer = this.markersGroup[key]
-      if (filter[key]) {
-        if (!this.map.hasLayer(layer)) {
-          this.map.addLayer(layer)
-        }
-      } else {
-        this.map.removeLayer(layer)
-      }
+      this.plotVillagesByType(key, filter[key])
     })
-    const plotted = geoData.villages.filter((entry) => (filter[entry.type]))
+    const plotted = geoData.villages.filter((item) => (filter[item.type]))
 
-    this.map.whenReady(() => {
-      if (highlight && highlight.length) {
-        highlight.forEach((item) => {
-          const radius = RADIUS[item.type] + RADIUS.highlight
-          const options = {
-            pane: 'custom-pane-markers',
-            radius: radius,
-            className: 'map-marker highlight'
-          }
+    if (highlight && highlight.length) {
+      highlight.forEach((item) => {
+        const radius = RADIUS[item.type] + RADIUS.highlight
+        const options = {
+          pane: 'custom-pane-markers',
+          radius: radius,
+          className: 'map-marker highlight'
+        }
 
-          const marker = L.circle(item._latlon, options)
-          this.layerCommons(marker, item)
-          this.featureGroup.addLayer(marker)
+        const marker = L.circle(item._latlon, options)
+        this.addLayerEvents(marker, item)
+        this.featureGroup.addLayer(marker)
 
-          if (buffer > 0 && item.cases > 0) {
-            // find out the points within the buffer zone
-            // TO BE IMPROVED (quadratic)
-            const inBuffer = plotted.filter((entry) => (
-                item._id !== entry._id &&
-                item._latlon.distanceTo(entry._latlon) <= (buffer + radius)
-              ))
-            inBuffer.push(item) // this has the info about cases
+        if (buffer > 0 && item.cases > 0) {
+          // find out the points within the buffer zone
+          // TO BE IMPROVED (quadratic)
+          const inBuffer = plotted.filter((entry) => (
+              item._id !== entry._id &&
+              item._latlon.distanceTo(entry._latlon) <= (buffer + radius)
+            ))
+          inBuffer.push(item) // this has the info about cases
+          const inSelection = selected.filter((entry) => entry._id === item._id).length > 0
 
-            // create buffer zone around the highlighted village
-            const bufferZone = L.circle(item._latlon, {
-              pane: 'custom-pane-buffer',
-              radius: buffer,
-              className: 'map-marker buffer'
-            })
-            this.featureGroup.addLayer(bufferZone)
+          // create buffer zone around the highlighted village
+          const bufferZone = L.circle(item._latlon, {
+            pane: 'custom-pane-buffer',
+            radius: buffer,
+            className: 'map-marker buffer'
+          })
+          this.featureGroup.addLayer(bufferZone)
 
-            bufferZone.on({
-              dblclick: (event) => {
-                if (item.selected) {
+          bufferZone.on({
+            click: (event) => {
+              L.DomEvent.stop(event)
+
+              if (this.selectionMode) {
+                if (inSelection) {
                   unselect(inBuffer)
                 } else {
                   select(inBuffer)
                 }
-                L.DomEvent.stop(event)
               }
-            })
-          }
-        })
-      }
+            }
+          })
+        }
+      })
+    }
 
-      if (selected && selected.length) {
-        selected.forEach((item) => {
-          // take size from village type and increase it if there are cases
-          const radius = RADIUS[item.type] + ((item.cases > 0) ? RADIUS.highlight : 0)
-          const options = {
-            pane: 'custom-pane-markers',
-            radius: radius,
-            className: 'map-marker selected'
-          }
+    if (selected && selected.length) {
+      selected.forEach((item) => {
+        // take size from village type and increase it if there are cases
+        const radius = RADIUS[item.type] + ((item.cases > 0) ? RADIUS.highlight : 0)
+        const options = {
+          pane: 'custom-pane-markers',
+          radius: radius,
+          className: 'map-marker selected'
+        }
 
-          const marker = L.circle(item._latlon, options)
-          this.layerCommons(marker, item)
-          this.featureGroup.addLayer(marker)
-        })
-      }
-    })
+        const marker = L.circle(item._latlon, options)
+        this.addLayerEvents(marker, {...item, selected: true})
+        this.featureGroup.addLayer(marker)
+      })
+    }
   }
 
   fitToBounds () {
-    this.map.whenReady(() => {
-      setTimeout(() => {
-        if (this.detailsGroup.getLayers().length) {
-          this.map.fitBounds(this.detailsGroup.getBounds(), { maxZoom: 13 })
-        } else if (this.featureGroup.getLayers().length) {
-          this.map.fitBounds(this.featureGroup.getBounds(), { maxZoom: 13 })
-        } else {
-          this.map.setView(geoData.center, geoData.zoom)
-        }
-        this.map.invalidateSize()
-      }, 1)
-    })
+    setTimeout(() => {
+      if (this.featureGroup.getLayers().length) {
+        this.map.fitBounds(this.featureGroup.getBounds(), { maxZoom: 13 })
+      } else {
+        this.map.setView(geoData.center, geoData.zoom)
+      }
+      this.map.invalidateSize()
+    }, 1)
   }
 
-  layerCommons (layer, item) {
+  plotVillagesByType (type, active) {
+    const layer = this.markersGroup[type]
+    if (active) {
+      // include layer
+      if (!this.map.hasLayer(layer)) {
+        this.map.addLayer(layer)
+
+        // check if the layer has markers
+        if (layer.getLayers().length === 0) {
+          geoData.villages
+            .filter((item) => item.type === type)
+            .forEach((item, index) => {
+              const options = {
+                pane: 'custom-pane-markers',
+                radius: RADIUS[type],
+                className: 'map-marker ' + type
+              }
+
+              const marker = L.circle(item._latlon, options)
+              this.addLayerEvents(marker, item)
+              layer.addLayer(marker)
+            })
+        }
+      }
+    } else {
+      // remove layer
+      if (this.map.hasLayer(layer)) {
+        this.map.removeLayer(layer)
+      }
+    }
+  }
+
+  addLayerEvents (layer, item) {
     const {
       select,
       unselect
     } = this.props
 
+    layer.on({
+      click: (event) => {
+        L.DomEvent.stop(event)
+        console.log(item)
+        if (this.selectionMode) {
+          if (item.isVillage) {
+            (item.selected ? unselect([item]) : select([item]))
+          }
+        } else {
+          this.openPopup(item, event.latlng)
+        }
+      },
+      contextmenu: (event) => {
+        L.DomEvent.stop(event)
+        this.openPopup(item, event.latlng)
+      }
+    })
+    // layer.bindTooltip(item._label, { sticky: true })
+  }
+
+  openPopup (item, latlng) {
     const div = L.DomUtil.create('div', 'tooltip')
     const {locale, messages} = this.props.intl
+
     // we need to wrap it with IntlProvider to use i18n features
     ReactDOM.render(
       <IntlProvider locale={locale} messages={messages}>
@@ -258,23 +319,28 @@ class Map extends Component {
       div
     )
 
-    layer.on({
-      dblclick: (event) => {
-        L.DomEvent.stop(event)
-        if (item.isVillage) {
-          if (item.selected) {
-            unselect([item])
-          } else {
-            select([item])
-          }
-        }
-      },
-      contextmenu: (event) => {
-        L.DomEvent.stop(event)
-        this.map.openPopup(div, event.latlng, {minWidth: 200, maxWidth: 500})
-      }
-    })
-    layer.bindTooltip(item._label, { sticky: true })
+    this.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
+  }
+
+  updateSelectionPanel () {
+    const {locale, messages} = this.props.intl
+    const { selected, unselect } = this.props
+    const container = this.selectionPanel.getContainer()
+
+    if (this.selectionMode || selected.length > 0) {
+      // we need to wrap it with IntlProvider to use i18n features
+      ReactDOM.render(
+        <IntlProvider locale={locale} messages={messages}>
+          <DataSelected
+            data={selected}
+            show={(item) => this.openPopup(item, item._latlon)}
+            unselect={unselect} />
+        </IntlProvider>,
+        container
+      )
+    } else {
+      container.innerHTML = ''
+    }
   }
 }
 
@@ -282,6 +348,7 @@ Map.propTypes = {
   filter: PropTypes.object,
   buffer: PropTypes.number,
   highlight: PropTypes.arrayOf(PropTypes.object),
+  popup: PropTypes.object,
   selected: PropTypes.arrayOf(PropTypes.object),
   select: PropTypes.func,
   unselect: PropTypes.func,

@@ -129,6 +129,25 @@ $types: (
   margin: 0 auto;
 }
 
+.leaflet-control-layers-toggle {
+  background-color: white;
+  background-image: none;
+  border-radius: 5px;
+  border: 1px solid $gray;
+  font-family: FontAwesome;
+  font-size: 16px;
+  height: 26px;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 26px;
+
+  &:after {
+    content: "\f0ac";
+  }
+}
+
 .map__panel {
   display: inline-block;
   height: $map-height;

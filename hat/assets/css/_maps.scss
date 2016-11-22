@@ -132,10 +132,8 @@ $types: (
 .leaflet-control-layers-toggle {
   background-color: white;
   background-image: none;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid $gray;
-  font-family: FontAwesome;
-  font-size: 16px;
   height: 26px;
   margin: 0;
   text-align: center;
@@ -144,7 +142,10 @@ $types: (
   width: 26px;
 
   &:after {
+    color: $text-color;
     content: "\f0ac";
+    font-family: FontAwesome;
+    font-size: 16px;
   }
 }
 
@@ -156,29 +157,11 @@ $types: (
 .map__panel--selection {
   margin: 0;
   padding: 0;
+  height: ($map-height - 10);
   .map__selection {
     background-color: white;
-    height: $map-height;
     width: $map-sidebar-width;
   }
-}
-
-.map__panel--left {
-  display: inline-block;
-  height: ($map-height + 60);
-  width: calc(100% - #{$map-sidebar-width});
-}
-
-.map__panel--right {
-  position: relative;
-  display: inline-block;
-  vertical-align: top;
-  width: $map-sidebar-width;
-  height: ($map-height + 60);
-  background: rgba(255,255,255,0.97);
-  border-left: 1px solid $gray;
-  box-shadow: -1px 0 1px 0 rgba(black, 0.08);
-  overflow-y: scroll;
 }
 
 .map__sidebar__export {
@@ -203,7 +186,7 @@ $types: (
 
 .map__control--button {
   background-color: white;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid $gray;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
   cursor: pointer !important;
@@ -322,7 +305,7 @@ ul.map__selection__list {
   @include reset-list-style;
   clear: both;
   overflow: auto;
-  max-height: ($map-height - 200);
+  max-height: ($map-height - 400);
 }
 .map__selection__list__item {
   line-height: 1.3;

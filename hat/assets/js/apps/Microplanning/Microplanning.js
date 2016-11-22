@@ -10,7 +10,7 @@ import { createUrl } from '../../utils/fetchData'
 
 import {actions} from './redux'
 import geoData from './utils/geoData'
-import {Map, MapLegend, DataSelected} from './components'
+import {Map, MapLegend} from './components'
 
 const MESSAGES = defineMessages({
   // dateperiod messages

@@ -28,6 +28,8 @@ const RADIUS = {
 class Map extends Component {
   componentDidMount () {
     this.createMap()
+    this.includeControls()
+    this.includeLayersAndMarkers()
   }
   componentDidUpdate () {
     this.map.whenReady(() => {
@@ -71,7 +73,9 @@ class Map extends Component {
 
     // show metric scale
     L.control.scale({ imperial: false }).addTo(this.map)
+  }
 
+  includeControls () {
     // create control to `fitToBounds`
     const fitToButton = L.control({position: 'topleft'})
     fitToButton.onAdd = (map) => {
@@ -93,6 +97,8 @@ class Map extends Component {
       const div = L.DomUtil.create('div', 'map__control--button')
       div.innerHTML = '<i class="fa fa-bullseye"></i>'
       L.DomEvent.on(div, 'click', (event) => {
+        L.DomEvent.stop(event)
+
         this.selectionMode = !this.selectionMode
         this.updateSelectionPanel()
         if (this.selectionMode) {
@@ -114,6 +120,11 @@ class Map extends Component {
 
     // tiles control
     L.control.layers(baseLayers, null, {position: 'topleft'}).addTo(this.map)
+  }
+
+  includeLayersAndMarkers () {
+    // use for the markers
+    this.featureGroup = new L.FeatureGroup().addTo(this.map)
 
     const shapeOptions = {
       pane: 'custom-pane-layers',
@@ -130,17 +141,14 @@ class Map extends Component {
     const zoomGroup = new L.FeatureGroup()
     zoomGroup.addLayer(L.geoJson(geoData.areas, shapeOptions))
 
-    // use for the markers
-    this.featureGroup = new L.FeatureGroup().addTo(this.map)
-
     L.DomEvent.on(this.map, 'zoomend', (event) => {
       // plot the AREAS if the zoom is greater than 9
       if (this.map.getZoom() > 9) {
-        if (!this.map.hasLayer(this.zoomGroup)) {
+        if (!this.map.hasLayer(zoomGroup)) {
           this.map.addLayer(zoomGroup)
         }
       } else {
-        if (this.map.hasLayer(this.zoomGroup)) {
+        if (this.map.hasLayer(zoomGroup)) {
           this.map.removeLayer(zoomGroup)
         }
       }
@@ -290,7 +298,7 @@ class Map extends Component {
     layer.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        console.log(item)
+
         if (this.selectionMode) {
           if (item.isVillage) {
             (item.selected ? unselect([item]) : select([item]))
@@ -309,38 +317,39 @@ class Map extends Component {
 
   openPopup (item, latlng) {
     const div = L.DomUtil.create('div', 'tooltip')
-    const {locale, messages} = this.props.intl
-
-    // we need to wrap it with IntlProvider to use i18n features
-    ReactDOM.render(
-      <IntlProvider locale={locale} messages={messages}>
-        <MapTooltip item={item} />
-      </IntlProvider>,
-      div
-    )
+    ReactDOM.render(this.injectI18n(<MapTooltip item={item} />), div)
 
     this.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
   }
 
   updateSelectionPanel () {
-    const {locale, messages} = this.props.intl
     const { selected, unselect } = this.props
     const container = this.selectionPanel.getContainer()
 
     if (this.selectionMode || selected.length > 0) {
-      // we need to wrap it with IntlProvider to use i18n features
       ReactDOM.render(
-        <IntlProvider locale={locale} messages={messages}>
+        this.injectI18n(
           <DataSelected
             data={selected}
             show={(item) => this.openPopup(item, item._latlon)}
             unselect={unselect} />
-        </IntlProvider>,
+        ),
         container
       )
     } else {
       container.innerHTML = ''
     }
+  }
+
+  injectI18n (component) {
+    // we need to wrap it with IntlProvider to use i18n features
+    const {locale, messages} = this.props.intl
+
+    return (
+      <IntlProvider locale={locale} messages={messages}>
+        {component}
+      </IntlProvider>
+    )
   }
 }
 

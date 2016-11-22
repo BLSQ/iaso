@@ -8,8 +8,12 @@ import zonesTopo from '../../../../json/zones.json'
 import areasTopo from '../../../../json/areas.json'
 import villages from '../../../../json/villages.json'
 
-const MAP_CENTER = [ -4.4233379, 16.2113064 ]
-const MAP_ZOOM = 7
+// TO BE CHANGED AFTER WORKSHOP
+// const MAP_CENTER = [ -4.4233379, 16.2113064 ]
+// const MAP_ZOOM = 7
+const MAP_CENTER = [-4.001260, 18.171387]
+const MAP_ZOOM = 8
+// !TO BE CHANGED AFTER WORKSHOP
 
 //
 // Leaflet doesn't support topoJSON format, transform them to geoJSON layers.

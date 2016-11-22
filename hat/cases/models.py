@@ -36,7 +36,10 @@ class Case(models.Model):
     village = models.TextField(null=True)
     province = models.TextField(null=True)
     ZS = models.TextField(db_index=True, null=True)
+    # TODO: Aires de santé acronym is misspelled and should be refactored into AS
     AZ = models.TextField(null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
     mobile_unit = models.TextField(null=True)
 
@@ -97,7 +100,25 @@ class Case(models.Model):
         ordering = ['-document_date']
         permissions = (
             ("import", "Can import data"),
+            ("import_reconciled", "Can import reconciliation data"),
             ("export", "Can export data"),
             ("export_full", "Can export the full dataset as csv"),
             ("view", "Can view data"),
+        )
+
+
+class Location(models.Model):
+    ZS = models.TextField(db_index=True, null=True)
+    AS = models.TextField(db_index=True, null=True)
+    AS_alt = models.TextField(db_index=True, null=True)
+    village = models.TextField(db_index=True, null=True)
+    village_alt = models.TextField(db_index=True, null=True)
+    village_type = models.TextField(null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
+    population = models.PositiveIntegerField(null=True)
+
+    class Meta:
+        permissions = (
+            ("import_locations", "Can import location data"),
         )

@@ -3,21 +3,21 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Data upload" %}</h1>
+  <h1 class="header__title">{% trans "Import reconciled data" %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+        <h2 class="widget__heading">{% trans "Upload Excel file" %}</h2>
       </div>
       <div class="widget__content">
-        <form method="POST" action="{% url 'datasets:import_cases:upload' %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'datasets:import_reconciled:upload' %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form }}
           <div class="block--margin-top--xs">
-            <button type="submit" class="button">{% trans "Import" %}</button>
+            <button type="submit" class="button">{% trans "Upload" %}</button>
           </div>
 
           <div id='import'>

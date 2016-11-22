@@ -1,0 +1,55 @@
+{% extends "app.html" %}
+{% load i18n %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Data upload" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Upload locations data" %}</h2>
+      </div>
+      <div class="widget__content">
+        {% if error_count > 0 %}
+          <div class="block--margin-bottom--small">
+            <h2 class="text--error">{% trans "There have been errors." %}</h2>
+          </div>
+        {% endif %}
+
+        <table class="job-result-table" style="width: 100%">
+          <thead>
+            <tr>
+              <th>{% trans "File" %}</th>
+              <th>{% trans "Result" %}</th>
+              <th>{% trans "Info" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="{% if result.success %}job-result-ok{% else %}job-result-error{% endif %}">
+              <td>{{ result.orgname }}</td>
+
+              <td>
+              {% if result.success %}
+                &#x2713;
+              {% else %}
+                &#x274c;
+              {% endif %}
+              </td>
+
+              <td>
+              {% if result.success %}
+                {{ result.num_imported }}/{{ result.num_total }} imported
+              {% else %}
+                {{ result.error }}
+              {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

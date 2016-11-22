@@ -50,7 +50,7 @@ if tunnel_id:
 # The tag is used to separate those tests from the 'normal' test run
 @tag('selenium')
 class SeleniumTestCase(LiveServerTestCase):
-    fixtures = ['users', 'api_cases.json']
+    fixtures = ['users', 'cases']
 
     def setUp(self):
         super().setUp()

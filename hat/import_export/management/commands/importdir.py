@@ -1,7 +1,7 @@
 import os
 from os import path
 from django.core.management.base import BaseCommand
-from hat.import_export.import_data import import_file
+from hat.import_export.import_cases import import_cases_file
 
 
 class Command(BaseCommand):
@@ -19,7 +19,7 @@ class Command(BaseCommand):
         self.stdout.write('Importing {} files from {}'.format(len(files), options['directory']))
         for i, filename in enumerate(files):
             self.stdout.write('-- #{}/{} - {}'.format(i+1, len(files), filename))
-            r = import_file(filename, path.join(dir, filename), options['store'])
+            r = import_cases_file(filename, path.join(dir, filename), options['store'])
             if len(r['errors']) > 0:
                 self.stdout.write('-- ERROR: {}'.format(r['errors']))
             else:

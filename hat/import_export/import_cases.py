@@ -1,32 +1,23 @@
 import logging
-from hashlib import md5
-from typing import List
 from pathlib import PurePath
 from django.conf import settings
-from hat.cases.models import Case
 import hat.couchdb.api as couchdb
-from hat.couchdb.utils import walk_changes
-from hat.common.utils import create_shared_filename
 from hat.common.mdb import get_tablenames
 from hat.import_export.errors import ImportStageException
-from .load import load_into_db, store_file
+from .load import load_cases_into_db
 from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
-
 from hat.import_export.errors import ImportStage
+from .utils import hash_file, store_raw_file
 
 logger = logging.getLogger(__name__)
 
 
-def import_file(orgname: str, filename: str, store=False) -> dict:
+def import_cases_file(orgname: str, filename: str, store=False) -> dict:
 
     # skip existing files when not doing re-import
+    file_hash = None
     if store:
-        hasher = md5()
-
-        with open(filename, 'rb') as file:
-            hasher.update(file.read())
-
-        file_hash = hasher.hexdigest()
+        file_hash = hash_file(filename)
         existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
         if existing.status_code == 200:
             return {
@@ -37,8 +28,6 @@ def import_file(orgname: str, filename: str, store=False) -> dict:
                     'message': 'This file has already been imported'
                 }]
             }
-    else:
-        file_hash = ''
 
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
@@ -80,7 +69,7 @@ def import_file(orgname: str, filename: str, store=False) -> dict:
     try:
         extracted = extract_file(config, filename)
         transformed = transform_source(config, extracted, orgname)
-        loaded = load_into_db(transformed)
+        loaded = load_cases_into_db(transformed)
 
         stats['num_total'] = len(extracted[config['main_table']])
         stats['num_imported'] = len(loaded)
@@ -88,9 +77,8 @@ def import_file(orgname: str, filename: str, store=False) -> dict:
         if store:
             doc = stats.copy()
             # use file hash as id for easy lookup of existing files
-            if file_hash:
-                doc['_id'] = file_hash
-            store_id = store_file(doc, filename, 'application/x-msaccess')
+            doc['_id'] = file_hash
+            store_id = store_raw_file(doc, filename, 'application/x-msaccess')
             stats['store_id'] = store_id
 
     except ImportStageException as exc:
@@ -101,42 +89,3 @@ def import_file(orgname: str, filename: str, store=False) -> dict:
         logger.exception(exc)
 
     return stats
-
-
-def reimport() -> List[dict]:
-    results = []
-
-    def import_change(c):
-        nonlocal results
-        type = c['doc'].get('type', None)
-        if not type == 'historic_import' and \
-           not type == 'backup_import' and \
-           not type == 'pv_import':
-            return
-
-        # get the attached file
-        r = couchdb.get(settings.COUCHDB_DB + '/' + c['id'] + '/file')
-        if r.status_code >= 400:
-            err_msg = 'Could not get attachement for doc id: ' + id
-            logger.error(err_msg)
-            results.append({
-                'type': 'import_error',
-                'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
-            })
-            return
-
-        # write the file to disk
-        suffix = PurePath(c['doc']['filename']).suffix.lower()
-        filename = create_shared_filename(suffix)
-        chunk_size = 4096
-        with open(filename, 'wb') as fd:
-            for chunk in r.iter_content(chunk_size):
-                fd.write(chunk)
-
-        stats = import_file(c['doc']['orgname'], filename)
-        results.append(stats)
-
-    Case.objects.all().delete()
-    walk_changes(settings.COUCHDB_DB, import_change, params={'include_docs': 'true'})
-    logger.info('reimport finished')
-    return results

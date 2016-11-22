@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.import_export.import_data import reimport
+from hat.import_export.reimport import reimport
 
 
 class Command(BaseCommand):

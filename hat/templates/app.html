@@ -24,12 +24,26 @@
             <a href={% url "datasets:index" %}>{% trans "Datasets" %}</a>
             {% if 'datasets' in ns %}
             <ul>
-              <li class="navigation__menu__item--secondary{% if view == 'datasets:import:upload' %}--active{% endif %}">
-                <a href={% url "datasets:import:upload" %}>{% trans "Upload" %}</a>
-              </li>
-              <li class="navigation__menu__item--secondary{% if view == 'datasets:export:download' %}--active{% endif %}">
-                <a href={% url "datasets:export:download" %}>{% trans "Download" %}</a>
-              </li>
+              {% if perms.cases.import %}
+                <li class="navigation__menu__item--secondary{% if 'datasets:import_cases' in view %}--active{% endif %}">
+                  <a href={% url "datasets:import_cases:upload" %}>{% trans "Upload cases" %}</a>
+                </li>
+              {% endif %}
+              {% if perms.cases.export %}
+                <li class="navigation__menu__item--secondary{% if 'datasets:export_cases' in view %}--active{% endif %}">
+                  <a href={% url "datasets:export_cases:download" %}>{% trans "Download cases" %}</a>
+                </li>
+              {% endif %}
+              {% if perms.cases.import_locations %}
+                <li class="navigation__menu__item--secondary{% if 'datasets:import_locations' in view %}--active{% endif %}">
+                  <a href={% url "datasets:import_locations:upload" %}>{% trans "Upload locations" %}</a>
+                </li>
+              {% endif %}
+              {% if perms.cases.import_reconciled %}
+                <li class="navigation__menu__item--secondary{% if 'datasets:import_reconciled' in view %}--active{% endif %}">
+                  <a href={% url "datasets:import_reconciled:upload" %}>{% trans "Upload reconciled data" %}</a>
+                </li>
+              {% endif %}
             </ul>
             {% endif %}
           </li>

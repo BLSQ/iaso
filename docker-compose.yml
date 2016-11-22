@@ -32,6 +32,8 @@ services:
       - ./shared:/opt/shared
       # build scripts for testing prod version
       - ./build_scripts:/opt/app/build_scripts
+      # test data
+      - ./testdata:/opt/app/testdata
     links: &hat_links
       - db
       - couchdb

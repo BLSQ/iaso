@@ -1,15 +1,24 @@
 from hashlib import md5
+from base64 import b64encode
 from string import capwords
 from functools import reduce
 import re
 import pandas
 from pandas import Series, DataFrame
+from django.conf import settings
+import hat.couchdb.api as couchdb
 
 
 def capitalize(x: str) -> str:
     if pandas.isnull(x):
         return None
     return capwords(x)
+
+
+def transform_location_name(x: str) -> str:
+    if pandas.isnull(x):
+        return None
+    return x.upper()
 
 
 def create_documentid(row: Series) -> str:
@@ -111,3 +120,23 @@ def hat_id(row: Series) -> str:
         yob[0:4] +
         mothers[0:1]
     ).upper()
+
+
+def hash_file(filename: str) -> str:
+    hasher = md5()
+    with open(filename, 'rb') as file:
+        hasher.update(file.read())
+    return hasher.hexdigest()
+
+
+def store_raw_file(doc: dict, filename: str, mimetype: str) -> str:
+    with open(filename, 'rb') as file:
+        doc['_attachments'] = {
+            'file': {
+                'content_type': mimetype,
+                'data': b64encode(file.read()).decode('ascii')
+            }
+        }
+    r = couchdb.post(settings.COUCHDB_DB, json=doc)
+    r.raise_for_status()
+    return r.json()['id']

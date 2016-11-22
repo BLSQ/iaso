@@ -2,13 +2,31 @@ import React, {Component, PropTypes} from 'react'
 import {
   FormattedDate,
   FormattedMessage,
+  defineMessages,
   injectIntl,
   intlShape
 } from 'react-intl'
+import {capitalize} from '../../../utils'
+
+const MESSAGES = defineMessages({
+  'official': {
+    id: 'microplanning.tooltip.village.type.official',
+    defaultMessage: 'Official'
+  },
+  'other': {
+    id: 'microplanning.tooltip.village.type.other',
+    defaultMessage: 'Non official'
+  },
+  'unknown': {
+    id: 'microplanning.tooltip.village.type.unknown',
+    defaultMessage: 'Unknown'
+  }
+})
 
 class MapTooltip extends Component {
   render () {
     const {item} = this.props
+    const {formatMessage} = this.props.intl
 
     return (
       <div key={item._id} ref={(node) => (this.container = node)} className='map__tooltip'>
@@ -19,7 +37,7 @@ class MapTooltip extends Component {
               <FormattedMessage id='microplanning.tooltip.zone' defaultMessage='Zone de Sante' />
             </div>
             <div className='value'>
-              {item.zone}
+              {capitalize(item.zone)}
             </div>
           </div>
         }
@@ -29,7 +47,7 @@ class MapTooltip extends Component {
               <FormattedMessage id='microplanning.tooltip.area' defaultMessage='Aire de Sante' />
             </div>
             <div className='value'>
-              {item.area}
+              {capitalize(item.area)}
             </div>
           </div>
         }
@@ -40,16 +58,34 @@ class MapTooltip extends Component {
               <FormattedMessage id='microplanning.tooltip.village' defaultMessage='Village' />
             </div>
             <div className='value'>
-              { item.village}
+              {capitalize(item.village)}
             </div>
           </div>,
 
-          <div key='property-coords' className='property'>
+          <div key='property-type' className='property'>
             <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.coordinates' defaultMessage='Coordinates' />
+              <FormattedMessage id='microplanning.tooltip.type' defaultMessage='Classification' />
             </div>
             <div className='value'>
-              {' [ '}{item.lat.toFixed(6)}{', '}{item.lon.toFixed(6)}{' ] '}
+              {formatMessage(MESSAGES[item.type])}
+            </div>
+          </div>,
+
+          <div key='property-coords-lat' className='property'>
+            <div className='label'>
+              <FormattedMessage id='microplanning.tooltip.latitude' defaultMessage='Latitude' />
+            </div>
+            <div className='value'>
+              {item.lat.toFixed(6)}
+            </div>
+          </div>,
+
+          <div key='property-coords-lon' className='property'>
+            <div className='label'>
+              <FormattedMessage id='microplanning.tooltip.longitude' defaultMessage='Longitude' />
+            </div>
+            <div className='value'>
+              {item.lon.toFixed(6)}
             </div>
           </div>
         ]}

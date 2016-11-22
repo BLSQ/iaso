@@ -20,9 +20,17 @@ import_locations_urlpatterns = [
     url(r'^done/(?P<task_id>[a-z0-9-]+)$', views.upload_locations_done, name='done'),
 ]
 
+import_reconciled_urlpatterns = [
+    url(r'^upload$', views.upload_reconciled, name='upload'),
+    url(r'^state/(?P<task_id>[a-z0-9-]+)$', views.upload_reconciled_state, name='state'),
+    url(r'^done/(?P<task_id>[a-z0-9-]+)$', views.upload_reconciled_done, name='done'),
+]
+
+
 urlpatterns = [
     url('^$', views.index, name='index'),
     url('^import/', include(import_cases_urlpatterns, 'import_cases')),
     url('^export/', include(export_cases_urlpatterns, 'export_cases')),
     url('^import_locations/', include(import_locations_urlpatterns, 'import_locations')),
+    url('^import_reconciled/', include(import_reconciled_urlpatterns, 'import_reconciled')),
 ]

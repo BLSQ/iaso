@@ -13,6 +13,11 @@ class UploadLocationsFileForm(forms.Form):
                            widget=forms.FileInput(attrs={'accept': '.dbf'}))
 
 
+class UploadReconciledFileForm(forms.Form):
+    file = forms.FileField(label=_('File'),
+                           widget=forms.FileInput(attrs={'accept': '.xlsx'}))
+
+
 class DateInput(forms.DateInput):
     ''' Django uses type="text" by default, but we want type="date" '''
     input_type = 'date'

@@ -44,5 +44,17 @@
     </div>
     {% endif %}
 
+    {% if perms.cases.import_reconciled %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Import reconciled data" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu sodales nisi. Sed molestie gravida lectus id tempus. Ut accumsan viverra mollis. Donec nec purus eu nunc egestas facilisis. Praesent id facilisis nibh.</p>
+        <p><a href={% url "datasets:import_reconciled:upload" %}>{% trans "Goto upload" %}</a></p>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 {% endblock %}

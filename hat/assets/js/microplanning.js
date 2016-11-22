@@ -8,7 +8,7 @@ import createStore from './redux/createStore'
 import App from './apps/App'
 
 import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
-import { microplanningReducer } from './apps/Microplanning/redux'
+import { microplanningReducer, initialState } from './apps/Microplanning/redux'
 import { loadReducer } from './redux/load'
 
 export default function microplanningApp (appConfig, element, baseUrl) {
@@ -27,7 +27,7 @@ export default function microplanningApp (appConfig, element, baseUrl) {
   const store = createStore({
     config: appConfig,
     highlight: {},
-    microplanning: {}
+    microplanning: initialState
   }, {
     config: (state = {}) => state,
     highlight: loadReducer,

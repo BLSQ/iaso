@@ -11,7 +11,7 @@ class MapTooltip extends Component {
     const {item} = this.props
 
     return (
-      <div ref={(node) => (this.container = node)} className='tooltip'>
+      <div key={item._id} ref={(node) => (this.container = node)} className='map__tooltip'>
         { /* ITEM */ }
         { item.zone &&
           <div key='property-zone' className='property'>

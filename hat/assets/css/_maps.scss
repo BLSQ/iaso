@@ -112,8 +112,8 @@ input.widget__filter__numberinput {
 
 $types: (
   official: $green,
-  other: $orange, 
-  unknown: $mid-gray, 
+  other: $orange,
+  unknown: $mid-gray,
   buffer: $yellow
 );
 
@@ -182,9 +182,9 @@ $types: (
   font-size: 16px;
   height: 26px;
   margin: 0;
-  padding: 2px 0 0 10px;
+  text-align: center;
   vertical-align: middle;
-  width: 24px;
+  width: 26px;
 }
 
 .legend {
@@ -197,30 +197,6 @@ $types: (
     list-style-type: none;
     margin: 0;
     padding: 0;
-  }
-
-  .scale {
-    background: $background-highlight-gray;
-    border-radius: 5px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    display: inline-block;
-    float: right;
-    height: 32px;
-    margin: $padding-unit/4;
-    padding: 6px 8px;
-    width: 180px;
-
-    li {
-      display: inline-block;
-      height: 16px;
-      width: 16px;
-    }
-    .min {
-      float: left;
-    }
-    .max {
-      float: right;
-    }
   }
 
   .points {
@@ -240,35 +216,13 @@ $types: (
   }
 }
 
-.details {
-  background-color: lighten($details, 15%);
-  padding: $padding-unit/4;
-
-  span.close {
-    cursor: pointer;
-    color: white;
-    float: right;
-    height: 24px;
-    width: 24px;
-  }
-  button {
-    background-color: white;
-    color: $details;
-    &:hover { color: white; }
-    margin-right: $padding-unit/4;
-  }
-}
-
-.tooltip {
-  color: white;
-  margin: $padding-unit/4;
-
+.map__tooltip {
   div.property {
     padding: 6px;
 
     div.label {
       display: inline-block;
-      width: 40%;
+      width: 50%;
     }
     div.value {
       display: inline-block;
@@ -381,7 +335,8 @@ path.map-layer {
     stroke: $mid-gray;
   }
   &.highlight {
-    /* fill and stroke depend on the number of cases */
+    fill: transparent;
+    stroke: $highlight;
   }
   &.details {
     fill: $details;

@@ -1,27 +1,8 @@
-import geoData from './utils/geoData'
-
-export const SHOW_DETAILS = 'hat/microplanning/SHOW_DETAILS'
-export const PLOT_DETAILS_VILLAGES = 'hat/microplanning/PLOT_DETAILS_VILLAGES'
-export const UNPLOT_DETAILS_VILLAGES = 'hat/microplanning/UNPLOT_DETAILS_VILLAGES'
-
 export const SELECT_VILLAGES = 'hat/microplanning/SELECT_VILLAGES'
 export const UNSELECT_VILLAGES = 'hat/microplanning/UNSELECT_VILLAGES'
 
 export const FILTER_VILLAGES = 'hat/microplanning/FILTER_VILLAGES'
-export const SET_BUFFER = 'hat/microplanning/SET_BUFFER'
-
-export const showDetails = (item, centered) => ({
-  type: SHOW_DETAILS,
-  payload: {item, centered}
-})
-
-export const plotDetailsVillages = () => ({
-  type: PLOT_DETAILS_VILLAGES
-})
-
-export const unplotDetailsVillages = () => ({
-  type: UNPLOT_DETAILS_VILLAGES
-})
+export const SET_BUFFER_SIZE = 'hat/microplanning/SET_BUFFER_SIZE'
 
 export const selectVillages = (items) => ({
   type: SELECT_VILLAGES,
@@ -39,59 +20,25 @@ export const filterVillages = (filter) => ({
 })
 
 export const setBuffer = (value) => ({
-  type: SET_BUFFER,
+  type: SET_BUFFER_SIZE,
   payload: value
 })
 
 export const actions = {
-  showDetails,
-  plotDetailsVillages,
-  unplotDetailsVillages,
   selectVillages,
   unselectVillages,
   filterVillages,
   setBuffer
 }
 
-export const microplanningReducer = (state = {}, action = {}) => {
+export const initialState = {
+  selected: [],
+  buffer: 5000, // metres (5km)
+  filter: { official: true, other: false, unknown: false }
+}
+
+export const microplanningReducer = (state = initialState, action = {}) => {
   switch (action.type) {
-    case SHOW_DETAILS: {
-      return {
-        ...state,
-        details: action.payload.item,
-        centered: (action.payload.item && action.payload.centered || false)
-      }
-    }
-
-    case PLOT_DETAILS_VILLAGES: {
-      if (!state.details) return state
-
-      // search the villages and include them
-      const plotted = state.plotted || []
-      const condition = (item) => (
-        item.zone === state.details.zone &&
-        (!state.details.area || item.area === state.details.area))
-
-      if (plotted.filter(condition).length === 0) {
-        const list = geoData.villages.filter(condition)
-        return {...state, plotted: plotted.concat(list)}
-      }
-      // ignore action
-      return state
-    }
-
-    case UNPLOT_DETAILS_VILLAGES: {
-      if (!state.details) return state
-
-      // search the villages and exclude them
-      const plotted = state.plotted || []
-      const condition = (item) => (
-        item.zone !== state.details.zone ||
-        item.area !== state.details.area)
-
-      return {...state, plotted: plotted.filter(condition)}
-    }
-
     case SELECT_VILLAGES: {
       let selected = state.selected || []
       const _find = (list, item) => (list.find((entry) => entry._id === item._id))
@@ -119,7 +66,7 @@ export const microplanningReducer = (state = {}, action = {}) => {
       return {...state, filter: action.payload}
     }
 
-    case SET_BUFFER: {
+    case SET_BUFFER_SIZE: {
       return {...state, buffer: parseInt(action.payload, 10)}
     }
 

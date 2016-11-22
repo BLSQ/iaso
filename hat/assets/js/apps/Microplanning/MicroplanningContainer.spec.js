@@ -7,6 +7,7 @@ import nock from 'nock'
 import sinon from 'sinon'
 
 import { urls, MicroplanningContainer } from './MicroplanningContainer'
+import { initialState } from './redux'
 
 const appConfig = {
   'sources': [
@@ -49,7 +50,7 @@ describe('MicroplanningContainer Loading Data', () => {
     reduxStore = createStore((e) => e, {
       config: appConfig,
       highlight: {},
-      microplanning: {}
+      microplanning: initialState
     })
     nockScope = createNockScope()
   })
@@ -60,7 +61,7 @@ describe('MicroplanningContainer Loading Data', () => {
   })
 
   it('loads data on initialization', function () {
-    this.timeout(10000) // increase timeout -> load JSON files
+    this.timeout(60000) // increase timeout -> load JSON files
     renderWithStore(
       reduxStore, <MicroplanningContainer {...defaultProps} />
     )
@@ -68,7 +69,7 @@ describe('MicroplanningContainer Loading Data', () => {
   })
 
   it('loads data when the filter params change', function () {
-    this.timeout(10000) // increase timeout -> load JSON files
+    this.timeout(60000) // increase timeout -> load JSON files
     const node = document.createElement('div')
     renderWithStore(
       reduxStore, <MicroplanningContainer {...defaultProps} />, node

@@ -65,7 +65,7 @@ const COLUMNS = [
 
 class DataSelected extends Component {
   render () {
-    const {data, show, unselect} = this.props
+    const {data, unselect} = this.props
 
     const sectionTitle = (
       <div className='map__selection__title'>
@@ -88,9 +88,6 @@ class DataSelected extends Component {
 
     // calculate number of villages and population
     const number = data.length
-    const official = data.filter((item) => item.type === 'official').length
-    const other = data.filter((item) => item.type === 'other').length
-    const unknown = data.filter((item) => item.type === 'unknown').length
     const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
 
     return (
@@ -138,9 +135,13 @@ class DataSelected extends Component {
             {data.map((item) => {
               return (
                 <li className='map__selection__list__item' key={item._id}>
+                  {
+                  /*
                   <span className='view' onClick={() => show(item, true)}>
                     <i className='fa fa-map-marker' />
                   </span>
+                  */
+                  }
                   <span>
                     {item.area}
                     {' - '}
@@ -150,7 +151,6 @@ class DataSelected extends Component {
               )
             })}
           </ul>
-          
         </div>
 
         <div className='map__sidebar__export'>
@@ -165,7 +165,6 @@ class DataSelected extends Component {
 
 DataSelected.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
-  show: PropTypes.func,
   unselect: PropTypes.func,
   intl: intlShape.isRequired
 }

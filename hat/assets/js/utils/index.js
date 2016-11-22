@@ -89,3 +89,12 @@ export function doAsyncInterval (delay, asyncFn, checkFn) {
   }
   return new Promise(recLoop)
 }
+
+export const capitalize = (text) => (
+  text
+    .split(' ')
+    .map((word) => (
+      word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase()
+    ))
+    .join(' ')
+)

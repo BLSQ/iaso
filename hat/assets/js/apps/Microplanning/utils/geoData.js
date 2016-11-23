@@ -16,7 +16,7 @@ const MAP_ZOOM = 8
 // !TO BE CHANGED AFTER WORKSHOP
 
 //
-// Leaflet doesn't support topoJSON format, transform them to geoJSON layers.
+// Leaflet doesn't support topoJSON format, transform them to geoJSON format.
 //
 const zones = topojson.feature(zonesTopo, zonesTopo.objects.zones)
 const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
@@ -31,33 +31,36 @@ const WORKSHOP = [
   'BULUNGU',
   'KIMPUTU'
 ]
-zones.features = zones.features.filter((item) => WORKSHOP.indexOf(item.properties.zone) > -1)
 areas.features = areas.features.filter((item) => WORKSHOP.indexOf(item.properties.zone) > -1)
-const locations = villages.filter((item) => WORKSHOP.indexOf(item.zone) > -1)
 // !TO BE REMOVED AFTER WORKSHOP
-// const locations = villages
 
 //
-// modify villages list based on other properties
+// include new properties based on other ones
 //
-locations.forEach((item) => {
-  // create fake `_id` based on assumed uniqueness location
-  item._id = item.lat.toString() + ':' + item.lon.toString()
-  item._latlon = L.latLng(item.lat, item.lon)
-  item._label = item.village
-  item.isVillage = true // used in tooltip...
+const locations = villages
+  // TO BE REMOVED AFTER WORKSHOP
+  .filter((item) => WORKSHOP.indexOf(item.zone) > -1)
+  // !TO BE REMOVED AFTER WORKSHOP
+  .map((item) => {
+    // create fake `_id` based on assumed uniqueness location
+    const _id = item.lat.toFixed(8).toString() + ':' + item.lon.toFixed(8).toString()
+    const _latlon = L.latLng(item.lat, item.lon)
+    const _label = item.village // used in tooltip
 
-  // indicate `type` based on `official` and `village` values
-  if (item.official === 'YES') {
-    item.type = 'official'
-  } else if (item.official === 'NO') {
-    item.type = 'other'
-  } else if (item.village === 'Inconnu') {
-    item.type = 'unknown'
-  } else {
-    item.type = '---' // this should never happen
-  }
-})
+    // indicate `type` based on `official` and `village` values
+    let type
+    if (item.official === 'YES') {
+      type = 'official'
+    } else if (item.official === 'NO') {
+      type = 'other'
+    } else if (item.village === 'Inconnu') {
+      type = 'unknown'
+    } else {
+      type = '---' // this should never happen
+    }
+
+    return {...item, type, _id, _label, _latlon, isVillage: true}
+  })
 
 //
 // calculate aggregated population, number of villages...

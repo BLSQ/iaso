@@ -5,8 +5,9 @@ python:
 
 sudo: required
 
-addons:
-  sauce_connect: true
+# Integration tests are temporarily disabled
+# addons:
+#   sauce_connect: true
 
 services:
   - docker
@@ -28,7 +29,7 @@ before_install:
 install:
   - pip install awscli awsebcli
 script:
-  - "docker-compose run hat test && docker-compose run -p 8081:8081 hat test_integration"
+  - "docker-compose run hat test" # && docker-compose run -p 8081:8081 hat test_integration"
 
 after_success:
   - "./build_scripts/tfx_upload.sh"

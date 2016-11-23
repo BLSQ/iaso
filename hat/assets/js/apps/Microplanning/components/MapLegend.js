@@ -8,7 +8,7 @@ import {
 class MapLegend extends Component {
   render () {
     return (
-      <div ref={(node) => (this.container = node)} className='legend'>
+      <div className='legend'>
         <div className='points'>
           <ul>
             <li key='highlight'>

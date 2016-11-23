@@ -76,7 +76,7 @@ class DataSelected extends Component {
 
     if (!data || data.length === 0) {
       return (
-        <div ref={(node) => (this.container = node)} className='map__selection'>
+        <div className='map__selection'>
           <div className='map__selection__content'>
             {sectionTitle}
             <div className='map__selection__summary--empty'>
@@ -92,7 +92,7 @@ class DataSelected extends Component {
     const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
 
     return (
-      <div ref={(node) => (this.container = node)} className='map__selection'>
+      <div className='map__selection'>
         <div className='map__selection__content'>
           {sectionTitle}
           <div className='map__selection__summary'>
@@ -129,10 +129,10 @@ class DataSelected extends Component {
           <h3>
             <FormattedMessage id='microplanning.selected.list' defaultMessage='Villages in your selection:' />
           </h3>
+          <a onClick={() => unselect([])}>
+            <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
+          </a>
           <ul className='map__selection__list'>
-            <a onClick={() => unselect([])}>
-              <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
-            </a>
             {data.map((item) => {
               return (
                 <li className='map__selection__list__item' key={item._id}>

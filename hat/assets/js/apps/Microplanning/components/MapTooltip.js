@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react'
 import {
   FormattedDate,
   FormattedMessage,
+  FormattedNumber,
   defineMessages,
   injectIntl,
   intlShape
@@ -9,157 +10,135 @@ import {
 import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
-  'official': {
+  zone: {
+    id: 'microplanning.tooltip.zone',
+    defaultMessage: 'Zonde de Sante'
+  },
+  area: {
+    id: 'microplanning.tooltip.area',
+    defaultMessage: 'Aire de Sante'
+  },
+  village: {
+    id: 'microplanning.tooltip.village',
+    defaultMessage: 'Village'
+  },
+  villagesOfficial: {
+    id: 'microplanning.tooltip.villages.official',
+    defaultMessage: 'Villages'
+  },
+  villagesOther: {
+    id: 'microplanning.tooltip.villages.other',
+    defaultMessage: 'Non official'
+  },
+  villagesUnknown: {
+    id: 'microplanning.tooltip.villages.unknown',
+    defaultMessage: 'Unknown'
+  },
+  type: {
+    id: 'microplanning.tooltip.type',
+    defaultMessage: 'Classification'
+  },
+  lat: {
+    id: 'microplanning.tooltip.latitude',
+    defaultMessage: 'Latitude'
+  },
+  lon: {
+    id: 'microplanning.tooltip.longitude',
+    defaultMessage: 'Longitude'
+  },
+
+  population: {
+    id: 'microplanning.tooltip.population',
+    defaultMessage: 'Population'
+  },
+  cases: {
+    id: 'microplanning.tooltip.cases',
+    defaultMessage: '# Cases'
+  },
+  caseDate: {
+    id: 'microplanning.tooltip.case.date',
+    defaultMessage: 'Last case date'
+  },
+  visitDate: {
+    id: 'microplanning.tooltip.visit.date',
+    defaultMessage: 'Last visit date'
+  },
+
+  // type values
+  official: {
     id: 'microplanning.tooltip.village.type.official',
     defaultMessage: 'Official'
   },
-  'other': {
+  other: {
     id: 'microplanning.tooltip.village.type.other',
     defaultMessage: 'Non official'
   },
-  'unknown': {
+  unknown: {
     id: 'microplanning.tooltip.village.type.unknown',
     defaultMessage: 'Unknown'
   }
 })
 
+const ROWS = [
+  { key: 'zone', type: 'capitalize' },
+  { key: 'area', type: 'capitalize' },
+  { key: 'villagesOfficial', type: 'integer' },
+  { key: 'villagesOther', type: 'integer' },
+  { key: 'villagesUnknown', type: 'integer' },
+  { key: 'village', type: 'capitalize' },
+  { key: 'type', type: 'message' },
+  { key: 'lat', type: 'coordinates' },
+  { key: 'lon', type: 'coordinates' },
+  { key: 'population', type: 'integer' },
+  { key: 'cases', type: 'integer' },
+  { key: 'caseDate', type: 'date' },
+  { key: 'visitDate', type: 'date' }
+]
+
 class MapTooltip extends Component {
   render () {
     const {item} = this.props
-    const {formatMessage} = this.props.intl
 
     return (
-      <div key={item._id} ref={(node) => (this.container = node)} className='map__tooltip'>
-        { /* ITEM */ }
-        { item.zone &&
-          <div key='property-zone' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.zone' defaultMessage='Zone de Sante' />
-            </div>
-            <div className='value'>
-              {capitalize(item.zone)}
-            </div>
-          </div>
-        }
-        { item.area &&
-          <div key='property-area' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.area' defaultMessage='Aire de Sante' />
-            </div>
-            <div className='value'>
-              {capitalize(item.area)}
-            </div>
-          </div>
-        }
+      <div key={item._id} className='map__tooltip'>
+        {
+          ROWS
+            .filter((row) => item[row.key] && item[row.key] !== '')
+            .map((row) => {
+              let value = item[row.key]
 
-        { item.isVillage && [
-          <div key='property-village' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.village' defaultMessage='Village' />
-            </div>
-            <div className='value'>
-              {capitalize(item.village)}
-            </div>
-          </div>,
+              switch (row.type) {
+                case 'date':
+                  value = <FormattedDate value={value} />
+                  break
+                case 'capitalize':
+                  value = capitalize(value)
+                  break
+                case 'coordinates':
+                  value = <FormattedNumber value={value} minimumFractionDigits={8} />
+                  break
+                case 'float':
+                  value = <FormattedNumber value={value} minimumFractionDigits={2} />
+                  break
+                case 'integer':
+                  value = <FormattedNumber value={value} />
+                  break
+                case 'message':
+                  value = <FormattedMessage {...MESSAGES[value]} />
+                  break
+              }
 
-          <div key='property-type' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.type' defaultMessage='Classification' />
-            </div>
-            <div className='value'>
-              {formatMessage(MESSAGES[item.type])}
-            </div>
-          </div>,
-
-          <div key='property-coords-lat' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.latitude' defaultMessage='Latitude' />
-            </div>
-            <div className='value'>
-              {item.lat.toFixed(6)}
-            </div>
-          </div>,
-
-          <div key='property-coords-lon' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.longitude' defaultMessage='Longitude' />
-            </div>
-            <div className='value'>
-              {item.lon.toFixed(6)}
-            </div>
-          </div>
-        ]}
-
-        { !item.isVillage && [
-          <div key='property-villages-official' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.villages.official' defaultMessage='Villages' />
-            </div>
-            <div className='value'>
-              {item.villages.official || 0}
-            </div>
-          </div>,
-
-          <div key='property-villages-other' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.villages.other' defaultMessage='Non official' />
-            </div>
-            <div className='value'>
-              {item.villages.other || 0}
-            </div>
-          </div>,
-
-          <div key='property-villages-unknown' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.villages.unknown' defaultMessage='Unknown' />
-            </div>
-            <div className='value'>
-              {item.villages.unknown || 0}
-            </div>
-          </div>
-        ]}
-
-        { item.population > 0 &&
-          <div key='property-population' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.population' defaultMessage='Population' />
-            </div>
-            <div className='value'>
-              {item.population}
-            </div>
-          </div>
-        }
-
-        { /* HIGHLIGHT INFO */ }
-        { item.cases > 0 &&
-          <div key='property-cases' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.cases' defaultMessage='# Cases' />
-            </div>
-            <div className='value'>
-              {item.cases}
-            </div>
-          </div>
-        }
-        { item.caseDate && item.caseDate !== '' &&
-          <div key='property-case-date' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.case.date' defaultMessage='Last case date' />
-            </div>
-            <div className='value'>
-              <FormattedDate value={item.caseDate} />
-            </div>
-          </div>
-        }
-        { item.visitDate && item.visitDate !== '' &&
-          <div key='property-visit-date' className='property'>
-            <div className='label'>
-              <FormattedMessage id='microplanning.tooltip.visit.date' defaultMessage='Last visit date' />
-            </div>
-            <div className='value'>
-              <FormattedDate value={item.visitDate} />
-            </div>
-          </div>
+              return (
+                <div key={row.key} className='property'>
+                  <div className='label'>
+                    <FormattedMessage {...MESSAGES[row.key]} />
+                  </div>
+                  <div className='value'>
+                    {value}
+                  </div>
+                </div>
+              )
+            })
         }
       </div>
     )

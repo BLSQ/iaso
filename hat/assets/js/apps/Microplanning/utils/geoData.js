@@ -75,12 +75,9 @@ const aggregated = (item) => {
 
   if (list.length) {
     props.population = list.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
-    props.villages = {
-      list: list,
-      official: list.filter((village) => (village.type === 'official')).length,
-      other: list.filter((village) => (village.type === 'other')).length,
-      unknown: list.filter((village) => (village.type === 'unknown')).length
-    }
+    props.villagesOfficial = list.filter((village) => (village.type === 'official')).length
+    props.villagesOther = list.filter((village) => (village.type === 'other')).length
+    props.villagesUnknown = list.filter((village) => (village.type === 'unknown')).length
   }
 }
 

@@ -39,15 +39,19 @@ const MESSAGES = defineMessages({
   },
   'export-cases': {
     id: 'microplanning.export.cases',
-    defaultMessage: '# Cases'
+    defaultMessage: '# Confirmed Cases'
   },
   'export-case-date': {
     id: 'microplanning.export.case.date',
     defaultMessage: 'Last case date'
   },
-  'export-visit-date': {
-    id: 'microplanning.export.visit.date',
-    defaultMessage: 'Last visit date'
+  'export-screening-people': {
+    id: 'microplanning.tooltip.screening.people',
+    defaultMessage: '# Screened people'
+  },
+  'export-screening-date': {
+    id: 'microplanning.export.screening.date',
+    defaultMessage: 'Last screening date'
   }
 })
 
@@ -59,9 +63,10 @@ const COLUMNS = [
   { message: 'export-latitude', key: 'lat', type: 'number' },
   { message: 'export-longitude', key: 'lon', type: 'number' },
   { message: 'export-population', key: 'population', type: 'number' },
-  { message: 'export-cases', key: 'cases', type: 'number' },
-  { message: 'export-case-date', key: 'caseDate', type: 'date' },
-  { message: 'export-visit-date', key: 'visitDate', type: 'date' }
+  { message: 'export-cases', key: 'confirmedCases', type: 'number' },
+  { message: 'export-case-date', key: 'lastConfirmedCaseDate', type: 'date' },
+  // { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
+  { message: 'export-screening-date', key: 'lastScreeningDate', type: 'date' }
 ]
 
 class DataSelected extends Component {

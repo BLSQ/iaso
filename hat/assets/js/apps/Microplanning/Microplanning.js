@@ -138,7 +138,7 @@ export class Microplanning extends Component {
     } = this.props.microplanning
     const bufferCheck = (buffer > 0)
 
-    const highlight = (data && data.confirmedByLocation || [])
+    const highlightedItems = (data && data.confirmedByLocation || [])
       // transform the objects from backend into the frontend format
       .map((item) => ({
         zone: item.ZS,
@@ -282,9 +282,9 @@ export class Microplanning extends Component {
           <div className=''>
             <div className='map__panel'>
               <Map
-                highlight={highlight}
-                selected={selected}
-                buffer={buffer}
+                highlightedItems={highlightedItems}
+                selectedItems={selected}
+                bufferSize={buffer}
                 filter={filter}
                 select={this.selectVillages}
                 unselect={this.unselectVillages}

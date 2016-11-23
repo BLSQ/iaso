@@ -154,14 +154,23 @@ $types: (
   height: $map-height;
   width: 100%;
 }
-.map__panel--selection {
-  margin: 0;
-  padding: 0;
-  height: ($map-height - 10);
-  .map__selection {
-    background-color: white;
-    width: $map-sidebar-width;
-  }
+
+.map__panel--left {
+  display: inline-block;
+  height: $map-height;
+  width: calc(100% - #{$map-sidebar-width});
+}
+
+.map__panel--right {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  width: $map-sidebar-width;
+  height: $map-height;
+  background: rgba(255,255,255,0.97);
+  border-left: 1px solid $gray;
+  box-shadow: -1px 0 1px 0 rgba(black, 0.08);
+  overflow-y: scroll;
 }
 
 .map__sidebar__export {
@@ -305,7 +314,7 @@ ul.map__selection__list {
   @include reset-list-style;
   clear: both;
   overflow: auto;
-  max-height: ($map-height - 400);
+  max-height: ($map-height - 350);
 }
 .map__selection__list__item {
   line-height: 1.3;

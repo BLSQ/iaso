@@ -69,3 +69,20 @@
   color: $mid-gray;
   font-weight: normal;
 }
+
+
+.list--instructions {
+  margin-top: $padding-unit*.5;
+  margin-bottom: $padding-unit;
+  padding-left: $padding-unit;
+  max-width: 32em;
+}
+.list__item--instructions {
+  margin-bottom: 0.5em;
+  line-height: 1.35;
+  font-size: $font-size-s;
+}
+
+.form__wrapper ul {
+  @include reset-list-style;
+}

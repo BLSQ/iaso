@@ -231,7 +231,18 @@ export class SuspectCases extends Component {
         <div className='widget__container'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
-              {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='suspect cases for this period' />
+              {
+                numResults
+                  ? data &&
+                    <span>
+                      {numResults}&nbsp;
+                      <FormattedMessage
+                        id='suspectcases.header.results'
+                        defaultMessage='suspect cases for this period' />
+                    </span>
+                : <FormattedMessage id='suspectcases.header.noresults' defaultMessage='No suspect cases for this period – use the controls above to select different parameters' />
+              }
+
             </h2>
           </div>
           <span>
@@ -252,7 +263,10 @@ export class SuspectCases extends Component {
             {
               numResults
                 ? data && <DataTable data={data} />
-                : <div className='widget__content'><FormattedMessage id='suspectcases.data.noresults' defaultMessage='No results for this timeframe and location – use the controls above to select different parameters.' /></div>
+                : (<div className='widget__content'>
+                  <p><FormattedMessage id='suspectcases.data.instruction' defaultMessage='This page allows you to download a list of HAT suspect cases (defined as participants with a positive screening test who did not have a follow-up confirmation test.)' /></p>
+                </div>
+                )
             }
           </span>
           <div className='widget__pagination'>

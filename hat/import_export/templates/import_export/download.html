@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Data download" %}</h1>
+  <h1 class="header__title">{% trans "Datasets – cases" %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -10,9 +10,38 @@
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Export data" %}</h2>
+        <h2 class="widget__heading">{% trans "Download cases" %}</h2>
       </div>
       <div class="widget__content">
+        <p>
+          {% blocktrans %}
+          Download data as a CSV file. Download all data from the database or a subset of the data.
+          {% endblocktrans %}
+        </p>
+        <ul class="list--instructions">
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            Select the time range you wish to include. <strong>Leave the 'from' and 'to' date fields blank to download <em>all</em> data.</strong>
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            Select whether you would like data from all sources or from historical data, mobile backups and / or pharmacovigilance.
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+          {% blocktrans %}
+            The 'field separator' option defaults to 'comma', as this is most commonly used format. For most European versions of Excel, you may need to select semicolons.
+          {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+          {% blocktrans %}
+            Hit "Prepare cases download", then you will be directed to a link to receive your file.
+          {% endblocktrans %}
+        </ul>
+
+        <div class="divider"></div>
+
         <form method="POST" action="{% url 'datasets:export_cases:download' %}" enctype="multipart/form-data">
           {% csrf_token %}
           <fieldset>
@@ -40,9 +69,9 @@
               {{ form.sep }}
             </div>
 
-            <div class="">
+            <div>
               <button type="submit" class="button">
-                {% trans "Prepare download" %}
+                {% trans "Prepare cases download" %}
               </button>
             </div>
           </fieldset>

@@ -50,7 +50,7 @@ export const DataTable = ({
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          <FormattedMessage id='monthlyreport.header.results' defaultMessage='Results' />
+          <FormattedMessage id='monthlyreport.header.results' defaultMessage='Monthly statistics from active screening using the HAT mobile application' />
         </h2>
       </div>
       <section>

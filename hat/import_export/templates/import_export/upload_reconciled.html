@@ -3,21 +3,62 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Import reconciled data" %}</h1>
+  <h1 class="header__title">{% trans "Datasets – reconciled data" %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Upload Excel file" %}</h2>
+        <h2 class="widget__heading">{% trans "Upload reconciled data" %}</h2>
       </div>
       <div class="widget__content">
+        <p>
+          {% blocktrans %}
+          From time to time, it may be necessary to manually reconcile data. This section can be used for participant or location reconciliation.
+          {% endblocktrans %}
+        </p>
+        <ul class="list--instructions">
+          <li class="list__item--instructions">
+            {% trans "To begin, your file must be in .xlsx format." %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            File must contain the document_id field of the record you want to update. Beyond that only the fields which need correcting need to be included.
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% trans "Column headers must match exactly the headers used in the exported data." %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            To upload data, click “Choose files” and upload the .xlsx file with the corrected fields. Hit "Upload reconciled data".
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            You will see a screen showing that the the upload is in progress. <strong>Please stay on this screen until you get a notification that the upload has finished.</strong>
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            You will see a screen showing successful uploads and any files which could not be imported. Fix any issues with the files which could not be imported and re-upload.
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            The data will be available immediately after the confirmation message is shown.
+            {% endblocktrans %}
+          </li>
+        </ul>
+
+        <div class="divider"></div>
+
         <form method="POST" action="{% url 'datasets:import_reconciled:upload' %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form }}
           <div class="block--margin-top--xs">
-            <button type="submit" class="button">{% trans "Upload" %}</button>
+            <button type="submit" class="button">{% trans "Upload reconciled data" %}</button>
           </div>
 
           <div id='import'>

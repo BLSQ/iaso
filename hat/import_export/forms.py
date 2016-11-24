@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class UploadMdbFilesForm(forms.Form):
     file = forms.FileField(
-        label=_('Upload files'),
+        label=_('Upload file'),
         widget=forms.FileInput(attrs={'multiple': True, 'accept': '.mdb,.accdb,.enc'}))
 
 

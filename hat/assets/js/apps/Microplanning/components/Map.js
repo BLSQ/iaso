@@ -1,14 +1,15 @@
 import React, {Component, PropTypes} from 'react'
 import ReactDOM from 'react-dom'
-import {
-  FormattedMessage,
-  IntlProvider,
-  injectIntl,
-  intlShape
-} from 'react-intl'
+import { IntlProvider, injectIntl, intlShape } from 'react-intl'
+
 import L from 'leaflet'
 import geoData from '../utils/geoData'
-import {MapLegend, MapTooltip, MapSelectionList} from './index'
+import {
+  MapLegend,
+  MapSelectionControl,
+  MapSelectionList,
+  MapTooltip
+} from './index'
 
 // map base layers (the `key` is the label used in the layers control)
 const baseLayers = {
@@ -27,7 +28,13 @@ const RADIUS = {
   other: 100,
   unknown: 100,
   highlight: 80, // amount to increase if there are cases
-  buffer: 5000 // default buffer value (5km)
+  buffer: 5 // default buffer value (5km)
+}
+
+const SELECTION_MODES = {
+  none: 0,
+  select: 1,
+  deselect: -1
 }
 
 // find all the entries in the list that match exact
@@ -61,20 +68,23 @@ class Map extends Component {
       map: null,
       // where to plot the selected, highlighted and buffer markers
       featureGroup: new L.FeatureGroup(),
-      // where to plot ALL villages; different groups based on type
+      // where to plot ALL villages; in different groups based on type
       markersGroup: {
         official: new L.FeatureGroup(),
         other: new L.FeatureGroup(),
         unknown: new L.FeatureGroup()
       },
-      // selection mode is active or not
-      inSelectionMode: false,
-      bufferSize: RADIUS.buffer,
-      filter: { official: true, other: false, unknown: false }
+      legend: { official: true, other: false, unknown: false },
+      selection: {
+        mode: SELECTION_MODES.none,
+        bufferSize: RADIUS.buffer,
+        controlContainer: null
+      }
     }
 
-    this.filterChangeHandler = this.filterChangeHandler.bind(this)
+    this.legendChangeHandler = this.legendChangeHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
+    this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
   }
 
   componentDidMount () {
@@ -84,7 +94,18 @@ class Map extends Component {
   }
   componentDidUpdate () {
     this.state.map.whenReady(() => {
-      this.updateMap()
+      // reset previous state
+      this.state.featureGroup.clearLayers()
+      this.state.map.off('mousemove') // remove ALL previous listeners
+      this.state.map.on('mousemove', (event) => {
+        // dirty: we don't want to dispatch a new state
+        this._currentPosition = event.latlng
+      })
+
+      this.updateVillages()
+      this.updateHighlightedItems()
+      this.updateSelectedItems()
+      this.updateSelectionMode()
     })
   }
   componentWillUnmount () {
@@ -93,13 +114,13 @@ class Map extends Component {
     }
   }
   render () {
-    const { filter, bufferSize, inSelectionMode } = this.state
+    const { legend, selection } = this.state
     const { selectedItems, deselect } = this.props
-    const showSelection = inSelectionMode || selectedItems.length > 0
-    const mapClass = (!showSelection ? 'map__panel' : 'map__panel--left')
+    const showSelectionList = (selection.mode !== SELECTION_MODES.none) || (selectedItems.length > 0)
+    const mapClass = (!showSelectionList ? 'map__panel' : 'map__panel--left')
 
     let selectionList = ''
-    if (showSelection) {
+    if (showSelectionList) {
       selectionList = (
         <div className='map__panel--right'>
           <MapSelectionList
@@ -114,10 +135,8 @@ class Map extends Component {
       <div className='widget__container'>
         <div className='widget__header'>
           <MapLegend
-            filter={filter}
-            filterChange={this.filterChangeHandler}
-            bufferSize={bufferSize}
-            bufferChange={this.bufferChangeHandler}
+            legend={legend}
+            legendChange={this.legendChangeHandler}
           />
         </div>
         <div className=''>
@@ -153,8 +172,8 @@ class Map extends Component {
 
     // create panes (to preserve z-index order)
     map.createPane('custom-pane-layers')
-    map.createPane('custom-pane-buffer')
     map.createPane('custom-pane-markers')
+    map.createPane('custom-pane-buffer')
 
     // show metric scale
     L.control.scale({ imperial: false }).addTo(map)
@@ -174,20 +193,12 @@ class Map extends Component {
     const commonOptions = {position: 'topleft'}
 
     // control to `activate selection mode`
-    const selectionModeControl = L.control(commonOptions)
-    selectionModeControl.onAdd = (map) => {
-      const div = L.DomUtil.create('div', 'map__control__button--selection')
-      this.renderSelectionModeControl(div, false)
-
-      L.DomEvent.on(div, 'click', (event) => {
-        L.DomEvent.stop(event)
-        this.renderSelectionModeControl(div, !this.state.inSelectionMode)
-        this.setState({ inSelectionMode: !this.state.inSelectionMode })
-      })
-
-      return div
+    const selectionControl = L.control(commonOptions)
+    selectionControl.onAdd = (map) => {
+      return L.DomUtil.create('div')
     }
-    selectionModeControl.addTo(map)
+    selectionControl.addTo(map)
+    this.state.selection.controlContainer = selectionControl.getContainer()
 
     // zoom control (standard)
     L.control.zoom(commonOptions).addTo(map)
@@ -247,58 +258,32 @@ class Map extends Component {
     return map
   }
 
-  updateMap () {
-    const { featureGroup, filter, bufferSize } = this.state
-    const { selectedItems, select, deselect } = this.props
+  updateVillages () {
+    const { legend } = this.state
 
-    const highlightedItems = (this.props.highlightedItems || [])
+    // plot indicated villages (active in legend)
+    Object.keys(legend).forEach((key) => {
+      this.plotVillagesByType(key, legend[key])
+    })
+  }
+
+  getHighlightedItems () {
+    const { legend } = this.state
+
+    return this.props.highlightedItems
       // remove not matched/reconciled villages (not in list)
       .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
       .map((item) => {
         const matched = findInData(geoData.villages, item, ['zone', 'area', 'village'])[0]
         return { ...item, ...matched }
       })
-      .filter((item) => filter[item.type])
+      .filter((item) => legend[item.type])
+  }
 
-    // TODO: filter the higlighted areas
-    // const findInShape = (item) => (findInData(highlight, item.properties, item.properties._keys))
-    // const shapes = [].concat(
-    //   geoData.zones.features
-    //     .filter((item) => (findInShape(item).length > 0)),
-    //   geoData.areas.features
-    //     .filter((item) => (findInShape(item).length > 0))
-    // )
-    //   .map((item) => {
-    //     const matched = findInShape(item)
+  updateHighlightedItems () {
+    const { featureGroup } = this.state
 
-    //     // find out the number of cases and the onset date of the last case
-    //     const confirmedCases = matched.reduce((prev, curr) => (prev + curr.confirmedCases), 0)
-    //     const screenedPeople = matched.reduce((prev, curr) => (prev + curr.screenedPeople), 0)
-    //     const lastConfirmedCaseDate = matched.reduce((prev, curr) => (prev >= curr.lastConfirmedCaseDate ? prev : curr.lastConfirmedCaseDate), '')
-    //     const lastScreeningDate = matched.reduce((prev, curr) => (prev >= curr.lastScreeningDate ? prev : curr.lastScreeningDate), '')
-
-    //     return {
-    //       ...item,
-    //       properties: {
-    //         ...item.properties,
-    //         confirmedCases,
-    //         lastConfirmedCaseDate,
-    //         screenedPeople,
-    //         lastScreeningDate
-    //       }
-    //     }
-    //   })
-
-    // reset previous state
-    featureGroup.clearLayers()
-
-    // plot indicated villages
-    Object.keys(filter).forEach((key) => {
-      this.plotVillagesByType(key, filter[key])
-    })
-    const plotted = geoData.villages.filter((item) => (filter[item.type]))
-
-    highlightedItems.forEach((item) => {
+    this.getHighlightedItems().forEach((item) => {
       const radius = RADIUS[item.type] + RADIUS.highlight
       const options = {
         pane: 'custom-pane-markers',
@@ -309,35 +294,12 @@ class Map extends Component {
       const marker = L.circle(item._latlon, options)
       this.addLayerEvents(marker, item)
       featureGroup.addLayer(marker)
-
-      if (bufferSize > 0 && item.confirmedCases > 0) {
-        // find out the points within the buffer zone
-        // TO BE IMPROVED (quadratic)
-        const inBuffer = plotted.filter((entry) => (
-            item._id !== entry._id &&
-            item._latlon.distanceTo(entry._latlon) <= (bufferSize + radius)
-          ))
-        inBuffer.push(item) // this has the info about cases
-        const inSelection = selectedItems.filter((entry) => entry._id === item._id).length > 0
-
-        // create buffer zone around the highlighted village
-        const bufferZone = L.circle(item._latlon, {
-          pane: 'custom-pane-buffer',
-          radius: bufferSize,
-          className: 'map-marker buffer'
-        })
-        featureGroup.addLayer(bufferZone)
-
-        bufferZone.on({
-          click: (event) => {
-            L.DomEvent.stop(event)
-            if (this.state.inSelectionMode) {
-              (inSelection ? deselect(inBuffer) : select(inBuffer))
-            }
-          }
-        })
-      }
     })
+  }
+
+  updateSelectedItems () {
+    const { featureGroup } = this.state
+    const { selectedItems } = this.props
 
     selectedItems.forEach((item) => {
       // take size from village type and increase it if there are cases
@@ -352,6 +314,54 @@ class Map extends Component {
       this.addLayerEvents(marker, {...item, selected: true})
       featureGroup.addLayer(marker)
     })
+  }
+
+  updateSelectionMode () {
+    const {mode, bufferSize} = this.state.selection
+
+    this.renderselectionControl()
+
+    // create buffer marker that follows mouse movements
+    if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
+      const { featureGroup, legend } = this.state
+      const bufferRadius = bufferSize * 1000 // in metres
+      const plotted = geoData.villages.filter((item) => (legend[item.type]))
+      const highlightedItems = this.getHighlightedItems()
+
+      // create buffer zone around the highlighted village
+      const bufferZone = L.circle(this._currentPosition || this.state.map.getCenter(), {
+        pane: 'custom-pane-buffer',
+        radius: bufferRadius,
+        className: 'map-marker buffer'
+      })
+      featureGroup.addLayer(bufferZone)
+
+      bufferZone.on({
+        click: (event) => {
+          L.DomEvent.stop(event)
+          // find out the points within the buffer zone
+          // TO BE IMPROVED (quadratic)
+          const inBuffer = plotted
+            .filter((entry) => (
+              event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
+            ))
+            .map((item) => {
+              const matched = findInData(highlightedItems, item, ['zone', 'area', 'village'])[0]
+              return { ...matched, ...item }
+            })
+          this.executeSelectionAction(inBuffer)
+        }
+      })
+
+      this.state.map.on('mousemove', (event) => {
+        L.DomEvent.stop(event)
+        // fires exception `undefined`
+        // bufferZone.setLatLng(event.latlng)
+        // workaround
+        bufferZone._latlng = L.latLng(event.latlng)
+        bufferZone.redraw()
+      })
+    }
   }
 
   fitToBounds () {
@@ -401,17 +411,10 @@ class Map extends Component {
   }
 
   addLayerEvents (layer, item) {
-    const { select, deselect } = this.props
-
     layer.on({
       click: (event) => {
         L.DomEvent.stop(event)
-
-        if (this.state.inSelectionMode) {
-          if (item.isVillage) {
-            (item.selected ? deselect([item]) : select([item]))
-          }
-        } else {
+        if (this.state.selection.mode === SELECTION_MODES.none) {
           this.openPopup(item, event.latlng)
         }
       },
@@ -425,23 +428,82 @@ class Map extends Component {
 
   openPopup (item, latlng) {
     const div = L.DomUtil.create('div', 'tooltip')
-    ReactDOM.render(this.injectI18n(<MapTooltip item={item} />), div)
+    let entry = item
 
+    if (!item.isVillage) {
+      const {highlightedItems} = this.props
+      // find the higlighted items in shape
+      const findInShape = (item) => (findInData(highlightedItems, item, item._keys))
+      const inShape = findInShape(item)
+
+      // find out the number of cases and the onset date of the last case
+      const confirmedCases = inShape.reduce((prev, curr) => (prev + curr.confirmedCases), 0)
+      const screenedPeople = inShape.reduce((prev, curr) => (prev + curr.screenedPeople), 0)
+      const lastConfirmedCaseDate = inShape.reduce((prev, curr) => (prev >= curr.lastConfirmedCaseDate ? prev : curr.lastConfirmedCaseDate), '')
+      const lastScreeningDate = inShape.reduce((prev, curr) => (prev >= curr.lastScreeningDate ? prev : curr.lastScreeningDate), '')
+
+      entry = {
+        ...item,
+        confirmedCases,
+        lastConfirmedCaseDate,
+        screenedPeople,
+        lastScreeningDate
+      }
+    }
+
+    ReactDOM.render(this.injectI18n(<MapTooltip item={entry} />), div)
     this.state.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
   }
 
-  renderSelectionModeControl (container, active) {
-    const className = 'map__icon--select' + (active ? '--active' : '')
-    const component = (
-      <div>
-        <i className={className} />
-        <span className='map__text--select'>
-          <FormattedMessage id='microplanning.selection.active' defaultMessage='Select villages' />
-        </span>
-      </div>
-    )
+  renderselectionControl () {
+    const {mode, bufferSize, controlContainer} = this.state.selection
+    const component = <MapSelectionControl
+      mode={mode}
+      modes={SELECTION_MODES}
+      bufferSize={bufferSize}
+      modeChange={this.selectionModeChangeHandler}
+      bufferChange={this.bufferChangeHandler}
+    />
+    ReactDOM.render(this.injectI18n(component), controlContainer)
+  }
 
-    ReactDOM.render(this.injectI18n(component), container)
+  executeSelectionAction (list) {
+    const {select, deselect} = this.props
+
+    switch (this.state.selection.mode) {
+      case SELECTION_MODES.select:
+        select(list)
+        break
+      case SELECTION_MODES.deselect:
+        deselect(list)
+        break
+    }
+  }
+
+  legendChangeHandler (event) {
+    L.DomEvent.stop(event)
+    const {legend} = this.state
+    legend[event.target.name] = event.target.checked
+    this.setState({ legend: legend })
+  }
+
+  selectionModeChangeHandler (mode) {
+    this.setState({selection: {...this.state.selection, mode}})
+  }
+
+  bufferChangeHandler (event) {
+    L.DomEvent.stop(event)
+    let value
+    if (event.target.name === 'buffer-check') {
+      if (!event.target.checked) {
+        value = 0
+      } else {
+        value = RADIUS.buffer // default value
+      }
+    } else {
+      value = parseInt(event.target.value, 10)
+    }
+    this.setState({selection: {...this.state.selection, bufferSize: value}})
   }
 
   injectI18n (component) {
@@ -453,26 +515,6 @@ class Map extends Component {
         {component}
       </IntlProvider>
     )
-  }
-
-  filterChangeHandler (event) {
-    const {filter} = this.state
-    filter[event.target.name] = event.target.checked
-    this.setState({ filter: filter })
-  }
-
-  bufferChangeHandler (event) {
-    let value
-    if (event.target.name === 'buffer-check') {
-      if (!event.target.checked) {
-        value = 0
-      } else {
-        value = RADIUS.buffer // default value
-      }
-    } else {
-      value = parseInt(event.target.value, 10)
-    }
-    this.setState({ bufferSize: value })
   }
 }
 

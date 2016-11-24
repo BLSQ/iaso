@@ -239,7 +239,7 @@ class Map extends Component {
         this.addLayerEvents(marker, item)
         featureGroup.addLayer(marker)
 
-        if (bufferSize > 0 && item.cases > 0) {
+        if (bufferSize > 0 && item.confirmedCases > 0) {
           // find out the points within the buffer zone
           // TO BE IMPROVED (quadratic)
           const inBuffer = plotted.filter((entry) => (
@@ -277,7 +277,7 @@ class Map extends Component {
     if (selectedItems && selectedItems.length) {
       selectedItems.forEach((item) => {
         // take size from village type and increase it if there are cases
-        const radius = RADIUS[item.type] + ((item.cases > 0) ? RADIUS.highlight : 0)
+        const radius = RADIUS[item.type] + ((item.confirmedCases > 0) ? RADIUS.highlight : 0)
         const options = {
           pane: 'custom-pane-markers',
           radius: radius,

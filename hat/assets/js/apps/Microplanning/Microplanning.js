@@ -13,19 +13,19 @@ import geoData from './utils/geoData'
 import {Map, MapLegend} from './components'
 
 const MESSAGES = defineMessages({
-  // dateperiod messages
-  'since-last-year': {
-    id: 'microplanning.dateperiod.since-last-year',
-    defaultMessage: 'One year'
-  },
-  'since-three-years': {
-    id: 'microplanning.dateperiod.since-three-years',
-    defaultMessage: 'Three years'
-  },
-  'since-five-years': {
-    id: 'microplanning.dateperiod.since-five-years',
-    defaultMessage: 'Five years'
-  },
+  // // dateperiod messages
+  // 'since-last-year': {
+  //   id: 'microplanning.dateperiod.since-last-year',
+  //   defaultMessage: 'One year'
+  // },
+  // 'since-three-years': {
+  //   id: 'microplanning.dateperiod.since-three-years',
+  //   defaultMessage: 'Three years'
+  // },
+  // 'since-five-years': {
+  //   id: 'microplanning.dateperiod.since-five-years',
+  //   defaultMessage: 'Five years'
+  // },
 
   // location messages
   'location-national': {
@@ -34,11 +34,11 @@ const MESSAGES = defineMessages({
   }
 })
 
-const DATEPERIODS = [
-  'since-last-year',
-  'since-three-years',
-  'since-five-years'
-]
+// const DATEPERIODS = [
+//   'since-last-year',
+//   'since-three-years',
+//   'since-five-years'
+// ]
 
 // find all the entries in the list that match exact
 // with the item values in the indicated keys list
@@ -75,14 +75,14 @@ export class Microplanning extends Component {
   }
 
   caseDateHandler (event) {
-    const caseperiod = event.target.value
-    const url = createUrl({...this.props.params, caseperiod})
+    const casedatefrom = event.target.value
+    const url = createUrl({...this.props.params, casedatefrom})
     this.props.dispatch(push(url))
   }
 
   screeningDateHandler (event) {
-    const screeningperiod = event.target.value
-    const url = createUrl({...this.props.params, screeningperiod})
+    const screeningdateto = event.target.value
+    const url = createUrl({...this.props.params, screeningdateto})
     this.props.dispatch(push(url))
   }
 
@@ -126,8 +126,8 @@ export class Microplanning extends Component {
 
   render () {
     const { formatMessage } = this.props.intl
-    // TODO: const { caseperiod, screeningperiod, location } = this.props.params
-    const { caseperiod, location } = this.props.params
+    // TODO: const { casedatefrom, screeningdateto, location } = this.props.params
+    const { location } = this.props.params
     const { data, error } = this.props.highlight
     const loading = this.props.highlight.loading
     const locations = data && data.locations || []
@@ -139,15 +139,6 @@ export class Microplanning extends Component {
     const bufferCheck = (buffer > 0)
 
     const highlightedItems = (data && data.confirmedByLocation || [])
-      // transform the objects from backend into the frontend format
-      .map((item) => ({
-        zone: item.ZS,
-        area: item.AZ,
-        village: item.village,
-        cases: item.confirmed_cases,
-        caseDate: item.last_confirmed_date,
-        visitDate: item.last_screening_date
-      }))
       // remove not matched/reconciled villages (not in list)
       .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
       .map((item) => {
@@ -168,17 +159,19 @@ export class Microplanning extends Component {
     //     const matched = findInShape(item)
 
     //     // find out the number of cases and the onset date of the last case
-    //     const cases = matched.reduce((prev, curr) => (prev + curr.cases), 0)
-    //     const caseDate = matched.reduce((prev, curr) => (prev >= curr.caseDate ? prev : curr.caseDate), '')
-    //     const visitDate = matched.reduce((prev, curr) => (prev >= curr.visitDate ? prev : curr.visitDate), '')
+    //     const confirmedCases = matched.reduce((prev, curr) => (prev + curr.confirmedCases), 0)
+    //     const screenedPeople = matched.reduce((prev, curr) => (prev + curr.screenedPeople), 0)
+    //     const lastConfirmedCaseDate = matched.reduce((prev, curr) => (prev >= curr.lastConfirmedCaseDate ? prev : curr.lastConfirmedCaseDate), '')
+    //     const lastScreeningDate = matched.reduce((prev, curr) => (prev >= curr.lastScreeningDate ? prev : curr.lastScreeningDate), '')
 
     //     return {
     //       ...item,
     //       properties: {
     //         ...item.properties,
-    //         cases,
-    //         caseDate,
-    //         visitDate
+    //         confirmedCases,
+    //         lastConfirmedCaseDate,
+    //         screenedPeople,
+    //         lastScreeningDate
     //       }
     //     }
     //   })
@@ -189,11 +182,12 @@ export class Microplanning extends Component {
           <h2 className='filter__label'>
             <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages' />
           </h2>
+          { /* TODO: first change django filters
           <div key='filter-case-date' className='filter__container__select'>
-            <label htmlFor='casedate' className='filter__container__select__label'>
+            <label htmlFor='casedatefrom' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.cases.date' defaultMessage='with HAT cases in past' />
             </label>
-            <select disabled={loading} name='casedate' value={caseperiod} onChange={this.caseDateHandler} className='select--minimised'>
+            <select disabled={loading} name='casedatefrom' value={casedatefrom} onChange={this.caseDateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
                   {formatMessage(MESSAGES[period])}
@@ -201,12 +195,11 @@ export class Microplanning extends Component {
               ))}
             </select>
           </div>
-          { /* TODO: first change django filters
           <div key='filter-screening-date' className='filter__container__select'>
-            <label htmlFor='screeningperiod' className='filter__container__select__label'>
+            <label htmlFor='screeningdateto' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and not visited in past' />
             </label>
-            <select disabled={loading} name='screeningperiod' value={screeningperiod} onChange={this.screeningDateHandler} className='select--minimised'>
+            <select disabled={loading} name='screeningdateto' value={screeningdateto} onChange={this.screeningDateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
                   {formatMessage(MESSAGES[period])}

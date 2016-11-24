@@ -1,7 +1,8 @@
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from calendar import monthrange
 import pytz
+from django.db import connection
 from django.db.models import Count, Min, Max
 from django.db.models.expressions import RawSQL
 from django.core.exceptions import ValidationError
@@ -20,6 +21,7 @@ from hat.cases.filters import \
     Q_staging \
 
 datasets = {}
+DATE_FORMAT = "%Y-%m-%d"
 
 
 def dataset(params_schema=None):
@@ -44,11 +46,11 @@ params_schema = {
     'properties': {
         'date': {'type': 'string'},
         'dateperiod': {'type': 'string'},
+        'datefrom': {'type': 'string'},
+        'dateto': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'},
         'offset': {'type': 'string'},
-        'caseperiod': {'type': 'string'},
-        'screeningperiod': {'type': 'string'},
     },
     'additionalProperties': False,
 }
@@ -82,6 +84,15 @@ def get_cases_filtered(params, ignore_params=None):
     if dateperiod is not None:
         (date_from, date_to) = resolve_dateperiod(dateperiod)
         cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
+
+    datefrom = get_param_value('datefrom')
+    dateto = get_param_value('dateto')
+    if datefrom is not None:
+        date_from = datetime.strptime(datefrom, DATE_FORMAT)
+        cases = cases.filter(document_date__gte=date_from)
+    if dateto is not None:
+        date_to = datetime.strptime(dateto, DATE_FORMAT) + timedelta(days=1)
+        cases = cases.filter(document_date__lt=date_to)
 
     location = get_param_value('location')
     if location is not None:
@@ -170,25 +181,86 @@ def tested_per_day(params):
     return result
 
 
-@dataset(params_schema=params_schema)
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {
+        'datefrom': {'type': 'string'},
+        'dateto': {'type': 'string'},
+        'location': {'type': 'string'},
+        'source': {'type': 'string'},
+        'casedatefrom': {'type': 'string'},
+        'screeningdateto': {'type': 'string'},
+    }
+})
 def confirmed_by_location(params):
-    params['dateperiod'] = params.get('caseperiod', None)
+    # first expected date is 2000-01-01
+    date_from = datetime(2000, 1, 1)
+    # last date is today
+    today = date.today()
+    date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    if 'datefrom' in params:
+        date_from = datetime.strptime(params['datefrom'], DATE_FORMAT)
+    if 'dateto' in params:
+        date_to = datetime.strptime(params['dateto'], DATE_FORMAT) + timedelta(days=1)
 
-    cases = get_cases_filtered(params, ignore_params=['caseperiod', 'screeningperiod']) \
-        .filter(Q_confirmation) \
-        .filter(Q_confirmation_positive) \
-        .values('province', 'ZS', 'AZ', 'village') \
-        .annotate(confirmed_cases=Count('document_id')) \
-        .annotate(last_confirmed_date=Max('document_date')) \
-        .order_by('province', 'ZS', 'AZ', 'village')
+    positiveCondition = '''FILTER
+            (WHERE test_maect IS TRUE
+                OR test_ge IS TRUE
+                OR test_pg IS TRUE
+                OR test_ctcwoo IS TRUE
+                -- test_catt_dilution is a text field and currently not included
+                OR test_lymph_node_puncture IS TRUE
+                OR test_sf IS TRUE
+                OR test_lcr IS TRUE)
+    '''
 
-    # visits = get_cases_filtered(params, ignore_params=['caseperiod', 'screeningperiod'])
-    # visits = visits.filter(Q_screening) \
-    #     .values('province', 'ZS', 'AZ', 'village') \
-    #     .annotate(last_screening_date=Max('document_date')) \
-    #     .order_by('province', 'ZS', 'AZ', 'village')
+    screeningCondition = '''FILTER
+            (WHERE test_catt IS NOT NULL
+                OR test_rdt IS NOT NULL)
+    '''
 
-    return cases
+    sql = '''
+        SELECT "ZS" as zone
+             , "AZ" as area
+             , village
+             , count(DISTINCT document_id) ''' + screeningCondition + '''
+              as "screenedPeople"
+             , max(document_date)  ''' + screeningCondition + '''
+              as "lastScreeningDate"
+             , count(DISTINCT document_id) ''' + positiveCondition + '''
+              as "confirmedCases"
+             , max(document_date) ''' + positiveCondition + '''
+              as "lastConfirmedCaseDate"
+        FROM cases_case
+        WHERE document_date >= %s AND document_date < %s
+    '''
+
+    sql_params = [date_from, date_to]
+    if 'location' in params:
+        sql = sql + 'AND "ZS" = %s'
+        sql_params.append(params['location'])
+    if 'source' in params:
+        sql = sql + 'AND source = %s'
+        sql_params.append(params['source'])
+    sql = sql + '''
+        GROUP BY "ZS", "AZ", village
+        HAVING count(DISTINCT document_id) ''' + positiveCondition + ''' > 0
+    '''
+    if 'casedatefrom' in params:
+        sql = sql + ' AND max(document_date) ' + positiveCondition + ' >= %s'
+        sql_params.append(datetime.strptime(params['casedatefrom'], DATE_FORMAT))
+    if 'screeningdateto' in params:
+        sql = sql + ' AND max(document_date) ' + screeningCondition + ' < %s'
+        sql_params.append(
+            datetime.strptime(params['screeningdateto'], DATE_FORMAT) + timedelta(days=1))
+
+    result = []
+    with connection.cursor() as cursor:
+        cursor.execute(sql, sql_params)
+        columns = [x.name for x in cursor.description]
+        for row in cursor.fetchall():
+            result.append(dict(zip(columns, row)))
+    return result
 
 
 class DatasetViewSet(viewsets.ViewSet):

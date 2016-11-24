@@ -24,21 +24,24 @@ export const urls = [
     mock: [{ 'ZS': 'Yasa-bonga' }]
   },
   {
-    name: 'confirmation',
-    url: '/api/datasets/count_confirmed/',
-    mock: { 'negative': 0, 'total': 0, 'positive': 0 }
-  },
-  {
     name: 'confirmedByLocation',
     url: '/api/datasets/confirmed_by_location/',
     mock: [{
-      'province': 'Bandundu',
-      'ZS': 'Yasa-bonga',
-      'AZ': 'Kimbwayamu',
-      'village': 'Kintulu',
-      'confirmed_cases': 2,
-      'last_confirmed_case': '2016-06-03T00:00:00.000Z',
-      'last_screening_date': '2016-07-03T00:00:00.000Z'
+      'area': 'Muwanda-koso',
+      'confirmedCases': 1,
+      'lastConfirmedCase': '2016-06-27T13:29:03.141000Z',
+      'lastScreeningDate': '2016-06-12T09:20:48.654000Z',
+      'screenedPeople': 201,
+      'village': 'Polongo',
+      'zone': 'Mosango'
+    }, {
+      'area': 'Fula',
+      'confirmedCases': 2,
+      'lastConfirmedCase': '2016-08-21T12:27:17.420000Z',
+      'lastScreeningDate': '2016-08-21T12:27:17.420000Z',
+      'screenedPeople': 211,
+      'village': 'Kikonzi-mf',
+      'zone': 'Yasa-bonga'
     }]
   }
 ]

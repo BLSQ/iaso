@@ -247,7 +247,7 @@ class ConfirmationWidget extends Component {
               <FormattedMessage id='statspage.confirmation.subheader' defaultMessage='HAT confirmed' />
             </h2>
             <p>
-              <FormattedMessage id='statspage.registered.description' defaultMessage='The percentage of participants tested who had a positive confirmation test (PG, mAECT, CTC/WOO, or GE)' />
+              <FormattedMessage id='statspage.confirmation.description' defaultMessage='The percentage of participants tested who had a positive confirmation test (PG, mAECT, CTC/WOO, or GE)' />
             </p>
             <ul className='list--stats--reduced'>
               <li className='list__item--stats--reduced'>

@@ -205,7 +205,6 @@ class ScreeningWidget extends Component {
                   {total.negative}
                 </span>
               </li>
-              
             </ul>
             <span className='text--explanation'>
               <FormattedMessage id='statspage.screening.count.total'

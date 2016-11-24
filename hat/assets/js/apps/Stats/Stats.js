@@ -56,49 +56,53 @@ class ParticipationWidget extends Component {
     const villagesWithEstimate = coverage.population_estimate.locations.length
     const population = coverage.population_estimate.population
     const registered = coverage.population_estimate.registered
-    const percentage = Math.round(registered / population * 10000) / 100
+    const percentageScreened = Math.round(registered / population * 10000) / 100
 
     return <div className='widget__container'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          <FormattedMessage id='statspage.participation.header' defaultMessage='Coverage' />
+          <FormattedMessage id='statspage.participation.header' defaultMessage='Proportion of population screened' />
         </h2>
       </div>
-      <section className='widget__section--columnar'>
-        <div className='widget__content--column2'>
-          <ul>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.participation.totalpop' defaultMessage='Total estimated population in the villages' />
-              </span>
-              <span>
-                <span className='list__item__number'>{population}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.participation.registered' defaultMessage='Total number of participants registered in the villages' />
-              </span>
-              <span>
-                <span className='list__item__number'>{registered}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.participation.explanation'
-                  defaultMessage='There are {totalVillages} villages in this selection, but only {villagesWithEstimate} have a population estimate. The participation rate is calculated from this reduced set.'
-                  values={{totalVillages, villagesWithEstimate}}
-                />
-              </span>
-            </li>
-          </ul>
-        </div>
+      <div className='widget__content'>
+        <section className='wrapper__column'>
+          <div className='column--4'>
+            <h2 className='block--margin-bottom--xs'>
+              <FormattedMessage id='statspage.participation.subheader' defaultMessage='Participation rate' />
+              &nbsp;{percentageScreened}
+            </h2>
+            <p>
+              <FormattedMessage id='statspage.participation.description' defaultMessage='The percentage of the target population of the screened areas for this time period' />
+            </p>
+            <ul className='list--stats--reduced'>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.participation.registered' defaultMessage='Number of participants registered' />
+                </span>
+                <span className='list__item__number--prominent'>{registered}</span>
+              </li>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.participation.totalpop' defaultMessage='Total population of screened areas (estimate)' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {population}
+                </span>
+              </li>
+            </ul>
+            <span className='text--explanation'>
+              <FormattedMessage id='statspage.participation.explanation'
+                defaultMessage='There are {totalVillages} villages in this selection, but only {villagesWithEstimate} have population data. The participation rate is calculated using only these {villagesWithEstimate} villages.'
+                values={{totalVillages, villagesWithEstimate}}
+              />
+            </span>
+          </div>
 
-        <div className='widget__content--column1'>
-          <h1>{percentage}</h1>
-          <div ref={(node) => (this.donutContainer = node)} />
-        </div>
-      </section>
+          <div className='column--6 container__graph--6'>
+            <div ref={(node) => (this.donutContainer = node)} />
+          </div>
+        </section>
+      </div>
     </div>
   }
 }
@@ -106,6 +110,7 @@ class ParticipationWidget extends Component {
 class RegisteredWidget extends Component {
   render () {
     const {timeseries, total} = this.props
+    const percentageMissing = Math.round(total.tested / total.registered * 10000) / 100
     const spec = {
       x_accessor: 'date',
       y_accessor: 'registered',
@@ -115,34 +120,43 @@ class RegisteredWidget extends Component {
     return <div className='widget__container'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          <FormattedMessage id='statspage.registered.header.results' defaultMessage='Registered participants' />
+          <FormattedMessage id='statspage.registered.header.results' defaultMessage='Amount of people missing tests' />
         </h2>
       </div>
-      <section className='widget__section--columnar'>
-        <div className='widget__content--column1'>
-          <ul className='list--stats'>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.registered.count.registered' defaultMessage='Registered' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.registered}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.registered.count.tested' defaultMessage='Tested' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.tested}</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div className='widget__content--column2'>
-          <Visualization data={timeseries} spec={spec} />
-        </div>
-      </section>
+      <div className='widget__content'>
+        <section className='wrapper__column'>
+          <div className='column--4'>
+            <h2 className='block--margin-bottom--xs'>
+              {percentageMissing}&nbsp;
+              <FormattedMessage id='statspage.registered.subheader' defaultMessage='missing tests' />
+            </h2>
+            <p>
+              <FormattedMessage id='statspage.registered.description' defaultMessage='The percentage of participants registered in the app who are missing test results' />
+            </p>
+            <ul className='list--stats--reduced'>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.registered.count.tested' defaultMessage='Number of participants with a test result' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.tested}
+                </span>
+              </li>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.registered.count.registered' defaultMessage='Number of participants registered' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.registered}
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div className='column--6 container__graph--6'>
+            <Visualization data={timeseries} spec={spec} />
+          </div>
+        </section>
+      </div>
     </div>
   }
 }
@@ -150,6 +164,7 @@ class RegisteredWidget extends Component {
 class ScreeningWidget extends Component {
   render () {
     const {timeseries, total} = this.props
+    const percentagePositiveScreening = Math.round(total.positive / total.total * 10000) / 100
     const spec = {
       x_accessor: 'date',
       y_accessor: ['screening_pos', 'screening_neg', 'screening_total'],
@@ -163,39 +178,47 @@ class ScreeningWidget extends Component {
           <FormattedMessage id='statspage.screening.header.results' defaultMessage='Screening tests' />
         </h2>
       </div>
-      <section className='widget__section--columnar'>
-        <div className='widget__content--column1'>
-          <ul className='list--stats'>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.screening.count.pos' defaultMessage='Tested positive' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.positive}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.screening.count.neg' defaultMessage='Tested negative' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.negative}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.screening.count.total' defaultMessage='Total' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.total}</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div className='widget__content--column2'>
-          <Visualization data={timeseries} spec={spec} />
-        </div>
-      </section>
+      <div className='widget__content'>
+        <section className='wrapper__column'>
+          <div className='column--4'>
+            <h2 className='block--margin-bottom--xs'>
+              {percentagePositiveScreening}&nbsp;
+              <FormattedMessage id='statspage.screening.subheader' defaultMessage='HAT probable' />
+            </h2>
+            <p>
+              <FormattedMessage id='statspage.registered.description' defaultMessage='The percentage of participants tested who had a positive screening test (CATT or RDT)' />
+            </p>
+            <ul className='list--stats--reduced'>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.screening.count.pos' defaultMessage='Number of participants with a positive screening result' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.positive}
+                </span>
+              </li>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.screening.count.neg' defaultMessage='Number of participants with a negative screening result' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.negative}
+                </span>
+              </li>
+              
+            </ul>
+            <span className='text--explanation'>
+              <FormattedMessage id='statspage.screening.count.total'
+                defaultMessage='Out of an overall total of {totalParticipants} participants registered.'
+                values={{totalParticipants: total.total}}
+              />
+            </span>
+          </div>
+          <div className='column--6 container__graph--6'>
+            <Visualization data={timeseries} spec={spec} />
+          </div>
+        </section>
+      </div>
     </div>
   }
 }
@@ -203,6 +226,7 @@ class ScreeningWidget extends Component {
 class ConfirmationWidget extends Component {
   render () {
     const {timeseries, total} = this.props
+    const percentagePositiveConfirmation = Math.round(total.positive / total.total * 10000) / 100
     const spec = {
       x_accessor: 'date',
       y_accessor: ['confirmation_pos', 'confirmation_neg', 'confirmation_total'],
@@ -216,39 +240,46 @@ class ConfirmationWidget extends Component {
           <FormattedMessage id='statspage.confirmation.header.results' defaultMessage='Confirmation tests' />
         </h2>
       </div>
-      <section className='widget__section--columnar'>
-        <div className='widget__content--column1'>
-          <ul className='list--stats'>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.confirmation.count.pos' defaultMessage='Tested positive' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.positive}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.confirmation.count.neg' defaultMessage='Tested negative' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.negative}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.confirmation.count.total' defaultMessage='Total' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.total}</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div className='widget__content--column2'>
-          <Visualization data={timeseries} spec={spec} />
-        </div>
-      </section>
+      <div className='widget__content'>
+        <section className='wrapper__column'>
+          <div className='column--4'>
+            <h2 className='block--margin-bottom--xs'>
+              {percentagePositiveConfirmation}&nbsp;
+              <FormattedMessage id='statspage.confirmation.subheader' defaultMessage='HAT confirmed' />
+            </h2>
+            <p>
+              <FormattedMessage id='statspage.registered.description' defaultMessage='The percentage of participants tested who had a positive confirmation test (PG, mAECT, CTC/WOO, or GE)' />
+            </p>
+            <ul className='list--stats--reduced'>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.confirmation.count.pos' defaultMessage='Number of participants confirmed positive for HAT' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.positive}
+                </span>
+              </li>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.confirmation.count.neg' defaultMessage='Number of participants confirmed negative for HAT' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.negative}
+                </span>
+              </li>
+            </ul>
+            <span className='text--explanation'>
+              <FormattedMessage id='statspage.confirmation.count.total'
+                defaultMessage='Out of an overall total of {totalParticipants} participants registered.'
+                values={{totalParticipants: total.total}}
+              />
+            </span>
+          </div>
+          <div className='column--6 container__graph--6'>
+            <Visualization data={timeseries} spec={spec} />
+          </div>
+        </section>
+      </div>
     </div>
   }
 }
@@ -269,39 +300,39 @@ class StageWidget extends Component {
           <FormattedMessage id='statspage.stage.header.results' defaultMessage='Stage tests' />
         </h2>
       </div>
-      <section className='widget__section--columnar'>
-        <div className='widget__content--column1'>
-          <ul className='list--stats'>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.stage.count.pos' defaultMessage='Tested positive' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.stage2}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.stage.count.neg' defaultMessage='Tested negative' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.stage1}</span>
-              </span>
-            </li>
-            <li className='list__item--stats'>
-              <span>
-                <FormattedMessage id='statspage.stage.count.total' defaultMessage='Total' />
-              </span>
-              <span>
-                <span className='list__item__number'>{total.total}</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div className='widget__content--column2'>
-          <Visualization data={timeseries} spec={spec} />
-        </div>
-      </section>
+      <div className='widget__content'>
+        <section className='wrapper__column'>
+          <div className='column--4'>
+            <ul className='list--stats--reduced'>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.stage.count.pos' defaultMessage='Number of participants HAT Stage Two' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.stage2}
+                </span>
+              </li>
+              <li className='list__item--stats--reduced'>
+                <span className='text--label'>
+                  <FormattedMessage id='statspage.stage.count.neg' defaultMessage='Number of participants HAT Stage One' />
+                </span>
+                <span className='list__item__number--prominent'>
+                  {total.stage1}
+                </span>
+              </li>
+            </ul>
+            <span className='text--explanation'>
+              <FormattedMessage id='statspage.stage.count.total'
+                defaultMessage='Out of an overall total of {totalParticipants} participants registered.'
+                values={{totalParticipants: total.total}}
+              />
+            </span>
+          </div>
+          <div className='column--6 container__graph--6'>
+            <Visualization data={timeseries} spec={spec} />
+          </div>
+        </section>
+      </div>
     </div>
   }
 }

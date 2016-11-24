@@ -1,0 +1,24 @@
+
+[class*="container__graph"] {
+  position: relative;
+  border: 1px solid $background-gray;
+  background: rgba($background-gray, .2);
+  padding: $padding-unit $padding-unit/2;
+  border-radius: 4px;
+  // width: calc(60% - #{$padding-unit});
+  box-shadow: inset 1px 1px 4px 0 rgba(black,.05);
+  /* this one weird trick to get graphs to vertically center
+     because apparently they won't render with flexbox? ¯\_(ツ)_/¯ */ 
+  > div {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+@for $i from 1 through 10 {
+  .container__graph {
+    &--#{$i} {
+      width: calc(#{$i}0% - #{$padding-unit});
+    }
+  }
+}

@@ -1,4 +1,5 @@
 /* landing page! this is all static (hard-coded) content */
+/* nothing here is very re-useable so it's not particularly elegant css */
 
 /* styles common to all sections */
 [class^="section--feature"] {
@@ -15,7 +16,6 @@
   &--welcome {
     flex-direction: column;
     background: white;
-    /*padding: $padding-unit;*/
   }
   &--pilot-area {
     background: $blue linear-gradient(-180deg, rgba(black,0.2) 0%, transparent 100%);
@@ -71,6 +71,7 @@
     align-self: center;
     @include white-text-dark-background;
     max-width: 32em;
+    padding: $padding-unit 0;
   }
   &__image--pilot-area {
     order: 2;

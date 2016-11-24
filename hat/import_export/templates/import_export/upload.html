@@ -3,21 +3,51 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Data upload" %}</h1>
+  <h1 class="header__title">{% trans "Datasets – cases" %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Import file" %}</h2>
+        <h2 class="widget__heading">{% trans "Upload cases" %}</h2>
       </div>
       <div class="widget__content">
+        <p>
+          {% blocktrans %}
+          Upload historical data forms from the Microsoft Access template or encrypted backup files from the mobile application.
+          {% endblocktrans %}
+        </p>
+        <ul class="list--instructions">
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            To upload data, click “Choose files” and select the file from your computer. Hit "Upload cases".
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            You will see a screen showing that the the upload is in progress. <strong>Please stay on this screen until you get a notification that the upload has finished.</strong>
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            You will see a screen showing successful uploads and any files which could not be imported. Files won't be imported if they've already been uploaded, or if there are errors in the file.
+            {% endblocktrans %}
+          </li>
+          <li class="list__item--instructions">
+            {% blocktrans %}
+            The data will be available immediately after the confirmation message is shown.
+            {% endblocktrans %}
+          </li>
+        </ul>
+
+        <div class="divider"></div>
+
         <form method="POST" action="{% url 'datasets:import_cases:upload' %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form }}
           <div class="block--margin-top--xs">
-            <button type="submit" class="button">{% trans "Import" %}</button>
+            <button type="submit" class="button">{% trans "Upload cases" %}</button>
           </div>
 
           <div id='import'>

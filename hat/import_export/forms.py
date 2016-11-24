@@ -4,17 +4,17 @@ from django.utils.translation import ugettext_lazy as _
 
 class UploadMdbFilesForm(forms.Form):
     file = forms.FileField(
-        label=_('Files'),
+        label=_('Upload file'),
         widget=forms.FileInput(attrs={'multiple': True, 'accept': '.mdb,.accdb,.enc'}))
 
 
 class UploadLocationsFileForm(forms.Form):
-    file = forms.FileField(label=_('File'),
+    file = forms.FileField(label=_('Upload file'),
                            widget=forms.FileInput(attrs={'accept': '.dbf'}))
 
 
 class UploadReconciledFileForm(forms.Form):
-    file = forms.FileField(label=_('File'),
+    file = forms.FileField(label=_('Upload file'),
                            widget=forms.FileInput(attrs={'accept': '.xlsx'}))
 
 
@@ -49,6 +49,6 @@ class DownloadCsvForm(forms.Form):
         required=True,
         widget=forms.RadioSelect,
         choices=SEP_CHOICES,
-        label=_('Fields separator'),
+        label=_('Field separator'),
         initial=','
     )

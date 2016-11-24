@@ -2,17 +2,20 @@
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Data download" %}</h1>
+  <h1 class="header__title">{% trans "Datasets – cases" %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Export ready" %}</h2>
+        <h2 class="widget__heading">{% trans "Download ready" %}</h2>
       </div>
       <div class="widget__content">
-        <a class="button" href="{{ download_link }}">{% trans "HAT historic data file" %}</a>
+        <a class="button--success" href="{{ download_link }}">
+        <i class="fa fa-download"></i>
+        {% trans "HAT database export" %}
+        </a>
       </div>
     </div>
   </div>

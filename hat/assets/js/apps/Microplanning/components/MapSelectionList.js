@@ -64,9 +64,9 @@ const COLUMNS = [
   { message: 'export-screening-date', key: 'lastScreeningDate', type: 'date' }
 ]
 
-class DataSelected extends Component {
+class MapSelectionList extends Component {
   render () {
-    const {data, show, unselect} = this.props
+    const {data, show, deselect} = this.props
 
     const sectionTitle = (
       <div className='map__selection__title'>
@@ -129,7 +129,7 @@ class DataSelected extends Component {
           <h3>
             <FormattedMessage id='microplanning.selected.list' defaultMessage='Villages in your selection:' />
           </h3>
-          <a onClick={() => unselect([])}>
+          <a onClick={() => deselect([])}>
             <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
           </a>
           <ul className='map__selection__list'>
@@ -160,10 +160,10 @@ class DataSelected extends Component {
   }
 }
 
-DataSelected.propTypes = {
+MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
-  unselect: PropTypes.func
+  deselect: PropTypes.func
 }
 
-export default injectIntl(DataSelected)
+export default injectIntl(MapSelectionList)

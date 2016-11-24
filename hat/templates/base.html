@@ -16,9 +16,8 @@
       {% render_bundle 'styles' %}
     {% else %}
       {% render_bundle 'styles' 'css' %}
-      {% render_bundle 'print' 'css' %}
     {% endif %}
-    
+
     {# very simple print stylesheet #}
     <link rel="stylesheet" href="{% static 'print.css' %}" type="text/css" media="print" />
 

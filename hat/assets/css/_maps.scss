@@ -14,7 +14,6 @@ $unknown: $mid-gray;
 $map-height: 720px;
 $map-sidebar-width: 260px;
 
-
 .widget__toggle-group {
   display: inline-block;
   vertical-align: top;
@@ -193,7 +192,7 @@ $types: (
   width: 100%;
 }
 
-.map__control--button {
+[class*="map__control__button"] {
   background-color: white;
   border-radius: 4px;
   border: 1px solid $gray;
@@ -205,10 +204,63 @@ $types: (
   text-align: center;
   vertical-align: middle;
   width: 26px;
-
   .active {
     color: $selected;
   }
+}
+
+.map__control__button--selection {
+  width: auto;
+  height: auto;
+  border: 1px solid $yellow;
+  box-shadow: 0 0 2px 0 #865A0B;
+  border-radius: 2px;
+  padding: 8px;
+  font-size: $font-size-s;
+  text-transform: uppercase;
+}
+
+[class^="map__icon--select"] {
+  /* sizes */
+  $icon-size: 28px;
+  $icon-center-size: 8px;
+  /* styles */
+  box-sizing: border-box;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: $icon-size;
+  height: $icon-size;
+  border-radius: 50%;
+  background: rgba($yellow, 0.85);
+  box-shadow: 0 0 2px 0 #865A0B;
+  margin-right: 6px;
+  filter: grayscale(100%);
+  &:after {
+    display: block;
+    position: absolute;
+    box-sizing: border-box;
+    content: '';
+    width: $icon-center-size;
+    height: $icon-center-size;
+    border-radius: 50%;
+    left: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+    top: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+    z-index: 1;
+    background: $bright-yellow;
+    border: 1px solid rgba($bright-pink, 0.85);
+    box-shadow: 0 0 1px 1px rgba($bright-pink,0.45);
+  }
+}
+.map__icon--select {
+  &--active {
+    filter: initial;
+  }
+}
+
+.map__text--select {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .legend {
@@ -409,8 +461,7 @@ path.map-marker {
     @include marker($details);
   }
   &.buffer {
-    @include marker($buffer);
-    fill-opacity: 0.3;
+    @include marker($color: $buffer, $fill-opacity: 0.3, $stroke-color: $buffer, $stroke-width: 1)
     &:hover {
       fill-opacity: 0.5;
     }

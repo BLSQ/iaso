@@ -14,7 +14,7 @@ const baseLayers = {
   'ArcGIS Topo Map': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.jpg')
 }
 // this is the default base layer, it should match one of the base layers keys
-const DEFAULT_LAYER = 'Blank'
+const DEFAULT_LAYER = 'ArcGIS Topo Map'
 
 // circle size in metres depending on the village type
 const RADIUS = {
@@ -129,10 +129,32 @@ class Map extends Component {
 
     const commonOptions = {position: 'topleft'}
 
+    // 2.- control to `activate selection mode`
+    const selectionModeControl = L.control(commonOptions)
+    selectionModeControl.onAdd = (map) => {
+      const div = L.DomUtil.create('div', 'map__control__button--selection')
+      div.innerHTML = '<i class="map__icon--select"></i> <span class="map__text--select">Select villages</span>'
+
+      L.DomEvent.on(div, 'click', (event) => {
+        L.DomEvent.stop(event)
+
+        if (!this.state.inSelectionMode) {
+          div.innerHTML = '<i class="map__icon--select--active"></i> <span class="map__text--select">Select villages</span>'
+        } else {
+          div.innerHTML = '<i class="map__icon--select"></i> <span class="map__text--select">Select villages</span>'
+        }
+
+        this.setState({inSelectionMode: !this.state.inSelectionMode})
+      })
+
+      return div
+    }
+    selectionModeControl.addTo(map)
+
     // 1.- control to `fitToBounds`
     const fitToBoundsControl = L.control(commonOptions)
     fitToBoundsControl.onAdd = (map) => {
-      const div = L.DomUtil.create('div', 'map__control--button')
+      const div = L.DomUtil.create('div', 'map__control__button')
       div.innerHTML = '<i class="fa fa-map-marker"></i>'
       L.DomEvent.on(div, 'click', (event) => {
         L.DomEvent.stop(event)
@@ -142,28 +164,6 @@ class Map extends Component {
       return div
     }
     fitToBoundsControl.addTo(map)
-
-    // 2.- control to `activate selection mode`
-    const selectionModeControl = L.control(commonOptions)
-    selectionModeControl.onAdd = (map) => {
-      const div = L.DomUtil.create('div', 'map__control--button')
-      div.innerHTML = '<i class="fa fa-bullseye"></i>'
-
-      L.DomEvent.on(div, 'click', (event) => {
-        L.DomEvent.stop(event)
-
-        if (!this.state.inSelectionMode) {
-          div.innerHTML = '<i class="fa fa-bullseye active"></i>'
-        } else {
-          div.innerHTML = '<i class="fa fa-bullseye"></i>'
-        }
-
-        this.setState({inSelectionMode: !this.state.inSelectionMode})
-      })
-
-      return div
-    }
-    selectionModeControl.addTo(map)
 
     // 3. layer control (standard)
     L.control.layers(baseLayers, null, commonOptions).addTo(map)

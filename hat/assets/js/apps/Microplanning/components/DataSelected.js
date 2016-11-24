@@ -117,7 +117,7 @@ class DataSelected extends Component {
             <div className='map__text--warning'>
               <FormattedMessage
                 id='microplanning.selected.population.warning'
-                defaultMessage='Please note: Population estimates may not be accurate. '
+                defaultMessage='Please note: population estimates may not be accurate. '
               />
               <FormattedMessage
                 id='microplanning.selected.population.warning1'

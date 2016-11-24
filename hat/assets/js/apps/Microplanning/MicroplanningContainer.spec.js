@@ -7,7 +7,6 @@ import nock from 'nock'
 import sinon from 'sinon'
 
 import { urls, MicroplanningContainer } from './MicroplanningContainer'
-import { initialState } from './redux'
 
 const appConfig = {
   'sources': [
@@ -42,15 +41,13 @@ describe('MicroplanningContainer Loading Data', () => {
   beforeEach(function () {
     defaultProps = {
       config: appConfig,
-      highlight: {},
-      microplanning: {},
+      villages: {},
       params: { datefrom: '2000-01-01' },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
       config: appConfig,
-      highlight: {},
-      microplanning: initialState
+      villages: {}
     })
     nockScope = createNockScope()
   })

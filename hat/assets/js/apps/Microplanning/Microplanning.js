@@ -5,6 +5,7 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
 
 import { Map } from './components'
+import { selectItems, deselectItems } from './selection'
 
 const MESSAGES = defineMessages({
   'location-national': {
@@ -19,6 +20,8 @@ export class Microplanning extends Component {
     this.caseDateHandler = this.caseDateHandler.bind(this)
     this.screeningDateHandler = this.screeningDateHandler.bind(this)
     this.locationHandler = this.locationHandler.bind(this)
+    this.selectItemsHandler = this.selectItemsHandler.bind(this)
+    this.deselectItemsHandler = this.deselectItemsHandler.bind(this)
   }
 
   caseDateHandler (event) {
@@ -39,16 +42,26 @@ export class Microplanning extends Component {
     this.props.dispatch(push(url))
   }
 
+  selectItemsHandler (list) {
+    this.props.dispatch(selectItems(list))
+  }
+
+  deselectItemsHandler (list) {
+    this.props.dispatch(deselectItems(list))
+  }
+
   render () {
     const { formatMessage } = this.props.intl
     const { caseyearfrom, screeningyearto, location } = this.props.params
-    const { data, error } = this.props.villages
-    const loading = this.props.villages.loading
-    const highlightedItems = (data && data.confirmedByLocation || [])
+    const { data, error, loading } = this.props.villages
+    const selectedItems = (this.props.selection.selectedItems || [])
+    const highlightedItems = (data && data.villagesWithConfirmedCases || [])
+
     // extract unique zones from fetched data
     const locations = highlightedItems
       .map((item) => item.zone)
       .filter((value, index, array) => array.indexOf(value) === index)
+      .map((value) => (<option key={value} value={value}>{value}</option>))
 
     return (
       <div>
@@ -85,7 +98,7 @@ export class Microplanning extends Component {
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
               </option>
-              {locations.map((loc) => (<option key={loc} value={loc}>{loc}</option>))}
+              {locations}
             </select>
           </div>
         </div>
@@ -102,7 +115,12 @@ export class Microplanning extends Component {
           }
         </div>
 
-        <Map highlightedItems={highlightedItems} />
+        <Map
+          highlightedItems={highlightedItems}
+          selectedItems={selectedItems}
+          select={this.selectItemsHandler}
+          deselect={this.deselectItemsHandler}
+        />
       </div>
     )
   }
@@ -112,5 +130,6 @@ const MicroplanningWithIntl = injectIntl(Microplanning)
 
 export default connect((state, ownProps) => ({
   config: state.config,
-  villages: state.villages
+  villages: state.villages,
+  selection: state.selection
 }))(MicroplanningWithIntl)

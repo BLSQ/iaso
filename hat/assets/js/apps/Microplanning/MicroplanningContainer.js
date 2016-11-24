@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Microplanning from './Microplanning'
 import { clone } from '../../utils'
-import { fetchUrls, checkLocation } from '../../utils/fetchData'
+import { fetchUrls } from '../../utils/fetchData'
 
 /*
  * Handles state
@@ -19,7 +19,7 @@ import { fetchUrls, checkLocation } from '../../utils/fetchData'
 // The name is used as the key in the results payload.
 export const urls = [
   {
-    name: 'confirmedByLocation',
+    name: 'villagesWithConfirmedCases',
     url: '/api/datasets/confirmed_by_location/',
     mock: [{
       'area': 'Muwanda-koso',
@@ -51,7 +51,7 @@ export class MicroplanningContainer extends Component {
     const {dispatch} = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
-    fetchUrls(urls, params, oldParams, dispatch, checkLocation)
+    fetchUrls(urls, params, oldParams, dispatch)
   }
 
   componentDidMount () {

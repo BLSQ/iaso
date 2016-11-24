@@ -8,6 +8,7 @@ import createStore from './redux/createStore'
 import App from './apps/App'
 
 import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
+import { selectionReducer, selectionInitialState } from './apps/Microplanning/selection'
 import { loadReducer } from './redux/load'
 
 export default function microplanningApp (appConfig, element, baseUrl) {
@@ -25,10 +26,12 @@ export default function microplanningApp (appConfig, element, baseUrl) {
 
   const store = createStore({
     config: appConfig,
-    villages: {}
+    villages: {},
+    selection: selectionInitialState
   }, {
     config: (state = {}) => state,
-    villages: loadReducer
+    villages: loadReducer,
+    selection: selectionReducer
   }, [
     routerMiddleware(history)
   ])

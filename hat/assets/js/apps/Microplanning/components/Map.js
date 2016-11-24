@@ -69,7 +69,6 @@ class Map extends Component {
       },
       // selection mode is active or not
       inSelectionMode: false,
-      selectedItems: [],
       bufferSize: RADIUS.buffer,
       filter: { official: true, other: false, unknown: false }
     }
@@ -94,9 +93,9 @@ class Map extends Component {
     }
   }
   render () {
-    const { selectedItems, filter, bufferSize } = this.state
-    const bufferCheck = (bufferSize > 0)
-    const showSelection = this.state.inSelectionMode || selectedItems.length > 0
+    const { filter, bufferSize, inSelectionMode } = this.state
+    const { selectedItems, deselect } = this.props
+    const showSelection = inSelectionMode || selectedItems.length > 0
     const mapClass = (!showSelection ? 'map__panel' : 'map__panel--left')
 
     let selectionList = ''
@@ -106,7 +105,7 @@ class Map extends Component {
           <MapSelectionList
             data={selectedItems}
             show={(item) => this.openPopup(item, item._latlon)}
-            deselect={this.deselectVillages} />
+            deselect={deselect} />
         </div>
       )
     }
@@ -114,41 +113,13 @@ class Map extends Component {
     return (
       <div className='widget__container'>
         <div className='widget__header'>
-          <form className='widget__toggle-group'>
-            <span className='widget__toggle-group__legend'>
-              <FormattedMessage id='microplanning.display.villages.types' defaultMessage='Village types' />
-            </span>
-            <label htmlFor='official' className='widget__filterpluslabel__item--official'>
-              <input type='checkbox' name='official' checked={filter.official} onChange={this.filterChangeHandler} className='widget__filterpluslabel__input' />
-              <span className='widget__filterpluslabel__text--official'>
-                <FormattedMessage id='microplanning.display.official' defaultMessage='Official villages' />
-              </span>
-            </label>
-            <label htmlFor='other' className='widget__filterpluslabel__item--other'>
-              <input type='checkbox' name='other' checked={filter.other} onChange={this.filterChangeHandler} className='widget__filterpluslabel__input' />
-              <span className='widget__filterpluslabel__text--other'>
-                <FormattedMessage id='microplanning.display.other' defaultMessage='Non official villages' />
-              </span>
-            </label>
-            <label htmlFor='unknown' className='widget__filterpluslabel__item--unknown'>
-              <input type='checkbox' name='unknown' checked={filter.unknown} onChange={this.filterChangeHandler} className='widget__filterpluslabel__input' />
-              <span className='widget__filterpluslabel__text--unknown'>
-                <FormattedMessage id='microplanning.display.unknown' defaultMessage='Unknown villages' />
-              </span>
-            </label>
-
-            <label htmlFor='buffer-check' className='widget__filterpluslabel__item--buffer'>
-              <input type='checkbox' name='buffer-check' checked={bufferCheck} onChange={this.bufferChangeHandler} className='widget__filterpluslabel__input' />
-              <span className='widget__filterpluslabel__text--buffer'>
-                <FormattedMessage id='microplanning.buffer' defaultMessage='Buffer zone on confirmed cases' />
-                <input type='number' className='small' disabled={!bufferCheck} name='buffer-value' value={bufferSize} onChange={this.bufferChangeHandler} />
-                {'m'}
-              </span>
-            </label>
-          </form>
-          <MapLegend />
+          <MapLegend
+            filter={filter}
+            filterChange={this.filterChangeHandler}
+            bufferSize={bufferSize}
+            bufferChange={this.bufferChangeHandler}
+          />
         </div>
-
         <div className=''>
           <div className={mapClass}>
             <div ref={(node) => (this.mapContainer = node)} className='map-container' />
@@ -277,12 +248,8 @@ class Map extends Component {
   }
 
   updateMap () {
-    const {
-      featureGroup,
-      selectedItems,
-      filter,
-      bufferSize
-    } = this.state
+    const { featureGroup, filter, bufferSize } = this.state
+    const { selectedItems, select, deselect } = this.props
 
     const highlightedItems = (this.props.highlightedItems || [])
       // remove not matched/reconciled villages (not in list)
@@ -364,13 +331,8 @@ class Map extends Component {
         bufferZone.on({
           click: (event) => {
             L.DomEvent.stop(event)
-
             if (this.state.inSelectionMode) {
-              if (inSelection) {
-                this.deselectVillages(inBuffer)
-              } else {
-                this.selectVillages(inBuffer)
-              }
+              (inSelection ? deselect(inBuffer) : select(inBuffer))
             }
           }
         })
@@ -439,13 +401,15 @@ class Map extends Component {
   }
 
   addLayerEvents (layer, item) {
+    const { select, deselect } = this.props
+
     layer.on({
       click: (event) => {
         L.DomEvent.stop(event)
 
         if (this.state.inSelectionMode) {
           if (item.isVillage) {
-            (item.selected ? this.deselectVillages([item]) : this.selectVillages([item]))
+            (item.selected ? deselect([item]) : select([item]))
           }
         } else {
           this.openPopup(item, event.latlng)
@@ -491,29 +455,6 @@ class Map extends Component {
     )
   }
 
-  selectVillages (selection) {
-    let items = this.state.selectedItems || []
-    const _find = (list, item) => (list.find((entry) => entry._id === item._id))
-    selection.forEach((item) => {
-      if (!_find(items, item)) {
-        items = [item, ...items]
-      }
-    })
-    this.setState({ selectedItems: items })
-  }
-
-  deselectVillages (selection) {
-    if (!selection || selection.length === 0) {
-      this.setState({ selectedItems: [] })
-      return
-    }
-
-    let items = this.state.selectedItems || []
-    const ids = selection.map((item) => item._id)
-    const condition = (entry) => (ids.indexOf(entry._id) === -1)
-    this.setState({ selectedItems: items.filter(condition) })
-  }
-
   filterChangeHandler (event) {
     const {filter} = this.state
     filter[event.target.name] = event.target.checked
@@ -537,6 +478,9 @@ class Map extends Component {
 
 Map.propTypes = {
   highlightedItems: PropTypes.arrayOf(PropTypes.object),
+  selectedItems: PropTypes.arrayOf(PropTypes.object),
+  select: PropTypes.func,
+  deselect: PropTypes.func,
   intl: intlShape.isRequired
 }
 

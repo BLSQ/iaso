@@ -44,8 +44,11 @@ export class Microplanning extends Component {
     const { caseyearfrom, screeningyearto, location } = this.props.params
     const { data, error } = this.props.villages
     const loading = this.props.villages.loading
-    const locations = data && data.locations || []
     const highlightedItems = (data && data.confirmedByLocation || [])
+    // extract unique zones from fetched data
+    const locations = highlightedItems
+      .map((item) => item.zone)
+      .filter((value, index, array) => array.indexOf(value) === index)
 
     return (
       <div>
@@ -82,10 +85,7 @@ export class Microplanning extends Component {
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
               </option>
-              {locations.map((loc) => {
-                var val = loc.ZS
-                return <option key={val} value={val}>{val}</option>
-              })}
+              {locations.map((loc) => (<option key={loc} value={loc}>{loc}</option>))}
             </select>
           </div>
         </div>

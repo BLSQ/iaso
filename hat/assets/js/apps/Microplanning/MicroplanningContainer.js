@@ -19,11 +19,6 @@ import { fetchUrls, checkLocation } from '../../utils/fetchData'
 // The name is used as the key in the results payload.
 export const urls = [
   {
-    name: 'locations',
-    url: '/api/datasets/list_locations/',
-    mock: [{ 'ZS': 'Yasa-bonga' }]
-  },
-  {
     name: 'confirmedByLocation',
     url: '/api/datasets/confirmed_by_location/',
     mock: [{

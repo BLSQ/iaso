@@ -52,7 +52,7 @@ params_schema = {
         'source': {'type': 'string'},
         'offset': {'type': 'string'},
     },
-    'additionalProperties': True,
+    'additionalProperties': False,
 }
 
 
@@ -223,14 +223,10 @@ def confirmed_by_location(params):
         SELECT "ZS" as zone
              , "AZ" as area
              , village
-             , count(DISTINCT document_id) ''' + screeningCondition + '''
-              as "screenedPeople"
-             , max(document_date)  ''' + screeningCondition + '''
-              as "lastScreeningDate"
-             , count(DISTINCT document_id) ''' + positiveCondition + '''
-              as "confirmedCases"
-             , max(document_date) ''' + positiveCondition + '''
-              as "lastConfirmedCaseDate"
+             , count(DISTINCT document_id) {screeningFilter} as "screenedPeople"
+             , max(document_date) {screeningFilter} as "lastScreeningDate"
+             , count(DISTINCT document_id) {positiveFilter} as "confirmedCases"
+             , max(document_date) {positiveFilter} as "lastConfirmedCaseDate"
         FROM cases_case
         WHERE document_date >= %s AND document_date < %s
     '''
@@ -244,14 +240,20 @@ def confirmed_by_location(params):
         sql_params.append(params['source'])
     sql = sql + '''
         GROUP BY "ZS", "AZ", village
-        HAVING count(DISTINCT document_id) ''' + positiveCondition + ''' > 0
+        HAVING count(DISTINCT document_id) {positiveFilter} > 0
     '''
+
     if 'caseyearfrom' in params:
-        sql = sql + ' AND max(document_date) ' + positiveCondition + ' >= %s'
+        sql = sql + ' AND max(document_date) {positiveFilter} >= %s'
         sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))
     if 'screeningyearto' in params:
-        sql = sql + ' AND max(document_date) ' + screeningCondition + ' < %s'
+        sql = sql + ' AND max(document_date) {screeningFilter} < %s'
         sql_params.append(datetime(today.year - int(params['screeningyearto']), 12, 31))
+
+    sql = sql.format(
+        screeningFilter=screeningCondition,
+        positiveFilter=positiveCondition
+    )
 
     result = []
     with connection.cursor() as cursor:
@@ -259,6 +261,7 @@ def confirmed_by_location(params):
         columns = [x.name for x in cursor.description]
         for row in cursor.fetchall():
             result.append(dict(zip(columns, row)))
+
     return result
 
 

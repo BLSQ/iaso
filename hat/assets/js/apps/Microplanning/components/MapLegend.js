@@ -1,9 +1,5 @@
 import React, {Component} from 'react'
-import {
-  FormattedMessage,
-  injectIntl,
-  intlShape
-} from 'react-intl'
+import { FormattedMessage, injectIntl } from 'react-intl'
 
 class MapLegend extends Component {
   render () {
@@ -24,10 +20,6 @@ class MapLegend extends Component {
       </div>
     )
   }
-}
-
-MapLegend.propTypes = {
-  intl: intlShape.isRequired
 }
 
 export default injectIntl(MapLegend)

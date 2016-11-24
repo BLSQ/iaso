@@ -1,10 +1,5 @@
 import React, {Component, PropTypes} from 'react'
-import {
-  defineMessages,
-  FormattedMessage,
-  injectIntl,
-  intlShape
-} from 'react-intl'
+import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 import ExportCSVButton from '../../../components/export-csv-button'
 import {capitalize} from '../../../utils'
 
@@ -168,8 +163,7 @@ class DataSelected extends Component {
 DataSelected.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
-  unselect: PropTypes.func,
-  intl: intlShape.isRequired
+  unselect: PropTypes.func
 }
 
 export default injectIntl(DataSelected)

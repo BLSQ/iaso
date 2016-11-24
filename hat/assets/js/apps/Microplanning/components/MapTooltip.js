@@ -4,8 +4,7 @@ import {
   FormattedMessage,
   FormattedNumber,
   defineMessages,
-  injectIntl,
-  intlShape
+  injectIntl
 } from 'react-intl'
 import {capitalize} from '../../../utils'
 
@@ -151,8 +150,7 @@ class MapTooltip extends Component {
 }
 
 MapTooltip.propTypes = {
-  item: PropTypes.object.isRequired,
-  intl: intlShape.isRequired
+  item: PropTypes.object.isRequired
 }
 
 export default injectIntl(MapTooltip)

@@ -186,7 +186,7 @@ class ScreeningWidget extends Component {
               <FormattedMessage id='statspage.screening.subheader' defaultMessage='HAT probable' />
             </h2>
             <p>
-              <FormattedMessage id='statspage.registered.description' defaultMessage='The percentage of participants tested who had a positive screening test (CATT or RDT)' />
+              <FormattedMessage id='statspage.screening.description' defaultMessage='The percentage of participants tested who had a positive screening test (CATT or RDT)' />
             </p>
             <ul className='list--stats--reduced'>
               <li className='list__item--stats--reduced'>

@@ -52,7 +52,7 @@ params_schema = {
         'source': {'type': 'string'},
         'offset': {'type': 'string'},
     },
-    'additionalProperties': False,
+    'additionalProperties': True,
 }
 
 
@@ -188,8 +188,8 @@ def tested_per_day(params):
         'dateto': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'},
-        'casedatefrom': {'type': 'string'},
-        'screeningdateto': {'type': 'string'},
+        'caseyearfrom': {'type': 'string'},
+        'screeningyearto': {'type': 'string'},
     }
 })
 def confirmed_by_location(params):
@@ -246,13 +246,12 @@ def confirmed_by_location(params):
         GROUP BY "ZS", "AZ", village
         HAVING count(DISTINCT document_id) ''' + positiveCondition + ''' > 0
     '''
-    if 'casedatefrom' in params:
+    if 'caseyearfrom' in params:
         sql = sql + ' AND max(document_date) ' + positiveCondition + ' >= %s'
-        sql_params.append(datetime.strptime(params['casedatefrom'], DATE_FORMAT))
-    if 'screeningdateto' in params:
+        sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))
+    if 'screeningyearto' in params:
         sql = sql + ' AND max(document_date) ' + screeningCondition + ' < %s'
-        sql_params.append(
-            datetime.strptime(params['screeningdateto'], DATE_FORMAT) + timedelta(days=1))
+        sql_params.append(datetime(today.year - int(params['screeningyearto']), 12, 31))
 
     result = []
     with connection.cursor() as cursor:

@@ -14,9 +14,9 @@ import { loadReducer } from './redux/load'
 export default function microplanningApp (appConfig, element, baseUrl) {
   const routes = [
     <Route
-      path='charts(/datefrom/:datefrom)(/dateto/:dateto)(/casedatefrom/:casedatefrom)(/screeningdateto/:screeningdateto)(/location/:location)(/source/:source)'
+      path='charts(/datefrom/:datefrom)(/dateto/:dateto)(/caseyearfrom/:caseyearfrom)(/screeningyearto/:screeningyearto)(/location/:location)(/source/:source)'
       component={MicroplanningContainer} />,
-    <Redirect path='*' to='charts/' />
+    <Redirect path='*' to='charts/caseyearfrom/5/screeningyearto/0' />
   ]
 
   let history = useRouterHistory(createHistory)({

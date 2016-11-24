@@ -68,3 +68,51 @@ $filter-container-height: 2rem;
     outline-offset: -3px;
   }
 }
+
+
+.filter__container__input {
+  position: relative;
+  border: 1px solid $light-gray;
+  border-radius: 2px;
+  margin-right: $padding-unit/2;
+  &:last-of-type {
+    margin-right: 0;
+  }
+}
+
+.filter__container__select__label__after {
+  background: #F0F4F5;
+  border-left: 1px solid $light-gray;
+  display: inline-block;
+  vertical-align: middle;
+  width: auto;
+  height: $filter-container-height;
+  line-height: $filter-container-height;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0;
+  font-weight: normal;
+  color: $mid-gray;
+  font-size: $font-size-s;
+  .fa {
+    margin-right: 0.2em;
+  }
+}
+
+input[type="number"].input--minimised {
+  @include text--standard;
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: $filter-container-height;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  background: white;
+  -webkit-appearance: none;
+  font-size: $font-size-s;
+  &:focus {
+    outline: #E0E5EB auto 4px;
+    outline-offset: -3px;
+  }
+}

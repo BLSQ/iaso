@@ -1,11 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import {
-  FormattedMessage,
-  injectIntl,
-  defineMessages
-} from 'react-intl'
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
 
 import {actions} from './redux'
@@ -13,32 +9,11 @@ import geoData from './utils/geoData'
 import {Map, MapLegend} from './components'
 
 const MESSAGES = defineMessages({
-  // // dateperiod messages
-  // 'since-last-year': {
-  //   id: 'microplanning.dateperiod.since-last-year',
-  //   defaultMessage: 'One year'
-  // },
-  // 'since-three-years': {
-  //   id: 'microplanning.dateperiod.since-three-years',
-  //   defaultMessage: 'Three years'
-  // },
-  // 'since-five-years': {
-  //   id: 'microplanning.dateperiod.since-five-years',
-  //   defaultMessage: 'Five years'
-  // },
-
-  // location messages
   'location-national': {
-    defaultMessage: '--- ALL ---',
+    defaultMessage: '--- all ---',
     id: 'microplanning.location.national'
   }
 })
-
-// const DATEPERIODS = [
-//   'since-last-year',
-//   'since-three-years',
-//   'since-five-years'
-// ]
 
 // find all the entries in the list that match exact
 // with the item values in the indicated keys list
@@ -75,14 +50,14 @@ export class Microplanning extends Component {
   }
 
   caseDateHandler (event) {
-    const casedatefrom = event.target.value
-    const url = createUrl({...this.props.params, casedatefrom})
+    const caseyearfrom = parseInt(event.target.value, 10)
+    const url = createUrl({...this.props.params, caseyearfrom})
     this.props.dispatch(push(url))
   }
 
   screeningDateHandler (event) {
-    const screeningdateto = event.target.value
-    const url = createUrl({...this.props.params, screeningdateto})
+    const screeningyearto = parseInt(event.target.value, 10)
+    const url = createUrl({...this.props.params, screeningyearto})
     this.props.dispatch(push(url))
   }
 
@@ -126,8 +101,7 @@ export class Microplanning extends Component {
 
   render () {
     const { formatMessage } = this.props.intl
-    // TODO: const { casedatefrom, screeningdateto, location } = this.props.params
-    const { location } = this.props.params
+    const { caseyearfrom, screeningyearto, location } = this.props.params
     const { data, error } = this.props.highlight
     const loading = this.props.highlight.loading
     const locations = data && data.locations || []
@@ -182,32 +156,27 @@ export class Microplanning extends Component {
           <h2 className='filter__label'>
             <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages' />
           </h2>
-          { /* TODO: first change django filters
-          <div key='filter-case-date' className='filter__container__select'>
-            <label htmlFor='casedatefrom' className='filter__container__select__label'>
+
+          <div key='filter-case-date' className='filter__container__input'>
+            <label htmlFor='caseyearfrom' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.cases.date' defaultMessage='with HAT cases in past' />
             </label>
-            <select disabled={loading} name='casedatefrom' value={casedatefrom} onChange={this.caseDateHandler} className='select--minimised'>
-              {DATEPERIODS.map((period) => (
-                <option key={period} value={period}>
-                  {formatMessage(MESSAGES[period])}
-                </option>
-              ))}
-            </select>
+            <input type='number' disabled={loading} name='caseyearfrom' min='0' value={caseyearfrom || 0} onChange={this.caseDateHandler} className='input--minimised' />
+            <label className='filter__container__select__label__after'>
+              <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
+            </label>
           </div>
-          <div key='filter-screening-date' className='filter__container__select'>
+
+          <div key='filter-screening-date' className='filter__container__input'>
             <label htmlFor='screeningdateto' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and not visited in past' />
             </label>
-            <select disabled={loading} name='screeningdateto' value={screeningdateto} onChange={this.screeningDateHandler} className='select--minimised'>
-              {DATEPERIODS.map((period) => (
-                <option key={period} value={period}>
-                  {formatMessage(MESSAGES[period])}
-                </option>
-              ))}
-            </select>
+            <input type='number' disabled={loading} name='screeningyearto' min='0' value={screeningyearto || 0} onChange={this.screeningDateHandler} className='input--minimised' />
+            <label className='filter__container__select__label__after'>
+              <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
+            </label>
           </div>
-          */ }
+
           <div key='filter-location' className='filter__container__select'>
             <label htmlFor='location' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zone de Sante' />

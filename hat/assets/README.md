@@ -15,7 +15,7 @@ Frontend assets are mounted on the pages via the [django-webpack-loader](https:/
 
 ### Adding new assets in package.json
 
-Unfortunately, for now you need to do a `docker-compose rm web && docker-compose build web` after adding packages in `package.json`
+Unfortunately, for now you need to do a `docker-compose rm hat && docker-compose build hat` after adding packages in `package.json`
 
 ### Testing the production build
 

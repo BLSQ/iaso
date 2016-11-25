@@ -136,7 +136,7 @@ class MapSelectionList extends Component {
             {data.map((item) => {
               return (
                 <li className='map__selection__list__item' key={item._id}>
-                  <span className='view' onClick={() => show(item)}>
+                  <span className={'view text--' + (item.confirmedCases > 0 ? 'highlight' : item.type)} onClick={() => show(item)}>
                     <i className='fa fa-map-marker' />
                   </span>
                   <span>

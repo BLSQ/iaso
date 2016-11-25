@@ -128,22 +128,26 @@ $types: (
   margin: 0 auto;
 }
 
+.leaflet-control-layers {
+  box-shadow: 0 0 10px rgba(black, 0.2);
+}
+
 .leaflet-control-layers-toggle {
+  box-sizing: border-box;
+  height: 26px;
+  width: 26px;
+  margin: 0;
+  vertical-align: middle;
   background-color: white;
   background-image: none;
   border-radius: 4px;
   border: 1px solid $gray;
-  height: 26px;
-  margin: 0;
   text-align: center;
   text-decoration: none;
-  vertical-align: middle;
-  width: 26px;
-
   &:after {
     color: $text-color;
     content: "\f0ac";
-    font-family: FontAwesome;
+    font-family: $icon-font;
     font-size: 16px;
   }
 }
@@ -192,11 +196,24 @@ $types: (
   width: 100%;
 }
 
+/* map controls */
+.map__control__container {
+  display: flex;
+  width: 100%;
+  input.small {
+    width: 26px;
+    text-align: center;
+    font-weight: bold;
+    padding: 0.45em 0.25em;
+  }
+}
+
+/* common styles for map controls */
 [class*="map__control__button"] {
   background-color: white;
   border-radius: 4px;
   border: 1px solid $gray;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 10px rgba(black, 0.2);
   cursor: pointer !important;
   font-size: 16px;
   height: 26px;
@@ -209,10 +226,13 @@ $types: (
   }
 }
 
-.map__control__button--selection {
+/* village selection controls */
+[class^="map__control__button--selection"] {
+  box-sizing: border-box;
   width: auto;
-  height: auto;
-  border: 1px solid $yellow;
+  height: 46px;
+  margin-right: 10px;
+  border: 1px solid $gray;
   box-shadow: 0 0 2px 0 #865A0B;
   border-radius: 2px;
   padding: 8px;
@@ -220,7 +240,19 @@ $types: (
   text-transform: uppercase;
 }
 
-[class^="map__icon--select"] {
+
+.map__control__container {
+  /* active items have a highlighted border */
+  div[class*="active"] {
+    border-color: $yellow;
+    .map__icon--select {
+      filter: initial;
+    }
+  }
+}
+
+/* the select/deselect icon */
+.map__icon--select {
   /* sizes */
   $icon-size: 28px;
   $icon-center-size: 8px;
@@ -252,9 +284,42 @@ $types: (
     box-shadow: 0 0 1px 1px rgba($bright-pink,0.45);
   }
 }
-.map__icon--select {
-  &--active {
-    filter: initial;
+
+@mixin deselect-icon($color) {
+  position: absolute;
+  display: block;
+  content: '';
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  background: $red;
+  z-index: 2;
+  right: -3px;
+  top: 25%;
+}
+
+[class^="map__control__button--selection--deselect"] {
+  .map__icon--select:before {
+    position: absolute;
+    display: block;
+    content: '';
+    width: 12px;
+    height: 4px;
+    border-radius: 2px;
+    background: $bright-pink;
+    z-index: 2;
+    right: -4px;
+    top: 30%;
+  }
+}
+.map__control__button--selection {
+  &--cancel {
+    border-color: $red;
+    color: $red;
+    line-height: 28px;
+    .fa {
+      margin-right: 4px;
+    }
   }
 }
 
@@ -329,6 +394,11 @@ $types: (
 
 .map__selection__summary--empty {
   @include text--small;
+  .text--explanation {
+    display: block;
+    margin-top: 2em;
+    line-height: 1.25;
+  }
 }
 
 .map__selection__summary {
@@ -383,7 +453,6 @@ ul.map__selection__list {
     margin-right: $padding-unit/4;
   }
 }
-
 
 
 

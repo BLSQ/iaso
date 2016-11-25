@@ -65,11 +65,12 @@ export class Microplanning extends Component {
 
     return (
       <div>
+        <div className='filter__container filter__container--reduced'>
+          <h4 className='block--margin-bottom--xxs'>
+            <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages:' />
+          </h4>
+        </div>
         <div className='filter__container'>
-          <h2 className='filter__label'>
-            <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages' />
-          </h2>
-
           <div key='filter-case-date' className='filter__container__input'>
             <label htmlFor='caseyearfrom' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.cases.date' defaultMessage='with HAT cases in past' />

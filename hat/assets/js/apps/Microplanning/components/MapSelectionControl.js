@@ -19,32 +19,32 @@ class MapSelectionControl extends Component {
     }
 
     return (
-      <div>
+      <div className='map__control__container'>
         <div
-          className='map__control__button--selection'
+          className={'map__control__button--selection--select' + (mode === modes.select ? '--active' : '')}
           onClick={() => modeChange(modes.select)}>
-          <i className={'map__icon--select' + (mode === modes.select ? '--active' : '')} />
+          <i className='map__icon--select' />
           <span className='map__text--select'>
             <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages' />
           </span>
         </div>
         <div
-          className='map__control__button--selection'
+          className={'map__control__button--selection--deselect' + (mode === modes.deselect ? '--active' : '')}
           onClick={() => modeChange(modes.deselect)}>
-          <i className={'map__icon--select' + (mode === modes.deselect ? '--active' : '')} />
+          <i className='map__icon--select' />
           <span className='map__text--select'>
             <FormattedMessage id='microplanning.selection.active.deselect' defaultMessage='Deselect villages' />
           </span>
         </div>
-        <div className='map__control__button--selection'>
+        <div className='map__control__button--selection--buffer'>
           <span className='map__text--select'>
             <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer' />
           </span>
-          <input type='number' className='small' name='buffer-value' value={bufferSize} onChange={bufferChange} />
+          <input type='number' className='small' name='buffer-value' value={bufferSize} onChange={bufferChange} min={1} />
           <span className='map__text--select'>{'km'}</span>
         </div>
         <div
-          className='map__control__button--selection'
+          className='map__control__button--selection--cancel'
           onClick={() => modeChange(modes.none)}>
           <i className='fa fa-close' />
           <span className='map__text--select'>

@@ -80,7 +80,10 @@ class MapSelectionList extends Component {
           <div className='map__selection__content'>
             {sectionTitle}
             <div className='map__selection__summary--empty'>
-              <FormattedMessage id='microplanning.selected.empty' defaultMessage='Nothing selected yet' />
+              <FormattedMessage id='microplanning.selected.empty' defaultMessage='Nothing selected yet' />.
+              <span className='text--explanation'>
+                <FormattedMessage id='microplanning.selected.empty.explanation' defaultMessage='Start clicking on villages to select them. You can adjust the size of selection buffer zone to include more / fewer villages in your selection' />.
+              </span>
             </div>
           </div>
         </div>

@@ -1,13 +1,24 @@
 $filter-container-height: 2rem;
 
-.filter__container {
+@mixin filter-container-common {
   display: flex;
   align-items: baseline;
+  background: $background-highlight-gray;
+  border-bottom: 1px solid $gray;
+}
+
+.filter__container {
+  @include filter-container-common;
   padding: $padding-unit*.75 $padding-unit;
   margin: -$padding-unit;
   margin-bottom: $padding-unit;
-  background: $background-highlight-gray;
-  border-bottom: 1px solid $gray;
+}
+
+.filter__container--reduced {
+  @include filter-container-common;
+  padding: $padding-unit/2 $padding-unit;
+  margin-bottom: 0;
+  border-bottom: none;
 }
 
 .filter__label {
@@ -107,7 +118,8 @@ input[type="number"].input--minimised {
   height: $filter-container-height;
   margin: 0;
   padding: 0 10px;
-  border: 0;
+  border: none;
+  border-radius: 0;
   background: white;
   -webkit-appearance: none;
   font-size: $font-size-s;

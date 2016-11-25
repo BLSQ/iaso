@@ -69,6 +69,7 @@ $types: (
   border-radius: 3px;
   background-color: $light-gray;
   font-weight: bold;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   color: $mid-gray;
   cursor: pointer;
@@ -317,8 +318,7 @@ input.widget__filter__numberinput {
 }
 .map__control__button--selection {
   &--cancel {
-    border-color: $red;
-    color: $red;
+    /*color: $red;*/
     line-height: 28px;
     .fa {
       margin-right: 4px;
@@ -360,18 +360,55 @@ input.widget__filter__numberinput {
   }
 }
 
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: $blue;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 4px;
+}
+
+.leaflet-popup-content {
+  margin: 44px 20px 30px 20px;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: white;
+  right: auto;
+  top: 10px;
+  left: 20px;
+  &:after {
+    content: 'close';
+    font-family: $body-font-family;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-left: 3px;
+  }
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: $bright-blue;
+}
+
 .map__tooltip {
   div.property {
-    padding: 6px;
-
+    padding: 6px 0;
+    border-top: 1px solid rgba(white, 0.4);
+    &:last-of-type {
+      border-bottom: 1px solid rgba(white, 0.4);
+    }
     div.label {
       display: inline-block;
       width: 50%;
+      font-size: $font-size-xs;
     }
     div.value {
       display: inline-block;
       width: 50%;
       font-weight: bold;
+      font-size: $font-size-s;
+      text-align: right;
     }
   }
 }

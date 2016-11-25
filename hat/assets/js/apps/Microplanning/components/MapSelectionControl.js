@@ -40,7 +40,7 @@ class MapSelectionControl extends Component {
           <span className='map__text--select'>
             <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer' />
           </span>
-          <input type='number' className='small' name='buffer-value' value={bufferSize} onChange={bufferChange} />
+          <input type='number' className='small' min='1' name='buffer-value' value={bufferSize} onChange={bufferChange} />
           <span className='map__text--select'>{'km'}</span>
         </div>
         <div

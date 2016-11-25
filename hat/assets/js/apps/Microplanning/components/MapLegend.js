@@ -1,9 +1,24 @@
 import React, {Component, PropTypes} from 'react'
-import { FormattedMessage, injectIntl } from 'react-intl'
+import { defineMessages, FormattedMessage, injectIntl } from 'react-intl'
+
+const MESSAGES = defineMessages({
+  official: {
+    id: 'microplanning.legend.official',
+    defaultMessage: 'Official villages'
+  },
+  other: {
+    id: 'microplanning.legend.other',
+    defaultMessage: 'Non official villages'
+  },
+  unknown: {
+    id: 'microplanning.tooltip.unknown',
+    defaultMessage: 'Unknown villages'
+  }
+})
 
 class MapLegend extends Component {
   render () {
-    const { legend, legendChange } = this.props
+    const { legend, legendToggle } = this.props
 
     return (
       <div>
@@ -11,24 +26,15 @@ class MapLegend extends Component {
           <span className='widget__toggle-group__legend'>
             <FormattedMessage id='microplanning.display.villages.types' defaultMessage='Village types' />
           </span>
-          <label htmlFor='official' className='widget__filterpluslabel__item--official'>
-            <input type='checkbox' name='official' checked={legend.official} onChange={legendChange} className='widget__filterpluslabel__input' />
-            <span className='widget__filterpluslabel__text--official'>
-              <FormattedMessage id='microplanning.display.official' defaultMessage='Official villages' />
-            </span>
-          </label>
-          <label htmlFor='other' className='widget__filterpluslabel__item--other'>
-            <input type='checkbox' name='other' checked={legend.other} onChange={legendChange} className='widget__filterpluslabel__input' />
-            <span className='widget__filterpluslabel__text--other'>
-              <FormattedMessage id='microplanning.display.other' defaultMessage='Non official villages' />
-            </span>
-          </label>
-          <label htmlFor='unknown' className='widget__filterpluslabel__item--unknown'>
-            <input type='checkbox' name='unknown' checked={legend.unknown} onChange={legendChange} className='widget__filterpluslabel__input' />
-            <span className='widget__filterpluslabel__text--unknown'>
-              <FormattedMessage id='microplanning.display.unknown' defaultMessage='Unknown villages' />
-            </span>
-          </label>
+          { Object.keys(legend).map((key) => (
+            <div
+              key={key}
+              onClick={() => legendToggle(key)}
+              className={'widget__filter__item widget__filterplus__text ' + (legend[key] ? key : '')}>
+              <i className={'fa fa' + (legend[key] ? '-check' : '') + '-square-o'} />
+              <FormattedMessage {...MESSAGES[key]} />
+            </div>
+          )) }
         </form>
 
         <div className='legend'>
@@ -52,7 +58,7 @@ class MapLegend extends Component {
 
 Map.MapLegend = {
   legend: PropTypes.object,
-  legendChange: PropTypes.func
+  legendToggle: PropTypes.func
 }
 
 export default injectIntl(MapLegend)

@@ -1,7 +1,6 @@
 
 /* colours */
 $buffer: $yellow;
-$details: $blue;
 $highlight: $bright-blue;
 $selected: $bright-yellow;
 
@@ -13,6 +12,23 @@ $unknown: $mid-gray;
 /* map size */
 $map-height: 720px;
 $map-sidebar-width: 260px;
+
+$types: (
+  official: $official,
+  other: $other,
+  unknown: $unknown,
+  highlight: $bright-pink
+);
+
+
+@each $type, $color in $types {
+  .text--#{$type} {
+    color: $color !important;
+  }
+  .background--#{$type} {
+    background-color: $color !important;
+  }
+}
 
 .widget__toggle-group {
   display: inline-block;
@@ -33,7 +49,6 @@ $map-sidebar-width: 260px;
 }
 
 /* legends/checkbox filters for charts */
-[class*="widget__filterpluslabel__item"],
 [class*="widget__filter__item"] {
   position: relative;
   display: inline-block;
@@ -49,10 +64,8 @@ $map-sidebar-width: 260px;
   }
 }
 
-[class*="widget__filterpluslabel__text"] {
-  display: block;
-  padding: 6px;
-  padding-left: 27px;
+[class*="widget__filterplus__text"] {
+  padding: 6px 10px;
   border-radius: 3px;
   background-color: $light-gray;
   font-weight: bold;
@@ -60,17 +73,20 @@ $map-sidebar-width: 260px;
   color: $mid-gray;
   cursor: pointer;
   transition: all .1s ease-in-out;
-  input[type="checkbox"] {
-    margin-top: 0;
+  i {
+    margin-right: 6px;
   }
-}
 
-.widget__filterpluslabel__input {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  margin: 0;
-  &:checked + [class^="widget__filterpluslabel__text"] {
+  &.official {
+    background-color: $official !important;
+    color: white;
+  }
+  &.other {
+    background-color: $other !important;
+    color: white;
+  }
+  &.unknown {
+    background-color: $unknown !important;
     color: white;
   }
 }
@@ -103,19 +119,6 @@ input.widget__filter__numberinput {
 }
 /* end filters */
 
-$types: (
-  official: $green,
-  other: $orange,
-  unknown: $mid-gray,
-  buffer: $yellow
-);
-
-
-@each $type, $color in $types {
-  .widget__filterpluslabel__input:checked + .widget__filterpluslabel__text--#{$type} {
-    background-color: $color !important;
-  }
-}
 
 .leaflet-container {
   color: $text-color;
@@ -351,7 +354,7 @@ $types: (
     }
     i {
       margin-right: 3px;
-      &.selected  { color: $selected; }
+      &.selected  { color: $bright-pink; }
       &.highlight { color: $highlight; }
     }
   }
@@ -448,7 +451,6 @@ ul.map__selection__list {
     margin-right: $padding-unit/4;
   }
   span.view {
-    color: $details;
     cursor: pointer;
     margin-right: $padding-unit/4;
   }
@@ -482,10 +484,6 @@ path.map-layer {
   &.highlight {
     fill: transparent;
     stroke: $highlight;
-  }
-  &.details {
-    fill: $details;
-    stroke: darken($details, 15%);
   }
 }
 
@@ -525,9 +523,6 @@ path.map-marker {
   }
   &.selected {
     @include marker($selected, 0.95, $bright-pink, 3);
-  }
-  &.details {
-    @include marker($details);
   }
   &.buffer {
     @include marker($color: $buffer, $fill-opacity: 0.3, $stroke-color: $buffer, $stroke-width: 1)

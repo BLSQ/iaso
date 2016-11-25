@@ -58,17 +58,20 @@ $filter-container-height: 2rem;
   color: $mid-gray;
   font-size: $font-size-s;
   .fa {
-    margin-right: 0.2em;
+    margin-right: 0.4em;
   }
 }
 
-.select--minimised {
-  @include text--standard;
+@mixin filter-select-positioning {
   display: inline-block;
   vertical-align: middle;
   width: 200px;
   height: $filter-container-height;
   margin: 0;
+}
+
+@mixin filter-select-style {
+  @include text--standard;
   padding: 0 10px;
   border: 0;
   background: white;
@@ -79,7 +82,6 @@ $filter-container-height: 2rem;
     outline-offset: -3px;
   }
 }
-
 
 .filter__container__input {
   position: relative;
@@ -127,4 +129,23 @@ input[type="number"].input--minimised {
     outline: #E0E5EB auto 4px;
     outline-offset: -3px;
   }
+}
+
+
+.react-datepicker__input-container {
+  @include filter-select-positioning;
+  input[type="text"] {
+    @include filter-select-style;
+    /* some stuff to override text input styles: */
+    box-sizing: border-box;
+    width: 200px;
+    height: $filter-container-height;
+    box-shadow: none;
+  }
+}
+
+
+.select--minimised {
+  @include filter-select-positioning;
+  @include filter-select-style;
 }

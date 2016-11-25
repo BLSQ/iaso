@@ -114,6 +114,17 @@ p {
   @include text--success;
 }
 
+.text--label {
+  @include text--label;
+}
+
 .text--small {
   font-size: $font-size-s;
+}
+
+.divider {
+  display: block;
+  margin-top: $padding-unit;
+  margin-bottom: $padding-unit;
+  border-bottom: 1px solid $gray;
 }

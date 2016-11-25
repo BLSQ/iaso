@@ -18,6 +18,7 @@ module.exports = {
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
     'playground': './assets/js/playground',
+    'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
     'suspect_cases': './assets/js/suspectCases',
     'microplanning': './assets/js/microplanning',

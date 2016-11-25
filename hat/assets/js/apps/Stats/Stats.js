@@ -365,44 +365,54 @@ class StageWidget extends Component {
       right: 40,
       top: 20
     }
-    return <div className='widget__container'>
-      <div className='widget__header'>
-        <h2 className='widget__heading'>
-          <FormattedMessage id='statspage.stage.header.results' defaultMessage='Stage tests' />
-        </h2>
+    return <div>
+      <div className='widget__container'>
+        <div className='widget__header'>
+          <h2 className='widget__heading'>
+            <FormattedMessage id='statspage.stage.header.results' defaultMessage='Stage tests' />
+          </h2>
+        </div>
+        <div className='widget__content'>
+          <section className='wrapper__column'>
+            <div className='column--4'>
+              <ul className='list--stats--reduced'>
+                <li className='list__item--stats--reduced'>
+                  <span className='text--label'>
+                    <FormattedMessage id='statspage.stage.count.pos' defaultMessage='Number of participants HAT Stage Two' />
+                  </span>
+                  <span className='list__item__number--prominent'>
+                    {total.stage2}
+                  </span>
+                </li>
+                <li className='list__item--stats--reduced'>
+                  <span className='text--label'>
+                    <FormattedMessage id='statspage.stage.count.neg' defaultMessage='Number of participants HAT Stage One' />
+                  </span>
+                  <span className='list__item__number--prominent'>
+                    {total.stage1}
+                  </span>
+                </li>
+              </ul>
+              <span className='text--explanation'>
+                <FormattedMessage id='statspage.stage.count.total'
+                  defaultMessage='Out of an overall total of {totalParticipants} participants registered.'
+                  values={{totalParticipants: total.total}}
+                />
+              </span>
+            </div>
+            <div className='column--6 container__graph--6'>
+              <Visualization data={timeseries} spec={spec} />
+            </div>
+          </section>
+        </div>
       </div>
-      <div className='widget__content'>
-        <section className='wrapper__column'>
-          <div className='column--4'>
-            <ul className='list--stats--reduced'>
-              <li className='list__item--stats--reduced'>
-                <span className='text--label'>
-                  <FormattedMessage id='statspage.stage.count.pos' defaultMessage='Number of participants HAT Stage Two' />
-                </span>
-                <span className='list__item__number--prominent'>
-                  {total.stage2}
-                </span>
-              </li>
-              <li className='list__item--stats--reduced'>
-                <span className='text--label'>
-                  <FormattedMessage id='statspage.stage.count.neg' defaultMessage='Number of participants HAT Stage One' />
-                </span>
-                <span className='list__item__number--prominent'>
-                  {total.stage1}
-                </span>
-              </li>
-            </ul>
-            <span className='text--explanation'>
-              <FormattedMessage id='statspage.stage.count.total'
-                defaultMessage='Out of an overall total of {totalParticipants} participants registered.'
-                values={{totalParticipants: total.total}}
-              />
-            </span>
-          </div>
-          <div className='column--6 container__graph--6'>
-            <Visualization data={timeseries} spec={spec} />
-          </div>
-        </section>
+      <div>
+        <span className='text--data'>
+          <FormattedMessage id='statspage.datasource.label' defaultMessage='Data sources' />:&nbsp;
+          <FormattedMessage id='statspage.datasource.mobiledata' defaultMessage='HAT mobile application data' />,&nbsp;
+          <FormattedMessage id='statspage.datasource.historical' defaultMessage='HAT historical forms' />,&nbsp;
+          <FormattedMessage id='statspage.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
+        </span>
       </div>
     </div>
   }

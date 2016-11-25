@@ -36,15 +36,14 @@
 }
 
 .button {
+  &--success {
+    @include button($green);
+  }
   &--warning {
     @include button($orange);
   }
-  &--reduced {
-    padding: 0.5em 1em;
-    font-size: $font-size-s;
-  }
-  &--success {
-    @include button($green);
+  &--danger {
+    @include button($red);
   }
   &--bright {
     @include button($bright-navy);
@@ -59,6 +58,14 @@
   &--minimised {
     @include button(lighten($blue, 12%));
     font-size: $font-size-s;
+  }
+  &--reduced {
+    padding: 0.5em 1em;
+    font-size: $font-size-s;
+  }
+  &--tiny {
+    padding: 0.5em;
+    font-size: $font-size-xs;
   }
   &--big {
     font-size: $font-size-m;

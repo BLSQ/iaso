@@ -22,6 +22,9 @@
   color: $mid-gray;
   padding: $padding-unit/2 $padding-unit;
 }
+.text--data {
+  @include text--caption;
+}
 
 .link--print {
   display: block;

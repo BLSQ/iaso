@@ -431,14 +431,18 @@ export class Stats extends Component {
   }
 
   datefromHandler (date) {
-    let url = createUrl({...this.props.params,
-                         datefrom: moment(date).format(this.dateFormat)})
+    let url = createUrl({
+      ...this.props.params,
+      datefrom: moment(date).format(this.dateFormat)
+    })
     this.props.dispatch(push(url))
   }
 
   datetoHandler (date) {
-    let url = createUrl({...this.props.params,
-                         dateto: moment(date).format(this.dateFormat)})
+    let url = createUrl({
+      ...this.props.params,
+      dateto: moment(date).format(this.dateFormat)
+    })
     this.props.dispatch(push(url))
   }
 

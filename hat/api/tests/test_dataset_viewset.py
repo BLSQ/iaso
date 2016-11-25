@@ -66,14 +66,14 @@ class DatasetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0]['village'], 'Kindundu')
-        self.assertEqual(response.data[0]['confirmed_cases'], 1)
+        self.assertEqual(response.data[0]['confirmedCases'], 1)
         self.assertEqual(
-            response.data[0]['last_confirmed_date'].replace(tzinfo=None),
+            response.data[0]['lastConfirmedCaseDate'].replace(tzinfo=None),
             datetime(2016, 1, 6, 0, 0)
         )
         self.assertEqual(response.data[1]['village'], 'Polongo')
-        self.assertEqual(response.data[1]['confirmed_cases'], 1)
+        self.assertEqual(response.data[1]['confirmedCases'], 1)
         self.assertEqual(
-            response.data[1]['last_confirmed_date'].replace(tzinfo=None),
+            response.data[1]['lastConfirmedCaseDate'].replace(tzinfo=None),
             datetime(2016, 1, 5, 0, 0)
         )

@@ -3,7 +3,7 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "GIS Tools" %}</h1>
+  <h1 class="header__title">{% trans "Microplanning" %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -13,16 +13,16 @@
   </div>
 
   {% render_bundle 'common' %}
-  {% render_bundle 'gis_tools' %}
+  {% render_bundle 'microplanning' %}
   <script>
   {% comment %}
-    The GIS tools app requires a config object populated via django
+    The microplanning app requires a config object populated via django
     The app is started manually with that config:
   {% endcomment %}
-    HAT.gis_tools.default(
+    HAT.microplanning.default(
       {{ json_data|safe }},
       document.getElementById('app'),
-      '/dashboard/gis-tools/'
+      '/dashboard/microplanning/'
     )
   </script>
 

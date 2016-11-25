@@ -30,7 +30,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 ***/
 .navigation__container {
   position: fixed;
-  flex-wrap: no-wrap;
+  flex-wrap: nowrap;
   flex: 1 1 auto;
   height: 100%;
   overflow: auto;

@@ -18,6 +18,8 @@ $dark-green: #22955A;
 /* brighter hues for highlighted items */
 $bright-navy: #122272;
 $bright-pink: #FF0C6C;
+$bright-blue: #0000FE;
+$bright-yellow: #FFA400;
 
 $danger: $red;
 $warning: $orange;
@@ -26,6 +28,7 @@ $text-color: $dark-blue;
 
 /* type */
 $body-font-family: "Lato", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$icon-font: FontAwesome;
 
 $font-size-xs: 0.75rem; // 12px
 $font-size-s: 0.875rem; // 14px

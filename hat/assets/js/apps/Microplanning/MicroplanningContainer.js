@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import GisTools from './GisTools'
+import Microplanning from './Microplanning'
 import { clone } from '../../utils'
 import { fetchUrls } from '../../utils/fetchData'
 
 /*
  * Handles state
  * and data loading
- * for the GIS tools page
+ * for the Microplanning page
  *
  * TODO: This is very similar to the MonthlyReportContainer.
  *       We might want refactor to both be the same Component.
@@ -19,30 +19,29 @@ import { fetchUrls } from '../../utils/fetchData'
 // The name is used as the key in the results payload.
 export const urls = [
   {
-    name: 'locations',
-    url: '/api/datasets/list_locations/',
-    mock: [{ 'ZS': 'Yasa-bonga' }]
-  },
-  {
-    name: 'confirmation',
-    url: '/api/datasets/count_confirmed/',
-    mock: { 'negative': 0, 'total': 0, 'positive': 0 }
-  },
-  {
-    name: 'confirmedByLocation',
+    name: 'villagesWithConfirmedCases',
     url: '/api/datasets/confirmed_by_location/',
     mock: [{
-      'province': 'Bandundu',
-      'ZS': 'Yasa-bonga',
-      'AZ': 'Kimbwayamu',
-      'village': 'Kintulu',
-      'confirmed_cases': 2,
-      'last_confirmed_case': '2016-06-03T00:00:00.000Z'
+      'area': 'Muwanda-koso',
+      'confirmedCases': 1,
+      'lastConfirmedCase': '2016-06-27T13:29:03.141000Z',
+      'lastScreeningDate': '2016-06-12T09:20:48.654000Z',
+      'screenedPeople': 201,
+      'village': 'Polongo',
+      'zone': 'Mosango'
+    }, {
+      'area': 'Fula',
+      'confirmedCases': 2,
+      'lastConfirmedCase': '2016-08-21T12:27:17.420000Z',
+      'lastScreeningDate': '2016-08-21T12:27:17.420000Z',
+      'screenedPeople': 211,
+      'village': 'Kikonzi-mf',
+      'zone': 'Yasa-bonga'
     }]
   }
 ]
 
-export class GisToolsContainer extends Component {
+export class MicroplanningContainer extends Component {
   constructor (props) {
     super(props)
     this.currentParams = ''
@@ -65,9 +64,9 @@ export class GisToolsContainer extends Component {
 
   render () {
     return (
-      <GisTools params={this.props.params} />
+      <Microplanning params={this.props.params} />
     )
   }
 }
 
-export default connect()(GisToolsContainer)
+export default connect()(MicroplanningContainer)

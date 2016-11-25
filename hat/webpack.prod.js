@@ -21,7 +21,7 @@ module.exports = {
     'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
     'suspect_cases': './assets/js/suspectCases',
-    'gis_tools': './assets/js/gisTools',
+    'microplanning': './assets/js/microplanning',
     'styles': './assets/css/index.scss'
   },
 

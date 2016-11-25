@@ -9,5 +9,5 @@ urlpatterns = [
     url(r'^monthly-report/.*$', views.monthly_report, name='monthly_report'),
     url(r'^stats/.*$', views.stats, name='stats'),
     url(r'^suspect-cases/.*$', views.suspect_cases, name='suspect_cases'),
-    url(r'^gis-tools/.*$', views.gis_tools, name='gis_tools'),
+    url(r'^microplanning/.*$', views.microplanning, name='microplanning'),
 ]

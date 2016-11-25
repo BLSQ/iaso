@@ -9,14 +9,14 @@ class ExportCSVButton extends Component {
   render () {
     const {formatMessage, formatDate} = this.props.intl
     const {data, columns, messages} = this.props
-    const CSV_SEP = this.props.sep || ';'
+    const DELIMITER = this.props.delimiter || ';'
     const WRAP_STR = '"'
     const filename = this.props.filename || 'data.csv'
 
     const toCsv = (list) => {
       const headers = columns.map((col) => {
         return WRAP_STR + formatMessage(messages[col.message]) + WRAP_STR
-      }).join(CSV_SEP)
+      }).join(DELIMITER)
 
       const rows = list.map((row) => (
         columns.map((col) => {
@@ -25,11 +25,11 @@ class ExportCSVButton extends Component {
             case 'number':
               return val
             case 'date':
-              return WRAP_STR + formatDate(val) + WRAP_STR
+              return (val !== '' ? WRAP_STR + formatDate(val) + WRAP_STR : val)
             default:
               return WRAP_STR + val + WRAP_STR
           }
-        }).join(CSV_SEP)
+        }).join(DELIMITER)
       ))
 
       return [headers].concat(rows).join('\n')
@@ -57,7 +57,7 @@ ExportCSVButton.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   columns: PropTypes.arrayOf(PropTypes.object),
   messages: PropTypes.object,
-  sep: PropTypes.string,
+  delimiter: PropTypes.string,
   filename: PropTypes.string,
   intl: intlShape.isRequired
 }

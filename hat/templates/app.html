@@ -64,8 +64,8 @@
           </li>
         {% endif %}
         {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:gis_tools' %}--active{% endif %}">
-            <a href={% url "dashboard:gis_tools" %}>{% trans "GIS tools" %}</a>
+          <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
+            <a href={% url "dashboard:microplanning" %}>{% trans "Microplanning" %}</a>
           </li>
         {% endif %}
         {% if user.is_superuser %}

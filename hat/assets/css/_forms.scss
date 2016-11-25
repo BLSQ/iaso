@@ -44,3 +44,16 @@ label {
   margin-bottom: $padding-unit;
 }
 
+form.inline {
+  label {
+    display: inline-block;
+    margin-right: $padding-unit/4;
+  }
+}
+
+input.small {
+  font-size: $font-size-xs;
+  height: 15px;
+  width: 50px;
+  margin: 0 $padding-unit/5;
+}

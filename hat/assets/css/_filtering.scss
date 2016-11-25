@@ -1,13 +1,24 @@
 $filter-container-height: 2rem;
 
-.filter__container {
+@mixin filter-container-common {
   display: flex;
   align-items: baseline;
+  background: $background-highlight-gray;
+  border-bottom: 1px solid $gray;
+}
+
+.filter__container {
+  @include filter-container-common;
   padding: $padding-unit*.75 $padding-unit;
   margin: -$padding-unit;
   margin-bottom: $padding-unit;
-  background: $background-highlight-gray;
-  border-bottom: 1px solid $gray;
+}
+
+.filter__container--reduced {
+  @include filter-container-common;
+  padding: $padding-unit/2 $padding-unit;
+  margin-bottom: 0;
+  border-bottom: none;
 }
 
 .filter__label {
@@ -72,6 +83,55 @@ $filter-container-height: 2rem;
   }
 }
 
+.filter__container__input {
+  position: relative;
+  border: 1px solid $light-gray;
+  border-radius: 2px;
+  margin-right: $padding-unit/2;
+  &:last-of-type {
+    margin-right: 0;
+  }
+}
+
+.filter__container__select__label__after {
+  background: #F0F4F5;
+  border-left: 1px solid $light-gray;
+  display: inline-block;
+  vertical-align: middle;
+  width: auto;
+  height: $filter-container-height;
+  line-height: $filter-container-height;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0;
+  font-weight: normal;
+  color: $mid-gray;
+  font-size: $font-size-s;
+  .fa {
+    margin-right: 0.2em;
+  }
+}
+
+input[type="number"].input--minimised {
+  @include text--standard;
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: $filter-container-height;
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+  border-radius: 0;
+  background: white;
+  -webkit-appearance: none;
+  font-size: $font-size-s;
+  &:focus {
+    outline: #E0E5EB auto 4px;
+    outline-offset: -3px;
+  }
+}
+
+
 .react-datepicker__input-container {
   @include filter-select-positioning;
   input[type="text"] {
@@ -83,7 +143,6 @@ $filter-container-height: 2rem;
     box-shadow: none;
   }
 }
-
 
 
 .select--minimised {

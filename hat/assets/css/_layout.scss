@@ -1,3 +1,7 @@
+div, section, article {
+  box-sizing: border-box;
+}
+
 .content {
   padding: $padding-unit;
 }

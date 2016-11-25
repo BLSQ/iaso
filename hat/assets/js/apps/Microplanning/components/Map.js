@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react'
 import ReactDOM from 'react-dom'
-import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
+import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 
 import L from 'leaflet'
 import geoData from '../utils/geoData'
@@ -153,6 +153,14 @@ class Map extends Component {
             <div ref={(node) => (this.mapContainer = node)} className='map-container' />
           </div>
           {selectionList}
+        </div>
+        <div className='widget__footer'>
+          <span className='text--data'>
+            <FormattedMessage id='microplanning.datasource.label' defaultMessage='Data sources' />:&nbsp;
+            <FormattedMessage id='microplanning.datasource.mobiledata' defaultMessage='HAT mobile application data' />,&nbsp;
+            <FormattedMessage id='microplanning.datasource.historical' defaultMessage='HAT historical forms' />,&nbsp;
+            <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
+          </span>
         </div>
       </div>
     )

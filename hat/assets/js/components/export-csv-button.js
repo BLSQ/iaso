@@ -41,7 +41,7 @@ class ExportCSVButton extends Component {
 
       return (
         <div ref={(node) => (this.container = node)}>
-          <a href={blobUrl} download={filename} className='button--success button'>
+          <a href={blobUrl} download={filename} className='button--big'>
             <i className='fa fa-download' />
             {this.props.children}
           </a>

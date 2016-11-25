@@ -129,12 +129,14 @@ class MapSelectionList extends Component {
             </div>
           </div>
 
-          <h3>
-            <FormattedMessage id='microplanning.selected.list' defaultMessage='Villages in your selection:' />
-          </h3>
-          <a onClick={() => deselect([])}>
-            <FormattedMessage id='microplanning.selected.reset' defaultMessage='Reset list' />
-          </a>
+          <div className='map__selection__list__header'>
+            <h3>
+              <FormattedMessage id='microplanning.selected.list' defaultMessage='Village list:' />
+            </h3>
+            <a onClick={() => deselect([])} className='button--tiny button--danger'>
+              <FormattedMessage id='microplanning.selected.reset' defaultMessage='Deselect all' />
+            </a>
+          </div>
           <ul className='map__selection__list'>
             {data.map((item) => {
               return (

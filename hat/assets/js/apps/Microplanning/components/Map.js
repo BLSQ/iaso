@@ -304,6 +304,15 @@ class Map extends Component {
       const marker = L.circle(item._latlon, options)
       this.addLayerEvents(marker, item)
       highlightGroup.addLayer(marker)
+
+      const shadowOptions = {
+        pane: 'custom-pane-markers',
+        radius: 600,
+        className: 'map-marker shadow'
+      }
+
+      const markerShadow = L.circle(item._latlon, shadowOptions)
+      highlightGroup.addLayer(markerShadow)
     })
   }
 

@@ -8,7 +8,7 @@
   // width: calc(60% - #{$padding-unit});
   box-shadow: inset 1px 1px 4px 0 rgba(black,.05);
   /* this one weird trick to get graphs to vertically center
-     because apparently they won't render with flexbox? ¯\_(ツ)_/¯ */ 
+     because apparently they won't render with flexbox? ¯\_(ツ)_/¯ */
   > div {
     position: relative;
     top: 50%;
@@ -21,4 +21,17 @@
       width: calc(#{$i}0% - #{$padding-unit});
     }
   }
+}
+
+.donut {
+  position: relative;
+}
+
+.donut--number {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  font-size: $font-size-xxl;
+  font-weight: bold;
 }

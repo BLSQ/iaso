@@ -267,8 +267,8 @@ def location_coverage(params):
                 })
             else:
                 # last row has the ROLLUP totals
-                pop['population'] = row[3]
-                pop['registered'] = row[4]
+                pop['population'] = row[3] or 0
+                pop['registered'] = row[4] or 0
 
     cases = Case.objects.filter(document_date__gte=date_from, document_date__lt=date_to)
     if 'location' in params:

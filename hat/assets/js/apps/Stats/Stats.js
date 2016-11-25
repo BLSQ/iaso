@@ -8,6 +8,7 @@ import {
 } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
 import moment from 'moment'
+import * as d3 from 'd3'
 
 import DatePicker from 'react-datepicker'
 import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css' // eslint-disable-line no-unused-vars
@@ -49,6 +50,67 @@ class Visualization extends Component {
   }
 }
 
+const noneMessage = <FormattedMessage id='statspage.none' defaultMessage='none' />
+
+class Donut extends Component {
+  componentDidMount () {
+    this.updateDonut()
+  }
+  componentDidUpdate () {
+    this.updateDonut()
+  }
+
+  render () {
+    const v = this.props.value || 0
+    const p = Math.round(v * 10000) / 100
+    return <div className='donut'>
+      <span className='donut--number'>{p}%</span>
+      <div ref={(node) => (this.container = node)} />
+    </div>
+  }
+
+  updateDonut () {
+    // remove the old old donut and then add a new one
+    if (this.container.hasChildNodes()) {
+      this.container.removeChild(this.container.childNodes[0])
+    }
+    const value = this.props.value || 0
+    const width = 600
+    const height = 300
+    const halfWidth = width / 2
+    const halfHeight = height / 2
+    const radius = Math.min(width, height) / 2
+
+    const arc = d3.arc()
+        .outerRadius(radius - 20)
+        .innerRadius(radius - 60)
+
+    const svg = d3.select(this.container)
+          .append('svg')
+          .attr('width', '100%')
+          .attr('height', '100%')
+          .attr('viewBox', `0 0 ${width} ${height}`)
+          .attr('preserveAspectRatio', 'xMinYMin')
+          .append('g')
+          .attr('transform', `translate(${halfWidth},${halfHeight})`)
+
+    const pie = d3.pie()
+          .sort(null)
+
+    const g = svg.selectAll('.arc')
+          .data(pie([1 - value, value]))
+          .enter()
+          .append('g')
+          .attr('class', 'arc')
+
+    const colors = ['rgb(216, 216, 216)', 'rgb(242, 208, 51)']
+
+    g.append('path')
+      .attr('d', arc)
+      .style('fill', (d) => colors[d.index])
+  }
+}
+
 class ParticipationWidget extends Component {
   render () {
     const {coverage} = this.props
@@ -56,7 +118,11 @@ class ParticipationWidget extends Component {
     const villagesWithEstimate = coverage.population_estimate.locations.length
     const population = coverage.population_estimate.population
     const registered = coverage.population_estimate.registered
-    const percentageScreened = Math.round(registered / population * 10000) / 100
+    const percentageScreened = registered
+          ? Math.round(registered / population * 10000) / 100 + '%'
+          : noneMessage
+
+    const donutValue = registered ? registered / population : 0
 
     return <div className='widget__container'>
       <div className='widget__header'>
@@ -69,7 +135,7 @@ class ParticipationWidget extends Component {
           <div className='column--4'>
             <h2 className='block--margin-bottom--xs'>
               <FormattedMessage id='statspage.participation.subheader' defaultMessage='Participation rate' />
-              &nbsp;{percentageScreened}
+              :&nbsp;{percentageScreened}
             </h2>
             <p>
               <FormattedMessage id='statspage.participation.description' defaultMessage='The percentage of the target population of the screened areas for this time period' />
@@ -99,7 +165,7 @@ class ParticipationWidget extends Component {
           </div>
 
           <div className='column--6 container__graph--6'>
-            <div ref={(node) => (this.donutContainer = node)} />
+            <Donut value={donutValue} />
           </div>
         </section>
       </div>
@@ -110,7 +176,9 @@ class ParticipationWidget extends Component {
 class RegisteredWidget extends Component {
   render () {
     const {timeseries, total} = this.props
-    const percentageMissing = Math.round(total.tested / total.registered * 10000) / 100
+    const percentageMissing = total.tested
+          ? Math.round((total.registered - total.tested) / total.registered * 10000) / 100 + '%'
+          : noneMessage
     const spec = {
       x_accessor: 'date',
       y_accessor: 'registered',
@@ -164,7 +232,9 @@ class RegisteredWidget extends Component {
 class ScreeningWidget extends Component {
   render () {
     const {timeseries, total} = this.props
-    const percentagePositiveScreening = Math.round(total.positive / total.total * 10000) / 100
+    const percentagePositiveScreening = total.positive
+          ? Math.round(total.positive / total.total * 10000) / 100 + '%'
+          : noneMessage
     const spec = {
       x_accessor: 'date',
       y_accessor: ['screening_pos', 'screening_neg', 'screening_total'],
@@ -225,7 +295,9 @@ class ScreeningWidget extends Component {
 class ConfirmationWidget extends Component {
   render () {
     const {timeseries, total} = this.props
-    const percentagePositiveConfirmation = Math.round(total.positive / total.total * 10000) / 100
+    const percentagePositiveConfirmation = total.positive
+          ? Math.round(total.positive / total.total * 10000) / 100 + '%'
+          : noneMessage
     const spec = {
       x_accessor: 'date',
       y_accessor: ['confirmation_pos', 'confirmation_neg', 'confirmation_total'],

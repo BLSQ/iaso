@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { Route, Redirect, useRouterHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
+import moment from 'moment'
 
 import createStore from './redux/createStore'
 import App from './apps/App'
@@ -22,11 +23,14 @@ export default function statsApp (appConfig, element, baseUrl) {
     locations: [{ 'ZS': 'Mosango' }]
   }
   */
+  const dateFrom = moment().startOf('year').format('YYYY-MM-DD')
+  const dateTo = moment().format('YYYY-MM-DD')
+
   const routes = [
     <Route
       path='charts(/location/:location)(/source/:source)(/datefrom/:datefrom)(/dateto/:dateto)'
       component={StatsContainer} />,
-    <Redirect path='*' to={'charts'} />
+    <Redirect path='*' to={`charts/datefrom/${dateFrom}/dateto/${dateTo}`} />
   ]
 
   let history = useRouterHistory(createHistory)({

@@ -189,6 +189,7 @@ class Map extends Component {
 
     // create panes (to preserve z-index order)
     map.createPane('custom-pane-layers')
+    map.createPane('custom-pane-shadows')
     map.createPane('custom-pane-markers')
     map.createPane('custom-pane-buffer')
 
@@ -308,9 +309,17 @@ class Map extends Component {
         radius: radius,
         className: 'map-marker highlight'
       }
+      const shadowOptions = {
+        pane: 'custom-pane-shadows',
+        radius: (2 * radius),
+        className: 'map-marker shadow'
+      }
 
+      const markerShadow = L.circle(item._latlon, shadowOptions)
       const marker = L.circle(item._latlon, options)
       this.addLayerEvents(marker, item)
+
+      highlightGroup.addLayer(markerShadow)
       highlightGroup.addLayer(marker)
     })
   }

@@ -50,3 +50,20 @@ $directions: left right top bottom;
     margin-#{$direction}: $padding-unit*2;
   }
 }
+
+// extremely simple grid system with flexbox
+// give a div a class .column--2 for 20% width (for example)
+// no spacing between columns, you could do that with padding
+
+.wrapper__column {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+@for $i from 1 through 10 {
+  .column--#{$i} {
+    box-sizing: border-box;
+    width: #{$i}0%;
+  }
+}

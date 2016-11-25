@@ -96,6 +96,10 @@ p {
   @include text--success;
 }
 
+.text--label {
+  @include text--label;
+}
+
 .text--small {
   font-size: $font-size-s;
 }

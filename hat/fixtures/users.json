@@ -54,7 +54,9 @@
         ["import", "cases", "case"],
         ["export", "cases", "case"],
         ["export_full", "cases", "case"],
-        ["view", "cases", "case"]
+        ["import_reconciled", "cases", "case"],
+        ["view", "cases", "case"],
+        ["import_locations", "cases", "location"]
       ]
     }
   },

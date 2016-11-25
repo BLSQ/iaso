@@ -1,0 +1,71 @@
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { clone } from '../../utils'
+import { fetchUrls, checkLocation } from '../../utils/fetchData'
+import Stats from './Stats'
+
+export const urls = [
+  {
+    name: 'timeseries',
+    url: '/api/datasets/cases_over_time',
+    mock: []
+  },
+  {
+    name: 'coverage',
+    url: '/api/datasets/location_coverage',
+    mock: []
+  },
+  {
+    name: 'locations',
+    url: '/api/datasets/list_locations/',
+    mock: [{ 'ZS': 'Yasa-bonga' }]
+  },
+  {
+    name: 'total',
+    url: '/api/datasets/count_total/',
+    mock: {'tested': 1401, 'female': 818, 'male': 583, 'registered': 1401}
+  },
+  {
+    name: 'screening',
+    url: '/api/datasets/count_screened/',
+    mock: {'negative': 1330, 'total': 1401, 'missing_confirmation': 71, 'positive': 71}
+  },
+  {
+    name: 'confirmation',
+    url: '/api/datasets/count_confirmed/',
+    mock: {'negative': 0, 'total': 0, 'positive': 0}
+  },
+  {
+    name: 'staging',
+    url: '/api/datasets/count_staging/',
+    mock: {'stage1': 0, 'total': 0, 'stage2': 0}
+  }
+]
+
+export class StatsContainer extends Component {
+  constructor (props) {
+    super(props)
+    this.currentParams = ''
+  }
+
+  loadData (params) {
+    const {dispatch} = this.props
+    const oldParams = clone(this.currentParams)
+    this.currentParams = clone(params)
+    fetchUrls(urls, params, oldParams, dispatch, checkLocation)
+  }
+
+  componentDidMount () {
+    this.loadData(this.props.params)
+  }
+
+  componentWillReceiveProps (newProps) {
+    this.loadData(newProps.params)
+  }
+
+  render (props) {
+    return <Stats params={this.props.params} />
+  }
+}
+
+export default connect()(StatsContainer)

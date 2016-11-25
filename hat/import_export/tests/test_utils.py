@@ -33,7 +33,7 @@ class UtilsTests(TestCase):
     def test_create_documentid(self):
         df = pandas.DataFrame({
             'prename': [11, 11, 11],
-            'lastname': [12, 12, None]
+            'lastname': [12, 12, None],
         })
         self.assertEqual(
             utils.create_documentid(df.loc[0]), utils.create_documentid(df.loc[1]))

@@ -31,6 +31,9 @@ Q_staging_positive = Q()
 for field in STAGING_TEST_FIELDS:
     Q_staging_positive |= Q(**{field: True})
 
+Q_staging_stage1 = Q(test_pl_result='stage1')
+Q_staging_stage2 = Q(test_pl_result='stage2')
+
 
 class DatePeriod(Enum):
     current_month = 'current-month'

@@ -3,7 +3,7 @@ import pandas
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from .load import load_reconciled_into_db
-from .utils import hash_file, store_raw_file, transform_location_name
+from .utils import hash_file, store_raw_file, capitalize
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,9 @@ def import_reconciled_file(orgname: str, filename: str, store=False) -> dict:
 
         df_rec = pandas.DataFrame()
         df_rec['document_id'] = df['document_id']
-        df_rec['ZS'] = df['ZS'].apply(transform_location_name)
-        df_rec['AZ'] = df['AS'].apply(transform_location_name)
-        df_rec['village'] = df['Village'].apply(transform_location_name)
+        df_rec['ZS'] = df['ZS'].apply(capitalize)
+        df_rec['AZ'] = df['AS'].apply(capitalize)
+        df_rec['village'] = df['Village'].apply(capitalize)
         df_rec['latitude'] = df['Latitude']
         df_rec['longitude'] = df['Longitude']
 

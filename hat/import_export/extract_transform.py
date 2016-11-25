@@ -5,7 +5,7 @@ import pandas
 from pandas import DataFrame, Series
 from pandas.io.json import json_normalize
 import hat.common.mdb as mdb
-from .utils import hat_id, capitalize, create_documentid, transform_location_name
+from .utils import hat_id, capitalize, create_documentid
 from hat.import_export.errors import handle_import_stage, ImportStage
 
 # This file contains the extraction and transformation functions.
@@ -435,11 +435,11 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Provence"),
-                "apply_to_column": transform_location_name
+                "apply_to_column": capitalize
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_PROVINCE"),
-                "apply_to_column": transform_location_name
+                "apply_to_column": capitalize
             },
             "mobile": None
         }
@@ -450,15 +450,15 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "ZS"),
-                "apply_to_column": transform_location_name
+                "apply_to_column": capitalize
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_HEALTH_ZONE"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
             "mobile": {
                 "field": ("main", "person.location.zone"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
         }
     },
@@ -468,15 +468,15 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "AS"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_HEALTH_AREA"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
             "mobile": {
                 "field": ("main", "person.location.area"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
         }
     },
@@ -486,15 +486,15 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Village"),
-                "apply_to_column": transform_location_name
+                "apply_to_column": capitalize
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_VILLAGE"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
             "mobile": {
                 "field": ("main", "person.location.village"),
-                "apply_to_column": transform_location_name,
+                "apply_to_column": capitalize,
             },
         }
     },

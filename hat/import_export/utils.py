@@ -1,10 +1,9 @@
 from hashlib import md5
 from base64 import b64encode
 from string import capwords
-from functools import reduce
 import re
 import pandas
-from pandas import Series, DataFrame
+from pandas import Series
 from django.conf import settings
 import hat.couchdb.api as couchdb
 
@@ -15,14 +14,15 @@ def capitalize(x: str) -> str:
     return capwords(x)
 
 
-def transform_location_name(x: str) -> str:
-    if pandas.isnull(x):
-        return None
-    return x.upper()
-
-
 def create_documentid(row: Series) -> str:
-    ''' Hash some columns to create the document id '''
+    '''
+    Hash some columns to create the document id
+    IMPORTANT: We use the `document_id` to identify cases. If something in
+               the import code changes, this function should still produce
+               the same id for a case as it did before the change. So that
+               cases that are reimported will get the same id as when they
+               were exported in the past.
+    '''
     COLUMNS = [
         # 'document_date',
         'name',
@@ -41,24 +41,6 @@ def create_documentid(row: Series) -> str:
     for x in t:
         h.update(str(x).encode())
     return h.hexdigest()
-
-
-def groupreduce(df: DataFrame, column: str, sortby=None) -> DataFrame:
-    '''
-    Group a dataframe by column value and then reduce each group column to the
-    last non null value. This is lossy in that it discards values which are not
-    null and not the last one in the column.
-
-    Example: reduce_df(df, 'id')
-    | id   | a    | b   |           | id | a  | b  |
-    |------|------|-----|     ==>   |----|----|----|
-    | 1    | 11   | 22  |           | 1  | 11 | 23 |
-    | 1    | null | 23  |           | 2  | 33 | 44 |
-    | 2    | 33   | 44  |
-    '''
-    result = df.sort_values(by=sortby) if sortby else df
-    return result.groupby(column) \
-                 .agg(lambda x: reduce(lambda a, b: b or a, x))
 
 
 def strip_accents(s: str) -> str:

@@ -14,6 +14,8 @@ The local dev setup uses [docker-compose](https://docs.docker.com/compose/) to s
 
 This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should be reachable at `https://<docker-host>:8443`.
 
+It will load some users via fixtures. See the user name/password combos further down.
+
 [Jupyter](http://jupyter.org/) iPython notebook server is run at port `8888` as well, that can be used for exploration in development.
 
 No local setup should be needed apart from docker.

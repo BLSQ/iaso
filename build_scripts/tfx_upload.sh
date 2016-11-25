@@ -13,7 +13,7 @@ then
 fi
 
 # create english language file for upload
-docker-compose run web manage makemessages -l en
+docker-compose run hat manage makemessages -l en
 
 # upload
 url="https://www.transifex.com/api/2/project/hat/resource/sense-hat-historicalpo/content"

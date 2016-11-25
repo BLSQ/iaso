@@ -567,4 +567,11 @@ path.map-marker {
       fill-opacity: 0.5;
     }
   }
+  &.shadow {
+    @include marker($bright-pink, 0.3, $bright-pink, 0);
+    &:hover {
+      fill: $bright-pink;
+      fill-opacity: 0.3;
+    }
+  }
 }

@@ -134,6 +134,12 @@ export const DataTable = ({
             value={total.registered - total.tested} />
         </ul>
       </section>
+      <div className='widget__footer'>
+        <span className='text--data'>
+          <FormattedMessage id='monthlyreport.datasource.label' defaultMessage='Data source' />:&nbsp;
+          <FormattedMessage id='monthlyreport.datasource.mobiledata' defaultMessage='HAT mobile application data' />
+        </span>
+      </div>
     </div>
   )
 }

@@ -39,13 +39,16 @@ class MapLegend extends Component {
 
         <div className='legend'>
           <div className='points'>
-            <ul>
-              <li key='highlight'>
-                <i className='fa fa-circle highlight' />
+            <span className='widget__toggle-group__legend'>
+              Map key
+            </span>
+            <ul className='legend__list'>
+              <li key='highlight' className='legend__list__item'>
+                <i className='map__legend__icon--highlight' />
                 <FormattedMessage id='microplanning.legend.highlight' defaultMessage='Villages with confirmed cases in the indicated period' />
               </li>
-              <li key='selected'>
-                <i className='fa fa-circle selected' />
+              <li key='selected' className='legend__list__item'>
+                <i className='map__legend__icon--selected' />
                 <FormattedMessage id='microplanning.legend.selected' defaultMessage='Selected villages' />
               </li>
             </ul>

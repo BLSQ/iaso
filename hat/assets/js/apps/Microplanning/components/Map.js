@@ -82,7 +82,7 @@ class Map extends Component {
       }
     }
 
-    this.legendChangeHandler = this.legendChangeHandler.bind(this)
+    this.legendToggleHandler = this.legendToggleHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
     this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
   }
@@ -136,7 +136,7 @@ class Map extends Component {
         <div className='widget__header'>
           <MapLegend
             legend={legend}
-            legendChange={this.legendChangeHandler}
+            legendToggle={this.legendToggleHandler}
           />
         </div>
         <div className=''>
@@ -324,7 +324,7 @@ class Map extends Component {
     // create buffer marker that follows mouse movements
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
       const { featureGroup, legend } = this.state
-      const bufferRadius = bufferSize * 1000 // in metres
+      const bufferRadius = bufferSize * 500 // in metres (buffer size = diameter = 2 * radius)
       const plotted = geoData.villages.filter((item) => (legend[item.type]))
       const highlightedItems = this.getHighlightedItems()
 
@@ -480,10 +480,9 @@ class Map extends Component {
     }
   }
 
-  legendChangeHandler (event) {
-    L.DomEvent.stop(event)
+  legendToggleHandler (key) {
     const {legend} = this.state
-    legend[event.target.name] = event.target.checked
+    legend[key] = !legend[key]
     this.setState({ legend: legend })
   }
 
@@ -493,16 +492,8 @@ class Map extends Component {
 
   bufferChangeHandler (event) {
     L.DomEvent.stop(event)
-    let value
-    if (event.target.name === 'buffer-check') {
-      if (!event.target.checked) {
-        value = 0
-      } else {
-        value = RADIUS.buffer // default value
-      }
-    } else {
-      value = parseInt(event.target.value, 10)
-    }
+    let value = parseInt(event.target.value, 10)
+    if (value < 1) value = 1
     this.setState({selection: {...this.state.selection, bufferSize: value}})
   }
 

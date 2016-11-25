@@ -122,6 +122,11 @@ p {
   font-size: $font-size-s;
 }
 
+.text--explanation {
+  font-size: $font-size-s;
+  font-style: italic;
+}
+
 .divider {
   display: block;
   margin-top: $padding-unit;

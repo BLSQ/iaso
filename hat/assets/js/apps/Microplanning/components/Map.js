@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react'
 import ReactDOM from 'react-dom'
-import { IntlProvider, injectIntl, intlShape } from 'react-intl'
+import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 
 import L from 'leaflet'
 import geoData from '../utils/geoData'
@@ -37,6 +37,13 @@ const SELECTION_MODES = {
   deselect: -1
 }
 
+const MESSAGES = defineMessages({
+  'fit-to-bounds': {
+    defaultMessage: 'center to highlighted villages',
+    id: 'microplanning.label.fitToBounds'
+  }
+})
+
 // find all the entries in the list that match exact
 // with the item values in the indicated keys list
 //
@@ -67,7 +74,8 @@ class Map extends Component {
       // leaflet map object
       map: null,
       // where to plot the selected, highlighted and buffer markers
-      featureGroup: new L.FeatureGroup(),
+      highlightGroup: new L.FeatureGroup(),
+      selectedGroup: new L.FeatureGroup(),
       // where to plot ALL villages; in different groups based on type
       markersGroup: {
         official: new L.FeatureGroup(),
@@ -95,7 +103,8 @@ class Map extends Component {
   componentDidUpdate () {
     this.state.map.whenReady(() => {
       // reset previous state
-      this.state.featureGroup.clearLayers()
+      this.state.highlightGroup.clearLayers()
+      this.state.selectedGroup.clearLayers()
       this.state.map.off('mousemove') // remove ALL previous listeners
       this.state.map.on('mousemove', (event) => {
         // dirty: we don't want to dispatch a new state
@@ -207,7 +216,7 @@ class Map extends Component {
     const fitToBoundsControl = L.control(commonOptions)
     fitToBoundsControl.onAdd = (map) => {
       const div = L.DomUtil.create('div', 'map__control__button')
-      div.innerHTML = '<i class="fa fa-map-marker"></i>'
+      this.renderFitToBoundsControl(div)
       L.DomEvent.on(div, 'click', (event) => {
         L.DomEvent.stop(event)
         this.fitToBounds()
@@ -224,8 +233,9 @@ class Map extends Component {
   }
 
   includeDefaultLayersInMap (map) {
-    // include dynamic layer (highlight, selected, buffer...)
-    map.addLayer(this.state.featureGroup)
+    // include dynamic layers (highlight, selected, buffer...)
+    map.addLayer(this.state.highlightGroup)
+    map.addLayer(this.state.selectedGroup)
 
     const shapeOptions = {
       pane: 'custom-pane-layers',
@@ -281,7 +291,7 @@ class Map extends Component {
   }
 
   updateHighlightedItems () {
-    const { featureGroup } = this.state
+    const { highlightGroup } = this.state
 
     this.getHighlightedItems().forEach((item) => {
       const radius = RADIUS[item.type] + RADIUS.highlight
@@ -293,12 +303,12 @@ class Map extends Component {
 
       const marker = L.circle(item._latlon, options)
       this.addLayerEvents(marker, item)
-      featureGroup.addLayer(marker)
+      highlightGroup.addLayer(marker)
     })
   }
 
   updateSelectedItems () {
-    const { featureGroup } = this.state
+    const { selectedGroup } = this.state
     const { selectedItems } = this.props
 
     selectedItems.forEach((item) => {
@@ -312,18 +322,18 @@ class Map extends Component {
 
       const marker = L.circle(item._latlon, options)
       this.addLayerEvents(marker, {...item, selected: true})
-      featureGroup.addLayer(marker)
+      selectedGroup.addLayer(marker)
     })
   }
 
   updateSelectionMode () {
     const {mode, bufferSize} = this.state.selection
 
-    this.renderselectionControl()
+    this.renderSelectionControl()
 
     // create buffer marker that follows mouse movements
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
-      const { featureGroup, legend } = this.state
+      const { selectedGroup, legend } = this.state
       const bufferRadius = bufferSize * 500 // in metres (buffer size = diameter = 2 * radius)
       const plotted = geoData.villages.filter((item) => (legend[item.type]))
       const highlightedItems = this.getHighlightedItems()
@@ -334,7 +344,7 @@ class Map extends Component {
         radius: bufferRadius,
         className: 'map-marker buffer'
       })
-      featureGroup.addLayer(bufferZone)
+      selectedGroup.addLayer(bufferZone)
 
       bufferZone.on({
         click: (event) => {
@@ -365,10 +375,10 @@ class Map extends Component {
   }
 
   fitToBounds () {
-    const {map, featureGroup} = this.state
+    const {map, highlightGroup} = this.state
     setTimeout(() => {
-      if (featureGroup.getLayers().length) {
-        map.fitBounds(featureGroup.getBounds(), { maxZoom: 13 })
+      if (highlightGroup.getLayers().length) {
+        map.fitBounds(highlightGroup.getBounds(), { maxZoom: 13 })
       } else {
         map.setView(geoData.center, geoData.zoom)
       }
@@ -455,7 +465,14 @@ class Map extends Component {
     this.state.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
   }
 
-  renderselectionControl () {
+  renderFitToBoundsControl (container) {
+    const {formatMessage} = this.props.intl
+    const title = formatMessage(MESSAGES['fit-to-bounds'])
+    const component = <i className='fa fa-map-marker' title={title} />
+    ReactDOM.render(this.injectI18n(component), container)
+  }
+
+  renderSelectionControl () {
     const {mode, bufferSize, controlContainer} = this.state.selection
     const component = <MapSelectionControl
       mode={mode}

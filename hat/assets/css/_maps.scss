@@ -401,7 +401,7 @@ input.widget__filter__numberinput {
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: white;
+  color: $bright-blue;
   right: auto;
   top: 10px;
   left: 20px;
@@ -414,7 +414,7 @@ input.widget__filter__numberinput {
   }
 }
 .leaflet-container a.leaflet-popup-close-button:hover {
-  color: $bright-blue;
+  color: $bright-navy;
 }
 
 .map__tooltip {

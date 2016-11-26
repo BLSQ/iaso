@@ -50,3 +50,14 @@
     min-height: calc(100vh - #{$banner-height});
   }
 }
+
+/*  media queries, just small laptop/desktop screens for now */
+/*  site not optimised for anything smaller than than */
+
+$desktop-small: 1280px;
+
+@mixin small-screen {
+  @media (max-width: #{$desktop-small}) {
+    @content;
+  }
+}

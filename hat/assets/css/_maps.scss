@@ -240,14 +240,20 @@ input.widget__filter__numberinput {
 [class^="map__control__button--selection"] {
   box-sizing: border-box;
   width: auto;
-  height: 46px;
+  height: auto;
   margin-right: 10px;
   border: 1px solid $gray;
   box-shadow: 0 0 2px 0 #865A0B;
   border-radius: 2px;
   padding: 8px;
-  font-size: $font-size-s;
+  font-size: $font-size-xs;
   text-transform: uppercase;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  @include small-screen {
+    text-transform: none;
+  }
 }
 
 
@@ -278,6 +284,9 @@ input.widget__filter__numberinput {
   box-shadow: 0 0 2px 0 #865A0B;
   margin-right: 6px;
   filter: grayscale(100%);
+  @include small-screen {
+    display: none;
+  }
   &:after {
     display: block;
     position: absolute;
@@ -328,6 +337,9 @@ input.widget__filter__numberinput {
     line-height: 28px;
     .fa {
       margin-right: 4px;
+      @include small-screen {
+        display: none;
+      }
     }
   }
 }

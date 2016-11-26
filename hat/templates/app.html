@@ -115,7 +115,7 @@
 
     {% if not request.resolver_match.view_name == 'dashboard:home' %}
       <a href="javascript:window.print()" class="link--print">
-        <i class="fa fa-print"></i> Print this page
+        <i class="fa fa-print"></i> {% trans "Print this page" %}
       </a>
     {% endif %}
     

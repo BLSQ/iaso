@@ -40,7 +40,7 @@ class MapLegend extends Component {
         <div className='legend'>
           <div className='points'>
             <span className='widget__toggle-group__legend'>
-              Map key
+              <FormattedMessage id='microplanning.legend.key' defaultMessage='Map key' />
             </span>
             <ul className='legend__list'>
               <li key='highlight' className='legend__list__item'>

@@ -7,6 +7,7 @@ import * as topojson from 'topojson'
 import zonesTopo from '../../../../json/zones.json'
 import areasTopo from '../../../../json/areas.json'
 import villages from '../../../../json/villages.json'
+import data2015 from '../../../../json/PNLTHA-2015.json'
 
 // TO BE CHANGED AFTER WORKSHOP
 // const MAP_CENTER = [ -4.4233379, 16.2113064 ]
@@ -23,15 +24,15 @@ const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
 
 // TO BE REMOVED AFTER WORKSHOP: show only PRIORITY zones
 const WORKSHOP = [
-  'MOSANGO',
-  'YASA BONGA',
-  'YASSA BONGA',
   'BOKORO',
-  'KIKONGO',
   'BULUNGU',
-  'KIMPUTU'
+  'KIKONGO',
+  'KIMPUTU',
+  'MOSANGO',
+  'YASA BONGA'
 ]
-areas.features = areas.features.filter((item) => WORKSHOP.indexOf(item.properties.zone) > -1)
+areas.features = areas.features.filter((item) =>
+  WORKSHOP.indexOf(item.properties.zone.toUpperCase()) > -1)
 // !TO BE REMOVED AFTER WORKSHOP
 
 //
@@ -88,10 +89,34 @@ const aggregated = (item) => {
 zones.features.forEach(aggregated)
 areas.features.forEach(aggregated)
 
+//
+// compare if the items share the same "cleaned" values in the indicated `keys`
+//
+// keys: [ 'a', 'b', 'c' ]
+// objA: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
+// objB: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
+//
+
+const isEqual = (a, b) => (stripAccents(a) === stripAccents(b))
+const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
+
+// taken from sense-hat-mobile
+const stripAccents = (word) => {
+  return (word || '').toUpperCase()
+    .replace('Ç', 'C')
+    .replace('Û', 'U')
+    .replace(/[ÀÁÂÄ]/, 'A')
+    .replace(/[ÈÉÊ]/, 'E')
+    .replace(/[^A-Z0-9]/g, '')
+}
+
 export default {
+  isEqual,
+  areEqual,
   center: MAP_CENTER,
   zoom: MAP_ZOOM,
-  zones: zones,
-  areas: areas,
-  villages: locations
+  zones,
+  areas,
+  villages: locations, // FIXME: should come from DB
+  data2015
 }

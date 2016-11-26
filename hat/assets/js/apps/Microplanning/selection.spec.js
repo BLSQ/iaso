@@ -2,7 +2,7 @@
 import assert from 'assert'
 import * as selection from './selection'
 
-describe('Microplanning actions', () => {
+describe('Microplanning selection', () => {
   describe('actions', () => {
     it('should create the select items action', () => {
       assert.deepEqual(

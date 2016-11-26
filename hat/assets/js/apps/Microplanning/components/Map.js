@@ -25,8 +25,8 @@ const DEFAULT_LAYER = 'ArcGIS Topo Map'
 // circle size in metres depending on the village type
 const RADIUS = {
   official: 350,
-  other: 100,
-  unknown: 100,
+  other: 150,
+  unknown: 150,
   highlight: 80, // amount to increase if there are cases
   buffer: 5 // default buffer value (5km)
 }

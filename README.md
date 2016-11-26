@@ -26,7 +26,7 @@ To login to the app or the django admin, a superuser needs to be created with:
 
 `docker-compose run hat manage createsuperuser`
 
-Then additional users with custom groups and permissions can be added through the django admin at `https://<docker-host>:8443/admin`.
+Then additional users with custom groups and permissions can be added through the django admin at `https://<docker-host>:8443/admin` or loaded via fixtures.
 
 ### Import mobile backups
 

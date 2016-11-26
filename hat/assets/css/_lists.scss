@@ -4,7 +4,7 @@
   padding: 0;
 }
 
-.list--stats {
+[class*="list--stats"] {
   @include reset-list-style;
   margin-top: $padding-unit*.5;
   margin-bottom: $padding-unit*2;
@@ -36,6 +36,10 @@
   &--purple {
     background: rgba($purple, 0.1);
   }
+  &--reduced {
+    display: block;
+    padding: $padding-unit/4 0;
+  }
   [class^="button"] {
     margin-top: 0.5em;
   }
@@ -64,8 +68,40 @@
   text-align: right;
 }
 
+/* stats page, inheriting from monthly report styles above ^
+   these are confusingly named 'stats' :-/                  */
+
+.list--stats--reduced {
+  margin-top: $padding-unit;
+  margin-bottom: $padding-unit;
+}
+
+.list__item__number--prominent {
+  display: block;
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-top: 0.25em;
+}
+
 .list__header {
   padding: 0 $padding-unit;
   color: $mid-gray;
   font-weight: normal;
+}
+
+
+.list--instructions {
+  margin-top: $padding-unit*.5;
+  margin-bottom: $padding-unit;
+  padding-left: $padding-unit;
+  max-width: 32em;
+}
+.list__item--instructions {
+  margin-bottom: 0.5em;
+  line-height: 1.35;
+  font-size: $font-size-s;
+}
+
+.form__wrapper ul {
+  @include reset-list-style;
 }

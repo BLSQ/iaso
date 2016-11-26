@@ -1,5 +1,6 @@
 {% load render_bundle from webpack_loader %}
 {% load i18n %}
+{% load static %}
 <!DOCTYPE HTML>
 <html>
   <head>
@@ -16,6 +17,9 @@
     {% else %}
       {% render_bundle 'styles' 'css' %}
     {% endif %}
+
+    {# very simple print stylesheet #}
+    <link rel="stylesheet" href="{% static 'print.css' %}" type="text/css" media="print" />
 
     {% block head %}
     {% endblock %}

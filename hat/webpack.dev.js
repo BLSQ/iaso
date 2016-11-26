@@ -1,20 +1,11 @@
 var path = require('path')
-var url = require('url')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remeber to switch in webpack.prod.js and
 // djanog settings as well
 var LOCALE = 'en'
-
-// When DOCKER_HOST is set we'll use its hostname for the webpack url
-var WEBPACK_URL = process.env.DOCKER_HOST
-  ? url.format({
-    protocol: 'http',
-    hostname: url.parse(process.env.DOCKER_HOST).hostname,
-    port: 3000
-  })
-  : 'http://localhost:3000'
+var WEBPACK_URL = 'https://localhost:3000'
 
 module.exports = {
   context: __dirname,
@@ -36,6 +27,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/playground'
     ],
+    'stats': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/stats'
+    ],
     'monthly_report': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -45,6 +41,11 @@ module.exports = {
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/suspectCases'
+    ],
+    'microplanning': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/microplanning'
     ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
@@ -90,7 +91,7 @@ module.exports = {
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot', 'babel?presets[]=es2015&presets[]=react&presets[]=stage-2']
+        loaders: ['react-hot-loader/webpack', 'babel?presets[]=es2015&presets[]=react&presets[]=stage-2']
       },
       {
         test: /\.css$/,
@@ -118,14 +119,24 @@ module.exports = {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file'
       },
+      // images
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url?limit=10000&mimetype=image/svg+xml'
+      },
+      {
+        test: /\.(png|jpg)$/,
+        loader: 'url-loader?limit=8192'
       },
       // JSON loader for translations
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

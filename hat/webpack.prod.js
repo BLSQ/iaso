@@ -18,8 +18,10 @@ module.exports = {
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
     'playground': './assets/js/playground',
+    'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
     'suspect_cases': './assets/js/suspectCases',
+    'microplanning': './assets/js/microplanning',
     'styles': './assets/css/index.scss'
   },
 
@@ -69,7 +71,7 @@ module.exports = {
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot', 'babel?' + JSON.stringify({
+        loaders: ['react-hot-loader/webpack', 'babel?' + JSON.stringify({
           presets: [
             'es2015',
             'react',
@@ -116,6 +118,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      // Leaftlet images
+      {
+        test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'url?limit=10000&mimetype=image/png'
       }
     ]
   },

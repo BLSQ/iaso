@@ -30,6 +30,7 @@
         {% endif %}
         {% csrf_token %}
         {{ form }}
+        <input type="hidden" name="next" value="{{ next }}" />
         <button type="submit" class="button">{% trans "Login" %}</button>
       </form>
     </div>

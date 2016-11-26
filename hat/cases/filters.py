@@ -31,6 +31,9 @@ Q_staging_positive = Q()
 for field in STAGING_TEST_FIELDS:
     Q_staging_positive |= Q(**{field: True})
 
+Q_staging_stage1 = Q(test_pl_result='stage1')
+Q_staging_stage2 = Q(test_pl_result='stage2')
+
 
 class DatePeriod(Enum):
     current_month = 'current-month'
@@ -42,6 +45,7 @@ class DatePeriod(Enum):
     since_last_year = 'since-last-year'
     since_two_years = 'since-two-years'
     since_three_years = 'since-three-years'
+    since_five_years = 'since-five-years'
 
 
 def resolve_dateperiod(value):
@@ -110,6 +114,12 @@ def resolve_dateperiod(value):
         date_from = datetime(td.year - 3, 1, 1, tzinfo=pytz.UTC)
         date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
             + timedelta(days=1)
+
+    elif value == DatePeriod.since_five_years.value:
+        date_from = datetime(td.year - 5, 1, 1, tzinfo=pytz.UTC)
+        date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
+            + timedelta(days=1)
+
     else:
         raise ValueError('Unkown date period: ' + value)
 

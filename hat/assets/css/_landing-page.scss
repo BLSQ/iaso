@@ -1,0 +1,138 @@
+/* landing page! this is all static (hard-coded) content */
+/* nothing here is very re-useable so it's not particularly elegant css */
+
+/* styles common to all sections */
+[class^="section--feature"] {
+  display: flex;
+  padding: $padding-unit*1.5 $padding-unit;
+  box-sizing: border-box;
+  img {
+    display: block;
+  }
+}
+
+/* specific section styles */
+.section--feature {
+  &--welcome {
+    flex-direction: column;
+    background: white;
+  }
+  &--pilot-area {
+    background: $blue linear-gradient(-180deg, rgba(black,0.2) 0%, transparent 100%);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    min-height: 374px; /* height of map image */
+  }
+  &--reports {
+    background: $light-gray;
+  }
+  &--data {
+    background: white;
+  }
+  &--suspect {
+    background: $light-gray;
+  }
+  &--partners {
+    flex-direction: column;
+    background-color: $bright-navy;
+    background-image: radial-gradient(at top, rgba(white, 0.2) 0%, $bright-navy 100%);
+    @include white-text-dark-background;
+    h2 {
+      @include text--center;
+      margin-bottom: 1.5em;
+    }
+  }
+}
+
+/* common styles for content */
+[class^="section__content"] {
+  h2 {
+    line-height: 1.25;
+    margin-bottom: 1.25em;
+  }
+  [class^="button"] {
+    margin-top: 1.5em;
+  }
+}
+
+.section__content {
+  &--welcome {
+    @include text--center;
+    h1 {
+      margin-bottom: 1em;
+    }
+    p {
+      max-width: none;
+      padding: 0 20%;
+    }
+  }
+  &--pilot-area {
+    align-self: center;
+    @include white-text-dark-background;
+    max-width: 32em;
+    padding: $padding-unit 0;
+  }
+  &__image--pilot-area {
+    order: 2;
+    margin-left: auto;
+  }
+  &--reports {
+    align-self: center;
+    flex-basis: 50%;
+    p { max-width: 26em; }
+  }
+  &__image--reports {
+    
+    min-height: 268px;
+    width: 50%;
+    min-width: 509px;
+  }
+  &__heading--data {
+    order: 2;
+    flex-basis: 50%;
+    @include text--center;
+    h2 {
+      margin-bottom: 4em;
+    }
+    img { 
+      display: initial; 
+      margin-bottom: 1em;
+    }
+  }
+  &--upload,
+  &--download {
+    align-self: center;
+    flex-basis: 25%;
+    p { max-width: 20em; }
+  }
+  &--upload {
+    order: 1;
+  }
+  &--download {
+    order: 3;
+  }
+  &--suspect {
+    align-self: center;
+  }
+  &__image--suspect {
+    min-height: 268px;
+    width: 50%;
+    min-width: 509px;
+    order: 2;
+  }
+  &--partners {
+    display: flex;
+    justify-content: center;
+    
+  }
+}
+
+.section__list--partners {
+  max-width: 20em;
+  li {
+    font-weight: bold;
+    margin-bottom: 1em;
+    line-height: 1.25;
+  }
+}

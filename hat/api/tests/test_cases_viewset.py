@@ -5,7 +5,7 @@ from hat.cases.models import Case
 
 
 class CasesTests(APITestCase):
-    fixtures = ['users', 'api_cases.json']
+    fixtures = ['users', 'cases']
 
     def setUp(self):
         self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))
@@ -16,7 +16,7 @@ class CasesTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], Case.objects.all().count())
         # Newest document should come first
-        self.assertEqual(response.data['results'][0]['document_id'], '5')
+        self.assertEqual(response.data['results'][0]['document_id'], '6')
         # Check the reponse has our custom pagination keys
         self.assertIn('limit', response.data)
         self.assertIn('offset', response.data)

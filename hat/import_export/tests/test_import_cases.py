@@ -1,7 +1,8 @@
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from hat.cases.models import Case
-from ..import_data import reimport, import_file
+from ..import_cases import import_cases_file
+from ..reimport import reimport
 from . import DBTestCase, TEST_DATA
 import datetime
 
@@ -9,11 +10,18 @@ mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
 enc_file = 'testdata/backup-v5.enc'
 
 
-class ImportTests(DBTestCase):
+def import_helper(orgname, filename, store=False):
+    ''' Helper functions to bail on import errors '''
+    stats = import_cases_file(orgname, filename, store=store)
+    if len(stats['errors']) > 0:
+        raise stats['errors'][0]
+    return stats
+
+
+class ImportCasesTests(DBTestCase):
     def test_import_historic(self):
         count = TEST_DATA['historic']['count']
-        stats = import_file('historic', TEST_DATA['historic']['file'], store=True)
-        self.assertEqual(len(stats['errors']), 0)
+        stats = import_helper('historic', TEST_DATA['historic']['file'], store=True)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
         self.assertEqual(Case.objects.count(), count)
@@ -26,8 +34,7 @@ class ImportTests(DBTestCase):
 
     def test_import_pv(self):
         count = TEST_DATA['pv']['count']
-        stats = import_file('pv', TEST_DATA['pv']['file'], store=True)
-        self.assertEqual(len(stats['errors']), 0)
+        stats = import_helper('pv', TEST_DATA['pv']['file'], store=True)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
         self.assertEqual(Case.objects.count(), count)
@@ -40,8 +47,7 @@ class ImportTests(DBTestCase):
 
     def test_import_backup(self):
         count = TEST_DATA['mobile_backup']['count']
-        stats = import_file('backup', TEST_DATA['mobile_backup']['file'], store=True)
-        self.assertEqual(len(stats['errors']), 0)
+        stats = import_helper('backup', TEST_DATA['mobile_backup']['file'], store=True)
         self.assertEqual(stats['num_total'], count)
         self.assertEqual(stats['num_imported'], count)
         self.assertEqual(Case.objects.count(), count)
@@ -53,9 +59,10 @@ class ImportTests(DBTestCase):
 
     def test_duplicate_merge_by_hash(self):
         # should import same person if it has been updated with a new result
-        import_file('backup-1', TEST_DATA['mobile_backup_duplicates_1']['file'], store=True)
-        import_file('backup-2', TEST_DATA['mobile_backup_duplicates_2']['file'], store=True)
-        import_file('backup-3', TEST_DATA['mobile_backup_duplicates_3']['file'], store=True)
+        import_helper('backup-1', TEST_DATA['mobile_backup_duplicates_1']['file'], store=True)
+        import_helper('backup-2', TEST_DATA['mobile_backup_duplicates_2']['file'], store=True)
+        import_helper('backup-3', TEST_DATA['mobile_backup_duplicates_3']['file'], store=True)
+
         # only one object in db
         self.assertEqual(
             Case.objects.count(),
@@ -78,9 +85,10 @@ class ImportTests(DBTestCase):
         )
 
     def test_reimport(self):
-        import_file('historic', mdb_file, store=True)
-        import_file('backup', enc_file, store=True)
-        import_file('pv', TEST_DATA['pv']['file'], store=True)
+        import_helper('historic', mdb_file, store=True)
+        import_helper('backup', enc_file, store=True)
+        import_helper('pv', TEST_DATA['pv']['file'], store=True)
+
         count = Case.objects.count()
         self.assertEqual(count, TEST_DATA['total_count'])
         Case.objects.all().delete()
@@ -88,8 +96,8 @@ class ImportTests(DBTestCase):
         self.assertEqual(Case.objects.count(), count)
 
     def test_import_existing_file(self):
-        stats1 = import_file('backup', enc_file, store=True)
-        stats2 = import_file('backup', enc_file, store=True)
+        stats1 = import_cases_file('backup', enc_file, store=True)
+        stats2 = import_cases_file('backup', enc_file, store=True)
 
         self.assertEqual(stats1['type'], 'backup_import')
         self.assertEqual(stats2['type'], 'import_error')

@@ -1,0 +1,20 @@
+[
+  {
+    "model": "sync.mobileuser",
+    "pk": 1,
+    "fields": {
+      "email": "test_karl@ehealthnigeria.org",
+      "db_name": "",
+      "couchdb_id": ""
+    }
+  },
+  {
+    "model": "sync.mobileuser",
+    "pk": 2,
+    "fields": {
+      "email": "test_till@ehealthnigeria.org",
+      "db_name": "",
+      "couchdb_id": ""
+    }
+  }
+]

@@ -43,6 +43,7 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 
 RUN pip install --quiet --upgrade pip==8.1.2
 
+COPY build_scripts/npmrc /root/.npmrc
 WORKDIR /opt/app
 
 COPY requirements.txt /opt/app/requirements.txt
@@ -50,8 +51,10 @@ RUN pip install --quiet -r requirements.txt
 
 # NODE Deps, JS/CSS production build
 ARG NODE_ENV=development
+COPY .npmrc /opt/app
 COPY package.json /opt/app/package.json
 RUN npm install --loglevel silent
+RUN rm -f .npmrc
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
 # display git commit

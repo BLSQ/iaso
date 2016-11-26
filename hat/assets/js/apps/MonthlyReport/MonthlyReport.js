@@ -50,7 +50,7 @@ export const DataTable = ({
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          <FormattedMessage id='monthlyreport.header.results' defaultMessage='Results' />
+          <FormattedMessage id='monthlyreport.header.results' defaultMessage='Monthly statistics from active screening using the HAT mobile application' />
         </h2>
       </div>
       <section>
@@ -134,6 +134,12 @@ export const DataTable = ({
             value={total.registered - total.tested} />
         </ul>
       </section>
+      <div className='widget__footer'>
+        <span className='text--data'>
+          <FormattedMessage id='monthlyreport.datasource.label' defaultMessage='Data source' />:&nbsp;
+          <FormattedMessage id='monthlyreport.datasource.mobiledata' defaultMessage='HAT mobile application data' />
+        </span>
+      </div>
     </div>
   )
 }
@@ -168,9 +174,9 @@ export class MonthlyReport extends Component {
     return (
       <div>
         <div className='filter__container'>
-          <h2 className='filter__label'>Select:</h2>
+          <h2 className='filter__label'><FormattedMessage id='monthlyreport.label.select' defaultMessage='Select:' /></h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /> Month</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='monthlyreport.label.month' defaultMessage='Month' /></label>
             <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className='select--minimised'>
               {dates.map((date) => (
                 <option key={date} value={date}>
@@ -180,7 +186,7 @@ export class MonthlyReport extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /> Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
@@ -196,7 +202,7 @@ export class MonthlyReport extends Component {
           {
             error && <div className='widget__container'>
               <div className='widget__header'>
-                <h2 className='widget__heading text--error'>Error:</h2>
+                <h2 className='widget__heading text--error'><FormattedMessage id='monthlyreport.header.error' defaultMessage='Error:' /></h2>
               </div>
               <div className='widget__content'>
                 {error}
@@ -206,7 +212,7 @@ export class MonthlyReport extends Component {
           {
             loading && <div className='widget__container'>
               <div className='widget__header'>
-                <h2 className='widget__heading'>Loading...</h2>
+                <h2 className='widget__heading'><FormattedMessage id='monthlyreport.header.loading' defaultMessage='Loading...' /></h2>
               </div>
             </div>
           }

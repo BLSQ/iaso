@@ -468,7 +468,7 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "AS"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_HEALTH_AREA"),

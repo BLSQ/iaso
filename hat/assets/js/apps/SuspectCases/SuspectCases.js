@@ -194,7 +194,7 @@ export class SuspectCases extends Component {
         <div className='filter__container'>
           <h2 className='filter__label'>Select:</h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /> Timeframe</label>
+            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='suspectcases.label.timeframe' defaultMessage='Timeframe' /></label>
             <select disabled={loading} name='date' value={dateperiod} onChange={this.dateHandler} className='select--minimised'>
               {DATEPERIODS.map((period) => (
                 <option key={period} value={period}>
@@ -204,7 +204,7 @@ export class SuspectCases extends Component {
             </select>
           </div>
           <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /> Location</label>
+            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='suspectcases.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
                 {formatMessage(MESSAGES['location-national'])}
@@ -220,7 +220,7 @@ export class SuspectCases extends Component {
           {
             error && <div className='widget__container'>
               <div className='widget__header'>
-                <h2 className='widget__heading text--error'>Error:</h2>
+                <h2 className='widget__heading text--error'><FormattedMessage id='suspectcases.header.error' defaultMessage='Error:' /></h2>
               </div>
               <div className='widget__content'>
                 {error}
@@ -231,7 +231,18 @@ export class SuspectCases extends Component {
         <div className='widget__container'>
           <div className='widget__header'>
             <h2 className='widget__heading'>
-              {numResults} <FormattedMessage id='suspectcases.header.results' defaultMessage='suspect cases for this period' />
+              {
+                numResults
+                  ? data &&
+                    <span>
+                      {numResults}&nbsp;
+                      <FormattedMessage
+                        id='suspectcases.header.results'
+                        defaultMessage='suspect cases for this period' />
+                    </span>
+                : <FormattedMessage id='suspectcases.header.noresults' defaultMessage='No suspect cases for this period – use the controls above to select different parameters' />
+              }
+
             </h2>
           </div>
           <span>
@@ -252,19 +263,22 @@ export class SuspectCases extends Component {
             {
               numResults
                 ? data && <DataTable data={data} />
-                : <div className='widget__content'><FormattedMessage id='suspectcases.data.noresults' defaultMessage='No results for this timeframe and location – use the controls above to select different parameters.' /></div>
+                : (<div className='widget__content'>
+                  <p><FormattedMessage id='suspectcases.data.instruction' defaultMessage='This page allows you to download a list of HAT suspect cases (defined as participants with a positive screening test who did not have a follow-up confirmation test.)' /></p>
+                </div>
+                )
             }
           </span>
           <div className='widget__pagination'>
             {
               data && data.cases && data.cases.previous && <button className='button--minimised block--margin-right--xxs' onClick={this.prevHandler}>
                 <i className='fa fa-arrow-left' />
-                Previous page
+                <FormattedMessage id='suspectcases.paginate.previous' defaultMessage='Previous page' />
               </button>
             }
             {
               data && data.cases && data.cases.next && <button className='button--minimised' onClick={this.nextHandler}>
-                Next page
+                <FormattedMessage id='suspectcases.paginate.next' defaultMessage='Next page' />
                 <i className='fa fa-arrow-right icon--right' />
               </button>
             }

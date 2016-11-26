@@ -5,13 +5,45 @@
   border: 1px solid $gray;
   border-radius: 4px;
   overflow: initial;
+
 }
+.widget__container:last-of-type { margin-bottom: 0; }
+
 
 .widget__header {
   display: flex;
   align-items: space-between;
   border-bottom: 1px solid $gray;
   padding: 1.5rem 1.8rem;
+}
+
+.widget__footer {
+  border-top: 1px solid $gray;
+  color: $mid-gray;
+  padding: $padding-unit/2 $padding-unit;
+}
+.text--data {
+  @include text--caption;
+}
+
+.link--print {
+  display: block;
+  float: right;
+  margin-right: $padding-unit;
+  margin-bottom: $padding-unit;
+  padding: $padding-unit/2;
+  font-size: $font-size-s;
+  color: $mid-gray;
+  text-decoration: none;
+  background: white;
+  border: 1px solid $blue;
+  border-radius: 2px;
+  color: $blue;
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    box-shadow: 0 0 1px 3px rgba($blue, 0.2);
+  }
+  i { margin-right: $padding-unit/4; }
 }
 
 .widget__heading {

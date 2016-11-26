@@ -4,14 +4,17 @@ set -e
 show_help() {
   echo """
   Commands
-  test          : run tests
-  start         : start django + uwsgi
-  start_dev     : start django devserver
-  start_rq      : start rq worker
-  start_jupyter : start jupyter notebook
-  manage        : run django manage.py
-  eval          : eval shell command
-  bash          : run bash
+  test             : run tests
+  test_js          : run javascript tests
+  test_integration : run integration tests
+  start            : start django + uwsgi
+  start_dev        : start django devserver
+  start_webpack    : start webpack server (only in DEV mode)
+  start_rq         : start rq worker
+  start_jupyter    : start jupyter notebook
+  manage           : run django manage.py
+  eval             : eval shell command
+  bash             : run bash
   """
 }
 
@@ -24,8 +27,12 @@ case "$1" in
     # Then tests
     ./scripts/wait_for_dbs.sh
     ./manage.py setupcouchdb
-    ./manage.py test --exclude-tag selenium
+    # Run python tests and pass on any args to e.g. run individual tests
+    ./manage.py test --exclude-tag selenium "${@:2}"
     npm run mocha
+  ;;
+  "test_js" )
+    npm run test
   ;;
   "test_integration" )
     export TESTING=true
@@ -44,9 +51,9 @@ case "$1" in
     ./scripts/start_web.sh
   ;;
   "start_dev" )
-    # When TEST_PROD is set, start the container in prod mode
     if [ -n "$TEST_PROD" ]; then
-      envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf.local > /etc/nginx/sites-available/default
+      # Test prod configuration
+      envsubst "\$COUCHDB_URL" < build_scripts/local/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
@@ -63,8 +70,15 @@ case "$1" in
       ./manage.py runserver 0.0.0.0:8080
     fi
   ;;
+  "start_dev_nginx" )
+    # ssl proxy to web
+    envsubst "\$COUCHDB_URL" < build_scripts/local/nginx-ssl.conf.local > /etc/nginx/sites-available/default
+    cp build_scripts/local/nginx.key.local /etc/nginx/cert.key
+    cp build_scripts/local/nginx.crt.local /etc/nginx/cert.crt
+    nginx -g "daemon off;"
+  ;;
   "start_webpack" )
-    # We only run this server if DEBUG is set
+    # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
@@ -74,7 +88,7 @@ case "$1" in
     ./scripts/start_rq.sh
   ;;
   "start_jupyter" )
-    # We only run this server if DEBUG is set
+    # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi

@@ -1,9 +1,11 @@
 from hashlib import md5
+from base64 import b64encode
 from string import capwords
-from functools import reduce
 import re
 import pandas
-from pandas import Series, DataFrame
+from pandas import Series
+from django.conf import settings
+import hat.couchdb.api as couchdb
 
 
 def capitalize(x: str) -> str:
@@ -13,7 +15,14 @@ def capitalize(x: str) -> str:
 
 
 def create_documentid(row: Series) -> str:
-    ''' Hash some columns to create the document id '''
+    '''
+    Hash some columns to create the document id
+    IMPORTANT: We use the `document_id` to identify cases. If something in
+               the import code changes, this function should still produce
+               the same id for a case as it did before the change. So that
+               cases that are reimported will get the same id as when they
+               were exported in the past.
+    '''
     COLUMNS = [
         # 'document_date',
         'name',
@@ -32,24 +41,6 @@ def create_documentid(row: Series) -> str:
     for x in t:
         h.update(str(x).encode())
     return h.hexdigest()
-
-
-def groupreduce(df: DataFrame, column: str, sortby=None) -> DataFrame:
-    '''
-    Group a dataframe by column value and then reduce each group column to the
-    last non null value. This is lossy in that it discards values which are not
-    null and not the last one in the column.
-
-    Example: reduce_df(df, 'id')
-    | id   | a    | b   |           | id | a  | b  |
-    |------|------|-----|     ==>   |----|----|----|
-    | 1    | 11   | 22  |           | 1  | 11 | 23 |
-    | 1    | null | 23  |           | 2  | 33 | 44 |
-    | 2    | 33   | 44  |
-    '''
-    result = df.sort_values(by=sortby) if sortby else df
-    return result.groupby(column) \
-                 .agg(lambda x: reduce(lambda a, b: b or a, x))
 
 
 def strip_accents(s: str) -> str:
@@ -96,7 +87,7 @@ def hat_id(row: Series) -> str:
     if 'year_of_birth' in r2:
         yob = str(r2['year_of_birth'])
     else:
-        yob = '1900'
+        yob = 'XXXX'
 
     if 'mothers_surname' in r2:
         mothers = strip_accents(r2['mothers_surname'])
@@ -111,3 +102,23 @@ def hat_id(row: Series) -> str:
         yob[0:4] +
         mothers[0:1]
     ).upper()
+
+
+def hash_file(filename: str) -> str:
+    hasher = md5()
+    with open(filename, 'rb') as file:
+        hasher.update(file.read())
+    return hasher.hexdigest()
+
+
+def store_raw_file(doc: dict, filename: str, mimetype: str) -> str:
+    with open(filename, 'rb') as file:
+        doc['_attachments'] = {
+            'file': {
+                'content_type': mimetype,
+                'data': b64encode(file.read()).decode('ascii')
+            }
+        }
+    r = couchdb.post(settings.COUCHDB_DB, json=doc)
+    r.raise_for_status()
+    return r.json()['id']

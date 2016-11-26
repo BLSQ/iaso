@@ -75,6 +75,33 @@ p {
   font-weight: normal;
 }
 
+@mixin white-text-dark-background {
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+@mixin text--center {
+  text-align: center;
+}
+
+@mixin text--x-small {
+  font-size: $font-size-xs;
+}
+
+@mixin text--small {
+  font-size: $font-size-s;
+}
+
+@mixin heading--small {
+  font-size: $font-size-s;
+  font-weight: bold;
+}
+
+@mixin heading--medium {
+  font-size: $font-size-standard;
+  font-weight: bold;
+}
+
 .text--error {
   @include text--error;
 }
@@ -87,6 +114,22 @@ p {
   @include text--success;
 }
 
+.text--label {
+  @include text--label;
+}
+
 .text--small {
   font-size: $font-size-s;
+}
+
+.text--explanation {
+  font-size: $font-size-s;
+  font-style: italic;
+}
+
+.divider {
+  display: block;
+  margin-top: $padding-unit;
+  margin-bottom: $padding-unit;
+  border-bottom: 1px solid $gray;
 }

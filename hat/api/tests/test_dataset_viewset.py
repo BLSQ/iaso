@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class DatasetTests(APITestCase):
-    fixtures = ['users', 'api_cases.json']
+    fixtures = ['users', 'cases']
 
     def setUp(self):
         self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))
@@ -14,7 +14,7 @@ class DatasetTests(APITestCase):
         url = reverse('api:datasets-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 6)
+        self.assertEqual(len(response.data), 10)
 
     def test_total_count(self):
         url = reverse('api:datasets-detail', args=['count_total'])
@@ -58,3 +58,22 @@ class DatasetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 31)
         self.assertEqual(response.data[1]['count'], 2)
+
+    def test_confirmed_by_location(self):
+        url = '{}?date=2016-01'.format(
+            reverse('api:datasets-detail', args=['confirmed_by_location']))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['village'], 'Kindundu')
+        self.assertEqual(response.data[0]['confirmedCases'], 1)
+        self.assertEqual(
+            response.data[0]['lastConfirmedCaseDate'].replace(tzinfo=None),
+            datetime(2016, 1, 6, 0, 0)
+        )
+        self.assertEqual(response.data[1]['village'], 'Polongo')
+        self.assertEqual(response.data[1]['confirmedCases'], 1)
+        self.assertEqual(
+            response.data[1]['lastConfirmedCaseDate'].replace(tzinfo=None),
+            datetime(2016, 1, 5, 0, 0)
+        )

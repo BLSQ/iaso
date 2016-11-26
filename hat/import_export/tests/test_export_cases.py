@@ -2,16 +2,16 @@ from datetime import datetime
 from io import StringIO
 import pandas
 from django.utils import timezone
-from ..import_data import import_file
+from ..import_cases import import_cases_file
 from ..export_csv import export_csv
 from . import DBTestCase, TEST_DATA
 
 
 class ExportTests(DBTestCase):
     def setUp(self):
-        import_file('historic', TEST_DATA['historic']['file'], store=True)
-        import_file('pv', TEST_DATA['pv']['file'], store=True)
-        import_file('backup', TEST_DATA['mobile_backup']['file'], store=True)
+        import_cases_file('historic', TEST_DATA['historic']['file'], store=True)
+        import_cases_file('pv', TEST_DATA['pv']['file'], store=True)
+        import_cases_file('backup', TEST_DATA['mobile_backup']['file'], store=True)
 
     def test_export(self):
         csv = export_csv()

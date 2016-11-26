@@ -1,7 +1,0 @@
-branch-defaults:
-  default:
-    environment: hat-historical-dev
-  dev:
-    environment: hat-historical-dev
-deploy:
-  artifact: build_scripts/deploy.zip

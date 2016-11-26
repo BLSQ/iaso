@@ -1,0 +1,96 @@
+{% extends "app.html" %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Datasets" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+    {% if perms.cases.import %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Upload cases" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>
+        {% blocktrans %}
+          Upload historical data forms from the Microsoft Access historical forms template or encrypted backup files from the Mobile Application.
+        {% endblocktrans %}
+        </p>
+        <p>
+          <a href={% url "datasets:import_cases:upload" %} class="button">
+            {% trans "Go to upload cases" %} 
+            <i class="fa fa-arrow-right icon--right"></i>
+          </a>
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if perms.cases.export %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Download cases" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>
+          {% blocktrans %}
+            Download data as a CSV file. Download all data from the database or a subset of the data.
+          {% endblocktrans %}
+        </p>
+        <p>
+        <a href={% url "datasets:export_cases:download" %} class="button">
+          {% trans "Go to download cases" %}
+          <i class="fa fa-arrow-right icon--right"></i>
+        </a>
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if perms.cases.import_locations %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Upload locations" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>
+          {% blocktrans %}
+          Upload updated locations. Use this section when the canonical locations files are updated.
+          {% endblocktrans %}
+        </p>
+        <p>
+          <a href={% url "datasets:import_locations:upload" %} class="button">
+            {% trans "Go to upload locations" %}
+            <i class="fa fa-arrow-right icon--right"></i>
+          </a>
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if perms.cases.import_reconciled %}
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">{% trans "Upload reconciled data" %}</h2>
+      </div>
+      <div class="widget__content">
+        <p>
+          {% blocktrans %}
+            Upload reconciled data. From time to time, it may be necessary to manually reconcile data.  Can be used for participant or location reconciliation. 
+          {% endblocktrans %}
+        </p>
+        <p>
+          <a href={% url "datasets:import_reconciled:upload" %} class="button">
+            {% trans "Go to upload reconciled data" %}
+            <i class="fa fa-arrow-right icon--right"></i>
+          </a>
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+{% endblock %}

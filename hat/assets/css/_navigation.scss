@@ -13,10 +13,14 @@
   transition: all 0.2s linear;
 }
 
-@mixin active-nav-link-styles {
-  background-color: darken($dark-blue, 8%);
-  border-left-color: $blue;
-  color: white;
+@mixin active-nav-link-styles(
+  $background: darken($dark-blue, 8%), 
+  $border-color: $blue, 
+  $color: white
+  ) {
+  background-color: $background;
+  border-left-color: $border-color;
+  color: $color;
 }
 
 $nav-border-style: 1px solid rgba(white, 0.15);
@@ -26,7 +30,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 ***/
 .navigation__container {
   position: fixed;
-  flex-wrap: no-wrap;
+  flex-wrap: nowrap;
   flex: 1 1 auto;
   height: 100%;
   overflow: auto;
@@ -56,6 +60,7 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: $nav-border-style;
 }
 
 [class^='navigation__menu__item'] a {
@@ -63,18 +68,41 @@ $nav-border-style: 1px solid rgba(white, 0.15);
   border-bottom: $nav-border-style;
 }
 
-[class^='navigation__menu__item']:first-of-type a {
-  border-top: $nav-border-style;
-}
-
 [class^='navigation__menu__item'] a:hover,
-.navigation__menu__item--active a {
+.navigation__menu__item--active > a {
   @include active-nav-link-styles;
 }
 
 [class^='navigation__menu__item'] a:hover {
   border-left-color: darken($blue, 10%);
 }
+
+/* sub-navigation items; a bit smaller */
+
+.navigation__menu__item--secondary a,
+.navigation__menu__item--secondary--active a {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: $font-size-s;
+  font-weight: normal;
+}
+
+.navigation__menu__item--active {
+  [class^="navigation__menu__item--secondary"] a {
+    @include active-nav-link-styles(
+      $background: darken($dark-blue, 4%), 
+      $border-color: darken($blue, 20%),
+      $color: rgba(white, 0.7)
+    );
+  }
+  .navigation__menu__item--secondary--active a,
+  [class^="navigation__menu__item--secondary"] a:hover {
+    @include active-nav-link-styles;
+  }
+  .navigation__menu__item--secondary--active a {font-weight: bold;}
+}
+
+/* navigation footer */
 
 .navigation__footer {
   background-color: darken($dark-blue, 8%);

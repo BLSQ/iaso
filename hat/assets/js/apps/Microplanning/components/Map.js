@@ -83,42 +83,45 @@ class Map extends Component {
     this.includeControlsInMap(this.state.map)
     this.includeDefaultLayersInMap(this.state.map)
     this.legendToggleHandler('official') // plot official villages
+    this.selectionModeChangeHandler(SELECTION_MODES.none) // no selection mode
   }
 
   componentDidUpdate (prevProps, prevState) {
+    const hasChanged = (prev, curr, key) => (prev[key] !== curr[key])
+    // console.log('updating...', new Date().toISOString())
+
     // to improve performance, save calculated values
-    this.state.highlightedItems = this.getHighlightedItems()
-    this.state.plottedItems = this.getPlottedItems()
+    // and update when needed
+    if (hasChanged(prevState, this.state, 'legend') ||
+      hasChanged(prevProps, this.props, 'highlightedItems')) {
+      this.state.highlightedItems = this.getHighlightedItems()
+      this.state.plottedItems = this.getPlottedItems()
+    }
 
     this.state.map.whenReady(() => {
-      this.state.map.off('mousemove') // remove ALL previous listeners
-      this.state.map.on('mousemove', (event) => {
-        // dirty: we don't want to dispatch a new state
-        this._currentPosition = event.latlng
-      })
-
-      const hadChanged = (prev, curr, key) => (prev[key] !== curr[key])
       // only call if legend changed
-      if (hadChanged(prevState, this.state, 'legend')) {
-        console.log('changed: legend')
+      if (hasChanged(prevState, this.state, 'legend')) {
         this.updateVillages()
       }
 
       // only call if highlighted changed
-      if (hadChanged(prevProps, this.props, 'highlightedItems')) {
-        console.log('changed: highlighted')
+      if (hasChanged(prevProps, this.props, 'highlightedItems')) {
         this.state.highlightGroup.clearLayers()
         this.updateHighlightedItems()
       }
 
       // only call if selected changed
-      if (hadChanged(prevProps, this.props, 'selectedItems')) {
-        console.log('changed: selected')
+      if (hasChanged(prevProps, this.props, 'selectedItems')) {
         this.state.selectedGroup.clearLayers()
         this.updateSelectedItems()
       }
 
-      this.updateSelectionMode()
+      // only call if legend changed
+      if (hasChanged(prevState, this.state, 'selection')) {
+        this.updateSelectionMode()
+      }
+
+      // console.log('updated', new Date().toISOString())
     })
   }
 
@@ -281,6 +284,61 @@ class Map extends Component {
       }
     })
 
+    // create buffer selection zone around the mouse pointer
+    const bufferMarker = L.circle(map.getCenter(), {
+      pane: 'custom-pane-buffer',
+      radius: 0,
+      className: 'map-marker buffer'
+    })
+    this.state.selection.marker = bufferMarker
+
+    bufferMarker.on({
+      click: (event) => {
+        L.DomEvent.stop(event)
+        const {plottedItems} = this.state
+        const bufferRadius = bufferMarker.getRadius()
+
+        // find out the points within the buffer zone
+        // TO BE IMPROVED (quadratic)
+        // const inBuffer = plottedItems
+        //   .filter((entry) => (
+        //     event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
+        //   ))
+        const length = plottedItems.length
+        const bounds = bufferMarker.getBounds()
+        const west = bounds.getWest()
+        const east = bounds.getEast()
+
+        let inBuffer = []
+        for (let i = 0; i < length; i++) {
+          // the plotted items are ordered by `lon`
+
+          // compare lon with west and east
+          // if the lat is easter then the current position, exit the loop
+          const entry = plottedItems[i]
+          if (entry.lon < west) continue // ignore and continue
+          if (entry.lon > east) break // exit the loop
+
+          // compare distance
+          const distance = event.latlng.distanceTo(entry._latlon)
+          if (distance <= (bufferRadius + RADIUS[entry.type])) {
+            inBuffer.push(entry)
+          }
+        }
+
+        this.executeSelectionAction(inBuffer)
+      }
+    })
+
+    // chase the mouse...
+    map.on('mousemove', (event) => {
+      // fires exception `undefined`
+      // bufferMarker.setLatLng(event.latlng)
+      // workaround
+      bufferMarker._latlng = L.latLng(event.latlng)
+      bufferMarker.redraw()
+    })
+
     return map
   }
 
@@ -363,72 +421,17 @@ class Map extends Component {
   }
 
   updateSelectionMode () {
-    const {mode, bufferSize} = this.state.selection
-    const { selectedGroup, plottedItems } = this.state
+    const {mode, bufferSize, marker} = this.state.selection
 
-    if (this.state.selection.marker) {
-      selectedGroup.removeLayer(this.state.selection.marker)
-    }
     this.renderSelectionControl()
 
-    // create buffer marker that follows mouse movements
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
-      const bufferRadius = bufferSize * 500 // in metres (buffer size = diameter = 2 * radius)
-
-      // create buffer zone around the highlighted village
-      const bufferZone = L.circle(this._currentPosition || this.state.map.getCenter(), {
-        pane: 'custom-pane-buffer',
-        radius: bufferRadius,
-        className: 'map-marker buffer'
-      })
-      selectedGroup.addLayer(bufferZone)
-      this.state.selection.marker = bufferZone
-
-      bufferZone.on({
-        click: (event) => {
-          L.DomEvent.stop(event)
-          // find out the points within the buffer zone
-          // TO BE IMPROVED (quadratic)
-          // const inBuffer = plottedItems
-          //   .filter((entry) => (
-          //     event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
-          //   ))
-          const length = plottedItems.length
-          const bounds = bufferZone.getBounds()
-          const west = bounds.getWest()
-          const east = bounds.getEast()
-
-          console.log(new Date(), length)
-          let inBuffer = []
-          for (let i = 0; i < length; i++) {
-            // the plotted items are ordered by `lon`
-
-            // compare lon with west and east
-            // if the lat is easter then the current position, exit the loop
-            const entry = plottedItems[i]
-            if (entry.lon < west) continue // ignore and continue
-            if (entry.lon > east) break // exit the loop
-
-            // compare distance
-            const distance = event.latlng.distanceTo(entry._latlon)
-            if (distance <= (bufferRadius + RADIUS[entry.type])) {
-              inBuffer.push(entry)
-            }
-          }
-
-          console.log(new Date(), length, inBuffer.length)
-          this.executeSelectionAction(inBuffer)
-        }
-      })
-
-      this.state.map.on('mousemove', (event) => {
-        L.DomEvent.stop(event)
-        // fires exception `undefined`
-        // bufferZone.setLatLng(event.latlng)
-        // workaround
-        bufferZone._latlng = L.latLng(event.latlng)
-        bufferZone.redraw()
-      })
+      // in metres (buffer size = diameter = 2 * radius)
+      marker.setRadius(bufferSize * 500)
+      this.state.map.addLayer(marker)
+    } else {
+      marker.setRadius(0)
+      this.state.map.removeLayer(marker)
     }
   }
 

@@ -44,26 +44,8 @@ const MESSAGES = defineMessages({
   }
 })
 
-// find all the entries in the list that match exact
-// with the item values in the indicated keys list
-//
-// keys: [ 'a', 'b', 'c' ]
-// item: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
-// one matched value could be: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
-const findInData = (list, item, keys) => {
-  // taken from sense-hat-mobile
-  const stripAccents = (word) => {
-    return (word || '').toUpperCase()
-      .replace(/[ÀÁÂÄ]/, 'A')
-      .replace(/[ÈÉÊ]/, 'E')
-      .replace('Ç', 'C')
-      .replace('Û', 'U')
-      .replace(/[^A-Z0-9]/g, '')
-  }
-
-  return list.filter((entry) => (
-    keys.every((key) => stripAccents(entry[key]) === stripAccents(item[key]))
-  ))
+const findVillageInList = (list, item) => {
+  return list.find((entry) => geoData.areEqual(item, entry, ['zone', 'area', 'village']))
 }
 
 class Map extends Component {
@@ -82,11 +64,12 @@ class Map extends Component {
         other: new L.FeatureGroup(),
         unknown: new L.FeatureGroup()
       },
-      legend: { official: true, other: false, unknown: false },
+      legend: { official: false, other: false, unknown: false },
       selection: {
         mode: SELECTION_MODES.none,
         bufferSize: RADIUS.buffer,
-        controlContainer: null
+        controlContainer: null,
+        marker: null
       }
     }
 
@@ -99,29 +82,52 @@ class Map extends Component {
     this.state.map = this.createMap()
     this.includeControlsInMap(this.state.map)
     this.includeDefaultLayersInMap(this.state.map)
+    this.legendToggleHandler('official') // plot official villages
   }
-  componentDidUpdate () {
+
+  componentDidUpdate (prevProps, prevState) {
+    // to improve performance, save calculated values
+    this.state.highlightedItems = this.getHighlightedItems()
+    this.state.plottedItems = this.getPlottedItems()
+
     this.state.map.whenReady(() => {
-      // reset previous state
-      this.state.highlightGroup.clearLayers()
-      this.state.selectedGroup.clearLayers()
       this.state.map.off('mousemove') // remove ALL previous listeners
       this.state.map.on('mousemove', (event) => {
         // dirty: we don't want to dispatch a new state
         this._currentPosition = event.latlng
       })
 
-      this.updateVillages()
-      this.updateHighlightedItems()
-      this.updateSelectedItems()
+      const hadChanged = (prev, curr, key) => (prev[key] !== curr[key])
+      // only call if legend changed
+      if (hadChanged(prevState, this.state, 'legend')) {
+        console.log('changed: legend')
+        this.updateVillages()
+      }
+
+      // only call if highlighted changed
+      if (hadChanged(prevProps, this.props, 'highlightedItems')) {
+        console.log('changed: highlighted')
+        this.state.highlightGroup.clearLayers()
+        this.updateHighlightedItems()
+      }
+
+      // only call if selected changed
+      if (hadChanged(prevProps, this.props, 'selectedItems')) {
+        console.log('changed: selected')
+        this.state.selectedGroup.clearLayers()
+        this.updateSelectedItems()
+      }
+
       this.updateSelectionMode()
     })
   }
+
   componentWillUnmount () {
     if (this.state.map) {
       this.state.map.remove()
     }
   }
+
   render () {
     const { legend, selection } = this.state
     const { selectedItems, deselect } = this.props
@@ -159,7 +165,8 @@ class Map extends Component {
             <FormattedMessage id='microplanning.datasource.label' defaultMessage='Data sources' />:&nbsp;
             <FormattedMessage id='microplanning.datasource.mobiledata' defaultMessage='HAT mobile application data' />,&nbsp;
             <FormattedMessage id='microplanning.datasource.historical' defaultMessage='HAT historical forms' />,&nbsp;
-            <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
+            <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />,&nbsp;
+            <FormattedMessage id='microplanning.datasource.pnltha.2015' defaultMessage='PNLTHA data (2015)' />
           </span>
         </div>
       </div>
@@ -288,39 +295,51 @@ class Map extends Component {
 
   getHighlightedItems () {
     const { legend } = this.state
-
     return this.props.highlightedItems
-      // remove not matched/reconciled villages (not in list)
-      .filter((item) => findInData(geoData.villages, item, ['zone', 'area', 'village']).length > 0)
-      .map((item) => {
-        const matched = findInData(geoData.villages, item, ['zone', 'area', 'village'])[0]
-        return { ...item, ...matched }
-      })
-      .filter((item) => legend[item.type])
+      // reconciled with official list
+      .map((item) => ({...item, ...findVillageInList(geoData.villages, item)}))
+      // remove not reconciled villages (has no `type`) and non active in legend
+      .filter((item) => item.type && legend[item.type])
+  }
+
+  getPlottedItems () {
+    const { highlightedItems, legend } = this.state
+
+    let plotted = geoData.villages
+      // only active types
+      .filter((item) => (legend[item.type]))
+      // merge with highlighted info
+      .map((item) => ({ ...findVillageInList(highlightedItems, item), ...item }))
+
+    // sort by latitude
+    plotted.sort((a, b) => a.lon - b.lon)
+
+    return plotted
   }
 
   updateHighlightedItems () {
-    const { highlightGroup } = this.state
+    const { highlightGroup, highlightedItems } = this.state
 
-    this.getHighlightedItems().forEach((item) => {
+    highlightedItems.forEach((item) => {
       const radius = RADIUS[item.type] + RADIUS.highlight
       const options = {
         pane: 'custom-pane-markers',
         radius: radius,
         className: 'map-marker highlight'
       }
+      const marker = L.circle(item._latlon, options)
+      this.addLayerEvents(marker, item)
+      highlightGroup.addLayer(marker)
+
+      // the shadow
       const shadowOptions = {
         pane: 'custom-pane-shadows',
         radius: (2 * radius),
         className: 'map-marker shadow'
       }
-
       const markerShadow = L.circle(item._latlon, shadowOptions)
-      const marker = L.circle(item._latlon, options)
-      this.addLayerEvents(marker, item)
-
+      this.addLayerEvents(markerShadow, item)
       highlightGroup.addLayer(markerShadow)
-      highlightGroup.addLayer(marker)
     })
   }
 
@@ -345,15 +364,16 @@ class Map extends Component {
 
   updateSelectionMode () {
     const {mode, bufferSize} = this.state.selection
+    const { selectedGroup, plottedItems } = this.state
 
+    if (this.state.selection.marker) {
+      selectedGroup.removeLayer(this.state.selection.marker)
+    }
     this.renderSelectionControl()
 
     // create buffer marker that follows mouse movements
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
-      const { selectedGroup, legend } = this.state
       const bufferRadius = bufferSize * 500 // in metres (buffer size = diameter = 2 * radius)
-      const plotted = geoData.villages.filter((item) => (legend[item.type]))
-      const highlightedItems = this.getHighlightedItems()
 
       // create buffer zone around the highlighted village
       const bufferZone = L.circle(this._currentPosition || this.state.map.getCenter(), {
@@ -362,20 +382,41 @@ class Map extends Component {
         className: 'map-marker buffer'
       })
       selectedGroup.addLayer(bufferZone)
+      this.state.selection.marker = bufferZone
 
       bufferZone.on({
         click: (event) => {
           L.DomEvent.stop(event)
           // find out the points within the buffer zone
           // TO BE IMPROVED (quadratic)
-          const inBuffer = plotted
-            .filter((entry) => (
-              event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
-            ))
-            .map((item) => {
-              const matched = findInData(highlightedItems, item, ['zone', 'area', 'village'])[0]
-              return { ...matched, ...item }
-            })
+          // const inBuffer = plottedItems
+          //   .filter((entry) => (
+          //     event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
+          //   ))
+          const length = plottedItems.length
+          const bounds = bufferZone.getBounds()
+          const west = bounds.getWest()
+          const east = bounds.getEast()
+
+          console.log(new Date(), length)
+          let inBuffer = []
+          for (let i = 0; i < length; i++) {
+            // the plotted items are ordered by `lon`
+
+            // compare lon with west and east
+            // if the lat is easter then the current position, exit the loop
+            const entry = plottedItems[i]
+            if (entry.lon < west) continue // ignore and continue
+            if (entry.lon > east) break // exit the loop
+
+            // compare distance
+            const distance = event.latlng.distanceTo(entry._latlon)
+            if (distance <= (bufferRadius + RADIUS[entry.type])) {
+              inBuffer.push(entry)
+            }
+          }
+
+          console.log(new Date(), length, inBuffer.length)
           this.executeSelectionAction(inBuffer)
         }
       })
@@ -458,16 +499,17 @@ class Map extends Component {
     let entry = item
 
     if (!item.isVillage) {
-      const {highlightedItems} = this.props
       // find the higlighted items in shape
-      const findInShape = (item) => (findInData(highlightedItems, item, item._keys))
-      const inShape = findInShape(item)
+      const inShape = this.state.highlightedItems
+        .filter((entry) => geoData.areEqual(entry, item, item._keys))
+      const sum = (key) => (prev, curr) => (prev + curr[key])
+      const max = (key) => (prev, curr) => (prev >= curr[key] ? prev : curr[key])
 
       // find out the number of cases and the onset date of the last case
-      const confirmedCases = inShape.reduce((prev, curr) => (prev + curr.confirmedCases), 0)
-      const screenedPeople = inShape.reduce((prev, curr) => (prev + curr.screenedPeople), 0)
-      const lastConfirmedCaseDate = inShape.reduce((prev, curr) => (prev >= curr.lastConfirmedCaseDate ? prev : curr.lastConfirmedCaseDate), '')
-      const lastScreeningDate = inShape.reduce((prev, curr) => (prev >= curr.lastScreeningDate ? prev : curr.lastScreeningDate), '')
+      const confirmedCases = inShape.reduce(sum('confirmedCases'), 0)
+      const screenedPeople = inShape.reduce(sum('screenedPeople'), 0)
+      const lastConfirmedCaseDate = inShape.reduce(max('lastConfirmedCaseDate'), '')
+      const lastScreeningDate = inShape.reduce(max('lastScreeningDate'), '')
 
       entry = {
         ...item,
@@ -516,8 +558,7 @@ class Map extends Component {
 
   legendToggleHandler (key) {
     const {legend} = this.state
-    legend[key] = !legend[key]
-    this.setState({ legend: legend })
+    this.setState({ legend: {...legend, [key]: !legend[key]} })
   }
 
   selectionModeChangeHandler (mode) {

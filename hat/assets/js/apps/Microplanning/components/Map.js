@@ -44,9 +44,8 @@ const MESSAGES = defineMessages({
   }
 })
 
-const findVillageInList = (list, item) => {
-  return list.find((entry) => geoData.areEqual(item, entry, ['zone', 'area', 'village']))
-}
+const sameVillage = (a, b) => geoData.areEqual(a, b, ['zone', 'area', 'village'])
+const findVillageInList = (list, item) => list.find((entry) => sameVillage(item, entry))
 
 class Map extends Component {
   constructor (props) {
@@ -88,12 +87,28 @@ class Map extends Component {
 
   componentDidUpdate (prevProps, prevState) {
     const hasChanged = (prev, curr, key) => (prev[key] !== curr[key])
-    // console.log('updating...', new Date().toISOString())
+    const containSameItems = (prev, curr, key) => {
+      if (!hasChanged(prev, curr, key)) return true
+
+      // this is a little tricky because we are only checking the id fields
+      // and not all of them so...
+      // edge case: same villages with different values (ignored!!!)
+      const arr1 = prev[key]
+      const arr2 = curr[key]
+      const length = arr1.length
+      if (length !== arr2.length) return false
+      for (let i = 0; i < length; i++) {
+        if (!sameVillage(arr1[i], arr2[i])) {
+          return false
+        }
+      }
+      return true
+    }
 
     // to improve performance, save calculated values
     // and update when needed
     if (hasChanged(prevState, this.state, 'legend') ||
-      hasChanged(prevProps, this.props, 'highlightedItems')) {
+      !containSameItems(prevProps, this.props, 'highlightedItems')) {
       this.state.highlightedItems = this.getHighlightedItems()
       this.state.plottedItems = this.getPlottedItems()
     }
@@ -105,13 +120,13 @@ class Map extends Component {
       }
 
       // only call if highlighted changed
-      if (hasChanged(prevProps, this.props, 'highlightedItems')) {
+      if (!containSameItems(prevProps, this.props, 'highlightedItems')) {
         this.state.highlightGroup.clearLayers()
         this.updateHighlightedItems()
       }
 
       // only call if selected changed
-      if (hasChanged(prevProps, this.props, 'selectedItems')) {
+      if (!containSameItems(prevProps, this.props, 'selectedItems')) {
         this.state.selectedGroup.clearLayers()
         this.updateSelectedItems()
       }
@@ -120,8 +135,6 @@ class Map extends Component {
       if (hasChanged(prevState, this.state, 'selection')) {
         this.updateSelectionMode()
       }
-
-      // console.log('updated', new Date().toISOString())
     })
   }
 

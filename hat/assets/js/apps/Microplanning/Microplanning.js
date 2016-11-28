@@ -7,6 +7,10 @@ import { createUrl } from '../../utils/fetchData'
 import { Map } from './components'
 import { selectItems, deselectItems } from './selection'
 
+// REMOVE AFTER WORKSHOP
+import geoData from './utils/geoData'
+const {data2015, isEqual, areEqual} = geoData
+
 const MESSAGES = defineMessages({
   'location-national': {
     defaultMessage: '--- all ---',
@@ -55,13 +59,57 @@ export class Microplanning extends Component {
     const { caseyearfrom, screeningyearto, location } = this.props.params
     const { data, error, loading } = this.props.villages
     const selectedItems = (this.props.selection.selectedItems || [])
-    const highlightedItems = (data && data.villagesWithConfirmedCases || [])
+    const villagesWithConfirmedCases = (data && data.villagesWithConfirmedCases || [])
+
+    // REMOVE AFTER WORKSHOP
+    let highlightedItems = []
+    if (!loading && !error) {
+      const year = new Date().getFullYear() - parseInt(caseyearfrom || 0, 10)
+      if (year > 2015) {
+        highlightedItems = villagesWithConfirmedCases
+      } else {
+        const defaultLastConfirmedCaseDate = '2015-12-31'
+        const keys = ['zone', 'area', 'village']
+        const extra2015 = data2015
+          .filter((item2015) => !location || isEqual(item2015.zone, location))
+
+        // 1.- add to fetched data 2015 entries
+        highlightedItems = villagesWithConfirmedCases.map((itemNo2015) => {
+          const item2015 = extra2015.find((entry) => areEqual(itemNo2015, entry, keys))
+          if (item2015) {
+            const confirmedCases = itemNo2015.confirmedCases + item2015.confirmedCases
+            const lastConfirmedCaseDate = (itemNo2015.lastConfirmedCaseDate > defaultLastConfirmedCaseDate)
+              ? itemNo2015.lastConfirmedCaseDate
+              : defaultLastConfirmedCaseDate
+            return {...itemNo2015, confirmedCases, lastConfirmedCaseDate}
+          }
+          return itemNo2015
+        })
+
+        // 2.- include data from 2015 that it's not in fetched data
+        extra2015
+          .forEach((item2015) => {
+            const itemNo2015 = villagesWithConfirmedCases.find((entry) => areEqual(item2015, entry, keys))
+            if (!itemNo2015) {
+              highlightedItems.push({...item2015, lastConfirmedCaseDate: defaultLastConfirmedCaseDate})
+            }
+          })
+      }
+    }
 
     // extract unique zones from fetched data
-    const locations = highlightedItems
-      .map((item) => item.zone)
-      .filter((value, index, array) => array.indexOf(value) === index)
-      .map((value) => (<option key={value} value={value}>{value}</option>))
+    // const locations = highlightedItems.map((item) => item.zone)
+    //   .filter((value, index, array) => array.indexOf(value) === index)
+    //   .map((value) => (<option key={value} value={value}>{value}</option>))
+    const locations = [
+      'Bokoro',
+      'Bulungu',
+      'Kikongo',
+      'Kimputu',
+      'Mosango',
+      'Yasa-bonga'
+    ].map((value) => (<option key={value} value={value}>{value}</option>))
+    // !REMOVE AFTER WORKSHOP
 
     return (
       <div>

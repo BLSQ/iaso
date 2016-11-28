@@ -60,6 +60,10 @@ export class Microplanning extends Component {
     const { data, error, loading } = this.props.villages
     const selectedItems = (this.props.selection.selectedItems || [])
     const villagesWithConfirmedCases = (data && data.villagesWithConfirmedCases || [])
+    // fix `Yasa Bonga` misspellings
+    villagesWithConfirmedCases
+      .filter((item) => (isEqual(item.zone, 'yassabonga')))
+      .forEach((item) => { item.zone = 'Yasa Bonga' })
 
     // REMOVE AFTER WORKSHOP
     let highlightedItems = []
@@ -107,7 +111,7 @@ export class Microplanning extends Component {
       'Kikongo',
       'Kimputu',
       'Mosango',
-      'Yasa-bonga'
+      'Yasa Bonga'
     ].map((value) => (<option key={value} value={value}>{value}</option>))
     // !REMOVE AFTER WORKSHOP
 

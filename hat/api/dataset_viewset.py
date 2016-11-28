@@ -461,15 +461,26 @@ def confirmed_by_location(params):
                     'kikongo',
                     'kimputu',
                     'mosango',
+                    'yasa bonga',
                     'yasa-bonga',
-                    'yasa bonga'
+                    'yassa bonga',
+                    'yassa-bonga'
                 )
+          AND "AZ" IS NOT NULL
+          AND village IS NOT NULL
     '''
 
     sql_params = [date_from, date_to]
     if 'location' in params:
-        sql = sql + 'AND "ZS" = %s'
-        sql_params.append(params['location'])
+        yasaBongas = ['yasa bonga', 'yasa-bonga', 'yassa bonga', 'yassa-bonga']
+        location = params['location'].lower()
+        if location in yasaBongas:
+            sql = sql + 'AND lower("ZS") in (%s, %s, %s, %s)'
+            for yasa in yasaBongas:
+                sql_params.append(yasa)
+        else:
+            sql = sql + 'AND lower("ZS") = %s'
+            sql_params.append(location)
     if 'source' in params:
         sql = sql + 'AND source = %s'
         sql_params.append(params['source'])

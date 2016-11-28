@@ -455,6 +455,15 @@ def confirmed_by_location(params):
              , max(document_date) {positiveFilter} as "lastConfirmedCaseDate"
         FROM cases_case
         WHERE document_date >= %s AND document_date < %s
+          AND lower("ZS") in (
+                    'bokoro',
+                    'bulungu',
+                    'kikongo',
+                    'kimputu',
+                    'mosango',
+                    'yasa-bonga',
+                    'yasa bonga'
+                )
     '''
 
     sql_params = [date_from, date_to]

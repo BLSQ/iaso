@@ -409,23 +409,19 @@ input.widget__filter__numberinput {
 }
 
 .leaflet-popup-content {
-  margin: 44px 20px 30px 20px;
+  margin: 10px 20px 30px 20px;
 }
 
-.leaflet-container a.leaflet-popup-close-button {
+.popup-close-button {
   color: $bright-blue;
-  right: auto;
-  top: 10px;
-  left: 20px;
-  &:after {
-    content: 'fermer';
-    font-family: $body-font-family;
-    font-size: 11px;
-    text-transform: uppercase;
-    margin-left: 3px;
-  }
+  font-family: $body-font-family;
+  font-size: $font-size-xs;
+  margin-bottom: 14px;
+  margin-left: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
 }
-.leaflet-container a.leaflet-popup-close-button:hover {
+.popup-close-button:hover {
   color: $bright-navy;
 }
 

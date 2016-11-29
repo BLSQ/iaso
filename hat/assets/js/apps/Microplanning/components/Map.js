@@ -536,8 +536,16 @@ class Map extends Component {
       }
     }
 
-    ReactDOM.render(this.injectI18n(<MapTooltip item={entry} />), div)
-    this.state.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
+    ReactDOM.render(this.injectI18n(
+      <div>
+        <div onClick={() => this.state.map.closePopup()} className='popup-close-button'>
+          <i className='fa fa-close' />&nbsp;
+          <FormattedMessage id='microplanning.popup.close' defaultMessage='close' />
+        </div>
+        <MapTooltip item={entry} />
+      </div>
+    ), div)
+    this.state.map.openPopup(div, latlng, { closeButton: false, minWidth: 200, maxWidth: 500 })
   }
 
   renderFitToBoundsControl (container) {

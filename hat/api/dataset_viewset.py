@@ -236,7 +236,7 @@ def location_coverage(params):
         WHERE document_date >= %s AND document_date < %s
     '''
     if 'location' in params:
-        sql = sql + 'AND A."ZS" = %s'
+        sql = sql + 'AND "ZS" = %s'
         sql_params.append(params['location'])
 
     sql = sql + '''

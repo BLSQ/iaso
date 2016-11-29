@@ -122,3 +122,13 @@ def store_raw_file(doc: dict, filename: str, mimetype: str) -> str:
     r = couchdb.post(settings.COUCHDB_DB, json=doc)
     r.raise_for_status()
     return r.json()['id']
+
+
+def location_classification(s: str) -> str:
+    switcher = {
+        'YES': 'official',
+        'NO': 'non official',
+        'OTHER': 'other',
+        'NA': 'unknown'
+    }
+    return switcher.get(s, '---')

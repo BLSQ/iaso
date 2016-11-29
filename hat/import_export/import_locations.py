@@ -4,7 +4,7 @@ from pandas import DataFrame
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from .load import load_locations_into_db
-from .utils import store_raw_file, capitalize
+from .utils import store_raw_file, capitalize, location_classification
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
             df_locs['village_type'] = df['VILLAGE_TY']
         elif 'TYPE' in df:
             df_locs['village_type'] = df['TYPE']
+        df_locs['classification'] = df['LIST_OFF'].apply(location_classification)
         df_locs['latitude'] = df['LAT']
         df_locs['longitude'] = df['LON']
         df_locs['population'] = df['POP_2016'].fillna(df['POP_2015'])

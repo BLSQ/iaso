@@ -98,9 +98,9 @@ class DatasetTests(APITestCase):
         self.assertEqual(data[1]['confirmation_neg'], 1)
         self.assertEqual(data[1]['staging_total'], 0)
 
-    def test_confirmed_by_location(self):
+    def test_data_by_location(self):
         url = '{}?date=2016-01'.format(
-            reverse('api:datasets-detail', args=['confirmed_by_location']))
+            reverse('api:datasets-detail', args=['data_by_location']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)

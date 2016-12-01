@@ -6,14 +6,17 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
-import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
-  zone: {
+  province: {
+    id: 'microplanning.tooltip.province',
+    defaultMessage: 'Province'
+  },
+  ZS: {
     id: 'microplanning.tooltip.zone',
     defaultMessage: 'Zonde de Sante'
   },
-  area: {
+  AS: {
     id: 'microplanning.tooltip.area',
     defaultMessage: 'Aire de Sante'
   },
@@ -83,19 +86,20 @@ const MESSAGES = defineMessages({
 })
 
 const ROWS = [
-  { key: 'zone', type: 'capitalize' },
-  { key: 'area', type: 'capitalize' },
+  { key: 'province' },
+  { key: 'ZS' },
+  { key: 'AS' },
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
-  { key: 'village', type: 'capitalize' },
+  { key: 'village' },
   { key: 'type', type: 'message' },
   { key: 'lat', type: 'coordinates' },
   { key: 'lon', type: 'coordinates' },
   { key: 'population', type: 'integer' },
   { key: 'confirmedCases', type: 'integer' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
-  // { key: 'screenedPeople', type: 'integer' },
+  { key: 'screenedPeople', type: 'integer' },
   { key: 'lastScreeningDate', type: 'date' }
 ]
 
@@ -104,7 +108,7 @@ class MapTooltip extends Component {
     const {item} = this.props
 
     return (
-      <div key={item._id} className='map__tooltip'>
+      <div key={item.id} className='map__tooltip'>
         {
           ROWS
             .filter((row) => item[row.key] && item[row.key] !== '')
@@ -114,9 +118,6 @@ class MapTooltip extends Component {
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} />
-                  break
-                case 'capitalize':
-                  value = capitalize(value)
                   break
                 case 'coordinates':
                   value = <FormattedNumber value={value} minimumFractionDigits={8} />

@@ -1,9 +1,12 @@
 import React, {Component, PropTypes} from 'react'
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 import ExportCSVButton from '../../../components/export-csv-button'
-import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
+  'export-province': {
+    id: 'microplanning.export.province',
+    defaultMessage: 'Province'
+  },
   'export-zone': {
     id: 'microplanning.export.zone',
     defaultMessage: 'Zone de Sante'
@@ -18,7 +21,7 @@ const MESSAGES = defineMessages({
   },
   'export-type': {
     id: 'microplanning.export.type',
-    defaultMessage: 'Official?'
+    defaultMessage: 'Classification'
   },
   'export-latitude': {
     id: 'microplanning.export.latitude',
@@ -51,16 +54,17 @@ const MESSAGES = defineMessages({
 })
 
 const COLUMNS = [
-  { message: 'export-zone', key: 'zone' },
-  { message: 'export-area', key: 'area' },
+  { message: 'export-province', key: 'province' },
+  { message: 'export-zone', key: 'ZS' },
+  { message: 'export-area', key: 'AS' },
   { message: 'export-village', key: 'village' },
-  { message: 'export-type', key: 'official' },
+  { message: 'export-type', key: 'type' },
   { message: 'export-latitude', key: 'lat', type: 'number' },
   { message: 'export-longitude', key: 'lon', type: 'number' },
   { message: 'export-population', key: 'population', type: 'number' },
   { message: 'export-cases', key: 'confirmedCases', type: 'number' },
   { message: 'export-case-date', key: 'lastConfirmedCaseDate', type: 'date' },
-  // { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
+  { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
   { message: 'export-screening-date', key: 'lastScreeningDate', type: 'date' }
 ]
 
@@ -140,14 +144,17 @@ class MapSelectionList extends Component {
           <ul className='map__selection__list'>
             {data.map((item) => {
               return (
-                <li className='map__selection__list__item' key={item._id}>
+                <li className='map__selection__list__item' key={item.id}>
+                  <span className='remove' onClick={() => deselect([item])}>
+                    <i className='fa fa-close' />
+                  </span>
                   <span className={'view text--' + (item.confirmedCases > 0 ? 'highlight' : item.type)} onClick={() => show(item)}>
                     <i className='fa fa-map-marker' />
                   </span>
                   <span>
-                    {capitalize(item.area)}
+                    {item.AS}
                     {' - '}
-                    {capitalize(item.village)}
+                    {item.village}
                   </span>
                 </li>
               )

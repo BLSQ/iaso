@@ -4,17 +4,14 @@ import { push } from 'react-router-redux'
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl'
 import { createUrl } from '../../utils/fetchData'
 
+import geoData from './utils/geoData'
 import { Map } from './components'
 import { selectItems, deselectItems } from './selection'
 
-// REMOVE AFTER WORKSHOP
-import geoData from './utils/geoData'
-const {data2015, isEqual, areEqual} = geoData
-
 const MESSAGES = defineMessages({
-  'location-national': {
+  'location-all': {
     defaultMessage: '--- all ---',
-    id: 'microplanning.location.national'
+    id: 'microplanning.location.all'
   }
 })
 
@@ -59,61 +56,39 @@ export class Microplanning extends Component {
     const { caseyearfrom, screeningyearto, location } = this.props.params
     const { data, error, loading } = this.props.villages
     const selectedItems = (this.props.selection.selectedItems || [])
-    const villagesWithConfirmedCases = (data && data.villagesWithConfirmedCases || [])
-    // fix `Yasa Bonga` misspellings
-    villagesWithConfirmedCases
-      .filter((item) => (isEqual(item.zone, 'yassabonga')))
-      .forEach((item) => { item.zone = 'Yasa Bonga' })
+    const villages = (data && data.villages || [])
 
+    /*
     // REMOVE AFTER WORKSHOP
-    let highlightedItems = []
+    const items = villages
     if (!loading && !error) {
       const year = new Date().getFullYear() - parseInt(caseyearfrom || 0, 10)
-      if (year > 2015) {
-        highlightedItems = villagesWithConfirmedCases
-      } else {
+      if (year < 2016) {
         const defaultLastConfirmedCaseDate = '2015-12-31'
-        const keys = ['zone', 'area', 'village']
-        const extra2015 = data2015
-          .filter((item2015) => !location || isEqual(item2015.zone, location))
+        const keys = ['ZS', 'AS', 'village']
+        const {data2015, isEqual, areEqual} = geoData
+        const extra2015 = (!location
+          ? data2015
+          : data2015.filter((item2015) => isEqual(item2015.ZS, location)))
 
-        // 1.- add to fetched data 2015 entries
-        highlightedItems = villagesWithConfirmedCases.map((itemNo2015) => {
-          const item2015 = extra2015.find((entry) => areEqual(itemNo2015, entry, keys))
-          if (item2015) {
-            const confirmedCases = itemNo2015.confirmedCases + item2015.confirmedCases
-            const lastConfirmedCaseDate = (itemNo2015.lastConfirmedCaseDate > defaultLastConfirmedCaseDate)
-              ? itemNo2015.lastConfirmedCaseDate
-              : defaultLastConfirmedCaseDate
-            return {...itemNo2015, confirmedCases, lastConfirmedCaseDate}
-          }
-          return itemNo2015
-        })
-
-        // 2.- include data from 2015 that it's not in fetched data
-        extra2015
-          .forEach((item2015) => {
-            const itemNo2015 = villagesWithConfirmedCases.find((entry) => areEqual(item2015, entry, keys))
-            if (!itemNo2015) {
-              highlightedItems.push({...item2015, lastConfirmedCaseDate: defaultLastConfirmedCaseDate})
+        // add to fetched data 2015 entries
+        if (extra2015.length) {
+          items = villages.map((itemNo2015) => {
+            const item2015 = extra2015.find((entry) => areEqual(itemNo2015, entry, keys))
+            if (item2015) {
+              const confirmedCases = itemNo2015.confirmedCases + item2015.confirmedCases
+              const lastConfirmedCaseDate = (itemNo2015.lastConfirmedCaseDate > defaultLastConfirmedCaseDate)
+                ? itemNo2015.lastConfirmedCaseDate
+                : defaultLastConfirmedCaseDate
+              return {...itemNo2015, confirmedCases, lastConfirmedCaseDate}
             }
+            return itemNo2015
           })
+        }
       }
     }
-
-    // extract unique zones from fetched data
-    // const locations = highlightedItems.map((item) => item.zone)
-    //   .filter((value, index, array) => array.indexOf(value) === index)
-    //   .map((value) => (<option key={value} value={value}>{value}</option>))
-    const locations = [
-      'Bokoro',
-      'Bulungu',
-      'Kikongo',
-      'Kimputu',
-      'Mosango',
-      'Yasa Bonga'
-    ].map((value) => (<option key={value} value={value}>{value}</option>))
     // !REMOVE AFTER WORKSHOP
+    */
 
     return (
       <div>
@@ -149,27 +124,41 @@ export class Microplanning extends Component {
             </label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
-              {locations}
+              {geoData.locations.map((value) => (<option key={value} value={value}>{value}</option>))}
             </select>
           </div>
         </div>
-        <div>
-          {
-            error && <div className='widget__container'>
-              <div className='widget__header'>
-                <h2 className='widget__heading text--error'>Error:</h2>
-              </div>
-              <div className='widget__content'>
-                {error}
-              </div>
+
+        {
+          error && <div className='widget__container'>
+            <div className='widget__header'>
+              <h2 className='widget__heading text--error'>
+                <FormattedMessage id='microplanning.label.error' defaultMessage='Error' />:
+              </h2>
             </div>
-          }
-        </div>
+            <div className='widget__content'>
+              {error}
+            </div>
+          </div>
+        }
+
+        {
+          loading && <div className='widget__container'>
+            <div className='widget__header'>
+              <h2 className='widget__heading'>
+                <i className='fa fa-spin fa-cog' />
+                &nbsp;
+                <FormattedMessage id='microplanning.label.loading' defaultMessage='Loading villages' />
+                &hellip;
+              </h2>
+            </div>
+          </div>
+        }
 
         <Map
-          highlightedItems={highlightedItems}
+          items={villages}
           selectedItems={selectedItems}
           select={this.selectItemsHandler}
           deselect={this.deselectItemsHandler}

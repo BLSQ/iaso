@@ -278,14 +278,19 @@ def cases_over_time(params):
         'datefrom': {'type': 'string'},
         'dateto': {'type': 'string'},
         'location': {'type': 'string'},
-        'source': {'type': 'string'},
         'caseyearfrom': {'type': 'string'},
         'screeningyearto': {'type': 'string'},
     }
 })
-def confirmed_by_location(params):
+def data_by_location(params):
+    '''
+    View to list and retrieve the official list of villages
+    with their meaningful info like confirmed cases, screened people...
+    '''
+
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
+    today = date.today()
 
     positiveCondition = '''FILTER
             (WHERE test_maect IS TRUE
@@ -303,62 +308,73 @@ def confirmed_by_location(params):
                 OR test_rdt IS NOT NULL)
     '''
 
-    sql = '''
-        SELECT "ZS" as zone
-             , "AZ" as area
+    sql_cases = '''
+        SELECT "ZS"
+             , "AZ" as "AS"
              , village
              , count(DISTINCT document_id) {screeningFilter} as "screenedPeople"
              , max(document_date) {screeningFilter} as "lastScreeningDate"
              , count(DISTINCT document_id) {positiveFilter} as "confirmedCases"
              , max(document_date) {positiveFilter} as "lastConfirmedCaseDate"
-        FROM cases_case
-        WHERE document_date >= %s AND document_date < %s
-          AND lower("ZS") in (
-                    'bokoro',
-                    'bulungu',
-                    'kikongo',
-                    'kimputu',
-                    'mosango',
-                    'yasa bonga',
-                    'yasa-bonga',
-                    'yassa bonga',
-                    'yassa-bonga'
-                )
-          AND "AZ" IS NOT NULL
-          AND village IS NOT NULL
+          FROM cases_case
+         WHERE document_date >= %s AND document_date < %s
+      GROUP BY "ZS", "AZ", village
+        HAVING count(DISTINCT document_id) {positiveFilter} > 0
+           AND max(document_date) {positiveFilter} >= %s
     '''
 
     sql_params = [date_from, date_to]
-    if 'location' in params:
-        yasaBongas = ['yasa bonga', 'yasa-bonga', 'yassa bonga', 'yassa-bonga']
-        location = params['location'].lower()
-        if location in yasaBongas:
-            sql = sql + 'AND lower("ZS") in (%s, %s, %s, %s)'
-            for yasa in yasaBongas:
-                sql_params.append(yasa)
-        else:
-            sql = sql + 'AND lower("ZS") = %s'
-            sql_params.append(location)
-    if 'source' in params:
-        sql = sql + 'AND source = %s'
-        sql_params.append(params['source'])
-    sql = sql + '''
-        GROUP BY "ZS", "AZ", village
-        HAVING count(DISTINCT document_id) {positiveFilter} > 0
-    '''
-
-    today = date.today()
     if 'caseyearfrom' in params:
-        sql = sql + ' AND max(document_date) {positiveFilter} >= %s'
         sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))
+    else:
+        sql_params.append(datetime(today.year, 1, 1))
+
     if 'screeningyearto' in params:
-        sql = sql + ' AND max(document_date) {screeningFilter} < %s'
+        sql_cases = sql_cases + ' AND max(document_date) {screeningFilter} < %s'
         sql_params.append(datetime(today.year - int(params['screeningyearto']), 12, 31))
 
-    sql = sql.format(
+    sql_cases = sql_cases.format(
         screeningFilter=screeningCondition,
         positiveFilter=positiveCondition
     )
+
+    sql = '''
+      SELECT a."ZS"
+           , a."AS"
+           , a.village
+           , a.longitude
+           , a.latitude
+
+           , TRIM(BOTH
+                TO_CHAR(a.longitude, '000.00000000')
+                || ':' ||
+                TO_CHAR(a.latitude, '000.00000000')) as id
+           , TRIM(BOTH
+                a."ZS" || ' - ' || a."AS" || ' - ' || a.village) as label
+           , CASE a.classification
+                WHEN 'YES' THEN 'official'
+                WHEN 'NO'  THEN 'other'
+                WHEN 'NA'  THEN 'unknown'
+              END as type
+
+           , COALESCE(a.population, 0) as population
+           , COALESCE(b."screenedPeople", 0) as "screenedPeople"
+           , b."lastScreeningDate"
+           , COALESCE(b."confirmedCases", 0) as "confirmedCases"
+           , b."lastConfirmedCaseDate"
+        FROM cases_location a
+        LEFT OUTER JOIN ({cases}) b
+       USING ("ZS", "AS", village)
+       WHERE a.classification IN ('YES', 'NO', 'NA')
+    '''
+
+    if 'location' in params:
+        sql = sql + 'AND lower(a."ZS") = %s'
+        sql_params.append(params['location'].lower())
+
+    sql = sql + ' ORDER BY a.longitude, a.latitude'
+
+    sql = sql.format(cases=sql_cases)
 
     result = []
     with connection.cursor() as cursor:

@@ -17,9 +17,9 @@ import MG from 'metrics-graphics'
 import MGStyles from 'metrics-graphics/dist/metricsgraphics.css' // eslint-disable-line no-unused-vars
 
 const MESSAGES = defineMessages({
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'stats.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'stats.labels.all'
   }
 })
 
@@ -493,7 +493,7 @@ export class Stats extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='statspage.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

@@ -69,9 +69,9 @@ const MESSAGES = defineMessages({
   },
 
   // misc
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'suspectcases.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'suspectcases.labels.all'
   }
 })
 
@@ -207,7 +207,7 @@ export class SuspectCases extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='suspectcases.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

@@ -12,9 +12,9 @@ import VISUALIZATIONS from '../../../json/visualizations.json'
 import { createUrl } from '../../utils/fetchData'
 
 const MESSAGES = defineMessages({
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'monthlyreport.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'monthlyreport.labels.all'
   }
 })
 
@@ -189,7 +189,7 @@ export class MonthlyReport extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

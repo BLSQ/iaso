@@ -57,7 +57,7 @@ const checkSuccess = (calls) => checkAction(calls, LOAD_SUCCESS)
  * - load data when mounted
  * - make sure only filter params changing triggers a new data load
  * - emit success/fail events
- * - redirect the page to 'national' if data is not available for a location
+ * - redirect the page to 'all' if data is not available for a location
  *
  */
 describe('MonthlyReportContainer Loading Data', () => {
@@ -130,12 +130,12 @@ describe('MonthlyReportContainer Loading Data', () => {
     assert(nockScope.isDone() === false, 'The urls have not been requested again')
   })
 
-  it('does not redirect on "national"', (done) => {
+  it('does not redirect on "all"', (done) => {
     const props = {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        location: '' // national
+        location: '' // all
       }
     }
     renderWithStore(
@@ -151,7 +151,7 @@ describe('MonthlyReportContainer Loading Data', () => {
     }, 200)
   })
 
-  it('redirects to "national (location: \'\')" if location is not included in the selected date range', (done) => {
+  it('redirects to "all (location: \'\')" if location is not included in the selected date range', (done) => {
     const props = {
       ...defaultProps,
       params: {

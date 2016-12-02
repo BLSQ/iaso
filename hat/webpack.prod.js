@@ -4,8 +4,8 @@ var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
 // Switch here for french
-// remeber to switch in webpack.dev.js and
-// djanog settings as well
+// remember to switch in webpack.dev.js and
+// django settings as well
 var LOCALE = 'fr'
 
 module.exports = {
@@ -123,6 +123,14 @@ module.exports = {
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url?limit=10000&mimetype=image/png'
+      },
+      // favicon
+      {
+        test: 'images/favicon-prod.png',
+        loader: 'url',
+        query: {
+          name: 'favicon.png'
+        }
       }
     ]
   },

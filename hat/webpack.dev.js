@@ -2,8 +2,8 @@ var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
-// remeber to switch in webpack.prod.js and
-// djanog settings as well
+// remember to switch in webpack.prod.js and
+// django settings as well
 var LOCALE = 'en'
 var WEBPACK_URL = 'https://localhost:3000'
 
@@ -137,6 +137,14 @@ module.exports = {
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url?limit=10000&mimetype=image/png'
+      },
+      // favicon
+      {
+        test: 'images/favicon-dev.png',
+        loader: 'url',
+        query: {
+          name: 'favicon.png'
+        }
       }
     ]
   },

@@ -3,8 +3,7 @@
 //
 
 import * as topojson from 'topojson'
-import zonesTopo from '../../../../json/zones.json'
-import areasTopo from '../../../../json/areas.json'
+import shapes from '../../../../json/shapes.json'
 import data2015 from '../../../../json/PNLTHA-2015.json'
 import {capitalize} from '../../../utils'
 
@@ -15,8 +14,8 @@ const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
 //
 // Leaflet doesn't support topoJSON format, transform them to geoJSON format.
 //
-const zones = topojson.feature(zonesTopo, zonesTopo.objects.zones)
-const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
+const zones = topojson.feature(shapes, shapes.objects.zones)
+const areas = topojson.feature(shapes, shapes.objects.areas)
 
 //
 // include basic properties in features
@@ -26,12 +25,21 @@ const addBasic = (item) => {
 
   // create fake `id` based on health structure divisions
   props.id = clean(props.province) + ':' + clean(props.ZS) + ':' + clean(props.AS)
-  props._keys = (props.AS ? ['ZS', 'AS'] : ['ZS'])
 
   props.province = capitalize(props.province)
-  props.ZS = capitalize(props.ZS)
-  if (props.AS) props.AS = capitalize(props.AS)
-  props.label = props.province + ' - ' + props.ZS + (props.AS ? ' - ' + props.AS : '')
+  props.label = props.province
+
+  if (props.ZS) {
+    props.ZS = capitalize(props.ZS)
+    props.label += ' - ' + props.ZS
+    props._keys = ['ZS']
+
+    if (props.AS) {
+      props.AS = capitalize(props.AS)
+      props.label += ' - ' + props.AS
+      props._keys = ['ZS', 'AS']
+    }
+  }
 }
 
 zones.features.forEach(addBasic)

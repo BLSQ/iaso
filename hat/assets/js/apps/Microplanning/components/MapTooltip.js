@@ -26,15 +26,15 @@ const MESSAGES = defineMessages({
   },
   villagesOfficial: {
     id: 'microplanning.tooltip.villages.official',
-    defaultMessage: 'Villages'
+    defaultMessage: 'Villages Z.S.'
   },
   villagesOther: {
     id: 'microplanning.tooltip.villages.other',
-    defaultMessage: 'Non official'
+    defaultMessage: 'Villages non-Z.S.'
   },
   villagesUnknown: {
     id: 'microplanning.tooltip.villages.unknown',
-    defaultMessage: 'Unknown'
+    defaultMessage: 'Villages satellite'
   },
   type: {
     id: 'microplanning.tooltip.type',

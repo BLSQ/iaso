@@ -128,7 +128,11 @@ class MapSelectionList extends Component {
               />
               <FormattedMessage
                 id='microplanning.selected.population.warning1'
-                defaultMessage='Only official villages have population data.'
+                defaultMessage='Only locations from Z.S. have population data.'
+              />
+              <FormattedMessage
+                id='microplanning.selected.population.warning2'
+                defaultMessage='The population data were provided by UCLA shapefiles.'
               />
             </div>
           </div>

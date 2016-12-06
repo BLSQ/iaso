@@ -351,7 +351,7 @@ def data_by_location(params):
                 TO_CHAR(a.latitude, '000.00000000')) as id
            , TRIM(BOTH
                 a."ZS" || ' - ' || a."AS" || ' - ' || a.village) as label
-           , CASE a.classification
+           , CASE a.village_official
                 WHEN 'YES' THEN 'official'
                 WHEN 'NO'  THEN 'other'
                 WHEN 'NA'  THEN 'unknown'
@@ -365,7 +365,7 @@ def data_by_location(params):
         FROM cases_location a
         LEFT OUTER JOIN ({cases}) b
        USING ("ZS", "AS", village)
-       WHERE a.classification IN ('YES', 'NO', 'NA')
+       WHERE a.village_official IN ('YES', 'NO', 'NA')
     '''
 
     if 'location' in params:

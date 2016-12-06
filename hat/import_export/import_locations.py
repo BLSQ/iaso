@@ -1,4 +1,5 @@
 import logging
+import pandas
 from simpledbf import Dbf5
 from pandas import DataFrame
 from django.conf import settings
@@ -41,10 +42,15 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
             df_locs['village_type'] = df['VILLAGE_TY']
         elif 'TYPE' in df:
             df_locs['village_type'] = df['TYPE']
-        df_locs['classification'] = df['LIST_OFF']
+        df_locs['village_official'] = df['LIST_OFF']
+
         df_locs['latitude'] = df['LAT']
         df_locs['longitude'] = df['LON']
-        df_locs['population'] = df['POP_2016'].fillna(df['POP_2015'])
+        df_locs['gps_source'] = df['GPS_SOURCE']
+
+        df_locs['population'] = df.apply(population_value, axis=1)
+        df_locs['population_year'] = df.apply(population_year, axis=1)
+        df_locs['population_source'] = df['POP_SOURCE']
 
         stats['num_with_population'] = len(df_locs[df_locs['population'].notnull()])
 
@@ -71,3 +77,21 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         logger.exception(ex)
 
     return stats
+
+
+def population_matrix(row, returnType='value') -> str:
+    for year in ['2016', '2015']:
+        if row['POP_' + year] and pandas.notnull(row['POP_' + year]):
+            if returnType == 'value':
+                return row['POP_' + year]
+            else:
+                return year
+    return None
+
+
+def population_value(row) -> str:
+    return population_matrix(row, 'value')
+
+
+def population_year(row) -> str:
+    return population_matrix(row, 'year')

@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
   },
   ZS: {
     id: 'microplanning.tooltip.zone',
-    defaultMessage: 'Zonde de Sante'
+    defaultMessage: 'Zone de Sante'
   },
   AS: {
     id: 'microplanning.tooltip.area',

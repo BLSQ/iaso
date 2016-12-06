@@ -138,10 +138,15 @@ class Location(models.Model):
     village = models.TextField(db_index=True, null=True)
     village_alt = models.TextField(db_index=True, null=True)
     village_type = models.TextField(null=True)
-    classification = models.TextField(null=True)
+    village_official = models.TextField(null=True)
+
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
+    gps_source = models.TextField(null=True)
+
     population = models.PositiveIntegerField(null=True)
+    population_source = models.TextField(null=True)
+    population_year = models.PositiveIntegerField(null=True)
 
     class Meta:
         permissions = (

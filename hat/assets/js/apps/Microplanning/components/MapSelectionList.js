@@ -124,15 +124,17 @@ class MapSelectionList extends Component {
             <div className='map__text--warning'>
               <FormattedMessage
                 id='microplanning.selected.population.warning'
-                defaultMessage='Please note: population estimates may not be accurate. '
+                defaultMessage='Please note: population estimates may not be accurate.'
               />
+              &nbsp;
               <FormattedMessage
                 id='microplanning.selected.population.warning1'
-                defaultMessage='Only locations from Z.S. have population data.'
+                defaultMessage='Only villages from Z.S. have population data.'
               />
+              <br />
               <FormattedMessage
                 id='microplanning.selected.population.warning2'
-                defaultMessage='The population data were provided by UCLA shapefiles.'
+                defaultMessage='Population data included in shape files curated by UCLA and based on Villages from Z.S.'
               />
             </div>
           </div>

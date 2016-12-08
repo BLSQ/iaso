@@ -12,7 +12,7 @@ export const urls = [
   },
   {
     name: 'coverage',
-    url: '/api/datasets/location_coverage',
+    url: '/api/datasets/population_coverage',
     mock: []
   },
   {

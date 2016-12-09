@@ -285,19 +285,19 @@ class Map extends Component {
     // include selected items layer
     map.addLayer(this.state.selectedGroup)
 
-    const shapeOptions = {
+    const shapeOptions = (type) => ({
       pane: 'custom-pane-layers',
-      style: () => ({ className: 'map-layer transparent' }),
+      style: () => ({ className: 'map-layer ' + type }),
       onEachFeature: (feature, layer) => {
         this.addLayerEvents(layer, feature.properties)
       }
-    }
+    })
 
     // plot the ALL boundaries
     const {provinces, zones, areas} = this.state.layersGroups
-    provinces.addLayer(L.geoJson(geoData.provinces, shapeOptions))
-    zones.addLayer(L.geoJson(geoData.zones, shapeOptions))
-    areas.addLayer(L.geoJson(geoData.areas, shapeOptions))
+    provinces.addLayer(L.geoJson(geoData.provinces, shapeOptions('province')))
+    zones.addLayer(L.geoJson(geoData.zones, shapeOptions('zone')))
+    areas.addLayer(L.geoJson(geoData.areas, shapeOptions('area')))
 
     plotOrHideLayer(-1, provinces)
     L.DomEvent.on(map, 'zoomend', (event) => {

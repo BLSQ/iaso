@@ -344,6 +344,7 @@ def data_by_location(params):
            , a.village
            , a.longitude
            , a.latitude
+           , a.gps_source as "gpsSource"
 
            , TRIM(BOTH
                 TO_CHAR(a.longitude, '000.00000000')
@@ -358,6 +359,8 @@ def data_by_location(params):
               END as type
 
            , COALESCE(a.population, 0) as population
+           , a.population_year as "populationYear"
+           , a.population_source as "populationSource"
            , COALESCE(b."screenedPeople", 0) as "screenedPeople"
            , b."lastScreeningDate"
            , COALESCE(b."confirmedCases", 0) as "confirmedCases"

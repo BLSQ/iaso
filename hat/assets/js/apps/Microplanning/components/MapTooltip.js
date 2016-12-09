@@ -6,11 +6,16 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
+import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
   province: {
     id: 'microplanning.tooltip.province',
     defaultMessage: 'Province'
+  },
+  formerProvince: {
+    id: 'microplanning.tooltip.province.former',
+    defaultMessage: 'Former province'
   },
   ZS: {
     id: 'microplanning.tooltip.zone',
@@ -40,19 +45,32 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.type',
     defaultMessage: 'Classification'
   },
-  lat: {
+  latitude: {
     id: 'microplanning.tooltip.latitude',
     defaultMessage: 'Latitude'
   },
-  lon: {
+  longitude: {
     id: 'microplanning.tooltip.longitude',
     defaultMessage: 'Longitude'
+  },
+  gpsSource: {
+    id: 'microplanning.tooltip.gps.source',
+    defaultMessage: 'GPS source'
   },
 
   population: {
     id: 'microplanning.tooltip.population',
     defaultMessage: 'Population'
   },
+  populationSource: {
+    id: 'microplanning.tooltip.population.source',
+    defaultMessage: 'Population source'
+  },
+  populationYear: {
+    id: 'microplanning.tooltip.population.year',
+    defaultMessage: 'Population year'
+  },
+
   confirmedCases: {
     id: 'microplanning.tooltip.cases',
     defaultMessage: '# Confirmed Cases'
@@ -73,20 +91,21 @@ const MESSAGES = defineMessages({
   // type values
   official: {
     id: 'microplanning.tooltip.village.type.official',
-    defaultMessage: 'Official'
+    defaultMessage: 'from Z.S.'
   },
   other: {
     id: 'microplanning.tooltip.village.type.other',
-    defaultMessage: 'Non official'
+    defaultMessage: 'not from Z.S.'
   },
   unknown: {
     id: 'microplanning.tooltip.village.type.unknown',
-    defaultMessage: 'Unknown'
+    defaultMessage: 'visible from satellite'
   }
 })
 
 const ROWS = [
   { key: 'province' },
+  { key: 'formerProvince' },
   { key: 'ZS' },
   { key: 'AS' },
   { key: 'villagesOfficial', type: 'integer' },
@@ -94,9 +113,12 @@ const ROWS = [
   { key: 'villagesUnknown', type: 'integer' },
   { key: 'village' },
   { key: 'type', type: 'message' },
-  { key: 'lat', type: 'coordinates' },
-  { key: 'lon', type: 'coordinates' },
+  { key: 'latitude', type: 'coordinates' },
+  { key: 'longitude', type: 'coordinates' },
+  { key: 'gpsSource' },
   { key: 'population', type: 'integer' },
+  { key: 'populationYear' },
+  { key: 'populationSource' },
   { key: 'confirmedCases', type: 'integer' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
   { key: 'screenedPeople', type: 'integer' },
@@ -118,6 +140,9 @@ class MapTooltip extends Component {
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} />
+                  break
+                case 'capitalize':
+                  value = capitalize(value)
                   break
                 case 'coordinates':
                   value = <FormattedNumber value={value} minimumFractionDigits={8} />

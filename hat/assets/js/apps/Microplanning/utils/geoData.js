@@ -1,5 +1,5 @@
 //
-// build clean lists with zones and areas boundaries
+// build clean lists with provinces, zones and areas boundaries
 //
 
 import * as topojson from 'topojson'
@@ -27,9 +27,10 @@ const addBasic = (item) => {
   // create fake `id` based on health structure divisions
   props.id = clean(props.NEW_PROV) + ':' + clean(props.ZS) + ':' + clean(props.AS)
 
-  props.provinceOld = capitalize(props.OLD_PROV)
   props.province = capitalize(props.NEW_PROV)
+  props.formerProvince = capitalize(props.OLD_PROV)
   props.label = props.province
+  props._keys = ['province']
 
   if (props.ZS) {
     props.ZS = capitalize(props.ZS)

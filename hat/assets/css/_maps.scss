@@ -556,25 +556,30 @@ ul.map__selection__list {
 
 /* boundaries */
 
-@mixin layer {
-  fill-opacity: 0.5;
-  stroke-dasharray: 4,4;
+@mixin layer($stroke-color: $mid-gray, $stroke-width: 3) {
+  fill: transparent;
+  fill-opacity: 0;
+  stroke-dasharray: 1,0;
   stroke-opacity: 1;
-  stroke-width: 2;
+
+  stroke: $stroke-color;
+  stroke-width: $stroke-width;
 
   &:hover {
-    fill-opacity: 0.7;
-    stroke-dasharray: 1,0;
-    stroke-width: 4;
+    stroke: darken($stroke-color, 10%);
+    stroke-width: ($stroke-width+1);
   }
 }
 
 path.map-layer {
-  @include layer;
-
-  &.transparent {
-    fill: transparent;
-    stroke: $mid-gray;
+  &.province {
+    @include layer(#935116, 4);
+  }
+  &.zone {
+    @include layer(#CA6F1E, 2);
+  }
+  &.area {
+    @include layer(#F0B27A, 1);
   }
 }
 

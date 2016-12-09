@@ -1,11 +1,10 @@
 import logging
-import pandas
 from simpledbf import Dbf5
 from pandas import DataFrame
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from .load import load_locations_into_db
-from .utils import store_raw_file, capitalize
+from .utils import store_raw_file, capitalize, get_property_by_year
 
 logger = logging.getLogger(__name__)
 
@@ -79,19 +78,9 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
     return stats
 
 
-def population_matrix(row, returnType='value') -> str:
-    for year in ['2016', '2015']:
-        if row['POP_' + year] and pandas.notnull(row['POP_' + year]):
-            if returnType == 'value':
-                return row['POP_' + year]
-            else:
-                return year
-    return None
-
-
 def population_value(row) -> str:
-    return population_matrix(row, 'value')
+    return get_property_by_year(row, prefix='POP_', returnType='value')
 
 
 def population_year(row) -> str:
-    return population_matrix(row, 'year')
+    return get_property_by_year(row, prefix='POP_', returnType='year')

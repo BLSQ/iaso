@@ -14,6 +14,7 @@ const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
 //
 // Leaflet doesn't support topoJSON format, transform them to geoJSON format.
 //
+const provinces = topojson.feature(shapes, shapes.objects.provinces)
 const zones = topojson.feature(shapes, shapes.objects.zones)
 const areas = topojson.feature(shapes, shapes.objects.areas)
 
@@ -24,9 +25,10 @@ const addBasic = (item) => {
   const props = item.properties
 
   // create fake `id` based on health structure divisions
-  props.id = clean(props.province) + ':' + clean(props.ZS) + ':' + clean(props.AS)
+  props.id = clean(props.NEW_PROV) + ':' + clean(props.ZS) + ':' + clean(props.AS)
 
-  props.province = capitalize(props.province)
+  props.provinceOld = capitalize(props.OLD_PROV)
+  props.province = capitalize(props.NEW_PROV)
   props.label = props.province
 
   if (props.ZS) {
@@ -42,6 +44,7 @@ const addBasic = (item) => {
   }
 }
 
+provinces.features.forEach(addBasic)
 zones.features.forEach(addBasic)
 areas.features.forEach(addBasic)
 
@@ -53,6 +56,7 @@ export default {
   areEqual,
   center: [ -4.4233379, 16.2113064 ],
   zoom: 7,
+  provinces,
   zones,
   areas,
   locations,

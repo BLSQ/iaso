@@ -53,6 +53,12 @@ class Map extends Component {
       map: null,
       // where to plot the selected markers
       selectedGroup: new L.FeatureGroup(),
+      // where to plot ALL boundaries; in different groups based on type
+      layersGroups: {
+        provinces: new L.FeatureGroup(),
+        zones: new L.FeatureGroup(),
+        areas: new L.FeatureGroup()
+      },
       // where to plot ALL villages; in different groups based on type
       markersGroups: {
         official: new L.FeatureGroup(),
@@ -264,6 +270,18 @@ class Map extends Component {
   }
 
   includeDefaultLayersInMap (map) {
+    const plotOrHideLayer = (minZoom, layer) => {
+      if (map.getZoom() > minZoom) {
+        if (!map.hasLayer(layer)) {
+          map.addLayer(layer)
+        }
+      } else {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer)
+        }
+      }
+    }
+
     // include selected items layer
     map.addLayer(this.state.selectedGroup)
 
@@ -275,27 +293,19 @@ class Map extends Component {
       }
     }
 
-    // plot the ALL zones boundaries
-    map.addLayer(L.geoJson(geoData.zones, shapeOptions))
+    // plot the ALL boundaries
+    const {provinces, zones, areas} = this.state.layersGroups
+    provinces.addLayer(L.geoJson(geoData.provinces, shapeOptions))
+    zones.addLayer(L.geoJson(geoData.zones, shapeOptions))
+    areas.addLayer(L.geoJson(geoData.areas, shapeOptions))
 
-    // use for the areas
-    const areasGroup = new L.FeatureGroup()
-    areasGroup.addLayer(L.geoJson(geoData.areas, shapeOptions))
-
+    plotOrHideLayer(-1, provinces)
     L.DomEvent.on(map, 'zoomend', (event) => {
-      // plot the AREAS if the zoom is greater than 9
-      if (map.getZoom() > 9) {
-        if (!map.hasLayer(areasGroup)) {
-          map.addLayer(areasGroup)
-        }
-      } else {
-        if (map.hasLayer(areasGroup)) {
-          map.removeLayer(areasGroup)
-        }
-      }
+      plotOrHideLayer(7, zones)
+      plotOrHideLayer(9, areas)
     })
 
-    this.state.defaultBounds = areasGroup.getBounds()
+    this.state.defaultBounds = provinces.getBounds()
 
     // create buffer selection circle around the mouse pointer
     const bufferMarker = L.circle(map.getCenter(), {

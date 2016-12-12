@@ -35,7 +35,8 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL('''
         CREATE OR REPLACE VIEW cases_case_view AS
-        SELECT source
+        SELECT id
+             , source
              , document_date
              , document_id
              , "ZS"

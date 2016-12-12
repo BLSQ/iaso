@@ -19,3 +19,4 @@ oauth2client==3.0.0
 mock==2.0.0
 simpledbf==0.2.6
 xlrd==1.0.0
+snaql==0.4

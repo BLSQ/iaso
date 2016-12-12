@@ -1,0 +1,26 @@
+[
+  {
+    "model": "cases.location",
+    "pk": 1,
+    "fields": {
+      "ZS": "Mosango",
+      "AS": "Muluma",
+      "village": "Kisala-lupa",
+      "latitude": 4.3971,
+      "longitude": 13.9500,
+      "population": 10
+    }
+  },
+  {
+    "model": "cases.location",
+    "pk": 2,
+    "fields": {
+      "ZS": "Mosango",
+      "AS": "Muwanda-koso",
+      "village": "Polongo",
+      "latitude": 4.3871,
+      "longitude": 15.9700,
+      "population": 5
+    }
+  }
+]

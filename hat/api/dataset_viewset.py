@@ -1,3 +1,4 @@
+import os
 from functools import wraps
 from datetime import datetime, timedelta, date
 from calendar import monthrange
@@ -10,7 +11,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
-from hat.cases.models import Case
+from snaql.factory import Snaql
+from hat.cases.models import CaseView
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
     resolve_dateperiod, \
@@ -19,12 +21,28 @@ from hat.cases.filters import \
     Q_confirmation, \
     Q_confirmation_positive, \
     Q_staging, \
-    Q_staging_positive, \
     Q_staging_stage1, \
     Q_staging_stage2
 
+# Load queries
+current_dir = os.path.abspath(os.path.dirname(__file__))
+snaql_factory = Snaql(current_dir, 'queries')
+stats_queries = snaql_factory.load_queries('stats.sql')
+
 datasets = {}
+
 DATE_FORMAT = "%Y-%m-%d"
+
+
+def parse_date_range(params, default_date_from=None):
+    today = date.today()
+    date_from = default_date_from or datetime(today.year, today.month, today.day)
+    date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    if 'datefrom' in params:
+        date_from = datetime.strptime(params['datefrom'], DATE_FORMAT)
+    if 'dateto' in params:
+        date_to = datetime.strptime(params['dateto'], DATE_FORMAT) + timedelta(days=1)
+    return (date_from, date_to)
 
 
 def dataset(params_schema=None):
@@ -61,7 +79,7 @@ params_schema = {
 
 def get_cases_filtered(params, ignore_params=None):
     '''
-    Takes the requests parameters as args and returns a filtered Case QuerySet.
+    Takes the requests parameters as args and returns a filtered CaseView QuerySet.
     '''
     def get_param_value(key):
         if ignore_params is not None and key in ignore_params:
@@ -70,7 +88,7 @@ def get_cases_filtered(params, ignore_params=None):
             value = params.get(key, None)
             return value if value != '' else None
 
-    cases = Case.objects
+    cases = CaseView.objects
 
     date = get_param_value('date')
     if date is not None:
@@ -117,12 +135,10 @@ def list_locations(params):
 @dataset(params_schema=params_schema)
 def count_total(params):
     cases = get_cases_filtered(params)
-    tested = cases.filter(Q_screening | Q_confirmation)
+    tested = cases.filter(Q_screening | Q_confirmation | Q_staging)
     return {
         'registered': cases.count(),
-        'tested': tested.count(),
-        'male': tested.filter(sex='male').count(),
-        'female': tested.filter(sex='female').count()
+        'tested': tested.count()
     }
 
 
@@ -153,7 +169,6 @@ def count_staging(params):
     cases = get_cases_filtered(params).filter(Q_staging)
     return {
         'total': cases.count(),
-        'positive': cases.filter(Q_staging_positive),
         'stage1': cases.filter(Q_staging_stage1).count(),
         'stage2': cases.filter(Q_staging_stage2).count()
     }
@@ -165,8 +180,8 @@ def campaign_meta(params):
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
         'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
-        'az_visited': cases.values('ZS', 'AZ').distinct().count(),
-        'villages_visited': cases.values('ZS', 'AZ', 'village').distinct().count()
+        'az_visited': cases.values('ZS', 'AS').distinct().count(),
+        'villages_visited': cases.values('ZS', 'AS', 'village').distinct().count()
     }
 
 
@@ -203,80 +218,25 @@ def tested_per_day(params):
         'location': {'type': 'string'},
     }
 })
-def location_coverage(params):
-    from django.db import connection
-    import datetime
+def population_coverage(params):
+    (date_from, date_to) = parse_date_range(params)
 
-    format = "%Y-%m-%d"
-    today = datetime.date.today()
-    date_from = datetime.datetime(today.year, today.month, today.day)
-    date_to = date_from + timedelta(days=1)
-    if 'datefrom' in params:
-        date_from = datetime.datetime.strptime(params['datefrom'], format)
-    if 'dateto' in params:
-        date_to = datetime.datetime.strptime(params['dateto'], format) \
-                  + timedelta(days=1)
-    result = {
-        'population_estimate': {
-            'locations': [],
-            'population': 0,
-            'registered': 0
-        },
-        'num_villages_visited': 0,
+    sql_context = {
+        'date_from': date_from,
+        'date_to': date_to
     }
-
-    sql_params = [date_from, date_to]
-    sql = '''
-      SELECT A."ZS", A."AS", A.village, sum(A.population), sum(B.registered)
-      FROM cases_location A
-      INNER JOIN (
-        SELECT "ZS", "AZ" AS "AS", village
-             , COUNT (document_id) as registered
-        FROM cases_case
-        WHERE document_date >= %s AND document_date < %s
-    '''
     if 'location' in params:
-        sql = sql + 'AND "ZS" = %s'
-        sql_params.append(params['location'])
+        sql_context['zone_sante'] = params['location']
+    if 'source' in params:
+        sql_context['source'] = params['source']
 
-    sql = sql + '''
-        GROUP BY "ZS", "AS", village
-      ) B ON A."ZS" = B."ZS" AND A."AS" = B."AS" AND A.village = B.village
-      WHERE A.population IS NOT NULL
-    '''
-    if 'location' in params:
-        sql = sql + 'AND A."ZS" = %s\n'
-        sql_params.append(params['location'])
-
-    # We use a grouping set to include and additional row with the totals
-    sql = sql + '''
-      GROUP BY GROUPING SETS ((A."ZS", A."AS", A.village), ())
-    '''
+    sql = stats_queries.population_coverage(**sql_context)
 
     with connection.cursor() as cursor:
-        cursor.execute(sql, sql_params)
-        rows = cursor.fetchall()
-        num_rows = len(rows)
-        pop = result['population_estimate']
-        for i, row in enumerate(rows):
-            if i < num_rows - 1:
-                pop['locations'].append({
-                    'ZS': row[0],
-                    'AS': row[1],
-                    'village': row[2],
-                    'population': row[3],
-                    'registered': row[4]
-                })
-            else:
-                # last row has the ROLLUP totals
-                pop['population'] = row[3] or 0
-                pop['registered'] = row[4] or 0
-
-    cases = Case.objects.filter(document_date__gte=date_from, document_date__lt=date_to)
-    if 'location' in params:
-        cases.filter(ZS=params['location'])
-    result['num_locations_visited'] = cases.values('ZS', 'AZ', 'village').distinct().count()
-    return result
+        cursor.execute(sql)
+        columns = [col[0] for col in cursor.description]
+        # convert the single row tuple to a dict
+        return dict(zip(columns, cursor.fetchone()))
 
 
 @dataset(params_schema={
@@ -290,121 +250,26 @@ def location_coverage(params):
     'additionalProperties': False,
 })
 def cases_over_time(params):
-    import datetime
-    from django.db import connection
+    (date_from, date_to) = parse_date_range(params)
 
-    format = "%Y-%m-%d"
-    today = datetime.date.today()
-    date_from = datetime.datetime(today.year, today.month, today.day)
-    date_to = date_from + timedelta(days=1)
-    if 'datefrom' in params:
-        date_from = datetime.datetime.strptime(params['datefrom'], format)
-    if 'dateto' in params:
-        date_to = datetime.datetime.strptime(params['dateto'], format) \
-                  + timedelta(days=1)
-
-    param_from = date_from.strftime(format)
-    param_to = date_to.strftime(format)
-    interval = '1 days'
-    trunc_to = 'day'
-
-    datetable_sql = '''
-        SELECT date::date
-        FROM generate_series(timestamp %s
-                           , timestamp %s
-                           , interval  %s) date
-    '''
-    datetable_params = [param_from, param_to, interval]
-
-    testtable_sql = '''
-        SELECT date_trunc(%s, document_date)::date AS date
-             , count(document_id) AS registered_total
-             , count(*) FILTER (WHERE test_catt IS NOT NULL
-                                   OR test_rdt IS NOT NULL)
-                        AS screening_total
-             , count(*) FILTER (WHERE test_catt IS TRUE
-                                   OR test_rdt IS TRUE)
-                        AS screening_pos
-             , count(*) FILTER (WHERE test_maect IS NOT NULL
-                                   OR test_ge IS NOT NULL
-                                   OR test_pg IS NOT NULL
-                                   OR test_ctcwoo IS NOT NULL
-                                   -- test_catt_dilution is a text field and currently not included
-                                   OR test_lymph_node_puncture IS NOT NULL
-                                   OR test_sf IS NOT NULL
-                                   OR test_lcr IS NOT NULL)
-                        AS confirmation_total
-             , count(*) FILTER (WHERE test_maect IS TRUE
-                                   OR test_ge IS TRUE
-                                   OR test_pg IS TRUE
-                                   OR test_ctcwoo IS TRUE
-                                   -- test_catt_dilution is a text field and currently not included
-                                   OR test_lymph_node_puncture IS TRUE
-                                   OR test_sf IS TRUE
-                                   OR test_lcr IS TRUE)
-                        AS confirmation_pos
-             , count(*) FILTER (WHERE test_pl_result IS NOT NULL)
-                        AS staging_total
-             , count(*) FILTER (WHERE test_pl_result = 'stage1')
-                        AS stage1
-             , count(*) FILTER (WHERE test_pl_result = 'stage2')
-                        AS stage2
-        FROM cases_case
-        WHERE document_date >= %s AND document_date < %s
-    '''
-    testtable_params = [trunc_to, param_from, param_to]
+    sql_context = {
+        'date_from': date_from,
+        'date_to': date_to,
+        'date_interval': '1 days',
+        'date_trunc_to': 'day',
+    }
     if 'location' in params:
-        testtable_sql = testtable_sql + 'AND "ZS" = %s'
-        testtable_params.append(params['location'])
+        sql_context['zone_sante'] = params['location']
     if 'source' in params:
-        testtable_sql = testtable_sql + 'AND source = %s'
-        testtable_params.append(params['source'])
-    testtable_sql = testtable_sql + '''
-        GROUP BY date
-    '''
+        sql_context['source'] = params['source']
 
-    sql = '''
-      SELECT *
-      FROM ( {datetable} ) dates
-      LEFT JOIN ( {testtable} ) tests USING (date)
-      ORDER BY date
-    '''.format(
-        datetable=datetable_sql,
-        testtable=testtable_sql,
-    )
-    print('datetable params', datetable_params, 'testtable_params', testtable_params)
+    sql = stats_queries.cases_over_time(**sql_context)
 
     with connection.cursor() as cursor:
-        cursor.execute(sql, [
-            *datetable_params,
-            *testtable_params
-        ])
-        result = []
-        for row in cursor.fetchall():
-            registered = row[1] if row[1] is not None else 0
-            screening_total = row[2] if row[2] is not None else 0
-            screening_pos = row[3] if row[3] is not None else 0
-            screening_neg = screening_total - screening_pos
-            confirmation_total = row[4] if row[4] is not None else 0
-            confirmation_pos = row[5] if row[5] is not None else 0
-            confirmation_neg = confirmation_total - confirmation_pos
-            staging = row[6] if row[6] is not None else 0
-            stage1 = row[7] if row[7] is not None else 0
-            stage2 = row[8] if row[8] is not None else 0
-            result.append({
-                'date': row[0],
-                'registered': registered,
-                'screening_total': screening_total,
-                'screening_pos': screening_pos,
-                'screening_neg': screening_neg,
-                'confirmation_total': confirmation_total,
-                'confirmation_pos': confirmation_pos,
-                'confirmation_neg': confirmation_neg,
-                'staging': staging,
-                'stage1': stage1,
-                'stage2': stage2,
-            })
-        return result
+        cursor.execute(sql)
+        columns = [col[0] for col in cursor.description]
+        # convert the row tuple to dicts to dicts
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
 @dataset(params_schema={
@@ -420,14 +285,7 @@ def cases_over_time(params):
 })
 def confirmed_by_location(params):
     # first expected date is 2000-01-01
-    date_from = datetime(2000, 1, 1)
-    # last date is today
-    today = date.today()
-    date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
-    if 'datefrom' in params:
-        date_from = datetime.strptime(params['datefrom'], DATE_FORMAT)
-    if 'dateto' in params:
-        date_to = datetime.strptime(params['dateto'], DATE_FORMAT) + timedelta(days=1)
+    (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
 
     positiveCondition = '''FILTER
             (WHERE test_maect IS TRUE
@@ -489,6 +347,7 @@ def confirmed_by_location(params):
         HAVING count(DISTINCT document_id) {positiveFilter} > 0
     '''
 
+    today = date.today()
     if 'caseyearfrom' in params:
         sql = sql + ' AND max(document_date) {positiveFilter} >= %s'
         sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))

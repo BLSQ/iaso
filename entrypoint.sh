@@ -66,6 +66,7 @@ case "$1" in
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
       ./manage.py migrate --noinput
+      ./manage.py loaddata users
       ./manage.py setupcouchdb
       ./manage.py runserver 0.0.0.0:8080
     fi

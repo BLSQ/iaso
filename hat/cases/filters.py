@@ -3,36 +3,14 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
 from django.db.models import Q
-from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
-    CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
 
-
-Q_screening = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening |= Q(**{field + '__isnull': False})
-
-Q_screening_positive = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening_positive |= Q(**{field: True})
-
-Q_confirmation = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation |= Q(**{field + '__isnull': False})
-
-Q_confirmation_positive = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation_positive |= Q(**{field: True})
-
-Q_staging = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging |= Q(**{field + '__isnull': False})
-
-Q_staging_positive = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging_positive |= Q(**{field: True})
-
-Q_staging_stage1 = Q(test_pl_result='stage1')
-Q_staging_stage2 = Q(test_pl_result='stage2')
+Q_screening = Q(screening_result__isnull=False)
+Q_screening_positive = Q(screening_result=True)
+Q_confirmation = Q(confirmation_result__isnull=False)
+Q_confirmation_positive = Q(confirmation_result=True)
+Q_staging = Q(stage_result__isnull=False)
+Q_staging_stage1 = Q(stage_result='stage1')
+Q_staging_stage2 = Q(stage_result='stage2')
 
 
 class DatePeriod(Enum):

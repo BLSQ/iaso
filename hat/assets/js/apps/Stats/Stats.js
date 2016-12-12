@@ -114,14 +114,13 @@ class Donut extends Component {
 class ParticipationWidget extends Component {
   render () {
     const {coverage} = this.props
-    const totalVillages = coverage.num_locations_visited
-    const villagesWithEstimate = coverage.population_estimate.locations.length
-    const population = coverage.population_estimate.population
-    const registered = coverage.population_estimate.registered
+    const totalVillages = coverage.total_visited
+    const villagesWithEstimate = coverage.visited_with_population
+    const population = coverage.population
+    const registered = coverage.registered_with_population
     const percentageScreened = registered
           ? Math.round(registered / population * 10000) / 100 + '%'
           : noneMessage
-
     const donutValue = registered ? registered / population : 0
 
     return <div className='widget__container'>
@@ -181,7 +180,7 @@ class RegisteredWidget extends Component {
           : noneMessage
     const spec = {
       x_accessor: 'date',
-      y_accessor: 'registered',
+      y_accessor: 'registered_total',
       right: 40,
       top: 20
     }

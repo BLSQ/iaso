@@ -86,7 +86,8 @@
       "village": "Kindundu",
       "latitude": "4.3871",
       "longitude": "15.9700",
-      "test_ge": true
+      "test_ge": true,
+      "test_pl_result": "stage1"
     }
   }
 ]

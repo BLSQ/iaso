@@ -1,12 +1,13 @@
 from django.db import models
 
+SOURCE_CHOICES = (
+    ('historic', 'Historic'),
+    ('mobile_backup', 'Mobile backup'),
+    ('pv', 'Pharmacovigilance'),
+)
+
 
 class Case(models.Model):
-    SOURCE_CHOICES = (
-        ('historic', 'Historic'),
-        ('mobile_backup', 'Mobile backup'),
-        ('pv', 'Pharamcovigilance'),
-    )
     source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
@@ -105,6 +106,29 @@ class Case(models.Model):
             ("export_full", "Can export the full dataset as csv"),
             ("view", "Can view data"),
         )
+
+
+class CaseView(models.Model):
+    source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
+
+    document_date = models.DateTimeField(db_index=True, null=True)
+    document_id = models.TextField(db_index=True)
+
+    ZS = models.TextField(db_index=True, null=True)
+    # TODO: Aires de santé acronym is misspelled and should be refactored into AS
+    AS = models.TextField(null=True)
+    village = models.TextField(null=True)
+
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
+
+    screening_result = models.NullBooleanField(null=True)
+    confirmation_result = models.NullBooleanField(null=True)
+    stage_result = models.TextField(null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'cases_case_view'
 
 
 class Location(models.Model):

@@ -110,11 +110,11 @@ export class Microplanning extends Component {
 
           <div key='filter-screening-date' className='filter__container__input'>
             <label htmlFor='screeningdateto' className='filter__container__select__label'>
-              <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and last time visited' />
+              <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and not visited in the last' />
             </label>
             <input type='number' disabled={loading} name='screeningyearto' min='0' value={screeningyearto || 0} onChange={this.screeningDateHandler} className='input--minimised' />
             <label className='filter__container__select__label__after'>
-              <FormattedMessage id='microplanning.filter.years.ago' defaultMessage='years ago' />
+              <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
             </label>
           </div>
 

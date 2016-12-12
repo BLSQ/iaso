@@ -28,6 +28,7 @@ from hat.cases.filters import \
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, 'queries')
 stats_queries = snaql_factory.load_queries('stats.sql')
+microplanning_queries = snaql_factory.load_queries('microplanning.sql')
 
 datasets = {}
 
@@ -290,103 +291,30 @@ def data_by_location(params):
 
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
-    today = date.today()
+    # last expected date is 31st December current year
+    currentYear = date.today().year
 
-    positiveCondition = '''FILTER
-            (WHERE test_maect IS TRUE
-                OR test_ge IS TRUE
-                OR test_pg IS TRUE
-                OR test_ctcwoo IS TRUE
-                -- test_catt_dilution is a text field and currently not included
-                OR test_lymph_node_puncture IS TRUE
-                OR test_sf IS TRUE
-                OR test_lcr IS TRUE)
-    '''
-
-    screeningCondition = '''FILTER
-            (WHERE test_catt IS NOT NULL
-                OR test_rdt IS NOT NULL)
-    '''
-
-    sql_cases = '''
-        SELECT "ZS"
-             , "AZ" as "AS"
-             , village
-             , count(DISTINCT document_id) {screeningFilter} as "screenedPeople"
-             , max(document_date) {screeningFilter} as "lastScreeningDate"
-             , count(DISTINCT document_id) {positiveFilter} as "confirmedCases"
-             , max(document_date) {positiveFilter} as "lastConfirmedCaseDate"
-          FROM cases_case
-         WHERE document_date >= %s AND document_date < %s
-      GROUP BY "ZS", "AZ", village
-        HAVING count(DISTINCT document_id) {positiveFilter} > 0
-           AND max(document_date) {positiveFilter} >= %s
-    '''
-
-    sql_params = [date_from, date_to]
-    if 'caseyearfrom' in params:
-        sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))
-    else:
-        sql_params.append(datetime(today.year, 1, 1))
-
-    if 'screeningyearto' in params:
-        sql_cases = sql_cases + ' AND max(document_date) {screeningFilter} < %s'
-        sql_params.append(datetime(today.year - int(params['screeningyearto']), 12, 31))
-
-    sql_cases = sql_cases.format(
-        screeningFilter=screeningCondition,
-        positiveFilter=positiveCondition
-    )
-
-    sql = '''
-      SELECT a."ZS"
-           , a."AS"
-           , a.village
-           , a.longitude
-           , a.latitude
-           , a.gps_source as "gpsSource"
-
-           , TRIM(BOTH
-                TO_CHAR(a.longitude, '000.00000000')
-                || ':' ||
-                TO_CHAR(a.latitude, '000.00000000')) as id
-           , TRIM(BOTH
-                a."ZS" || ' - ' || a."AS" || ' - ' || a.village) as label
-           , CASE a.village_official
-                WHEN 'YES' THEN 'official'
-                WHEN 'NO'  THEN 'other'
-                WHEN 'NA'  THEN 'unknown'
-              END as type
-
-           , COALESCE(a.population, 0) as population
-           , a.population_year as "populationYear"
-           , a.population_source as "populationSource"
-           , COALESCE(b."screenedPeople", 0) as "screenedPeople"
-           , b."lastScreeningDate"
-           , COALESCE(b."confirmedCases", 0) as "confirmedCases"
-           , b."lastConfirmedCaseDate"
-        FROM cases_location a
-        LEFT OUTER JOIN ({cases}) b
-       USING ("ZS", "AS", village)
-       WHERE a.village_official IN ('YES', 'NO', 'NA')
-    '''
+    sql_context = {
+        'date_from': date_from,
+        'date_to': date_to,
+    }
 
     if 'location' in params:
-        sql = sql + 'AND lower(a."ZS") = %s'
-        sql_params.append(params['location'].lower())
+        sql_context['zones_sante'] = params['location'].lower().split(',')
+    if 'caseyearfrom' in params:
+        yearfrom = currentYear - int(params['caseyearfrom'])
+        sql_context['casedatefrom'] = datetime(yearfrom, 1, 1)
+    if 'screeningyearto' in params and int(params['screeningyearto']) > 0:
+        yearto = currentYear - int(params['screeningyearto']) + 1
+        sql_context['screeningdateto'] = datetime(yearto, 1, 1)
 
-    sql = sql + ' ORDER BY a.longitude, a.latitude'
+    sql = microplanning_queries.data_by_location(**sql_context)
 
-    sql = sql.format(cases=sql_cases)
-
-    result = []
     with connection.cursor() as cursor:
-        cursor.execute(sql, sql_params)
-        columns = [x.name for x in cursor.description]
-        for row in cursor.fetchall():
-            result.append(dict(zip(columns, row)))
-
-    return result
+        cursor.execute(sql)
+        columns = [col[0] for col in cursor.description]
+        # convert the row tuple to dicts to dicts
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
 class DatasetViewSet(viewsets.ViewSet):

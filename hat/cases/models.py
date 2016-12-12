@@ -3,7 +3,7 @@ from django.db import models
 SOURCE_CHOICES = (
     ('historic', 'Historic'),
     ('mobile_backup', 'Mobile backup'),
-    ('pv', 'Pharamcovigilance'),
+    ('pv', 'Pharmacovigilance'),
 )
 
 

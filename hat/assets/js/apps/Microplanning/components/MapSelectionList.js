@@ -70,11 +70,24 @@ const COLUMNS = [
 
 class MapSelectionList extends Component {
   render () {
-    const {data, show, deselect} = this.props
+    const {data, show, deselect, selectByType} = this.props
 
     const sectionTitle = (
       <div className='map__selection__title'>
         <FormattedMessage id='microplanning.selected.title' defaultMessage='Village selection' />
+      </div>
+    )
+
+    const selectActions = (
+      <div className='map__selection__actions'>
+        <a onClick={() => selectByType('highlight')} className='button--tiny button--danger'>
+          <FormattedMessage id='microplanning.selected.select.highlight' defaultMessage='Select all villages with confirmed cases in the indicated period' />
+        </a>
+        {/*
+        <a onClick={() => selectByType('highlight+buffer')} className='button--tiny button--danger'>
+          <FormattedMessage id='microplanning.selected.select.buffer' defaultMessage='Select all high-risk villages around confirmed cases in the indicated period' />
+        </a>
+        */}
       </div>
     )
 
@@ -89,6 +102,7 @@ class MapSelectionList extends Component {
                 <FormattedMessage id='microplanning.selected.empty.explanation' defaultMessage='Start clicking on villages to select them. You can adjust the size of selection buffer zone to include more / fewer villages in your selection' />.
               </span>
             </div>
+            {selectActions}
           </div>
         </div>
       )
@@ -181,7 +195,8 @@ class MapSelectionList extends Component {
 MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
-  deselect: PropTypes.func
+  deselect: PropTypes.func,
+  selectByType: PropTypes.func
 }
 
 export default injectIntl(MapSelectionList)

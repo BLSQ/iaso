@@ -476,6 +476,10 @@ input.widget__filter__numberinput {
   margin-bottom: 1em;
 }
 
+.map__selection__actions {
+  margin: 0.5em 0;
+}
+
 .map__selection__summary--empty {
   @include text--small;
   .text--explanation {
@@ -536,7 +540,7 @@ ul.map__selection__list {
   @include reset-list-style;
   clear: both;
   overflow: auto;
-  max-height: ($map-height - 340);
+  max-height: ($map-height - 400);
 }
 .map__selection__list__item {
   line-height: 1.3;

@@ -10,7 +10,7 @@ import { selectItems, deselectItems } from './selection'
 
 const MESSAGES = defineMessages({
   'location-all': {
-    defaultMessage: '--- all ---',
+    defaultMessage: 'All',
     id: 'microplanning.location.all'
   }
 })

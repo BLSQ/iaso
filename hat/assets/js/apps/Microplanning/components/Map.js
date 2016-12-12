@@ -77,6 +77,7 @@ class Map extends Component {
     this.legendToggleHandler = this.legendToggleHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
     this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
+    this.selectByType = this.selectByType.bind(this)
   }
 
   componentDidMount () {
@@ -149,7 +150,9 @@ class Map extends Component {
           <MapSelectionList
             data={selectedItems}
             show={(item) => this.openPopup(item, item._latlon)}
-            deselect={deselect} />
+            deselect={deselect}
+            selectByType={this.selectByType}
+          />
         </div>
       )
     }
@@ -583,6 +586,17 @@ class Map extends Component {
         deselect(list)
         break
     }
+  }
+
+  selectByType (type) {
+    const {legend, items} = this.state
+    const {select} = this.props
+
+    const highlighted = items
+      .filter((item) => legend[item.type])
+      .filter((item) => item.confirmedCases > 0)
+
+    select(highlighted)
   }
 
   legendToggleHandler (key) {

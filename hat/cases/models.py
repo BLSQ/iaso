@@ -139,6 +139,12 @@ class Location(models.Model):
     village_alt = models.TextField(db_index=True, null=True)
     village_type = models.TextField(null=True)
     village_official = models.TextField(null=True)
+    VILLAGE_OFFICIAL_CHOICES = (
+        ('YES', 'Villages from Z.S.'),
+        ('NO', 'Villages not from Z.S.'),
+        ('OTHER', 'Locations in which people work/study...'),
+        ('NA', 'Villages from satellite (unknown)'),
+    )
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)

@@ -58,38 +58,6 @@ export class Microplanning extends Component {
     const selectedItems = (this.props.selection.selectedItems || [])
     const villages = (data && data.villages || [])
 
-    /*
-    // REMOVE AFTER WORKSHOP
-    const items = villages
-    if (!loading && !error) {
-      const year = new Date().getFullYear() - parseInt(caseyearfrom || 0, 10)
-      if (year < 2016) {
-        const defaultLastConfirmedCaseDate = '2015-12-31'
-        const keys = ['ZS', 'AS', 'village']
-        const {data2015, isEqual, areEqual} = geoData
-        const extra2015 = (!location
-          ? data2015
-          : data2015.filter((item2015) => isEqual(item2015.ZS, location)))
-
-        // add to fetched data 2015 entries
-        if (extra2015.length) {
-          items = villages.map((itemNo2015) => {
-            const item2015 = extra2015.find((entry) => areEqual(itemNo2015, entry, keys))
-            if (item2015) {
-              const confirmedCases = itemNo2015.confirmedCases + item2015.confirmedCases
-              const lastConfirmedCaseDate = (itemNo2015.lastConfirmedCaseDate > defaultLastConfirmedCaseDate)
-                ? itemNo2015.lastConfirmedCaseDate
-                : defaultLastConfirmedCaseDate
-              return {...itemNo2015, confirmedCases, lastConfirmedCaseDate}
-            }
-            return itemNo2015
-          })
-        }
-      }
-    }
-    // !REMOVE AFTER WORKSHOP
-    */
-
     return (
       <div>
         <div className='filter__container filter__container--reduced'>

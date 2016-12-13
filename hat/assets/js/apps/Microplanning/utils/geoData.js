@@ -4,7 +4,6 @@
 
 import * as topojson from 'topojson'
 import shapes from '../../../../json/shapes.json'
-import data2015 from '../../../../json/PNLTHA-2015.json'
 import {capitalize} from '../../../utils'
 
 const clean = (word) => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''))
@@ -60,6 +59,5 @@ export default {
   provinces,
   zones,
   areas,
-  locations,
-  data2015
+  locations
 }

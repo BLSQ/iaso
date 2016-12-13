@@ -111,10 +111,10 @@ class MapSelectionList extends Component {
                 <FormattedMessage id='microplanning.selected.filter.buffer.pre' defaultMessage='Select ALL villages around' />
               </span>
               <input type='number' className='small' min='0' name='buffer-value' value={bufferSize} onChange={this.bufferChangeHandler} />
-              <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selected.filter.buffer.post' defaultMessage='km of confirmed cases' />
+              <span>
+                <FormattedMessage id='microplanning.selected.filter.buffer.post' defaultMessage='km of confirmed cases.' />
               </span>
-              <a onClick={() => selectHighlightWithBuffer(1000 * bufferSize)} className='button--tiny button--danger'>
+              <a onClick={() => selectHighlightWithBuffer(1000 * bufferSize)} className='button--reduced'>
                 <FormattedMessage id='microplanning.selected.filter.select' defaultMessage='Select' />
               </a>
             </div>

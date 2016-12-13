@@ -477,10 +477,23 @@ input.widget__filter__numberinput {
 }
 
 .map__selection__actions {
-  margin: 0.5em 0;
+  margin: 1em 0;
+  padding: 1em 0;
+  border-top: 1px solid $light-gray;
+  border-bottom: 1px solid $light-gray;
+  overflow: hidden;
   font-size: $font-size-s;
+  input.small {
+    width: 26px;
+    font-weight: bold;
+    padding: 0.45em;
+  }
   input {
     display: inline-block;
+    margin: .5em .5em .5em 0;
+  }
+  .button--reduced {
+    margin-top: .25em;
   }
 }
 
@@ -520,6 +533,9 @@ input.widget__filter__numberinput {
   margin-top: $padding-unit/2;
   @include text--x-small;
   font-style: italic;
+}
+.map__text--select {
+  display: block;
 }
 
 /* list of villages in selection */

@@ -2,8 +2,9 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl'
-import { createUrl } from '../../utils/fetchData'
+import Select from 'react-select'
 
+import { createUrl } from '../../utils/fetchData'
 import geoData from './utils/geoData'
 import { Map } from './components'
 import { selectItems, deselectItems } from './selection'
@@ -37,8 +38,7 @@ export class Microplanning extends Component {
     this.props.dispatch(push(url))
   }
 
-  locationHandler (event) {
-    const location = event.target.value
+  locationHandler (location) {
     const url = createUrl({...this.props.params, location})
     this.props.dispatch(push(url))
   }
@@ -118,16 +118,22 @@ export class Microplanning extends Component {
             </label>
           </div>
 
-          <div key='filter-location' className='filter__container__select'>
+          <div key='filter-location' className='filter__container__input'>
             <label htmlFor='location' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zone de Sante' />
             </label>
-            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
-              <option key='all' value=''>
-                {formatMessage(MESSAGES['location-all'])}
-              </option>
-              {geoData.locations.map((value) => (<option key={value} value={value}>{value}</option>))}
-            </select>
+            <span className='filter__container__multiselect'>
+              <Select
+                multi
+                simpleValue
+                autosize={false}
+                name='location'
+                value={location || ''}
+                placeholder={formatMessage(MESSAGES['location-all'])}
+                options={geoData.locations.map((value) => ({label: value, value}))}
+                onChange={this.locationHandler}
+              />
+            </span>
           </div>
         </div>
 

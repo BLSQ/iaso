@@ -149,3 +149,20 @@ input[type="number"].input--minimised {
   @include filter-select-positioning;
   @include filter-select-style;
 }
+
+
+.filter__container__multiselect {
+  .Select {
+    max-width: 300px;
+    display: inline-block;
+    font-size: $font-size-s;
+    vertical-align: bottom;
+  }
+  .Select-menu-outer {
+    max-height: 150px;
+  }
+  .Select-menu {
+    max-height: 148px;
+    overflow-y: auto;
+  }
+}

@@ -86,11 +86,11 @@ export class Microplanning extends Component {
             </label>
           </div>
 
-          <div key='filter-location' className='filter__container__input'>
+          <div key='filter-location' className='filter__container__multiselect'>
             <label htmlFor='location' className='filter__container__select__label'>
               <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zone de Sante' />
             </label>
-            <span className='filter__container__multiselect'>
+            <span>
               <Select
                 multi
                 simpleValue

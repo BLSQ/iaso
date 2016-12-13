@@ -77,7 +77,7 @@ class Map extends Component {
     this.legendToggleHandler = this.legendToggleHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
     this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
-    this.selectByType = this.selectByType.bind(this)
+    this.selectHighlightWithBuffer = this.selectHighlightWithBuffer.bind(this)
   }
 
   componentDidMount () {
@@ -151,7 +151,7 @@ class Map extends Component {
             data={selectedItems}
             show={(item) => this.openPopup(item, item._latlon)}
             deselect={deselect}
-            selectByType={this.selectByType}
+            selectHighlightWithBuffer={this.selectHighlightWithBuffer}
           />
         </div>
       )
@@ -454,8 +454,8 @@ class Map extends Component {
     this.renderSelectionControl()
 
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
-      // in metres (buffer size = diameter = 2 * radius)
-      marker.setRadius(bufferSize * 500)
+      // in metres (buffer size = radius)
+      marker.setRadius(bufferSize * 1000)
       this.state.map.addLayer(marker)
     } else {
       marker.setRadius(0)
@@ -588,15 +588,58 @@ class Map extends Component {
     }
   }
 
-  selectByType (type) {
-    const {legend, items} = this.state
+  selectHighlightWithBuffer (bufferSize) {
+    const {legend, items, map} = this.state
     const {select} = this.props
 
-    const highlighted = items
-      .filter((item) => legend[item.type])
-      .filter((item) => item.confirmedCases > 0)
+    const plotted = items.filter((item) => legend[item.type])
+    const length = plotted.length
 
-    select(highlighted)
+    if (bufferSize === 0) {
+      select(plotted.filter((item) => item.confirmedCases > 0))
+      return
+    }
+
+    let inBuffer = []
+    const bufferCircle = L.circle([0, 0], bufferSize)
+    map.addLayer(bufferCircle)
+
+    for (let i = 0; i < length; i++) {
+      const itemA = plotted[i]
+      if (itemA.confirmedCases > 0) {
+        inBuffer.push(itemA)
+      }
+
+      // move and resize buffer circle
+      const radius = itemA._radius + bufferSize
+      bufferCircle._latlng = itemA._latlon
+      bufferCircle.setRadius(radius)
+      bufferCircle.redraw()
+
+      const east = bufferCircle.getBounds().getEast()
+
+      for (let j = i + 1; j < length; j++) {
+        const itemB = plotted[j]
+
+        // if the `longitude` is easter than the current position
+        // then exit the loop
+        if (itemB.longitude > east) break // exit the loop
+        if (!itemA.confirmedCases && !itemB.confirmedCases) continue // ignore and continue
+
+        // compare distance
+        const distance = itemB._latlon.distanceTo(itemA._latlon)
+        if (distance <= (radius + itemB._radius)) {
+          if (itemA.confirmedCases) {
+            inBuffer.push(itemB)
+          } else {
+            inBuffer.push(itemA)
+          }
+        }
+      }
+    }
+    map.removeLayer(bufferCircle)
+
+    select(inBuffer)
   }
 
   legendToggleHandler (key) {

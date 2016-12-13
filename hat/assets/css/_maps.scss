@@ -478,6 +478,10 @@ input.widget__filter__numberinput {
 
 .map__selection__actions {
   margin: 0.5em 0;
+  font-size: $font-size-s;
+  input {
+    display: inline-block;
+  }
 }
 
 .map__selection__summary--empty {

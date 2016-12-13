@@ -69,8 +69,21 @@ const COLUMNS = [
 ]
 
 class MapSelectionList extends Component {
+  constructor (props) {
+    super(props)
+
+    this.state = { bufferSize: 0 }
+    this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
+  }
+
+  bufferChangeHandler (event) {
+    let bufferSize = parseInt(event.target.value, 10)
+    if (bufferSize < 0) bufferSize = 0
+    this.setState({bufferSize})
+  }
+
   render () {
-    const {data, show, deselect, selectByType} = this.props
+    const {data, show, deselect} = this.props
 
     const sectionTitle = (
       <div className='map__selection__title'>
@@ -78,20 +91,10 @@ class MapSelectionList extends Component {
       </div>
     )
 
-    const selectActions = (
-      <div className='map__selection__actions'>
-        <a onClick={() => selectByType('highlight')} className='button--tiny button--danger'>
-          <FormattedMessage id='microplanning.selected.select.highlight' defaultMessage='Select all villages with confirmed cases in the indicated period' />
-        </a>
-        {/*
-        <a onClick={() => selectByType('highlight+buffer')} className='button--tiny button--danger'>
-          <FormattedMessage id='microplanning.selected.select.buffer' defaultMessage='Select all high-risk villages around confirmed cases in the indicated period' />
-        </a>
-        */}
-      </div>
-    )
-
     if (!data || data.length === 0) {
+      const {bufferSize} = this.state
+      const {selectHighlightWithBuffer} = this.props
+
       return (
         <div className='map__selection'>
           <div className='map__selection__content'>
@@ -102,7 +105,19 @@ class MapSelectionList extends Component {
                 <FormattedMessage id='microplanning.selected.empty.explanation' defaultMessage='Start clicking on villages to select them. You can adjust the size of selection buffer zone to include more / fewer villages in your selection' />.
               </span>
             </div>
-            {selectActions}
+
+            <div className='map__selection__actions'>
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selected.filter.buffer.pre' defaultMessage='Select ALL villages around' />
+              </span>
+              <input type='number' className='small' min='0' name='buffer-value' value={bufferSize} onChange={this.bufferChangeHandler} />
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selected.filter.buffer.post' defaultMessage='km of confirmed cases' />
+              </span>
+              <a onClick={() => selectHighlightWithBuffer(1000 * bufferSize)} className='button--tiny button--danger'>
+                <FormattedMessage id='microplanning.selected.filter.select' defaultMessage='Select' />
+              </a>
+            </div>
           </div>
         </div>
       )
@@ -196,7 +211,7 @@ MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
   deselect: PropTypes.func,
-  selectByType: PropTypes.func
+  selectHighlightWithBuffer: PropTypes.func
 }
 
 export default injectIntl(MapSelectionList)

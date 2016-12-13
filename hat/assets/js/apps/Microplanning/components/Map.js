@@ -27,7 +27,7 @@ const RADIUS = {
   official: 350,
   other: 150,
   unknown: 150,
-  highlight: 80, // amount to increase if there are cases
+  highlight: 80, // amount to increase if there were cases
   buffer: 1 // default buffer value (1km)
 }
 
@@ -53,6 +53,8 @@ class Map extends Component {
       map: null,
       // where to plot the selected markers
       selectedGroup: new L.FeatureGroup(),
+      // where to plot the markers shadows
+      shadowsGroup: new L.FeatureGroup(),
       // where to plot ALL boundaries; in different groups based on type
       layersGroups: {
         provinces: new L.FeatureGroup(),
@@ -285,8 +287,9 @@ class Map extends Component {
       }
     }
 
-    // include selected items layer
+    // include selected&shadows items layers
     map.addLayer(this.state.selectedGroup)
+    map.addLayer(this.state.shadowsGroup)
 
     const shapeOptions = (type) => ({
       pane: 'custom-pane-layers',
@@ -380,7 +383,9 @@ class Map extends Component {
   }
 
   updateItems (force) {
-    const { map, markersGroups, items, legend } = this.state
+    const { map, shadowsGroup, markersGroups, items, legend } = this.state
+
+    shadowsGroup.clearLayers()
 
     // plot indicated villages (active in legend)
     Object.keys(legend).forEach((key) => {
@@ -418,7 +423,7 @@ class Map extends Component {
                 }
                 const markerShadow = L.circle(item._latlon, shadowOptions)
                 this.addLayerEvents(markerShadow, item)
-                layer.addLayer(markerShadow)
+                shadowsGroup.addLayer(markerShadow)
               }
             })
         }
@@ -464,12 +469,24 @@ class Map extends Component {
   }
 
   fitToBounds () {
-    const {map, selectedGroup, markersGroups, defaultBounds} = this.state
+    const {map, selectedGroup, shadowsGroup, markersGroups, defaultBounds} = this.state
     const layer = markersGroups.official
+
+    //
+    // relevant order:
+    //
+    // 1. selected markers
+    // 2. highlighted shadows
+    // 3. official villages
+    // 4. default bounds (provinces shape)
+    // 5. default center and zoom
+    //
 
     setTimeout(() => {
       if (selectedGroup.getLayers().length) {
         map.fitBounds(selectedGroup.getBounds(), { maxZoom: 13 })
+      } else if (shadowsGroup.getLayers().length) {
+        map.fitBounds(shadowsGroup.getBounds())
       } else if (map.hasLayer(layer) && layer.getLayers().length) {
         map.fitBounds(layer.getBounds())
       } else if (defaultBounds) {

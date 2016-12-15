@@ -45,6 +45,21 @@ export const DataTable = ({
 }) => {
   // Minimum one day out, otherwise we'll get more participants screened per day than we actually screened
   var daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
+  let dataCollectionPeriod = (meta.enddate && meta.startdate)
+    ? (
+      <span>
+        <FormattedDate value={new Date(meta.startdate)} />
+        &nbsp;&mdash;&nbsp;
+        <FormattedDate value={new Date(meta.enddate)} />
+      </span>
+    )
+    : (
+      <span>
+        <FormattedMessage id='monthlyreport.label.unknown.date' defaultMessage='Unknown date' />
+        &nbsp;&mdash;&nbsp;
+        <FormattedMessage id='monthlyreport.label.unknown.date' defaultMessage='Unknown date' />
+      </span>
+    )
 
   return (
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
@@ -78,13 +93,7 @@ export const DataTable = ({
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.date_range' defaultMessage='Data collection period' />}
             definition={<FormattedMessage id='monthlyreport.items.date_range.definition' defaultMessage='Taken from date of first entry and date of last entry' />}
-            value={
-              <span>
-                <FormattedDate value={new Date(meta.startdate)} />
-                &nbsp;&mdash;&nbsp;
-                <FormattedDate value={new Date(meta.enddate)} />
-              </span>
-            }
+            value={dataCollectionPeriod}
             />
 
           <div className='widget__content list__item--graph' data-qa='monthly-report-data-loaded'>

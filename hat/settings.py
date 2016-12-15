@@ -214,7 +214,6 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
 
 # RQ
 
-# QUEUES = ['default']
 RQ_QUEUES = {
     'default': {
         'HOST': REDIS_HOST,

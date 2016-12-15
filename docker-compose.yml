@@ -88,7 +88,7 @@ services:
       - hat
     links: *hat_links
     environment: *hat_environment
-    command: start_rq
+    command: start_dev_rq
 
   # the jupyter server
   jupyter:

@@ -19,10 +19,6 @@ SHOW_DEBUG_TOOLBAR = os.environ.get("SHOW_DEBUG_TOOLBAR", '').lower() == 'true'
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
@@ -92,6 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
+    'django_rq',
     'rest_framework',
     'hat.rq',
     'hat.couchdb',
@@ -141,22 +138,26 @@ WSGI_APPLICATION = 'hat.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+
+DB_NAME = os.environ.get('RDS_DB_NAME', 'postgres')
+DB_USERNAME = os.environ.get('RDS_USERNAME', 'postgres')
+DB_PASSWORD = os.environ.get('RDS_PASSWORD', None)
+DB_HOST = os.environ.get('RDS_HOSTNAME', 'db')
+DB_PORT = os.environ.get('RDS_PORT', 5432)
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('RDS_DB_NAME', 'postgres'),
-        'USER': os.environ.get('RDS_USERNAME', 'postgres'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD', None),
-        'HOST': os.environ.get('RDS_HOSTNAME', 'db'),
-        'PORT': os.environ.get('RDS_PORT', 5432),
+        'NAME': DB_NAME,
+        'USER': DB_USERNAME,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
 
 
 # Password validation
-# https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -175,7 +176,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 # switch webpack.dev and webpack.prod as well if changing here
 LANGUAGE_CODE = 'fr'
@@ -214,7 +214,17 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
 
 # RQ
 
-QUEUES = ['default']
+# QUEUES = ['default']
+RQ_QUEUES = {
+    'default': {
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DB,
+        'PASSWORD': REDIS_PASSWORD,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}
+RQ_SHOW_ADMIN_LINK = True
 
 
 # Files

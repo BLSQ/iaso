@@ -4,6 +4,7 @@ psycopg2==2.6.2
 requests==2.12.3
 flake8==3.2.1
 rq==0.7.0
+django-rq==0.9.4
 redis==2.10.5
 jupyter==1.0.0
 pandas==0.19.1

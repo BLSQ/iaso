@@ -23,4 +23,5 @@ def extend_with_default(validator_class):
         validator_class, {"properties": set_defaults},
     )
 
+
 DefaultValidator = extend_with_default(Draft4Validator)

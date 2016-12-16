@@ -14,7 +14,7 @@ def import_helper(orgname, filename, store=False):
     ''' Helper functions to bail on import errors '''
     stats = import_cases_file(orgname, filename, store=store)
     if len(stats['errors']) > 0:
-        raise stats['errors'][0]
+        raise Exception(stats['errors'][0])
     return stats
 
 

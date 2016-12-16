@@ -4,10 +4,16 @@ from subprocess import run, PIPE, CalledProcessError
 from django.conf import settings
 
 
-def run_cmd(cmd: List[str]) -> str:
+def run_cmd(cmd: List[str], **kwargs) -> str:
     '''Helper function to run an external command.'''
+    args = {
+        'stdout': PIPE,
+        'stderr': PIPE,
+        'check': True,
+        **kwargs
+    }
     try:
-        r = run(cmd, stdout=PIPE, stderr=PIPE, check=True)
+        r = run(cmd, **args)
     except CalledProcessError as exc:
         msg = exc.stdout.decode() + exc.stderr.decode()
         raise Exception('Subprocess error: ' + msg)

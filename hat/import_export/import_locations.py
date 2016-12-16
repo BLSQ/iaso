@@ -4,7 +4,7 @@ from pandas import DataFrame
 from django.conf import settings
 import hat.couchdb.api as couchdb
 from .load import load_locations_into_db
-from .utils import store_raw_file, capitalize
+from .utils import store_raw_file, capitalize, get_property_by_year
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,15 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
             df_locs['village_type'] = df['VILLAGE_TY']
         elif 'TYPE' in df:
             df_locs['village_type'] = df['TYPE']
+        df_locs['village_official'] = df['LIST_OFF']
+
         df_locs['latitude'] = df['LAT']
         df_locs['longitude'] = df['LON']
-        df_locs['population'] = df['POP_2016'].fillna(df['POP_2015'])
+        df_locs['gps_source'] = df['GPS_SOURCE']
+
+        df_locs['population'] = df.apply(population_value, axis=1)
+        df_locs['population_year'] = df.apply(population_year, axis=1)
+        df_locs['population_source'] = df['POP_SOURCE']
 
         stats['num_with_population'] = len(df_locs[df_locs['population'].notnull()])
 
@@ -70,3 +76,11 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         logger.exception(ex)
 
     return stats
+
+
+def population_value(row) -> str:
+    return get_property_by_year(row, prefix='POP_', returnType='value')
+
+
+def population_year(row) -> str:
+    return get_property_by_year(row, prefix='POP_', returnType='year')

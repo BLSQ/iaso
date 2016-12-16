@@ -122,3 +122,21 @@ def store_raw_file(doc: dict, filename: str, mimetype: str) -> str:
     r = couchdb.post(settings.COUCHDB_DB, json=doc)
     r.raise_for_status()
     return r.json()['id']
+
+
+def get_property_by_year(row, prefix='', returnType='value') -> str:
+    import datetime
+    currentYear = datetime.date.today().year
+    # the first year is `2000` but the `range` method is exclusive
+    firstYear = 1999
+
+    # iterate through the years in reverse order,
+    # last years are more "meaningful" than previous ones
+    for year in range(currentYear, firstYear, -1):
+        key = prefix + str(year)
+        if key in row and pandas.notnull(row[key]):
+            if returnType == 'value':
+                return row[key]
+            else:
+                return year
+    return None

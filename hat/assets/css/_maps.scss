@@ -214,6 +214,15 @@ input.widget__filter__numberinput {
   }
 }
 
+.map__control__tooltip:not(:empty) {
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid $gray;
+  box-shadow: 0 0 10px rgba(black, 0.2);
+  vertical-align: middle;
+  padding: 0.5em 1em;
+}
+
 /* common styles for map controls */
 [class*="map__control__button"] {
   background-color: white;
@@ -409,23 +418,19 @@ input.widget__filter__numberinput {
 }
 
 .leaflet-popup-content {
-  margin: 44px 20px 30px 20px;
+  margin: 10px 20px 30px 20px;
 }
 
-.leaflet-container a.leaflet-popup-close-button {
+.popup-close-button {
   color: $bright-blue;
-  right: auto;
-  top: 10px;
-  left: 20px;
-  &:after {
-    content: 'fermer';
-    font-family: $body-font-family;
-    font-size: 11px;
-    text-transform: uppercase;
-    margin-left: 3px;
-  }
+  font-family: $body-font-family;
+  font-size: $font-size-xs;
+  margin-bottom: 14px;
+  margin-left: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
 }
-.leaflet-container a.leaflet-popup-close-button:hover {
+.popup-close-button:hover {
   color: $bright-navy;
 }
 
@@ -471,6 +476,27 @@ input.widget__filter__numberinput {
   margin-bottom: 1em;
 }
 
+.map__selection__actions {
+  margin: 1em 0;
+  padding: 1em 0;
+  border-top: 1px solid $light-gray;
+  border-bottom: 1px solid $light-gray;
+  overflow: hidden;
+  font-size: $font-size-s;
+  input.small {
+    width: 26px;
+    font-weight: bold;
+    padding: 0.45em;
+  }
+  input {
+    display: inline-block;
+    margin: .5em .5em .5em 0;
+  }
+  .button--reduced {
+    margin-top: .25em;
+  }
+}
+
 .map__selection__summary--empty {
   @include text--small;
   .text--explanation {
@@ -508,6 +534,9 @@ input.widget__filter__numberinput {
   @include text--x-small;
   font-style: italic;
 }
+.map__text--select {
+  display: block;
+}
 
 /* list of villages in selection */
 
@@ -531,7 +560,7 @@ ul.map__selection__list {
   @include reset-list-style;
   clear: both;
   overflow: auto;
-  max-height: ($map-height - 340);
+  max-height: ($map-height - 400);
 }
 .map__selection__list__item {
   line-height: 1.3;
@@ -551,29 +580,30 @@ ul.map__selection__list {
 
 /* boundaries */
 
-@mixin layer {
-  fill-opacity: 0.5;
-  stroke-dasharray: 3,3;
+@mixin layer($stroke-color: $mid-gray, $stroke-width: 3) {
+  fill: transparent;
+  fill-opacity: 0;
+  stroke-dasharray: 1,0;
   stroke-opacity: 1;
-  stroke-width: 1;
+
+  stroke: $stroke-color;
+  stroke-width: $stroke-width;
 
   &:hover {
-    fill-opacity: 0.7;
-    stroke-dasharray: 1,0;
-    stroke-width: 2;
+    stroke: darken($stroke-color, 10%);
+    stroke-width: ($stroke-width+1);
   }
 }
 
 path.map-layer {
-  @include layer;
-
-  &.transparent {
-    fill: transparent;
-    stroke: $mid-gray;
+  &.province {
+    @include layer(#935116, 4);
   }
-  &.highlight {
-    fill: transparent;
-    stroke: $highlight;
+  &.zone {
+    @include layer(#CA6F1E, 2);
+  }
+  &.area {
+    @include layer(#F0B27A, 1);
   }
 }
 

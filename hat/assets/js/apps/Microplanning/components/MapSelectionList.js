@@ -1,9 +1,12 @@
 import React, {Component, PropTypes} from 'react'
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 import ExportCSVButton from '../../../components/export-csv-button'
-import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
+  'export-province': {
+    id: 'microplanning.export.province',
+    defaultMessage: 'Province'
+  },
   'export-zone': {
     id: 'microplanning.export.zone',
     defaultMessage: 'Zone de Sante'
@@ -18,7 +21,7 @@ const MESSAGES = defineMessages({
   },
   'export-type': {
     id: 'microplanning.export.type',
-    defaultMessage: 'Official?'
+    defaultMessage: 'Classification'
   },
   'export-latitude': {
     id: 'microplanning.export.latitude',
@@ -51,20 +54,34 @@ const MESSAGES = defineMessages({
 })
 
 const COLUMNS = [
-  { message: 'export-zone', key: 'zone' },
-  { message: 'export-area', key: 'area' },
+  { message: 'export-province', key: 'province' },
+  { message: 'export-zone', key: 'ZS' },
+  { message: 'export-area', key: 'AS' },
   { message: 'export-village', key: 'village' },
-  { message: 'export-type', key: 'official' },
-  { message: 'export-latitude', key: 'lat', type: 'number' },
-  { message: 'export-longitude', key: 'lon', type: 'number' },
+  { message: 'export-type', key: 'type' },
+  { message: 'export-latitude', key: 'latitude', type: 'number' },
+  { message: 'export-longitude', key: 'longitude', type: 'number' },
   { message: 'export-population', key: 'population', type: 'number' },
   { message: 'export-cases', key: 'confirmedCases', type: 'number' },
   { message: 'export-case-date', key: 'lastConfirmedCaseDate', type: 'date' },
-  // { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
+  { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
   { message: 'export-screening-date', key: 'lastScreeningDate', type: 'date' }
 ]
 
 class MapSelectionList extends Component {
+  constructor (props) {
+    super(props)
+
+    this.state = { bufferSize: 0 }
+    this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
+  }
+
+  bufferChangeHandler (event) {
+    let bufferSize = parseInt(event.target.value, 10)
+    if (bufferSize < 0) bufferSize = 0
+    this.setState({bufferSize})
+  }
+
   render () {
     const {data, show, deselect} = this.props
 
@@ -75,6 +92,9 @@ class MapSelectionList extends Component {
     )
 
     if (!data || data.length === 0) {
+      const {bufferSize} = this.state
+      const {selectHighlightWithBuffer} = this.props
+
       return (
         <div className='map__selection'>
           <div className='map__selection__content'>
@@ -84,6 +104,19 @@ class MapSelectionList extends Component {
               <span className='text--explanation'>
                 <FormattedMessage id='microplanning.selected.empty.explanation' defaultMessage='Start clicking on villages to select them. You can adjust the size of selection buffer zone to include more / fewer villages in your selection' />.
               </span>
+            </div>
+
+            <div className='map__selection__actions'>
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selected.filter.buffer.pre' defaultMessage='Select ALL villages around' />
+              </span>
+              <input type='number' className='small' min='0' name='buffer-value' value={bufferSize} onChange={this.bufferChangeHandler} />
+              <span>
+                <FormattedMessage id='microplanning.selected.filter.buffer.post' defaultMessage='km of confirmed cases.' />
+              </span>
+              <a onClick={() => selectHighlightWithBuffer(1000 * bufferSize)} className='button--reduced'>
+                <FormattedMessage id='microplanning.selected.filter.select' defaultMessage='Select' />
+              </a>
             </div>
           </div>
         </div>
@@ -120,11 +153,17 @@ class MapSelectionList extends Component {
             <div className='map__text--warning'>
               <FormattedMessage
                 id='microplanning.selected.population.warning'
-                defaultMessage='Please note: population estimates may not be accurate. '
+                defaultMessage='Please note: population estimates may not be accurate.'
               />
+              &nbsp;
               <FormattedMessage
                 id='microplanning.selected.population.warning1'
-                defaultMessage='Only official villages have population data.'
+                defaultMessage='Only villages from Z.S. have population data.'
+              />
+              <br />
+              <FormattedMessage
+                id='microplanning.selected.population.warning2'
+                defaultMessage='Population data included in shape files curated by UCLA and based on Villages from Z.S.'
               />
             </div>
           </div>
@@ -140,14 +179,17 @@ class MapSelectionList extends Component {
           <ul className='map__selection__list'>
             {data.map((item) => {
               return (
-                <li className='map__selection__list__item' key={item._id}>
+                <li className='map__selection__list__item' key={item.id}>
+                  <span className='remove' onClick={() => deselect([item])}>
+                    <i className='fa fa-close' />
+                  </span>
                   <span className={'view text--' + (item.confirmedCases > 0 ? 'highlight' : item.type)} onClick={() => show(item)}>
                     <i className='fa fa-map-marker' />
                   </span>
                   <span>
-                    {capitalize(item.area)}
+                    {item.AS}
                     {' - '}
-                    {capitalize(item.village)}
+                    {item.village}
                   </span>
                 </li>
               )
@@ -168,7 +210,8 @@ class MapSelectionList extends Component {
 MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
-  deselect: PropTypes.func
+  deselect: PropTypes.func,
+  selectHighlightWithBuffer: PropTypes.func
 }
 
 export default injectIntl(MapSelectionList)

@@ -2,6 +2,7 @@ $filter-container-height: 2rem;
 
 @mixin filter-container-common {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   background: $background-highlight-gray;
   border-bottom: 1px solid $gray;
@@ -12,6 +13,7 @@ $filter-container-height: 2rem;
   padding: $padding-unit*.75 $padding-unit;
   margin: -$padding-unit;
   margin-bottom: $padding-unit;
+  padding-bottom: $padding-unit*.25;
 }
 
 .filter__container--reduced {
@@ -26,15 +28,19 @@ $filter-container-height: 2rem;
   margin-right: $padding-unit/2;
 }
 
-.filter__container__select {
-  $triangle-size: 4px;
+.filter__container__input, .filter__container__multiselect, .filter__container__select {
   position: relative;
   border: 1px solid $light-gray;
   border-radius: 2px;
   margin-right: $padding-unit/2;
+  margin-bottom: $padding-unit/2;
   &:last-of-type {
     margin-right: 0;
   }
+}
+
+.filter__container__select {
+  $triangle-size: 4px;
   &:after {
     position: absolute;
     right: 10px;
@@ -83,16 +89,6 @@ $filter-container-height: 2rem;
   }
 }
 
-.filter__container__input {
-  position: relative;
-  border: 1px solid $light-gray;
-  border-radius: 2px;
-  margin-right: $padding-unit/2;
-  &:last-of-type {
-    margin-right: 0;
-  }
-}
-
 .filter__container__select__label__after {
   background: #F0F4F5;
   border-left: 1px solid $light-gray;
@@ -111,6 +107,44 @@ $filter-container-height: 2rem;
     margin-right: 0.2em;
   }
 }
+
+.filter__container__multiselect {
+  label {
+    border: none;
+  }
+
+  .Select {
+    border-left: 1px solid $light-gray;
+    max-width: 300px;
+    min-width: 200px;
+    display: inline-block;
+    font-size: $font-size-s;
+    vertical-align: bottom;
+  }
+  .Select-control {
+    border: none;
+    height: auto;
+  }
+  .Select-input {
+    height: $filter-container-height;
+    display: inline-block;
+    input {
+      width: 2px;
+    }
+  }
+  .Select-value {
+    color: $blue;
+  }
+  .Select-menu-outer {
+    max-height: 150px;
+    margin: 0 -1px;
+  }
+  .Select-menu {
+    max-height: 148px;
+    overflow-y: auto;
+  }
+}
+
 
 input[type="number"].input--minimised {
   @include text--standard;

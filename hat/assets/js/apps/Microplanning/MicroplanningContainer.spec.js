@@ -44,7 +44,7 @@ describe('MicroplanningContainer Loading Data', () => {
       config: appConfig,
       villages: {},
       selection: selectionInitialState,
-      params: { datefrom: '2000-01-01' },
+      params: { caseyearfrom: '5' },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
@@ -61,7 +61,6 @@ describe('MicroplanningContainer Loading Data', () => {
   })
 
   it('loads data on initialization', function () {
-    this.timeout(60000) // increase timeout -> load JSON files
     renderWithStore(
       reduxStore, <MicroplanningContainer {...defaultProps} />
     )
@@ -69,7 +68,6 @@ describe('MicroplanningContainer Loading Data', () => {
   })
 
   it('loads data when the filter params change', function () {
-    this.timeout(60000) // increase timeout -> load JSON files
     const node = document.createElement('div')
     renderWithStore(
       reduxStore, <MicroplanningContainer {...defaultProps} />, node
@@ -84,7 +82,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        datefrom: '2015-01-01'
+        caseyearfrom: '3'
       }
     }
     renderWithStore(
@@ -98,7 +96,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        datefrom: '2015-01-01'
+        caseyearfrom: '3'
       }
     }
     renderWithStore(

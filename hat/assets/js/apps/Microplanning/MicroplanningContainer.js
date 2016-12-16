@@ -19,8 +19,8 @@ import { fetchUrls } from '../../utils/fetchData'
 // The name is used as the key in the results payload.
 export const urls = [
   {
-    name: 'villagesWithConfirmedCases',
-    url: '/api/datasets/confirmed_by_location/',
+    name: 'villages',
+    url: '/api/datasets/data_by_location/',
     mock: [{
       'area': 'Muwanda-koso',
       'confirmedCases': 1,

@@ -1,122 +1,63 @@
 //
-// build clean lists with areas boundaries and villages
+// build clean lists with provinces, zones and areas boundaries
 //
 
-import L from 'leaflet'
 import * as topojson from 'topojson'
-import zonesTopo from '../../../../json/zones.json'
-import areasTopo from '../../../../json/areas.json'
-import villages from '../../../../json/villages.json'
-import data2015 from '../../../../json/PNLTHA-2015.json'
+import shapes from '../../../../json/shapes.json'
+import {capitalize} from '../../../utils'
 
-// TO BE CHANGED AFTER WORKSHOP
-// const MAP_CENTER = [ -4.4233379, 16.2113064 ]
-// const MAP_ZOOM = 7
-const MAP_CENTER = [-4.001260, 18.171387]
-const MAP_ZOOM = 8
-// !TO BE CHANGED AFTER WORKSHOP
+const clean = (word) => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''))
+const isEqual = (a, b) => (clean(a) === clean(b))
+const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
 
 //
 // Leaflet doesn't support topoJSON format, transform them to geoJSON format.
 //
-const zones = topojson.feature(zonesTopo, zonesTopo.objects.zones)
-const areas = topojson.feature(areasTopo, areasTopo.objects.areas)
-
-// TO BE REMOVED AFTER WORKSHOP: show only PRIORITY zones
-const WORKSHOP = [
-  'BOKORO',
-  'BULUNGU',
-  'KIKONGO',
-  'KIMPUTU',
-  'MOSANGO',
-  'YASA BONGA'
-]
-areas.features = areas.features.filter((item) =>
-  WORKSHOP.indexOf(item.properties.zone.toUpperCase()) > -1)
-// !TO BE REMOVED AFTER WORKSHOP
+const provinces = topojson.feature(shapes, shapes.objects.provinces)
+const zones = topojson.feature(shapes, shapes.objects.zones)
+const areas = topojson.feature(shapes, shapes.objects.areas)
 
 //
-// include new properties based on other ones
+// include basic properties in features
 //
-const locations = villages
-  // TO BE REMOVED AFTER WORKSHOP
-  .filter((item) => WORKSHOP.indexOf(item.zone) > -1)
-  // !TO BE REMOVED AFTER WORKSHOP
-  .map((item) => {
-    // create fake `_id` based on assumed uniqueness location
-    const _id = item.lat.toFixed(8).toString() + ':' + item.lon.toFixed(8).toString()
-    const _latlon = L.latLng(item.lat, item.lon)
-    const _label = item.village // used in tooltip
-
-    // indicate `type` based on `official` and `village` values
-    let type
-    if (item.official === 'YES') {
-      type = 'official'
-    } else if (item.official === 'NO') {
-      type = 'other'
-    } else if (item.village === 'Inconnu') {
-      type = 'unknown'
-    } else {
-      type = '---' // this should never happen
-    }
-
-    return {...item, type, _id, _label, _latlon, isVillage: true}
-  })
-
-//
-// calculate aggregated population, number of villages...
-//
-const aggregated = (item) => {
+const addBasic = (item) => {
   const props = item.properties
-  // create fake `_id`
-  props._id = props.zone + ':' + (props.area || '')
-  props._keys = (props.area ? ['zone', 'area'] : ['zone'])
-  props._label = props.zone + (props.area ? ' - ' + props.area : '')
 
-  const list = locations.filter((entry) => (
-    props._keys.every((key) => entry[key] === props[key])
-  ))
+  // create fake `id` based on health structure divisions
+  props.id = clean(props.NEW_PROV) + ':' + clean(props.ZS) + ':' + clean(props.AS)
 
-  if (list.length) {
-    props.population = list.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
-    props.villagesOfficial = list.filter((village) => (village.type === 'official')).length
-    props.villagesOther = list.filter((village) => (village.type === 'other')).length
-    props.villagesUnknown = list.filter((village) => (village.type === 'unknown')).length
+  props.province = capitalize(props.NEW_PROV)
+  props.formerProvince = capitalize(props.OLD_PROV)
+  props.label = props.province
+  props._keys = ['province']
+
+  if (props.ZS) {
+    props.ZS = capitalize(props.ZS)
+    props.label += ' - ' + props.ZS
+    props._keys = ['ZS']
+
+    if (props.AS) {
+      props.AS = capitalize(props.AS)
+      props.label += ' - ' + props.AS
+      props._keys = ['ZS', 'AS']
+    }
   }
 }
 
-// include aggregated data from villages
-zones.features.forEach(aggregated)
-areas.features.forEach(aggregated)
+provinces.features.forEach(addBasic)
+zones.features.forEach(addBasic)
+areas.features.forEach(addBasic)
 
-//
-// compare if the items share the same "cleaned" values in the indicated `keys`
-//
-// keys: [ 'a', 'b', 'c' ]
-// objA: { a: 'aàa', b: 'bBb', c: 'cçC', d: 'xxx' }
-// objB: { a: 'AaA', b: 'bbb', c: 'ÇÇÇ', f: 'zzz' }
-//
-
-const isEqual = (a, b) => (stripAccents(a) === stripAccents(b))
-const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
-
-// taken from sense-hat-mobile
-const stripAccents = (word) => {
-  return (word || '').toUpperCase()
-    .replace('Ç', 'C')
-    .replace('Û', 'U')
-    .replace(/[ÀÁÂÄ]/, 'A')
-    .replace(/[ÈÉÊ]/, 'E')
-    .replace(/[^A-Z0-9]/g, '')
-}
+let locations = zones.features.map((item) => item.properties.ZS)
+locations.sort()
 
 export default {
   isEqual,
   areEqual,
-  center: MAP_CENTER,
-  zoom: MAP_ZOOM,
+  center: [ -4.4233379, 16.2113064 ],
+  zoom: 7,
+  provinces,
   zones,
   areas,
-  villages: locations, // FIXME: should come from DB
-  data2015
+  locations
 }

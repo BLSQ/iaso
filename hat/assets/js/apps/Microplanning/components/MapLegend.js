@@ -4,15 +4,15 @@ import { defineMessages, FormattedMessage, injectIntl } from 'react-intl'
 const MESSAGES = defineMessages({
   official: {
     id: 'microplanning.legend.official',
-    defaultMessage: 'Official villages'
+    defaultMessage: 'Villages from Z.S.'
   },
   other: {
     id: 'microplanning.legend.other',
-    defaultMessage: 'Non official villages'
+    defaultMessage: 'Villages not from Z.S.'
   },
   unknown: {
     id: 'microplanning.tooltip.unknown',
-    defaultMessage: 'Unknown villages'
+    defaultMessage: 'Villages visible from satellite'
   }
 })
 

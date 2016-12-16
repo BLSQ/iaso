@@ -27,8 +27,8 @@ const RADIUS = {
   official: 350,
   other: 150,
   unknown: 150,
-  highlight: 80, // amount to increase if there are cases
-  buffer: 5 // default buffer value (5km)
+  highlight: 80, // amount to increase if there were cases
+  buffer: 1 // default buffer value (1km)
 }
 
 const SELECTION_MODES = {
@@ -39,13 +39,10 @@ const SELECTION_MODES = {
 
 const MESSAGES = defineMessages({
   'fit-to-bounds': {
-    defaultMessage: 'center to highlighted villages',
+    defaultMessage: 'center to selected villages',
     id: 'microplanning.label.fitToBounds'
   }
 })
-
-const sameVillage = (a, b) => geoData.areEqual(a, b, ['zone', 'area', 'village'])
-const findVillageInList = (list, item) => list.find((entry) => sameVillage(item, entry))
 
 class Map extends Component {
   constructor (props) {
@@ -54,11 +51,18 @@ class Map extends Component {
     this.state = {
       // leaflet map object
       map: null,
-      // where to plot the selected, highlighted and buffer markers
-      highlightGroup: new L.FeatureGroup(),
+      // where to plot the selected markers
       selectedGroup: new L.FeatureGroup(),
+      // where to plot the markers shadows
+      shadowsGroup: new L.FeatureGroup(),
+      // where to plot ALL boundaries; in different groups based on type
+      layersGroups: {
+        provinces: new L.FeatureGroup(),
+        zones: new L.FeatureGroup(),
+        areas: new L.FeatureGroup()
+      },
       // where to plot ALL villages; in different groups based on type
-      markersGroup: {
+      markersGroups: {
         official: new L.FeatureGroup(),
         other: new L.FeatureGroup(),
         unknown: new L.FeatureGroup()
@@ -75,24 +79,26 @@ class Map extends Component {
     this.legendToggleHandler = this.legendToggleHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
     this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
+    this.selectHighlightWithBuffer = this.selectHighlightWithBuffer.bind(this)
   }
 
   componentDidMount () {
     this.state.map = this.createMap()
     this.includeControlsInMap(this.state.map)
     this.includeDefaultLayersInMap(this.state.map)
+
+    this.state.items = this.getItems()
     this.legendToggleHandler('official') // plot official villages
     this.selectionModeChangeHandler(SELECTION_MODES.none) // no selection mode
+
+    this.fitToBounds()
   }
 
   componentDidUpdate (prevProps, prevState) {
     const hasChanged = (prev, curr, key) => (prev[key] !== curr[key])
+    const sameVillage = (a, b) => geoData.areEqual(a, b, ['id', 'confirmedCases'])
     const containSameItems = (prev, curr, key) => {
       if (!hasChanged(prev, curr, key)) return true
-
-      // this is a little tricky because we are only checking the id fields
-      // and not all of them so...
-      // edge case: same villages with different values (ignored!!!)
       const arr1 = prev[key]
       const arr2 = curr[key]
       const length = arr1.length
@@ -105,33 +111,22 @@ class Map extends Component {
       return true
     }
 
-    // to improve performance, save calculated values
-    // and update when needed
-    if (hasChanged(prevState, this.state, 'legend') ||
-      !containSameItems(prevProps, this.props, 'highlightedItems')) {
-      this.state.highlightedItems = this.getHighlightedItems()
-      this.state.plottedItems = this.getPlottedItems()
-    }
-
     this.state.map.whenReady(() => {
-      // only call if legend changed
-      if (hasChanged(prevState, this.state, 'legend')) {
-        this.updateVillages()
+      // only call if legend or items changed
+      if (!containSameItems(prevProps, this.props, 'items')) {
+        this.state.items = this.getItems()
+        this.updateItems(true)
+      } else if (hasChanged(prevState, this.state, 'legend')) {
+        this.updateItems()
       }
 
-      // only call if highlighted changed
-      if (!containSameItems(prevProps, this.props, 'highlightedItems')) {
-        this.state.highlightGroup.clearLayers()
-        this.updateHighlightedItems()
-      }
-
-      // only call if selected changed
+      // only call if the number of selected items changed
       if (!containSameItems(prevProps, this.props, 'selectedItems')) {
         this.state.selectedGroup.clearLayers()
         this.updateSelectedItems()
       }
 
-      // only call if legend changed
+      // only call if selection object changed
       if (hasChanged(prevState, this.state, 'selection')) {
         this.updateSelectionMode()
       }
@@ -157,7 +152,9 @@ class Map extends Component {
           <MapSelectionList
             data={selectedItems}
             show={(item) => this.openPopup(item, item._latlon)}
-            deselect={deselect} />
+            deselect={deselect}
+            selectHighlightWithBuffer={this.selectHighlightWithBuffer}
+          />
         </div>
       )
     }
@@ -214,6 +211,8 @@ class Map extends Component {
     map.createPane('custom-pane-layers')
     map.createPane('custom-pane-shadows')
     map.createPane('custom-pane-markers')
+    map.createPane('custom-pane-highlight')
+    map.createPane('custom-pane-selected')
     map.createPane('custom-pane-buffer')
 
     // show metric scale
@@ -224,28 +223,28 @@ class Map extends Component {
 
   includeControlsInMap (map) {
     // The order in which the controls are added matters
+
     //
     // In TOP-LEFT
     // 1.- selection control
     // 2.- zoom control
     // 3.- fit to bounds control
     // 4.- layers control (so far only for base tiles)
+    //
 
-    const commonOptions = {position: 'topleft'}
+    const topleftOptions = { position: 'topleft' }
 
     // control to `activate selection mode`
-    const selectionControl = L.control(commonOptions)
-    selectionControl.onAdd = (map) => {
-      return L.DomUtil.create('div')
-    }
+    const selectionControl = L.control(topleftOptions)
+    selectionControl.onAdd = (map) => (L.DomUtil.create('div'))
     selectionControl.addTo(map)
     this.state.selection.controlContainer = selectionControl.getContainer()
 
     // zoom control (standard)
-    L.control.zoom(commonOptions).addTo(map)
+    L.control.zoom(topleftOptions).addTo(map)
 
-    // control to `fitToBounds`
-    const fitToBoundsControl = L.control(commonOptions)
+    // control to `fit to bounds`
+    const fitToBoundsControl = L.control(topleftOptions)
     fitToBoundsControl.onAdd = (map) => {
       const div = L.DomUtil.create('div', 'map__control__button')
       this.renderFitToBoundsControl(div)
@@ -258,83 +257,97 @@ class Map extends Component {
     }
     fitToBoundsControl.addTo(map)
 
-    // layer control (standard)
-    L.control.layers(baseLayers, null, commonOptions).addTo(map)
+    // layers control (standard)
+    L.control.layers(baseLayers, null, topleftOptions).addTo(map)
+
+    //
+    // In BOTTOM-RIGHT
+    // 1.- tooltip
+    //
+
+    // control to visualize the layer, marker tooltip
+    const tooltipControl = L.control({ position: 'bottomright' })
+    tooltipControl.onAdd = (map) => (L.DomUtil.create('div', 'map__control__tooltip'))
+    tooltipControl.addTo(map)
+    this.state.tooltipContainer = tooltipControl.getContainer()
 
     return map
   }
 
   includeDefaultLayersInMap (map) {
-    // include dynamic layers (highlight, selected, buffer...)
-    map.addLayer(this.state.highlightGroup)
-    map.addLayer(this.state.selectedGroup)
-
-    const shapeOptions = {
-      pane: 'custom-pane-layers',
-      style: () => ({className: 'map-layer transparent'}),
-      onEachFeature: (feature, layer) => {
-        this.addLayerEvents(layer, feature.properties)
+    const plotOrHideLayer = (minZoom, layer) => {
+      if (map.getZoom() > minZoom) {
+        if (!map.hasLayer(layer)) {
+          map.addLayer(layer)
+        }
+      } else {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer)
+        }
       }
     }
 
-    // plot the ALL zones boundaries
-    map.addLayer(L.geoJson(geoData.zones, shapeOptions))
+    // include selected&shadows items layers
+    map.addLayer(this.state.selectedGroup)
+    map.addLayer(this.state.shadowsGroup)
 
-    // use for the areas
-    const areasGroup = new L.FeatureGroup()
-    areasGroup.addLayer(L.geoJson(geoData.areas, shapeOptions))
-
-    L.DomEvent.on(map, 'zoomend', (event) => {
-      // plot the AREAS if the zoom is greater than 9
-      if (map.getZoom() > 9) {
-        if (!map.hasLayer(areasGroup)) {
-          map.addLayer(areasGroup)
-        }
-      } else {
-        if (map.hasLayer(areasGroup)) {
-          map.removeLayer(areasGroup)
-        }
+    const shapeOptions = (type) => ({
+      pane: 'custom-pane-layers',
+      style: () => ({ className: 'map-layer ' + type }),
+      onEachFeature: (feature, layer) => {
+        this.addLayerEvents(layer, feature.properties)
       }
     })
 
-    // create buffer selection zone around the mouse pointer
+    // plot the ALL boundaries
+    const {provinces, zones, areas} = this.state.layersGroups
+    provinces.addLayer(L.geoJson(geoData.provinces, shapeOptions('province')))
+    zones.addLayer(L.geoJson(geoData.zones, shapeOptions('zone')))
+    areas.addLayer(L.geoJson(geoData.areas, shapeOptions('area')))
+
+    plotOrHideLayer(-1, provinces)
+    L.DomEvent.on(map, 'zoomend', (event) => {
+      plotOrHideLayer(7, zones)
+      plotOrHideLayer(9, areas)
+    })
+
+    this.state.defaultBounds = provinces.getBounds()
+
+    // create buffer selection circle around the mouse pointer
     const bufferMarker = L.circle(map.getCenter(), {
+      className: 'map-marker buffer',
       pane: 'custom-pane-buffer',
-      radius: 0,
-      className: 'map-marker buffer'
+      radius: 0
     })
     this.state.selection.marker = bufferMarker
 
     bufferMarker.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        const {plottedItems} = this.state
+        const {legend, items} = this.state
+        const plotted = items.filter((item) => legend[item.type])
         const bufferRadius = bufferMarker.getRadius()
 
         // find out the points within the buffer zone
-        // TO BE IMPROVED (quadratic)
-        // const inBuffer = plottedItems
-        //   .filter((entry) => (
-        //     event.latlng.distanceTo(entry._latlon) <= (bufferRadius + RADIUS[entry.type])
-        //   ))
-        const length = plottedItems.length
+        const length = plotted.length
         const bounds = bufferMarker.getBounds()
         const west = bounds.getWest()
         const east = bounds.getEast()
 
         let inBuffer = []
         for (let i = 0; i < length; i++) {
-          // the plotted items are ordered by `lon`
+          // the items are ordered by `longitude`
 
-          // compare lon with west and east
-          // if the lat is easter then the current position, exit the loop
-          const entry = plottedItems[i]
-          if (entry.lon < west) continue // ignore and continue
-          if (entry.lon > east) break // exit the loop
+          // compare `longitude` with west and east
+          // if the `longitude` is easter than the current position
+          // then exit the loop
+          const entry = plotted[i]
+          if (entry.longitude < west) continue // ignore and continue
+          if (entry.longitude > east) break // exit the loop
 
           // compare distance
           const distance = event.latlng.distanceTo(entry._latlon)
-          if (distance <= (bufferRadius + RADIUS[entry.type])) {
+          if (distance <= (bufferRadius + entry._radius)) {
             inBuffer.push(entry)
           }
         }
@@ -355,62 +368,71 @@ class Map extends Component {
     return map
   }
 
-  updateVillages () {
-    const { legend } = this.state
+  getItems () {
+    return this.props.items
+      .map((item) => {
+        const _latlon = L.latLng(item.latitude, item.longitude)
+        // take size from village type and increase it if there are cases
+        const _radius = RADIUS[item.type] +
+          ((item.confirmedCases > 0) ? RADIUS.highlight : 0)
+        const _class = ((item.confirmedCases > 0) ? 'highlight' : item.type)
+        const _pane = ((item.confirmedCases > 0) ? 'highlight' : 'markers')
+
+        return {...item, _radius, _class, _pane, _latlon}
+      })
+  }
+
+  updateItems (force) {
+    const { map, shadowsGroup, markersGroups, items, legend } = this.state
+
+    shadowsGroup.clearLayers()
 
     // plot indicated villages (active in legend)
     Object.keys(legend).forEach((key) => {
-      this.plotVillagesByType(key, legend[key])
-    })
-  }
+      const layer = markersGroups[key]
 
-  getHighlightedItems () {
-    const { legend } = this.state
-    return this.props.highlightedItems
-      // reconciled with official list
-      .map((item) => ({...item, ...findVillageInList(geoData.villages, item)}))
-      // remove not reconciled villages (has no `type`) and non active in legend
-      .filter((item) => item.type && legend[item.type])
-  }
-
-  getPlottedItems () {
-    const { highlightedItems, legend } = this.state
-
-    let plotted = geoData.villages
-      // only active types
-      .filter((item) => (legend[item.type]))
-      // merge with highlighted info
-      .map((item) => ({ ...findVillageInList(highlightedItems, item), ...item }))
-
-    // sort by latitude
-    plotted.sort((a, b) => a.lon - b.lon)
-
-    return plotted
-  }
-
-  updateHighlightedItems () {
-    const { highlightGroup, highlightedItems } = this.state
-
-    highlightedItems.forEach((item) => {
-      const radius = RADIUS[item.type] + RADIUS.highlight
-      const options = {
-        pane: 'custom-pane-markers',
-        radius: radius,
-        className: 'map-marker highlight'
+      if (force) {
+        layer.clearLayers()
       }
-      const marker = L.circle(item._latlon, options)
-      this.addLayerEvents(marker, item)
-      highlightGroup.addLayer(marker)
 
-      // the shadow
-      const shadowOptions = {
-        pane: 'custom-pane-shadows',
-        radius: (2 * radius),
-        className: 'map-marker shadow'
+      if (legend[key]) {
+        // include layer
+        if (!map.hasLayer(layer)) map.addLayer(layer)
+
+        // check if the layer has markers
+        if (layer.getLayers().length === 0) {
+          items
+            .filter((item) => item.type === key)
+            .forEach((item, index) => {
+              const options = {
+                className: 'map-marker ' + item._class,
+                pane: 'custom-pane-' + item._pane,
+                radius: item._radius
+              }
+
+              const marker = L.circle(item._latlon, options)
+              this.addLayerEvents(marker, item)
+              layer.addLayer(marker)
+
+              if (item.confirmedCases > 0) {
+                // the shadow
+                const shadowOptions = {
+                  className: 'map-marker shadow',
+                  pane: 'custom-pane-shadows',
+                  radius: (2 * item._radius)
+                }
+                const markerShadow = L.circle(item._latlon, shadowOptions)
+                this.addLayerEvents(markerShadow, item)
+                shadowsGroup.addLayer(markerShadow)
+              }
+            })
+        }
+      } else {
+        // remove layer
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer)
+        }
       }
-      const markerShadow = L.circle(item._latlon, shadowOptions)
-      this.addLayerEvents(markerShadow, item)
-      highlightGroup.addLayer(markerShadow)
     })
   }
 
@@ -419,12 +441,10 @@ class Map extends Component {
     const { selectedItems } = this.props
 
     selectedItems.forEach((item) => {
-      // take size from village type and increase it if there are cases
-      const radius = RADIUS[item.type] + ((item.confirmedCases > 0) ? RADIUS.highlight : 0)
       const options = {
-        pane: 'custom-pane-markers',
-        radius: radius,
-        className: 'map-marker selected'
+        className: 'map-marker selected',
+        pane: 'custom-pane-selected',
+        radius: item._radius
       }
 
       const marker = L.circle(item._latlon, options)
@@ -439,8 +459,8 @@ class Map extends Component {
     this.renderSelectionControl()
 
     if (mode && mode !== SELECTION_MODES.none && bufferSize > 0) {
-      // in metres (buffer size = diameter = 2 * radius)
-      marker.setRadius(bufferSize * 500)
+      // in metres (buffer size = radius)
+      marker.setRadius(bufferSize * 1000)
       this.state.map.addLayer(marker)
     } else {
       marker.setRadius(0)
@@ -449,49 +469,33 @@ class Map extends Component {
   }
 
   fitToBounds () {
-    const {map, highlightGroup} = this.state
+    const {map, selectedGroup, shadowsGroup, markersGroups, defaultBounds} = this.state
+    const layer = markersGroups.official
+
+    //
+    // relevant order:
+    //
+    // 1. selected markers
+    // 2. highlighted shadows
+    // 3. official villages
+    // 4. default bounds (provinces shape)
+    // 5. default center and zoom
+    //
+
     setTimeout(() => {
-      if (highlightGroup.getLayers().length) {
-        map.fitBounds(highlightGroup.getBounds(), { maxZoom: 13 })
+      if (selectedGroup.getLayers().length) {
+        map.fitBounds(selectedGroup.getBounds(), { maxZoom: 13 })
+      } else if (shadowsGroup.getLayers().length) {
+        map.fitBounds(shadowsGroup.getBounds())
+      } else if (map.hasLayer(layer) && layer.getLayers().length) {
+        map.fitBounds(layer.getBounds())
+      } else if (defaultBounds) {
+        map.fitBounds(defaultBounds)
       } else {
         map.setView(geoData.center, geoData.zoom)
       }
       map.invalidateSize()
     }, 1)
-  }
-
-  plotVillagesByType (type, active) {
-    const {map, markersGroup} = this.state
-
-    const layer = markersGroup[type]
-    if (active) {
-      // include layer
-      if (!map.hasLayer(layer)) {
-        map.addLayer(layer)
-
-        // check if the layer has markers
-        if (layer.getLayers().length === 0) {
-          geoData.villages
-            .filter((item) => item.type === type)
-            .forEach((item, index) => {
-              const options = {
-                pane: 'custom-pane-markers',
-                radius: RADIUS[type],
-                className: 'map-marker ' + type
-              }
-
-              const marker = L.circle(item._latlon, options)
-              this.addLayerEvents(marker, item)
-              layer.addLayer(marker)
-            })
-        }
-      }
-    } else {
-      // remove layer
-      if (map.hasLayer(layer)) {
-        map.removeLayer(layer)
-      }
-    }
   }
 
   addLayerEvents (layer, item) {
@@ -505,39 +509,68 @@ class Map extends Component {
       contextmenu: (event) => {
         L.DomEvent.stop(event)
         this.openPopup(item, event.latlng)
+      },
+      mouseover: (event) => {
+        L.DomEvent.stop(event)
+        this.state.tooltipContainer.innerHTML = item.label
+      },
+      mouseout: (event) => {
+        L.DomEvent.stop(event)
+        this.state.tooltipContainer.innerHTML = ''
       }
     })
-    // layer.bindTooltip(item._label, { sticky: true })
   }
 
   openPopup (item, latlng) {
-    const div = L.DomUtil.create('div', 'tooltip')
+    const div = L.DomUtil.create('div')
     let entry = item
 
-    if (!item.isVillage) {
-      // find the higlighted items in shape
-      const inShape = this.state.highlightedItems
-        .filter((entry) => geoData.areEqual(entry, item, item._keys))
-      const sum = (key) => (prev, curr) => (prev + curr[key])
-      const max = (key) => (prev, curr) => (prev >= curr[key] ? prev : curr[key])
+    if (!item.village) {
+      const {items, legend} = this.state
+      const condition = (entry) => geoData.areEqual(item, entry, item._keys)
+      const count = (filter) => (prev, curr) => (prev + (filter(curr) ? 1 : 0))
+      const sum = (key) => (prev, curr) => (prev + (curr[key] || 0))
+      const max = (key) => (prev, curr) => (!curr[key] || prev >= curr[key] ? prev : curr[key])
+
+      // find the items in shape and the plotted ones
+      const inShape = items.filter(condition)
+      const plotted = inShape.filter((entry) => legend[entry.type])
 
       // find out the number of cases and the onset date of the last case
-      const confirmedCases = inShape.reduce(sum('confirmedCases'), 0)
-      const screenedPeople = inShape.reduce(sum('screenedPeople'), 0)
-      const lastConfirmedCaseDate = inShape.reduce(max('lastConfirmedCaseDate'), '')
-      const lastScreeningDate = inShape.reduce(max('lastScreeningDate'), '')
+      const confirmedCases = plotted.reduce(sum('confirmedCases'), 0)
+      const screenedPeople = plotted.reduce(sum('screenedPeople'), 0)
+      const lastConfirmedCaseDate = plotted.reduce(max('lastConfirmedCaseDate'), '')
+      const lastScreeningDate = plotted.reduce(max('lastScreeningDate'), '')
+
+      // find out the population and number of villages by type
+      const population = inShape.reduce(sum('population'), 0)
+      const villagesOfficial = inShape.reduce(count((entry) => (entry.type === 'official')), 0)
+      const villagesOther = inShape.reduce(count((entry) => (entry.type === 'other')), 0)
+      const villagesUnknown = inShape.reduce(count((entry) => (entry.type === 'unknown')), 0)
 
       entry = {
         ...item,
         confirmedCases,
         lastConfirmedCaseDate,
         screenedPeople,
-        lastScreeningDate
+        lastScreeningDate,
+        population,
+        villagesOfficial,
+        villagesOther,
+        villagesUnknown
       }
     }
 
-    ReactDOM.render(this.injectI18n(<MapTooltip item={entry} />), div)
-    this.state.map.openPopup(div, latlng, { minWidth: 200, maxWidth: 500 })
+    ReactDOM.render(this.injectI18n(
+      <div>
+        <div onClick={() => this.state.map.closePopup()} className='popup-close-button'>
+          <i className='fa fa-close' />&nbsp;
+          <FormattedMessage id='microplanning.popup.close' defaultMessage='close' />
+        </div>
+        <MapTooltip item={entry} />
+      </div>
+    ), div)
+    this.state.map.openPopup(div, latlng, { closeButton: false, minWidth: 200, maxWidth: 500 })
   }
 
   renderFitToBoundsControl (container) {
@@ -572,6 +605,60 @@ class Map extends Component {
     }
   }
 
+  selectHighlightWithBuffer (bufferSize) {
+    const {legend, items, map} = this.state
+    const {select} = this.props
+
+    const plotted = items.filter((item) => legend[item.type])
+    const length = plotted.length
+
+    if (bufferSize === 0) {
+      select(plotted.filter((item) => item.confirmedCases > 0))
+      return
+    }
+
+    let inBuffer = []
+    const bufferCircle = L.circle([0, 0], bufferSize)
+    map.addLayer(bufferCircle)
+
+    for (let i = 0; i < length; i++) {
+      const itemA = plotted[i]
+      if (itemA.confirmedCases > 0) {
+        inBuffer.push(itemA)
+      }
+
+      // move and resize buffer circle
+      const radius = itemA._radius + bufferSize
+      bufferCircle._latlng = itemA._latlon
+      bufferCircle.setRadius(radius)
+      bufferCircle.redraw()
+
+      const east = bufferCircle.getBounds().getEast()
+
+      for (let j = i + 1; j < length; j++) {
+        const itemB = plotted[j]
+
+        // if the `longitude` is easter than the current position
+        // then exit the loop
+        if (itemB.longitude > east) break // exit the loop
+        if (!itemA.confirmedCases && !itemB.confirmedCases) continue // ignore and continue
+
+        // compare distance
+        const distance = itemB._latlon.distanceTo(itemA._latlon)
+        if (distance <= (radius + itemB._radius)) {
+          if (itemA.confirmedCases) {
+            inBuffer.push(itemB)
+          } else {
+            inBuffer.push(itemA)
+          }
+        }
+      }
+    }
+    map.removeLayer(bufferCircle)
+
+    select(inBuffer)
+  }
+
   legendToggleHandler (key) {
     const {legend} = this.state
     this.setState({ legend: {...legend, [key]: !legend[key]} })
@@ -601,7 +688,7 @@ class Map extends Component {
 }
 
 Map.propTypes = {
-  highlightedItems: PropTypes.arrayOf(PropTypes.object),
+  items: PropTypes.arrayOf(PropTypes.object),
   selectedItems: PropTypes.arrayOf(PropTypes.object),
   select: PropTypes.func,
   deselect: PropTypes.func,

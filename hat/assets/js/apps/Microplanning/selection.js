@@ -6,9 +6,9 @@ export const selectItems = (items) => ({
   payload: items
 })
 
-export const deselectItems = (ids) => ({
+export const deselectItems = (items) => ({
   type: DESELECT_ITEMS,
-  payload: ids
+  payload: items
 })
 
 export const selectionInitialState = { selectedItems: [] }
@@ -17,7 +17,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
   switch (action.type) {
     case SELECT_ITEMS: {
       let selectedItems = state.selectedItems || []
-      const _find = (list, item) => (list.find((entry) => entry._id === item._id))
+      const _find = (list, item) => (list.find((entry) => entry.id === item.id))
       action.payload.forEach((item) => {
         if (!_find(selectedItems, item)) {
           selectedItems = [item, ...selectedItems]
@@ -33,8 +33,8 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
       }
 
       const selectedItems = state.selectedItems || []
-      const ids = action.payload.map((item) => item._id)
-      const condition = (entry) => (ids.indexOf(entry._id) === -1)
+      const ids = action.payload.map((item) => item.id)
+      const condition = (entry) => (ids.indexOf(entry.id) === -1)
       return {...state, selectedItems: selectedItems.filter(condition)}
     }
 

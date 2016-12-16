@@ -36,7 +36,10 @@ class ExportCSVButton extends Component {
     }
 
     if (data && data.length) {
-      const blob = new window.Blob([toCsv(data)], { type: 'text/csv' })
+      const blob = new window.Blob([toCsv(data)], {
+        encoding: 'UTF-8',
+        type: 'text/csv;charset=UTF-8'
+      })
       const blobUrl = window.URL.createObjectURL(blob)
 
       return (

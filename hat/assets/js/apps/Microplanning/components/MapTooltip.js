@@ -9,11 +9,19 @@ import {
 import {capitalize} from '../../../utils'
 
 const MESSAGES = defineMessages({
-  zone: {
-    id: 'microplanning.tooltip.zone',
-    defaultMessage: 'Zonde de Sante'
+  province: {
+    id: 'microplanning.tooltip.province',
+    defaultMessage: 'Province'
   },
-  area: {
+  formerProvince: {
+    id: 'microplanning.tooltip.province.former',
+    defaultMessage: 'Former province'
+  },
+  ZS: {
+    id: 'microplanning.tooltip.zone',
+    defaultMessage: 'Zone de Sante'
+  },
+  AS: {
     id: 'microplanning.tooltip.area',
     defaultMessage: 'Aire de Sante'
   },
@@ -23,33 +31,46 @@ const MESSAGES = defineMessages({
   },
   villagesOfficial: {
     id: 'microplanning.tooltip.villages.official',
-    defaultMessage: 'Villages'
+    defaultMessage: 'Villages Z.S.'
   },
   villagesOther: {
     id: 'microplanning.tooltip.villages.other',
-    defaultMessage: 'Non official'
+    defaultMessage: 'Villages non-Z.S.'
   },
   villagesUnknown: {
     id: 'microplanning.tooltip.villages.unknown',
-    defaultMessage: 'Unknown'
+    defaultMessage: 'Villages satellite'
   },
   type: {
     id: 'microplanning.tooltip.type',
     defaultMessage: 'Classification'
   },
-  lat: {
+  latitude: {
     id: 'microplanning.tooltip.latitude',
     defaultMessage: 'Latitude'
   },
-  lon: {
+  longitude: {
     id: 'microplanning.tooltip.longitude',
     defaultMessage: 'Longitude'
+  },
+  gpsSource: {
+    id: 'microplanning.tooltip.gps.source',
+    defaultMessage: 'GPS source'
   },
 
   population: {
     id: 'microplanning.tooltip.population',
     defaultMessage: 'Population'
   },
+  populationSource: {
+    id: 'microplanning.tooltip.population.source',
+    defaultMessage: 'Population source'
+  },
+  populationYear: {
+    id: 'microplanning.tooltip.population.year',
+    defaultMessage: 'Population year'
+  },
+
   confirmedCases: {
     id: 'microplanning.tooltip.cases',
     defaultMessage: '# Confirmed Cases'
@@ -70,32 +91,37 @@ const MESSAGES = defineMessages({
   // type values
   official: {
     id: 'microplanning.tooltip.village.type.official',
-    defaultMessage: 'Official'
+    defaultMessage: 'from Z.S.'
   },
   other: {
     id: 'microplanning.tooltip.village.type.other',
-    defaultMessage: 'Non official'
+    defaultMessage: 'not from Z.S.'
   },
   unknown: {
     id: 'microplanning.tooltip.village.type.unknown',
-    defaultMessage: 'Unknown'
+    defaultMessage: 'visible from satellite'
   }
 })
 
 const ROWS = [
-  { key: 'zone', type: 'capitalize' },
-  { key: 'area', type: 'capitalize' },
+  { key: 'province' },
+  { key: 'formerProvince' },
+  { key: 'ZS' },
+  { key: 'AS' },
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
-  { key: 'village', type: 'capitalize' },
+  { key: 'village' },
   { key: 'type', type: 'message' },
-  { key: 'lat', type: 'coordinates' },
-  { key: 'lon', type: 'coordinates' },
+  { key: 'latitude', type: 'coordinates' },
+  { key: 'longitude', type: 'coordinates' },
+  { key: 'gpsSource' },
   { key: 'population', type: 'integer' },
+  { key: 'populationYear' },
+  { key: 'populationSource' },
   { key: 'confirmedCases', type: 'integer' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
-  // { key: 'screenedPeople', type: 'integer' },
+  { key: 'screenedPeople', type: 'integer' },
   { key: 'lastScreeningDate', type: 'date' }
 ]
 
@@ -104,7 +130,7 @@ class MapTooltip extends Component {
     const {item} = this.props
 
     return (
-      <div key={item._id} className='map__tooltip'>
+      <div key={item.id} className='map__tooltip'>
         {
           ROWS
             .filter((row) => item[row.key] && item[row.key] !== '')

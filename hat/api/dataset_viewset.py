@@ -28,6 +28,7 @@ from hat.cases.filters import \
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, 'queries')
 stats_queries = snaql_factory.load_queries('stats.sql')
+microplanning_queries = snaql_factory.load_queries('microplanning.sql')
 
 datasets = {}
 
@@ -278,96 +279,42 @@ def cases_over_time(params):
         'datefrom': {'type': 'string'},
         'dateto': {'type': 'string'},
         'location': {'type': 'string'},
-        'source': {'type': 'string'},
         'caseyearfrom': {'type': 'string'},
         'screeningyearto': {'type': 'string'},
     }
 })
-def confirmed_by_location(params):
+def data_by_location(params):
+    '''
+    View to list and retrieve the official list of villages
+    with their meaningful info like confirmed cases, screened people...
+    '''
+
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
+    # last expected date is 31st December current year
+    currentYear = date.today().year
 
-    positiveCondition = '''FILTER
-            (WHERE test_maect IS TRUE
-                OR test_ge IS TRUE
-                OR test_pg IS TRUE
-                OR test_ctcwoo IS TRUE
-                -- test_catt_dilution is a text field and currently not included
-                OR test_lymph_node_puncture IS TRUE
-                OR test_sf IS TRUE
-                OR test_lcr IS TRUE)
-    '''
+    sql_context = {
+        'date_from': date_from,
+        'date_to': date_to,
+    }
 
-    screeningCondition = '''FILTER
-            (WHERE test_catt IS NOT NULL
-                OR test_rdt IS NOT NULL)
-    '''
-
-    sql = '''
-        SELECT "ZS" as zone
-             , "AZ" as area
-             , village
-             , count(DISTINCT document_id) {screeningFilter} as "screenedPeople"
-             , max(document_date) {screeningFilter} as "lastScreeningDate"
-             , count(DISTINCT document_id) {positiveFilter} as "confirmedCases"
-             , max(document_date) {positiveFilter} as "lastConfirmedCaseDate"
-        FROM cases_case
-        WHERE document_date >= %s AND document_date < %s
-          AND lower("ZS") in (
-                    'bokoro',
-                    'bulungu',
-                    'kikongo',
-                    'kimputu',
-                    'mosango',
-                    'yasa bonga',
-                    'yasa-bonga',
-                    'yassa bonga',
-                    'yassa-bonga'
-                )
-          AND "AZ" IS NOT NULL
-          AND village IS NOT NULL
-    '''
-
-    sql_params = [date_from, date_to]
     if 'location' in params:
-        yasaBongas = ['yasa bonga', 'yasa-bonga', 'yassa bonga', 'yassa-bonga']
-        location = params['location'].lower()
-        if location in yasaBongas:
-            sql = sql + 'AND lower("ZS") in (%s, %s, %s, %s)'
-            for yasa in yasaBongas:
-                sql_params.append(yasa)
-        else:
-            sql = sql + 'AND lower("ZS") = %s'
-            sql_params.append(location)
-    if 'source' in params:
-        sql = sql + 'AND source = %s'
-        sql_params.append(params['source'])
-    sql = sql + '''
-        GROUP BY "ZS", "AZ", village
-        HAVING count(DISTINCT document_id) {positiveFilter} > 0
-    '''
-
-    today = date.today()
+        sql_context['zones_sante'] = params['location'].lower().split(',')
     if 'caseyearfrom' in params:
-        sql = sql + ' AND max(document_date) {positiveFilter} >= %s'
-        sql_params.append(datetime(today.year - int(params['caseyearfrom']), 1, 1))
-    if 'screeningyearto' in params:
-        sql = sql + ' AND max(document_date) {screeningFilter} < %s'
-        sql_params.append(datetime(today.year - int(params['screeningyearto']), 12, 31))
+        yearfrom = currentYear - int(params['caseyearfrom'])
+        sql_context['casedatefrom'] = datetime(yearfrom, 1, 1)
+    if 'screeningyearto' in params and int(params['screeningyearto']) > 0:
+        yearto = currentYear - int(params['screeningyearto']) + 1
+        sql_context['screeningdateto'] = datetime(yearto, 1, 1)
 
-    sql = sql.format(
-        screeningFilter=screeningCondition,
-        positiveFilter=positiveCondition
-    )
+    sql = microplanning_queries.data_by_location(**sql_context)
 
-    result = []
     with connection.cursor() as cursor:
-        cursor.execute(sql, sql_params)
-        columns = [x.name for x in cursor.description]
-        for row in cursor.fetchall():
-            result.append(dict(zip(columns, row)))
-
-    return result
+        cursor.execute(sql)
+        columns = [col[0] for col in cursor.description]
+        # convert the row tuple to dicts to dicts
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
 class DatasetViewSet(viewsets.ViewSet):

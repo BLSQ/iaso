@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react'
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
-import ExportCSVButton from '../../../components/export-csv-button'
+import ExportButton from '../../../components/export-button'
 
 const MESSAGES = defineMessages({
   'export-province': {
@@ -50,6 +50,20 @@ const MESSAGES = defineMessages({
   'export-screening-date': {
     id: 'microplanning.export.screening.date',
     defaultMessage: 'Last screening date'
+  },
+
+  // type values
+  official: {
+    id: 'microplanning.export.village.type.official',
+    defaultMessage: 'from Z.S.'
+  },
+  other: {
+    id: 'microplanning.export.village.type.other',
+    defaultMessage: 'not from Z.S.'
+  },
+  unknown: {
+    id: 'microplanning.export.village.type.unknown',
+    defaultMessage: 'visible from satellite'
   }
 })
 
@@ -58,7 +72,7 @@ const COLUMNS = [
   { message: 'export-zone', key: 'ZS' },
   { message: 'export-area', key: 'AS' },
   { message: 'export-village', key: 'village' },
-  { message: 'export-type', key: 'type' },
+  { message: 'export-type', key: 'type', type: 'message' },
   { message: 'export-latitude', key: 'latitude', type: 'number' },
   { message: 'export-longitude', key: 'longitude', type: 'number' },
   { message: 'export-population', key: 'population', type: 'number' },
@@ -198,9 +212,9 @@ class MapSelectionList extends Component {
         </div>
 
         <div className='map__sidebar__export'>
-          <ExportCSVButton data={data} delimiter=',' columns={COLUMNS} messages={MESSAGES} filename='microplanning.csv'>
+          <ExportButton data={data} columns={COLUMNS} messages={MESSAGES} filename='microplanning' format='xlsx'>
             <FormattedMessage id='microplanning.selected.export' defaultMessage='Export list' />
-          </ExportCSVButton>
+          </ExportButton>
         </div>
       </div>
     )

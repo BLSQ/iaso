@@ -82,7 +82,9 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       '__LOCALE': JSON.stringify(LOCALE)
-    })
+    }),
+    // XLSX
+    new webpack.IgnorePlugin(/cptable/)
   ],
 
   module: {
@@ -149,8 +151,20 @@ module.exports = {
     ]
   },
 
+  // https://github.com/SheetJS/js-xlsx/issues/285
+  node: {
+    fs: 'empty'
+  },
+  externals: [
+    {
+      './cptable': 'var cptable',
+      './jszip': 'jszip'
+    }
+  ],
+
   resolve: {
     modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.jsx']
+    extensions: ['', '.js', '.jsx'],
+    loaders: ['script']
   }
 }

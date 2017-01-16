@@ -62,7 +62,9 @@ module.exports = {
       '__LOCALE': JSON.stringify(LOCALE)
     }),
     // Minification
-    new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+    new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+    // XLSX
+    new webpack.IgnorePlugin(/cptable/)
   ],
 
   module: {
@@ -135,9 +137,21 @@ module.exports = {
     ]
   },
 
+  // https://github.com/SheetJS/js-xlsx/issues/285
+  node: {
+    fs: 'empty'
+  },
+  externals: [
+    {
+      './cptable': 'var cptable',
+      './jszip': 'jszip'
+    }
+  ],
+
   resolve: {
     modulesDirectories: ['node_modules'],
     // empty needs to be there to find external modules
-    extensions: ['', '.js']
+    extensions: ['', '.js'],
+    loaders: ['script']
   }
 }

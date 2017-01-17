@@ -1,6 +1,9 @@
 import React, {Component} from 'react'
 import { FormattedMessage } from 'react-intl'
 
+// Experimental components to render a json-schema as ui
+// Main component is: `JsonSchema`
+
 class InputLabel extends Component {
   constructor (props) {
     super(props)

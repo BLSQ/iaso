@@ -14,7 +14,6 @@ urlpatterns = [
     url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
-    url(r'^playground/', include('hat.playground.urls', 'playground')),
 ]
 
 if settings.SHOW_DEBUG_TOOLBAR:

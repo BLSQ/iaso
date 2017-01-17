@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     'hat.cases',
     'hat.import_export',
     'hat.dashboard',
-    'hat.playground',
     'hat.maintenance',
     'hat.api',
     'hat.integration_tests',

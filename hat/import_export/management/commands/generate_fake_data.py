@@ -43,7 +43,7 @@ def add_locations(file, num):
 
     file.write(
         """COPY cases_location ("""
-        """"ZS", "AS", village, latitude, longitude, population"""
+        """"ZS", "AS", village, village_official, latitude, longitude, population"""
         """) FROM stdin;\n"""
     )
 
@@ -52,6 +52,7 @@ def add_locations(file, num):
             ('ZS', random.choice(zones)),
             ('AS', random.choice(areas)),
             ('village', randstr(random.randint(7, 11))),
+            ('village_official', random.choice(['YES', 'NO', 'OTHER', 'NA'])),
             ('latitude', str(random.uniform(topleft[0], bottomright[0]))),
             ('longitude', str(random.uniform(topleft[1], bottomright[1]))),
             ('population', str(random.randint(pop_min, pop_max))),
@@ -64,9 +65,9 @@ def add_locations(file, num):
 
 
 def add_cases(file, num, locations):
-    # Daterange for the cases. Currently all are created in _this_ year.
+    # Daterange for the cases is from 52 weeks ago until today
     today = datetime.datetime.today()
-    backthen = datetime.datetime(today.year - 0, 1, 1)
+    backthen = today - datetime.timedelta(weeks=52)
 
     file.write(
         """COPY cases_case ("""
@@ -126,7 +127,8 @@ class Command(BaseCommand):
             r = run_cmd(['psql',
                          '-h', settings.DB_HOST,
                          '-p', str(settings.DB_PORT),
-                         '-U', settings.DB_USERNAME],
+                         '-U', settings.DB_USERNAME,
+                         '-d', settings.DB_NAME],
                         stdin=temp_file,
                         env={'PGPASSWORD': settings.DB_PASSWORD or ''})
             self.stdout.write(r)

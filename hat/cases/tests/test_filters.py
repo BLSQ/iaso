@@ -21,7 +21,7 @@ class FilterTests(TestCase):
             self.assertEqual(date_to, datetime(2016, 7, 12, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.current_trimester.value)
-            self.assertEqual(date_from, datetime(2016, 5, 1, tzinfo=pytz.UTC))
+            self.assertEqual(date_from, datetime(2016, 7, 1, tzinfo=pytz.UTC))
             self.assertEqual(date_to, datetime(2016, 7, 12, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.current_year.value)
@@ -33,8 +33,8 @@ class FilterTests(TestCase):
             self.assertEqual(date_to, datetime(2016, 7, 1, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.last_trimester.value)
-            self.assertEqual(date_from, datetime(2016, 1, 1, tzinfo=pytz.UTC))
-            self.assertEqual(date_to, datetime(2016, 5, 1, tzinfo=pytz.UTC))
+            self.assertEqual(date_from, datetime(2016, 4, 1, tzinfo=pytz.UTC))
+            self.assertEqual(date_to, datetime(2016, 7, 1, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.last_year.value)
             self.assertEqual(date_from, datetime(2015, 1, 1, tzinfo=pytz.UTC))
@@ -66,7 +66,7 @@ class FilterTests(TestCase):
             self.assertEqual(date_to, datetime(2017, 1, 1, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.last_trimester.value)
-            self.assertEqual(date_from, datetime(2016, 9, 1, tzinfo=pytz.UTC))
+            self.assertEqual(date_from, datetime(2016, 10, 1, tzinfo=pytz.UTC))
             self.assertEqual(date_to, datetime(2017, 1, 1, tzinfo=pytz.UTC))
 
             (date_from, date_to) = resolve_dateperiod(DatePeriod.last_year.value)

@@ -39,7 +39,7 @@ def resolve_dateperiod(value):
             + timedelta(days=1)
 
     elif value == DatePeriod.current_trimester.value:
-        first_month = td.month - ((td.month - 1) % 4)
+        first_month = td.month - ((td.month - 1) % 3)
         date_from = datetime(td.year, first_month, 1, tzinfo=pytz.UTC)
         date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
             + timedelta(days=1)
@@ -59,18 +59,18 @@ def resolve_dateperiod(value):
             + timedelta(days=1)
 
     elif value == DatePeriod.last_trimester.value:
-        to_month = td.month - ((td.month - 1) % 4)
+        to_month = td.month - ((td.month - 1) % 3)
         to_year = td.year
         if to_month == 1:
             # last trimester is the last trimester of last year
-            from_month = 9
+            from_month = 10
             from_year = to_year - 1
         else:
             # last trimester is in same year
-            from_month = to_month - 4
+            from_month = to_month - 3
             from_year = to_year
         date_from = datetime(from_year, from_month, 1, tzinfo=pytz.UTC)
-        date_to = datetime(to_year, to_month, 1, tzinfo=pytz.UTC) \
+        date_to = datetime(to_year, to_month, 1, tzinfo=pytz.UTC)
 
     elif value == DatePeriod.last_year.value:
         date_from = datetime(td.year - 1, 1, 1, tzinfo=pytz.UTC)

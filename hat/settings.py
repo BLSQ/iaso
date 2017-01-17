@@ -55,10 +55,17 @@ LOGGING = {
             'format': '%(asctime)s %(name)s -- %(message)s'
         },
     },
+    'filters': {
+        'no_static': {
+            '()': 'hat.common.log_filter.StaticUrlFilter'
+        }
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'default'
+            'formatter': 'default',
+            # Don't pollute the log output with lots of static url request in development
+            'filters': ['no_static'] if DEBUG else None,
         },
     },
     'loggers': {

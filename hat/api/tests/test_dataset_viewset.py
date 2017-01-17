@@ -66,7 +66,7 @@ class DatasetTests(APITestCase):
         self.assertEqual(response.data[1]['count'], 2)
 
     def test_population_coverage(self):
-        url = '{}?datefrom=2016-01-01&dateto=2016-12-01'.format(
+        url = '{}?date_from=2016-01-01&date_to=2016-12-01'.format(
             reverse('api:datasets-detail', args=['population_coverage']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -78,7 +78,7 @@ class DatasetTests(APITestCase):
         self.assertEqual(data['total_visited'], 3)
 
     def test_cases_over_time(self):
-        url = '{}?datefrom=2016-01-01&dateto=2016-01-31'.format(
+        url = '{}?date_from=2016-01-01&date_to=2016-01-31'.format(
             reverse('api:datasets-detail', args=['cases_over_time']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -99,7 +99,7 @@ class DatasetTests(APITestCase):
         self.assertEqual(data[1]['staging_total'], 0)
 
     def test_data_by_location(self):
-        url = '{}?datefrom=2016-01-01&dateto=2016-01-31'.format(
+        url = '{}?date_from=2016-01-01&date_to=2016-01-31'.format(
             reverse('api:datasets-detail', args=['data_by_location']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)

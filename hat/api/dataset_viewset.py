@@ -39,10 +39,10 @@ def parse_date_range(params, default_date_from=None):
     today = date.today()
     date_from = default_date_from or datetime(today.year, today.month, today.day)
     date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
-    if 'datefrom' in params:
-        date_from = datetime.strptime(params['datefrom'], DATE_FORMAT)
-    if 'dateto' in params:
-        date_to = datetime.strptime(params['dateto'], DATE_FORMAT) + timedelta(days=1)
+    if 'date_from' in params:
+        date_from = datetime.strptime(params['date_from'], DATE_FORMAT)
+    if 'date_to' in params:
+        date_to = datetime.strptime(params['date_to'], DATE_FORMAT) + timedelta(days=1)
     return (date_from, date_to)
 
 
@@ -68,8 +68,8 @@ params_schema = {
     'properties': {
         'date': {'type': 'string'},
         'dateperiod': {'type': 'string'},
-        'datefrom': {'type': 'string'},
-        'dateto': {'type': 'string'},
+        'date_from': {'type': 'string'},
+        'date_to': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'},
         'offset': {'type': 'string'},
@@ -107,13 +107,13 @@ def get_cases_filtered(params, ignore_params=None):
         (date_from, date_to) = resolve_dateperiod(dateperiod)
         cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
-    datefrom = get_param_value('datefrom')
-    dateto = get_param_value('dateto')
-    if datefrom is not None:
-        date_from = datetime.strptime(datefrom, DATE_FORMAT)
+    date_from = get_param_value('date_from')
+    date_to = get_param_value('date_to')
+    if date_from is not None:
+        date_from = datetime.strptime(date_from, DATE_FORMAT)
         cases = cases.filter(document_date__gte=date_from)
-    if dateto is not None:
-        date_to = datetime.strptime(dateto, DATE_FORMAT) + timedelta(days=1)
+    if date_to is not None:
+        date_to = datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
         cases = cases.filter(document_date__lt=date_to)
 
     location = get_param_value('location')
@@ -214,8 +214,8 @@ def tested_per_day(params):
 @dataset(params_schema={
     'type': 'object',
     'properties': {
-        'datefrom': {'type': 'string'},
-        'dateto': {'type': 'string'},
+        'date_from': {'type': 'string'},
+        'date_to': {'type': 'string'},
         'location': {'type': 'string'},
     }
 })
@@ -243,8 +243,8 @@ def population_coverage(params):
 @dataset(params_schema={
     'type': 'object',
     'properties': {
-        'datefrom': {'type': 'string'},
-        'dateto': {'type': 'string'},
+        'date_from': {'type': 'string'},
+        'date_to': {'type': 'string'},
         'location': {'type': 'string'},
         'source': {'type': 'string'},
     },
@@ -276,8 +276,8 @@ def cases_over_time(params):
 @dataset(params_schema={
     'type': 'object',
     'properties': {
-        'datefrom': {'type': 'string'},
-        'dateto': {'type': 'string'},
+        'date_from': {'type': 'string'},
+        'date_to': {'type': 'string'},
         'location': {'type': 'string'},
         'caseyearfrom': {'type': 'string'},
         'screeningyearto': {'type': 'string'},

@@ -56,6 +56,7 @@ def add_locations(file, num):
             ('latitude', str(random.uniform(topleft[0], bottomright[0]))),
             ('longitude', str(random.uniform(topleft[1], bottomright[1]))),
             ('population', str(random.randint(pop_min, pop_max))),
+            ('village_official', random.choice(['YES', 'NO', 'OTHER']))
         ])
         locations.append(l)
         file.write('\t'.join(l.values()) + '\n')
@@ -96,7 +97,7 @@ def add_cases(file, num, locations):
             location['AS'],  # AZ
             random.choice(['t', 'f', '\\N']),  # test_catt
             random.choice(['t', 'f', '\\N']),  # test_maect
-            random.choice(['stage1', 'stage2', 'unknown']),  # test_pl_result
+            random.choice(['stage1', 'stage2', 'unknown', '\\N']),  # test_pl_result
             location['latitude'],  # latitude
             location['longitude'],  # longitude
         ]
@@ -120,11 +121,16 @@ class Command(BaseCommand):
         num_cases = options['num_cases']
 
         with tempfile.TemporaryFile('w') as temp_file:
+            self.stdout.write('creating locations...')
             locations = add_locations(temp_file, num_locations)
+
+            self.stdout.write('creating cases...')
             add_cases(temp_file, num_cases, locations)
 
+            self.stdout.write('inserting data...')
             temp_file.seek(0)
             r = run_cmd(['psql',
+                         '-v', 'ON_ERROR_STOP=1',
                          '-h', settings.DB_HOST,
                          '-p', str(settings.DB_PORT),
                          '-U', settings.DB_USERNAME,

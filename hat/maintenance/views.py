@@ -17,7 +17,7 @@ def index(request):
     num_transformed = Case.objects.count()
     r = couchdb.get(settings.COUCHDB_DB)
     r.raise_for_status()
-    print('json', r.json())
+
     num_raw = r.json()['doc_count']
     # To account for the design doc we simply subtract one. These is just
     # an assummption. If we will have non raw docs or more than one design

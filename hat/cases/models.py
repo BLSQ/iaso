@@ -6,6 +6,11 @@ SOURCE_CHOICES = (
     ('pv', 'Pharmacovigilance'),
 )
 
+SEX_CHOICES = (
+    ('female', 'Female'),
+    ('male', 'Male'),
+)
+
 
 class Case(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
@@ -25,10 +30,6 @@ class Case(models.Model):
     name = models.TextField(null=True)
     lastname = models.TextField(null=True)
     prename = models.TextField(null=True)
-    SEX_CHOICES = (
-        ('female', 'Female'),
-        ('male', 'Male'),
-    )
     sex = models.TextField(choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField(null=True)
     year_of_birth = models.PositiveSmallIntegerField(null=True)
@@ -113,7 +114,17 @@ class CaseView(models.Model):
 
     document_date = models.DateTimeField(db_index=True, null=True)
     document_id = models.TextField(db_index=True)
+    hat_id = models.TextField()
+    mobile_unit = models.TextField(null=True)
 
+    name = models.TextField(null=True)
+    lastname = models.TextField(null=True)
+    prename = models.TextField(null=True)
+    sex = models.TextField(choices=SEX_CHOICES, null=True)
+    age = models.PositiveSmallIntegerField(null=True)
+    year_of_birth = models.PositiveSmallIntegerField(null=True)
+
+    province = models.TextField(null=True)
     ZS = models.TextField(db_index=True, null=True)
     # TODO: Aires de santé acronym is misspelled and should be refactored into AS
     AS = models.TextField(null=True)

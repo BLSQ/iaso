@@ -1,3 +1,4 @@
+from enum import Enum
 from io import StringIO
 from functools import reduce
 from typing import Dict
@@ -173,10 +174,10 @@ def pv_get_pl_liquid_result(x):
 # operate on two tables, the main table and some related table like "followups"
 # or "treatments". Each of these is very similar or even the same, it
 # groups the related data by the index, which is the foreign key(PersID)
-# and the aggregates each group to a single value for each group.
+# and then reduces each group to a single value for each group.
 # Those values are then returned as a Series with the foreign key as index.
-# Because the result DataFrame they are merged into uses the same index
-# values, all the fields will be assigned to the right rows automatically.
+# Because the result DataFrame the values are merged into uses the same index,
+# all the fields will be assigned to the right rows automatically.
 # It might make sense to combine some of these in the future.
 
 
@@ -218,7 +219,7 @@ def pv_get_followup_test_result(main_table, related_table, field) -> Series:
 
 def reduce_test_result(a, b):
     # Values can be True, False or null. We have to handle null explicitely
-    # to accidentially have this return null in favor of False.
+    # to not accidentially have this return null in favor of False.
     if pandas.isnull(b):
         return a
     return a or b
@@ -227,10 +228,10 @@ def reduce_test_result(a, b):
 ################################################################################
 # Mapping for import and export fields
 #
-# For the export every field needs to define a `export_level` property that
+# For the export every field needs to define a `export_levels` property that
 # is used to collect the export fields for `anon` and `full` export.
 #
-# For the import each field must define the `import_field` property and a
+# For the import each field must define the `field` property and a
 # `sources` property that contains the field configuration for each import source.
 # In some cases this can be a one-to-one mapping, but in others we need to apply a
 # function to transform from the source value to the import value.
@@ -261,8 +262,13 @@ def reduce_test_result(a, b):
 # that will combine the series from the multiple source fields input the import field.
 #
 
-EXPORT_LEVEL_ANON = 'anon'
-EXPORT_LEVEL_FULL = 'full'
+# The export levels
+class Export(Enum):
+    full = 1
+    anon = 2
+    suspects_full = 3
+    suspects_anon = 4
+
 
 SCREENING_TEST = 'screening'
 CONFIRMATION_TEST = 'confirmation'
@@ -272,16 +278,16 @@ UNKNOWN_TEST = 'unknown'
 MAPPING = [
     # meta fields
     {
-        "import_field": "source",
-        "export_level": EXPORT_LEVEL_ANON
+        "field": "source",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
     },
     {
-        "import_field": "document_id",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "document_id",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
     },
     {
-        "import_field": "document_date",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "document_date",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Date de diagnostique"),
             "historic": ("T_CARDS", "D_DATE"),
@@ -289,26 +295,20 @@ MAPPING = [
         },
     },
     {
-        "import_field": "entry_date",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "entry_date",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": ("T_CARDS", "F_TIMESTAMP"),
             "mobile": ("main", "dateCreated",)
         }
     },
     {
-        "import_field": "entry_name",
-        "export_level": EXPORT_LEVEL_ANON,
-        "sources": {
-            "pv": None,
-            "historic": None,
-            "mobile": None
-        }
+        "field": "entry_name",
+        "export_levels": [Export.full, Export.anon],
     },
     {
-        "import_field": "mobile_unit",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "mobile_unit",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "UM"),
@@ -318,44 +318,40 @@ MAPPING = [
                 "field": ("T_CARDS", "IF_UM"),
                 "apply_to_column": capitalize
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "form_number",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "form_number",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Numero du cas"),
             "historic": ("T_CARDS", "IF_NBR"),
-            "mobile": None
         }
     },
     {
-        "import_field": "form_month",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "form_month",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Mois"),
             "historic": ("T_CARDS", "IF_MONTH"),
-            "mobile": None
         }
     },
     {
-        "import_field": "form_year",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "form_year",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Année"),
             "historic": ("T_CARDS", "IF_YEAR"),
-            "mobile": None
         }
     },
     # person fields
     {
-        "import_field": "hat_id",
-        "export_level": EXPORT_LEVEL_FULL
+        "field": "hat_id",
+        "export_levels": [Export.full, Export.suspects_full]
     },
     {
-        "import_field": "name",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "name",
+        "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Nom"),
             "historic": ("T_CARDS", "IM_NAME"),
@@ -363,8 +359,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "lastname",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "lastname",
+        "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Postnom"),
             "historic": ("T_CARDS", "IM_LASTNAME"),
@@ -372,8 +368,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "prename",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "prename",
+        "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Prénom"),
             "historic": ("T_CARDS", "IM_PRENAME"),
@@ -381,8 +377,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "sex",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "sex",
+        "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sexe"),
@@ -399,8 +395,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "year_of_birth",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "year_of_birth",
+        "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Année de naissance"),
             "historic": ("T_CARDS", "IM_BIRTHYEAR"),
@@ -408,8 +404,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "age",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "age",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Age"),
             "historic": ("T_CARDS", "IM_AGE"),
@@ -420,8 +416,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "mothers_surname",
-        "export_level": EXPORT_LEVEL_FULL,
+        "field": "mothers_surname",
+        "export_levels": [Export.full],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Nom de la mère"),
             "historic": ("T_CARDS", "IM_MERE"),
@@ -430,8 +426,8 @@ MAPPING = [
     },
     # location fields
     {
-        "import_field": "province",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "province",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Provence"),
@@ -441,12 +437,11 @@ MAPPING = [
                 "field": ("T_CARDS", "IM_AD_PROVINCE"),
                 "apply_to_column": capitalize
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "ZS",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "ZS",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "ZS"),
@@ -463,8 +458,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "AZ",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "AZ",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "AS"),
@@ -481,8 +476,8 @@ MAPPING = [
         }
     },
     {
-        "import_field": "village",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "village",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Village"),
@@ -500,53 +495,49 @@ MAPPING = [
     },
     # treatment fields
     {
-        "import_field": "treatment_center",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_center",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Centre recommandé2"),
             "historic": ("T_CARDS", "IM_UM_CT"),
-            "mobile": None
         }
     },
     {
-        "import_field": "treatment_start_date",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_start_date",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Date début réel"),
                 "apply_to_table": pv_get_treatment_date
             },
             "historic": ("T_CARDS", "TP_DATE"),
-            "mobile": None
         }
     },
     {
-        "import_field": "treatment_end_date",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_end_date",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Date fin"),
                 "apply_to_table": pv_get_treatment_date
             },
             "historic": ("T_CARDS", "TP_DATE_END"),
-            "mobile": None
         }
     },
     {
-        "import_field": "treatment_prescribed",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_prescribed",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Traitement"),
                 "apply_to_table": pv_get_treatment
             },
             "historic": ("T_CARDS", "TP_TREATMENT"),
-            "mobile": None
         }
     },
     {
-        "import_field": "treatment_secondary_effects",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_secondary_effects",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
@@ -556,27 +547,24 @@ MAPPING = [
                 "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
                 "apply_to_column": historic_get_secondary_effects
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "treatment_result",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "treatment_result",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv":  {
                 "field": ('tblTraitementPrescrit', 'Compliance du traitement'),
                 "apply_to_table": pv_get_treatment_result
             },
             "historic": ("T_CARDS", "TP_RESULT"),
-            "mobile": None
         }
     },
     # test fields
     {
-        "import_field": "test_rdt",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_rdt",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "D_TDR"),
                 "apply_to_column": historic_get_result
@@ -589,8 +577,8 @@ MAPPING = [
         "test_type": SCREENING_TEST
     },
     {
-        "import_field": "test_catt",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_catt",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "CATT sang total"),
@@ -617,8 +605,8 @@ MAPPING = [
         "test_type": SCREENING_TEST
     },
     {
-        "import_field": "test_maect",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_maect",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang mAECT"),
@@ -649,8 +637,8 @@ MAPPING = [
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_ge",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_ge",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang GE"),
@@ -668,11 +656,9 @@ MAPPING = [
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_pg",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pg",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
-            "historic": None,
             "mobile": {
                 "field": ("main", "participant.screenings.pg.result"),
                 "apply_to_column": mobile_get_result
@@ -681,8 +667,8 @@ MAPPING = [
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_ctcwoo",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_ctcwoo",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang W00"),
@@ -700,11 +686,9 @@ MAPPING = [
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_pl",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
-            "historic": None,
             "mobile": {
                 "field": ("main", "participant.screenings.pl.result"),
                 "apply_to_column": mobile_get_result
@@ -713,21 +697,20 @@ MAPPING = [
         "test_type": STAGING_TEST
     },
     {
-        "import_field": "test_catt_dilution",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_catt_dilution",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "CATT dilution"),
             "historic": {
                 "field": ("T_CARDS", "D_CATT_DILUTION"),
                 "apply_to_column": historic_get_catt_dil_result
             },
-            "mobile": None
         },
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_lymph_node_puncture",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_lymph_node_puncture",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Suc ganglionnaire"),
@@ -737,13 +720,12 @@ MAPPING = [
                 "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_sf",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_sf",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang SF"),
@@ -753,13 +735,12 @@ MAPPING = [
                 "field": ("T_CARDS", "MD_SF"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_lcr",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_lcr",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "LCR"),
@@ -782,91 +763,78 @@ MAPPING = [
                 ],
                 "reduce": reduce_test_result
             },
-            "mobile": None
         },
         "test_type": CONFIRMATION_TEST
     },
     {
-        "import_field": "test_dil",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_dil",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_DIL"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_parasit",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_parasit",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_PARASIT"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_sternal_puncture",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_sternal_puncture",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_ifat",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_ifat",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_IFAT"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_clinical_sickness",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_clinical_sickness",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_other",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_other",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_CARDS", "MD_OTHER"),
                 "apply_to_column": historic_get_result
             },
-            "mobile": None
         },
         "test_type": UNKNOWN_TEST
     },
     {
-        "import_field": "test_pl_liquid",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_liquid",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Aspect LCR"),
@@ -876,60 +844,52 @@ MAPPING = [
                 "field": ("T_CARDS", "DS_PL_LIQUID"),
                 "apply_to_column": historic_get_pl_liquid_result
             },
-            "mobile": None
         },
     },
     {
-        "import_field": "test_pl_trypanosome",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_trypanosome",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Présence trypanosomes"),
             "historic": ("T_CARDS", "DS_PL_TRYPANOSOME"),
-            "mobile": None
         }
     },
     {
-        "import_field": "test_pl_gb_mm3",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_gb_mm3",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "GB/mm3"),
             "historic": ("T_CARDS", "DS_PL_GB_MM3"),
-            "mobile": None
         }
     },
     {
-        "import_field": "test_pl_albumine",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_albumine",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": ("T_CARDS", "DS_PL_ALBUMINE"),
-            "mobile": None
         }
     },
     {
-        "import_field": "test_pl_lcr",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_lcr",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": ("tblFishedeDeclaration", "Latex LCR"),
             "historic": {
                 "field": ("T_CARDS", "DS_PL_LCR"),
                 "apply_to_column": historic_get_pl_lcr_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_pl_comments",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_comments",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": ("T_CARDS", "DS_PL_COMMENTS"),
-            "mobile": None
         }
     },
     {
-        "import_field": "test_pl_result",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_pl_result",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Stade"),
@@ -939,14 +899,13 @@ MAPPING = [
                 "field": ("T_CARDS", "DS_PL_RESULT"),
                 "apply_to_column": historic_get_pl_result
             },
-            "mobile": None
         },
         "test_type": STAGING_TEST
     },
     # followup fields
     {
-        "import_field": "followup_done",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "followup_done",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "SuiviId"),
@@ -956,12 +915,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_ID"),
                 "apply_to_table": historic_get_followup_done
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_pg",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_pg",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PG"),
@@ -971,12 +929,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_PG"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_sf",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_sf",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "SF"),
@@ -986,12 +943,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_SF"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_ge",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_ge",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "GE"),
@@ -1001,12 +957,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_GE"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None,
         }
     },
     {
-        "import_field": "test_followup_woo",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_woo",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "Woo"),
@@ -1016,12 +971,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_WOO"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_maect",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_maect",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "mAECT"),
@@ -1031,36 +985,31 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_MAECT"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_woo_maect",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_woo_maect",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_pl",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_pl",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": None,
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_PL"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_pl_trypanosome",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_pl_trypanosome",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PL Tryp"),
@@ -1070,12 +1019,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_pl_gb",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_pl_gb",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PL GB"),
@@ -1085,12 +1033,11 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_PL_GB"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
     {
-        "import_field": "test_followup_decision",
-        "export_level": EXPORT_LEVEL_ANON,
+        "field": "test_followup_decision",
+        "export_levels": [Export.full, Export.anon],
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "Décision médicale"),
@@ -1100,25 +1047,40 @@ MAPPING = [
                 "field": ("T_FOLLOWUPS", "S_DECISION"),
                 "apply_to_table": historic_get_followup_test_result
             },
-            "mobile": None
         }
     },
+
+    # These fields might get added later and are currently placeholders with no source fields.
+    # For now these are supported through the case sql view.
+    {
+        "field": "screening_result",
+        "export_levels": [Export.suspects_full, Export.suspects_anon],
+    },
+    {
+        "field": "confirmation_result",
+        "export_levels": [Export.suspects_full, Export.suspects_anon],
+    },
+    {
+        "field": "stage_result",
+        "export_levels": [Export.suspects_full, Export.suspects_anon],
+    },
+    {
+        "field": "AS",
+        "export_levels": [Export.suspects_full, Export.suspects_anon],
+    }
 ]
 
-ANON_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
-                      if f['export_level'] == EXPORT_LEVEL_ANON]
+ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
+                      if Export.anon in f['export_levels']]
 
-FULL_EXPORT_FIELDS = [f['import_field'] for f in MAPPING
-                      if f['export_level'] in [EXPORT_LEVEL_ANON, EXPORT_LEVEL_FULL]]
+FULL_EXPORT_FIELDS = [f['field'] for f in MAPPING
+                      if Export.full in f['export_levels']]
 
-SCREENING_TEST_FIELDS = [f['import_field'] for f in MAPPING
-                         if 'test_type' in f and f['test_type'] == SCREENING_TEST]
+SUSPECT_FULL_EXPORT_FIELDS = [f['field'] for f in MAPPING
+                              if Export.suspects_full in f['export_levels']]
 
-CONFIRMATION_TEST_FIELDS = [f['import_field'] for f in MAPPING
-                            if 'test_type' in f and f['test_type'] == CONFIRMATION_TEST]
-
-STAGING_TEST_FIELDS = [f['import_field'] for f in MAPPING
-                       if 'test_type' in f and f['test_type'] == STAGING_TEST]
+SUSPECT_ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
+                              if Export.suspects_anon in f['export_levels']]
 
 
 def extract_mdb(filename: str, import_options: Dict) -> Dict[str, DataFrame]:
@@ -1338,10 +1300,8 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
             # Not mapping this field
             continue
 
-        import_field = field_mapping['import_field']
+        import_field = field_mapping['field']
         source_field = field_mapping['sources'][mapping_field]
-        if source_field is None:
-            continue
 
         try:
             r = transform_field(source_field, main_table_name, tables)

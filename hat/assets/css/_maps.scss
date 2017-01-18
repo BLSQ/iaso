@@ -644,17 +644,26 @@ path.map-marker {
   &.selected {
     @include marker($selected, 0.95, $bright-pink, 3);
   }
-  &.buffer {
-    @include marker($color: $buffer, $fill-opacity: 0.3, $stroke-color: $buffer, $stroke-width: 1)
+
+  &.highlight-buffer {
+    @include marker($highlight, 0.3, $bright-pink, 0);
     &:hover {
-      fill-opacity: 0.5;
+      fill-opacity: 0.3;
+      fill: $highlight;
+    }
+  }
+  &.buffer {
+    @include marker($buffer, 0.3, $buffer, 1)
+    &:hover {
+      fill-opacity: 0.3;
+      fill: $buffer;
     }
   }
   &.shadow {
     @include marker($bright-pink, 0.3, $bright-pink, 0);
     &:hover {
-      fill: $bright-pink;
       fill-opacity: 0.3;
+      fill: $bright-pink;
     }
   }
 }

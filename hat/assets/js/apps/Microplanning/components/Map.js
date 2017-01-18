@@ -22,6 +22,9 @@ const baseLayers = {
 // this is the default base layer, it should match one of the base layers keys
 const DEFAULT_LAYER = 'ArcGIS Topo Map'
 
+// maximum zoom used when fit to relevant markers
+const MAX_ZOOM = 13
+
 // circle size in metres depending on the village type
 const RADIUS = {
   official: 350,
@@ -39,7 +42,7 @@ const SELECTION_MODES = {
 
 const MESSAGES = defineMessages({
   'fit-to-bounds': {
-    defaultMessage: 'center to selected villages',
+    defaultMessage: 'center to relevant villages',
     id: 'microplanning.label.fitToBounds'
   }
 })
@@ -71,6 +74,8 @@ class Map extends Component {
       selection: {
         mode: SELECTION_MODES.none,
         bufferSize: RADIUS.buffer,
+        highlightBufferSize: 0,
+        highlightBufferGroup: new L.FeatureGroup(),
         controlContainer: null,
         marker: null
       }
@@ -79,6 +84,7 @@ class Map extends Component {
     this.legendToggleHandler = this.legendToggleHandler.bind(this)
     this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
     this.selectionModeChangeHandler = this.selectionModeChangeHandler.bind(this)
+    this.highlightBufferSizeHandler = this.highlightBufferSizeHandler.bind(this)
     this.selectHighlightWithBuffer = this.selectHighlightWithBuffer.bind(this)
   }
 
@@ -130,6 +136,9 @@ class Map extends Component {
       if (hasChanged(prevState, this.state, 'selection')) {
         this.updateSelectionMode()
       }
+
+      // buffer zone around highlighted items
+      this.updateBufferZone()
     })
   }
 
@@ -153,6 +162,8 @@ class Map extends Component {
             data={selectedItems}
             show={(item) => this.openPopup(item, item._latlon)}
             deselect={deselect}
+            highlightBufferSize={selection.highlightBufferSize}
+            highlightBufferSizeChange={this.highlightBufferSizeHandler}
             selectHighlightWithBuffer={this.selectHighlightWithBuffer}
           />
         </div>
@@ -178,8 +189,7 @@ class Map extends Component {
             <FormattedMessage id='microplanning.datasource.label' defaultMessage='Data sources' />:&nbsp;
             <FormattedMessage id='microplanning.datasource.mobiledata' defaultMessage='HAT mobile application data' />,&nbsp;
             <FormattedMessage id='microplanning.datasource.historical' defaultMessage='HAT historical forms' />,&nbsp;
-            <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />,&nbsp;
-            <FormattedMessage id='microplanning.datasource.pnltha.2015' defaultMessage='PNLTHA data (2015)' />
+            <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
           </span>
         </div>
       </div>
@@ -209,6 +219,7 @@ class Map extends Component {
 
     // create panes (to preserve z-index order)
     map.createPane('custom-pane-layers')
+    map.createPane('custom-pane-highlight-buffer')
     map.createPane('custom-pane-shadows')
     map.createPane('custom-pane-markers')
     map.createPane('custom-pane-highlight')
@@ -287,9 +298,10 @@ class Map extends Component {
       }
     }
 
-    // include selected&shadows items layers
+    // include relevant and fixed layers
     map.addLayer(this.state.selectedGroup)
     map.addLayer(this.state.shadowsGroup)
+    map.addLayer(this.state.selection.highlightBufferGroup)
 
     const shapeOptions = (type) => ({
       pane: 'custom-pane-layers',
@@ -468,6 +480,38 @@ class Map extends Component {
     }
   }
 
+  updateBufferZone () {
+    const { selectedItems } = this.props
+    const {
+      mode,
+      highlightBufferSize,
+      highlightBufferGroup
+    } = this.state.selection
+
+    highlightBufferGroup.clearLayers()
+
+    // include buffer zone if selection mode is active
+    // and there are no selected items yet
+    if (mode && mode !== SELECTION_MODES.none &&
+      selectedItems.length === 0 &&
+      highlightBufferSize > 0) {
+      const {items, legend} = this.state
+      const highlight = items.filter((item) => legend[item.type] && item.confirmedCases > 0)
+      const bufferSize = highlightBufferSize * 1000
+
+      highlight.forEach((item) => {
+        const options = {
+          className: 'map-marker highlight-buffer',
+          pane: 'custom-pane-highlight-buffer',
+          radius: item._radius + bufferSize
+        }
+
+        const marker = L.circle(item._latlon, options)
+        highlightBufferGroup.addLayer(marker)
+      })
+    }
+  }
+
   fitToBounds () {
     const {map, selectedGroup, shadowsGroup, markersGroups, defaultBounds} = this.state
     const layer = markersGroups.official
@@ -484,13 +528,13 @@ class Map extends Component {
 
     setTimeout(() => {
       if (selectedGroup.getLayers().length) {
-        map.fitBounds(selectedGroup.getBounds(), { maxZoom: 13 })
+        map.fitBounds(selectedGroup.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (shadowsGroup.getLayers().length) {
-        map.fitBounds(shadowsGroup.getBounds())
+        map.fitBounds(shadowsGroup.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (map.hasLayer(layer) && layer.getLayers().length) {
-        map.fitBounds(layer.getBounds())
+        map.fitBounds(layer.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (defaultBounds) {
-        map.fitBounds(defaultBounds)
+        map.fitBounds(defaultBounds, { maxZoom: MAX_ZOOM })
       } else {
         map.setView(geoData.center, geoData.zoom)
       }
@@ -605,9 +649,17 @@ class Map extends Component {
     }
   }
 
-  selectHighlightWithBuffer (bufferSize) {
+  highlightBufferSizeHandler (event) {
+    L.DomEvent.stop(event)
+    let value = parseInt(event.target.value, 10)
+    if (value < 0) value = 0
+    this.setState({selection: {...this.state.selection, highlightBufferSize: value}})
+  }
+
+  selectHighlightWithBuffer () {
     const {legend, items, map} = this.state
     const {select} = this.props
+    const bufferSize = 1000 * this.state.selection.highlightBufferSize
 
     const plotted = items.filter((item) => legend[item.type])
     const length = plotted.length

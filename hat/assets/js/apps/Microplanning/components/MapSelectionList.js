@@ -83,19 +83,6 @@ const COLUMNS = [
 ]
 
 class MapSelectionList extends Component {
-  constructor (props) {
-    super(props)
-
-    this.state = { bufferSize: 0 }
-    this.bufferChangeHandler = this.bufferChangeHandler.bind(this)
-  }
-
-  bufferChangeHandler (event) {
-    let bufferSize = parseInt(event.target.value, 10)
-    if (bufferSize < 0) bufferSize = 0
-    this.setState({bufferSize})
-  }
-
   render () {
     const {data, show, deselect} = this.props
 
@@ -106,8 +93,11 @@ class MapSelectionList extends Component {
     )
 
     if (!data || data.length === 0) {
-      const {bufferSize} = this.state
-      const {selectHighlightWithBuffer} = this.props
+      const {
+        highlightBufferSize,
+        highlightBufferSizeChange,
+        selectHighlightWithBuffer
+      } = this.props
 
       return (
         <div className='map__selection'>
@@ -124,11 +114,11 @@ class MapSelectionList extends Component {
               <span className='map__text--select'>
                 <FormattedMessage id='microplanning.selected.filter.buffer.pre' defaultMessage='Select ALL villages around' />
               </span>
-              <input type='number' className='small' min='0' name='buffer-value' value={bufferSize} onChange={this.bufferChangeHandler} />
+              <input type='number' className='small' min='0' name='buffer-value' value={highlightBufferSize} onChange={highlightBufferSizeChange} />
               <span>
                 <FormattedMessage id='microplanning.selected.filter.buffer.post' defaultMessage='km of confirmed cases.' />
               </span>
-              <a onClick={() => selectHighlightWithBuffer(1000 * bufferSize)} className='button--reduced'>
+              <a onClick={selectHighlightWithBuffer} className='button--reduced'>
                 <FormattedMessage id='microplanning.selected.filter.select' defaultMessage='Select' />
               </a>
             </div>
@@ -225,6 +215,8 @@ MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   show: PropTypes.func,
   deselect: PropTypes.func,
+  highlightBufferSize: PropTypes.number,
+  highlightBufferSizeChange: PropTypes.func,
   selectHighlightWithBuffer: PropTypes.func
 }
 

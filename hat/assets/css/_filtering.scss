@@ -45,6 +45,7 @@ $filter-container-height: 2rem;
     position: absolute;
     right: 10px;
     top: calc(#{$filter-container-height}/2 - #{$triangle-size}/2);
+    pointer-events: none;
     @include triangle(bottom, $dark-blue, $triangle-size);
   }
 }

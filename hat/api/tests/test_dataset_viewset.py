@@ -46,7 +46,7 @@ class DatasetTests(APITestCase):
         url = reverse('api:datasets-detail', args=['campaign_meta'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['az_visited'], 2)
+        self.assertEqual(response.data['as_visited'], 2)
         self.assertEqual(response.data['villages_visited'], 3)
         self.assertEqual(
             response.data['startdate'].replace(tzinfo=None),

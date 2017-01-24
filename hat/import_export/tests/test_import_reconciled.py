@@ -21,7 +21,7 @@ class ImportReconciledTests(DBTestCase):
         self.assertEqual(stats['num_imported'], 6)
 
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
-        self.assertEqual(Case.objects.filter(AZ='Ipeke').count(), 3)
+        self.assertEqual(Case.objects.filter(AS='Ipeke').count(), 3)
         self.assertEqual(Case.objects.filter(village='Ipoku').count(), 1)
 
         r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])

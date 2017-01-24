@@ -74,7 +74,7 @@ def add_cases(file, num, locations):
         """COPY cases_case ("""
         """hat_id, source, document_date, document_id,"""
         """name, lastname, prename, sex, year_of_birth, mothers_surname,"""
-        """village, "ZS", "AZ","""
+        """village, "ZS", "AS","""
         """test_catt, test_maect, test_pl_result, latitude, longitude"""
         """) FROM stdin;\n"""
     )
@@ -94,7 +94,7 @@ def add_cases(file, num, locations):
             randstr(random.randint(7, 11)),  # mothers_surname
             location['village'],  # village
             location['ZS'],  # ZS
-            location['AS'],  # AZ
+            location['AS'],  # AS
             random.choice(['t', 'f', '\\N']),  # test_catt
             random.choice(['t', 'f', '\\N']),  # test_maect
             random.choice(['stage1', 'stage2', 'unknown', '\\N']),  # test_pl_result

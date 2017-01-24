@@ -181,7 +181,7 @@ def campaign_meta(params):
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
         'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
-        'az_visited': cases.values('ZS', 'AS').distinct().count(),
+        'as_visited': cases.values('ZS', 'AS').distinct().count(),
         'villages_visited': cases.values('ZS', 'AS', 'village').distinct().count()
     }
 

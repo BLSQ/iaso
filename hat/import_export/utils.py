@@ -34,7 +34,7 @@ def create_documentid(row: Series) -> str:
         'village',
         'province',
         'ZS',
-        'AZ'
+        'AS'
     ]
     t = tuple(row[COLUMNS])
     h = md5()

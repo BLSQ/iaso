@@ -79,7 +79,7 @@ def update_entries(duplicates):
             'village',
             'province',
             'ZS',
-            'AZ',
+            'AS',
             'hat_id',
             'name',
             'lastname',

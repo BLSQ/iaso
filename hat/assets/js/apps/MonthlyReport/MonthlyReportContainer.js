@@ -38,7 +38,7 @@ export const urls = [
   {
     name: 'meta',
     url: '/api/datasets/campaign_meta/',
-    mock: {'enddate': '2016-08-29T10:58:42.807000Z', 'startdate': '2016-08-11T08:18:43.559000Z', 'az_visited': 1, 'villages_visited': 4}
+    mock: {'enddate': '2016-08-29T10:58:42.807000Z', 'startdate': '2016-08-11T08:18:43.559000Z', 'as_visited': 1, 'villages_visited': 4}
   },
   {
     name: 'testedPerDay',

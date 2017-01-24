@@ -458,8 +458,8 @@ MAPPING = [
         }
     },
     {
-        "field": "AZ",
-        "export_levels": [Export.full, Export.anon],
+        "field": "AS",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "AS"),
@@ -1062,10 +1062,6 @@ MAPPING = [
     },
     {
         "field": "stage_result",
-        "export_levels": [Export.suspects_full, Export.suspects_anon],
-    },
-    {
-        "field": "AS",
         "export_levels": [Export.suspects_full, Export.suspects_anon],
     }
 ]

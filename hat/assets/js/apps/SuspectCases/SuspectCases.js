@@ -21,8 +21,8 @@ const MESSAGES = defineMessages({
     id: 'suspectcases.table.column.zs',
     defaultMessage: 'Zone de Sante'
   },
-  'column-az': {
-    id: 'suspectcases.table.column.az',
+  'column-as': {
+    id: 'suspectcases.table.column.as',
     defaultMessage: 'Aire de Sante'
   },
   'column-village': {
@@ -78,7 +78,7 @@ const MESSAGES = defineMessages({
 const TABLE_COLUMNS = [
   {message: 'column-date', key: 'document_date', type: 'date'},
   {message: 'column-zs', key: 'ZS'},
-  {message: 'column-az', key: 'AZ'},
+  {message: 'column-as', key: 'AS'},
   {message: 'column-village', key: 'village'}
 ]
 

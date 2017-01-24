@@ -38,12 +38,15 @@ class Case(models.Model):
     village = models.TextField(null=True)
     province = models.TextField(null=True)
     ZS = models.TextField(db_index=True, null=True)
-    # TODO: Aires de santé acronym is misspelled and should be refactored into AS
-    AZ = models.TextField(null=True)
+    AS = models.TextField(null=True)
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
     mobile_unit = models.TextField(null=True)
+    device_id = models.TextField(null=True)
+
+    # control field
+    deleted = models.NullBooleanField(default=False)
 
     treatment_center = models.TextField(null=True)
     treatment_start_date = models.DateTimeField(null=True)
@@ -126,7 +129,6 @@ class CaseView(models.Model):
 
     province = models.TextField(null=True)
     ZS = models.TextField(db_index=True, null=True)
-    # TODO: Aires de santé acronym is misspelled and should be refactored into AS
     AS = models.TextField(null=True)
     village = models.TextField(null=True)
 

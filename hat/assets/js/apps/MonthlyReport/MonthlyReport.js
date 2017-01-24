@@ -79,7 +79,7 @@ export const DataTable = ({
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aires de Santé visited' />}
-            value={meta.az_visited} />
+            value={meta.as_visited} />
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.tested' defaultMessage='Participants tested' />}

@@ -40,9 +40,15 @@
 
         FROM cases_case_view
        WHERE document_date BETWEEN {{ date_from|guards.date }} AND {{ date_to|guards.date }}
-      {% if zones_sante is defined %}
-         AND lower("ZS") IN ('{{ zones_sante|join("','") }}')
-      {% endif %}
+
+        {% if casedatefrom is defined %}
+         AND confirmation_result IS TRUE
+         AND document_date >= {{ casedatefrom|guards.date }}
+        {% endif %}
+
+        {% if screeningdateto is defined %}
+         AND (screening_result IS NULL OR document_date < {{ screeningdateto|guards.date }})
+        {% endif %}
     GROUP BY "ZS", "AS", village
     ) b
 
@@ -50,15 +56,11 @@
      AND a."AS" = b."AS"
      AND a.village = b.village
 
-    {% if casedatefrom is defined %}
-     AND b."lastConfirmedCaseDate" >= {{ casedatefrom|guards.date }}
-    {% endif %}
-
-    {% if screeningdateto is defined %}
-     AND (b."lastScreeningDate" IS NULL OR b."lastScreeningDate" < {{ screeningdateto|guards.date }})
-    {% endif %}
-
    WHERE a.village_official IN ('YES', 'NO', 'NA')
+
+  {% if zones_sante is defined %}
+     AND lower(a."ZS") IN ('{{ zones_sante|join("','") }}')
+  {% endif %}
 
    ORDER BY a.longitude, a.latitude
 {% endquery %}

@@ -9,17 +9,6 @@ import {capitalize} from '../../../utils'
 const clean = (word) => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''))
 const isEqual = (a, b) => (clean(a) === clean(b))
 const areEqual = (a, b, keys) => (keys.every((key) => isEqual(a[key], b[key])))
-
-//
-// Leaflet doesn't support topoJSON format, transform them to geoJSON format.
-//
-const provinces = topojson.feature(shapes, shapes.objects.provinces)
-const zones = topojson.feature(shapes, shapes.objects.zones)
-const areas = topojson.feature(shapes, shapes.objects.areas)
-
-//
-// include basic properties in features
-//
 const addBasic = (item) => {
   const props = item.properties
 
@@ -44,11 +33,17 @@ const addBasic = (item) => {
   }
 }
 
-provinces.features.forEach(addBasic)
-zones.features.forEach(addBasic)
-areas.features.forEach(addBasic)
+const divisions = [ 'province', 'zone', 'area' ]
+const data = {}
+divisions.forEach((type) => {
+  // Leaflet doesn't support topoJSON format, transform them to geoJSON format.
+  data[type] = topojson.feature(shapes, shapes.objects[type + 's'])
+  // include basic properties in features
+  data[type].features.forEach(addBasic)
+})
 
-let locations = zones.features.map((item) => item.properties.ZS)
+// use zones as locations list in filters
+let locations = data.zone.features.map((item) => item.properties.ZS)
 locations.sort()
 
 export default {
@@ -56,8 +51,7 @@ export default {
   areEqual,
   center: [ -4.4233379, 16.2113064 ],
   zoom: 7,
-  provinces,
-  zones,
-  areas,
+  divisions,
+  data,
   locations
 }

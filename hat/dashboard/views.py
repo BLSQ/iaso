@@ -99,8 +99,4 @@ def suspect_cases(request):
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def microplanning(request):
-    sources = Case.objects.order_by().values('source').distinct()
-    json_data = json.dumps({
-        'sources': [s['source'] for s in sources],
-    })
-    return render(request, 'dashboard/microplanning.html', {'json_data': json_data})
+    return render(request, 'dashboard/microplanning.html')

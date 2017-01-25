@@ -62,6 +62,31 @@ export class Microplanning extends Component {
       <div>
         <div className='filter__container filter__container--reduced'>
           <h4 className='block--margin-bottom--xxs'>
+            <FormattedMessage id='microplanning.filter.query' defaultMessage='Show villages:' />
+          </h4>
+        </div>
+        <div className='filter__container'>
+          <div key='filter-location' className='filter__container__multiselect'>
+            <label htmlFor='location' className='filter__container__select__label'>
+              <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zones de Sante' />
+            </label>
+            <span>
+              <Select
+                multi
+                simpleValue
+                autosize={false}
+                name='location'
+                value={location || ''}
+                placeholder={formatMessage(MESSAGES['location-all'])}
+                options={geoData.locations.map((value) => ({label: value, value}))}
+                onChange={this.locationHandler}
+              />
+            </span>
+          </div>
+        </div>
+
+        <div className='filter__container filter__container--reduced'>
+          <h4 className='block--margin-bottom--xxs'>
             <FormattedMessage id='microplanning.filter.highlight' defaultMessage='Highlight villages:' />
           </h4>
         </div>
@@ -84,24 +109,6 @@ export class Microplanning extends Component {
             <label className='filter__container__select__label__after'>
               <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
             </label>
-          </div>
-
-          <div key='filter-location' className='filter__container__multiselect'>
-            <label htmlFor='location' className='filter__container__select__label'>
-              <FormattedMessage id='microplanning.filter.location' defaultMessage='in the Zone de Sante' />
-            </label>
-            <span>
-              <Select
-                multi
-                simpleValue
-                autosize={false}
-                name='location'
-                value={location || ''}
-                placeholder={formatMessage(MESSAGES['location-all'])}
-                options={geoData.locations.map((value) => ({label: value, value}))}
-                onChange={this.locationHandler}
-              />
-            </span>
           </div>
         </div>
 

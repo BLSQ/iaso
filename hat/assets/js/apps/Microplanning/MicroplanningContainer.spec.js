@@ -9,12 +9,6 @@ import sinon from 'sinon'
 import { urls, MicroplanningContainer } from './MicroplanningContainer'
 import { selectionInitialState } from './selection'
 
-const appConfig = {
-  'sources': [
-    'mobile_backup'
-  ]
-}
-
 // create a single nock scope chaining all requests
 function createNockScope () {
   const ns = nock('http://localhost')
@@ -41,14 +35,14 @@ describe('MicroplanningContainer Loading Data', () => {
 
   beforeEach(function () {
     defaultProps = {
-      config: appConfig,
+      config: {},
       villages: {},
       selection: selectionInitialState,
       params: { caseyearfrom: '5' },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
-      config: appConfig,
+      config: {},
       villages: {},
       selection: selectionInitialState
     })

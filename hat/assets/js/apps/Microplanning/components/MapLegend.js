@@ -59,7 +59,7 @@ class MapLegend extends Component {
   }
 }
 
-Map.MapLegend = {
+MapLegend.propTypes = {
   legend: PropTypes.object,
   legendToggle: PropTypes.func
 }

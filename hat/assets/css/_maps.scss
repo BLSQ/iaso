@@ -22,7 +22,6 @@ $types: (
   highlight: $bright-pink
 );
 
-
 @each $type, $color in $types {
   .text--#{$type} {
     color: $color !important;
@@ -122,46 +121,22 @@ input.widget__filter__numberinput {
 }
 /* end filters */
 
-
-.leaflet-container {
-  color: $text-color;
-  font-family: $body-font-family;
-  font-weight: normal;
-}
-
-.leaflet-container {
-  cursor: default !important;
-  margin: 0 auto;
-}
-
-.leaflet-control-layers {
-  box-shadow: 0 0 10px rgba(black, 0.2);
-}
-
-.leaflet-control-layers-toggle {
-  box-sizing: border-box;
-  height: 26px !important; /* (；⌣̀_⌣́) */
-  width: 26px !important; /* 凸(￣ヘ￣) */
-  margin: 0;
-  vertical-align: middle;
-  background-color: white;
-  background-image: none;
-  border-radius: 4px;
-  border: 1px solid $gray;
-  text-align: center;
-  text-decoration: none;
-  &:after {
-    color: $text-color;
-    content: "\f0ac";
-    font-family: $icon-font;
-    font-size: 16px;
-  }
-}
-
 .map__panel {
   display: inline-block;
   height: $map-height;
   width: 100%;
+  position: relative;
+
+  &--fullscreen {
+    background: $background-highlight-gray;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 0;
+  }
 }
 
 .map__panel--left {
@@ -198,8 +173,9 @@ input.widget__filter__numberinput {
 
 .map-container {
   background: $background-highlight-gray;
-  height: $map-height;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 /* map controls */
@@ -227,18 +203,27 @@ input.widget__filter__numberinput {
 [class*="map__control__button"] {
   background-color: white;
   border-radius: 4px;
-  border: 1px solid $gray;
+  border: 2px solid $gray;
   box-shadow: 0 0 10px rgba(black, 0.2);
   cursor: pointer !important;
-  font-size: 16px;
-  height: 26px;
+  font-size: $font-size-s;
+  line-height: 30px;
+  width: 34px;
+  height: 34px;
   margin: 0;
   text-align: center;
-  vertical-align: middle;
-  width: 26px;
   .active {
     color: $selected;
   }
+}
+
+.leaflet-touch .map__control__button {
+  border: 2px solid rgba(0,0,0,0.2);
+  background-clip: padding-box;
+}
+
+.map__control__button.active {
+  background-color: $light-gray;
 }
 
 /* village selection controls */
@@ -268,6 +253,44 @@ input.widget__filter__numberinput {
     border-color: $yellow;
     .map__icon--select {
       filter: initial;
+    }
+  }
+}
+
+.map__banner {
+}
+
+.map__control__button--printer {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  margin-right: 10px;
+  border: 2px solid $blue;
+  box-shadow: 0 0 3px 0 $dark-gray;
+  border-radius: 2px;
+  padding: 8px;
+  font-size: $font-size-xs;
+  text-align: left;
+  display: flex;
+  align-items: center;
+
+  .map__icon--printer {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: 64px;
+    height: 64px;
+    margin-right: 6px;
+
+    &:after {
+      margin-left: 6px;
+      font-style: normal;
+      font-size: 48px;
+      line-height: 64px;
+      font-family: $icon-font;
+      color: $blue;
+      content: '\f02f'; /* printer icon */
     }
   }
 }
@@ -403,24 +426,6 @@ input.widget__filter__numberinput {
   }
 }
 
-.leaflet-retina .leaflet-control-layers-toggle {
-  background-image: none;
-}
-
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: $blue;
-  color: white;
-  -webkit-font-smoothing: antialiased;
-}
-.leaflet-popup-content-wrapper {
-  border-radius: 4px;
-}
-
-.leaflet-popup-content {
-  margin: 10px 20px 30px 20px;
-}
-
 .popup-close-button {
   color: $bright-blue;
   font-family: $body-font-family;
@@ -457,6 +462,21 @@ input.widget__filter__numberinput {
   }
 }
 
+.map__marker__label {
+  font-size: $font-size-s;
+  white-space: nowrap;
+  color: $dark-gray;
+  text-shadow: 0px 0px 2px white;
+  font-variant: small-caps;
+  font-weight: 800;
+
+  &.official {
+    font-size: $font-size-s;
+  }
+  &.other {
+    font-size: $font-size-xs;
+  }
+}
 
 /* map sidebar with selection UI */
 

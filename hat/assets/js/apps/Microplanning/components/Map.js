@@ -769,7 +769,7 @@ class Map extends Component {
             <span className='text--center'>
               <FormattedMessage id='microplanning.label.print.info' defaultMessage='Click here or press «Ctrl+P» to print the map as it is.' />
               <br />
-              <FormattedMessage id='microplanning.label.print.info' defaultMessage='Press «Esc» to return to normal view.' />
+              <FormattedMessage id='microplanning.label.print.esc' defaultMessage='Press «Esc» to return to normal view.' />
             </span>
           </div>
         </div>

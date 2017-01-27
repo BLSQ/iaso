@@ -28,6 +28,10 @@
               <td>{% trans "Transformed" %}</td>
               <td>{{ num_transformed }}</td>
             </tr>
+            <tr>
+              <td>{% trans "Duplicate matches" %}</td>
+              <td>{{ num_duplicates }}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -69,6 +73,16 @@
                   {% csrf_token %}
                   {{ form }}
                   <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Rebuild the reconciliation duplicates list." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:rebuild_duplicates' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Rebuild Duplicates" %}</button>
                 </form>
               </td>
             </tr>

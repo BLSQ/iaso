@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
+    url(r'^cases/', include('hat.cases.urls', 'cases')),
 ]
 
 if settings.SHOW_DEBUG_TOOLBAR:

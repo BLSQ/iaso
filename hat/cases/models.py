@@ -13,7 +13,7 @@ SEX_CHOICES = (
 
 
 class Case(models.Model):
-    source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
+    source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
     # The id is currently a hash over the row to be able to
@@ -37,7 +37,7 @@ class Case(models.Model):
 
     village = models.TextField(null=True)
     province = models.TextField(null=True)
-    ZS = models.TextField(db_index=True, null=True)
+    ZS = models.TextField(null=True)
     AS = models.TextField(null=True)
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
@@ -113,7 +113,7 @@ class Case(models.Model):
 
 
 class CaseView(models.Model):
-    source = models.TextField(choices=SOURCE_CHOICES, db_index=True, null=True)
+    source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
     document_id = models.TextField(db_index=True)
@@ -128,7 +128,7 @@ class CaseView(models.Model):
     year_of_birth = models.PositiveSmallIntegerField(null=True)
 
     province = models.TextField(null=True)
-    ZS = models.TextField(db_index=True, null=True)
+    ZS = models.TextField(null=True)
     AS = models.TextField(null=True)
     village = models.TextField(null=True)
 
@@ -170,4 +170,25 @@ class Location(models.Model):
     class Meta:
         permissions = (
             ("import_locations", "Can import location data"),
+        )
+
+
+class DuplicatesPair(models.Model):
+    case1 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
+    case2 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
+    ZS = models.TextField(null=True)
+    AS = models.TextField(null=True)
+    village = models.TextField(null=True)
+    deleted = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if(self.case1_id > self.case2_id):
+            super(DuplicatesPair, self).save(*args, **kwargs)
+        else:
+            raise Exception("Case1's id should always be greater than case2's id")
+
+    class Meta:
+        unique_together = (('case1', 'case2'),)
+        permissions = (
+            ("reconcile_duplicates", "Can reconcile duplicates"),
         )

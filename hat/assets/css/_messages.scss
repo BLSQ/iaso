@@ -13,6 +13,10 @@
     background-color: $danger;
     color: white;
   }
+  &--success {
+    background-color: $green;
+    color: white;
+  }
 }
 .message__title {
   margin: 0;

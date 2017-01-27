@@ -1,15 +1,10 @@
-import os
 from datetime import timedelta
 from .extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS, \
     SUSPECT_FULL_EXPORT_FIELDS, SUSPECT_ANON_EXPORT_FIELDS
 from django.conf import settings
 from hat.common.utils import run_cmd, create_shared_filename
 from hat.cases.filters import resolve_dateperiod
-
-from snaql.factory import Snaql
-current_dir = os.path.abspath(os.path.dirname(__file__))
-snaql_factory = Snaql(current_dir, 'queries')
-export_queries = snaql_factory.load_queries('export.sql')
+from .queries import export_queries
 
 
 def export_csv(

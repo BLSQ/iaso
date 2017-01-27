@@ -1,0 +1,63 @@
+{% extends "app.html" %}
+{% load i18n %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Duplicate cases reconciliation" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">
+          {{ count }} Duplicate matches found
+        </h2>
+      </div>
+      <div class="widget__content">
+        <p>This list shows potential duplicate cases. Click on "Compare" for a detailed comparison.</p>
+      </div>
+
+      <section class="widget__content">
+        <table class="table--minimised duplicates__table duplicates__table--list">
+          <thead>
+            <tr>
+              <th>Case1</th>
+              <th>Case2</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                {% if row.type == 'location' %}
+                  <td colspan="3" class="location__td"><b>{{ row.location }}</b></td>
+                {% elif row.type == 'pair' %}
+                  <td>{{ row.pair.case1.name }} {{ row.pair.case1.prename}} {{ row.pair.case1.lastname }}, {{ row.pair.case1.sex }}, {{ row.pair.case1.age }}</td>
+                  <td>{{ row.pair.case2.name }} {{ row.pair.case2.prename}} {{ row.pair.case2.lastname }}, {{ row.pair.case2.sex }}, {{ row.pair.case2.age }}</td>
+                  <td><a class="button--minimised" href="{% url 'cases:duplicates_details' pair_id=row.pair.id %}?back={{ request.get_full_path|urlencode }}">Compare</a></td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <div class="widget__pagination">
+        {% if pairs.has_previous %}
+          <a class="button--minimised block--margin-right--xxs" href="?page={{ pairs.previous_page_number }}">
+            <i class="fa fa-arrow-left"></i>
+            <span>Previous</span>
+          </a>
+        {% endif %}
+
+        {% if pairs.has_next %}
+          <a class="button--minimised" href="?page={{ pairs.next_page_number }}">
+            <span>Next</span>
+            <i class="fa fa-arrow-right icon--right"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

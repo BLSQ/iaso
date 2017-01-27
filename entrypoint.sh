@@ -18,6 +18,9 @@ show_help() {
   """
 }
 
+export PYTHONPATH="/opt/app:$PYTHONPATH"
+export DJANGO_SETTINGS_MODULE=hat.settings
+
 case "$1" in
   "test" )
     export TESTING=true
@@ -86,6 +89,7 @@ case "$1" in
     npm run webpack-server
   ;;
   "start_rq" )
+    ./manage.py rqscheduler &
     ./manage.py rqworker default
   ;;
   "start_dev_rq" )
@@ -94,6 +98,7 @@ case "$1" in
     # RQ uses the PID as part of it's name and that does not
     # change with container restarts and RQ the exits because
     # it finds the old worker under it's name in redis.
+    ./manage.py rqscheduler &
     ./manage.py rqworker default --name "rq-${RANDOM}"
   ;;
   "start_jupyter" )
@@ -101,7 +106,6 @@ case "$1" in
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
-    export DJANGO_SETTINGS_MODULE=hat.settings
     jupyter notebook -y --no-browser --ip=0.0.0.0
   ;;
   "manage" )

@@ -1,4 +1,3 @@
-import os
 from functools import wraps
 from datetime import datetime, timedelta, date
 from calendar import monthrange
@@ -11,7 +10,6 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
-from snaql.factory import Snaql
 from hat.cases.models import CaseView
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
@@ -23,12 +21,7 @@ from hat.cases.filters import \
     Q_staging, \
     Q_staging_stage1, \
     Q_staging_stage2
-
-# Load queries
-current_dir = os.path.abspath(os.path.dirname(__file__))
-snaql_factory = Snaql(current_dir, 'queries')
-stats_queries = snaql_factory.load_queries('stats.sql')
-microplanning_queries = snaql_factory.load_queries('microplanning.sql')
+from .queries import stats_queries, microplanning_queries
 
 datasets = {}
 

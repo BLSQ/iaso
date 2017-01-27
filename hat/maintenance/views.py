@@ -12,22 +12,23 @@ from django.utils.translation import ugettext as _
 @require_http_methods(['GET'])
 def index(request):
     from django.conf import settings
-    from hat.cases.models import Case
+    from hat.cases.models import Case, DuplicatesPair
     import hat.couchdb.api as couchdb
     num_transformed = Case.objects.count()
     r = couchdb.get(settings.COUCHDB_DB)
     r.raise_for_status()
 
     num_raw = r.json()['doc_count']
-    # To account for the design doc we simply subtract one. These is just
-    # an assummption. If we will have non raw docs or more than one design
-    # doc in couchdb, it will be incorrect.
+    # To account for the design doc we simply subtract one from the raw count.
+    # That is just an assummption. If we will have non raw docs or more than
+    # one design doc in couchdb, it will be incorrect.
     num_raw = num_raw - 1
     context = {
-            'num_transformed': num_transformed,
-            'num_raw': num_raw,
-            'show_raw_data_button': settings.DEBUG
-            }
+        'num_transformed': num_transformed,
+        'num_raw': num_raw,
+        'num_duplicates': DuplicatesPair.objects.all().count(),
+        'show_raw_data_button': settings.DEBUG,
+    }
     return render(request, 'maintenance/index.html', context)
 
 
@@ -91,4 +92,13 @@ def delete_couchdb_data(request):
 def reimport(request):
     from hat.import_export.tasks import reimport_task
     task = run_task(reimport_task, superuser=True)
+    return redirect('maintenance:status', task_id=task.id)
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def rebuild_duplicates(request):
+    from hat.cases.tasks import duplicates_task
+    task = run_task(duplicates_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)

@@ -83,12 +83,12 @@ class ExportButton extends Component {
     const format = (isXLSXPossible && this.props.format === 'xlsx' ? 'xlsx' : 'csv')
 
     const toCsv = (list) => {
-      const DELIMITER = this.props.delimiter || ','
+      const sep = this.props.sep || ','
       const WRAP_STR = '"'
 
       const headers = columns.map((col) => {
         return WRAP_STR + formatMessage(messages[col.message]) + WRAP_STR
-      }).join(DELIMITER)
+      }).join(sep)
 
       const rows = list.map((row) => (
         columns.map((col) => {
@@ -103,7 +103,7 @@ class ExportButton extends Component {
             default:
               return WRAP_STR + val + WRAP_STR
           }
-        }).join(DELIMITER)
+        }).join(sep)
       ))
 
       return [headers].concat(rows).join('\n')
@@ -178,7 +178,7 @@ ExportButton.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object),
   messages: PropTypes.object,
   format: PropTypes.string,
-  delimiter: PropTypes.string,
+  sep: PropTypes.string,
   filename: PropTypes.string,
   intl: intlShape.isRequired
 }

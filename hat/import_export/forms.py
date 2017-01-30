@@ -41,8 +41,8 @@ class DownloadCsvForm(forms.Form):
     )
 
     SEP_CHOICES = (
-        (',', _('Comma ","')),
-        (';', _('Semicolon ";"')),
+        (',', _('Comma “,”')),
+        (';', _('Semicolon “;”')),
     )
     sep = forms.ChoiceField(
         required=True,

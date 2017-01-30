@@ -1,28 +1,30 @@
 {% query 'data_by_location', note='locations info with confirmed cases' %}
-  SELECT a."ZS"
+  SELECT a.province
+       , a.province_old AS "formerProvince"
+       , a."ZS"
        , a."AS"
        , a.village
        , a.longitude
        , a.latitude
-       , a.gps_source as "gpsSource"
+       , a.gps_source AS "gpsSource"
 
        , TRIM(BOTH
             TO_CHAR(a.longitude, '000.00000000')
             || ':' ||
-            TO_CHAR(a.latitude, '000.00000000')) as id
-       , TRIM(BOTH a."ZS" || ' - ' || a."AS" || ' - ' || a.village) as label
+            TO_CHAR(a.latitude, '000.00000000')) AS id
+       , TRIM(BOTH a."ZS" || ' - ' || a."AS" || ' - ' || a.village) AS label
        , CASE a.village_official
             WHEN 'YES' THEN 'official'
             WHEN 'NO'  THEN 'other'
             WHEN 'NA'  THEN 'unknown'
-          END as type
+          END AS type
 
-       , COALESCE(a.population, 0) as population
-       , a.population_year as "populationYear"
-       , a.population_source as "populationSource"
-       , COALESCE(b."screenedPeople", 0) as "screenedPeople"
+       , COALESCE(a.population, 0) AS population
+       , a.population_year AS "populationYear"
+       , a.population_source AS "populationSource"
+       , COALESCE(b."screenedPeople", 0) AS "screenedPeople"
        , b."lastScreeningDate"
-       , COALESCE(b."confirmedCases", 0) as "confirmedCases"
+       , COALESCE(b."confirmedCases", 0) AS "confirmedCases"
        , b."lastConfirmedCaseDate"
 
     FROM cases_location a
@@ -32,11 +34,11 @@
            , "AS"
            , village
 
-           , count(DISTINCT document_id) FILTER (WHERE screening_result IS NOT NULL) as "screenedPeople"
-           , max(document_date) FILTER (WHERE screening_result IS NOT NULL) as "lastScreeningDate"
+           , count(DISTINCT document_id) FILTER (WHERE screening_result IS NOT NULL) AS "screenedPeople"
+           , max(document_date) FILTER (WHERE screening_result IS NOT NULL) AS "lastScreeningDate"
 
-           , count(DISTINCT document_id) FILTER (WHERE confirmation_result IS TRUE) as "confirmedCases"
-           , max(document_date) FILTER (WHERE confirmation_result IS TRUE) as "lastConfirmedCaseDate"
+           , count(DISTINCT document_id) FILTER (WHERE confirmation_result IS TRUE) AS "confirmedCases"
+           , max(document_date) FILTER (WHERE confirmation_result IS TRUE) AS "lastConfirmedCaseDate"
 
         FROM cases_case_view
        WHERE document_date BETWEEN {{ date_from|guards.date }} AND {{ date_to|guards.date }}

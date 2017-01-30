@@ -3,15 +3,31 @@ from simpledbf import Dbf5
 from pandas import DataFrame
 from django.conf import settings
 import hat.couchdb.api as couchdb
-from .load import load_locations_into_db
+from .load import load_locations_into_db, load_locations_areas_info_db
 from .utils import store_raw_file, capitalize, get_property_by_year
 
 logger = logging.getLogger(__name__)
 
 STORE_ID = 'hat-raw-locations'
+AREAS_ID = 'hat-raw-locations-areas'
+
+'''
+    ** import_locations_file
+    This method receives the COMPLETE villages list.
+    It will trucate the "location" table and insert the new entries.
+
+    ** import_locations_areas_file
+    This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
+    It will update the missing "province" info in the "location" table entries.
+    No new entries will be created, either other properties will be updated.
+'''
 
 
 def import_locations_file(orgname: str, filename: str, store=False) -> dict:
+    '''
+    This method receives the COMPLETE villages list.
+    It will trucate the "location" table and insert the new entries.
+    '''
     stats = {
         'type': 'locations_import',
         'version': 1,
@@ -30,6 +46,9 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         stats['num_total'] = len(df)
 
         df_locs = DataFrame()
+        # this is not possible yet, that's the main reason of the other method
+        # df_locs['province'] = df['NEW_PROV'].apply(capitalize)
+        # df_locs['province_old'] = df['OLD_PROV'].apply(capitalize)
         df_locs['ZS'] = df['ZS'].apply(capitalize)
         df_locs['AS'] = df['AS_'].apply(capitalize)
         if 'Alt_AS' in df:
@@ -69,6 +88,59 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
             doc['_id'] = STORE_ID
             store_raw_file(doc, filename, 'application/x-dbf')
             stats['store_id'] = STORE_ID
+
+    except Exception as ex:
+        stats['success'] = False
+        stats['error'] = str(ex)
+        logger.exception(ex)
+
+    return stats
+
+
+def import_locations_areas_file(orgname: str, filename: str, store=False) -> dict:
+    '''
+    This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
+    It will update the missing province "info" in the "location" table entries.
+    No new entries will be created, either other properties will be updated.
+    '''
+    stats = {
+        'type': 'locations_areas_import',
+        'version': 1,
+        'orgname': orgname,
+        'filename': filename,
+        'success': True,
+        'num_total': 0,
+        'num_imported': 0,
+        'error': None
+    }
+    try:
+        dbf = Dbf5(filename)
+        df = dbf.to_dataframe()
+
+        stats['num_total'] = len(df)
+
+        df_locs = DataFrame()
+        df_locs['province'] = df['NEW_PROV'].apply(capitalize)
+        df_locs['province_old'] = df['OLD_PROV'].apply(capitalize)
+        df_locs['ZS'] = df['ZS'].apply(capitalize)
+        df_locs['AS'] = df['AS_'].apply(capitalize)
+
+        num_imported = load_locations_areas_info_db(df_locs)
+        stats['num_imported'] = num_imported
+
+        # We store the areas so that they can be replicated to another
+        # server and get inserted when we reimport from raw data.
+        if store:
+            # Check if a areas raw file already exists and delete it
+            r = couchdb.get(settings.COUCHDB_DB + '/' + AREAS_ID)
+            if r.status_code < 400:
+                old_doc = r.json()
+                couchdb.delete(settings.COUCHDB_DB + '/' + AREAS_ID,
+                               params={'rev': old_doc['_rev']})
+            doc = stats.copy()
+            doc['_id'] = AREAS_ID
+            store_raw_file(doc, filename, 'application/x-dbf')
+            stats['store_id'] = AREAS_ID
 
     except Exception as ex:
         stats['success'] = False

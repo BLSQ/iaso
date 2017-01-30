@@ -2,7 +2,7 @@ from typing import List, Tuple
 from django_rq import job
 from .export_csv import export_csv
 from .import_cases import import_cases_file
-from .import_locations import import_locations_file
+from .import_locations import import_locations_file, import_locations_areas_file
 from .import_reconciled import import_reconciled_file
 from .reimport import reimport
 
@@ -28,6 +28,11 @@ def reimport_task() -> dict:
 @job('default', timeout=15*60)
 def import_locations_task(name, filename) -> dict:
     return import_locations_file(name, filename)
+
+
+@job('default', timeout=15*60)
+def import_locations_areas_task(name, filename) -> dict:
+    return import_locations_areas_file(name, filename)
 
 
 @job('default', timeout=15*60)

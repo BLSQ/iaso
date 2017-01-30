@@ -9,7 +9,8 @@ from .forms import \
     UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
 from hat.import_export.tasks import \
-    import_task, export_task, import_locations_task, import_reconciled_task
+    import_task, export_task, import_locations_task, \
+    import_locations_areas_task, import_reconciled_task
 from hat.rq.utils import run_task, get_task_status, get_task_result
 from rq.exceptions import NoSuchJobError
 from hat.import_export.errors import error_helper
@@ -196,6 +197,7 @@ def upload_locations(request):
     if request.method == 'POST':
         form = UploadLocationsFileForm(request.POST, request.FILES)
         if form.is_valid():
+            source = request.POST.get('source', None)
             form_files = request.FILES.getlist('file')
             file = form_files[0]
             suffix = PurePath(file.name).suffix.lower()
@@ -203,8 +205,12 @@ def upload_locations(request):
             with open(filename, 'wb') as fd:
                 fd.write(file.read())
             # run import task
-            task = run_task(import_locations_task, args=[file.name, filename],
-                            permission='cases.import_locations')
+            if source == 'areas':
+                task = run_task(import_locations_areas_task, args=[file.name, filename],
+                                permission='cases.import_locations')
+            else:
+                task = run_task(import_locations_task, args=[file.name, filename],
+                                permission='cases.import_locations')
             return redirect('datasets:import_locations:state', task_id=task.id)
     else:
         form = UploadLocationsFileForm()
@@ -225,7 +231,7 @@ def upload_locations_state(request, task_id):
     if status == 'failed':
         message = default_messages['upload_failed']
         messages.add_message(request, messages.ERROR, message)
-        return redirect('datasets:export_cases:download')
+        return redirect('datasets:import_locations:upload')
     elif status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
     else:

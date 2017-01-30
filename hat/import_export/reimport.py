@@ -8,7 +8,7 @@ from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
 from hat.import_export.errors import ImportStage
 from .import_cases import import_cases_file
-from .import_locations import import_locations_file
+from .import_locations import import_locations_file, import_locations_areas_file
 from .import_reconciled import import_reconciled_file
 from .import_csv import import_csv_file
 
@@ -26,6 +26,7 @@ def reimport() -> List[dict]:
            not type == 'pv_import' and \
            not type == 'csv_import' and \
            not type == 'locations_import' and \
+           not type == 'locations_areas_import' and \
            not type == 'reconciled_import':
             return
 
@@ -56,6 +57,8 @@ def reimport() -> List[dict]:
             stats = import_csv_file(c['doc']['orgname'], filename)
         elif type == 'locations_import':
             stats = import_locations_file(c['doc']['orgname'], filename)
+        elif type == 'locations_areas_import':
+            stats = import_locations_areas_file(c['doc']['orgname'], filename)
         elif type == 'reconciled_import':
             stats = import_reconciled_file(c['doc']['orgname'], filename)
 

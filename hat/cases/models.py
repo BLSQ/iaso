@@ -145,11 +145,13 @@ class CaseView(models.Model):
 
 
 class Location(models.Model):
-    ZS = models.TextField(db_index=True, null=True)
-    AS = models.TextField(db_index=True, null=True)
-    AS_alt = models.TextField(db_index=True, null=True)
-    village = models.TextField(db_index=True, null=True)
-    village_alt = models.TextField(db_index=True, null=True)
+    province = models.TextField(null=True)
+    province_old = models.TextField(null=True)
+    ZS = models.TextField(null=True)
+    AS = models.TextField(null=True)
+    AS_alt = models.TextField(null=True)
+    village = models.TextField(null=True)
+    village_alt = models.TextField(null=True)
     village_type = models.TextField(null=True)
     VILLAGE_OFFICIAL_CHOICES = (
         ('YES', 'Villages from Z.S.'),

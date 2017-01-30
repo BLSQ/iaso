@@ -60,10 +60,10 @@ class Migration(migrations.Migration):
                 mothers_surname gin_trgm_ops
             )''',
             reverse_sql = '''
+            -- Remove trigram indexes for names
+            DROP INDEX cases_case_names_trgm_idx;
             -- Disable extension
             DROP EXTENSION pg_trgm;
-            -- Remove trigram indexes for names
-            DROP INDEX cases_case_names_trgm_idx
             '''
         ),
     ]

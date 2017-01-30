@@ -79,14 +79,6 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.case.date',
     defaultMessage: 'Last case date'
   },
-  screenedPeople: {
-    id: 'microplanning.tooltip.screened',
-    defaultMessage: '# Screened people'
-  },
-  lastScreeningDate: {
-    id: 'microplanning.tooltip.screening.date',
-    defaultMessage: 'Last screening date'
-  },
 
   // type values
   official: {
@@ -120,9 +112,7 @@ const ROWS = [
   { key: 'populationYear' },
   { key: 'populationSource' },
   { key: 'confirmedCases', type: 'integer' },
-  { key: 'lastConfirmedCaseDate', type: 'date' },
-  { key: 'screenedPeople', type: 'integer' },
-  { key: 'lastScreeningDate', type: 'date' }
+  { key: 'lastConfirmedCaseDate', type: 'date' }
 ]
 
 class MapTooltip extends Component {

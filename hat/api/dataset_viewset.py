@@ -273,7 +273,6 @@ def cases_over_time(params):
         'date_to': {'type': 'string'},
         'location': {'type': 'string'},
         'caseyearfrom': {'type': 'string'},
-        'screeningyearto': {'type': 'string'},
     }
 })
 def data_by_location(params):
@@ -297,9 +296,6 @@ def data_by_location(params):
     if 'caseyearfrom' in params:
         yearfrom = currentYear - int(params['caseyearfrom'])
         sql_context['casedatefrom'] = datetime(yearfrom, 1, 1)
-    if 'screeningyearto' in params and int(params['screeningyearto']) > 0:
-        yearto = currentYear - int(params['screeningyearto']) + 1
-        sql_context['screeningdateto'] = datetime(yearto, 1, 1)
 
     sql = microplanning_queries.data_by_location(**sql_context)
 

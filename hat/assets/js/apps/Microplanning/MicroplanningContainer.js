@@ -22,21 +22,17 @@ export const urls = [
     name: 'villages',
     url: '/api/datasets/data_by_location/',
     mock: [{
-      'area': 'Muwanda-koso',
+      'AS': 'Muwanda-koso',
       'confirmedCases': 1,
       'lastConfirmedCase': '2016-06-27T13:29:03.141000Z',
-      'lastScreeningDate': '2016-06-12T09:20:48.654000Z',
-      'screenedPeople': 201,
       'village': 'Polongo',
-      'zone': 'Mosango'
+      'ZS': 'Mosango'
     }, {
-      'area': 'Fula',
+      'AS': 'Fula',
       'confirmedCases': 2,
       'lastConfirmedCase': '2016-08-21T12:27:17.420000Z',
-      'lastScreeningDate': '2016-08-21T12:27:17.420000Z',
-      'screenedPeople': 211,
       'village': 'Kikonzi-mf',
-      'zone': 'Yasa-bonga'
+      'ZS': 'Yasa-bonga'
     }]
   }
 ]

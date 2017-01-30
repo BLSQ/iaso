@@ -22,8 +22,6 @@
        , COALESCE(a.population, 0) AS population
        , a.population_year AS "populationYear"
        , a.population_source AS "populationSource"
-       , COALESCE(b."screenedPeople", 0) AS "screenedPeople"
-       , b."lastScreeningDate"
        , COALESCE(b."confirmedCases", 0) AS "confirmedCases"
        , b."lastConfirmedCaseDate"
 
@@ -34,9 +32,6 @@
            , "AS"
            , village
 
-           , count(DISTINCT document_id) FILTER (WHERE screening_result IS NOT NULL) AS "screenedPeople"
-           , max(document_date) FILTER (WHERE screening_result IS NOT NULL) AS "lastScreeningDate"
-
            , count(DISTINCT document_id) FILTER (WHERE confirmation_result IS TRUE) AS "confirmedCases"
            , max(document_date) FILTER (WHERE confirmation_result IS TRUE) AS "lastConfirmedCaseDate"
 
@@ -46,10 +41,6 @@
         {% if casedatefrom is defined %}
          AND confirmation_result IS TRUE
          AND document_date >= {{ casedatefrom|guards.date }}
-        {% endif %}
-
-        {% if screeningdateto is defined %}
-         AND (screening_result IS NULL OR document_date < {{ screeningdateto|guards.date }})
         {% endif %}
     GROUP BY "ZS", "AS", village
     ) b

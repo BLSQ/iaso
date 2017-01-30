@@ -712,9 +712,7 @@ class Map extends Component {
 
       // find out the number of cases and the onset date of the last case
       const confirmedCases = plotted.reduce(sum('confirmedCases'), 0)
-      const screenedPeople = plotted.reduce(sum('screenedPeople'), 0)
       const lastConfirmedCaseDate = plotted.reduce(max('lastConfirmedCaseDate'), '')
-      const lastScreeningDate = plotted.reduce(max('lastScreeningDate'), '')
 
       // find out the population and number of villages by type
       const population = inShape.reduce(sum('population'), 0)
@@ -726,8 +724,6 @@ class Map extends Component {
         ...item,
         confirmedCases,
         lastConfirmedCaseDate,
-        screenedPeople,
-        lastScreeningDate,
         population,
         villagesOfficial,
         villagesOther,

@@ -20,7 +20,6 @@ export class Microplanning extends Component {
   constructor () {
     super()
     this.caseDateHandler = this.caseDateHandler.bind(this)
-    this.screeningDateHandler = this.screeningDateHandler.bind(this)
     this.locationHandler = this.locationHandler.bind(this)
     this.selectItemsHandler = this.selectItemsHandler.bind(this)
     this.deselectItemsHandler = this.deselectItemsHandler.bind(this)
@@ -29,12 +28,6 @@ export class Microplanning extends Component {
   caseDateHandler (event) {
     const caseyearfrom = parseInt(event.target.value, 10)
     const url = createUrl({...this.props.params, caseyearfrom})
-    this.props.dispatch(push(url))
-  }
-
-  screeningDateHandler (event) {
-    const screeningyearto = parseInt(event.target.value, 10)
-    const url = createUrl({...this.props.params, screeningyearto})
     this.props.dispatch(push(url))
   }
 
@@ -53,7 +46,7 @@ export class Microplanning extends Component {
 
   render () {
     const { formatMessage } = this.props.intl
-    const { caseyearfrom, screeningyearto, location } = this.props.params
+    const { caseyearfrom, location } = this.props.params
     const { data, error, loading } = this.props.villages
     const selectedItems = (this.props.selection.selectedItems || [])
     const villages = (data && data.villages || [])
@@ -96,16 +89,6 @@ export class Microplanning extends Component {
               <FormattedMessage id='microplanning.filter.cases.date' defaultMessage='with HAT cases in past' />
             </label>
             <input type='number' disabled={loading} name='caseyearfrom' min='0' value={caseyearfrom || 0} onChange={this.caseDateHandler} className='input--minimised' />
-            <label className='filter__container__select__label__after'>
-              <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
-            </label>
-          </div>
-
-          <div key='filter-screening-date' className='filter__container__input'>
-            <label htmlFor='screeningdateto' className='filter__container__select__label'>
-              <FormattedMessage id='microplanning.filter.screening.date' defaultMessage='and not visited in the last' />
-            </label>
-            <input type='number' disabled={loading} name='screeningyearto' min='0' value={screeningyearto || 0} onChange={this.screeningDateHandler} className='input--minimised' />
             <label className='filter__container__select__label__after'>
               <FormattedMessage id='microplanning.filter.years' defaultMessage='years' />
             </label>

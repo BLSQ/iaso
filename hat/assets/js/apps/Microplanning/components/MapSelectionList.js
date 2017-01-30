@@ -43,14 +43,6 @@ const MESSAGES = defineMessages({
     id: 'microplanning.export.case.date',
     defaultMessage: 'Last case date'
   },
-  'export-screening-people': {
-    id: 'microplanning.tooltip.screening.people',
-    defaultMessage: '# Screened people'
-  },
-  'export-screening-date': {
-    id: 'microplanning.export.screening.date',
-    defaultMessage: 'Last screening date'
-  },
 
   // type values
   official: {
@@ -77,9 +69,7 @@ const COLUMNS = [
   { message: 'export-longitude', key: 'longitude', type: 'number' },
   { message: 'export-population', key: 'population', type: 'number' },
   { message: 'export-cases', key: 'confirmedCases', type: 'number' },
-  { message: 'export-case-date', key: 'lastConfirmedCaseDate', type: 'date' },
-  { message: 'export-screening-people', key: 'screenedPeople', type: 'number' },
-  { message: 'export-screening-date', key: 'lastScreeningDate', type: 'date' }
+  { message: 'export-case-date', key: 'lastConfirmedCaseDate', type: 'date' }
 ]
 
 class MapSelectionList extends Component {

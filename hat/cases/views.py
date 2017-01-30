@@ -6,16 +6,14 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
-from hat.cases.models import Case, DuplicatesPair
-from .forms import DuplicatesMergeForm
+from hat.cases.models import Case, DuplicatesPair, IgnoredPair
 
 
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
-    all_pairs = DuplicatesPair.objects.filter(deleted=False) \
-                                      .order_by('ZS', 'AS', 'village')
+    all_pairs = DuplicatesPair.objects.order_by('case1__ZS', 'case1__AS', 'case1__village')
     paginator = Paginator(all_pairs, 25)
 
     page = request.GET.get('page')
@@ -30,10 +28,10 @@ def duplicatespair_list(request):
 
     rows = []
     if len(pairs) > 0:
-        cur_loc = [pairs[0].ZS, pairs[0].AS, pairs[0].village]
+        cur_loc = [pairs[0].case1.ZS, pairs[0].case1.AS, pairs[0].case1.village]
         rows = [{'type': 'location', 'location': ', '.join(cur_loc)}]
         for pair in pairs:
-            loc = [pair.ZS, pair.AS, pair.village]
+            loc = [pair.case1.ZS, pair.case1.AS, pair.case1.village]
             if loc != cur_loc:
                 cur_loc = loc
                 rows.append({'type': 'location', 'location': ', '.join(cur_loc)})
@@ -49,7 +47,6 @@ def duplicatespair_list(request):
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET', 'POST'])
-@transaction.non_atomic_requests
 def duplicatespair_detail(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
@@ -58,16 +55,6 @@ def duplicatespair_detail(request, pair_id):
     [case1, case2] = Case.objects.filter(id__in=[pair.case1_id, pair.case2_id]) \
                                  .order_by('document_date')
     (new_case, steps) = merge_cases(case1, case2)
-
-    form = DuplicatesMergeForm(request.POST or None)
-    if request.method == 'POST':
-        if form.is_valid():
-            pair.deleted = True
-            pair.save()
-            commit_merge(case1, case2, new_case)
-            # todo: persist the `steps` to the DB
-            messages.add_message(request, messages.SUCCESS, _('Merge done.'))
-            return redirect(back_link)
 
     fields = [
         'source',
@@ -112,11 +99,47 @@ def duplicatespair_detail(request, pair_id):
         ])
 
     return render(request, 'cases/duplicates_detail.html', {
+        'pair_id': pair.id,
         'headers': ['Case 1', 'Case 2', 'Merged case preview'],
         'rows': rows,
-        'form': form,
         'back_link': back_link
     })
+
+
+@login_required()
+@permission_required('cases.reconcile_duplicates')
+@require_http_methods(['POST'])
+@transaction.non_atomic_requests
+def duplicatespair_merge(request, pair_id):
+    back_link = request.GET.get('back', 'cases:duplicates_list')
+    pair = DuplicatesPair.objects.get(pk=int(pair_id))
+    # Get cases in chronological asc order
+    [case1, case2] = Case.objects.filter(id__in=[pair.case1_id, pair.case2_id]) \
+                                 .order_by('document_date')
+    (new_case, steps) = merge_cases(case1, case2)
+
+    pair.delete()
+    commit_merge(case1, case2, new_case)
+    # todo: persist the `steps` to the DB
+    messages.add_message(request, messages.SUCCESS, _('Merge done.'))
+    return redirect(back_link)
+
+
+@login_required()
+@permission_required('cases.reconcile_duplicates')
+@require_http_methods(['POST'])
+@transaction.non_atomic_requests
+def duplicatespair_ignore(request, pair_id):
+    back_link = request.GET.get('back', 'cases:duplicates_list')
+
+    pair = DuplicatesPair.objects.get(pk=int(pair_id))
+    pair.delete()
+
+    ignored = IgnoredPair(document_id1=pair.document_id1, document_id2=pair.document_id2)
+    ignored.save()
+
+    messages.add_message(request, messages.SUCCESS, _('Match ignored.'))
+    return redirect(back_link)
 
 
 def merge_cases(case1, case2):
@@ -167,22 +190,23 @@ def commit_merge(case1, case2, new_case):
         # Replace the merged ids with the new id. The model has a constraint
         # that id1 > id2 to help finding duplicates. We need to honor that.
         # The new id will always be greater than any existing id. Any arising
-        # duplicate pairs will be marked deleted.
+        # duplicate pairs will be deleted.
 
         if p.case1_id == case1.id or p.case1_id == case2.id:
             key = (new_case.id, p.case2_id)
             if key in unique_pairs:
-                p.deleted = True
+                p.delete()
             else:
                 p.case1_id = new_case.id
+                p.save()
         elif p.case2_id == case1.id or p.case2_id == case2.id:
             key = (new_case.id, p.case1_id)
             if key in unique_pairs:
-                p.deleted = True
+                p.delete()
             else:
                 # ids need to be switched to keep up with the constraint
                 p.case2_id = p.case1_id
                 p.case1_id = new_case.id
+                p.save()
 
         unique_pairs.add(key)
-        p.save()

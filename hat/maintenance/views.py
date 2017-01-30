@@ -26,7 +26,7 @@ def index(request):
     context = {
         'num_transformed': num_transformed,
         'num_raw': num_raw,
-        'num_duplicates': DuplicatesPair.objects.all().count(),
+        'num_duplicates': DuplicatesPair.objects.count(),
         'show_raw_data_button': settings.DEBUG,
     }
     return render(request, 'maintenance/index.html', context)

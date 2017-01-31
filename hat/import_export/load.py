@@ -51,6 +51,17 @@ def load_locations_into_db(df: DataFrame):
     return df
 
 
+def load_locations_areas_info_db(df: DataFrame):
+    total = 0
+    with transaction.atomic():
+        for index, row in df.iterrows():
+            num = Location.objects.filter(ZS=row['ZS']) \
+                                  .filter(AS=row['AS']) \
+                                  .update(**row.dropna().to_dict())
+            total += num
+    return total
+
+
 def load_reconciled_into_db(df: DataFrame):
     total = 0
     with transaction.atomic():
@@ -79,7 +90,7 @@ def update_entries(duplicates):
             'village',
             'province',
             'ZS',
-            'AZ',
+            'AS',
             'hat_id',
             'name',
             'lastname',

@@ -1,0 +1,84 @@
+/*
+ * LEAFLETJS
+ * override classes
+ */
+
+.leaflet-container {
+  color: $text-color;
+  font-family: $body-font-family;
+  font-weight: normal;
+}
+
+.leaflet-container {
+  cursor: default !important;
+  margin: 0 auto;
+}
+
+/*
+ * layers control
+ */
+.leaflet-touch .leaflet-control-layers {
+  border: none;
+}
+.leaflet-touch .leaflet-control-layers-expanded {
+  border: 2px solid rgba(black,0.2);
+}
+
+.leaflet-control-layers {
+  box-shadow: 0 0 10px rgba(black, 0.2);
+}
+.leaflet-control-layers-toggle {
+  box-sizing: border-box;
+  height: 34px !important; /* (；⌣̀_⌣́) */
+  width: 34px !important; /* 凸(￣ヘ￣) */
+  line-height: 30px;
+  margin: 0;
+  background-color: white;
+  background-image: none;
+  border-radius: 5px;
+  border: 2px solid $gray;
+  text-align: center;
+  text-decoration: none;
+
+  &:after {
+    color: $text-color;
+    content: "\f0ac";
+    font-family: $icon-font;
+    font-size: $font-size-s;
+  }
+}
+.leaflet-retina .leaflet-control-layers-toggle {
+  background-image: none;
+}
+
+
+/*
+ * popup
+ */
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: $blue;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 4px;
+}
+.leaflet-popup-content {
+  margin: 10px 20px 30px 20px;
+}
+
+
+/*
+ * BOXZOOM
+ * https://github.com/gregallensworth/L.Control.BoxZoom
+ */
+
+.leaflet-container.leaflet-control-boxzoom-active {
+  cursor: crosshair !important;
+
+  path.leaflet-interactive {
+    cursor: crosshair !important;
+  }
+}

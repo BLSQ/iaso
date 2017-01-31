@@ -4,8 +4,8 @@ var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
 // Switch here for french
-// remeber to switch in webpack.dev.js and
-// djanog settings as well
+// remember to switch in webpack.dev.js and
+// django settings as well
 var LOCALE = 'fr'
 
 module.exports = {
@@ -17,7 +17,6 @@ module.exports = {
     'common': ['react', 'react-dom', 'react-intl'],
     'import': './assets/js/import',
     'testapp': './assets/js/testapp',
-    'playground': './assets/js/playground',
     'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
     'suspect_cases': './assets/js/suspectCases',
@@ -62,7 +61,9 @@ module.exports = {
       '__LOCALE': JSON.stringify(LOCALE)
     }),
     // Minification
-    new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+    new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+    // XLSX
+    new webpack.IgnorePlugin(/cptable/)
   ],
 
   module: {
@@ -123,13 +124,33 @@ module.exports = {
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url?limit=10000&mimetype=image/png'
+      },
+      // favicon
+      {
+        test: 'images/favicon-prod.png',
+        loader: 'url',
+        query: {
+          name: 'favicon.png'
+        }
       }
     ]
   },
 
+  // https://github.com/SheetJS/js-xlsx/issues/285
+  node: {
+    fs: 'empty'
+  },
+  externals: [
+    {
+      './cptable': 'var cptable',
+      './jszip': 'jszip'
+    }
+  ],
+
   resolve: {
     modulesDirectories: ['node_modules'],
     // empty needs to be there to find external modules
-    extensions: ['', '.js']
+    extensions: ['', '.js'],
+    loaders: ['script']
   }
 }

@@ -12,9 +12,9 @@ import VISUALIZATIONS from '../../../json/visualizations.json'
 import { createUrl } from '../../utils/fetchData'
 
 const MESSAGES = defineMessages({
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'monthlyreport.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'monthlyreport.labels.all'
   }
 })
 
@@ -45,6 +45,21 @@ export const DataTable = ({
 }) => {
   // Minimum one day out, otherwise we'll get more participants screened per day than we actually screened
   var daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
+  let dataCollectionPeriod = (meta.enddate && meta.startdate)
+    ? (
+      <span>
+        <FormattedDate value={new Date(meta.startdate)} />
+        &nbsp;&mdash;&nbsp;
+        <FormattedDate value={new Date(meta.enddate)} />
+      </span>
+    )
+    : (
+      <span>
+        <FormattedMessage id='monthlyreport.label.unknown.date' defaultMessage='Unknown date' />
+        &nbsp;&mdash;&nbsp;
+        <FormattedMessage id='monthlyreport.label.unknown.date' defaultMessage='Unknown date' />
+      </span>
+    )
 
   return (
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
@@ -64,7 +79,7 @@ export const DataTable = ({
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.as_visited' defaultMessage='Aires de Santé visited' />}
-            value={meta.az_visited} />
+            value={meta.as_visited} />
 
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.tested' defaultMessage='Participants tested' />}
@@ -78,13 +93,7 @@ export const DataTable = ({
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.date_range' defaultMessage='Data collection period' />}
             definition={<FormattedMessage id='monthlyreport.items.date_range.definition' defaultMessage='Taken from date of first entry and date of last entry' />}
-            value={
-              <span>
-                <FormattedDate value={new Date(meta.startdate)} />
-                &nbsp;&mdash;&nbsp;
-                <FormattedDate value={new Date(meta.enddate)} />
-              </span>
-            }
+            value={dataCollectionPeriod}
             />
 
           <div className='widget__content list__item--graph' data-qa='monthly-report-data-loaded'>
@@ -189,7 +198,7 @@ export class MonthlyReport extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

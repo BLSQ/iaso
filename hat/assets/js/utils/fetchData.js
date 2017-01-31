@@ -26,7 +26,7 @@ export function checkLocation (params, results, dispatch) {
     return location.ZS === selectedLocation
   })
   if (selectedLocation && !validLocation) {
-    // No data for this location, redirect to national
+    // No data for this location, redirect to all
     dispatch(push(createUrl({ ...params, location: '' })))
     return false
   }

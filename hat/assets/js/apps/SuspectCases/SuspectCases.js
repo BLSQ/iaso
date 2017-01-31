@@ -21,8 +21,8 @@ const MESSAGES = defineMessages({
     id: 'suspectcases.table.column.zs',
     defaultMessage: 'Zone de Sante'
   },
-  'column-az': {
-    id: 'suspectcases.table.column.az',
+  'column-as': {
+    id: 'suspectcases.table.column.as',
     defaultMessage: 'Aire de Sante'
   },
   'column-village': {
@@ -69,16 +69,16 @@ const MESSAGES = defineMessages({
   },
 
   // misc
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'suspectcases.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'suspectcases.labels.all'
   }
 })
 
 const TABLE_COLUMNS = [
   {message: 'column-date', key: 'document_date', type: 'date'},
   {message: 'column-zs', key: 'ZS'},
-  {message: 'column-az', key: 'AZ'},
+  {message: 'column-as', key: 'AS'},
   {message: 'column-village', key: 'village'}
 ]
 
@@ -207,7 +207,7 @@ export class SuspectCases extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='suspectcases.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

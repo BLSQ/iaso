@@ -3,36 +3,14 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 import pytz
 from django.db.models import Q
-from hat.import_export.extract_transform import SCREENING_TEST_FIELDS, \
-    CONFIRMATION_TEST_FIELDS, STAGING_TEST_FIELDS
 
-
-Q_screening = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening |= Q(**{field + '__isnull': False})
-
-Q_screening_positive = Q()
-for field in SCREENING_TEST_FIELDS:
-    Q_screening_positive |= Q(**{field: True})
-
-Q_confirmation = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation |= Q(**{field + '__isnull': False})
-
-Q_confirmation_positive = Q()
-for field in CONFIRMATION_TEST_FIELDS:
-    Q_confirmation_positive |= Q(**{field: True})
-
-Q_staging = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging |= Q(**{field + '__isnull': False})
-
-Q_staging_positive = Q()
-for field in STAGING_TEST_FIELDS:
-    Q_staging_positive |= Q(**{field: True})
-
-Q_staging_stage1 = Q(test_pl_result='stage1')
-Q_staging_stage2 = Q(test_pl_result='stage2')
+Q_screening = Q(screening_result__isnull=False)
+Q_screening_positive = Q(screening_result=True)
+Q_confirmation = Q(confirmation_result__isnull=False)
+Q_confirmation_positive = Q(confirmation_result=True)
+Q_staging = Q(stage_result__isnull=False)
+Q_staging_stage1 = Q(stage_result='stage1')
+Q_staging_stage2 = Q(stage_result='stage2')
 
 
 class DatePeriod(Enum):
@@ -61,7 +39,7 @@ def resolve_dateperiod(value):
             + timedelta(days=1)
 
     elif value == DatePeriod.current_trimester.value:
-        first_month = td.month - ((td.month - 1) % 4)
+        first_month = td.month - ((td.month - 1) % 3)
         date_from = datetime(td.year, first_month, 1, tzinfo=pytz.UTC)
         date_to = datetime(td.year, td.month, td.day, tzinfo=pytz.UTC) \
             + timedelta(days=1)
@@ -81,17 +59,18 @@ def resolve_dateperiod(value):
             + timedelta(days=1)
 
     elif value == DatePeriod.last_trimester.value:
-        first_month = td.month - ((td.month - 1) % 4)
-        first_year = td.year
-        if first_month == 1:
+        to_month = td.month - ((td.month - 1) % 3)
+        to_year = td.year
+        if to_month == 1:
             # last trimester is the last trimester of last year
-            first_month = 9
-            first_year = first_year - 1
+            from_month = 10
+            from_year = to_year - 1
         else:
             # last trimester is in same year
-            first_month = first_month - 4
-        date_from = datetime(first_year, first_month, 1, tzinfo=pytz.UTC)
-        date_to = datetime(first_year, first_month + 4, 1, tzinfo=pytz.UTC) \
+            from_month = to_month - 3
+            from_year = to_year
+        date_from = datetime(from_year, from_month, 1, tzinfo=pytz.UTC)
+        date_to = datetime(to_year, to_month, 1, tzinfo=pytz.UTC)
 
     elif value == DatePeriod.last_year.value:
         date_from = datetime(td.year - 1, 1, 1, tzinfo=pytz.UTC)

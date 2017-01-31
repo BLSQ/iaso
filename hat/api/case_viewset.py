@@ -1,10 +1,11 @@
 from collections import OrderedDict
 from rest_framework import viewsets
 from rest_framework.serializers import ModelSerializer
-from hat.cases.models import Case
+from hat.cases.models import CaseView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from hat.cases.filters import resolve_dateperiod, Q_confirmation, Q_screening_positive
+from hat.cases.filters import resolve_dateperiod, \
+    Q_confirmation, Q_screening_positive, Q_staging
 
 
 class CasePagination(LimitOffsetPagination):
@@ -26,13 +27,16 @@ class CasePagination(LimitOffsetPagination):
 
 class CaseSerializer(ModelSerializer):
     class Meta:
-        model = Case
+        model = CaseView
         fields = [
             'document_id',
             'document_date',
             'ZS',
-            'AZ',
-            'village'
+            'AS',
+            'village',
+            'screening_result',
+            'confirmation_result',
+            'stage_result',
         ]
 
 
@@ -42,7 +46,7 @@ class CaseViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         ''' Filter by query parameters '''
-        queryset = Case.objects.all()
+        queryset = CaseView.objects.all()
 
         dateperiod = self.request.query_params.get('dateperiod', None)
         if dateperiod is not None:
@@ -57,5 +61,7 @@ class CaseViewSet(viewsets.ReadOnlyModelViewSet):
         only_suspects = self.request.query_params.get('only_suspects', None)
         if only_suspects is not None:
             queryset = queryset.filter(Q_screening_positive) \
-                               .exclude(Q_confirmation)
+                               .exclude(Q_confirmation) \
+                               .exclude(Q_staging)
+        queryset = queryset.order_by('-document_date')
         return queryset

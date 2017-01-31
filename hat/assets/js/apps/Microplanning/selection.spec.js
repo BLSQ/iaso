@@ -35,98 +35,98 @@ describe('Microplanning selection', () => {
       assert.deepEqual(
         reducer(undefined, {
           type: selection.SELECT_ITEMS,
-          payload: [{_id: 1}]
+          payload: [{id: 1}]
         }),
-        { ...initialState, selectedItems: [{_id: 1}] })
+        { ...initialState, selectedItems: [{id: 1}] })
     })
 
     it('should include item in selected list at first position', () => {
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.SELECT_ITEMS,
-          payload: [{_id: 9}]
+          payload: [{id: 9}]
         }),
-        { ...initialState, selectedItems: [{_id: 9}, {_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 9}, {id: 1}, {id: 2}, {id: 3}, {id: 4}] })
     })
 
     it('should not include item in selected list if it is already there', () => {
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.SELECT_ITEMS,
-          payload: [{_id: 3}]
+          payload: [{id: 3}]
         }),
-        { ...initialState, selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}] })
     })
 
     it('should include items in empty selected list in reverse order', () => {
       assert.deepEqual(
         reducer(undefined, {
           type: selection.SELECT_ITEMS,
-          payload: [{_id: 1}, {_id: 2}, {_id: 2}, {_id: 4}]
+          payload: [{id: 1}, {id: 2}, {id: 2}, {id: 4}]
         }),
-        { ...initialState, selectedItems: [{_id: 4}, {_id: 2}, {_id: 1}] })
+        { ...initialState, selectedItems: [{id: 4}, {id: 2}, {id: 1}] })
     })
 
     it('should include non repeated items in selected list in reverse order', () => {
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.SELECT_ITEMS,
-          payload: [{_id: 5}, {_id: 2}, {_id: 8}, {_id: 5}]
+          payload: [{id: 5}, {id: 2}, {id: 8}, {id: 5}]
         }),
-        { ...initialState, selectedItems: [{_id: 8}, {_id: 5}, {_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 8}, {id: 5}, {id: 1}, {id: 2}, {id: 3}, {id: 4}] })
     })
 
     it('should remove item from selected list', () => {
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.DESELECT_ITEMS,
-          payload: [{_id: 1}]
+          payload: [{id: 1}]
         }),
-        { ...initialState, selectedItems: [{_id: 2}, {_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 2}, {id: 3}, {id: 4}] })
 
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.DESELECT_ITEMS,
-          payload: [{_id: 3}]
+          payload: [{id: 3}]
         }),
-        { ...initialState, selectedItems: [{_id: 1}, {_id: 2}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 1}, {id: 2}, {id: 4}] })
 
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.DESELECT_ITEMS,
-          payload: [{_id: 9}]
+          payload: [{id: 9}]
         }),
-        { ...initialState, selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}] })
     })
 
     it('should remove items from selected list', () => {
       assert.deepEqual(
         reducer({
           ...initialState,
-          selectedItems: [{_id: 1}, {_id: 2}, {_id: 3}, {_id: 4}]
+          selectedItems: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]
         }, {
           type: selection.DESELECT_ITEMS,
-          payload: [{_id: 1}, {_id: 2}, {_id: 2}, {_id: 6}, {_id: 8}]
+          payload: [{id: 1}, {id: 2}, {id: 2}, {id: 6}, {id: 8}]
         }),
-        { ...initialState, selectedItems: [{_id: 3}, {_id: 4}] })
+        { ...initialState, selectedItems: [{id: 3}, {id: 4}] })
     })
 
     it('should delete all selected items', () => {

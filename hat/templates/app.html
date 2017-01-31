@@ -69,13 +69,13 @@
           </li>
         {% endif %}
         {% if user.is_superuser %}
-          <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
-            <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
+          <li class="navigation__menu__item{% if 'cases:duplicates' in view %}--active{% endif %}">
+            <a href={% url "cases:duplicates_list" %}>{% trans "Reconciliation" %}</a>
           </li>
         {% endif %}
         {% if user.is_superuser %}
-          <li class="navigation__menu__item{% if ns == 'playground' %}--active{% endif %}">
-            <a href={% url "playground:index" %}>{% trans "Playground" %}</a>
+          <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
+            <a href={% url "maintenance:index" %}>{% trans "Maintenance" %}</a>
           </li>
         {% endif %}
       </ul>
@@ -96,7 +96,9 @@
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          <li{% if message.tags %} class="message message--{{ message.tags }}"{% endif %}>
+            <span class="message__title">{{ message }}</span>
+          </li>
         {% endfor %}
       </ul>
     {% endif %}
@@ -118,7 +120,7 @@
         <i class="fa fa-print"></i> {% trans "Print this page" %}
       </a>
     {% endif %}
-    
-        
+
+
   </div>
 {% endblock %}

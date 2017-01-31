@@ -28,9 +28,9 @@ export default function statsApp (appConfig, element, baseUrl) {
 
   const routes = [
     <Route
-      path='charts(/location/:location)(/source/:source)(/datefrom/:datefrom)(/dateto/:dateto)'
+      path='charts(/location/:location)(/source/:source)(/date_from/:date_from)(/date_to/:date_to)'
       component={StatsContainer} />,
-    <Redirect path='*' to={`charts/datefrom/${dateFrom}/dateto/${dateTo}`} />
+    <Redirect path='*' to={`charts/date_from/${dateFrom}/date_to/${dateTo}`} />
   ]
 
   let history = useRouterHistory(createHistory)({

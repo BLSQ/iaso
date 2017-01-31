@@ -24,10 +24,10 @@ class DateInput(forms.DateInput):
 
 
 class DownloadCsvForm(forms.Form):
-    start_date = forms.DateField(widget=DateInput, required=False,
-                                 label=_('From'))
-    end_date = forms.DateField(widget=DateInput, required=False,
-                               label=_('To'))
+    date_from = forms.DateField(widget=DateInput, required=False,
+                                label=_('From'))
+    date_to = forms.DateField(widget=DateInput, required=False,
+                              label=_('To'))
     SOURCE_CHOICES = (
         ('historic', _('Historic data')),
         ('mobile_backup', _('Mobile backup data')),
@@ -41,9 +41,8 @@ class DownloadCsvForm(forms.Form):
     )
 
     SEP_CHOICES = (
-        (',', _('Comma ","')),
-        (';', _('Semicolon ";"')),
-        ('\t', _('Tab "\\t"'))
+        (',', _('Comma “,”')),
+        (';', _('Semicolon “;”')),
     )
     sep = forms.ChoiceField(
         required=True,

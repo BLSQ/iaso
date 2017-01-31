@@ -56,8 +56,8 @@ class MapSelectionControl extends Component {
   }
 }
 
-Map.MapSelectionControl = {
-  mode: PropTypes.string,
+MapSelectionControl.propTypes = {
+  mode: PropTypes.number,
   modes: PropTypes.object,
   modeChange: PropTypes.func,
   bufferChange: PropTypes.func

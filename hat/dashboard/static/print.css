@@ -1,7 +1,9 @@
 .navigation__container,
 .link--print,
 .filter__label,
-.filter__container__select:after {
+.filter__container__select:after,
+.leaflet-control-layers,
+.leaflet-control-zoom {
   display: none;
 }
 
@@ -31,4 +33,8 @@
   width: auto;
   padding: 0 15px;
   border: 0;
+}
+
+.hide-on-print {
+  display: none;
 }

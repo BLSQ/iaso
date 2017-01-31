@@ -6,6 +6,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     url(r'^api/', include('hat.api.urls', 'api')),
     url(r'^admin/', admin.site.urls),
+    url(r'^rq/', include('django_rq.urls')),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
@@ -13,7 +14,7 @@ urlpatterns = [
     url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
-    url(r'^playground/', include('hat.playground.urls', 'playground')),
+    url(r'^cases/', include('hat.cases.urls', 'cases')),
 ]
 
 if settings.SHOW_DEBUG_TOOLBAR:

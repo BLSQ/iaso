@@ -17,9 +17,9 @@ import MG from 'metrics-graphics'
 import MGStyles from 'metrics-graphics/dist/metricsgraphics.css' // eslint-disable-line no-unused-vars
 
 const MESSAGES = defineMessages({
-  'location-national': {
-    defaultMessage: 'National',
-    id: 'stats.labels.national'
+  'location-all': {
+    defaultMessage: 'All',
+    id: 'stats.labels.all'
   }
 })
 
@@ -114,14 +114,13 @@ class Donut extends Component {
 class ParticipationWidget extends Component {
   render () {
     const {coverage} = this.props
-    const totalVillages = coverage.num_locations_visited
-    const villagesWithEstimate = coverage.population_estimate.locations.length
-    const population = coverage.population_estimate.population
-    const registered = coverage.population_estimate.registered
+    const totalVillages = coverage.total_visited || '0'
+    const villagesWithEstimate = coverage.visited_with_population || '0'
+    const population = coverage.population || 0
+    const registered = coverage.registered_with_population || 0
     const percentageScreened = registered
           ? Math.round(registered / population * 10000) / 100 + '%'
           : noneMessage
-
     const donutValue = registered ? registered / population : 0
 
     return <div className='widget__container'>
@@ -181,7 +180,7 @@ class RegisteredWidget extends Component {
           : noneMessage
     const spec = {
       x_accessor: 'date',
-      y_accessor: 'registered',
+      y_accessor: 'registered_total',
       right: 40,
       top: 20
     }
@@ -443,7 +442,7 @@ export class Stats extends Component {
   datefromHandler (date) {
     let url = createUrl({
       ...this.props.params,
-      datefrom: moment(date).format(this.dateFormat)
+      date_from: moment(date).format(this.dateFormat)
     })
     this.props.dispatch(push(url))
   }
@@ -451,7 +450,7 @@ export class Stats extends Component {
   datetoHandler (date) {
     let url = createUrl({
       ...this.props.params,
-      dateto: moment(date).format(this.dateFormat)
+      date_to: moment(date).format(this.dateFormat)
     })
     this.props.dispatch(push(url))
   }
@@ -464,11 +463,11 @@ export class Stats extends Component {
 
   render () {
     const {formatMessage} = this.props.intl
-    const { datefrom, dateto, location } = this.props.params
+    const { date_from, date_to, location } = this.props.params
     const { loading, data, error } = this.props.report
     const locations = data && data.locations || []
-    const pickerFrom = datefrom ? moment(datefrom) : moment()
-    const pickerTo = dateto ? moment(dateto) : moment()
+    const pickerFrom = date_from ? moment(date_from) : moment() // eslint-disable-line
+    const pickerTo = date_to ? moment(date_to) : moment() // eslint-disable-line
 
     return (
       <div>
@@ -493,7 +492,7 @@ export class Stats extends Component {
             <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='statspage.label.location' defaultMessage='Location' /></label>
             <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
               <option key='all' value=''>
-                {formatMessage(MESSAGES['location-national'])}
+                {formatMessage(MESSAGES['location-all'])}
               </option>
               {locations.map((loc) => {
                 var val = loc.ZS

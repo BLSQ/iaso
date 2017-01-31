@@ -2,14 +2,15 @@ import json
 from pathlib import PurePath
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
 from .forms import \
     UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm
 from hat.common.utils import create_shared_filename
 from hat.import_export.tasks import \
-    import_task, export_task, import_locations_task, import_reconciled_task
+    import_task, export_task, import_locations_task, \
+    import_locations_areas_task, import_reconciled_task
 from hat.rq.utils import run_task, get_task_status, get_task_result
 from rq.exceptions import NoSuchJobError
 from hat.import_export.errors import error_helper
@@ -18,11 +19,11 @@ from django.utils.translation import ugettext as _
 
 
 default_messages = {
-    'download_expired':  _('''The download job you\'re looking for
-                            has expired.  You can create a new download
-                            with the button below.'''),
-    'upload_expired': _('''The upload job you\'re looking for has expired.
-                        It is done but the result can't be viewed any more.''')
+    'download_expired':  _("The download job you're looking for has expired. "
+                           "You can create a new download with the button below."),
+    'download_failed':  _("The download job has failed.  Please try again."),
+    'upload_expired': _("The upload job you\'re looking for has expired."),
+    'upload_failed': _("The upload job has failed."),
 }
 
 
@@ -73,10 +74,13 @@ def upload_cases_state(request, task_id):
         status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_cases:upload')
 
-    if status != 'finished':
+    if status == 'failed':
+        message = default_messages['upload_failed']
+        messages.add_message(request, messages.ERROR, message)
+    elif status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
     return redirect('datasets:import_cases:done', task_id=task_id)
 
@@ -89,7 +93,7 @@ def upload_cases_done(request, task_id):
         results = get_task_result(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_cases:upload')
 
     for result in results:
@@ -118,8 +122,8 @@ def download_cases(request):
         form = DownloadCsvForm(request.POST)
         if form.is_valid():
             options = {
-                'start_date': form.cleaned_data['start_date'],
-                'end_date': form.cleaned_data['end_date'],
+                'date_from': form.cleaned_data['date_from'],
+                'date_to': form.cleaned_data['date_to'],
                 'sources': form.cleaned_data['sources'],
                 'sep': form.cleaned_data['sep'],
             }
@@ -142,16 +146,18 @@ def download_cases_state(request, task_id):
     try:
         status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
-        messages.add_message(
-            request,
-            messages.INFO,
-            default_messages['download_expired']
-        )
+        message = default_messages['download_expired']
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:export_cases:download')
 
-    if status != 'finished':
+    if status == 'failed':
+        message = default_messages['download_failed']
+        messages.add_message(request, messages.ERROR, message)
+        return redirect('datasets:export_cases:download')
+    elif status != 'finished':
         return render(request, 'import_export/download_state.html', {'status': status})
-    return redirect('datasets:export_cases:done', task_id=task_id)
+    else:
+        return redirect('datasets:export_cases:done', task_id=task_id)
 
 
 @login_required()
@@ -168,16 +174,13 @@ def download_cases_done(request, task_id):
 @require_http_methods(['GET'])
 def download_cases_get(request, task_id):
     try:
-        result = get_task_result(task_id, request.user)
+        filename = get_task_result(task_id, request.user)
     except NoSuchJobError:
-        messages.add_message(
-            request,
-            messages.INFO,
-            default_messages['download_expired']
-        )
+        message = default_messages['download_expired']
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:export_cases:download')
 
-    response = HttpResponse(result, content_type='text/csv')
+    response = FileResponse(open(filename, 'rb'))
     response['Content-Disposition'] = 'attachment; filename="hat.csv"'
     return response
 
@@ -194,6 +197,7 @@ def upload_locations(request):
     if request.method == 'POST':
         form = UploadLocationsFileForm(request.POST, request.FILES)
         if form.is_valid():
+            source = request.POST.get('source', None)
             form_files = request.FILES.getlist('file')
             file = form_files[0]
             suffix = PurePath(file.name).suffix.lower()
@@ -201,8 +205,12 @@ def upload_locations(request):
             with open(filename, 'wb') as fd:
                 fd.write(file.read())
             # run import task
-            task = run_task(import_locations_task, args=[file.name, filename],
-                            permission='cases.import_locations')
+            if source == 'areas':
+                task = run_task(import_locations_areas_task, args=[file.name, filename],
+                                permission='cases.import_locations')
+            else:
+                task = run_task(import_locations_task, args=[file.name, filename],
+                                permission='cases.import_locations')
             return redirect('datasets:import_locations:state', task_id=task.id)
     else:
         form = UploadLocationsFileForm()
@@ -217,12 +225,17 @@ def upload_locations_state(request, task_id):
         status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_locations:upload')
 
-    if status != 'finished':
+    if status == 'failed':
+        message = default_messages['upload_failed']
+        messages.add_message(request, messages.ERROR, message)
+        return redirect('datasets:import_locations:upload')
+    elif status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
-    return redirect('datasets:import_locations:done', task_id=task_id)
+    else:
+        return redirect('datasets:import_locations:done', task_id=task_id)
 
 
 @login_required()
@@ -233,7 +246,7 @@ def upload_locations_done(request, task_id):
         result = get_task_result(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_locations:upload')
     return render(request, 'import_export/upload_locations_done.html', {'result': result})
 
@@ -273,9 +286,12 @@ def upload_reconciled_state(request, task_id):
         status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_reconciled:upload')
 
+    if status == 'failed':
+        message = default_messages['upload_failed']
+        messages.add_message(request, messages.ERROR, message)
     if status != 'finished':
         return render(request, 'import_export/upload_state.html', {'status': status})
     return redirect('datasets:import_reconciled:done', task_id=task_id)
@@ -289,6 +305,6 @@ def upload_reconciled_done(request, task_id):
         result = get_task_result(task_id, user=request.user)
     except NoSuchJobError:
         message = default_messages['upload_expired']
-        messages.add_message(request, messages.INFO, message)
+        messages.add_message(request, messages.ERROR, message)
         return redirect('datasets:import_reconciled:upload')
     return render(request, 'import_export/upload_reconciled_done.html', {'result': result})

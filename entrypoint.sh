@@ -18,6 +18,9 @@ show_help() {
   """
 }
 
+export PYTHONPATH="/opt/app:$PYTHONPATH"
+export DJANGO_SETTINGS_MODULE=hat.settings
+
 case "$1" in
   "test" )
     export TESTING=true
@@ -66,6 +69,7 @@ case "$1" in
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
       ./manage.py migrate --noinput
+      ./manage.py loaddata users
       ./manage.py setupcouchdb
       ./manage.py runserver 0.0.0.0:8080
     fi
@@ -85,14 +89,23 @@ case "$1" in
     npm run webpack-server
   ;;
   "start_rq" )
-    ./scripts/start_rq.sh
+    ./manage.py rqscheduler &
+    ./manage.py rqworker default
+  ;;
+  "start_dev_rq" )
+    # In local dev we assign a random name to the rq worker,
+    # to get around conflicts when restarting its container.
+    # RQ uses the PID as part of it's name and that does not
+    # change with container restarts and RQ the exits because
+    # it finds the old worker under it's name in redis.
+    ./manage.py rqscheduler &
+    ./manage.py rqworker default --name "rq-${RANDOM}"
   ;;
   "start_jupyter" )
     # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
-    export DJANGO_SETTINGS_MODULE=hat.settings
     jupyter notebook -y --no-browser --ip=0.0.0.0
   ;;
   "manage" )

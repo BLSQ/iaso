@@ -5,7 +5,7 @@ from rq.job import Job
 from rq.exceptions import NoSuchJobError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
-from . import redis_conn
+from django_rq import get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def get_task_status(id: str, user: User=None) -> str:
     - started
     - deferred
     '''
-    with Connection(redis_conn) as conn:
+    with Connection(get_connection()) as conn:
         try:
             job = Job.fetch(id, conn)
             raise_on_permission(job, user)
@@ -56,7 +56,7 @@ def get_task_status(id: str, user: User=None) -> str:
 
 def get_task_result(id: str, user: User=None) -> Any:
     '''Return the tasks return value which is stored in redis.'''
-    with Connection(redis_conn) as conn:
+    with Connection(get_connection()) as conn:
         job = Job.fetch(id, conn)
         raise_on_permission(job, user)
         return job.result

@@ -2,8 +2,8 @@ var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
-// remeber to switch in webpack.prod.js and
-// djanog settings as well
+// remember to switch in webpack.prod.js and
+// django settings as well
 var LOCALE = 'en'
 var WEBPACK_URL = 'https://localhost:3000'
 
@@ -21,11 +21,6 @@ module.exports = {
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/testapp'
-    ],
-    'playground': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/playground'
     ],
     'stats': [
       'webpack-dev-server/client?' + WEBPACK_URL,
@@ -82,7 +77,9 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       '__LOCALE': JSON.stringify(LOCALE)
-    })
+    }),
+    // XLSX
+    new webpack.IgnorePlugin(/cptable/)
   ],
 
   module: {
@@ -137,12 +134,32 @@ module.exports = {
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'url?limit=10000&mimetype=image/png'
+      },
+      // favicon
+      {
+        test: 'images/favicon-dev.png',
+        loader: 'url',
+        query: {
+          name: 'favicon.png'
+        }
       }
     ]
   },
 
+  // https://github.com/SheetJS/js-xlsx/issues/285
+  node: {
+    fs: 'empty'
+  },
+  externals: [
+    {
+      './cptable': 'var cptable',
+      './jszip': 'jszip'
+    }
+  ],
+
   resolve: {
     modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.jsx']
+    extensions: ['', '.js', '.jsx'],
+    loaders: ['script']
   }
 }

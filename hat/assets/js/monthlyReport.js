@@ -18,7 +18,6 @@ export default function monthlyReportApp (appConfig, element, baseUrl) {
   Example appConfig object:
   {
     dates: ['2016-04', '2016-05', '2016-06'],
-    sources: ['all', 'pv', 'mobilebackup', 'historic'],
     locations: [{ 'ZS': 'Mosango' }]
   }
   */

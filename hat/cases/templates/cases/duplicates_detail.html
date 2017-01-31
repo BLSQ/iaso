@@ -26,8 +26,6 @@
       <div class="widget__content">
         <p>This page shows a detailed field by field comparison of the matching cases. In the most right column is a preview of the result fields of the merge. The merge can be performed by clicking the "Merge" button on the bottom right.</p>
       </div>
-      <form method="POST" action="" enctype="multipart/form-data">
-        {% csrf_token %}
         <div class="widget__content">
           <table class="table--minimised duplicates__table duplicates__table--details">
             <thead>
@@ -54,12 +52,20 @@
               {% endfor %}
               <tr>
                 <td colspan="3"></td>
-                <td><button type="submit" class="button">{% trans "Merge" %}</button></td>
+                <td>
+                  <form method="POST" action="{% url 'cases:duplicates_merge' pair_id %}?back={{ back_link }}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="submit" class="button">{% trans "Merge" %}</button>
+                  </form>
+                  <form method="POST" action="{% url 'cases:duplicates_ignore' pair_id %}?back={{ back_link }}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="submit" class="button">{% trans "Ignore" %}</button>
+                  </form>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </form>
     </div>
   </div>
 

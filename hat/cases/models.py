@@ -178,10 +178,8 @@ class Location(models.Model):
 class DuplicatesPair(models.Model):
     case1 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
     case2 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
-    ZS = models.TextField(null=True)
-    AS = models.TextField(null=True)
-    village = models.TextField(null=True)
-    deleted = models.BooleanField(default=False)
+    document_id1 = models.TextField(db_index=True, null=True)
+    document_id2 = models.TextField(db_index=True, null=True)
 
     def save(self, *args, **kwargs):
         if(self.case1_id > self.case2_id):
@@ -194,3 +192,17 @@ class DuplicatesPair(models.Model):
         permissions = (
             ("reconcile_duplicates", "Can reconcile duplicates"),
         )
+
+
+class IgnoredPair(models.Model):
+    '''
+    This table tracks all duplicates pairs that have been found not to be actual matches.
+    When the process for finding duplicates reruns, we don't want any previously ignored
+    pairs to show up again and need to keep track of them. The pairs are tracked by the
+    document_id, so that they are not dependent on the table instance.
+    '''
+    document_id1 = models.TextField(db_index=True)
+    document_id2 = models.TextField(db_index=True)
+
+    class Meta:
+        unique_together = (('document_id1', 'document_id2'),)

@@ -4,13 +4,13 @@ from django.db import transaction
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_http_methods
 from hat.cases.models import Case, DuplicatesPair, IgnoredPair
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
     all_pairs = DuplicatesPair.objects.order_by('case1__ZS', 'case1__AS', 'case1__village')
@@ -45,7 +45,7 @@ def duplicatespair_list(request):
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET', 'POST'])
 def duplicatespair_detail(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -107,7 +107,7 @@ def duplicatespair_detail(request, pair_id):
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 @transaction.non_atomic_requests
 def duplicatespair_merge(request, pair_id):
@@ -126,7 +126,7 @@ def duplicatespair_merge(request, pair_id):
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 @transaction.non_atomic_requests
 def duplicatespair_ignore(request, pair_id):

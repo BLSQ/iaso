@@ -68,7 +68,7 @@
             <a href={% url "dashboard:suspect_cases" %}>{% trans "Suspect cases" %}</a>
           </li>
         {% endif %}
-        {% if perms.cases.reconcile_duplicates %}
+        {% if user.is_superuser %}
           <li class="navigation__menu__item{% if 'cases:duplicates' in view %}--active{% endif %}">
             <a href={% url "cases:duplicates_list" %}>{% trans "Reconciliation" %}</a>
           </li>

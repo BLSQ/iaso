@@ -258,22 +258,13 @@
   {# "CaseView" model #}
   DROP VIEW IF EXISTS cases_case_view;
   CREATE VIEW cases_case_view AS
-    SELECT id
-         , source
-         , document_date
-         , document_id
-         , "ZS"
-         , "AS"
-         , village
-         , latitude
-         , longitude
-
+    SELECT *
          , CASE
              WHEN test_catt
                OR test_rdt
              THEN TRUE
              WHEN test_catt IS FALSE
-               OR test_rdt IS FALSE
+               OR test_rdt  IS FALSE
              THEN FALSE
              ELSE NULL
            END AS screening_result
@@ -287,28 +278,18 @@
                OR test_sf
                OR test_lcr
              THEN TRUE
-             WHEN test_maect IS FALSE
-               OR test_ge IS FALSE
-               OR test_pg IS FALSE
-               OR test_ctcwoo IS FALSE
+             WHEN test_maect               IS FALSE
+               OR test_ge                  IS FALSE
+               OR test_pg                  IS FALSE
+               OR test_ctcwoo              IS FALSE
                OR test_lymph_node_puncture IS FALSE
-               OR test_sf IS FALSE
-               OR test_lcr IS FALSE
+               OR test_sf                  IS FALSE
+               OR test_lcr                 IS FALSE
              THEN FALSE
              ELSE NULL
            END AS confirmation_result
 
          , test_pl_result AS stage_result
-
-         , hat_id
-         , mobile_unit
-         , name
-         , lastname
-         , prename
-         , sex
-         , age
-         , year_of_birth
-         , province
 
       FROM cases_case;
 {% endsql %}

@@ -27,15 +27,10 @@ def export_csv(
         'delimiter': sep
     }
     if only_suspects:
-        # Use the case view for suspects because it allows for easier
-        # filtering and we don't need each test field there.
-        table_name = 'cases_case_view'
         fields = SUSPECT_ANON_EXPORT_FIELDS if anon else SUSPECT_FULL_EXPORT_FIELDS
     else:
-        table_name = 'cases_case'
         fields = ANON_EXPORT_FIELDS if anon else FULL_EXPORT_FIELDS
 
-    sql_context['table_name'] = table_name
     # quote the fields
     sql_context['fields'] = ['"{}"'.format(f) for f in fields]
 

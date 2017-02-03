@@ -83,9 +83,12 @@
       operation     text;
     BEGIN
       IF NEW.update_with IS NULL THEN
-        operation := 'UPDATE'; {# manual reconciliation #}
+        operation := 'UPDATE';       {# manual reconciliation #}
+      ELSIF NEW.update_with = 'IMPORT_MERGE' THEN
+        operation := 'IMPORT_MERGE'; {# import file updates #}
+        NEW.update_with := NULL;     {# remove any trace #}
       ELSE
-        operation := 'MERGE';  {# duplicates merge #}
+        operation := 'MERGE';        {# duplicates merge #}
       END IF;
 
       {# include the step in the history tables #}

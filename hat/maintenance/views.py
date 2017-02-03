@@ -102,3 +102,24 @@ def rebuild_duplicates(request):
     from hat.cases.tasks import duplicates_task
     task = run_task(duplicates_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def download_log(request):
+    import pandas
+    from django.db import connection
+    from django.http import HttpResponse
+
+    sql = '''
+        SELECT * FROM cases_history_log_view ORDER BY stamp DESC
+    '''
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        log = cursor.fetchall()
+        pd = pandas.DataFrame(log, columns=[col[0] for col in cursor.description])
+        csv = pd.to_csv()
+        response = HttpResponse(csv, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="hat_log.csv"'
+        return response

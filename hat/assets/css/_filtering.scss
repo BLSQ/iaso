@@ -147,11 +147,16 @@ $filter-container-height: 2rem;
 }
 
 
-input[type="number"].input--minimised {
+input.input--minimised {
   @include text--standard;
   display: inline-block;
   vertical-align: middle;
-  width: 30px;
+  &[type="number"] {
+    width: 30px;
+  }
+  &[type="text"] {
+    width: 200px;
+  }
   height: $filter-container-height;
   margin: 0;
   padding: 0 10px;

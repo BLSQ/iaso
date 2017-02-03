@@ -46,24 +46,4 @@ class Migration(migrations.Migration):
             name='duplicatespair',
             unique_together=set([('case1', 'case2')]),
         ),
-        migrations.RunSQL(
-            sql = '''
-            -- Load the postgres trigrams extension
-            CREATE EXTENSION pg_trgm;
-            -- Create trigram indexes for names
-            CREATE INDEX cases_case_names_trgm_idx
-            ON cases_case
-            USING gin (
-                name gin_trgm_ops,
-                prename gin_trgm_ops,
-                lastname gin_trgm_ops,
-                mothers_surname gin_trgm_ops
-            )''',
-            reverse_sql = '''
-            -- Remove trigram indexes for names
-            DROP INDEX cases_case_names_trgm_idx;
-            -- Disable extension
-            DROP EXTENSION pg_trgm;
-            '''
-        ),
     ]

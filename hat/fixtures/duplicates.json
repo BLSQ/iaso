@@ -8,8 +8,10 @@
       "ZS": "Mosango",
       "AS": "Muluma",
       "village": "Kisala-lupa",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
+      "name": "John",
+      "prename": "XX",
+      "lastname": "Smith",
+      "mothers_surname": "Doe",
       "sex": "male",
       "age": 10
     }
@@ -23,8 +25,10 @@
       "ZS": "Mosango",
       "AS": "Muluma",
       "village": "Kisala-lupa",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
+      "name": "John",
+      "prename": "XX",
+      "lastname": "Smit",
+      "mothers_surname": "Doe",
       "sex": "male",
       "test_maect": false,
       "test_rdt": true
@@ -39,8 +43,10 @@
       "ZS": "Mosango",
       "AS": "Muluma",
       "village": "Kisala-lupa",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
+      "name": "XX",
+      "prename": "Jack",
+      "lastname": "London",
+      "mothers_surname": "Fang",
       "sex": "male",
       "test_rdt": false
     }
@@ -54,41 +60,12 @@
       "ZS": "Mosango",
       "AS": "Muluma",
       "village": "Kisala-lupa",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
+      "name": "Mary",
+      "prename": "Jane",
+      "lastname": "Jackson",
+      "mothers_surname": "Johnson",
       "sex": "female",
       "test_catt": true
-    }
-  },
-  {
-    "model": "cases.case",
-    "pk": 5,
-    "fields": {
-      "document_id": "5",
-      "document_date": "2016-01-05T00:00:00Z",
-      "ZS": "Mosango",
-      "AS": "Muwanda-koso",
-      "village": "Polongo",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
-      "sex": "female",
-      "test_maect": true
-    }
-  },
-  {
-    "model": "cases.case",
-    "pk": 6,
-    "fields": {
-      "document_id": "6",
-      "document_date": "2016-01-06T00:00:00Z",
-      "ZS": "Mosango",
-      "AS": "Muwanda-koso",
-      "village": "Kindundu",
-      "latitude": "4.3871",
-      "longitude": "15.9700",
-      "sex": "female",
-      "test_ge": true,
-      "test_pl_result": "stage1"
     }
   }
 ]

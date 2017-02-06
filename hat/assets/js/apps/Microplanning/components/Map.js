@@ -242,21 +242,8 @@ class Map extends Component {
   }
 
   createMap () {
-    const node = this.mapContainer
-
-    // HACK: Work around for testing Leaflet in JSDOM
-    // see: https://github.com/Leaflet/Leaflet/issues/4823
-    if (!node.clientWidth && !node.clientHeight) {
-      node.clientHeight = 720
-      node.clientWidth = 1000
-    }
-
-    // improves performance ???
-    // http://leafletjs.com/reference.html#path-clip_padding
-    L.Path.CLIP_PADDING = 0.5
-
     // create map
-    const map = L.map(node, {
+    const map = L.map(this.mapContainer, {
       attributionControl: false,
       zoomControl: false,
       center: geoData.center,

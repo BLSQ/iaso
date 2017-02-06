@@ -69,6 +69,11 @@
           </li>
         {% endif %}
         {% if user.is_superuser %}
+          <li class="navigation__menu__item{% if 'cases:cases' in view %}--active{% endif %}">
+            <a href={% url "cases:cases_list" %}>{% trans "Cases" %}</a>
+          </li>
+        {% endif %}
+        {% if user.is_superuser %}
           <li class="navigation__menu__item{% if 'cases:duplicates' in view %}--active{% endif %}">
             <a href={% url "cases:duplicates_list" %}>{% trans "Reconciliation" %}</a>
           </li>

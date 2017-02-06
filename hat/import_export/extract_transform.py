@@ -295,6 +295,13 @@ MAPPING = [
         },
     },
     {
+        "field": "device_id",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": ("main", "deviceId",)
+        },
+    },
+    {
         "field": "entry_date",
         "export_levels": [Export.full, Export.anon],
         "sources": {
@@ -1224,6 +1231,8 @@ def transform_field(source_field, main_table_name, tables) -> Series:
         if table_name != main_table_name:
             raise ValueError('Use apply_to_table for foreign field: ' + field +
                              ' from: ' + table_name)
+        if field not in tables[table_name]:
+            return None
         return tables[table_name][field]
 
     elif isinstance(source_field, dict):

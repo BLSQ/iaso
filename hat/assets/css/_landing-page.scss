@@ -83,7 +83,7 @@
     p { max-width: 26em; }
   }
   &__image--reports {
-    
+
     min-height: 268px;
     width: 50%;
     min-width: 509px;
@@ -95,8 +95,8 @@
     h2 {
       margin-bottom: 4em;
     }
-    img { 
-      display: initial; 
+    img {
+      display: initial;
       margin-bottom: 1em;
     }
   }
@@ -124,7 +124,7 @@
   &--partners {
     display: flex;
     justify-content: center;
-    
+
   }
 }
 
@@ -134,5 +134,14 @@
     font-weight: bold;
     margin-bottom: 1em;
     line-height: 1.25;
+  }
+}
+
+.welcome__images {
+  img {
+    width: 150px;
+    display: inline;
+    vertical-align: middle;
+    margin: 0 2em 1em;
   }
 }

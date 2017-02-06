@@ -10,19 +10,23 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ count }} Duplicate matches found
+          {{ count }} {% trans "Duplicate matches found" %}
         </h2>
       </div>
       <div class="widget__content">
-        <p>This list shows potential duplicate cases. Click on "Compare" for a detailed comparison.</p>
+        <p>
+          {% blocktrans %}
+          This list shows potential duplicate cases. Click on “Compare” for a detailed comparison.
+          {% endblocktrans %}
+          </p>
       </div>
 
       <section class="widget__content">
         <table class="table--minimised duplicates__table duplicates__table--list">
           <thead>
             <tr>
-              <th>Case1</th>
-              <th>Case2</th>
+              <th>{% trans "Case 1" %}</th>
+              <th>{% trans "Case 2" %}</th>
               <th></th>
             </tr>
           </thead>
@@ -46,13 +50,13 @@
         {% if pairs.has_previous %}
           <a class="button--minimised block--margin-right--xxs" href="?page={{ pairs.previous_page_number }}">
             <i class="fa fa-arrow-left"></i>
-            <span>Previous</span>
+            <span>{% trans "Previous" %}</span>
           </a>
         {% endif %}
 
         {% if pairs.has_next %}
           <a class="button--minimised" href="?page={{ pairs.next_page_number }}">
-            <span>Next</span>
+            <span>{% trans "Next" %}</span>
             <i class="fa fa-arrow-right icon--right"></i>
           </a>
         {% endif %}

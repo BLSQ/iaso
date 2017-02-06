@@ -27,6 +27,7 @@ services:
       - "8080:8080"
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
+      - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       # shared dir between containers
       - ./shared:/opt/shared

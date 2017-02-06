@@ -18,7 +18,7 @@ class Case(models.Model):
     document_date = models.DateTimeField(db_index=True, null=True)
     # The id is currently a hash over the row to be able to
     # catch duplicates
-    document_id = models.TextField(db_index=True)
+    document_id = models.TextField(unique=True)
     hat_id = models.TextField()
     entry_date = models.DateTimeField(null=True)
     entry_name = models.TextField(null=True)
@@ -45,9 +45,6 @@ class Case(models.Model):
     mobile_unit = models.TextField(null=True)
     device_id = models.TextField(null=True)
 
-    # control field
-    deleted = models.NullBooleanField(default=False)
-
     treatment_center = models.TextField(null=True)
     treatment_start_date = models.DateTimeField(null=True)
     treatment_end_date = models.DateTimeField(null=True)
@@ -55,23 +52,23 @@ class Case(models.Model):
     treatment_secondary_effects = models.NullBooleanField()
     treatment_result = models.TextField(null=True)
 
-    test_rdt = models.NullBooleanField(null=True)
-    test_catt = models.NullBooleanField(null=True)
-    test_maect = models.NullBooleanField(null=True)
-    test_ge = models.NullBooleanField(null=True)
-    test_pg = models.NullBooleanField(null=True)
-    test_ctcwoo = models.NullBooleanField(null=True)
-    test_pl = models.NullBooleanField(null=True)
+    test_rdt = models.NullBooleanField()
+    test_catt = models.NullBooleanField()
+    test_maect = models.NullBooleanField()
+    test_ge = models.NullBooleanField()
+    test_pg = models.NullBooleanField()
+    test_ctcwoo = models.NullBooleanField()
+    test_pl = models.NullBooleanField()
     test_catt_dilution = models.TextField(null=True)
-    test_lymph_node_puncture = models.NullBooleanField(null=True)
-    test_sf = models.NullBooleanField(null=True)
-    test_lcr = models.NullBooleanField(null=True)
-    test_dil = models.NullBooleanField(null=True)
-    test_parasit = models.NullBooleanField(null=True)
-    test_sternal_puncture = models.NullBooleanField(null=True)
-    test_ifat = models.NullBooleanField(null=True)
-    test_clinical_sickness = models.NullBooleanField(null=True)
-    test_other = models.NullBooleanField(null=True)
+    test_lymph_node_puncture = models.NullBooleanField()
+    test_sf = models.NullBooleanField()
+    test_lcr = models.NullBooleanField()
+    test_dil = models.NullBooleanField()
+    test_parasit = models.NullBooleanField()
+    test_sternal_puncture = models.NullBooleanField()
+    test_ifat = models.NullBooleanField()
+    test_clinical_sickness = models.NullBooleanField()
+    test_other = models.NullBooleanField()
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.
     test_pl_liquid = models.TextField(null=True)
@@ -87,7 +84,7 @@ class Case(models.Model):
     )
     test_pl_result = models.TextField(choices=PL_TEST_RESULT_CHOICES, null=True)
 
-    followup_done = models.NullBooleanField(null=True)
+    followup_done = models.NullBooleanField()
 
     # fields for followup tests
     test_followup_pg = models.TextField(null=True)
@@ -100,6 +97,12 @@ class Case(models.Model):
     test_followup_pl_trypanosome = models.TextField(null=True)
     test_followup_pl_gb = models.TextField(null=True)
     test_followup_decision = models.TextField(null=True)
+
+    # log fields
+    # used in merge duplicates actions
+    update_with = models.TextField(null=True)
+    # just to know how many times has been updated
+    version_number = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-document_date']
@@ -116,7 +119,7 @@ class CaseView(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
-    document_id = models.TextField(db_index=True)
+    document_id = models.TextField(unique=True)
     hat_id = models.TextField()
     mobile_unit = models.TextField(null=True)
 
@@ -135,8 +138,8 @@ class CaseView(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
-    screening_result = models.NullBooleanField(null=True)
-    confirmation_result = models.NullBooleanField(null=True)
+    screening_result = models.NullBooleanField()
+    confirmation_result = models.NullBooleanField()
     stage_result = models.TextField(null=True)
 
     class Meta:
@@ -185,7 +188,7 @@ class DuplicatesPair(models.Model):
         if(self.case1_id > self.case2_id):
             super(DuplicatesPair, self).save(*args, **kwargs)
         else:
-            raise Exception("Case1's id should always be greater than case2's id")
+            raise Exception("Case1's id MUST always be greater than case2's id")
 
     class Meta:
         unique_together = (('case1', 'case2'),)

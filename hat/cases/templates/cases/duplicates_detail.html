@@ -11,7 +11,7 @@
     <div>
       <a class="button--minimised" href="{{ back_link}}">
         <i class="fa fa-arrow-left"></i>
-        <span>Back to list</span>
+        <span>{% trans "Back to list" %}</span>
       </a>
     </div>
     <br/>
@@ -20,11 +20,17 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          Comparison of matching cases
+          {% trans "Comparison of matching cases" %}
         </h2>
       </div>
       <div class="widget__content">
-        <p>This page shows a detailed field by field comparison of the matching cases. In the most right column is a preview of the result fields of the merge. The merge can be performed by clicking the "Merge" button on the bottom right.</p>
+        <p>
+          {% blocktrans %}
+          This page shows a detailed field by field comparison of the matching cases.
+          In the most right column is a preview of the result fields of the merge.
+          The merge can be performed by clicking the “Merge” button on the bottom right.
+          {% endblocktrans %}
+        </p>
       </div>
         <div class="widget__content">
           <table class="table--minimised duplicates__table duplicates__table--details">

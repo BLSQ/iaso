@@ -109,5 +109,9 @@ def update_entries(duplicates):
     # Use a transaction to bundle updates for better performance
     with transaction.atomic():
         for index, row in duplicates.iterrows():
+            data = {
+                  **row.dropna().to_dict(),
+                  'update_with': 'IMPORT_MERGE'
+            }
             Case.objects.filter(document_id=row['document_id']) \
-                        .update(**row.dropna().to_dict())
+                        .update(**data)

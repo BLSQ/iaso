@@ -1,0 +1,47 @@
+{% extends "app.html" %}
+{% load i18n %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Case" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+
+    <div>
+      <a class="button--minimised" href="{{ back_link}}">
+        <i class="fa fa-arrow-left"></i>
+        <span>Back to list</span>
+      </a>
+    </div>
+    <br/>
+
+
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">
+          Case {{ case.document_id }}
+        </h2>
+      </div>
+      <div class="widget__content">
+        <table class="table--minimised">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>{{ row.name }}</td>
+                <td><b>{{ row.value }}</b></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

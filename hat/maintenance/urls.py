@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^delete-couchdb-data$', views.delete_couchdb_data, name='delete_couchdb_data'),
     url(r'^reimport$', views.reimport, name='reimport'),
     url(r'^rebuild_duplicates$', views.rebuild_duplicates, name='rebuild_duplicates'),
+    url(r'^download_log$', views.download_log, name='download_log'),
 ]

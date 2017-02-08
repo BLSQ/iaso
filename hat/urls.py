@@ -6,6 +6,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     url(r'^api/', include('hat.api.urls', 'api')),
     url(r'^admin/', admin.site.urls),
+    url(r'^explorer/', include('explorer.urls')),
     url(r'^rq/', include('django_rq.urls')),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),

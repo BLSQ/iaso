@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'explorer',
     'debug_toolbar',
     'django_rq',
     'rest_framework',
@@ -151,6 +152,11 @@ DB_PASSWORD = os.environ.get('RDS_PASSWORD', None)
 DB_HOST = os.environ.get('RDS_HOSTNAME', 'db')
 DB_PORT = os.environ.get('RDS_PORT', 5432)
 
+# sql explorer django user
+# TODO: use a read only user for security
+DB_EXPLORER_USERNAME = os.environ.get('RDS_USERNAME', 'postgres')
+DB_EXPLORER_PASSWORD = os.environ.get('RDS_PASSWORD', None)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -159,8 +165,28 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
         'PORT': DB_PORT,
+    },
+    'explorer': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': DB_NAME,
+        'USER': DB_EXPLORER_USERNAME,
+        'PASSWORD': DB_EXPLORER_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+        'TEST': {
+            'MIRROR': 'default',
+        }
     }
 }
+
+
+def is_superuser(u):
+    return u.is_superuser
+
+
+EXPLORER_CONNECTION_NAME = 'explorer'
+EXPLORER_PERMISSION_VIEW = is_superuser
+EXPLORER_PERMISSION_CHANGE = is_superuser
 
 
 # Password validation

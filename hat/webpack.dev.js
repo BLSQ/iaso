@@ -10,8 +10,8 @@ var WEBPACK_URL = 'https://localhost:3000'
 module.exports = {
   context: __dirname,
   entry: {
-    // Empty module stand-in for Prod Bundle
-    'common': [],
+    // use same settings as in Prod
+    'common': ['react', 'react-dom', 'react-intl'],
     'import': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -70,7 +70,7 @@ module.exports = {
       '../translations/' + LOCALE + '.json'
     ),
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(), // don't reload if there is an error
+    new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
@@ -83,63 +83,73 @@ module.exports = {
   ],
 
   module: {
-    loaders: [
+    rules: [
       // we pass the output from babel loader to react-hot loader
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot-loader/webpack', 'babel?presets[]=es2015&presets[]=react&presets[]=stage-2']
+        use: [
+          { loader: 'react-hot-loader/webpack' },
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['es2015', 'react', 'stage-2']
+            }
+          }
+        ]
       },
       {
         test: /\.css$/,
-        loaders: ['style-loader', 'css-loader']
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' }
+        ]
       },
       // Extract Sass files
       {
         test: /\.scss$/,
-        loaders: ['style-loader', 'css-loader', 'sass-loader']
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+          { loader: 'sass-loader' }
+        ]
       },
       // font files
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
         test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/octet-stream'
+        loader: 'url-loader?limit=10000&mimetype=application/octet-stream'
       },
       {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file'
+        loader: 'file-loader'
       },
       // images
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=image/svg+xml'
+        loader: 'url-loader?limit=10000&mimetype=image/svg+xml'
       },
       {
         test: /\.(png|jpg)$/,
         loader: 'url-loader?limit=8192'
       },
-      // JSON loader for translations
-      {
-        test: /\.json$/,
-        loader: 'json'
-      },
       // Leaftlet images
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=image/png'
+        loader: 'url-loader?limit=10000&mimetype=image/png'
       },
       // favicon
       {
         test: 'images/favicon-dev.png',
-        loader: 'url',
-        query: {
+        loader: 'url-loader',
+        options: {
           name: 'favicon.png'
         }
       }
@@ -158,8 +168,7 @@ module.exports = {
   ],
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.jsx'],
-    loaders: ['script']
+    modules: ['node_modules'],
+    extensions: ['.js']
   }
 }

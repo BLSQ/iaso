@@ -11,45 +11,53 @@
     <form name="casesfilter" method="GET" action="" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="filter__container">
-        <h2 class="filter__label">Location</h2>
+        <h2 class="filter__label">{% trans "Location" %}</h2>
         <div class="filter__container__select">
-          <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">ZS</label>
+          <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">{% trans "ZS" %}</label>
           {{ form.ZS }}
         </div>
         {% if not form.AS.is_hidden %}
           <div class="filter__container__select">
-            <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">AS</label>
+            <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">{% trans "AS" %}</label>
             {{ form.AS }}
           </div>
         {% endif %}
         {% if not form.village.is_hidden %}
           <div class="filter__container__select">
-            <label class="filter__container__select__label" for="{{ form.village.id_for_label }}">village</label>
+            <label class="filter__container__select__label" for="{{ form.village.id_for_label }}">{% trans "Village" %}</label>
             {{ form.village }}
           </div>
         {% endif %}
       </div>
 
       <div class="filter__container">
-        <h2 class="filter__label">Field</h2>
+        <h2 class="filter__label">{% trans "Field" %}</h2>
         <div class="filter__container__select">
-          <label class="filter__container__select__label" for="{{ form.case_field.id_for_label }}">Name</label>
+          <label class="filter__container__select__label" for="{{ form.case_field.id_for_label }}">{% trans "Name" %}</label>
           {{ form.case_field}}
         </div>
         {% if not form.case_field_value.is_hidden %}
           <div class='filter__container__input'>
-            <label class="filter__container__select__label" for="{{ form.case_field_value.id_for_label }}">Value</label>
+            <label class="filter__container__select__label" for="{{ form.case_field_value.id_for_label }}">{% trans "Value" %}</label>
             {{ form.case_field_value}}
           </div>
           <button type="submit" class="button--reduced block--margin-left--xs">{% trans "Search" %}</button>
         {% endif %}
+      </div>
+
+      <div class="filter__container">
+        <h2 class="filter__label">{% trans "Order" %}</h2>
+        <div class="filter__container__select">
+          <label class="filter__container__select__label" for="{{ form.case_order.id_for_label }}">{% trans "Name" %}</label>
+          {{ form.case_order}}
+        </div>
       </div>
     </form>
 
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ count }} Cases found
+          {{ count }} {% trans "Cases found" %}
         </h2>
       </div>
 
@@ -57,12 +65,12 @@
         <table class="table--minimised duplicates__table duplicates__table--list">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Name</th>
-              <th>Age</th>
-              <th>Gender</th>
-              <th>Location</th>
-              <th>ID</th>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Name" %}</th>
+              <th>{% trans "Age" %}</th>
+              <th>{% trans "Gender" %}</th>
+              <th>{% trans "Location" %}</th>
+              <th>{% trans "ID" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -84,13 +92,13 @@
         {% if prev_url %}
           <a class="button--minimised block--margin-right--xxs" href="{{ prev_url }}">
             <i class="fa fa-arrow-left"></i>
-            <span>Previous</span>
+            <span>{% trans "Previous" %}</span>
           </a>
         {% endif %}
 
         {% if next_url %}
           <a class="button--minimised" href="{{ next_url }}">
-            <span>Next</span>
+            <span>{% trans "Next" %}</span>
             <i class="fa fa-arrow-right icon--right"></i>
           </a>
         {% endif %}

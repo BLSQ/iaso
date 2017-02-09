@@ -1,115 +1,105 @@
 from django.test import TestCase
-from hat.sync import credentials
+from hat.sync import couchdb_helpers as helpers
 from hat.couchdb import api
 
 from . import clean_couch
 
 
-class SyncCredentialsTestCase(TestCase):
+class CouchDBHelpersTestCase(TestCase):
     def tearDown(self):
         super().tearDown()
         clean_couch()
 
-    # start with the easy one:
-    def test_generate_credentials(self):
-        creds = credentials.generate_credentials('karl.westin@ehealthnigeria.org')
+    def test_generate_password(self):
+        p1 = helpers.generate_password()
+        self.assertEqual(len(p1), 100)
+        p2 = helpers.generate_password()
+        self.assertNotEqual(p1, p2)
 
-        self.assertEqual(creds['user_name'], 'karl.westin@ehealthnigeria.org')
-        self.assertEqual(len(creds['password']), 100)
-        self.assertEqual(creds['db_name'], 'device_karlwestinehealthnigeriaorg')
+    def test_generate_user_id(self):
+        email = 'test_user@ehealthnigeria.org'
+        user_id = helpers.generate_user_id(email)
+        self.assertEqual(user_id, 'org.couchdb.user:test_user@ehealthnigeria.org')
 
-    def test_create_user_and_db(self):
-        creds = credentials.generate_credentials('test_user@ehealthnigeria.org')
+    def test_create_device_db_name(self):
+        device_id = 'test_XXxx99//123?`'
+        db_name = helpers.generate_db_name(device_id)
+        self.assertEqual(db_name, 'device_test_xxxx99123')
 
-        credentials.create(creds['user_name'], creds['password'], creds['db_name'])
+    def test_create_device_db(self):
+        device_id = 'test_xxx'
+        helpers.create_db(device_id)
+        db_name = helpers.generate_db_name(device_id)
+        db_req = api.get(db_name)
+        self.assertEqual(db_req.status_code, 200, msg=db_req.text)
 
-        # check that the user has access using the creds
-        valid_creds_request = api.get(
-            creds['db_name'],
-            auth=(creds['user_name'], creds['password'])
-        )
+        sec_req = api.get(helpers.generate_db_name(device_id) + '/_security')
+        self.assertEqual(sec_req.status_code, 200, sec_req.text)
+        sec_doc = sec_req.json()
+        self.assertIn(device_id, sec_doc['members']['roles'])
 
-        self.assertEqual(
-            valid_creds_request.status_code,
-            200,
-            msg='db got created and the user has access')
+    def test_create_couchdb_user(self):
+        email = 'test_user@ehealthnigeria.org'
+        password = helpers.generate_password()
+        device_id = 'test_db'
+        helpers.create_user(email, password, device_id)
 
-        # check that non-authed user does not have access
-        invalid_creds_request = api.get(
-            creds['db_name'],
-            auth=('randomuser', 'randompassword')
-        )
+        # Check the user exists
+        user_url = '_users/' + helpers.generate_user_id(email)
+        user_request = api.get(user_url)
+        self.assertEqual(user_request.status_code, 200, msg=user_request.text)
 
-        self.assertEqual(
-            invalid_creds_request.status_code,
-            401,
-            msg='invalid user does not have access')
+    def test_delete_couchdb_user(self):
+        email = 'test_user@ehealthnigeria.org'
+        password = helpers.generate_password()
+        device_id = 'test_db'
+        helpers.create_user(email, password, device_id)
+
+        # Check the user exists
+        user_url = '_users/' + helpers.generate_user_id(email)
+        user_request = api.get(user_url)
+        self.assertEqual(user_request.status_code, 200, msg=user_request.text)
+
+        # Check the user is gone
+        helpers.delete_user(email)
+        user_request = api.get(user_url)
+        self.assertEqual(user_request.status_code, 404, msg=user_request.text)
 
     def test_update_user_password(self):
-        creds = credentials.generate_credentials('test_user2@ehealthnigeria.org')
+        email = 'test_user2@ehealthnigeria.org'
+        password = helpers.generate_password()
+        device_id = 'test_db'
+        helpers.create_user(email, password, device_id)
 
-        credentials.create(creds['user_name'], creds['password'], creds['db_name'])
         new_password = 'super secure new password'
 
-        user_url = '_users/org.couchdb.user:test_user2@ehealthnigeria.org'
+        user_url = '_users/' + helpers.generate_user_id(email)
         user_doc = api.get(user_url).json()
+        key = user_doc['derived_key']
 
-        credentials.update(user_url, new_password, user_doc)
+        helpers.update_user(user_url, new_password, device_id, user_doc)
 
-        # check that the user has access using the creds
-        valid_creds_request = api.get(
-            creds['db_name'],
-            auth=(creds['user_name'], new_password)
-        )
-
-        self.assertEqual(
-            valid_creds_request.status_code,
-            200,
-            msg='Has access to DB using new password')
-
-        # check that non-authed user does not have access
-        invalid_creds_request = api.get(
-            creds['db_name'],
-            auth=(creds['user_name'], creds['password'])
-        )
-
-        self.assertEqual(
-            invalid_creds_request.status_code,
-            401,
-            msg='No access to DB using old password')
+        user_doc = api.get(user_url).json()
+        self.assertNotEqual(user_doc['derived_key'], key)
 
     def test_create_or_update(self):
-        test_email = 'test_user3@ehealthnigeria.org'
-        creds = credentials.create_or_update(test_email)
+        email = 'test_user3@ehealthnigeria.org'
+        device_id = 'test_db'
+        helpers.create_or_update_user(email, device_id)
 
-        self.assertTrue(creds['user_name'])
-        self.assertTrue(creds['db_name'])
-        self.assertTrue(creds['_id'])
-        self.assertTrue(creds['password'])
+        user_url = '_users/' + helpers.generate_user_id(email)
+        user_req = api.get(user_url)
+        self.assertEqual(user_req.status_code, 200, msg=user_req.text)
 
-        valid_creds_request = api.get(
-            creds['db_name'],
-            auth=(creds['user_name'], creds['password'])
-        )
+        user_doc = user_req.json()
+        rev = user_doc['_rev']
+        key = user_doc['derived_key']
 
-        self.assertEqual(
-            valid_creds_request.status_code,
-            200,
-            msg='Has access to DB using first password')
+        helpers.create_or_update_user(email, device_id)
 
-        creds2 = credentials.create_or_update(test_email)
+        user_req = api.get(user_url)
+        self.assertEqual(user_req.status_code, 200, msg=user_req.text)
 
-        self.assertEqual(creds['user_name'], creds2['user_name'], msg='Username should stay')
-        self.assertEqual(creds['db_name'], creds2['db_name'], msg='Database name should stay')
-        self.assertEqual(creds['_id'], creds2['_id'], msg='User Doc ID should stay')
-        self.assertNotEqual(creds['password'], creds2['password'], msg='Password should be new')
-
-        valid_creds_request2 = api.get(
-            creds['db_name'],
-            auth=(creds2['user_name'], creds2['password'])
-        )
-
-        self.assertEqual(
-            valid_creds_request2.status_code,
-            200,
-            msg='Has access to DB using new password')
+        user_doc = user_req.json()
+        self.assertNotEqual(rev, user_doc['_rev'])
+        self.assertNotEqual(key, user_doc['derived_key'])

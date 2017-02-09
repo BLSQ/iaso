@@ -22,3 +22,4 @@ simpledbf==0.2.6
 xlrd==1.0.0
 snaql==0.4
 django-sql-explorer==1.0
+django-cors-headers==2.0.2

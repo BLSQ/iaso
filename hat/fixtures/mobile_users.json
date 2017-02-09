@@ -1,0 +1,16 @@
+[
+  {
+    "model": "sync.mobileuser",
+    "pk": 1,
+    "fields": {
+      "email": "test_karl@ehealthnigeria.org"
+    }
+  },
+  {
+    "model": "sync.mobileuser",
+    "pk": 2,
+    "fields": {
+      "email": "test_till@ehealthnigeria.org"
+    }
+  }
+]

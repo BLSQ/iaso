@@ -72,6 +72,18 @@
     @include white-text-dark-background;
     max-width: 32em;
     padding: $padding-unit 0;
+
+    h2 {
+      margin-top: 1.5em;
+      margin-bottom: .5em;
+
+      &:first-of-type {
+        margin-top: 0;
+      }
+    }
+    p {
+      margin-bottom: 1.5em;
+    }
   }
   &__image--pilot-area {
     order: 2;
@@ -113,7 +125,12 @@
     order: 3;
   }
   &--suspect {
-    align-self: center;
+    flex: 1;
+    text-align: center;
+
+    p {
+      max-width: inherit;
+    }
   }
   &__image--suspect {
     min-height: 268px;

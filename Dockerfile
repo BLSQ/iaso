@@ -1,14 +1,28 @@
-FROM python:3.5
+FROM python:3.6
+
+################################################################################
+# DEFINE VARIABLES
+################################################################################
 
 ENV DEBIAN_FRONTEND noninteractive
 # Do not buffer stdout so we see log output immediatly
 ENV PYTHONUNBUFFERED true
+# Taken from: https://github.com/docker-library/python/blob/master/3.6/Dockerfile
+# if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
+ENV PYTHON_PIP_VERSION 9.0.1
+# https://github.com/Yelp/dumb-init/releases
+ENV DUMB_INIT 1.2.0
+# https://nodejs.org
+ENV NPM_CONFIG_LOGLEVEL info
+ENV NODE_VERSION 6.9.5
+
+################################################################################
 
 COPY build_scripts/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update -qq && cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
 COPY build_scripts/nginx.conf /etc/nginx/sites-available/default
 
-RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64.deb
+RUN wget https://github.com/Yelp/dumb-init/releases/download/v${DUMB_INIT}/dumb-init_${DUMB_INIT}_amd64.deb
 RUN dpkg -i dumb-init_*.deb
 RUN rm dumb-init_*.deb
 
@@ -29,19 +43,21 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 6.5.0
-
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
-  && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+RUN curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+  && curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc" \
   && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
-  && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
-  && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt
+  && grep " node-v${NODE_VERSION}-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+  && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
+  && rm "node-v${NODE_VERSION}-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt
 
 ################################################################################
 
-RUN pip install --quiet --upgrade pip==8.1.2
+# Taken from: https://github.com/docker-library/python/blob/master/3.6/Dockerfile
+# we use "--force-reinstall" for the case where the version of pip
+# we're trying to install is the same as the version bundled with Python
+# ("Requirement already up-to-date: pip==8.1.2 in /usr/local/lib/python3.6/site-packages")
+# https://github.com/docker-library/python/pull/143#issuecomment-241032683
+RUN pip install --quiet --no-cache-dir --upgrade --force-reinstall pip==${PYTHON_PIP_VERSION}
 
 COPY build_scripts/npmrc /root/.npmrc
 WORKDIR /opt/app

@@ -153,7 +153,7 @@ def cases_details(request, doc_id=None):
 def cases_list(request):
     all_cases = CaseView.objects.all()
 
-    locations = [Case.objects.order_by().values_list('ZS', flat=True).distinct()]
+    locations = [Case.objects.order_by('ZS').values_list('ZS', flat=True).distinct()]
     location = []
 
     ZS = request.GET.get('ZS', None)
@@ -162,7 +162,7 @@ def cases_list(request):
         location.append(ZS)
         ASs = Case.objects \
                   .filter(ZS=ZS) \
-                  .order_by() \
+                  .order_by('AS') \
                   .values_list('AS', flat=True) \
                   .distinct()
         locations.append(ASs)
@@ -173,7 +173,7 @@ def cases_list(request):
             location.append(AS)
             villages = Case.objects \
                            .filter(ZS=ZS, AS=AS) \
-                           .order_by() \
+                           .order_by('village') \
                            .values_list('village', flat=True) \
                            .distinct()
             locations.append(villages)
@@ -203,7 +203,25 @@ def cases_list(request):
     else:
         case_field = None
 
-    form = CasesFilterForm(locations, location, case_fields, case_field, request.GET or None)
+    case_orders = (
+        ('date', _('Document date')),
+        ('location', _('Location')),
+        ('names', _('Name'))
+    )
+    case_order = request.GET.get('case_order', None)
+    if case_order == 'date':
+        all_cases = all_cases.order_by('-document_date', 'ZS', 'AS', 'village')
+    elif case_order == 'location':
+        all_cases = all_cases.order_by('ZS', 'AS', 'village', '-document_date')
+    elif case_order == 'names':
+        all_cases = all_cases.order_by('name', 'prename', 'lastname', '-document_date')
+    else:
+        all_cases = all_cases.order_by('id')
+
+    form = CasesFilterForm(locations, location,
+                           case_fields, case_field,
+                           case_orders, case_order,
+                           request.GET or None)
     paginator = Paginator(all_cases, 25)
 
     page = request.GET.get('page')
@@ -238,7 +256,7 @@ def cases_list(request):
 
 
 class CasesFilterForm(forms.Form):
-    def __init__(self, locations, location, fields, case_field, *args, **kwargs):
+    def __init__(self, locations, location, fields, case_field, orders, order, *args, **kwargs):
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
         location_attrs = {
@@ -247,18 +265,18 @@ class CasesFilterForm(forms.Form):
         }
 
         zs_widget = forms.Select(attrs=location_attrs)
-        zs_choices = [(None, 'None')] + [(l, l) for l in locations[0]]
+        zs_choices = [(None, _('None'))] + [(l, l) for l in locations[0]]
 
         if len(locations) > 1:
             as_widget = forms.Select(attrs=location_attrs)
-            as_choices = [(None, 'None')] + [(l, l) for l in locations[1]]
+            as_choices = [(None, _('None'))] + [(l, l) for l in locations[1]]
         else:
             as_widget = forms.HiddenInput()
             as_choices = []
 
         if len(locations) > 2:
             village_widget = forms.Select(attrs=location_attrs)
-            village_choices = [(None, 'None')] + [(l, l) for l in locations[2]]
+            village_choices = [(None, _('None'))] + [(l, l) for l in locations[2]]
         else:
             village_widget = forms.HiddenInput()
             village_choices = []
@@ -280,7 +298,7 @@ class CasesFilterForm(forms.Form):
         )
 
         self.fields['case_field'] = forms.ChoiceField(
-            choices=[(None, 'None')] + [(f, f) for f in fields],
+            choices=[(None, _('None'))] + [(f, _(f)) for f in fields],
             widget=forms.Select(attrs={
                 'class': 'select--minimised',
                 'onchange': 'casesfilter.submit();',
@@ -293,5 +311,14 @@ class CasesFilterForm(forms.Form):
             case_field_value_widget = forms.HiddenInput()
         self.fields['case_field_value'] = forms.CharField(
             widget=case_field_value_widget,
+            required=False
+        )
+
+        self.fields['case_order'] = forms.ChoiceField(
+            choices=[(None, _('None'))] + [o for o in orders],
+            widget=forms.Select(attrs={
+                'class': 'select--minimised',
+                'onchange': 'casesfilter.submit();',
+            }),
             required=False
         )

@@ -41,12 +41,11 @@ module.exports = {
       /^__intl\/messages$/,
       '../translations/' + LOCALE + '.json'
     ),
-    new webpack.optimize.DedupePlugin(),
     new BundleTracker({
       path: __dirname,
       filename: './assets/bundles/webpack-stats.json'
     }),
-    new ExtractTextPlugin('[name]-[chunkhash].css'),
+    new ExtractTextPlugin({filename: '[name]-[chunkhash].css'}),
     new CommonsPlugin({
       minChunks: 3,
       name: 'common'
@@ -62,74 +61,85 @@ module.exports = {
     }),
     // Minification
     new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+    new webpack.LoaderOptionsPlugin({ minimize: true }),
     // XLSX
     new webpack.IgnorePlugin(/cptable/)
   ],
 
   module: {
-    loaders: [
+    rules: [
       // we pass the output from babel loader to react-hot loader
       {
         test: /\.js?$/,
         exclude: /node_modules/,
-        loaders: ['react-hot-loader/webpack', 'babel?' + JSON.stringify({
-          presets: [
-            'es2015',
-            'react',
-            'stage-2'
-          ],
-          plugins: [
-            ['react-intl', {
-              'messagesDir': path.join(__dirname, '/assets/messages')
-            }]
-          ]
-        })]
+        use: [
+          { loader: 'react-hot-loader/webpack' },
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                'es2015',
+                'react',
+                'stage-2'
+              ],
+              plugins: [
+                ['react-intl', {
+                  'messagesDir': path.join(__dirname, '/assets/messages')
+                }]
+              ]
+            }
+          }
+        ]
       },
       // Extract Sass files
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css!sass')
+        loader: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            { loader: 'css-loader' },
+            { loader: 'sass-loader' }
+          ]
+        })
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style-loader', 'css')
+        loader: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: 'css-loader'
+        })
       },
       // font files
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
         test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=application/octet-stream'
+        loader: 'url-loader?limit=10000&mimetype=application/octet-stream'
       },
       {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file'
+        loader: 'file-loader'
       },
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=image/svg+xml'
-      },
-      // JSON loader for translations
-      {
-        test: /\.json$/,
-        loader: 'json'
+        loader: 'url-loader?limit=10000&mimetype=image/svg+xml'
       },
       // Leaftlet images
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url?limit=10000&mimetype=image/png'
+        loader: 'url-loader?limit=10000&mimetype=image/png'
       },
       // favicon
       {
         test: 'images/favicon-prod.png',
-        loader: 'url',
-        query: {
+        loader: 'url-loader',
+        options: {
           name: 'favicon.png'
         }
       }
@@ -148,9 +158,7 @@ module.exports = {
   ],
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    // empty needs to be there to find external modules
-    extensions: ['', '.js'],
-    loaders: ['script']
+    modules: ['node_modules'],
+    extensions: ['.js']
   }
 }

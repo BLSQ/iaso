@@ -109,9 +109,10 @@ class Case(models.Model):
         permissions = (
             ("import", "Can import data"),
             ("import_reconciled", "Can import reconciliation data"),
-            ("export", "Can export data"),
-            ("export_full", "Can export the full dataset as csv"),
-            ("view", "Can view data"),
+            ("export", "Can export anonymized cases data"),
+            ("export_full", "Can export non anonymized cases data"),
+            ("view", "Can view anonymized cases data"),
+            ("view_full", "Can view non anonymized cases data"),
         )
 
 

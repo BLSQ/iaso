@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.shortcuts import render, redirect
@@ -13,7 +13,7 @@ from hat.cases.models import Case, CaseView, DuplicatesPair
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
     all_pairs = DuplicatesPair.objects.order_by('case1__ZS', 'case1__AS', 'case1__village')
@@ -48,7 +48,7 @@ def duplicatespair_list(request):
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET', 'POST'])
 def duplicatespair_detail(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -106,7 +106,7 @@ def duplicatespair_detail(request, pair_id):
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.reconcile_duplicates')
 @require_http_methods(['POST'])
 def duplicatespair_merge(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -118,7 +118,7 @@ def duplicatespair_merge(request, pair_id):
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.reconcile_duplicates')
 @require_http_methods(['POST'])
 def duplicatespair_ignore(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -130,7 +130,7 @@ def duplicatespair_ignore(request, pair_id):
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.view_full')
 @require_http_methods(['GET'])
 def cases_details(request, doc_id=None):
     back_link = request.GET.get('back', 'cases:cases_list')
@@ -148,7 +148,7 @@ def cases_details(request, doc_id=None):
 
 
 @login_required()
-@user_passes_test(lambda u: u.is_superuser)
+@permission_required('cases.view_full')
 @require_http_methods(['GET'])
 def cases_list(request):
     all_cases = CaseView.objects.all()

@@ -41,7 +41,7 @@ def force_put_doc(path: str, document: dict) -> Request:
     return r
 
 
-def bootstrap_couchdb():
+def bootstrap_couchdb(cleanup=True):
     o = urlparse(settings.COUCHDB_URL)
     couchdb_url = '{}://{}:{}@{}'.format(
         o.scheme,
@@ -51,7 +51,7 @@ def bootstrap_couchdb():
     cmd = ['couchdb-bootstrap', couchdb_url, settings.COUCHDB_DIR]
     # When testing, the db name will be '*_test' and if it already
     # exists, it will be dropped to start with an empty db.
-    if settings.TESTING:
+    if cleanup:
         test_db = settings.COUCHDB_DB
         cmd.append('--mapDbName={"hat":"' + test_db + '"}')
         r = api.get(test_db)

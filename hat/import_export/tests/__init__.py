@@ -34,5 +34,5 @@ TEST_DATA = {
 
 class DBTestCase(TransactionTestCase):
     def tearDown(self):
-        # This will recreate the test couchdb to drop any data created in the test
-        setup_couchdb()
+        # This will recreate the test couchdb and drop any data created in the test
+        setup_couchdb(cleanup=True)

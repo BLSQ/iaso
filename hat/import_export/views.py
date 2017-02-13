@@ -13,7 +13,6 @@ from hat.common.utils import create_shared_filename
 from hat.common.view_utils import task_status
 from hat.rq.utils import run_task, get_task_result
 
-
 from .errors import error_helper
 from .forms import \
     UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm

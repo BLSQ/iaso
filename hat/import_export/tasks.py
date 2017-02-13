@@ -5,6 +5,7 @@ from .export_csv import export_csv
 from .import_cases import import_cases_file
 from .import_locations import import_locations_file, import_locations_areas_file
 from .import_reconciled import import_reconciled_file
+from .import_synced import import_synced_devices, import_synced_device
 from .reimport import reimport
 
 
@@ -39,3 +40,13 @@ def import_locations_areas_task(name, filename) -> dict:
 @job('default', timeout=15*60)
 def import_reconciled_task(name, filename) -> dict:
     return import_reconciled_file(name, filename)
+
+
+@job('default', timeout=15*60)
+def import_synced_devices_task() -> list:
+    return import_synced_devices()
+
+
+@job('default', timeout=15*60)
+def import_synced_device_task(device) -> dict:
+    return import_synced_device(device)

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
+<<<<<<< 1e321c246b30b1d4da0e2d739802d9a518095ab6
 
 from hat.common.view_utils import task_status
 from hat.rq.utils import run_task
@@ -15,6 +16,7 @@ def index(request):
     from django.conf import settings
     from hat.cases.models import Case, DuplicatesPair
     import hat.couchdb.api as couchdb
+    from hat.sync.models import DeviceDB
     num_transformed = Case.objects.count()
     r = couchdb.get(settings.COUCHDB_DB)
     r.raise_for_status()
@@ -24,10 +26,12 @@ def index(request):
     # That is just an assummption. If we will have non raw docs or more than
     # one design doc in couchdb, it will be incorrect.
     num_raw = num_raw - 1
+
     context = {
         'num_transformed': num_transformed,
         'num_raw': num_raw,
         'num_duplicates': DuplicatesPair.objects.count(),
+        'num_devices': DeviceDB.objects.count(),
         'show_raw_data_button': settings.DEBUG,
     }
     return render(request, 'maintenance/index.html', context)
@@ -50,6 +54,18 @@ def status(request, task_id: str):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def done(request, task_id: str):
+    try:
+        status = get_task_status(task_id, user=request.user)
+    except NoSuchJobError:
+        messages.add_message(request, messages.INFO, task_messages['expired'])
+        return redirect('maintenance:index')
+
+    if status == 'failed':
+        messages.add_message(request, messages.ERROR, task_messages[status])
+    elif status != 'finished':
+        return render(request, 'maintenance/status.html', {'status': task_messages[status]})
+    else:
+        messages.add_message(request, messages.SUCCESS, task_messages[status])
     return redirect('maintenance:index')
 
 
@@ -124,3 +140,12 @@ def download_log(request):
         response = HttpResponse(csv, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="hat_log.csv"'
         return response
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def import_synced(request):
+    from hat.import_export.tasks import import_synced_devices_task
+    task = run_task(import_synced_devices_task, superuser=True)
+    return redirect('maintenance:status', task_id=task.id)

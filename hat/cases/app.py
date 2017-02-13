@@ -1,7 +1,7 @@
+from datetime import datetime
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from django_rq import get_scheduler
-from .tasks import duplicates_task
 
 
 class CasesAppConfig(AppConfig):
@@ -17,10 +17,17 @@ class CasesAppConfig(AppConfig):
         for job in scheduler.get_jobs():
             job.delete()
 
-        # Run the duplicates detection daily at night
+        # Run the duplicates detection task daily at night (2am)
         scheduler.cron(
             ('0 2 * * *'),
-            func=duplicates_task
+            func='hat.cases.tasks.duplicates_task',
+        )
+
+        # run the sync import task every hour since now
+        scheduler.schedule(
+            scheduled_time=datetime.utcnow(),
+            func='hat.import_export.tasks.import_synced_devices_task',
+            interval=60*60,
         )
 
 

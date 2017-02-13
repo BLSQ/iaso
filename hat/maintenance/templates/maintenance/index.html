@@ -32,6 +32,10 @@
               <td>{% trans "Duplicate matches" %}</td>
               <td>{{ num_duplicates }}</td>
             </tr>
+            <tr>
+              <td>{% trans "Synced devices" %}</td>
+              <td>{{ num_devices }}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -93,6 +97,16 @@
                   {% csrf_token %}
                   {{ form }}
                   <button type="submit" class="button--reduced">{% trans "Download log" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Import synced devices data." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:import_synced' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced">{% trans "Import data" %}</button>
                 </form>
               </td>
             </tr>

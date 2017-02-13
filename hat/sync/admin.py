@@ -4,7 +4,7 @@ from .models import MobileUser
 
 
 class MobileUserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'couchdb_id', 'db_name', )
+    list_display = ('email',)
     fields = ['email', ]
 
 

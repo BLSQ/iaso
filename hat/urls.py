@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
     url(r'^cases/', include('hat.cases.urls', 'cases')),
+    url(r'^sync/', include('hat.sync.urls', 'sync')),
 ]
 
 if settings.SHOW_DEBUG_TOOLBAR:

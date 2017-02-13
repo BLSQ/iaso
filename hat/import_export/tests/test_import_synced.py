@@ -1,9 +1,8 @@
-from django.test import TestCase
-
 from hat.couchdb import api
 from hat.sync import couchdb_helpers as helpers
 from hat.sync.tests import clean_couch
 from hat.sync.models import DeviceDB, DeviceDBEntry
+from . import DBTestCase
 from ..import_synced import import_synced_device
 
 device_id = 'test_Xx'
@@ -46,7 +45,7 @@ participant1 = {
 }
 
 
-class ImportSyncedTests(TestCase):
+class ImportSyncedTests(DBTestCase):
     def tearDown(self):
         super().tearDown()
         clean_couch()
@@ -93,6 +92,17 @@ class ImportSyncedTests(TestCase):
         result = import_synced_device(devicedb)
         self.assertEqual(result['num_total'], 1)
         self.assertEqual(result['num_imported'], 1)
+        entries = DeviceDBEntry.objects.filter(device_id=device_id)
+        self.assertEqual(entries.count(), 1)
+        entry = entries.first()
+        self.assertEqual(entry.device_doc_id, p1['id'])
+        self.assertNotEqual(entry.device_doc_rev, p1['rev'])
+        self.assertEqual(entry.device_doc_rev, p2['rev'])
+
+        # re-sync without changes
+        result = import_synced_device(devicedb)
+        self.assertEqual(result['num_total'], 0)
+        self.assertEqual(result['num_imported'], 0)
         entries = DeviceDBEntry.objects.filter(device_id=device_id)
         self.assertEqual(entries.count(), 1)
         entry = entries.first()

@@ -152,8 +152,7 @@ module.exports = {
   },
   externals: [
     {
-      './cptable': 'var cptable',
-      './jszip': 'jszip'
+      './cptable': 'var cptable'
     }
   ],
 

@@ -14,6 +14,8 @@ class DeviceDB(models.Model):
     last_synced_date = models.DateTimeField(null=True)
     last_synced_seq = models.TextField(null=True, default=0)
     last_synced_docs = models.TextField(null=True)
+    last_synced_log_status = models.TextField(null=True)
+    last_synced_log_message = models.TextField(null=True)
 
     @property
     def db_name(self):

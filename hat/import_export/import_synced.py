@@ -28,6 +28,8 @@ def import_synced_device(device: DeviceDB) -> dict:
         'last_seq': 0,
         'errors': [],
     }
+    device.last_synced_log_status = None
+    device.last_synced_log_message = None
 
     try:
         data = fetch_devicedb_data(device)
@@ -44,17 +46,26 @@ def import_synced_device(device: DeviceDB) -> dict:
 
         # log sync
         device.last_synced_seq = data['last_seq']
-        device.last_synced_date = timezone.now()
         device.last_synced_docs = data['docs']
-        device.save()
+        device.last_synced_log_status = 'success'
+        device.last_synced_log_message = '{} / {}'.format(stats['num_imported'],
+                                                          stats['num_total'])
 
         stats['last_seq'] = data['last_seq']
 
     except ImportStageException as exc:
+        device.last_synced_log_status = 'error'
+        device.last_synced_log_message = exc.stage.name
         stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})
         logger.exception(exc)
     except Exception as exc:
+        device.last_synced_log_status = 'error'
+        device.last_synced_log_message = ImportStage.stage.name
         stats['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
         logger.exception(exc)
+
+    # log sync
+    device.last_synced_date = timezone.now()
+    device.save()
 
     return stats

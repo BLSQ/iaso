@@ -39,6 +39,16 @@ class Migration(migrations.Migration):
             name='last_synced_docs',
             field=models.TextField(null=True),
         ),
+        migrations.AddField(
+            model_name='devicedb',
+            name='last_synced_log_status',
+            field=models.TextField(null=True),
+        ),
+        migrations.AddField(
+            model_name='devicedb',
+            name='last_synced_log_message',
+            field=models.TextField(null=True),
+        ),
         migrations.AlterUniqueTogether(
             name='devicedbentry',
             unique_together=set([('device_id', 'device_doc_id')]),

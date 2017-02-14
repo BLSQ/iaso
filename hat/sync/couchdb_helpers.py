@@ -127,34 +127,3 @@ def delete_user(email):
     couch_user = get_user.json()
     r = api.delete(user_url + '?rev={}'.format(couch_user['_rev']))
     r.raise_for_status()
-
-
-def fetch_dbs_info() -> dict:
-    r = api.get('_all_dbs')
-
-    # get the list of devices databases
-    dbs = [db for db in r.json() if db.startswith('device_')]
-
-    # get the list of existing and valid databases
-    results = {}
-    for dbname in dbs:
-        db = api.get(dbname)
-        db.raise_for_status()
-        results[dbname] = db.json()
-    return results
-
-
-def fetch_devicesdb_docs(device_id: str, last_seq: str) -> dict:
-    '''
-    get all updated documents in the device since last sync
-    '''
-    dbname = generate_db_name(device_id)
-    changes_url = '{}/_changes?style=all_docs&include_docs=true&since={}'.format(dbname, last_seq)
-
-    r = api.get(changes_url)
-    r.raise_for_status()
-    result = r.json()
-    return {
-        'last_seq': result['last_seq'],
-        'docs': [doc['doc'] for doc in result['results']],
-    }

@@ -1,23 +1,23 @@
 from .models import DeviceDB, DeviceDBEntry
-from .couchdb_helpers import generate_db_name, fetch_dbs_info, fetch_devicesdb_docs
+from hat.couchdb.utils import fetch_dbs_info, fetch_db_docs
 
 
-def fetch_devicesdb_info() -> list:
+def fetch_devicedbs_info() -> list:
     dbs_info = fetch_dbs_info()
     results = []
     for device in DeviceDB.objects.all():
-        dbname = generate_db_name(device.device_id)
-        dbinfo = dbs_info[dbname]
-        if dbname is not None:
+        dbinfo = dbs_info[device.db_name]
+        if dbinfo is not None:
             results.append({
                 'device': device,
                 'num_docs': dbinfo['doc_count'],
+                'num_cases': DeviceDBEntry.objects.filter(device_id=device.device_id).count()
             })
     return results
 
 
-def fetch_devicesdb_data(device: DeviceDB) -> list:
-    result = fetch_devicesdb_docs(device.device_id, device.last_synced_seq)
+def fetch_devicedb_data(device: DeviceDB) -> list:
+    result = fetch_db_docs(device.db_name, device.last_synced_seq)
 
     # compare couchdb with postgresql entries
     entries = []

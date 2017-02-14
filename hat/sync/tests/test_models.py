@@ -125,3 +125,10 @@ class ModelsTestCase(TransactionTestCase):
         # User now has access to db2
         user_db_req2 = api.get(db_name2, auth=user_auth)
         self.assertEqual(user_db_req2.status_code, 200, user_db_req2.text)
+
+    def test_devicedb_dbname(self):
+        device_id = 'test_XxYyZz987654321'
+        db_name = couchdb_helpers.generate_db_name(device_id)
+        devicedb = DeviceDB(device_id=device_id)
+
+        self.assertEqual(devicedb.db_name, db_name)

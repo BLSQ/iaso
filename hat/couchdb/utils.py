@@ -61,3 +61,33 @@ def bootstrap_couchdb(cleanup=True):
 
     r = run_cmd(cmd)
     return r
+
+
+def fetch_dbs_info() -> dict:
+    r = api.get('_all_dbs')
+
+    # get the list of non-private databases
+    dbs = [db for db in r.json() if not db.startswith('_')]
+
+    # create the dict of existing and valid databases with info
+    results = {}
+    for dbname in dbs:
+        db = api.get(dbname)
+        db.raise_for_status()
+        results[dbname] = db.json()
+    return results
+
+
+def fetch_db_docs(dbname: str, last_seq: str) -> dict:
+    '''
+    get all changed documents in the database since last sequence
+    '''
+    changes_url = '{}/_changes?style=all_docs&include_docs=true&since={}'.format(dbname, last_seq)
+
+    r = api.get(changes_url)
+    r.raise_for_status()
+    result = r.json()
+    return {
+        'last_seq': result['last_seq'],
+        'docs': [doc['doc'] for doc in result['results']],
+    }

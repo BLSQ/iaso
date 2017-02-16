@@ -1,13 +1,13 @@
 import logging
-from django.conf import settings
+from django.db import transaction
 from django.utils.translation import ugettext as _
 from pandas import DataFrame
 from simpledbf import Dbf5
 
-import hat.couchdb.api as couchdb
 from .errors import ImportStage
 from .load import load_locations_into_db, load_locations_areas_info_db
-from .utils import store_raw_file, capitalize, get_property_by_year
+from .models import ImportLog
+from .utils import extract_raw_file, capitalize, get_property_by_year
 
 logger = logging.getLogger(__name__)
 
@@ -26,29 +26,37 @@ AREAS_ID = 'hat-raw-locations-areas'
 '''
 
 
+@transaction.atomic
 def import_locations_file(orgname: str, filename: str, store=False) -> dict:
     '''
     This method receives the COMPLETE villages list.
     It will trucate the "location" table and insert the new entries.
     '''
 
+    if ImportLog.objects.filter(file_hash=STORE_ID).exists():
+        import_log = ImportLog.objects.filter(file_hash=STORE_ID).first()
+    else:
+        import_log = ImportLog()
+        import_log.source = 'locations_areas_import'
+        import_log.mimetype = 'application/x-dbf'
+        import_log.filename = orgname
+        import_log.file_hash = STORE_ID
+
     stats = {
-        'type': 'locations_import',
         'typename': _('locations'),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'num_total': 0,
-        'num_imported': 0,
-        'num_with_population': 0,
         'errors': [],
+        'log': import_log,
+        'num_with_population': 0,
     }
 
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
 
-        stats['num_total'] = len(df)
+        import_log.num_total = len(df)
 
         df_locs = DataFrame()
         # this is not possible yet, that's the main reason of the other method
@@ -76,23 +84,14 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         df_locs['population_source'] = df['POP_SOURCE']
 
         stats['num_with_population'] = len(df_locs[df_locs['population'].notnull()])
-
-        df_imported = load_locations_into_db(df_locs)
-        stats['num_imported'] = len(df_imported)
+        load_locations_into_db(df_locs)
 
         # We store the locations so that they can be replicated to another
         # server and get inserted when we reimport from raw data.
         if store:
-            # Check if a locations raw file already exists and delete it
-            r = couchdb.get(settings.COUCHDB_DB + '/' + STORE_ID)
-            if r.status_code < 400:
-                old_doc = r.json()
-                couchdb.delete(settings.COUCHDB_DB + '/' + STORE_ID,
-                               params={'rev': old_doc['_rev']})
-            doc = stats.copy()
-            doc['_id'] = STORE_ID
-            store_raw_file(doc, filename, 'application/x-dbf')
-            stats['store_id'] = STORE_ID
+            import_log.content = extract_raw_file(filename)
+            import_log.extra_stats = str({'num_with_population': stats['num_with_population']})
+            import_log.save()
 
     except KeyError as ke:
         stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
@@ -112,22 +111,29 @@ def import_locations_areas_file(orgname: str, filename: str, store=False) -> dic
     No new entries will be created, either other properties will be updated.
     '''
 
+    if ImportLog.objects.filter(file_hash=AREAS_ID).exists():
+        import_log = ImportLog.objects.filter(file_hash=AREAS_ID).first()
+    else:
+        import_log = ImportLog()
+        import_log.source = 'locations_areas_import'
+        import_log.mimetype = 'application/x-dbf'
+        import_log.filename = orgname
+        import_log.file_hash = AREAS_ID
+
     stats = {
-        'type': 'locations_areas_import',
         'typename': _('health areas'),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'num_total': 0,
-        'num_imported': 0,
         'errors': [],
+        'log': import_log,
     }
 
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
 
-        stats['num_total'] = len(df)
+        import_log.num_total = len(df)
 
         df_locs = DataFrame()
         df_locs['province'] = df['NEW_PROV'].apply(capitalize)
@@ -135,22 +141,13 @@ def import_locations_areas_file(orgname: str, filename: str, store=False) -> dic
         df_locs['ZS'] = df['ZS'].apply(capitalize)
         df_locs['AS'] = df['AS_'].apply(capitalize)
 
-        num_imported = load_locations_areas_info_db(df_locs)
-        stats['num_imported'] = num_imported
+        load_locations_areas_info_db(df_locs)
 
         # We store the areas so that they can be replicated to another
         # server and get inserted when we reimport from raw data.
         if store:
-            # Check if a areas raw file already exists and delete it
-            r = couchdb.get(settings.COUCHDB_DB + '/' + AREAS_ID)
-            if r.status_code < 400:
-                old_doc = r.json()
-                couchdb.delete(settings.COUCHDB_DB + '/' + AREAS_ID,
-                               params={'rev': old_doc['_rev']})
-            doc = stats.copy()
-            doc['_id'] = AREAS_ID
-            store_raw_file(doc, filename, 'application/x-dbf')
-            stats['store_id'] = AREAS_ID
+            import_log.content = extract_raw_file(filename)
+            import_log.save()
 
     except KeyError as ke:
         stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})

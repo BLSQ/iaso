@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 SOURCE_CHOICES = (
     ('historic', 'Historic'),
@@ -99,8 +101,6 @@ class Case(models.Model):
     test_followup_decision = models.TextField(null=True)
 
     # log fields
-    # used in merge duplicates actions
-    update_with = models.TextField(null=True)
     # just to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
 
@@ -114,6 +114,11 @@ class Case(models.Model):
             ("view", "Can view anonymized cases data"),
             ("view_full", "Can view non anonymized cases data"),
         )
+
+
+@receiver(pre_save, sender=Case)
+def increase_case_version_number(sender, instance, *args, **kwargs):
+    instance.version_number = instance.version_number + 1
 
 
 class CaseView(models.Model):

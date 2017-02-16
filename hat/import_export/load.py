@@ -2,11 +2,12 @@ from django.db import transaction
 from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.models import Case, Location
+from .models import ImportLog
 from .errors import handle_import_stage, ImportStage
 
 
 @handle_import_stage(ImportStage.load)
-def load_cases_into_db(df: DataFrame) -> DataFrame:
+def load_cases_into_db(df: DataFrame, stats: ImportLog) -> ImportLog:
     '''Load the dataframe into postgres'''
 
     # remove rows with existing ids from the data
@@ -40,19 +41,28 @@ def load_cases_into_db(df: DataFrame) -> DataFrame:
     if len(duplicates) > 0:
         update_entries(duplicates)
 
-    return df
+    stats.num_created = len(df)
+    stats.num_updated = len(duplicates)
+    stats.num_deleted = 0
+
+    return stats
 
 
-def load_locations_into_db(df: DataFrame):
+def load_locations_into_db(df: DataFrame, stats: ImportLog) -> ImportLog:
     locations = [Location(**row.dropna().to_dict()) for _, row in df.iterrows()]
+
+    stats.num_created = len(locations)
+    stats.num_updated = 0
+    stats.num_deleted = Location.objects.all().count()
+
     # Delete all rows from the table and replaced with the new ones
     with transaction.atomic():
         Location.objects.all().delete()
         Location.objects.bulk_create(locations)
-    return df
+    return stats
 
 
-def load_locations_areas_info_db(df: DataFrame):
+def load_locations_areas_info_db(df: DataFrame, stats: ImportLog) -> ImportLog:
     total = 0
     with transaction.atomic():
         for index, row in df.iterrows():
@@ -60,17 +70,27 @@ def load_locations_areas_info_db(df: DataFrame):
                                   .filter(AS=row['AS']) \
                                   .update(**row.dropna().to_dict())
             total += num
-    return total
+
+    stats.num_created = 0
+    stats.num_updated = total
+    stats.num_deleted = 0
+
+    return stats
 
 
-def load_reconciled_into_db(df: DataFrame):
+def load_reconciled_into_db(df: DataFrame, stats: ImportLog) -> ImportLog:
     total = 0
     with transaction.atomic():
         for index, row in df.iterrows():
             num = Case.objects.filter(document_id=row['document_id']) \
                               .update(**row.dropna().to_dict())
             total += num
-    return total
+
+    stats.num_created = 0
+    stats.num_updated = total
+    stats.num_deleted = 0
+
+    return stats
 
 
 def update_entries(duplicates):
@@ -110,9 +130,5 @@ def update_entries(duplicates):
     # Use a transaction to bundle updates for better performance
     with transaction.atomic():
         for index, row in duplicates.iterrows():
-            data = {
-                  **row.dropna().to_dict(),
-                  'update_with': 'IMPORT_MERGE'
-            }
             Case.objects.filter(document_id=row['document_id']) \
-                        .update(**data)
+                        .update(**row.dropna().to_dict())

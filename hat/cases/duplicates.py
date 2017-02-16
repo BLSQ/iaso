@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from hat.cases.models import Case, DuplicatesPair, IgnoredPair
+from hat.import_export.models import ImportLog
 
 
 @transaction.atomic
@@ -58,12 +59,23 @@ def commit_merge(pair_id):
         else:
             p.save()
 
-    # Mark the possible changes with the youngest one...
-    merged_case.update_with = younger_case.document_id
     # ... save merged with changes...
     merged_case.save()
     # ... and delete the youngest one.
     younger_case.delete()
+
+    # create the entry in the log
+    import_log = ImportLog()
+    import_log.source = 'merge_import'
+    import_log.num_total = 2
+    import_log.num_created = 0
+    import_log.num_updated = 1
+    import_log.num_deleted = 1
+    import_log.documents = str({
+        'updated': older_case.document_id,
+        'deleted': younger_case.document_id,
+    })
+    import_log.save()
 
 
 def merge_cases(pair_id):
@@ -81,7 +93,7 @@ def merge_cases(pair_id):
     # Merge the cases while prefering more recent values
     for field in older_case._meta.get_fields():
         # ignore some fields
-        if field.name in ['version_number', 'update_with']:
+        if field.name in ['version_number']:
             continue
 
         # ids belong to the older case (merge into it)

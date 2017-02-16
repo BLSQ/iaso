@@ -2,12 +2,9 @@ import pandas
 import re
 
 from base64 import b64encode
-from django.conf import settings
 from hashlib import md5
 from pandas import Series
 from string import capwords
-
-import hat.couchdb.api as couchdb
 
 
 def capitalize(x: str) -> str:
@@ -113,17 +110,11 @@ def hash_file(filename: str) -> str:
     return hasher.hexdigest()
 
 
-def store_raw_file(doc: dict, filename: str, mimetype: str) -> str:
+def extract_raw_file(filename: str):
+    content = None
     with open(filename, 'rb') as file:
-        doc['_attachments'] = {
-            'file': {
-                'content_type': mimetype,
-                'data': b64encode(file.read()).decode('ascii')
-            }
-        }
-    r = couchdb.post(settings.COUCHDB_DB, json=doc)
-    r.raise_for_status()
-    return r.json()['id']
+        content = b64encode(file.read()).decode('ascii')
+    return content
 
 
 def get_property_by_year(row, prefix='', returnType='value') -> str:

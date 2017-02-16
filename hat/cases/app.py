@@ -28,15 +28,11 @@ def prepare_db(sender, **kwargs):
     from django.db import connection
     from .queries import prepare_queries, duplicates_queries
 
-    with connection.cursor() as cursor:
-        sql_context = {
-          'case_file': False,  # not implemented yet
-          'location_file': False,  # not implemented yet
-        }
+    # TODO: migrate files from couchdb to postgresql
 
-        cursor.execute(prepare_queries.prepare_extensions(**sql_context))
-        cursor.execute(prepare_queries.prepare_tables(**sql_context))
-        cursor.execute(prepare_queries.prepare_indices(**sql_context))
-        cursor.execute(prepare_queries.prepare_triggers(**sql_context))
-        cursor.execute(prepare_queries.prepare_views(**sql_context))
+    with connection.cursor() as cursor:
+        cursor.execute(prepare_queries.prepare_extensions())
+        cursor.execute(prepare_queries.prepare_indices())
+        cursor.execute(prepare_queries.prepare_views())
+        cursor.execute(prepare_queries.cleaning())
         cursor.execute(duplicates_queries.prepare())

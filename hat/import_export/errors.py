@@ -2,6 +2,7 @@ from typing import Dict
 from enum import Enum
 from functools import wraps
 from django.template.defaultfilters import truncatechars
+from django.utils.translation import ugettext as _
 
 
 class ImportStage(Enum):
@@ -34,13 +35,13 @@ def handle_import_stage(stage: ImportStage):
 
 
 messages = dict([
-    (ImportStage.filetype.name, 'Unknown file type. Only .mdb, .accdb and .enc accepted'),
-    (ImportStage.extract.name, 'Could not extract data from file for import'),
-    (ImportStage.transform.name, 'File is missing values, can not be automatically imported'),
-    (ImportStage.load.name, 'Could not load data into database'),
-    (ImportStage.store.name, 'Could not store file for re-import'),
-    (ImportStage.exists.name, 'File has already been uploaded'),
-    (ImportStage.other.name, 'An unforseen error occurred'),
+    (ImportStage.filetype.name, _('Unknown file type. Only .mdb, .accdb and .enc accepted')),
+    (ImportStage.extract.name, _('Could not extract data from file for import')),
+    (ImportStage.transform.name, _('File is missing values, can not be automatically imported')),
+    (ImportStage.load.name, _('Could not load data into database')),
+    (ImportStage.store.name, _('Could not store file for re-import')),
+    (ImportStage.exists.name, _('File has already been uploaded')),
+    (ImportStage.other.name, _('An unforseen error occurred')),
 ])
 
 

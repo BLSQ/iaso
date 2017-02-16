@@ -12,7 +12,7 @@ class ImportCSVTests(DBTestCase):
     def test_import_csv(self):
         stats = import_csv_file('testdata', csv_file, True)
 
-        self.assertEqual(stats['success'], True)
+        self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['num_total'], 9)
         self.assertEqual(stats['num_imported'], 9)
 

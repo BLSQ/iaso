@@ -1,10 +1,12 @@
 from datetime import timedelta
-from .extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS, \
-    SUSPECT_FULL_EXPORT_FIELDS, SUSPECT_ANON_EXPORT_FIELDS
 from django.conf import settings
+
 from hat.common.utils import run_cmd, create_shared_filename
 from hat.cases.filters import resolve_dateperiod
+
 from .queries import export_queries
+from .extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS, \
+    SUSPECT_FULL_EXPORT_FIELDS, SUSPECT_ANON_EXPORT_FIELDS
 
 
 def export_csv(

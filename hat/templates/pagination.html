@@ -1,0 +1,17 @@
+{% load i18n %}
+
+<div class="widget__pagination">
+  {% if prev_url %}
+    <a class="button--minimised block--margin-right--xxs" href="{{ prev_url }}">
+      <i class="fa fa-arrow-left"></i>
+      <span>{% trans "Previous" %}</span>
+    </a>
+  {% endif %}
+
+  {% if next_url %}
+    <a class="button--minimised" href="{{ next_url }}">
+      <span>{% trans "Next" %}</span>
+      <i class="fa fa-arrow-right icon--right"></i>
+    </a>
+  {% endif %}
+</div>

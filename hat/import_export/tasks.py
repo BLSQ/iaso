@@ -1,5 +1,6 @@
 from typing import List, Tuple
 from django_rq import job
+
 from .export_csv import export_csv
 from .import_cases import import_cases_file
 from .import_locations import import_locations_file, import_locations_areas_file

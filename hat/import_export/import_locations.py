@@ -1,8 +1,11 @@
 import logging
-from simpledbf import Dbf5
-from pandas import DataFrame
 from django.conf import settings
+from django.utils.translation import ugettext as _
+from pandas import DataFrame
+from simpledbf import Dbf5
+
 import hat.couchdb.api as couchdb
+from .errors import ImportStage
 from .load import load_locations_into_db, load_locations_areas_info_db
 from .utils import store_raw_file, capitalize, get_property_by_year
 
@@ -28,17 +31,19 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
     This method receives the COMPLETE villages list.
     It will trucate the "location" table and insert the new entries.
     '''
+
     stats = {
         'type': 'locations_import',
+        'typename': _('locations'),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'success': True,
         'num_total': 0,
         'num_imported': 0,
         'num_with_population': 0,
-        'error': None
+        'errors': [],
     }
+
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
@@ -89,9 +94,12 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
             store_raw_file(doc, filename, 'application/x-dbf')
             stats['store_id'] = STORE_ID
 
+    except KeyError as ke:
+        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
+        logger.exception(ke)
+
     except Exception as ex:
-        stats['success'] = False
-        stats['error'] = str(ex)
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
     return stats
@@ -103,16 +111,18 @@ def import_locations_areas_file(orgname: str, filename: str, store=False) -> dic
     It will update the missing province "info" in the "location" table entries.
     No new entries will be created, either other properties will be updated.
     '''
+
     stats = {
         'type': 'locations_areas_import',
+        'typename': _('health areas'),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'success': True,
         'num_total': 0,
         'num_imported': 0,
-        'error': None
+        'errors': [],
     }
+
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
@@ -142,9 +152,12 @@ def import_locations_areas_file(orgname: str, filename: str, store=False) -> dic
             store_raw_file(doc, filename, 'application/x-dbf')
             stats['store_id'] = AREAS_ID
 
+    except KeyError as ke:
+        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
+        logger.exception(ke)
+
     except Exception as ex:
-        stats['success'] = False
-        stats['error'] = str(ex)
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
     return stats

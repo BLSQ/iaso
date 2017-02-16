@@ -46,21 +46,7 @@
         </table>
       </section>
 
-      <div class="widget__pagination">
-        {% if pairs.has_previous %}
-          <a class="button--minimised block--margin-right--xxs" href="?page={{ pairs.previous_page_number }}">
-            <i class="fa fa-arrow-left"></i>
-            <span>{% trans "Previous" %}</span>
-          </a>
-        {% endif %}
-
-        {% if pairs.has_next %}
-          <a class="button--minimised" href="?page={{ pairs.next_page_number }}">
-            <span>{% trans "Next" %}</span>
-            <i class="fa fa-arrow-right icon--right"></i>
-          </a>
-        {% endif %}
-      </div>
+      {% include "pagination.html" %}
     </div>
   </div>
 

@@ -1,10 +1,11 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import render, redirect
-from hat.rq.utils import run_task, get_task_status
-from rq.exceptions import NoSuchJobError
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect
 from django.utils.translation import ugettext as _
+from django.views.decorators.http import require_http_methods
+
+from hat.common.view_utils import task_status
+from hat.rq.utils import run_task
 
 
 @login_required()
@@ -36,19 +37,19 @@ def index(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def status(request, task_id: str):
-    try:
-        status = get_task_status(task_id, user=request.user)
-    except NoSuchJobError:
-        messages.add_message(
-            request,
-            messages.INFO,
-            _('This task is expired, you can start a new job below')
-        )
-        return redirect('maintenance:index')
+    return task_status(request,
+                       task_id=task_id,
+                       back_view='maintenance:done',
+                       texts={
+                           'title': _('Maintenance'),
+                           'expired': _('This task is expired, you can start a new job below'),
+                       })
 
-    if status != 'finished':
-        return render(request, 'maintenance/status.html', {'status': status})
-    messages.add_message(request, messages.SUCCESS, _('Task done.'))
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def done(request, task_id: str):
     return redirect('maintenance:index')
 
 

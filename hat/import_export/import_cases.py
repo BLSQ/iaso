@@ -1,12 +1,13 @@
 import logging
-from pathlib import PurePath
 from django.conf import settings
+from django.utils.translation import ugettext as _
+from pathlib import PurePath
+
 import hat.couchdb.api as couchdb
 from hat.common.mdb import get_tablenames
-from hat.import_export.errors import ImportStageException
-from .load import load_cases_into_db
+from .errors import ImportStage, ImportStageException
 from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
-from hat.import_export.errors import ImportStage
+from .load import load_cases_into_db
 from .utils import hash_file, store_raw_file
 
 logger = logging.getLogger(__name__)
@@ -14,20 +15,26 @@ logger = logging.getLogger(__name__)
 
 def import_cases_file(orgname: str, filename: str, store=False) -> dict:
 
+    stats_error = {
+        'type': 'import_error',
+        'typename': '---',
+        'version': 1,
+        'orgname': orgname,
+        'filename': filename,
+        'stored': store,
+        'errors': []
+    }
+
     # skip existing files when not doing re-import
     file_hash = None
     if store:
         file_hash = hash_file(filename)
         existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
         if existing.status_code == 200:
-            return {
-                'orgname': orgname,
-                'type': 'import_error',
-                'errors': [{
-                    'stage': ImportStage.exists.name,
-                    'message': 'This file has already been imported'
-                }]
-            }
+            err_msg = _('This file has already been uploaded: {}').format(orgname)
+            logger.error(err_msg)
+            stats_error['errors'].append({'stage': ImportStage.exists.name, 'message': err_msg})
+            return stats_error
 
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
@@ -38,24 +45,21 @@ def import_cases_file(orgname: str, filename: str, store=False) -> dict:
         elif IMPORT_CONFIG['pv']['main_table'] in tables:
             source_type = 'pv'
         else:
-            err_msg = 'Cannot import unkown mdb file: {}'.format(orgname)
+            err_msg = _('Cannot import unkown mdb file: {}').format(orgname)
             logger.error(err_msg)
-            return {
-                'type': 'import_error',
-                'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
-            }
+            stats_error['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
+            return stats_error
     elif suffix == '.enc':
         source_type = 'backup'
     else:
-        err_msg = 'Cannot import unkown filetype: {}'.format(suffix)
+        err_msg = _('Cannot import unkown filetype: {}').format(suffix)
         logger.error(err_msg)
-        return {
-            'type': 'import_error',
-            'errors': [{'stage': ImportStage.filetype.name, 'message': err_msg}]
-        }
+        stats_error['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
+        return stats_error
 
     stats = {
         'type': '{}_import'.format(source_type),
+        'typename': _(source_type),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
@@ -78,7 +82,10 @@ def import_cases_file(orgname: str, filename: str, store=False) -> dict:
             doc = stats.copy()
             # use file hash as id for easy lookup of existing files
             doc['_id'] = file_hash
-            store_id = store_raw_file(doc, filename, 'application/x-msaccess')
+            mimetype = 'application/x-msaccess'
+            if source_type == 'backup':
+                mimetype = 'application/x-encrypted'
+            store_id = store_raw_file(doc, filename, mimetype)
             stats['store_id'] = store_id
 
     except ImportStageException as exc:

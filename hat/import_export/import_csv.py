@@ -1,7 +1,10 @@
 import logging
 import pandas
 from django.conf import settings
+from django.utils.translation import ugettext as _
+
 import hat.couchdb.api as couchdb
+from .errors import ImportStage
 from .load import load_cases_into_db
 from .utils import hash_file, store_raw_file
 
@@ -15,14 +18,14 @@ logger = logging.getLogger(__name__)
 def import_csv_file(orgname, filename, store=False):
     stats = {
         'type': 'csv_import',
+        'typename': '***',
         'version': 1,
         'orgname': orgname,
         'filename': filename,
         'stored': store,
         'num_total': 0,
         'num_imported': 0,
-        'success': True,
-        'error': None
+        'errors': [],
     }
     try:
         file_hash = None
@@ -30,7 +33,10 @@ def import_csv_file(orgname, filename, store=False):
             file_hash = hash_file(filename)
             existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
             if existing.status_code == 200:
-                raise FileExistsError('File has already been uploaded')
+                err_msg = _('This file has already been uploaded: {}').format(orgname)
+                logger.error(err_msg)
+                stats['errors'].append({'stage': ImportStage.exists.name, 'message': err_msg})
+                return stats
 
         df = pandas.read_csv(filename, sep=';')
         stats['num_total'] = len(df)
@@ -44,8 +50,7 @@ def import_csv_file(orgname, filename, store=False):
             stats['store_id'] = store_id
 
     except Exception as ex:
-        stats['success'] = False
-        stats['error'] = str(ex)
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
     return stats

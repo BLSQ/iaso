@@ -1,13 +1,13 @@
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
+from hat.common.view_utils import paginate
 from hat.cases.duplicates import merge_cases, commit_merge, commit_ignore
 from hat.cases.models import Case, CaseView, DuplicatesPair
 
@@ -17,19 +17,14 @@ from hat.cases.models import Case, CaseView, DuplicatesPair
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
     all_pairs = DuplicatesPair.objects.order_by('case1__ZS', 'case1__AS', 'case1__village')
-    paginator = Paginator(all_pairs, 25)
 
-    page = request.GET.get('page')
-    try:
-        pairs = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        pairs = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        pairs = paginator.page(paginator.num_pages)
+    paginator = paginate(request,
+                         objects=all_pairs,
+                         prefix_url=reverse('cases:duplicates_list') + '?',
+                         )
 
     rows = []
+    pairs = paginator['items']
     if len(pairs) > 0:
         cur_loc = [pairs[0].case1.ZS, pairs[0].case1.AS, pairs[0].case1.village]
         rows = [{'type': 'location', 'location': ', '.join(cur_loc)}]
@@ -40,11 +35,7 @@ def duplicatespair_list(request):
                 rows.append({'type': 'location', 'location': ', '.join(cur_loc)})
             rows.append({'type': 'pair', 'pair': pair})
 
-    return render(request, 'cases/duplicates_list.html', {
-        'count': all_pairs.count(),
-        'rows': rows,
-        'pairs': pairs
-    })
+    return render(request, 'cases/duplicates_list.html', {**paginator, 'rows': rows, })
 
 
 @login_required()
@@ -222,37 +213,13 @@ def cases_list(request):
                            case_fields, case_field,
                            case_orders, case_order,
                            request.GET or None)
-    paginator = Paginator(all_cases, 25)
 
-    page = request.GET.get('page')
-    try:
-        cases = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        cases = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        cases = paginator.page(paginator.num_pages)
+    paginator = paginate(request,
+                         objects=all_cases,
+                         prefix_url=reverse('cases:cases_list') + '?',
+                         )
 
-    next_url = None
-    prev_url = None
-
-    if cases.has_next():
-        qs = request.GET.copy()
-        qs['page'] = cases.next_page_number()
-        next_url = reverse('cases:cases_list') + '?' + qs.urlencode()
-    if cases.has_previous():
-        qs = request.GET.copy()
-        qs['page'] = cases.previous_page_number()
-        prev_url = reverse('cases:cases_list') + '?' + qs.urlencode()
-
-    return render(request, 'cases/cases_list.html', {
-        'cases': cases,
-        'count': all_cases.count(),
-        'form': form,
-        'next_url': next_url,
-        'prev_url': prev_url
-    })
+    return render(request, 'cases/cases_list.html', {**paginator, 'form': form, })
 
 
 class CasesFilterForm(forms.Form):

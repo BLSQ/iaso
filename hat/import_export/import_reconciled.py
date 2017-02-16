@@ -1,7 +1,10 @@
 import logging
 import pandas
 from django.conf import settings
+from django.utils.translation import ugettext as _
+
 import hat.couchdb.api as couchdb
+from .errors import ImportStage
 from .load import load_reconciled_into_db
 from .utils import hash_file, store_raw_file, capitalize
 
@@ -9,16 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 def import_reconciled_file(orgname: str, filename: str, store=False) -> dict:
+
     stats = {
         'type': 'reconciled_import',
+        'typename': _('reconciled data'),
         'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'success': True,
         'num_total': 0,
         'num_imported': 0,
-        'error': None
+        'errors': [],
     }
+
     try:
         # skip existing files when not doing re-import
         file_hash = None
@@ -26,7 +31,11 @@ def import_reconciled_file(orgname: str, filename: str, store=False) -> dict:
             file_hash = hash_file(filename)
             existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
             if existing.status_code == 200:
-                raise FileExistsError('File has already been uploaded')
+                stats['errors'].append({
+                    'stage': ImportStage.exists.name,
+                    'message': _('This file has already been uploaded')
+                })
+                return stats
 
         df = pandas.read_excel(filename)
         stats['num_total'] = len(df)
@@ -50,9 +59,12 @@ def import_reconciled_file(orgname: str, filename: str, store=False) -> dict:
             store_id = store_raw_file(doc, filename, 'application/x-msexcel')
             stats['store_id'] = store_id
 
+    except KeyError as ke:
+        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
+        logger.exception(ke)
+
     except Exception as ex:
-        stats['success'] = False
-        stats['error'] = str(ex)
+        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
     return stats

@@ -74,7 +74,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for case in cases %}
+            {% for case in items %}
               <tr>
                 <td>{{ case.document_date|date:"SHORT_DATE_FORMAT" }}</td>
                 <td>{{ case.name }} {{ case.prename}} {{ case.lastname }}</td>
@@ -88,21 +88,7 @@
         </table>
       </section>
 
-      <div class="widget__pagination">
-        {% if prev_url %}
-          <a class="button--minimised block--margin-right--xxs" href="{{ prev_url }}">
-            <i class="fa fa-arrow-left"></i>
-            <span>{% trans "Previous" %}</span>
-          </a>
-        {% endif %}
-
-        {% if next_url %}
-          <a class="button--minimised" href="{{ next_url }}">
-            <span>{% trans "Next" %}</span>
-            <i class="fa fa-arrow-right icon--right"></i>
-          </a>
-        {% endif %}
-      </div>
+      {% include "pagination.html" %}
     </div>
   </div>
 

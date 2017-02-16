@@ -2,15 +2,17 @@ import logging
 from typing import List
 from pathlib import PurePath
 from django.conf import settings
+
 from hat.cases.models import Case, Location
-import hat.couchdb.api as couchdb
-from hat.couchdb.utils import walk_changes
 from hat.common.utils import create_shared_filename
-from hat.import_export.errors import ImportStage
+from hat.couchdb.utils import walk_changes
+import hat.couchdb.api as couchdb
+
+from .errors import ImportStage
 from .import_cases import import_cases_file
+from .import_csv import import_csv_file
 from .import_locations import import_locations_file, import_locations_areas_file
 from .import_reconciled import import_reconciled_file
-from .import_csv import import_csv_file
 
 logger = logging.getLogger(__name__)
 

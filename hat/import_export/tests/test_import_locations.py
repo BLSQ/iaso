@@ -14,12 +14,11 @@ class ImportLocationsTests(DBTestCase):
     def test_import_locations(self):
         stats = import_locations_file('testdata', dbf_file, True)
 
-        self.assertTrue(stats['success'])
         self.assertEqual(stats['orgname'], 'testdata')
         self.assertEqual(stats['num_imported'], 9)
         self.assertEqual(stats['num_total'], 9)
         self.assertEqual(stats['num_with_population'], 2)
-        self.assertEqual(stats['error'], None)
+        self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['store_id'], STORE_ID)
 
         self.assertEqual(stats['num_imported'], Location.objects.count())
@@ -53,11 +52,10 @@ class ImportLocationsTests(DBTestCase):
 
         stats = import_locations_areas_file('testdata', dbf_areas, True)
 
-        self.assertTrue(stats['success'])
         self.assertEqual(stats['orgname'], 'testdata')
         self.assertEqual(stats['num_imported'], 2)  # says imported but are updated
         self.assertEqual(stats['num_total'], 1)  # only one row in the file
-        self.assertEqual(stats['error'], None)
+        self.assertEqual(len(stats['errors']), 0)
         self.assertEqual(stats['store_id'], AREAS_ID)
         self.assertEqual(Location.objects.count(), count)  # no new locations
 

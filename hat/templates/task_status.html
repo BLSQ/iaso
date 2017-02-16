@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Maintenance" %}</h1>
+  <h1 class="header__title">{{ title }}</h1>
 {% endblock %}
 
 {% block content %}
@@ -14,8 +14,8 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-        <i class="fa fa-cog fa-spin"></i>
-          {% trans "Task running..." %}
+          <i class="fa fa-cog fa-spin"></i>
+          {{ running }}
         </h2>
       </div>
       <div class="widget__content">

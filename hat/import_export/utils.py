@@ -1,10 +1,12 @@
-from hashlib import md5
-from base64 import b64encode
-from string import capwords
-import re
 import pandas
-from pandas import Series
+import re
+
+from base64 import b64encode
 from django.conf import settings
+from hashlib import md5
+from pandas import Series
+from string import capwords
+
 import hat.couchdb.api as couchdb
 
 

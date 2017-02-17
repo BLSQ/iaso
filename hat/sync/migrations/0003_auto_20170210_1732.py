@@ -12,18 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='DeviceDBEntry',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device_id', models.TextField(db_index=True)),
-                ('device_doc_id', models.TextField(db_index=True, null=True)),
-                ('device_doc_rev', models.TextField(null=True)),
-            ],
-            options={
-                'permissions': (('import_sync', 'Can import synced cases'),),
-            },
-        ),
         migrations.AddField(
             model_name='devicedb',
             name='last_synced_date',
@@ -48,9 +36,5 @@ class Migration(migrations.Migration):
             model_name='devicedb',
             name='last_synced_log_message',
             field=models.TextField(null=True),
-        ),
-        migrations.AlterUniqueTogether(
-            name='devicedbentry',
-            unique_together=set([('device_id', 'device_doc_id')]),
         ),
     ]

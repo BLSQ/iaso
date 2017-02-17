@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
-<<<<<<< 1e321c246b30b1d4da0e2d739802d9a518095ab6
 
 from hat.common.view_utils import task_status
 from hat.rq.utils import run_task
@@ -54,18 +53,6 @@ def status(request, task_id: str):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def done(request, task_id: str):
-    try:
-        status = get_task_status(task_id, user=request.user)
-    except NoSuchJobError:
-        messages.add_message(request, messages.INFO, task_messages['expired'])
-        return redirect('maintenance:index')
-
-    if status == 'failed':
-        messages.add_message(request, messages.ERROR, task_messages[status])
-    elif status != 'finished':
-        return render(request, 'maintenance/status.html', {'status': task_messages[status]})
-    else:
-        messages.add_message(request, messages.SUCCESS, task_messages[status])
     return redirect('maintenance:index')
 
 

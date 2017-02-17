@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 config = IMPORT_CONFIG['sync']
 
 
-def import_synced_devices() -> dict:
+def import_synced_devices(store=True) -> dict:
     # do not spend time on empty devices
     devices = [info['device'] for info in fetch_devicedbs_info() if info['num_docs'] > 0]
-    return [import_synced_device(device) for device in devices]
+    return [import_synced_device(device, store) for device in devices]
 
 
 @transaction.atomic
-def import_synced_device(device: DeviceDB) -> dict:
+def import_synced_device(device: DeviceDB, store=True) -> dict:
     stats = {
         'type': 'synced_import',
         'version': 1,
@@ -41,17 +41,17 @@ def import_synced_device(device: DeviceDB) -> dict:
             stats['num_total'] = len(extracted[config['main_table']])
             stats['num_imported'] = len(loaded)
 
-            for entry in data['entries']:
-                entry.save()
-
-        # log sync
-        device.last_synced_seq = data['last_seq']
-        device.last_synced_docs = data['docs']
-        device.last_synced_log_status = 'success'
-        device.last_synced_log_message = '{} / {}'.format(stats['num_imported'],
-                                                          stats['num_total'])
-
         stats['last_seq'] = data['last_seq']
+
+        if store:
+            # log sync
+            device.last_synced_seq = data['last_seq']
+            device.last_synced_docs = data['docs']
+            device.last_synced_log_status = 'success'
+            device.last_synced_log_message = '{} / {}'.format(stats['num_imported'],
+                                                              stats['num_total'])
+            device.last_synced_date = timezone.now()
+            device.save()
 
     except ImportStageException as exc:
         device.last_synced_log_status = 'error'
@@ -63,9 +63,5 @@ def import_synced_device(device: DeviceDB) -> dict:
         device.last_synced_log_message = ImportStage.stage.name
         stats['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
         logger.exception(exc)
-
-    # log sync
-    device.last_synced_date = timezone.now()
-    device.save()
 
     return stats

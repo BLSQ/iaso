@@ -32,6 +32,8 @@ Then additional users with custom groups and permissions can be added through th
 
 For the app to be able to decrypt mobile backups, it needs a privatekey. The key must be exported as env var `$HAT_MOBILE_KEY` and will be picked up by docker-compose. It can be found in Lastpass under `Backup private key`. The key is also needed to run the tests.
 
+For more information about the encrypted backups, refer to the [sense-hat-mobile README](https://github.com/eHealthAfrica/sense-hat-mobile#encrypted-usb-backups).
+
 ## Run commands on the server
 
 Each docker container uses the same script as entrypoint. The `entrypoint.sh` script offers a range of commands to start services or run commands. The full list of commands can be seen in the script. The pattern to run a command is always `docker-compose run <container-name> <entrypoint-command> <...args>` The following are some examples:

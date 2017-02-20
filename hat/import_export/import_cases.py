@@ -7,37 +7,31 @@ from hat.common.mdb import get_tablenames
 from .errors import ImportStage, ImportStageException
 from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
 from .load import load_cases_into_db
-from .models import ImportLog
 from .utils import hash_file, extract_raw_file
+from hat.cases.event_log import EventFile, log_cases_file_import, cases_file_exists
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def import_cases_file(orgname: str, filename: str, store=False) -> ImportLog:
-
-    import_log = ImportLog()
-    import_log.source = 'import_error'
-    import_log.filename = orgname
-
-    stats = {
-        'typename': '---',
-        'version': 1,
+def import_cases_file(orgname: str, filename: str, store=True):
+    result = {
+        'typename': None,
         'orgname': orgname,
         'filename': filename,
         'errors': [],
-        'log': import_log,
+        'stats': None
     }
 
-    # skip existing files when not doing re-import
-    import_log.file_hash = hash_file(filename)
+    file_name = orgname
+    file_hash = hash_file(filename)
 
-    if store:
-        if ImportLog.objects.filter(file_hash=import_log.file_hash).exists():
-            err_msg = _('This file has already been uploaded: {}').format(orgname)
-            logger.error(err_msg)
-            stats['errors'].append({'stage': ImportStage.exists.name, 'message': err_msg})
-            return stats
+    # skip existing files when not doing re-import
+    if store and cases_file_exists(file_hash):
+        err_msg = _('This file has already been uploaded: {}').format(orgname)
+        logger.error(err_msg)
+        result['errors'].append({'stage': ImportStage.exists.name, 'message': err_msg})
+        return result
 
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
@@ -50,38 +44,35 @@ def import_cases_file(orgname: str, filename: str, store=False) -> ImportLog:
         else:
             err_msg = _('Cannot import unkown mdb file: {}').format(orgname)
             logger.error(err_msg)
-            stats['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
-            return stats
+            result['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
+            return result
     elif suffix == '.enc':
         source_type = 'backup'
     else:
         err_msg = _('Cannot import unkown filetype: {}').format(suffix)
         logger.error(err_msg)
-        stats['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
-        return stats
+        result['errors'].append({'stage': ImportStage.filetype.name, 'message': err_msg})
+        return result
 
-    import_log.source = '{}_import'.format(source_type)
-    import_log.mimetype = 'application/x-msaccess'
-    if source_type == 'backup':
-        import_log.mimetype = 'application/x-encrypted'
-    stats['typename'] = _(source_type)
+    result['typename'] = _(source_type)
     config = IMPORT_CONFIG[source_type]
 
     try:
         extracted = extract_file(config, filename)
-        import_log.num_total = len(extracted[config['main_table']])
         transformed = transform_source(config, extracted, orgname)
-        load_cases_into_db(transformed, import_log)
+        stats = load_cases_into_db(transformed)
+        result['stats'] = stats
 
         if store:
-            import_log.content = extract_raw_file(filename)
-            import_log.save()
+            # file.contents = extract_raw_file(filename)
+            file = EventFile(name=orgname, hash=file_hash, contents=extract_raw_file(filename))
+            log_cases_file_import(stats, file, source_type)
 
     except ImportStageException as exc:
-        stats['errors'].append({'stage': exc.stage.name, 'message': str(exc)})
+        result['errors'].append({'stage': exc.stage.name, 'message': str(exc)})
         logger.exception(exc)
     except Exception as exc:
-        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
+        result['errors'].append({'stage': ImportStage.other.name, 'message': str(exc)})
         logger.exception(exc)
 
-    return stats
+    return result

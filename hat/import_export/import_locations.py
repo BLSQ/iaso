@@ -6,13 +6,10 @@ from simpledbf import Dbf5
 
 from .errors import ImportStage
 from .load import load_locations_into_db, load_locations_areas_info_db
-from .models import ImportLog
-from .utils import extract_raw_file, capitalize, get_property_by_year
+from .utils import hash_file, extract_raw_file, capitalize, get_property_by_year
+
 
 logger = logging.getLogger(__name__)
-
-STORE_ID = 'hat-raw-locations'
-AREAS_ID = 'hat-raw-locations-areas'
 
 '''
     ** import_locations_file
@@ -27,36 +24,24 @@ AREAS_ID = 'hat-raw-locations-areas'
 
 
 @transaction.atomic
-def import_locations_file(orgname: str, filename: str, store=False) -> dict:
+def import_locations_file(orgname: str, filename: str) -> dict:
     '''
     This method receives the COMPLETE villages list.
     It will trucate the "location" table and insert the new entries.
     '''
 
-    if ImportLog.objects.filter(file_hash=STORE_ID).exists():
-        import_log = ImportLog.objects.filter(file_hash=STORE_ID).first()
-    else:
-        import_log = ImportLog()
-        import_log.source = 'locations_areas_import'
-        import_log.mimetype = 'application/x-dbf'
-        import_log.filename = orgname
-        import_log.file_hash = STORE_ID
-
-    stats = {
+    result = {
         'typename': _('locations'),
-        'version': 1,
         'orgname': orgname,
         'filename': filename,
         'errors': [],
-        'log': import_log,
+        'stats': None,
         'num_with_population': 0,
     }
 
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
-
-        import_log.num_total = len(df)
 
         df_locs = DataFrame()
         # this is not possible yet, that's the main reason of the other method
@@ -83,57 +68,39 @@ def import_locations_file(orgname: str, filename: str, store=False) -> dict:
         df_locs['population_year'] = df.apply(population_year, axis=1)
         df_locs['population_source'] = df['POP_SOURCE']
 
-        stats['num_with_population'] = len(df_locs[df_locs['population'].notnull()])
-        load_locations_into_db(df_locs)
-
-        # We store the locations so that they can be replicated to another
-        # server and get inserted when we reimport from raw data.
-        if store:
-            import_log.content = extract_raw_file(filename)
-            import_log.extra_stats = str({'num_with_population': stats['num_with_population']})
-            import_log.save()
+        result['num_with_population'] = len(df_locs[df_locs['population'].notnull()])
+        stats = load_locations_into_db(df_locs)
+        result['stats'] = stats
 
     except KeyError as ke:
-        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
+        result['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
         logger.exception(ke)
 
     except Exception as ex:
-        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
+        result['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
-    return stats
+    return result
 
 
-def import_locations_areas_file(orgname: str, filename: str, store=False) -> dict:
+def import_locations_areas_file(orgname: str, filename: str) -> dict:
     '''
     This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
     It will update the missing province "info" in the "location" table entries.
     No new entries will be created, either other properties will be updated.
     '''
 
-    if ImportLog.objects.filter(file_hash=AREAS_ID).exists():
-        import_log = ImportLog.objects.filter(file_hash=AREAS_ID).first()
-    else:
-        import_log = ImportLog()
-        import_log.source = 'locations_areas_import'
-        import_log.mimetype = 'application/x-dbf'
-        import_log.filename = orgname
-        import_log.file_hash = AREAS_ID
-
-    stats = {
+    result = {
         'typename': _('health areas'),
-        'version': 1,
         'orgname': orgname,
         'filename': filename,
         'errors': [],
-        'log': import_log,
+        'stats': None
     }
 
     try:
         dbf = Dbf5(filename)
         df = dbf.to_dataframe()
-
-        import_log.num_total = len(df)
 
         df_locs = DataFrame()
         df_locs['province'] = df['NEW_PROV'].apply(capitalize)
@@ -141,23 +108,18 @@ def import_locations_areas_file(orgname: str, filename: str, store=False) -> dic
         df_locs['ZS'] = df['ZS'].apply(capitalize)
         df_locs['AS'] = df['AS_'].apply(capitalize)
 
-        load_locations_areas_info_db(df_locs)
-
-        # We store the areas so that they can be replicated to another
-        # server and get inserted when we reimport from raw data.
-        if store:
-            import_log.content = extract_raw_file(filename)
-            import_log.save()
+        stats = load_locations_areas_info_db(df_locs)
+        result['stats'] = stats
 
     except KeyError as ke:
-        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
+        result['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
         logger.exception(ke)
 
     except Exception as ex:
-        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
+        result['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
 
-    return stats
+    return result
 
 
 def population_value(row) -> str:

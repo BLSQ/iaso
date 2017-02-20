@@ -96,8 +96,8 @@ class ImportCasesTests(DBTestCase):
         self.assertEqual(Case.objects.count(), count)
 
     def test_import_existing_file(self):
-        stats1 = import_cases_file('backup', enc_file, store=True)
-        stats2 = import_cases_file('backup', enc_file, store=True)
+        stats1 = import_cases_file('backup', enc_file)
+        stats2 = import_cases_file('backup', enc_file)
 
         self.assertEqual(stats1['type'], 'backup_import')
         self.assertEqual(stats2['type'], 'import_error')

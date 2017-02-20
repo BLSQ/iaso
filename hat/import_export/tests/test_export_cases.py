@@ -8,9 +8,9 @@ from . import DBTestCase, TEST_DATA
 
 class ExportTests(DBTestCase):
     def setUp(self):
-        import_cases_file('historic', TEST_DATA['historic']['file'], store=True)
-        import_cases_file('pv', TEST_DATA['pv']['file'], store=True)
-        import_cases_file('backup', TEST_DATA['mobile_backup']['file'], store=True)
+        import_cases_file('historic', TEST_DATA['historic']['file'])
+        import_cases_file('pv', TEST_DATA['pv']['file'])
+        import_cases_file('backup', TEST_DATA['mobile_backup']['file'])
 
     def test_export(self):
         csv_file = export_csv()

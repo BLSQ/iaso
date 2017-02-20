@@ -1,30 +1,8 @@
-{% sql 'prepare_extensions', note='Create extensions' %}
-  {# Load the trigrams extension #}
-  CREATE EXTENSION IF NOT EXISTS pg_trgm;
-
-  {# hstore is necessary to save the document changes #}
-  CREATE EXTENSION IF NOT EXISTS hstore;
-{% endsql %}
-
-
-{% sql 'prepare_indices', depends_on=['prepare_extensions'] %}
-  {#  create trigram indexes for names #}
-  CREATE INDEX IF NOT EXISTS cases_case_names_trgm_idx
-    ON cases_case
-    USING gin (
-      name            gin_trgm_ops,
-      prename         gin_trgm_ops,
-      lastname        gin_trgm_ops,
-      mothers_surname gin_trgm_ops
-    );
-{% endsql %}
-
-
-{% sql 'prepare_views', note='Create views outside migration files' %}
-  {# The best way is to DROP and CREATE again instead of CREATE OR REPLACE #}
+{% sql 'prepare_views', note='Create any views' %}
+  {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
 
-  {# "CaseView" model #}
+  {# View of cases with aggregated results for test types #}
   DROP VIEW IF EXISTS cases_case_view;
   CREATE VIEW cases_case_view AS
     SELECT *
@@ -66,17 +44,4 @@
          , test_pl_result AS stage_result
 
       FROM cases_case;
-{% endsql %}
-
-
-{% sql 'cleaning', note='Cleaning the house' %}
-  DROP TRIGGER IF EXISTS cases_case_action_update ON cases_case;
-  DROP TRIGGER IF EXISTS cases_case_action_delete ON cases_case;
-
-  DROP FUNCTION IF EXISTS cases_case_update();
-  DROP FUNCTION IF EXISTS cases_case_delete();
-
-  {# DROP VIEW IF EXISTS cases_history_log_view; #}
-  {# DROP TABLE IF EXISTS cases_history_log; #}
-  {# DROP TABLE IF EXISTS cases_history_log_document; #}
 {% endsql %}

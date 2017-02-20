@@ -7,10 +7,8 @@ from hat.common.utils import create_shared_filename
 
 from .errors import ImportStage
 from .import_cases import import_cases_file
-from .import_csv import import_csv_file
 from .import_locations import import_locations_file, import_locations_areas_file
 from .import_reconciled import import_reconciled_file
-from .models import ImportLog
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +53,6 @@ def reimport() -> List[dict]:
            type == 'backup_import' or \
            type == 'pv_import':
             stats = import_cases_file(import_log.filename, filename)
-        elif type == 'csv_import':
-            stats = import_csv_file(import_log.filename, filename)
         elif type == 'locations_import':
             stats = import_locations_file(import_log.filename, filename)
         elif type == 'locations_areas_import':
@@ -67,9 +63,10 @@ def reimport() -> List[dict]:
         # Todo: remove the file after import
         results.append(stats)
 
+    raise Error('NOT IMPLEMENTED')
     Case.objects.all().delete()
     Location.objects.all().delete()
-    for import_log in ImportLog.objects.all():
-        import_change(import_log)
+    # for import_log in ImportLog.objects.all():
+    #     import_change(import_log)
     logger.info('reimport finished')
     return results

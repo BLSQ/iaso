@@ -30,7 +30,7 @@
               <th>{% trans "File" %}</th>
               <th>{% trans "Type" %}</th>
               <th>{% trans "Result" %}</th>
-              <th>{% trans "In file" %}</th>
+              <th>{% trans "Total" %}</th>
               <th>{% trans "Created" %}</th>
               <th>{% trans "Updated" %}</th>
               <th>{% trans "Deleted" %}</th>
@@ -40,7 +40,7 @@
           <tbody>
             {% for file in results %}
               <tr class="{% if file.ok %}job-result-ok{% else %}job-result-error{% endif %}">
-                <td>{{ file.log.filename }}</td>
+                <td>{{ file.orgname }}</td>
                 <td>{{ file.typename }}</td>
                 <td>
                   {% if file.ok %}
@@ -49,10 +49,17 @@
                     <span class="text--error"><i class="fa fa-times"></i> {% trans "Error" %}</span>
                   {% endif %}
                 </td>
-                <td>{{ file.log.num_total}}</td>
-                <td>{{ file.log.num_created}}</td>
-                <td>{{ file.log.num_updated}}</td>
-                <td>{{ file.log.num_deleted}}</td>
+                {% if file.stats %}
+                  <td>{{ file.stats.total}}</td>
+                  <td>{{ file.stats.created}}</td>
+                  <td>{{ file.stats.updated}}</td>
+                  <td>{{ file.stats.deleted}}</td>
+                {% else %}
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                {% endif %}
                 <td>
                   {% for error in file.errors %}
                     {{error.short_message}}

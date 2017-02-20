@@ -13,7 +13,7 @@ from .reimport import reimport
 def import_task(fileinfos: List[Tuple[str, str]]) -> dict:
     results = []
     for (name, filename) in fileinfos:
-        results.append(import_cases_file(name, filename, store=True))
+        results.append(import_cases_file(name, filename))
     return results
 
 

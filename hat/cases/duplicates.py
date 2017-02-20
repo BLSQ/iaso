@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from hat.cases.models import Case, DuplicatesPair, IgnoredPair
-from hat.import_export.models import ImportLog
+from .event_log import log_cases_merge
 
 
 @transaction.atomic
@@ -65,17 +65,8 @@ def commit_merge(pair_id):
     younger_case.delete()
 
     # create the entry in the log
-    import_log = ImportLog()
-    import_log.source = 'merge_import'
-    import_log.num_total = 2
-    import_log.num_created = 0
-    import_log.num_updated = 1
-    import_log.num_deleted = 1
-    import_log.documents = str({
-        'updated': older_case.document_id,
-        'deleted': younger_case.document_id,
-    })
-    import_log.save()
+    log_cases_merge(updated_id=older_case.document_id,
+                    deleted_id=younger_case.document_id)
 
 
 def merge_cases(pair_id):

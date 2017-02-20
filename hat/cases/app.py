@@ -8,7 +8,7 @@ class CasesAppConfig(AppConfig):
     name = 'hat.cases'
 
     def ready(self):
-        post_migrate.connect(prepare_db, sender=self)
+        post_migrate.connect(setup_db, sender=self)
 
         # schedule jobs
         scheduler = get_scheduler('default')
@@ -31,15 +31,6 @@ class CasesAppConfig(AppConfig):
         )
 
 
-def prepare_db(sender, **kwargs):
-    from django.db import connection
-    from .queries import prepare_queries, duplicates_queries
-
-    # TODO: migrate files from couchdb to postgresql
-
-    with connection.cursor() as cursor:
-        cursor.execute(prepare_queries.prepare_extensions())
-        cursor.execute(prepare_queries.prepare_indices())
-        cursor.execute(prepare_queries.prepare_views())
-        cursor.execute(prepare_queries.cleaning())
-        cursor.execute(duplicates_queries.prepare())
+def setup_db(sender, **kwargs):
+    from .queries import prepare_db
+    prepare_db()

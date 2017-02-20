@@ -11,8 +11,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         result = import_synced_devices(store=options['store'])
-        num_total = sum(r['num_total'] for r in result)
-        num_imported = sum(r['num_imported'] for r in result)
+        num_total = sum(r['stats'].total for r in result if r['stats'] is not None)
+        num_imported = sum(r['stats'].created for r in result if r['stats'] is not None)
         num_errors = sum(len(r['errors']) for r in result)
         self.stdout.write('----------- Import done -----------')
         self.stdout.write('Total number of records:    {}'.format(num_total))

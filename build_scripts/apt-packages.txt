@@ -1,7 +1,7 @@
-gettext-base
-gettext
-postgresql-client
-mdbtools
 curl
-vim
+gettext
+gettext-base
+mdbtools
 nginx
+postgresql-client
+vim

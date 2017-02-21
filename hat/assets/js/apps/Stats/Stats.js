@@ -477,6 +477,8 @@ export class Stats extends Component {
           <div className='filter__container__select'>
             <label htmlFor='date-from' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='statspage.label.datefrom' defaultMessage='From' /></label>
             <DatePicker
+              dateFormat={this.dateFormat}
+              dateFormatCalendar={this.dateFormat}
               selected={pickerFrom}
               onChange={this.datefromHandler} />
           </div>
@@ -484,6 +486,8 @@ export class Stats extends Component {
           <div className='filter__container__select'>
             <label htmlFor='date-to' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='statspage.label.dateto' defaultMessage='To' /></label>
             <DatePicker
+              dateFormat={this.dateFormat}
+              dateFormatCalendar={this.dateFormat}
               selected={pickerTo}
               onChange={this.datetoHandler} />
           </div>

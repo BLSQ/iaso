@@ -112,15 +112,27 @@ module.exports = {
       // font files
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'application/font-woff'
+        }
       },
       {
         test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'application/font-woff'
+        }
       },
       {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/octet-stream'
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'application/octet-stream'
+        }
       },
       {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
@@ -128,12 +140,20 @@ module.exports = {
       },
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=image/svg+xml'
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'image/svg+xml'
+        }
       },
       // Leaftlet images
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=image/png'
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'image/png'
+        }
       },
       // favicon
       {
@@ -147,14 +167,8 @@ module.exports = {
   },
 
   // https://github.com/SheetJS/js-xlsx/issues/285
-  node: {
-    fs: 'empty'
-  },
-  externals: [
-    {
-      './cptable': 'var cptable'
-    }
-  ],
+  node: { fs: 'empty' },
+  externals: [{ './cptable': 'var cptable' }],
 
   resolve: {
     modules: ['node_modules'],

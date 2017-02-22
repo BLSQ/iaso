@@ -5,7 +5,7 @@ from pandas import DataFrame
 from simpledbf import Dbf5
 
 from .errors import get_import_error
-from .load import load_locations_into_db, load_locations_areas_info_db
+from .load import load_locations_into_db, load_locations_areas_into_db
 from .utils import capitalize, get_property_by_year
 
 
@@ -102,7 +102,7 @@ def import_locations_areas_file(orgname: str, filename: str) -> dict:
         df_locs['ZS'] = df['ZS'].apply(capitalize)
         df_locs['AS'] = df['AS_'].apply(capitalize)
 
-        stats = load_locations_areas_info_db(df_locs)
+        stats = load_locations_areas_into_db(df_locs)
         result['stats'] = stats
 
     except Exception as ex:

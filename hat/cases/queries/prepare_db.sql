@@ -4,7 +4,7 @@
 
   {# View joining the hat event tables #}
   DROP VIEW if EXISTS hat_event_view;
-    CREATE VIEW hat_event_view AS
+  CREATE VIEW hat_event_view AS
     SELECT B.*
          , A.type
          , A.name

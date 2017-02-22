@@ -76,7 +76,7 @@ def load_locations_into_db(df: DataFrame) -> EventStats:
 
 
 @transaction.atomic
-def load_locations_areas_info_db(df: DataFrame) -> EventStats:
+def load_locations_areas_into_db(df: DataFrame) -> EventStats:
     total = len(df)
     updated = 0
     for index, row in df.iterrows():

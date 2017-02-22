@@ -17,7 +17,6 @@ class ExportTests(TransactionTestCase):
     fixtures = ['cases']
 
     def test_export(self):
-        from hat.cases.models import Case
         csv_file = export_csv()
         df = pandas.read_csv(csv_file)
         self.assertEqual(len(df), NUM_CASES)

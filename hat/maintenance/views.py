@@ -1,3 +1,4 @@
+from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
@@ -20,15 +21,13 @@ def index(request):
     r = couchdb.get(settings.COUCHDB_DB)
     r.raise_for_status()
 
-    num_raw = r.json()['doc_count']
-    # To account for the design doc we simply subtract one from the raw count.
-    # That is just an assummption. If we will have non raw docs or more than
-    # one design doc in couchdb, it will be incorrect.
-    num_raw = num_raw - 1
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT count(*) FROM hat_event')
+        num_events = cursor.fetchone()[0]
 
     context = {
+        'num_events': num_events,
         'num_transformed': num_transformed,
-        'num_raw': num_raw,
         'num_duplicates': DuplicatesPair.objects.count(),
         'num_devices': DeviceDB.objects.count(),
         'show_raw_data_button': settings.DEBUG,
@@ -111,19 +110,18 @@ def rebuild_duplicates(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def download_log(request):
+def download_events(request):
     import pandas
-    from django.db import connection
     from django.http import HttpResponse
-
     sql = '''
-        SELECT * FROM cases_history_log_view ORDER BY stamp DESC
+        SELECT stamp, created, updated, deleted, total, type, name
+        FROM hat_event_view ORDER BY stamp DESC
     '''
     with connection.cursor() as cursor:
         cursor.execute(sql)
         log = cursor.fetchall()
         pd = pandas.DataFrame(log, columns=[col[0] for col in cursor.description])
-        csv = pd.to_csv()
+        csv = pd.to_csv(index=False)
         response = HttpResponse(csv, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="hat_log.csv"'
         return response

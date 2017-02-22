@@ -21,8 +21,8 @@
           </thead>
           <tbody>
             <tr>
-              <td>{% trans "Raw" %}</td>
-              <td>{{ num_raw }}</td>
+              <td>{% trans "Events" %}</td>
+              <td>{{ num_events }}</td>
             </tr>
             <tr>
               <td>{% trans "Transformed" %}</td>
@@ -91,12 +91,12 @@
               </td>
             </tr>
             <tr>
-              <td>{% trans "Download the history log." %}</td>
+              <td>{% trans "Download the events log." %}</td>
               <td>
-                <form method="POST" action="{% url 'maintenance:download_log' %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   {{ form }}
-                  <button type="submit" class="button--reduced">{% trans "Download log" %}</button>
+                  <button type="submit" class="button--reduced">{% trans "Download events" %}</button>
                 </form>
               </td>
             </tr>

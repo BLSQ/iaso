@@ -3,6 +3,7 @@
     "model": "cases.case",
     "pk": 1,
     "fields": {
+      "source": "historic",
       "document_id": "1",
       "document_date": "2016-01-01T00:00:00Z",
       "ZS": "Mosango",
@@ -18,6 +19,7 @@
     "model": "cases.case",
     "pk": 2,
     "fields": {
+      "source": "historic",
       "document_id": "2",
       "document_date": "2016-01-02T00:00:00Z",
       "ZS": "Mosango",
@@ -34,6 +36,7 @@
     "model": "cases.case",
     "pk": 3,
     "fields": {
+      "source": "mobile_backup",
       "document_id": "3",
       "document_date": "2016-01-02T12:00:00Z",
       "ZS": "Mosango",
@@ -49,6 +52,7 @@
     "model": "cases.case",
     "pk": 4,
     "fields": {
+      "source": "mobile_backup",
       "document_id": "4",
       "document_date": "2016-01-04T00:00:00Z",
       "ZS": "Mosango",
@@ -64,6 +68,7 @@
     "model": "cases.case",
     "pk": 5,
     "fields": {
+      "source": "mobile_backup",
       "document_id": "5",
       "document_date": "2016-01-05T00:00:00Z",
       "ZS": "Mosango",
@@ -79,6 +84,7 @@
     "model": "cases.case",
     "pk": 6,
     "fields": {
+      "source": "pv",
       "document_id": "6",
       "document_date": "2016-01-06T00:00:00Z",
       "ZS": "Mosango",

@@ -102,17 +102,18 @@ def merge_case_models(older_case, younger_case):
     # Merge the cases while prefering more recent values
     for field in older_case._meta.get_fields():
         # ids belong to the older case (merge into it)
-        if field.name in ['id', 'document_id', 'hat_id']:
+        if field.name in ['id', 'document_id', 'hat_id', 'version_number']:
             steps.append((field.name, older_case, 1))
             continue
 
-        v1 = getattr(older_case, field.name)
-        v2 = getattr(younger_case, field.name)
-        if v2 == v1:
+        old_value = getattr(older_case, field.name)
+        new_value = getattr(younger_case, field.name)
+
+        if new_value == old_value:
             steps.append((field.name, older_case, 0))
-        elif v2 is not None:
+        elif new_value is not None:
             steps.append((field.name, younger_case, 2))
-        elif v1 is not None:
+        elif old_value is not None:
             steps.append((field.name, older_case, 1))
 
     merged_case = Case(**{name: getattr(case, name) for (name, case, _) in steps})

@@ -7,6 +7,7 @@ from hat.cases.event_log import EventStats
 
 
 @handle_import_stage(ImportStage.load)
+@transaction.atomic
 def load_cases_into_db(df: DataFrame) -> EventStats:
     '''Load the dataframe into postgres'''
     total = len(df)
@@ -53,6 +54,7 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     )
 
 
+@transaction.atomic
 def load_locations_into_db(df: DataFrame) -> EventStats:
     total = len(df)
 
@@ -62,9 +64,8 @@ def load_locations_into_db(df: DataFrame) -> EventStats:
     deleted = Location.objects.all().count()
 
     # Delete all rows from the table and replaced with the new ones
-    with transaction.atomic():
-        Location.objects.all().delete()
-        Location.objects.bulk_create(locations)
+    Location.objects.all().delete()
+    Location.objects.bulk_create(locations)
 
     return EventStats(
         total=total,
@@ -74,16 +75,15 @@ def load_locations_into_db(df: DataFrame) -> EventStats:
     )
 
 
+@transaction.atomic
 def load_locations_areas_info_db(df: DataFrame) -> EventStats:
     total = len(df)
     updated = 0
-    with transaction.atomic():
-        for index, row in df.iterrows():
-            num = Location.objects.filter(ZS=row['ZS']) \
-                                  .filter(AS=row['AS']) \
-                                  .update(**row.dropna().to_dict())
-            updated += num
-
+    for index, row in df.iterrows():
+        num = Location.objects.filter(ZS=row['ZS']) \
+                              .filter(AS=row['AS']) \
+                              .update(**row.dropna().to_dict())
+        updated += num
     return EventStats(
         total=total,
         created=0,
@@ -92,15 +92,14 @@ def load_locations_areas_info_db(df: DataFrame) -> EventStats:
     )
 
 
+@transaction.atomic
 def load_reconciled_into_db(df: DataFrame) -> EventStats:
     total = len(df)
     updated = 0
-    with transaction.atomic():
-        for index, row in df.iterrows():
-            num = Case.objects.filter(document_id=row['document_id']) \
-                              .update(**row.dropna().to_dict())
-            updated += num
-
+    for index, row in df.iterrows():
+        num = Case.objects.filter(document_id=row['document_id']) \
+                          .update(**row.dropna().to_dict())
+        updated += num
     return EventStats(
         total=total,
         created=0,
@@ -143,8 +142,6 @@ def update_entries(duplicates):
         errors='ignore'
     )
 
-    # Use a transaction to bundle updates for better performance
-    with transaction.atomic():
-        for index, row in duplicates.iterrows():
-            Case.objects.filter(document_id=row['document_id']) \
-                        .update(**row.dropna().to_dict())
+    for index, row in duplicates.iterrows():
+        Case.objects.filter(document_id=row['document_id']) \
+                    .update(**row.dropna().to_dict())

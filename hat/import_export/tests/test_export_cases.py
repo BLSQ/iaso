@@ -1,12 +1,13 @@
 from datetime import datetime
 import pandas
+from django.test import TestCase
 from django.utils import timezone
 from ..import_cases import import_cases_file
 from ..export_csv import export_csv
-from . import DBTestCase, TEST_DATA
+from . import TEST_DATA
 
 
-class ExportTests(DBTestCase):
+class ExportTests(TestCase):
     def setUp(self):
         import_cases_file('historic', TEST_DATA['historic']['file'])
         import_cases_file('pv', TEST_DATA['pv']['file'])
@@ -20,6 +21,7 @@ class ExportTests(DBTestCase):
     def test_export_anon(self):
         csv_file = export_csv(anon=True)
         df = pandas.read_csv(csv_file)
+        self.assertEqual(len(df), TEST_DATA['total_count'])
         self.assertTrue('name' not in df)
 
     def test_export_sources(self):

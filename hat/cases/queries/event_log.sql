@@ -17,10 +17,9 @@
      Every event consists of two rows, one in the general event table and one
      in the table with specific event data. Do not use this by itself #}
   INSERT INTO hat_event
-      (type, created, updated, deleted, total)
+      (created, updated, deleted, total)
   VALUES (
-      {{ type|guards.string }}
-    , {{ created|guards.integer }}
+      {{ created|guards.integer }}
     , {{ updated|guards.integer }}
     , {{ deleted|guards.integer }}
     , {{ total|guards.integer }}
@@ -59,10 +58,9 @@
 {% sql 'insert_cases_merge', note='create merge entry' %}
   WITH e AS ({{ insert_event }})
   INSERT INTO hat_merge_cases_event
-      (id, updated_document_id, deleted_document_id)
+      (id, documents)
   SELECT e.id
-       , {{ updated_document_id|guards.string }}
-       , {{ deleted_document_id|guards.string }}
+       , '{{ documents }}'
   FROM e
   RETURNING id
 {% endsql %}
@@ -71,9 +69,10 @@
 {% sql 'insert_cases_sync', note='insert sync entry' %}
   WITH e AS ({{ insert_event }})
   INSERT INTO hat_sync_cases_event
-      (id, documents)
+      (id, documents, device_id)
   SELECT e.id
-       , {{ documents|guards.string }}
+       , '{{ documents }}'
+       , {{ device_id|guards.string }}
   FROM e
   RETURNING id
 {% endsql %}

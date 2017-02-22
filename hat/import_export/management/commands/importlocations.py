@@ -9,15 +9,13 @@ class Command(BaseCommand):
         parser.add_argument('filename', type=str, help='The DBF file to import')
         parser.add_argument('-source', type=str, default='villages',
                             help='The info contained in the file to import')
-        parser.add_argument('--store', action='store_true',
-                            help='Store the imported file in couchdb')
 
     def handle(self, *args, **options):
         filename = options['filename']
         source = options['source']
 
         if source == 'areas':
-            result = import_locations_areas_file(filename, filename, options['store'])
+            result = import_locations_areas_file(filename, filename)
             self.stdout.write('----------- Import done -----------')
             self.stdout.write('Success:                     {}'.format(result['success']))
             self.stdout.write('Total number of areas:       {}'.format(result['num_total']))

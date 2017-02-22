@@ -14,7 +14,7 @@ def commit_ignore(pair_id):
 
 @transaction.atomic
 def commit_merge(pair_id):
-    (older_case, younger_case, merged_case, steps) = merge_cases(pair_id)
+    (older_case, younger_case, merged_case, steps) = merge_cases_pair(pair_id)
 
     # delete pair
     DuplicatesPair.objects.get(pk=int(pair_id)).delete()
@@ -59,17 +59,16 @@ def commit_merge(pair_id):
         else:
             p.save()
 
-    # ... save merged with changes...
+    # save merged with changes, it's the updated older one
     merged_case.save()
-    # ... and delete the youngest one.
+    # and delete the youngest one.
     younger_case.delete()
 
     # create the entry in the log
-    log_cases_merge(updated_id=older_case.document_id,
-                    deleted_id=younger_case.document_id)
+    log_cases_merge(older_case.document_id, younger_case.document_id)
 
 
-def merge_cases(pair_id):
+def merge_cases_pair(pair_id):
     pair = DuplicatesPair.objects.get(pk=int(pair_id))
 
     # Get cases in chronological asc order
@@ -79,14 +78,29 @@ def merge_cases(pair_id):
     ] = Case.objects.filter(id__in=[pair.case1_id, pair.case2_id]) \
                     .order_by('document_date')
 
+    return merge_case_models(older_case, younger_case)
+
+
+def merge_cases_by_ids(updated_doc_id, deleted_doc_id):
+    older_case = Case.objects.get(document_id=updated_doc_id)
+    younger_case = Case.objects.get(document_id=deleted_doc_id)
+    (_, _, merged_case, _) = merge_case_models(older_case, younger_case)
+    # save merged with changes, it's the updated older case
+    merged_case.save()
+    # and delete the younger one.
+    younger_case.delete()
+
+
+def merge_case_models(older_case, younger_case):
+    '''
+    Merge two case models by merging the younger cases values into the older one.
+    The returned case model has the same id as the older case model and saving the
+    merged case model will update the older case. Should be deleted.
+    '''
     steps = []
 
     # Merge the cases while prefering more recent values
     for field in older_case._meta.get_fields():
-        # ignore some fields
-        if field.name in ['version_number']:
-            continue
-
         # ids belong to the older case (merge into it)
         if field.name in ['id', 'document_id', 'hat_id']:
             steps.append((field.name, older_case, 1))

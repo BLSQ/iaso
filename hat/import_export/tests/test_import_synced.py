@@ -1,10 +1,10 @@
+from django.test import TestCase
 from hat.cases.models import Case
 from hat.couchdb import api
 from hat.sync.models import DeviceDB
 from hat.sync.tests import clean_couch
 
-from . import DBTestCase
-from ..import_synced import import_synced_device
+from ..import_synced import import_synced_devices
 
 device_id = 'test_Xx'
 participant = {
@@ -46,7 +46,7 @@ participant = {
 }
 
 
-class ImportSyncedTests(DBTestCase):
+class ImportSyncedTests(TestCase):
     def tearDown(self):
         super().tearDown()
         clean_couch()
@@ -56,54 +56,69 @@ class ImportSyncedTests(DBTestCase):
         devicedb.save()
 
         # nothing to import (empty db)
-        result = import_synced_device(devicedb)
-        self.assertEqual(result['log'].source, 'synced_import')
-        self.assertEqual(result['log'].num_total, 0)
-        self.assertEqual(result['log'].num_created, 0)
-        self.assertEqual(result['log'].num_updated, 0)
-        self.assertEqual(result['log'].num_deleted, 0)
-        self.assertEqual(result['device'].device_id, device_id)
-        self.assertEqual(result['device'].last_synced_seq, 0)
+        stats = import_synced_devices()[0]['stats']
+        # self.assertEqual(r['log'].source, 'synced_import')
+        self.assertEqual(stats.total, 0)
+        self.assertEqual(stats.created, 0)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        devicedb.refresh_from_db()
+        self.assertEqual(devicedb.last_synced_seq, '0')
 
         # create documents in device db and sync
         p1 = api.post(devicedb.db_name, json=participant).json()
         self.assertEqual(participant['_id'], p1['id'])
 
-        result = import_synced_device(devicedb)
-        self.assertEqual(result['log'].num_total, 1)
-        self.assertEqual(result['log'].num_created, 1)
-        self.assertEqual(result['log'].num_updated, 0)
-        self.assertEqual(result['log'].num_deleted, 0)
-        self.assertNotEqual(result['device'].last_synced_seq, 0)
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        devicedb.refresh_from_db()
+        self.assertNotEqual(devicedb.last_synced_seq, '0')
         self.assertEqual(Case.objects.filter(device_id=device_id).count(), 1)
 
         # re-sync without changes
-        result = import_synced_device(devicedb)
-        self.assertEqual(result['log'].num_total, 0)
-        self.assertEqual(result['log'].num_created, 0)
-        self.assertEqual(result['log'].num_updated, 0)
-        self.assertEqual(result['log'].num_deleted, 0)
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 0)
+        self.assertEqual(stats.created, 0)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
         self.assertEqual(Case.objects.filter(device_id=device_id).count(), 1)
 
         # update record and re-sync
         participant['_rev'] = p1['rev']
-        participant['person']['mothersSurname'] = 'MS'
+        participant['participant']['screenings']['pl']['result'] = 'negative'
         p2 = api.post(devicedb.db_name, json=participant).json()
         self.assertEqual(p2['id'], p1['id'])
 
-        result = import_synced_device(devicedb)
-        self.assertEqual(result['log'].num_total, 1)
-        # changing mother's surname triggers new case instead of updating the existing one
-        # P A R T Y ! ! !
-        self.assertEqual(result['log'].num_created, 1)
-        self.assertEqual(result['log'].num_updated, 0)
-        self.assertEqual(result['log'].num_deleted, 0)
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 0)
+        self.assertEqual(stats.updated, 1)
+        self.assertEqual(stats.deleted, 0)
+        self.assertEqual(Case.objects.filter(device_id=device_id).count(), 1)
+
+        # create another record and re-sync
+        participant['_id'] = '2'
+        del participant['_rev']
+        participant['person']['forename'] = 'Someone'
+        r = api.post(devicedb.db_name, json=participant)
+        r.raise_for_status()
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
         self.assertEqual(Case.objects.filter(device_id=device_id).count(), 2)
 
         # re-sync without changes
-        result = import_synced_device(devicedb)
-        self.assertEqual(result['log'].num_total, 0)
-        self.assertEqual(result['log'].num_created, 0)
-        self.assertEqual(result['log'].num_updated, 0)
-        self.assertEqual(result['log'].num_deleted, 0)
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 0)
+        self.assertEqual(stats.created, 0)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
         self.assertEqual(Case.objects.filter(device_id=device_id).count(), 2)

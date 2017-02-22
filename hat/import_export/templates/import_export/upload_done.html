@@ -34,7 +34,7 @@
               <th>{% trans "Created" %}</th>
               <th>{% trans "Updated" %}</th>
               <th>{% trans "Deleted" %}</th>
-              <th>{% trans "Errors" %}</th>
+              <th>{% trans "Error" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -60,11 +60,7 @@
                   <td>-</td>
                   <td>-</td>
                 {% endif %}
-                <td>
-                  {% for error in file.errors %}
-                    {{error.short_message}}
-                  {% endfor %}
-                </td>
+                <td>{{ file.error.short_message }}</td>
               </tr>
             {% endfor %}
           </tbody>

@@ -151,7 +151,7 @@ class DuplicatesTests(TestCase):
         self.assertEqual(merged_case.test_rdt, younger_case.test_rdt)
 
         # logs properties
-        self.assertEqual(older_case.version_number, 0)
+        self.assertEqual(older_case.version_number, 1)
         self.assertEqual(merged_case.version_number, older_case.version_number + 1)
 
     def test_duplicatespair_merge_pairs(self):

@@ -1,5 +1,4 @@
-from django.test import TransactionTestCase
-from hat.couchdb.setup import setup_couchdb
+from django.db import connection
 
 
 TEST_DATA = {
@@ -32,7 +31,21 @@ TEST_DATA = {
 }
 
 
-class DBTestCase(TransactionTestCase):
-    def tearDown(self):
-        # This will recreate the test couchdb and drop any data created in the test
-        setup_couchdb(cleanup=True)
+#
+# Helper functions
+#
+
+
+def get_events():
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM hat_event_view')
+        columns = [col[0] for col in cursor.description]
+        events = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return events
+
+
+def get_import_cases_file_event(id):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM hat_import_cases_file_event WHERE id = %s', [id])
+        columns = [col[0] for col in cursor.description]
+        return dict(zip(columns, cursor.fetchone()))

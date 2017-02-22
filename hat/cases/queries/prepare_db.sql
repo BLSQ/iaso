@@ -2,6 +2,50 @@
   {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
 
+  {# View joining the hat event tables #}
+  DROP VIEW if EXISTS hat_event_view;
+    CREATE VIEW hat_event_view AS
+    SELECT B.*
+         , A.type
+         , A.name
+         , A.contents
+         , A.documents
+    FROM (
+         SELECT id
+              , 'import_cases_file_event' AS type
+              , filename AS name
+              , contents
+              , NULL::jsonb AS documents
+         FROM hat_import_cases_file_event
+
+         UNION ALL
+         SELECT id
+              , 'import_reconciled_file_event' AS type
+              , filename AS name
+              , contents
+              , NULL::jsonb AS documents
+         FROM hat_import_reconciled_file_event
+
+         UNION ALL
+         SELECT id
+              , 'merge_cases_event' AS type
+              , NULL AS name
+              , NULL AS contents
+              , documents
+         FROM hat_merge_cases_event
+
+         UNION ALL
+         SELECT id
+              , 'sync_cases_event' AS type
+              , device_id AS name
+              , NULL AS contents
+              , documents
+         from hat_sync_cases_event
+    ) A
+    JOIN hat_event B
+    ON B.id = A.id
+    ORDER BY stamp ASC;
+
   {# View of cases with aggregated results for test types #}
   DROP VIEW IF EXISTS cases_case_view;
   CREATE VIEW cases_case_view AS

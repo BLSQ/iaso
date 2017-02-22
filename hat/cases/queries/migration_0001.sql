@@ -24,7 +24,6 @@
       in a event specific table that points to an entry in this table. #}
    CREATE TABLE hat_event (
      id         serial          PRIMARY KEY,
-     type       text            NOT NULL,
      stamp      timestamp       NOT NULL DEFAULT now(),
      created    integer         DEFAULT 0,
      updated    integer         DEFAULT 0,
@@ -52,18 +51,17 @@
    );
 
    CREATE TABLE hat_merge_cases_event (
-     id                  integer         PRIMARY KEY REFERENCES hat_event
-                                           ON UPDATE CASCADE
-                                           ON DELETE CASCADE,
-     updated_document_id text            NOT NULL,
-     deleted_document_id text            NOT NULL
+     id          integer         PRIMARY KEY REFERENCES hat_event
+                                   ON UPDATE CASCADE
+                                   ON DELETE CASCADE,
+     documents   jsonb           NOT NULL
    );
 
    CREATE TABLE hat_sync_cases_event (
      id          integer         PRIMARY KEY REFERENCES hat_event
                                    ON UPDATE CASCADE
                                    ON DELETE CASCADE,
-     documents   text            NOT NULL,
+     documents   jsonb           NOT NULL,
      device_id   text            NOT NULL
    );
 

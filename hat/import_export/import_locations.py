@@ -4,9 +4,9 @@ from django.utils.translation import ugettext as _
 from pandas import DataFrame
 from simpledbf import Dbf5
 
-from .errors import ImportStage
+from .errors import get_import_error
 from .load import load_locations_into_db, load_locations_areas_info_db
-from .utils import hash_file, extract_raw_file, capitalize, get_property_by_year
+from .utils import capitalize, get_property_by_year
 
 
 logger = logging.getLogger(__name__)
@@ -29,12 +29,11 @@ def import_locations_file(orgname: str, filename: str) -> dict:
     This method receives the COMPLETE villages list.
     It will trucate the "location" table and insert the new entries.
     '''
-
     result = {
         'typename': _('locations'),
         'orgname': orgname,
         'filename': filename,
-        'errors': [],
+        'error': None,
         'stats': None,
         'num_with_population': 0,
     }
@@ -72,13 +71,9 @@ def import_locations_file(orgname: str, filename: str) -> dict:
         stats = load_locations_into_db(df_locs)
         result['stats'] = stats
 
-    except KeyError as ke:
-        result['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
-        logger.exception(ke)
-
     except Exception as ex:
-        result['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
+        result['error'] = ex
 
     return result
 
@@ -89,12 +84,11 @@ def import_locations_areas_file(orgname: str, filename: str) -> dict:
     It will update the missing province "info" in the "location" table entries.
     No new entries will be created, either other properties will be updated.
     '''
-
     result = {
         'typename': _('health areas'),
         'orgname': orgname,
         'filename': filename,
-        'errors': [],
+        'error': None,
         'stats': None
     }
 
@@ -111,13 +105,9 @@ def import_locations_areas_file(orgname: str, filename: str) -> dict:
         stats = load_locations_areas_info_db(df_locs)
         result['stats'] = stats
 
-    except KeyError as ke:
-        result['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
-        logger.exception(ke)
-
     except Exception as ex:
-        result['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
+        result['error'] = get_import_error(ex)
 
     return result
 

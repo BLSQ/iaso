@@ -1,7 +1,7 @@
 import pandas
 import re
 
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from hashlib import md5
 from pandas import Series
 from string import capwords
@@ -110,11 +110,17 @@ def hash_file(filename: str) -> str:
     return hasher.hexdigest()
 
 
-def extract_raw_file(filename: str):
-    content = None
+def read_file_base64(filename: str):
+    ''' Read the file contents into a base64 encoded string '''
     with open(filename, 'rb') as file:
-        content = b64encode(file.read()).decode('ascii')
-    return content
+        # return b64encode(file.read()).decode('ascii')
+        return b64encode(file.read()).decode('ascii')
+
+
+def write_file_base64(filename: str, b64str: str):
+    ''' Decode a base64 encoded string and write it to a file '''
+    with open(filename, 'wb') as file:
+        file.write(b64decode(b64str))
 
 
 def get_property_by_year(row, prefix='', returnType='value') -> str:

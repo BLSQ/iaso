@@ -1108,11 +1108,10 @@ def extract_backup(filename: str, import_options=None) -> Dict[str, DataFrame]:
     from hat.common.utils import run_cmd
     r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     data = json.loads(r)
+    return extract_mobile_docs(data)
 
-    return extract_mobile_post(data)
 
-
-def extract_mobile_post(data) -> Dict[str, DataFrame]:
+def extract_mobile_docs(data) -> Dict[str, DataFrame]:
     # keep cases only for this import,
     # (might be locations in the data as well)
     data = [doc for doc in data if 'type' in doc and doc['type'] == 'participant']

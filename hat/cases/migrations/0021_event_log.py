@@ -13,8 +13,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            migration.apply(),
-            migration.revert(),
-        ),
+        migrations.RunSQL(migration.run()),
     ]

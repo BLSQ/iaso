@@ -1,4 +1,4 @@
-{% sql 'apply' %}
+{% sql 'run' %}
   {# Load the trigrams extension #}
   CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
@@ -73,14 +73,6 @@
    DROP FUNCTION IF EXISTS cases_case_delete();
 
    DROP VIEW IF EXISTS cases_history_log_view;
-   DROP TABLE IF EXISTS cases_history_log;
    DROP TABLE IF EXISTS cases_history_log_document;
-{% endsql %}
-
-{% sql 'revert' %}
-   DROP TABLE hat_event;
-   DROP TABLE hat_cases_file_import_event;
-   DROP TABLE hat_locations_file_import_event;
-   DROP TABLE hat_merge_event;
-   DROP TABLE hat_sync_import_event;
+   DROP TABLE IF EXISTS cases_history_log;
 {% endsql %}

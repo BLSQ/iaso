@@ -51,7 +51,7 @@ def get_import_error(ex: Exception) -> Dict[str, dict]:
     message = str(ex)
     short_message = MESSAGES[stage.name]
     return {
-        'type': stage,
+        'type': stage.name,
         'full_message': message,
         'short_message': short_message
     }

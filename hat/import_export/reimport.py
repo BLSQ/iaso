@@ -53,11 +53,12 @@ def import_event(event):
 
 
 @transaction.atomic
-def reimport() -> List[dict]:
+def reimport(delete_data=True) -> List[dict]:
     logger.info('starting reimport')
 
-    Case.objects.all().delete()
-    DuplicatesPair.objects.all().delete()
+    if delete_data:
+        Case.objects.all().delete()
+        DuplicatesPair.objects.all().delete()
 
     results = []
     with connection.cursor() as cursor:

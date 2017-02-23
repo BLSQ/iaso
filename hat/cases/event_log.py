@@ -32,12 +32,13 @@ def get_events():
 
 def get_event_of_type(table_type, id):
     with connection.cursor() as cursor:
+        # Join the row from the main event table and the specific event table
         sql = '''
             SELECT *
-            FROM (SELECT * FROM {} WHERE id = %s) a
-            JOIN hat_event b ON a.id = b.id
+            FROM hat_event a, {} b
+            WHERE a.id = %s AND b.id = %s
         '''.format(table_type.value)
-        cursor.execute(sql, [id])
+        cursor.execute(sql, [id, id])
         columns = [col[0] for col in cursor.description]
         return dict(zip(columns, cursor.fetchone()))
 

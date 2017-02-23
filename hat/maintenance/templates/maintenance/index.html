@@ -58,18 +58,6 @@
                 </form>
               </td>
             </tr>
-            {% if show_raw_data_button %}
-              <tr>
-                <td>{% trans "Delete the raw data. This is not recoverable!"  %}</td>
-                <td>
-                  <form method="POST" action="{% url 'maintenance:delete_couchdb_data' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form }}
-                    <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Raw" %}</button>
-                  </form>
-                </td>
-              </tr>
-            {% endif %}
             <tr>
               <td>{% trans "Delete the transformed data and reimport from raw." %}</td>
               <td>

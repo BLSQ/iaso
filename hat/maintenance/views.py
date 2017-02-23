@@ -29,8 +29,7 @@ def index(request):
         'num_events': num_events,
         'num_transformed': num_transformed,
         'num_duplicates': DuplicatesPair.objects.count(),
-        'num_devices': DeviceDB.objects.count(),
-        'show_raw_data_button': settings.DEBUG,
+        'num_devices': DeviceDB.objects.count()
     }
     return render(request, 'maintenance/index.html', context)
 
@@ -66,26 +65,6 @@ def delete_db_data(request):
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:
         messages.add_message(request, messages.SUCCESS, _('Task done.'))
-    return redirect('maintenance:index')
-
-
-@login_required()
-@user_passes_test(lambda u: u.is_superuser)
-@require_http_methods(['POST'])
-def delete_couchdb_data(request):
-    from django.conf import settings
-    import hat.couchdb.api as couchdb
-    from hat.couchdb.setup import setup_couchdb
-    if settings.DEBUG:
-        try:
-            couchdb.delete(settings.COUCHDB_DB)
-            setup_couchdb()
-        except Exception as e:
-            messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
-        else:
-            messages.add_message(request, messages.SUCCESS, _('Task done.'))
-    else:
-        messages.add_message(request, messages.ERROR, _('Feature not available.'))
     return redirect('maintenance:index')
 
 

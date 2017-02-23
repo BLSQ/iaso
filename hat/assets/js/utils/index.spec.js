@@ -1,6 +1,6 @@
 /* global describe, it */
 import assert from 'assert'
-import {clone, deepEqual, substituteVars, doAsyncInterval} from './index'
+import {clone, deepEqual, substituteVars} from './index'
 
 describe('clone', () => {
   it('should clone an obj', () => {
@@ -69,28 +69,4 @@ describe('substituteVars', () => {
     assert.deepEqual(newObj, expectedObj)
     assert(newObj !== templateObj)
   })
-})
-
-describe('doAsyncInterval', () => {
-  let counter = 3
-  let asyncCalled = false
-  let checkCalled = false
-  return doAsyncInterval(
-    0,
-    () => new Promise((resolve, reject) => {
-      counter = counter - 1
-      asyncCalled = true
-      resolve(counter)
-    }),
-    (c) => {
-      checkCalled = true
-      return c === 0
-    }
-  )
-    .then((c) => {
-      assert(counter === 0, 'Counter should be zero')
-      assert(c === 0, 'The result should be zero')
-      assert(asyncCalled, 'Async function should have been called')
-      assert(checkCalled, 'Check function should have been called')
-    })
 })

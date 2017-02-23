@@ -7,10 +7,13 @@
 
 {% block content %}
   <div class="content">
+
+    {% include "cases/filters.html" with form=form only %}
+
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ count }} {% trans "Duplicate matches found" %}
+          {{ page.count }} {% trans "Duplicate matches found" %}
         </h2>
       </div>
       <div class="widget__content">
@@ -22,7 +25,7 @@
       </div>
 
       <section class="widget__content">
-        <table class="table--minimised duplicates__table duplicates__table--list">
+        <table class="table--minimised list__table list__table--list">
           <thead>
             <tr>
               <th>{% trans "Case 1" %}</th>
@@ -31,23 +34,28 @@
             </tr>
           </thead>
           <tbody>
-            {% for row in rows %}
+            {% for pair in page.items %}
               <tr>
-                {% if row.type == 'location' %}
-                  <td colspan="3" class="location__td"><b>{{ row.location }}</b></td>
-                {% elif row.type == 'pair' %}
-                  <td>{{ row.pair.case1.name }} {{ row.pair.case1.prename}} {{ row.pair.case1.lastname }}, {{ row.pair.case1.sex }}, {{ row.pair.case1.age }}</td>
-                  <td>{{ row.pair.case2.name }} {{ row.pair.case2.prename}} {{ row.pair.case2.lastname }}, {{ row.pair.case2.sex }}, {{ row.pair.case2.age }}</td>
-                  <td><a class="button--minimised" href="{% url 'cases:duplicates_details' pair_id=row.pair.id %}?back={{ request.get_full_path|urlencode }}">Compare</a></td>
-                {% endif %}
+                <td>
+                  {% include "cases/duplicates/list_detail.html" with case=pair.case1 only %}
+                </td>
+                <td>
+                  {% include "cases/duplicates/list_detail.html" with case=pair.case2 only %}
+                </td>
+                <td>
+                  <a
+                    class="button--minimised"
+                    href="{% url 'cases:duplicates_details' pair_id=pair.id %}?back={{ request.get_full_path|urlencode }}">
+                    {% trans "Compare" %}
+                  </a>
+                </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </section>
 
-      {% include "pagination.html" %}
+      {% include "pagination.html" with page=page only %}
     </div>
   </div>
-
 {% endblock %}

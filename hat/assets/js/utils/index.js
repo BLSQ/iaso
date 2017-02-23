@@ -64,32 +64,6 @@ export function substituteVars (obj, subs, transform = null) {
   }))
 }
 
-export function doAsyncInterval (delay, asyncFn, checkFn) {
-  // This function will call `asyncFn`, which must return a promise.
-  // Then it will pass the result of the promise to the `checkFn` and
-  // depending if the checkFn returns `true` or `false`, it will run
-  // the `asyncFn` again, otherwise it will resolve the toplevel
-  // promise. One possible use case is to poll an endpoint until
-  // `checkFn` is fine with the result and returns true.
-
-  // delayed recursive function that takes Promises `resolve` and `reject` functions
-  function recLoop (resolve, reject) {
-    asyncFn()
-      .then((result) => {
-        if (checkFn(result)) {
-          // resolve with the last result and end the loop
-          return resolve(result)
-        }
-        setTimeout(function () {
-          // recurse after some time
-          recLoop(resolve, reject)
-        }, delay)
-      })
-      .catch(reject)
-  }
-  return new Promise(recLoop)
-}
-
 export const capitalize = (text) => (
   text
     .split(' ')

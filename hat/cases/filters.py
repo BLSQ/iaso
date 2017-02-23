@@ -11,6 +11,7 @@ Q_confirmation_positive = Q(confirmation_result=True)
 Q_staging = Q(stage_result__isnull=False)
 Q_staging_stage1 = Q(stage_result='stage1')
 Q_staging_stage2 = Q(stage_result='stage2')
+Q_is_suspect = Q(Q_screening_positive & ~Q_confirmation & ~Q_staging)
 
 
 class DatePeriod(Enum):

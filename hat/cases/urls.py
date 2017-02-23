@@ -11,4 +11,5 @@ urlpatterns = [
         views.duplicatespair_ignore, name='duplicates_ignore'),
     url(r'^cases$', views.cases_list, name='cases_list'),
     url(r'^cases/(?P<doc_id>[a-z0-9]+)', views.cases_details, name='cases_details'),
+    url(r'^suspects$', views.suspects_list, name='suspects_list'),
 ]

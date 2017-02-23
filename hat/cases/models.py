@@ -120,6 +120,10 @@ class CaseView(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
+    date_day = models.DateTimeField(null=True)
+    date_year = models.DateTimeField(null=True)
+    date_month = models.DateTimeField(null=True)
+
     document_id = models.TextField(unique=True)
     hat_id = models.TextField()
     mobile_unit = models.TextField(null=True)

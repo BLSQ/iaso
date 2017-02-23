@@ -87,16 +87,5 @@ def stats(request):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def suspect_cases(request):
-    sources = Case.objects.order_by().values('source').distinct()
-    json_data = json.dumps({
-        'sources': [s['source'] for s in sources],
-    })
-    return render(request, 'dashboard/suspect_cases.html', {'json_data': json_data})
-
-
-@login_required()
-@permission_required('cases.view')
-@require_http_methods(['GET'])
 def microplanning(request):
     return render(request, 'dashboard/microplanning.html')

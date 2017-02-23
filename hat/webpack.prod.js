@@ -19,7 +19,6 @@ module.exports = {
     'testapp': './assets/js/testapp',
     'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
-    'suspect_cases': './assets/js/suspectCases',
     'microplanning': './assets/js/microplanning',
     'styles': './assets/css/index.scss'
   },

@@ -5,7 +5,7 @@
   <div class="navigation__container">
     <div class="navigation__content">
       <div class="brand">
-        <a class="brand__heading" href={% url "index" %}>Sense HAT Dashboard</a>
+        <a class="brand__heading" href={% url "index" %}>{% trans "Sense HAT Dashboard" %}</a>
       </div>
 
       <!-- Menu toggle -->
@@ -64,8 +64,8 @@
           </li>
         {% endif %}
         {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:suspect_cases' %}--active{% endif %}">
-            <a href={% url "dashboard:suspect_cases" %}>{% trans "Suspect cases" %}</a>
+          <li class="navigation__menu__item{% if view == 'cases:suspects_list' %}--active{% endif %}">
+            <a href={% url "cases:suspects_list" %}>{% trans "Suspect cases" %}</a>
           </li>
         {% endif %}
         {% if perms.cases.view_full %}

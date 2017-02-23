@@ -132,7 +132,7 @@
         {% endblocktrans %}
       </p>
       {% if perms.cases.view %}
-        <a href={% url "dashboard:suspect_cases" %} class="button--bright">
+        <a href={% url "cases:suspects_list" %} class="button--bright">
           {% trans "Go to HAT suspects" %}
           <i class='fa fa-arrow-right icon--right'></i>
         </a>

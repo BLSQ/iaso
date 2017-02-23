@@ -11,7 +11,7 @@
     <div>
       <a class="button--minimised" href="{{ back_link}}">
         <i class="fa fa-arrow-left"></i>
-        <span>Back to list</span>
+        <span>{% trans "Back to list" %}</span>
       </a>
     </div>
     <br/>
@@ -20,15 +20,15 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          Case {{ case.document_id }}
+          {% trans "Case" %} {{ case.document_id }}
         </h2>
       </div>
       <div class="widget__content">
         <table class="table--minimised">
           <thead>
             <tr>
-              <th>Field</th>
-              <th>Value</th>
+              <th>{% trans "Field" %}</th>
+              <th>{% trans "Value" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -43,5 +43,4 @@
       </div>
     </div>
   </div>
-
 {% endblock %}

@@ -262,6 +262,11 @@
   DROP VIEW IF EXISTS cases_case_view;
   CREATE VIEW cases_case_view AS
     SELECT *
+
+         , date_trunc('day',   document_date) AS date_day
+         , date_trunc('month', document_date) AS date_month
+         , date_trunc('year',  document_date) AS date_year
+
          , CASE
              WHEN test_catt
                OR test_rdt

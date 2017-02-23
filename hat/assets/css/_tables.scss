@@ -19,7 +19,7 @@ table {
 th {
   @include table-cell-styles;
   background: $light-gray;
-  
+
 }
 td {
   @include table-cell-styles;
@@ -57,5 +57,30 @@ tr:first-child td {
   }
   td {
     @include list-like-table-cell-styles;
+  }
+}
+
+.list__table {
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-left: $padding-unit * 0.5;
+  }
+}
+
+.list__table--details {
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td:not(:first-child) {
+    border-left: 1px solid $light-gray;
+  }
+  td:last-child {
+    background-color: #efefef;
+  }
+  tr:last-child td:last-child {
+    border-left: 0;
+  }
+  form {
+    display: inline-block;
   }
 }

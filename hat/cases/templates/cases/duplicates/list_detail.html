@@ -1,0 +1,13 @@
+<b>{{ case.name }} {{ case.prename }} {{ case.lastname }}</b>
+<br>
+{{ case.age }}
+({% if case.sex == 'male' %}
+  <i class="fa fa-male"></i>
+{% elif case.sex == 'female' %}
+  <i class="fa fa-female"></i>
+{% endif %}
+{{ case.sex }} )
+<br>
+<i>{{ case.ZS }} {{ case.AS }} {{ case.village }}</i>
+<br>
+{{ case.document_date|date:"DATE_FORMAT" }}

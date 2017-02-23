@@ -1,41 +1,108 @@
-from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
 from hat.common.view_utils import paginate
-from hat.cases.duplicates import merge_cases, commit_merge, commit_ignore
-from hat.cases.models import Case, CaseView, DuplicatesPair
+from .duplicates import merge_cases, commit_merge, commit_ignore
+from .filters import Q_is_suspect
+from .forms import filter_and_create_form, FieldChoice, OrderChoice
+from .models import Case, CaseView, DuplicatesPair
 
 
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
-    all_pairs = DuplicatesPair.objects.order_by('case1__ZS', 'case1__AS', 'case1__village')
+    items = DuplicatesPair.objects.order_by('id')
 
-    paginator = paginate(request,
-                         objects=all_pairs,
-                         prefix_url=reverse('cases:duplicates_list') + '?',
-                         )
+    locations_filters = {
+        'all': Case.objects.filter(
+            Q(id__in=items.values_list('case1')) |
+            Q(id__in=items.values_list('case2'))
+        ),
+        'ZS': lambda q, v: q.filter(Q(case1__ZS=v) | Q(case2__ZS=v)),
+        'AS': lambda q, v: q.filter(Q(case1__AS=v) | Q(case2__AS=v)),
+        'village': lambda q, v: q.filter(Q(case1__village=v) | Q(case2__village=v)),
+    }
 
-    rows = []
-    pairs = paginator['items']
-    if len(pairs) > 0:
-        cur_loc = [pairs[0].case1.ZS, pairs[0].case1.AS, pairs[0].case1.village]
-        rows = [{'type': 'location', 'location': ', '.join(cur_loc)}]
-        for pair in pairs:
-            loc = [pair.case1.ZS, pair.case1.AS, pair.case1.village]
-            if loc != cur_loc:
-                cur_loc = loc
-                rows.append({'type': 'location', 'location': ', '.join(cur_loc)})
-            rows.append({'type': 'pair', 'pair': pair})
+    dates_filters = {
+        'between': lambda q, f, t: q.filter(
+            Q(case1__document_date__range=(f, t)) |
+            Q(case2__document_date__range=(f, t))),
+        'from': lambda q, v: q.filter(
+            Q(case1__document_date__gte=v) |
+            Q(case2__document_date__gte=v)),
+        'to': lambda q, v: q.filter(
+            Q(case1__document_date__lt=v) |
+            Q(case2__document_date__lt=v)),
+    }
 
-    return render(request, 'cases/duplicates_list.html', {**paginator, 'rows': rows, })
+    fields_filters = [
+        FieldChoice(
+            id='id', label=_('Internal ID'),
+            filter=lambda q, v: q.filter(
+                Q(case1__document_id__icontains=v) |
+                Q(case2__document_id__icontains=v)
+            )),
+        FieldChoice(
+            id='names', label=_('Name'),
+            filter=lambda q, v: q.filter(
+                Q(case1__name__icontains=v) |
+                Q(case1__prename__icontains=v) |
+                Q(case1__lastname__icontains=v) |
+                Q(case2__name__icontains=v) |
+                Q(case2__prename__icontains=v) |
+                Q(case2__lastname__icontains=v)
+            )),
+    ]
+
+    orders = (
+        OrderChoice(
+            id='date', label=_('Document date'),
+            asc=lambda q: q.order_by('case1__document_date', 'case2__document_date', ),
+            desc=lambda q: q.order_by('-case1__document_date', '-case2__document_date', ),
+        ),
+        OrderChoice(
+            id='location', label=_('Location'),
+            asc=lambda q: q.order_by('case1__ZS', 'case1__AS', 'case1__village',
+                                     'case2__ZS', 'case2__AS', 'case2__village',
+                                     ),
+            desc=lambda q: q.order_by('-case1__ZS', '-case1__AS', '-case1__village',
+                                      '-case2__ZS', '-case2__AS', '-case2__village',
+                                      ),
+        ),
+        OrderChoice(
+            id='name', label=_('Name'),
+            asc=lambda q: q.order_by('case1__name', 'case1__prename', 'case1__lastname',
+                                     'case2__name', 'case2__prename', 'case2__lastname',
+                                     ),
+            desc=lambda q: q.order_by('-case1__name', '-case1__prename', '-case1__lastname',
+                                      '-case2__name', '-case2__prename', '-case2__lastname',
+                                      ),
+        ),
+    )
+
+    data = filter_and_create_form(request,
+                                  items=items,
+                                  locations_filters=locations_filters,
+                                  fields_filters=fields_filters,
+                                  dates_filters=dates_filters,
+                                  orders=orders,
+                                  )
+    current_page = paginate(request,
+                            objects=data.items,
+                            prefix_url=reverse('cases:duplicates_list') + '?',
+                            page_size=10,
+                            )
+
+    return render(request, 'cases/duplicates/list.html', {
+        'page': current_page,
+        'form': data.form
+    })
 
 
 @login_required()
@@ -88,7 +155,7 @@ def duplicatespair_detail(request, pair_id):
             {'value': v3, 'indicator': ''}
         ])
 
-    return render(request, 'cases/duplicates_detail.html', {
+    return render(request, 'cases/duplicates/detail.html', {
         'pair_id': pair_id,
         'headers': ['Case 1', 'Case 2', 'Merged case preview'],
         'rows': rows,
@@ -131,7 +198,7 @@ def cases_details(request, doc_id=None):
         v = getattr(case, f.name)
         rows.append({'name': f.name, 'value': v if v is not None else ''})
 
-    return render(request, 'cases/cases_detail.html', {
+    return render(request, 'cases/cases/detail.html', {
         'back_link': back_link,
         'case': case,
         'rows': rows,
@@ -142,150 +209,128 @@ def cases_details(request, doc_id=None):
 @permission_required('cases.view_full')
 @require_http_methods(['GET'])
 def cases_list(request):
-    all_cases = CaseView.objects.all()
+    items = CaseView.objects.order_by('id')
 
-    locations = [Case.objects.order_by('ZS').values_list('ZS', flat=True).distinct()]
-    location = []
+    locations_filters = {
+        'ZS': lambda q, v: q.filter(ZS=v),
+        'AS': lambda q, v: q.filter(AS=v),
+        'village': lambda q, v: q.filter(village=v),
+    }
 
-    ZS = request.GET.get('ZS', None)
-    if ZS is not None and ZS is not '':
-        all_cases = all_cases.filter(ZS=ZS)
-        location.append(ZS)
-        ASs = Case.objects \
-                  .filter(ZS=ZS) \
-                  .order_by('AS') \
-                  .values_list('AS', flat=True) \
-                  .distinct()
-        locations.append(ASs)
+    dates_filters = {
+        'between': lambda q, f, t: q.filter(Q(document_date__range=(f, t))),
+        'from': lambda q, v: q.filter(Q(document_date__gte=v)),
+        'to': lambda q, v: q.filter(Q(document_date__lt=v)),
+    }
 
-        AS = request.GET.get('AS', None)
-        if AS is not None and AS is not '' and AS in ASs:
-            all_cases = all_cases.filter(AS=AS)
-            location.append(AS)
-            villages = Case.objects \
-                           .filter(ZS=ZS, AS=AS) \
-                           .order_by('village') \
-                           .values_list('village', flat=True) \
-                           .distinct()
-            locations.append(villages)
-
-            village = request.GET.get('village', None)
-            if village is not None and village is not '' and village in villages:
-                all_cases = all_cases.filter(village=village)
-                location.append(village)
-
-    fields = [
-        ('document_id', lambda q, v: q.filter(document_id__icontains=v)),
-        ('names', lambda q, v: q.filter(
-            Q(name__icontains=v) | Q(prename__icontains=v) | Q(lastname__icontains=v))),
-        ('screening_result', lambda q, v: q.filter(
-            screening_result=v.lower() == 'true' or v.lower() == 't')),
-        ('confirmation_result', lambda q, v: q.filter(
-            confirmation_result=v.lower() == 'true' or v.lower() == 't'))
+    fields_filters = [
+        FieldChoice(
+            id='id', label=_('Internal ID'),
+            filter=lambda q, v: q.filter(document_id__icontains=v)),
+        FieldChoice(
+            id='names', label=_('Name'),
+            filter=lambda q, v: q.filter(
+                Q(name__icontains=v) | Q(prename__icontains=v) | Q(lastname__icontains=v))),
+        FieldChoice(
+            id='screening', label=_('Screening result'),
+            filter=lambda q, v: q.filter(
+                screening_result=(v.lower() == 'true' or v.lower() == 't'))),
+        FieldChoice(
+            id='confirmation', label=_('Confirmation result'),
+            filter=lambda q, v: q.filter(
+                confirmation_result=(v.lower() == 'true' or v.lower() == 't'))),
+        FieldChoice(
+            id='source', label=_('Source'),
+            filter=lambda q, v: q.filter(source__icontains=v)),
     ]
 
-    case_fields = [name for (name, _) in fields]
-    case_field = request.GET.get('case_field', None)
-    if case_field is not None and case_field is not '':
-        case_field_value = request.GET.get('case_field_value', None)
-        if case_field_value is not None and case_field_value is not '':
-            f = next(f[1] for f in fields if f[0] == case_field)
-            all_cases = f(all_cases, case_field_value)
-    else:
-        case_field = None
-
-    case_orders = (
-        ('date', _('Document date')),
-        ('location', _('Location')),
-        ('names', _('Name'))
+    orders = (
+        OrderChoice(
+            id='date', label=_('Document date'),
+            asc=lambda q: q.order_by('document_date', 'ZS', 'AS', 'village'),
+            desc=lambda q: q.order_by('-document_date', 'ZS', 'AS', 'village'),
+        ),
+        OrderChoice(
+            id='location', label=_('Location'),
+            asc=lambda q: q.order_by('ZS', 'AS', 'village', '-document_date'),
+            desc=lambda q: q.order_by('-ZS', '-AS', '-village', '-document_date'),
+        ),
+        OrderChoice(
+            id='name', label=_('Name'),
+            asc=lambda q: q.order_by('name', 'prename', 'lastname', '-document_date'),
+            desc=lambda q: q.order_by('-name', '-prename', '-lastname', '-document_date'),
+        ),
     )
-    case_order = request.GET.get('case_order', None)
-    if case_order == 'date':
-        all_cases = all_cases.order_by('-document_date', 'ZS', 'AS', 'village')
-    elif case_order == 'location':
-        all_cases = all_cases.order_by('ZS', 'AS', 'village', '-document_date')
-    elif case_order == 'names':
-        all_cases = all_cases.order_by('name', 'prename', 'lastname', '-document_date')
-    else:
-        all_cases = all_cases.order_by('id')
 
-    form = CasesFilterForm(locations, location,
-                           case_fields, case_field,
-                           case_orders, case_order,
-                           request.GET or None)
-
-    paginator = paginate(request,
-                         objects=all_cases,
-                         prefix_url=reverse('cases:cases_list') + '?',
-                         )
-
-    return render(request, 'cases/cases_list.html', {**paginator, 'form': form, })
+    data = filter_and_create_form(request,
+                                  items=items,
+                                  locations_filters=locations_filters,
+                                  fields_filters=fields_filters,
+                                  dates_filters=dates_filters,
+                                  orders=orders,
+                                  )
+    current_page = paginate(request,
+                            objects=data.items,
+                            prefix_url=reverse('cases:cases_list') + '?',
+                            )
+    return render(request, 'cases/cases/list.html', {
+        'page': current_page,
+        'form': data.form
+    })
 
 
-class CasesFilterForm(forms.Form):
-    def __init__(self, locations, location, fields, case_field, orders, order, *args, **kwargs):
-        super(CasesFilterForm, self).__init__(*args, **kwargs)
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def suspects_list(request):
+    items = CaseView.objects.filter(Q_is_suspect)
 
-        location_attrs = {
-            'class': 'select--minimised',
-            'onchange': 'casesfilter.submit();',
-        }
+    locations_filters = {
+        'ZS': lambda q, v: q.filter(ZS=v),
+        'AS': lambda q, v: q.filter(AS=v),
+        'village': lambda q, v: q.filter(village=v),
+    }
 
-        zs_widget = forms.Select(attrs=location_attrs)
-        zs_choices = [(None, _('None'))] + [(l, l) for l in locations[0]]
+    dates_filters = {
+        'between': lambda q, f, t: q.filter(Q(document_date__range=(f, t))),
+        'from': lambda q, v: q.filter(Q(document_date__gte=v)),
+        'to': lambda q, v: q.filter(Q(document_date__lt=v)),
+    }
 
-        if len(locations) > 1:
-            as_widget = forms.Select(attrs=location_attrs)
-            as_choices = [(None, _('None'))] + [(l, l) for l in locations[1]]
-        else:
-            as_widget = forms.HiddenInput()
-            as_choices = []
+    orders = (
+        OrderChoice(
+            id='date', label=_('Document date'),
+            asc=lambda q: q.order_by('date_day', 'ZS', 'AS', 'village'),
+            desc=lambda q: q.order_by('-date_day', 'ZS', 'AS', 'village'),
+        ),
+        OrderChoice(
+            id='location', label=_('Location'),
+            asc=lambda q: q.order_by('ZS', 'AS', 'village', '-date_day'),
+            desc=lambda q: q.order_by('-ZS', '-AS', '-village', '-date_day'),
+        ),
+    )
 
-        if len(locations) > 2:
-            village_widget = forms.Select(attrs=location_attrs)
-            village_choices = [(None, _('None'))] + [(l, l) for l in locations[2]]
-        else:
-            village_widget = forms.HiddenInput()
-            village_choices = []
+    data = filter_and_create_form(request,
+                                  items=items,
+                                  locations_filters=locations_filters,
+                                  fields_filters=None,
+                                  dates_filters=dates_filters,
+                                  orders=orders,
+                                  )
 
-        self.fields['ZS'] = forms.ChoiceField(
-            choices=zs_choices,
-            widget=zs_widget,
-            required=False
-        )
-        self.fields['AS'] = forms.ChoiceField(
-            choices=as_choices,
-            widget=as_widget,
-            required=False
-        )
-        self.fields['village'] = forms.ChoiceField(
-            choices=village_choices,
-            widget=village_widget,
-            required=False
-        )
+    total_cases = data.items.count()
 
-        self.fields['case_field'] = forms.ChoiceField(
-            choices=[(None, _('None'))] + [(f, _(f)) for f in fields],
-            widget=forms.Select(attrs={
-                'class': 'select--minimised',
-                'onchange': 'casesfilter.submit();',
-            }),
-            required=False
-        )
-        if case_field:
-            case_field_value_widget = forms.TextInput(attrs={'class': 'input--minimised'})
-        else:
-            case_field_value_widget = forms.HiddenInput()
-        self.fields['case_field_value'] = forms.CharField(
-            widget=case_field_value_widget,
-            required=False
-        )
+    items = data.items \
+        .values('date_day', 'ZS', 'AS', 'village') \
+        .annotate(cases=Count('document_id')) \
+        .values('date_day', 'ZS', 'AS', 'village', 'cases')
 
-        self.fields['case_order'] = forms.ChoiceField(
-            choices=[(None, _('None'))] + [o for o in orders],
-            widget=forms.Select(attrs={
-                'class': 'select--minimised',
-                'onchange': 'casesfilter.submit();',
-            }),
-            required=False
-        )
+    current_page = paginate(request,
+                            objects=items,
+                            prefix_url=reverse('cases:suspects_list') + '?',
+                            )
+    return render(request, 'cases/suspects/list.html', {
+        'page': current_page,
+        'form': data.form,
+        'total_cases': total_cases,
+    })

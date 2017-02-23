@@ -1,0 +1,48 @@
+{% extends "app.html" %}
+{% load i18n %}
+
+{% block header %}
+  <h1 class="header__title">{% trans "Suspect cases" %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="content">
+
+    {% include "cases/filters.html" with form=form only %}
+
+    <div class="widget__container">
+      <div class="widget__header">
+        <h2 class="widget__heading">
+          {{ page.count }} {% trans "Locations with" %} {{ total_cases }} {% trans "suspect cases found" %}
+        </h2>
+      </div>
+
+      <section class="widget__content">
+        <table class="table--minimised list__table list__table--list" data-qa="suspect-cases-data-loaded">
+          <thead>
+            <tr>
+              <th>{% trans "Date" %}</th>
+              <th>{% trans "Zone de Sante" %}</th>
+              <th>{% trans "Aire de Sante" %}</th>
+              <th>{% trans "Village" %}</th>
+              <th>{% trans "# cases" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for case in page.items %}
+              <tr>
+                <td>{{ case.date_day|date:"SHORT_DATE_FORMAT" }}</td>
+                <td>{{ case.ZS }}</td>
+                <td>{{ case.AS }}</td>
+                <td>{{ case.village }}</td>
+                <td>{{ case.cases }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      {% include "pagination.html" with page=page only %}
+    </div>
+  </div>
+{% endblock %}

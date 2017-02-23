@@ -6,13 +6,11 @@
   DROP VIEW if EXISTS hat_event_view;
   CREATE VIEW hat_event_view AS
     SELECT B.*
-         , A.type
          , A.name
          , A.contents
          , A.documents
     FROM (
          SELECT id
-              , 'import_cases_file_event' AS type
               , filename AS name
               , contents
               , NULL::jsonb AS documents
@@ -20,7 +18,6 @@
 
          UNION ALL
          SELECT id
-              , 'import_reconciled_file_event' AS type
               , filename AS name
               , contents
               , NULL::jsonb AS documents
@@ -28,7 +25,6 @@
 
          UNION ALL
          SELECT id
-              , 'merge_cases_event' AS type
               , NULL AS name
               , NULL AS contents
               , documents
@@ -36,7 +32,6 @@
 
          UNION ALL
          SELECT id
-              , 'sync_cases_event' AS type
               , device_id AS name
               , NULL AS contents
               , documents

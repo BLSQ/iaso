@@ -1,8 +1,9 @@
 from django.test import TestCase
 from hat.cases.models import Case
+from hat.cases.event_log import get_events, get_event_of_type, EventTable
 from ..import_cases import import_cases_file
 from ..reimport import reimport
-from . import TEST_DATA, get_events, get_import_cases_file_event
+from . import TEST_DATA
 import datetime
 
 
@@ -25,10 +26,9 @@ class ImportCasesTests(TestCase):
         self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
 
         event = get_events()[0]
-        self.assertEqual(event['type'], 'import_cases_file_event')
         self.assertEqual(event['total'], count)
         self.assertEqual(event['created'], count)
-        event = get_import_cases_file_event(event['id'])
+        event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'historic')
 
     def test_import_pv(self):
@@ -40,10 +40,10 @@ class ImportCasesTests(TestCase):
         self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
 
         event = get_events()[0]
-        self.assertEqual(event['type'], 'import_cases_file_event')
+        self.assertEqual(EventTable(event['table_name']), EventTable.cases_file)
         self.assertEqual(event['total'], count)
         self.assertEqual(event['created'], count)
-        event = get_import_cases_file_event(event['id'])
+        event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'pv')
 
     def test_import_backup(self):
@@ -54,10 +54,10 @@ class ImportCasesTests(TestCase):
         self.assertEqual(Case.objects.count(), count)
 
         event = get_events()[0]
-        self.assertEqual(event['type'], 'import_cases_file_event')
+        self.assertEqual(EventTable(event['table_name']), EventTable.cases_file)
         self.assertEqual(event['total'], count)
         self.assertEqual(event['created'], count)
-        event = get_import_cases_file_event(event['id'])
+        event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'backup')
 
     def test_duplicate_merge_by_hash(self):

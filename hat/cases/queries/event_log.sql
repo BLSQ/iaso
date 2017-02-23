@@ -17,9 +17,10 @@
      Every event consists of two rows, one in the general event table and one
      in the table with specific event data. Do not use this by itself #}
   INSERT INTO hat_event
-      (created, updated, deleted, total)
+      (table_name, created, updated, deleted, total)
   VALUES (
-      {{ created|guards.integer }}
+      {{ table_name|guards.string }}
+    , {{ created|guards.integer }}
     , {{ updated|guards.integer }}
     , {{ deleted|guards.integer }}
     , {{ total|guards.integer }}

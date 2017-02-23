@@ -25,6 +25,7 @@
    CREATE TABLE hat_event (
      id         serial          PRIMARY KEY,
      stamp      timestamp       NOT NULL DEFAULT now(),
+     table_name text            NOT NULL,
      created    integer         DEFAULT 0,
      updated    integer         DEFAULT 0,
      deleted    integer         DEFAULT 0,

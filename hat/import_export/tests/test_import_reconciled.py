@@ -3,7 +3,7 @@ from django.test import TestCase
 from hat.cases.models import Case
 from ..import_reconciled import import_reconciled_file
 from ..reimport import reimport
-from . import get_events
+from hat.cases.event_log import get_events, EventTable
 
 xlsx_file = 'testdata/reconciled_cases.xlsx'
 csv_file = 'testdata/test_cases.csv'
@@ -27,7 +27,7 @@ class ImportReconciledTests(TestCase):
         self.assertEqual(Case.objects.filter(village='Ipoku').count(), 1)
 
         event = get_events()[0]
-        self.assertEqual(event['type'], 'import_reconciled_file_event')
+        self.assertEqual(EventTable(event['table_name']), EventTable.reconciled_file)
         self.assertEqual(event['total'], 7)
         self.assertEqual(event['updated'], 6)
 
@@ -36,8 +36,7 @@ class ImportReconciledTests(TestCase):
         r = import_reconciled_file('testdata', xlsx_file)
         self.assertEqual(r['error'], None)
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
-        events = get_events()
-        self.assertEqual(len(events), 1, 'Only one event from the import')
+        self.assertEqual(len(get_events()), 1, 'Only one event from the import')
 
         # reload the cases fixtures to have unreconciled data
         Case.objects.all().delete()
@@ -46,5 +45,4 @@ class ImportReconciledTests(TestCase):
         # reimport without deleting the fresh fixtures
         reimport(delete_data=False)
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
-        events = get_events()
-        self.assertEqual(len(events), 1, 'Still just one event')
+        self.assertEqual(len(get_events()), 1, 'Still just one event')

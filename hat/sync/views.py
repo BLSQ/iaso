@@ -12,7 +12,7 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 import logging
 
-from .couchdb_helpers import create_or_update_user, generate_db_name
+from .couchdb_helpers import create_or_update_user
 from .models import MobileUser, DeviceDB
 
 logger = logging.getLogger(__name__)
@@ -95,6 +95,6 @@ def signin(request):
         'username': couchdb_config['username'],
         'password': couchdb_config['password'],
         # Send the url of the couchdb device-db for replication
-        'url': request.build_absolute_uri('/_couchdb/' + generate_db_name(device_db.device_id))
+        'url': request.build_absolute_uri('/_couchdb/' + device_db.db_name)
     }
     return Response(payload, status.HTTP_201_CREATED)

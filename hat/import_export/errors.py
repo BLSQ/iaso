@@ -1,7 +1,6 @@
 from typing import Dict
 from enum import Enum
 from functools import wraps
-from django.template.defaultfilters import truncatechars
 from django.utils.translation import ugettext as _
 
 
@@ -34,7 +33,7 @@ def handle_import_stage(stage: ImportStage):
     return decorator
 
 
-messages = dict([
+MESSAGES = dict([
     (ImportStage.filetype.name, _('Unknown file type. Only .mdb, .accdb and .enc accepted')),
     (ImportStage.extract.name, _('Could not extract data from file for import')),
     (ImportStage.transform.name, _('File is missing values, can not be automatically imported')),
@@ -45,18 +44,14 @@ messages = dict([
 ])
 
 
-def error_helper(err: Dict[str, dict]) -> Dict[str, dict]:
-    '''tries to return a user friendly error message, and the full message in a dict'''
-    stage = err['stage']
-    message = err['message']
-
-    if stage in messages:
-        short_message = messages[stage]
-    else:
-        short_message = truncatechars(message, 60)
-
+def get_import_error(ex: Exception) -> Dict[str, dict]:
+    stage = ImportStage.other
+    if type(ex) is ImportStageException:
+        stage = ex.stage
+    message = str(ex)
+    short_message = MESSAGES[stage.name]
     return {
-        'type': stage,
+        'type': stage.name,
         'full_message': message,
         'short_message': short_message
     }

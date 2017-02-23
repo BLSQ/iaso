@@ -1,70 +1,57 @@
 import logging
 import pandas
-from django.conf import settings
 from django.utils.translation import ugettext as _
 
-import hat.couchdb.api as couchdb
-from .errors import ImportStage
+from .errors import ImportStageException, ImportStage, get_import_error
 from .load import load_reconciled_into_db
-from .utils import hash_file, store_raw_file, capitalize
+from .utils import hash_file, read_file_base64, capitalize
+from hat.cases.event_log import EventFile, log_reconciled_file_import, reconciled_file_exists
 
 logger = logging.getLogger(__name__)
 
 
-def import_reconciled_file(orgname: str, filename: str, store=False) -> dict:
-
-    stats = {
-        'type': 'reconciled_import',
+def import_reconciled_file(orgname: str, filename: str):
+    ''' Import a reconciled file with handling errors and storing the event '''
+    result = {
         'typename': _('reconciled data'),
-        'version': 1,
         'orgname': orgname,
         'filename': filename,
-        'num_total': 0,
-        'num_imported': 0,
-        'errors': [],
+        'error': None,
+        'stats': None
     }
-
+    file_hash = hash_file(filename)
     try:
-        # skip existing files when not doing re-import
-        file_hash = None
-        if store:
-            file_hash = hash_file(filename)
-            existing = couchdb.get(settings.COUCHDB_DB + '/' + file_hash)
-            if existing.status_code == 200:
-                stats['errors'].append({
-                    'stage': ImportStage.exists.name,
-                    'message': _('This file has already been uploaded')
-                })
-                return stats
-
-        df = pandas.read_excel(filename)
-        stats['num_total'] = len(df)
-
-        df_rec = pandas.DataFrame()
-        df_rec['document_id'] = df['document_id']
-        df_rec['ZS'] = df['ZS'].apply(capitalize)
-        df_rec['AS'] = df['AS'].apply(capitalize)
-        df_rec['village'] = df['Village'].apply(capitalize)
-        df_rec['latitude'] = df['Latitude']
-        df_rec['longitude'] = df['Longitude']
-
-        num_imported = load_reconciled_into_db(df_rec)
-        stats['num_imported'] = num_imported
-
-        # We store the reconciled data so that it can be replicated to another
-        # server and get inserted when we reimport from raw data.
-        if store:
-            doc = stats.copy()
-            doc['_id'] = file_hash
-            store_id = store_raw_file(doc, filename, 'application/x-msexcel')
-            stats['store_id'] = store_id
-
-    except KeyError as ke:
-        stats['errors'].append({'stage': ImportStage.transform.name, 'message':  str(ke)})
-        logger.exception(ke)
+        if reconciled_file_exists(file_hash):
+            err_msg = _('This file has already been uploaded: {}').format(orgname)
+            raise ImportStageException(err_msg, ImportStage.exists)
+        stats = import_reconciled_file_unchecked(orgname, filename)
+        result['stats'] = stats
 
     except Exception as ex:
-        stats['errors'].append({'stage': ImportStage.other.name, 'message': str(ex)})
         logger.exception(ex)
+        result['error'] = get_import_error(ex)
 
+    else:
+        file = EventFile(
+            name=orgname,
+            hash=file_hash,
+            contents=read_file_base64(filename)
+        )
+        log_reconciled_file_import(stats, file)
+    return result
+
+
+def import_reconciled_file_unchecked(orgname: str, filename: str):
+    ''' Import a reconciled file without handling errors '''
+    df = pandas.read_excel(filename)
+
+    df_rec = pandas.DataFrame()
+    df_rec['document_id'] = df['document_id']
+    df_rec['ZS'] = df['ZS'].apply(capitalize)
+    df_rec['AS'] = df['AS'].apply(capitalize)
+    df_rec['village'] = df['Village'].apply(capitalize)
+    df_rec['latitude'] = df['Latitude']
+    df_rec['longitude'] = df['Longitude']
+
+    stats = load_reconciled_into_db(df_rec)
     return stats

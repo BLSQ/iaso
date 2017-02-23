@@ -30,33 +30,37 @@
               <th>{% trans "File" %}</th>
               <th>{% trans "Type" %}</th>
               <th>{% trans "Result" %}</th>
-              <th>{% trans "Info" %}</th>
+              <th>{% trans "Total" %}</th>
+              <th>{% trans "Created" %}</th>
+              <th>{% trans "Updated" %}</th>
+              <th>{% trans "Deleted" %}</th>
+              <th>{% trans "Error" %}</th>
             </tr>
           </thead>
           <tbody>
             {% for file in results %}
               <tr class="{% if file.ok %}job-result-ok{% else %}job-result-error{% endif %}">
                 <td>{{ file.orgname }}</td>
-
                 <td>{{ file.typename }}</td>
-
-                 <td>
+                <td>
                   {% if file.ok %}
                     <span class="text--success"><i class="fa fa-check"></i> {% trans "Success" %}</span>
                   {% else %}
                     <span class="text--error"><i class="fa fa-times"></i> {% trans "Error" %}</span>
                   {% endif %}
                 </td>
-
-                <td>
-                  {% if file.ok %}
-                   {{ file.num_imported }}/{{ file.num_total}} {% trans "imported" %}
-                  {% else %}
-                    {% for error in file.errors %}
-                      {{error.short_message}}
-                    {% endfor %}
-                  {% endif %}
-                </td>
+                {% if file.stats %}
+                  <td>{{ file.stats.total}}</td>
+                  <td>{{ file.stats.created}}</td>
+                  <td>{{ file.stats.updated}}</td>
+                  <td>{{ file.stats.deleted}}</td>
+                {% else %}
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                {% endif %}
+                <td>{{ file.error.short_message }}</td>
               </tr>
             {% endfor %}
           </tbody>

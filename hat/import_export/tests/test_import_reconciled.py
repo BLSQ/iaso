@@ -1,38 +1,48 @@
-from django.conf import settings
-import hat.couchdb.api as couchdb
+from django.core.management import call_command
+from django.test import TestCase
 from hat.cases.models import Case
-from . import DBTestCase
 from ..import_reconciled import import_reconciled_file
-from ..import_csv import import_csv_file
 from ..reimport import reimport
+from hat.cases.event_log import get_events, EventTable
 
 xlsx_file = 'testdata/reconciled_cases.xlsx'
 csv_file = 'testdata/test_cases.csv'
 
 
-class ImportReconciledTests(DBTestCase):
+class ImportReconciledTests(TestCase):
+    fixtures = ['cases']
+
     def test_import_reconciled(self):
-        # Import some fixtures from a cases csv file
-        stats_csv = import_csv_file('testdata', csv_file, True)
-        self.assertEqual(len(stats_csv['errors']), 0)
-        stats = import_reconciled_file('testdata', xlsx_file, True)
-        self.assertEqual(len(stats['errors']), 0)
-        self.assertEqual(stats['num_total'], 7)
-        self.assertEqual(stats['num_imported'], 6)
+        self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 0)
+        self.assertEqual(Case.objects.filter(AS='Ipeke').count(), 0)
+        self.assertEqual(Case.objects.filter(village='Ipoku').count(), 0)
+
+        r = import_reconciled_file('testdata', xlsx_file)
+        self.assertEqual(r['error'], None)
+        self.assertEqual(r['stats'].total, 7)
+        self.assertEqual(r['stats'].updated, 6)
 
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
         self.assertEqual(Case.objects.filter(AS='Ipeke').count(), 3)
         self.assertEqual(Case.objects.filter(village='Ipoku').count(), 1)
 
-        r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
-        r.raise_for_status()
+        event = get_events()[0]
+        self.assertEqual(EventTable(event['table_name']), EventTable.reconciled_file)
+        self.assertEqual(event['total'], 7)
+        self.assertEqual(event['updated'], 6)
 
     def test_reimport_reconciled(self):
-        s1 = import_csv_file('testdata', csv_file, True)
-        self.assertEqual(len(s1['errors']), 0)
-        s2 = import_reconciled_file('testdata', xlsx_file, True)
-        self.assertEqual(len(s2['errors']), 0)
+        self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 0)
+        r = import_reconciled_file('testdata', xlsx_file)
+        self.assertEqual(r['error'], None)
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
+        self.assertEqual(len(get_events()), 1, 'Only one event from the import')
+
+        # reload the cases fixtures to have unreconciled data
         Case.objects.all().delete()
-        reimport()
+        call_command('loaddata', 'cases', verbosity=0)
+
+        # reimport without deleting the fresh fixtures
+        reimport(delete_data=False)
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
+        self.assertEqual(len(get_events()), 1, 'Still just one event')

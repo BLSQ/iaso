@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
 from hat.common.view_utils import paginate
-from .duplicates import merge_cases, commit_merge, commit_ignore
+from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect
 from .forms import filter_and_create_form, FieldChoice, OrderChoice
 from .models import Case, CaseView, DuplicatesPair
@@ -111,7 +111,7 @@ def duplicatespair_list(request):
 def duplicatespair_detail(request, pair_id):
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
-    (older_case, younger_case, merged_case, steps) = merge_cases(pair_id)
+    (older_case, younger_case, merged_case, steps) = merge_cases_pair(pair_id)
 
     fields = [
         'source',

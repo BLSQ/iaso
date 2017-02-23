@@ -21,8 +21,8 @@
           </thead>
           <tbody>
             <tr>
-              <td>{% trans "Raw" %}</td>
-              <td>{{ num_raw }}</td>
+              <td>{% trans "Events" %}</td>
+              <td>{{ num_events }}</td>
             </tr>
             <tr>
               <td>{% trans "Transformed" %}</td>
@@ -31,6 +31,10 @@
             <tr>
               <td>{% trans "Duplicate matches" %}</td>
               <td>{{ num_duplicates }}</td>
+            </tr>
+            <tr>
+              <td>{% trans "Synced devices" %}</td>
+              <td>{{ num_devices }}</td>
             </tr>
           </tbody>
         </table>
@@ -54,18 +58,6 @@
                 </form>
               </td>
             </tr>
-            {% if show_raw_data_button %}
-              <tr>
-                <td>{% trans "Delete the raw data. This is not recoverable!"  %}</td>
-                <td>
-                  <form method="POST" action="{% url 'maintenance:delete_couchdb_data' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form }}
-                    <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Raw" %}</button>
-                  </form>
-                </td>
-              </tr>
-            {% endif %}
             <tr>
               <td>{% trans "Delete the transformed data and reimport from raw." %}</td>
               <td>
@@ -87,12 +79,22 @@
               </td>
             </tr>
             <tr>
-              <td>{% trans "Download the history log." %}</td>
+              <td>{% trans "Download the events log." %}</td>
               <td>
-                <form method="POST" action="{% url 'maintenance:download_log' %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   {{ form }}
-                  <button type="submit" class="button--reduced">{% trans "Download log" %}</button>
+                  <button type="submit" class="button--reduced">{% trans "Download events" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Import synced devices data." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:import_synced' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced">{% trans "Import data" %}</button>
                 </form>
               </td>
             </tr>

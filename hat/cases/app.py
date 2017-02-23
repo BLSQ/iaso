@@ -1,14 +1,14 @@
+from datetime import datetime
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from django_rq import get_scheduler
-from .tasks import duplicates_task
 
 
 class CasesAppConfig(AppConfig):
     name = 'hat.cases'
 
     def ready(self):
-        post_migrate.connect(prepare_db, sender=self)
+        post_migrate.connect(setup_db, sender=self)
 
         # schedule jobs
         scheduler = get_scheduler('default')
@@ -17,26 +17,20 @@ class CasesAppConfig(AppConfig):
         for job in scheduler.get_jobs():
             job.delete()
 
-        # Run the duplicates detection daily at night
+        # Run the duplicates detection task daily at night (2am)
         scheduler.cron(
             ('0 2 * * *'),
-            func=duplicates_task
+            func='hat.cases.tasks.duplicates_task',
+        )
+
+        # run the sync import task every hour since now
+        scheduler.schedule(
+            scheduled_time=datetime.utcnow(),
+            func='hat.import_export.tasks.import_synced_devices_task',
+            interval=60*60,
         )
 
 
-def prepare_db(sender, **kwargs):
-    from django.db import connection
-    from .queries import prepare_queries, duplicates_queries
-
-    with connection.cursor() as cursor:
-        sql_context = {
-          'case_file': False,  # not implemented yet
-          'location_file': False,  # not implemented yet
-        }
-
-        cursor.execute(prepare_queries.prepare_extensions(**sql_context))
-        cursor.execute(prepare_queries.prepare_tables(**sql_context))
-        cursor.execute(prepare_queries.prepare_indices(**sql_context))
-        cursor.execute(prepare_queries.prepare_triggers(**sql_context))
-        cursor.execute(prepare_queries.prepare_views(**sql_context))
-        cursor.execute(duplicates_queries.prepare())
+def setup_db(sender, **kwargs):
+    from .queries import prepare_db
+    prepare_db()

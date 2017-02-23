@@ -91,24 +91,25 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'explorer',
-    'debug_toolbar',
     'django_rq',
+    'corsheaders',
+    'debug_toolbar',
+    'explorer',
     'rest_framework',
-    'hat.rq',
-    'hat.couchdb',
-    'hat.cases',
-    'hat.import_export',
-    'hat.dashboard',
-    'hat.maintenance',
-    'hat.api',
-    'hat.integration_tests',
-    'hat.sync',
     'webpack_loader',
+    'hat.api',
+    'hat.cases',
+    'hat.common',
+    'hat.couchdb',
+    'hat.dashboard',
+    'hat.import_export',
+    'hat.integration_tests',
+    'hat.maintenance',
+    'hat.rq',
+    'hat.sync',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -238,10 +239,12 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
 
 COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
+COUCHDB_DB_MAIN = 'hat'
+COUCHDB_DB_TEST = 'hat_test'
 if TESTING:
-    COUCHDB_DB = 'hat_test'
+    COUCHDB_DB = COUCHDB_DB_TEST
 else:
-    COUCHDB_DB = 'hat'
+    COUCHDB_DB = COUCHDB_DB_MAIN
 COUCHDB_USER = os.environ.get('COUCHDB_USER', None)
 COUCHDB_PASSWORD = os.environ.get('COUCHDB_PASSWORD', None)
 COUCHDB_DIR = './couchdb'

@@ -6,11 +6,14 @@ class Command(BaseCommand):
     help = 'Reimport data'
 
     def handle(self, *args, **options):
-        result = reimport()
-        num_total = sum(r['num_total'] for r in result)
-        num_imported = sum(r['num_imported'] for r in result)
-        num_errors = sum(len(r['errors']) for r in result)
+        results = reimport()
+        total = sum(r.total for r in results)
+        created = sum(r.created for r in results)
+        updated = sum(r.updated for r in results)
+        deleted = sum(r.deleted for r in results)
         self.stdout.write('---------- Re-import done ----------')
-        self.stdout.write('Total number of records:    {}'.format(num_total))
-        self.stdout.write('Number of imported records: {}'.format(num_imported))
-        self.stdout.write('Number of errors:           {}'.format(num_errors))
+        self.stdout.write('Number of events reimported: {}'.format(len(results)))
+        self.stdout.write('Total number of records:     {}'.format(total))
+        self.stdout.write('Number of created records:   {}'.format(created))
+        self.stdout.write('Number of updated records:   {}'.format(updated))
+        self.stdout.write('Number of deleted records:   {}'.format(deleted))

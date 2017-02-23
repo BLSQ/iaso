@@ -65,8 +65,11 @@ def load_config(directory, strip=False, predicate=lambda x: True):
     return ob
 
 
-def setup_db(db_name: str, config: dict):
-    ''' Setup up a couchdb database from a configuration '''
+def setup_db(db_name: str, config: dict, cleanup=False):
+    '''
+    Setup up a couchdb database from a configuration
+    When `cleanup` is True all the data will be wiped from the existing database!
+    '''
     ddoc = config.copy()
     # The {db}/_security is its own document in couchdb and we push it seperately.
     # A security document is required.
@@ -80,8 +83,8 @@ def setup_db(db_name: str, config: dict):
     exists = r.status_code < 400
 
     # In testing mode we delete existing couchdbs
-    if exists and settings.TESTING:
-        logger.info('deleting test couchdb: ' + db_name)
+    if exists and cleanup:
+        logger.info('deleting couchdb: ' + db_name)
         r = api.delete(db_name)
         r.raise_for_status()
         exists = False
@@ -99,7 +102,7 @@ def setup_db(db_name: str, config: dict):
     force_put_doc(secdoc_url, secdoc)
 
 
-def setup_couchdb():
+def setup_couchdb(cleanup=False):
     ''' Setup couchdb by loading the configuration from a directory structure '''
     base_path = Path(settings.COUCHDB_DIR)
     dirs = (p for p in base_path.iterdir() if p.is_dir())
@@ -110,4 +113,4 @@ def setup_couchdb():
         if settings.TESTING:
             db_name = db_name + '_test'
         config = load_config(str(db_dir))
-        setup_db(db_name, config)
+        setup_db(db_name, config, cleanup=cleanup)

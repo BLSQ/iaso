@@ -1,67 +1,70 @@
-from django.conf import settings
-import hat.couchdb.api as couchdb
+from django.test import TestCase
 from hat.cases.models import Case
+from hat.cases.event_log import get_events, get_event_of_type, EventTable
 from ..import_cases import import_cases_file
 from ..reimport import reimport
-from . import DBTestCase, TEST_DATA
+from . import TEST_DATA
 import datetime
 
-mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
-enc_file = 'testdata/backup-v5.enc'
 
-
-def import_helper(orgname, filename, store=False):
+def import_helper(orgname, filename):
     ''' Helper functions to bail on import errors '''
-    stats = import_cases_file(orgname, filename, store=store)
-    if len(stats['errors']) > 0:
-        raise Exception(stats['errors'][0])
+    stats = import_cases_file(orgname, filename)
+    if stats['error'] is not None:
+        print(stats)
+        raise Exception(stats['error']['type'])
     return stats
 
 
-class ImportCasesTests(DBTestCase):
+class ImportCasesTests(TestCase):
     def test_import_historic(self):
         count = TEST_DATA['historic']['count']
-        stats = import_helper('historic', TEST_DATA['historic']['file'], store=True)
-        self.assertEqual(stats['num_total'], count)
-        self.assertEqual(stats['num_imported'], count)
+        r = import_helper('historic', TEST_DATA['historic']['file'])
+        self.assertEqual(r['stats'].total, count)
+        self.assertEqual(r['stats'].created, count)
         self.assertEqual(Case.objects.count(), count)
         self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
-        r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
-        r.raise_for_status()
-        self.assertEqual(r.json()['type'], 'historic_import')
-        r = couchdb.head(settings.COUCHDB_DB + '/' + stats['store_id'] + '/file')
-        r.raise_for_status()
+
+        event = get_events()[0]
+        self.assertEqual(event['total'], count)
+        self.assertEqual(event['created'], count)
+        event = get_event_of_type(EventTable.cases_file, event['id'])
+        self.assertEqual(event['source_type'], 'historic')
 
     def test_import_pv(self):
         count = TEST_DATA['pv']['count']
-        stats = import_helper('pv', TEST_DATA['pv']['file'], store=True)
-        self.assertEqual(stats['num_total'], count)
-        self.assertEqual(stats['num_imported'], count)
+        r = import_helper('pv', TEST_DATA['pv']['file'])
+        self.assertEqual(r['stats'].total, count)
+        self.assertEqual(r['stats'].created, count)
         self.assertEqual(Case.objects.count(), count)
         self.assertGreater(Case.objects.filter(followup_done=True).count(), 0)
-        r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
-        r.raise_for_status()
-        self.assertEqual(r.json()['type'], 'pv_import')
-        r = couchdb.head(settings.COUCHDB_DB + '/' + stats['store_id'] + '/file')
-        r.raise_for_status()
+
+        event = get_events()[0]
+        self.assertEqual(EventTable(event['table_name']), EventTable.cases_file)
+        self.assertEqual(event['total'], count)
+        self.assertEqual(event['created'], count)
+        event = get_event_of_type(EventTable.cases_file, event['id'])
+        self.assertEqual(event['source_type'], 'pv')
 
     def test_import_backup(self):
         count = TEST_DATA['mobile_backup']['count']
-        stats = import_helper('backup', TEST_DATA['mobile_backup']['file'], store=True)
-        self.assertEqual(stats['num_total'], count)
-        self.assertEqual(stats['num_imported'], count)
+        r = import_helper('backup', TEST_DATA['mobile_backup']['file'])
+        self.assertEqual(r['stats'].total, count)
+        self.assertEqual(r['stats'].created, count)
         self.assertEqual(Case.objects.count(), count)
-        r = couchdb.get(settings.COUCHDB_DB + '/' + stats['store_id'])
-        r.raise_for_status()
-        self.assertEqual(r.json()['type'], 'backup_import')
-        r = couchdb.head(settings.COUCHDB_DB + '/' + stats['store_id'] + '/file')
-        r.raise_for_status()
+
+        event = get_events()[0]
+        self.assertEqual(EventTable(event['table_name']), EventTable.cases_file)
+        self.assertEqual(event['total'], count)
+        self.assertEqual(event['created'], count)
+        event = get_event_of_type(EventTable.cases_file, event['id'])
+        self.assertEqual(event['source_type'], 'backup')
 
     def test_duplicate_merge_by_hash(self):
         # should import same person if it has been updated with a new result
-        import_helper('backup-1', TEST_DATA['mobile_backup_duplicates_1']['file'], store=True)
-        import_helper('backup-2', TEST_DATA['mobile_backup_duplicates_2']['file'], store=True)
-        import_helper('backup-3', TEST_DATA['mobile_backup_duplicates_3']['file'], store=True)
+        import_helper('backup-1', TEST_DATA['mobile_backup_duplicates_1']['file'])
+        import_helper('backup-2', TEST_DATA['mobile_backup_duplicates_2']['file'])
+        import_helper('backup-3', TEST_DATA['mobile_backup_duplicates_3']['file'])
 
         # only one object in db
         self.assertEqual(
@@ -85,20 +88,22 @@ class ImportCasesTests(DBTestCase):
         )
 
     def test_reimport(self):
-        import_helper('historic', mdb_file, store=True)
-        import_helper('backup', enc_file, store=True)
-        import_helper('pv', TEST_DATA['pv']['file'], store=True)
+        import_helper('historic.mdb', TEST_DATA['historic']['file'])
+        import_helper('backup.enc', TEST_DATA['mobile_backup']['file'])
+        import_helper('pv.mdb', TEST_DATA['pv']['file'])
 
         count = Case.objects.count()
         self.assertEqual(count, TEST_DATA['total_count'])
+        events = get_events()
+        self.assertEqual(len(events), 3, 'Three events from 3 imports')
+
         Case.objects.all().delete()
         reimport()
         self.assertEqual(Case.objects.count(), count)
+        events = get_events()
+        self.assertEqual(len(events), 3, 'Still just 3 events')
 
     def test_import_existing_file(self):
-        stats1 = import_cases_file('backup', enc_file, store=True)
-        stats2 = import_cases_file('backup', enc_file, store=True)
-
-        self.assertEqual(stats1['type'], 'backup_import')
-        self.assertEqual(stats2['type'], 'import_error')
-        self.assertEqual(stats2['orgname'], 'backup')
+        import_cases_file('backup', TEST_DATA['mobile_backup']['file'])
+        stats = import_cases_file('backup', TEST_DATA['mobile_backup']['file'])
+        self.assertNotEqual(stats['error'], None)

@@ -3,11 +3,14 @@ from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.models import Case, Location
 from .errors import handle_import_stage, ImportStage
+from hat.cases.event_log import EventStats
 
 
 @handle_import_stage(ImportStage.load)
-def load_cases_into_db(df: DataFrame) -> DataFrame:
+@transaction.atomic
+def load_cases_into_db(df: DataFrame) -> EventStats:
     '''Load the dataframe into postgres'''
+    total = len(df)
 
     # remove rows with existing ids from the data
     ids = list(df['document_id'])
@@ -40,37 +43,69 @@ def load_cases_into_db(df: DataFrame) -> DataFrame:
     if len(duplicates) > 0:
         update_entries(duplicates)
 
-    return df
+    # stats.created = len(df)
+    # stats.updated = len(duplicates)
+    # return stats
+    return EventStats(
+        total=total,
+        created=len(df),
+        updated=len(duplicates),
+        deleted=0
+    )
 
 
-def load_locations_into_db(df: DataFrame):
+@transaction.atomic
+def load_locations_into_db(df: DataFrame) -> EventStats:
+    total = len(df)
+
     locations = [Location(**row.dropna().to_dict()) for _, row in df.iterrows()]
+
+    created = len(locations)
+    deleted = Location.objects.all().count()
+
     # Delete all rows from the table and replaced with the new ones
-    with transaction.atomic():
-        Location.objects.all().delete()
-        Location.objects.bulk_create(locations)
-    return df
+    Location.objects.all().delete()
+    Location.objects.bulk_create(locations)
+
+    return EventStats(
+        total=total,
+        created=created,
+        updated=0,
+        deleted=deleted
+    )
 
 
-def load_locations_areas_info_db(df: DataFrame):
-    total = 0
-    with transaction.atomic():
-        for index, row in df.iterrows():
-            num = Location.objects.filter(ZS=row['ZS']) \
-                                  .filter(AS=row['AS']) \
-                                  .update(**row.dropna().to_dict())
-            total += num
-    return total
-
-
-def load_reconciled_into_db(df: DataFrame):
-    total = 0
-    with transaction.atomic():
-        for index, row in df.iterrows():
-            num = Case.objects.filter(document_id=row['document_id']) \
+@transaction.atomic
+def load_locations_areas_into_db(df: DataFrame) -> EventStats:
+    total = len(df)
+    updated = 0
+    for index, row in df.iterrows():
+        num = Location.objects.filter(ZS=row['ZS']) \
+                              .filter(AS=row['AS']) \
                               .update(**row.dropna().to_dict())
-            total += num
-    return total
+        updated += num
+    return EventStats(
+        total=total,
+        created=0,
+        updated=updated,
+        deleted=0
+    )
+
+
+@transaction.atomic
+def load_reconciled_into_db(df: DataFrame) -> EventStats:
+    total = len(df)
+    updated = 0
+    for index, row in df.iterrows():
+        num = Case.objects.filter(document_id=row['document_id']) \
+                          .update(**row.dropna().to_dict())
+        updated += num
+    return EventStats(
+        total=total,
+        created=0,
+        updated=updated,
+        deleted=0
+    )
 
 
 def update_entries(duplicates):
@@ -107,12 +142,6 @@ def update_entries(duplicates):
         errors='ignore'
     )
 
-    # Use a transaction to bundle updates for better performance
-    with transaction.atomic():
-        for index, row in duplicates.iterrows():
-            data = {
-                  **row.dropna().to_dict(),
-                  'update_with': 'IMPORT_MERGE'
-            }
-            Case.objects.filter(document_id=row['document_id']) \
-                        .update(**data)
+    for index, row in duplicates.iterrows():
+        Case.objects.filter(document_id=row['document_id']) \
+                    .update(**row.dropna().to_dict())

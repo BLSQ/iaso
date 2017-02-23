@@ -1,7 +1,3 @@
-from django.test import TransactionTestCase
-from hat.couchdb.setup import setup_couchdb
-
-
 TEST_DATA = {
     'historic': {
         'file': 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb',
@@ -30,9 +26,3 @@ TEST_DATA = {
     # skip duplicate test files for total count
     'total_count': 11
 }
-
-
-class DBTestCase(TransactionTestCase):
-    def tearDown(self):
-        # This will recreate the test couchdb to drop any data created in the test
-        setup_couchdb()

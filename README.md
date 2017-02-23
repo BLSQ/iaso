@@ -12,7 +12,7 @@ The local dev setup uses [docker-compose](https://docs.docker.com/compose/) to s
 
 `docker-compose up`
 
-This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should be reachable at `https://<docker-host>:8443`.
+This will build and download the containers and start them. The `docker-compose.yml` file describes the setup of the containers. The web server should be reachable at `https://<docker-host>:8443`. Because the https connection uses a self signed cert in development, that needs to be accepted manually. If you see no styles in the browser, have a look in the js-console if the requests to webpack fail. If they fail, try to open the webpack url once and accept the self signed cert there as well.
 
 It will load some users via fixtures. See the user name/password combos further down.
 

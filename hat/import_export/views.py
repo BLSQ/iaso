@@ -13,8 +13,6 @@ from hat.common.utils import create_shared_filename
 from hat.common.view_utils import task_status
 from hat.rq.utils import run_task, get_task_result
 
-
-from .errors import error_helper
 from .forms import \
     UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm
 from .tasks import \
@@ -264,10 +262,8 @@ def upload_done(request, task_id, error_view, dataset):
         return redirect(error_view)
 
     for result in results:
-        result['ok'] = len(result['errors']) == 0
-        # needs to be a list to be converted to JSON
-        result['errors'] = list(map(error_helper, result['errors']))
-    error_count = len([res for res in results if res['errors']])
+        result['ok'] = result['error'] is None
+    error_count = sum(1 for r in results if r['error'] is not None)
     resultJSON = json.dumps(results, indent=2)
 
     return render(request, 'import_export/upload_done.html', {

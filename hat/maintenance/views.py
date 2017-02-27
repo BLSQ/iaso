@@ -93,8 +93,9 @@ def download_events(request):
     import pandas
     from django.http import HttpResponse
     sql = '''
-        SELECT stamp, created, updated, deleted, total, type, name
-        FROM hat_event_view ORDER BY stamp DESC
+        SELECT stamp, table_name, name, total, created, updated, deleted
+          FROM hat_event_view
+         ORDER BY stamp DESC
     '''
     with connection.cursor() as cursor:
         cursor.execute(sql)

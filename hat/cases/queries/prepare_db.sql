@@ -3,43 +3,49 @@
   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
 
   {# View joining the hat event tables #}
-  DROP VIEW if EXISTS hat_event_view;
+  DROP VIEW IF EXISTS hat_event_view;
   CREATE VIEW hat_event_view AS
-    SELECT B.*
+    SELECT E.id
+         , E.stamp
+         , E.table_name
          , A.name
+         , E.total
+         , E.created
+         , E.updated
+         , E.deleted
          , A.contents
          , A.documents
-    FROM (
+      FROM hat_event E
+      JOIN (
          SELECT id
-              , filename AS name
+              , filename    AS name
               , contents
               , NULL::jsonb AS documents
-         FROM hat_import_cases_file_event
+           FROM hat_import_cases_file_event
 
-         UNION ALL
+          UNION ALL
          SELECT id
-              , filename AS name
+              , filename    AS name
               , contents
               , NULL::jsonb AS documents
-         FROM hat_import_reconciled_file_event
+           FROM hat_import_reconciled_file_event
 
-         UNION ALL
+          UNION ALL
          SELECT id
-              , NULL AS name
-              , NULL AS contents
+              , NULL::text  AS name
+              , NULL::bytea AS contents
               , documents
-         FROM hat_merge_cases_event
+           FROM hat_merge_cases_event
 
-         UNION ALL
+          UNION ALL
          SELECT id
-              , device_id AS name
-              , NULL AS contents
+              , device_id   AS name
+              , NULL::bytea AS contents
               , documents
-         from hat_sync_cases_event
-    ) A
-    JOIN hat_event B
-    ON B.id = A.id
-    ORDER BY stamp ASC;
+           FROM hat_sync_cases_event
+         ) A
+        ON E.id = A.id;
+
 
   {# View of cases with aggregated results for test types #}
   DROP VIEW IF EXISTS cases_case_view;
@@ -83,4 +89,5 @@
          , test_pl_result AS stage_result
 
       FROM cases_case;
+
 {% endsql %}

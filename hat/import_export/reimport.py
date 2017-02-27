@@ -61,7 +61,7 @@ def reimport(delete_data=True) -> List[dict]:
 
     results = []
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM hat_event_view')
+        cursor.execute('SELECT * FROM hat_event_view ORDER BY stamp ASC')
         columns = [col[0] for col in cursor.description]
         while True:
             event_row = cursor.fetchone()

@@ -7,6 +7,7 @@ import {
   injectIntl,
   defineMessages
 } from 'react-intl'
+import LoadingSpinner from '../../components/loading-spinner'
 import VegaLiteVis from '../../components/vega-lite-vis'
 import VISUALIZATIONS from '../../../json/visualizations.json'
 import { createUrl } from '../../utils/fetchData'
@@ -15,6 +16,10 @@ const MESSAGES = defineMessages({
   'location-all': {
     defaultMessage: 'All',
     id: 'monthlyreport.labels.all'
+  },
+  'loading': {
+    defaultMessage: 'Loading',
+    id: 'monthlyreport.labels.loading'
   }
 })
 
@@ -218,13 +223,7 @@ export class MonthlyReport extends Component {
               </div>
             </div>
           }
-          {
-            loading && <div className='widget__container'>
-              <div className='widget__header'>
-                <h2 className='widget__heading'><FormattedMessage id='monthlyreport.header.loading' defaultMessage='Loading...' /></h2>
-              </div>
-            </div>
-          }
+          {loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />}
           {data && <DataTable data={data} />}
         </div>
       </div>

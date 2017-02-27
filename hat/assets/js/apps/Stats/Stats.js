@@ -6,6 +6,7 @@ import {
   injectIntl,
   defineMessages
 } from 'react-intl'
+import LoadingSpinner from '../../components/loading-spinner'
 import { createUrl } from '../../utils/fetchData'
 import moment from 'moment'
 import * as d3 from 'd3'
@@ -20,6 +21,10 @@ const MESSAGES = defineMessages({
   'location-all': {
     defaultMessage: 'All',
     id: 'stats.labels.all'
+  },
+  'loading': {
+    defaultMessage: 'Loading',
+    id: 'stats.labels.loading'
   }
 })
 
@@ -518,11 +523,7 @@ export class Stats extends Component {
             </div>
           }
           {
-            loading && <div className='widget__container'>
-              <div className='widget__header'>
-                <h2 className='widget__heading'><FormattedMessage id='statspage.header.loading' defaultMessage='Loading...' /></h2>
-              </div>
-            </div>
+            loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
           }
           {
             data && <Widgets data={data} />

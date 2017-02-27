@@ -4,6 +4,7 @@ import { push } from 'react-router-redux'
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl'
 import Select from 'react-select'
 
+import LoadingSpinner from '../../components/loading-spinner'
 import { createUrl } from '../../utils/fetchData'
 import geoData from './utils/geoData'
 import { Map } from './components'
@@ -12,7 +13,11 @@ import { selectItems, deselectItems } from './selection'
 const MESSAGES = defineMessages({
   'location-all': {
     defaultMessage: 'All',
-    id: 'microplanning.location.all'
+    id: 'microplanning.labels.all'
+  },
+  'loading': {
+    defaultMessage: 'Loading villages',
+    id: 'microplanning.labels.loading'
   }
 })
 
@@ -109,16 +114,7 @@ export class Microplanning extends Component {
         }
 
         {
-          loading && <div className='widget__container'>
-            <div className='widget__header'>
-              <h2 className='widget__heading'>
-                <i className='fa fa-spin fa-cog' />
-                &nbsp;
-                <FormattedMessage id='microplanning.label.loading' defaultMessage='Loading villages' />
-                &hellip;
-              </h2>
-            </div>
-          </div>
+          loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
         }
 
         <Map

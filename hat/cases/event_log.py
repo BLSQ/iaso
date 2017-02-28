@@ -1,7 +1,8 @@
 import json
 from enum import Enum
 from django.db import connection
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
+from snaql.convertors import guard_string
 
 from .queries import event_log_queries as queries
 
@@ -59,31 +60,46 @@ def reconciled_file_exists(file_hash):
         return r is not None
 
 
-def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) -> int:
-    insert_event_sql = queries.insert_event(
-        **stats._asdict(), table_name=EventTable.cases_file.value)
-    sql = queries.insert_cases_file_import(
-        insert_event=insert_event_sql,
-        **file._asdict(),
-        source_type=source_type
+def log_event(stats: EventStats, event_table: EventTable, event_data: OrderedDict) -> int:
+    ''' Create a log entry for an event. We only want to log events when they
+        changed any data and return `None` in case the event did not. For This
+        to work it is important that correct `EventStats` are provided.
+    '''
+    # Check if anything was changed
+    if stats.created == 0 and stats.updated == 0 and stats.deleted == 0 and stats.total == 0:
+        return None
+    # Quote and join fields and join values
+    fields = ','.join(['"{}"'.format(k) for k in event_data.keys()])
+    values = ','.join(event_data.values())
+    sql = queries.insert_event(
+        **stats._asdict(),
+        details_table=event_table.value,
+        details_fields=fields,
+        details_values=values,
     )
     with connection.cursor() as cursor:
         cursor.execute(sql)
         id = cursor.fetchone()[0]
         return id
+
+
+def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) -> int:
+    event_data = OrderedDict([
+        ('filename', guard_string(file.name)),
+        ('file_hash', guard_string(file.hash)),
+        ('contents', guard_string(file.contents)),
+        ('source_type', guard_string(source_type))
+    ])
+    return log_event(stats, EventTable.cases_file, event_data)
 
 
 def log_reconciled_file_import(stats: EventStats, file: EventFile) -> int:
-    insert_event_sql = queries.insert_event(
-        **stats._asdict(), table_name=EventTable.reconciled_file.value)
-    sql = queries.insert_reconciled_file_import(
-        insert_event=insert_event_sql,
-        **file._asdict()
-    )
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        id = cursor.fetchone()[0]
-        return id
+    event_data = OrderedDict([
+        ('filename', guard_string(file.name)),
+        ('file_hash', guard_string(file.hash)),
+        ('contents', guard_string(file.contents))
+    ])
+    return log_event(stats, EventTable.reconciled_file, event_data)
 
 
 def log_cases_merge(older_id, younger_id):
@@ -93,27 +109,24 @@ def log_cases_merge(older_id, younger_id):
         deleted=1,
         total=0
     )
-    insert_event_sql = queries.insert_event(
-        **stats._asdict(), table_name=EventTable.cases_merge.value)
-    sql = queries.insert_cases_merge(
-        insert_event=insert_event_sql,
-        documents=json.dumps({'older_id': older_id, 'younger_id': younger_id})
-    )
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        id = cursor.fetchone()[0]
-        return id
+    documents = json.dumps({
+        'older_id': older_id,
+        'younger_id': younger_id,
+    })
+    event_data = OrderedDict([
+        # We do not `guard_string` documents, because it would escape
+        # the quotes in the json string
+        ('documents', "'{}'".format(documents)),
+    ])
+    return log_event(stats, EventTable.cases_merge, event_data)
 
 
-def log_sync_import(stats, docs, device_id):
-    insert_event_sql = queries.insert_event(
-        **stats._asdict(), table_name=EventTable.sync.value)
-    sql = queries.insert_cases_sync(
-        insert_event=insert_event_sql,
-        documents=json.dumps(docs),
-        device_id=device_id
-    )
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        id = cursor.fetchone()[0]
-        return id
+def log_sync_import(stats: EventStats, docs: dict, device_id: str) -> id:
+    documents = json.dumps(docs)
+    event_data = OrderedDict([
+        # We do not `guard_string` documents, because it would escape
+        # the quotes in the json string
+        ('documents', "'{}'".format(documents)),
+        ('device_id', guard_string(device_id)),
+    ])
+    return log_event(stats, EventTable.sync, event_data)

@@ -89,6 +89,16 @@
               </td>
             </tr>
             <tr>
+              <td>{% trans "Clean the events log from empty events." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:clean_events' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  {{ form }}
+                  <button type="submit" class="button--reduced">{% trans "Clean events" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
               <td>{% trans "Import synced devices data." %}</td>
               <td>
                 <form method="POST" action="{% url 'maintenance:import_synced' %}" enctype="multipart/form-data">

@@ -1,3 +1,4 @@
+import logging
 from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -7,6 +8,8 @@ from django.views.decorators.http import require_http_methods
 
 from hat.common.view_utils import task_status
 from hat.rq.utils import run_task
+
+logger = logging.getLogger(__name__)
 
 
 @login_required()
@@ -62,6 +65,7 @@ def delete_db_data(request):
     try:
         Case.objects.all().delete()
     except Exception as e:
+        logger.exception(e)
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:
         messages.add_message(request, messages.SUCCESS, _('Task done.'))
@@ -105,6 +109,25 @@ def download_events(request):
         response = HttpResponse(csv, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="hat_log.csv"'
         return response
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def clean_events(request):
+    ''' Delete events which have zero stats '''
+    sql = '''
+        DELETE FROM hat_event WHERE created = 0 AND updated = 0 AND deleted = 0 AND total = 0
+    '''
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+    except Exception as e:
+        logger.exception(e)
+        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
+    else:
+        messages.add_message(request, messages.SUCCESS, _('Task done.'))
+    return redirect('maintenance:index')
 
 
 @login_required()

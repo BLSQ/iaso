@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^reimport$', views.reimport, name='reimport'),
     url(r'^rebuild_duplicates$', views.rebuild_duplicates, name='rebuild_duplicates'),
     url(r'^download_events$', views.download_events, name='download_events'),
+    url(r'^clean_events$', views.clean_events, name='clean_events'),
     url(r'^import_synced$', views.import_synced, name='import_synced'),
 ]

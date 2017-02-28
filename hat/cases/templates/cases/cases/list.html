@@ -8,7 +8,7 @@
 {% block content %}
   <div class="content">
 
-    {% include "cases/filters.html" with form=form only %}
+    {% include "cases/filters.html" with form=form custom=custom_filters only %}
 
     <div class="widget__container">
       <div class="widget__header">
@@ -34,10 +34,10 @@
             {% for case in page.items %}
               <tr>
                 <td>{{ case.document_date|date:"SHORT_DATE_FORMAT" }}</td>
-                <td>{{ case.name }} {{ case.prename }} {{ case.lastname }}</td>
+                <td>{{ case.full_name }}</td>
                 <td>{{ case.age }}</td>
                 <td>{{ case.sex }}</td>
-                <td>{{ case.ZS }} {{ case.AS }} {{ case.village }}</td>
+                <td>{{ case.full_location }}</td>
                 <td>{{ case.source }}</td>
                 <td><a href="{% url 'cases:cases_details' doc_id=case.document_id %}?back={{ request.get_full_path|urlencode }}">{{ case.document_id }}</a></td>
               </tr>

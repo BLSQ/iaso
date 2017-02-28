@@ -8,7 +8,7 @@
 {% block content %}
   <div class="content">
 
-    {% include "cases/filters.html" with form=form only %}
+    {% include "cases/filters.html" with form=form custom=custom_filters only %}
 
     <div class="widget__container">
       <div class="widget__header">
@@ -22,19 +22,15 @@
           <thead>
             <tr>
               <th>{% trans "Date" %}</th>
-              <th>{% trans "Zone de Sante" %}</th>
-              <th>{% trans "Aire de Sante" %}</th>
-              <th>{% trans "Village" %}</th>
+              <th>{% trans "Location" %}</th>
               <th>{% trans "# cases" %}</th>
             </tr>
           </thead>
           <tbody>
             {% for case in page.items %}
               <tr>
-                <td>{{ case.date_day|date:"SHORT_DATE_FORMAT" }}</td>
-                <td>{{ case.ZS }}</td>
-                <td>{{ case.AS }}</td>
-                <td>{{ case.village }}</td>
+                <td>{{ case.document_date_day|date:"SHORT_DATE_FORMAT" }}</td>
+                <td>{{ case.full_location }}</td>
                 <td>{{ case.cases }}</td>
               </tr>
             {% endfor %}

@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Q, Count
+from django.db.models import F, Q, Count, Case as QCase, When
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 
 from hat.common.view_utils import paginate
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
-from .filters import Q_is_suspect
+from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice
 from .models import Case, CaseView, DuplicatesPair
 
@@ -43,13 +43,14 @@ def duplicatespair_list(request):
 
     fields_filters = [
         FieldChoice(
-            id='id', label=_('Internal ID'),
+            id='document_id', label=_('Internal ID'), choices=None,
             filter=lambda q, v: q.filter(
                 Q(case1__document_id__icontains=v) |
                 Q(case2__document_id__icontains=v)
-            )),
+            )
+        ),
         FieldChoice(
-            id='names', label=_('Name'),
+            id='full_name', label=_('Name'), choices=None,
             filter=lambda q, v: q.filter(
                 Q(case1__name__icontains=v) |
                 Q(case1__prename__icontains=v) |
@@ -57,7 +58,8 @@ def duplicatespair_list(request):
                 Q(case2__name__icontains=v) |
                 Q(case2__prename__icontains=v) |
                 Q(case2__lastname__icontains=v)
-            )),
+            )
+        ),
     ]
 
     orders = (
@@ -92,6 +94,7 @@ def duplicatespair_list(request):
                                   fields_filters=fields_filters,
                                   dates_filters=dates_filters,
                                   orders=orders,
+                                  columns=None,
                                   )
     current_page = paginate(request,
                             objects=data.items,
@@ -101,6 +104,7 @@ def duplicatespair_list(request):
 
     return render(request, 'cases/duplicates/list.html', {
         'page': current_page,
+        'custom_filters': [f.id for f in fields_filters],
         'form': data.form
     })
 
@@ -225,23 +229,38 @@ def cases_list(request):
 
     fields_filters = [
         FieldChoice(
-            id='id', label=_('Internal ID'),
-            filter=lambda q, v: q.filter(document_id__icontains=v)),
+            id='document_id', label=_('Internal ID'), choices=None,
+            filter=lambda q, v: q.filter(document_id__icontains=v)
+        ),
         FieldChoice(
-            id='names', label=_('Name'),
-            filter=lambda q, v: q.filter(
-                Q(name__icontains=v) | Q(prename__icontains=v) | Q(lastname__icontains=v))),
+            id='full_name', label=_('Name'), choices=None,
+            filter=lambda q, v: q.filter(full_name__icontains=v)
+        ),
+        FieldChoice(
+            id='suspect', label=_('Suspect case'),
+            choices=yesno_choices,
+            filter=lambda q, v: q.filter(check_boolean(Q_is_suspect, v))
+        ),
         FieldChoice(
             id='screening', label=_('Screening result'),
-            filter=lambda q, v: q.filter(
-                screening_result=(v.lower() == 'true' or v.lower() == 't'))),
+            choices=positive_choices,
+            filter=lambda q, v: q.filter(check_boolean(Q_screening_positive, v))
+        ),
         FieldChoice(
             id='confirmation', label=_('Confirmation result'),
-            filter=lambda q, v: q.filter(
-                confirmation_result=(v.lower() == 'true' or v.lower() == 't'))),
+            choices=positive_choices,
+            filter=lambda q, v: q.filter(check_boolean(Q_confirmation_positive, v))
+        ),
         FieldChoice(
             id='source', label=_('Source'),
-            filter=lambda q, v: q.filter(source__icontains=v)),
+            filter=lambda q, v: q.filter(source=v),
+            choices=get_sources_choices(),
+        ),
+        FieldChoice(
+            id='device_id', label=_('Device'),
+            filter=lambda q, v: q.filter(device_id=v),
+            choices=get_devices_choices(),
+        ),
     ]
 
     orders = (
@@ -252,13 +271,13 @@ def cases_list(request):
         ),
         OrderChoice(
             id='location', label=_('Location'),
-            asc=lambda q: q.order_by('ZS', 'AS', 'village', '-document_date'),
-            desc=lambda q: q.order_by('-ZS', '-AS', '-village', '-document_date'),
+            asc=lambda q: q.order_by('full_location', '-document_date'),
+            desc=lambda q: q.order_by('-full_location', '-document_date'),
         ),
         OrderChoice(
             id='name', label=_('Name'),
-            asc=lambda q: q.order_by('name', 'prename', 'lastname', '-document_date'),
-            desc=lambda q: q.order_by('-name', '-prename', '-lastname', '-document_date'),
+            asc=lambda q: q.order_by('full_name', '-document_date'),
+            desc=lambda q: q.order_by('-full_name', '-document_date'),
         ),
     )
 
@@ -268,6 +287,7 @@ def cases_list(request):
                                   fields_filters=fields_filters,
                                   dates_filters=dates_filters,
                                   orders=orders,
+                                  columns=None,
                                   )
     current_page = paginate(request,
                             objects=data.items,
@@ -275,6 +295,7 @@ def cases_list(request):
                             )
     return render(request, 'cases/cases/list.html', {
         'page': current_page,
+        'custom_filters': [f.id for f in fields_filters],
         'form': data.form
     })
 
@@ -300,13 +321,13 @@ def suspects_list(request):
     orders = (
         OrderChoice(
             id='date', label=_('Document date'),
-            asc=lambda q: q.order_by('date_day', 'ZS', 'AS', 'village'),
-            desc=lambda q: q.order_by('-date_day', 'ZS', 'AS', 'village'),
+            asc=lambda q: q.order_by('document_date_day', 'full_location'),
+            desc=lambda q: q.order_by('-document_date_day', 'full_location'),
         ),
         OrderChoice(
             id='location', label=_('Location'),
-            asc=lambda q: q.order_by('ZS', 'AS', 'village', '-date_day'),
-            desc=lambda q: q.order_by('-ZS', '-AS', '-village', '-date_day'),
+            asc=lambda q: q.order_by('full_location', '-document_date_day'),
+            desc=lambda q: q.order_by('-full_location', '-document_date_day'),
         ),
     )
 
@@ -316,14 +337,15 @@ def suspects_list(request):
                                   fields_filters=None,
                                   dates_filters=dates_filters,
                                   orders=orders,
+                                  columns=None,
                                   )
 
     total_cases = data.items.count()
 
     items = data.items \
-        .values('date_day', 'ZS', 'AS', 'village') \
+        .values('document_date_day', 'full_location') \
         .annotate(cases=Count('document_id')) \
-        .values('date_day', 'ZS', 'AS', 'village', 'cases')
+        .values('document_date_day', 'full_location', 'cases')
 
     current_page = paginate(request,
                             objects=items,
@@ -334,3 +356,31 @@ def suspects_list(request):
         'form': data.form,
         'total_cases': total_cases,
     })
+
+
+################################################################################
+# helpers
+################################################################################
+
+yesno_choices = [('false', _('No')), ('true', _('Yes')), ]
+positive_choices = [('false', _('Negative')), ('true', _('Positive')), ]
+
+
+def count(items, condition, name):
+    return items.filter(condition).values_list(name).distinct().count()
+
+
+def calculated(condition, name):
+    return QCase(When(condition, then=F(name)))
+
+
+def check_boolean(condition, value):
+    return condition if value == 'true' else ~condition
+
+
+def get_sources_choices():
+    return [(c, c) for c in CaseView.objects.values_list('source', flat=True).distinct()]
+
+
+def get_devices_choices():
+    return [(c, c) for c in CaseView.objects.values_list('device_id', flat=True).distinct()]

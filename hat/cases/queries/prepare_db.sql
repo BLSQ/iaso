@@ -62,10 +62,10 @@
          , CAST(EXTRACT(MONTH FROM document_date) AS INT) AS document_month
          , CAST(EXTRACT(YEAR  FROM document_date) AS INT) AS document_year
 
-         , COALESCE(province, '') || ' ' ||
-           COALESCE("ZS", '') || ' ' ||
-           COALESCE("AS", '') || ' ' ||
-           COALESCE(village, '')                          AS full_location
+         , COALESCE(province, '***') || ' - ' ||
+           COALESCE("ZS", '***') || ' - ' ||
+           COALESCE("AS", '***') || ' - ' ||
+           COALESCE(village, '***')                       AS full_location
          , COALESCE(name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||
            COALESCE(lastname, '')                         AS full_name

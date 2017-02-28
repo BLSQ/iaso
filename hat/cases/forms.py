@@ -7,16 +7,17 @@ DATE_FORMAT = "%Y-%m-%d"
 
 
 ItemsAndForm = namedtuple('ItemsAndForm', ['items', 'form'])
-FieldChoice = namedtuple('FieldChoice', ['id', 'label', 'filter'])
+FieldChoice = namedtuple('FieldChoice', ['id', 'label', 'filter', 'choices'])
 OrderChoice = namedtuple('OrderChoice', ['id', 'label', 'asc', 'desc'])
+ColumnChoice = namedtuple('ColumnChoice', ['id', 'label'])
 
 
 class CasesFilterForm(forms.Form):
     def __init__(self,
                  locations_choices,
-                 fields_choices,
-                 field_choice,
+                 custom_filters,
                  orders_choices,
+                 columns,
                  *args, **kwargs):
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
@@ -41,7 +42,7 @@ class CasesFilterForm(forms.Form):
         self.fields['ZS'] = forms.ChoiceField(
             choices=[none_choice] + [(l, l) for l in locations_choices[0]],
             widget=forms.Select(attrs=select_attrs),
-            required=False
+            required=False,
         )
 
         if len(locations_choices) > 1:
@@ -50,63 +51,65 @@ class CasesFilterForm(forms.Form):
                 widget=forms.Select(attrs=select_attrs),
                 required=False
             )
-        else:
-            self.fields['AS'] = forms.ChoiceField(widget=forms.HiddenInput)
 
         if len(locations_choices) > 2:
             self.fields['village'] = forms.ChoiceField(
                 choices=[none_choice] + [(l, l) for l in locations_choices[2]],
                 widget=forms.Select(attrs=select_attrs),
-                required=False
+                required=False,
             )
-        else:
-            self.fields['village'] = forms.ChoiceField(widget=forms.HiddenInput)
 
         ########################################################################
         # date fields
         self.fields['date_from'] = forms.DateField(
             widget=DateInput(attrs=date_attrs),
-            required=False
+            required=False,
         )
         self.fields['date_to'] = forms.DateField(
             widget=DateInput(attrs=date_attrs),
-            required=False
+            required=False,
         )
 
         ########################################################################
-        # custom filter fields
-        if fields_choices is None:
-            self.fields['case_field'] = forms.ChoiceField(widget=forms.HiddenInput)
-        else:
-            self.fields['case_field'] = forms.ChoiceField(
-                choices=[none_choice] + fields_choices,
-                widget=forms.Select(select_attrs),
-                required=False
-            )
-            if field_choice:
-                case_field_value_widget = forms.TextInput(attrs=input_attrs)
-            else:
-                case_field_value_widget = forms.HiddenInput()
-            self.fields['case_field_value'] = forms.CharField(
-                widget=case_field_value_widget,
-                required=False
-            )
+        # custom filters
+        if custom_filters:
+            for field in custom_filters:
+                if field.choices:
+                    self.fields[field.id] = forms.ChoiceField(
+                        label=field.label,
+                        choices=[none_choice] + field.choices,
+                        widget=forms.Select(attrs=select_attrs),
+                        required=False,
+                    )
+                else:
+                    self.fields[field.id] = forms.CharField(
+                        label=field.label,
+                        widget=forms.TextInput(attrs=input_attrs),
+                        required=False,
+                    )
 
         ########################################################################
         # order
-        if orders_choices is None:
-            self.fields['order'] = forms.ChoiceField(widget=forms.HiddenInput)
-        else:
+        if orders_choices:
             self.fields['order'] = forms.ChoiceField(
                 choices=[none_choice] + orders_choices,
                 widget=forms.Select(attrs=select_attrs),
-                required=False
+                required=False,
             )
             self.fields['asc_desc'] = forms.ChoiceField(
                 choices=[('asc', _('Ascendent')), ('desc', _('Descendent'))],
                 widget=forms.RadioSelect(attrs=radio_attrs),
                 required=False,
                 initial='asc',
+            )
+
+        ########################################################################
+        # columns
+        if columns:
+            self.fields['columns'] = forms.ChoiceField(
+                choices=columns,
+                widget=forms.CheckboxSelectMultiple(attrs=radio_attrs),
+                required=False,
             )
 
 
@@ -117,6 +120,7 @@ def filter_and_create_form(
     dates_filters,
     fields_filters: None,
     orders: None,
+    columns: None,
 ) -> ItemsAndForm:
 
     ############################################################################
@@ -182,18 +186,10 @@ def filter_and_create_form(
     # check fields
 
     if fields_filters:
-        fields_choices = [(f.id, f.label) for f in fields_filters]
-        case_field = request.GET.get('case_field', None)
-        if case_field:
-            case_field_value = request.GET.get('case_field_value', None)
-            if case_field_value:
-                f = next(f.filter for f in fields_filters if f.id == case_field)
-                items = f(items, case_field_value)
-        else:
-            case_field = None
-    else:
-        fields_choices = None
-        case_field = None
+        for field in fields_filters:
+            value = request.GET.get(field.id, None)
+            if value:
+                items = field.filter(items, value)
 
     ############################################################################
     # check order
@@ -216,9 +212,9 @@ def filter_and_create_form(
     # create form
 
     form = CasesFilterForm(locations_choices,
-                           fields_choices,
-                           case_field,
+                           fields_filters,
                            orders_choices,
+                           columns,
                            request.GET or None
                            )
 

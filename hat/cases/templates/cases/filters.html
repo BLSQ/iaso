@@ -11,13 +11,13 @@
       <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">{% trans "ZS" %}</label>
       {{ form.ZS }}
     </div>
-    {% if not form.AS.is_hidden %}
+    {% if form.AS %}
       <div class="filter__container__select">
         <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">{% trans "AS" %}</label>
         {{ form.AS }}
       </div>
     {% endif %}
-    {% if not form.village.is_hidden %}
+    {% if form.village %}
       <div class="filter__container__select">
         <label class="filter__container__select__label" for="{{ form.village.id_for_label }}">{% trans "Village" %}</label>
         {{ form.village }}
@@ -39,38 +39,55 @@
     </div>
   </div>
 
-  {% if not form.case_field.is_hidden %}
-    <div class="filter__container">
-      <h2 class="filter__label">
-        <i class="fa fa-search"></i>
-        {% trans "Field" %}
-      </h2>
-      <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.case_field.id_for_label }}">{% trans "Name" %}</label>
-        {{ form.case_field }}
-      </div>
-      {% if not form.case_field_value.is_hidden %}
-        <div class='filter__container__input'>
-          <label class="filter__container__select__label" for="{{ form.case_field_value.id_for_label }}">{% trans "Value" %}</label>
-          {{ form.case_field_value }}
+  {% if custom %}
+    {% for field in form%}
+      {% if field.html_name in custom %}
+        <div class="filter__container">
+          <h2 class="filter__label">
+            <i class="fa fa-search"></i>
+            {% trans "Filter" %}
+          </h2>
+
+          {% if field.field.choices %}
+          <div class="filter__container__select">
+          {% else %}
+          <div class="filter__container__input">
+          {% endif %}
+            <label class="filter__container__select__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+          </div>
+          {% if not field.field.choices %}
+          <button type="submit" class="button--reduced block--margin-left--xs">{% trans "Search" %}</button>
+          {% endif %}
         </div>
-        <button type="submit" class="button--reduced block--margin-left--xs">{% trans "Search" %}</button>
       {% endif %}
-    </div>
+    {% endfor %}
   {% endif %}
 
-  {% if not form.order.is_hidden %}
+  {% if form.order %}
     <div class="filter__container">
       <h2 class="filter__label">
         <i class="fa fa-sort-alpha-asc"></i>
         {% trans "Order" %}
       </h2>
       <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.order.id_for_label }}">{% trans "Name" %}</label>
+        <label class="filter__container__select__label" for="{{ form.order.id_for_label }}">{% trans "Field" %}</label>
         {{ form.order }}
       </div>
       <div class="form__wrapper inline">
         {{ form.asc_desc }}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if form.columns %}
+    <div class="filter__container">
+      <h2 class="filter__label">
+        <i class="fa fa-table"></i>
+        {% trans "Group by" %}
+      </h2>
+      <div class="form__wrapper inline">
+        {{ form.columns }}
       </div>
     </div>
   {% endif %}

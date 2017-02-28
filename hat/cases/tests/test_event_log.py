@@ -71,3 +71,10 @@ class EventLogTests(TestCase):
         self.assertEqual(e['documents'][0]['foo'], 'bar')
         self.assertEqual(e['device_id'], 'device-id')
         assertStats(self, e, test_stats)
+
+    def test_dont_log_when_stats_empty(self):
+        self.assertEqual(len(evl.get_events()), 0)
+        empty_stats = evl.EventStats(created=0, updated=0, deleted=0, total=0)
+        id = evl.log_sync_import(empty_stats, [{'foo': 'bar'}], 'device-id')
+        self.assertIsNone(id)
+        self.assertEqual(len(evl.get_events()), 0)

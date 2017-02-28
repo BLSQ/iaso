@@ -61,6 +61,13 @@ def reconciled_file_exists(file_hash):
 
 
 def log_event(stats: EventStats, event_table: EventTable, event_data: OrderedDict) -> int:
+    ''' Create a log entry for an event. We only want to log events when they
+        changed any data and return `None` in case the event did not. For This
+        to work it is important that correct `EventStats` are provided.
+    '''
+    # Check if anything was changed
+    if stats.created == 0 and stats.updated == 0 and stats.deleted == 0 and stats.total == 0:
+        return None
     # Quote and join fields and join values
     fields = ','.join(['"{}"'.format(k) for k in event_data.keys()])
     values = ','.join(event_data.values())

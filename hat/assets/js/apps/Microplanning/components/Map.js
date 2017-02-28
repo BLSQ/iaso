@@ -245,7 +245,8 @@ class Map extends Component {
     // create map
     const map = L.map(this.mapContainer, {
       attributionControl: false,
-      zoomControl: false,
+      zoomControl: false, // zoom control will be added manually
+      scrollWheelZoom: false, // disable scroll zoom
       center: geoData.center,
       zoom: geoData.zoom
     })

@@ -33,8 +33,12 @@
               <td>{{ num_duplicates }}</td>
             </tr>
             <tr>
-              <td>{% trans "Synced devices" %}</td>
-              <td>{{ num_devices }}</td>
+              <td>{% trans "Devices" %}</td>
+              <td>
+                {{ num_devices }}
+                &nbsp;
+                <a class="button--reduced" href={% url "maintenance:devices_list" %}>{% trans "View" %}</a>
+              </td>
             </tr>
           </tbody>
         </table>

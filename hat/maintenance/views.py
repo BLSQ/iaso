@@ -3,6 +3,7 @@ from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
@@ -16,13 +17,8 @@ logger = logging.getLogger(__name__)
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def index(request):
-    from django.conf import settings
     from hat.cases.models import Case, DuplicatesPair
-    import hat.couchdb.api as couchdb
-    from hat.sync.models import DeviceDB
-    num_transformed = Case.objects.count()
-    r = couchdb.get(settings.COUCHDB_DB)
-    r.raise_for_status()
+    from hat.sync.models import DeviceDBView
 
     with connection.cursor() as cursor:
         cursor.execute('SELECT count(*) FROM hat_event')
@@ -30,9 +26,9 @@ def index(request):
 
     context = {
         'num_events': num_events,
-        'num_transformed': num_transformed,
+        'num_transformed': Case.objects.count(),
         'num_duplicates': DuplicatesPair.objects.count(),
-        'num_devices': DeviceDB.objects.count()
+        'num_devices': DeviceDBView.objects.count(),
     }
     return render(request, 'maintenance/index.html', context)
 
@@ -137,3 +133,19 @@ def import_synced(request):
     from hat.import_export.tasks import import_synced_devices_task
     task = run_task(import_synced_devices_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def devices_list(request):
+    from hat.sync.models import DeviceDBView
+    from hat.common.view_utils import paginate
+    items = DeviceDBView.objects.order_by('last_synced_date', 'device_id')
+    current_page = paginate(request,
+                            objects=items,
+                            prefix_url=reverse('maintenance:devices_list') + '?',
+                            )
+    return render(request, 'devices/list.html', {
+        'page': current_page,
+    })

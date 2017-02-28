@@ -1,9 +1,10 @@
 {% sql 'prepare_views', note='Create any views' %}
   {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
+  {# CASCADE option will skip problems if the view is used in other views #}
 
   {# View joining the hat event tables #}
-  DROP VIEW IF EXISTS hat_event_view;
+  DROP VIEW IF EXISTS hat_event_view CASCADE;
   CREATE VIEW hat_event_view AS
     SELECT E.id
          , E.stamp
@@ -44,17 +45,30 @@
               , documents
            FROM hat_sync_cases_event
          ) A
-        ON E.id = A.id;
+        ON E.id = A.id
+  ;
 
 
   {# View of cases with aggregated results for test types #}
-  DROP VIEW IF EXISTS cases_case_view;
+  DROP VIEW IF EXISTS cases_case_view CASCADE;
   CREATE VIEW cases_case_view AS
     SELECT *
 
-         , date_trunc('day',   document_date) AS date_day
-         , date_trunc('month', document_date) AS date_month
-         , date_trunc('year',  document_date) AS date_year
+         , DATE_TRUNC('day',   document_date) AS document_date_day
+         , DATE_TRUNC('month', document_date) AS document_date_month
+         , DATE_TRUNC('year',  document_date) AS document_date_year
+
+         , CAST(EXTRACT(DAY   FROM document_date) AS INT) AS document_day
+         , CAST(EXTRACT(MONTH FROM document_date) AS INT) AS document_month
+         , CAST(EXTRACT(YEAR  FROM document_date) AS INT) AS document_year
+
+         , COALESCE(province, '') || ' ' ||
+           COALESCE("ZS", '') || ' ' ||
+           COALESCE("AS", '') || ' ' ||
+           COALESCE(village, '')                          AS full_location
+         , COALESCE(name, '') || ' ' ||
+           COALESCE(prename, '') || ' ' ||
+           COALESCE(lastname, '')                         AS full_name
 
          , CASE
              WHEN test_catt
@@ -88,6 +102,33 @@
 
          , test_pl_result AS stage_result
 
-      FROM cases_case;
+      FROM cases_case
+  ;
+
+
+  {# View joining devices and aggregated cases by device #}
+  DROP VIEW IF EXISTS sync_devicedb_view CASCADE;
+  CREATE VIEW sync_devicedb_view AS
+    SELECT COALESCE(D.device_id, C.device_id)                      AS device_id
+         , CASE WHEN D.device_id IS NULL THEN FALSE ELSE TRUE END  AS is_synced
+         , regexp_split_to_array(D.last_synced_log_message, ' - ') AS last_synced_stats
+         , D.last_synced_date
+         , D.last_synced_seq
+         , C.date_first
+         , C.date_last
+         , C.locations
+         , C.participants
+      FROM sync_devicedb D
+      FULL OUTER JOIN (
+        SELECT device_id
+             , MIN(document_date)                         AS date_first
+             , MAX(document_date)                         AS date_last
+             , COUNT(DISTINCT full_location)              AS locations
+             , COUNT(DISTINCT document_id)                AS participants
+          FROM cases_case_view
+         GROUP BY device_id) C
+        ON D.device_id = C.device_id
+     WHERE COALESCE(D.device_id, C.device_id) IS NOT NULL
+  ;
 
 {% endsql %}

@@ -19,7 +19,9 @@ table {
 th {
   @include table-cell-styles;
   background: $light-gray;
-
+  &.main {
+    border-bottom:1px solid $light-gray;
+  }
 }
 td {
   @include table-cell-styles;

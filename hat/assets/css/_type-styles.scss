@@ -133,3 +133,10 @@ p {
   margin-bottom: $padding-unit;
   border-bottom: 1px solid $gray;
 }
+
+.text--marked {
+  background-color: $background-highlight-gray;
+  border: 1px solid $gray;
+  padding: 5px;
+  border-radius: 5px;
+}

@@ -138,16 +138,3 @@ class SeleniumTestCase(LiveServerTestCase):
         wait = WebDriverWait(self.browser, 10)
         wait.until(EC.presence_of_element_located(
             (By.CSS_SELECTOR, '[data-qa=monthly-report-data-loaded]')))
-
-    def test_suspect_cases(self):
-        self.browser.get('http://localhost:8081/login')
-        # see https://github.com/eHealthAfrica/sense-hat#fixtures for available users
-        self.login('supervisor', 'supervisorsupervisor')
-
-        self.browser.get('http://localhost:8081/cases/suspects')
-
-        # This element is there as a beacon to show
-        # that the report has loaded and data got rendered
-        wait = WebDriverWait(self.browser, 10)
-        wait.until(EC.presence_of_element_located(
-            (By.CSS_SELECTOR, '[data-qa=suspect-cases-data-loaded]')))

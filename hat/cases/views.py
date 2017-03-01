@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import F, Q, Count, Case as QCase, When
+from django.db.models import F, Q, Min, Max, Count, Case as QCase, When
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
@@ -327,8 +327,8 @@ def cases_list(request):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def suspects_list(request):
-    items = CaseView.objects.filter(Q_is_suspect)
+def analysis(request):
+    items = CaseView.objects
 
     locations_filters = {
         'ZS': lambda q, v: q.filter(ZS=v),
@@ -342,43 +342,89 @@ def suspects_list(request):
         'to': lambda q, v: q.filter(Q(document_date__lt=v)),
     }
 
-    orders = (
-        OrderChoice(
-            id='date', label=_('Document date'),
-            asc=lambda q: q.order_by('document_date_day', 'full_location'),
-            desc=lambda q: q.order_by('-document_date_day', 'full_location'),
+    fields_filters = [
+        FieldChoice(
+            id='source', label=_('Source'),
+            filter=lambda q, v: q.filter(source=v),
+            choices=get_sources_choices(),
         ),
-        OrderChoice(
-            id='location', label=_('Location'),
-            asc=lambda q: q.order_by('full_location', '-document_date_day'),
-            desc=lambda q: q.order_by('-full_location', '-document_date_day'),
+        FieldChoice(
+            id='device_id', label=_('Device'),
+            filter=lambda q, v: q.filter(device_id=v),
+            choices=get_devices_choices(),
         ),
-    )
+    ]
+
+    columns = [
+        ColumnChoice(id='document_year', label=_('Year')),
+        ColumnChoice(id='document_month', label=_('Month')),
+        ColumnChoice(id='document_day', label=_('Day')),
+        ColumnChoice(id='ZS', label=_('Zone de Sante')),
+        ColumnChoice(id='AS', label=_('Aire de Sante')),
+        ColumnChoice(id='village', label=_('Village')),
+        ColumnChoice(id='source', label=_('Source')),
+        ColumnChoice(id='device_id', label=_('Device')),
+    ]
 
     data = filter_and_create_form(request,
                                   items=items,
                                   locations_filters=locations_filters,
-                                  fields_filters=None,
+                                  fields_filters=fields_filters,
                                   dates_filters=dates_filters,
-                                  orders=orders,
-                                  columns=None,
+                                  orders=None,
+                                  columns=columns,
                                   )
 
-    total_cases = data.items.count()
+    total_participants = count(data.items, Q_all, 'document_id')
+    total_suspect = count(data.items, Q_suspect, 'document_id')
+    total_confirmed = count(data.items, Q_confirmed, 'document_id')
 
-    items = data.items \
-        .values('document_date_day', 'full_location') \
-        .annotate(cases=Count('document_id')) \
-        .values('document_date_day', 'full_location', 'cases')
+    ############################################################################
+    # analysis columns
+    analysisColumns = [
+        ColumnChoice(id='date_from', label=_('From')),
+        ColumnChoice(id='date_to', label=_('To')),
+        ColumnChoice(id='participants', label=_('# Participants')),
+        ColumnChoice(id='suspected', label=_('# Suspected cases')),
+        ColumnChoice(id='confirmed', label=_('# Confirmed cases')),
+    ]
 
-    current_page = paginate(request,
-                            objects=items,
-                            prefix_url=reverse('cases:suspects_list') + '?',
-                            )
-    return render(request, 'cases/suspects/list.html', {
+    analysisData = {
+        'participants': Count(calculated(Q_all, 'document_id')),
+        'suspected': Count(calculated(Q_suspect, 'document_id')),
+        'confirmed': Count(calculated(Q_confirmed, 'document_id')),
+        'date_from': Min('document_date'),
+        'date_to': Max('document_date'),
+    }
+
+    ############################################################################
+    # check columns
+    fields = request.GET.getlist('columns')
+    if fields:
+        columns_in_page = [column for column in columns if column.id in fields]
+        items = data.items.order_by(*fields).values(*fields) \
+            .annotate(**analysisData) \
+            .values(*fields, *[c.id for c in analysisColumns])
+        current_page = paginate(request,
+                                objects=items,
+                                prefix_url=reverse('cases:analysis') + '?',
+                                )
+
+    else:
+        columns_in_page = []
+        items = data.items.aggregate(**analysisData)
+        current_page = {'items': [items], 'count': 1}
+
+    columns_in_page = columns_in_page + analysisColumns
+
+    return render(request, 'cases/analysis/list.html', {
         'page': current_page,
         'form': data.form,
-        'total_cases': total_cases,
+        'custom_filters': [f.id for f in fields_filters],
+        'columns': columns_in_page,
+        'total_participants': total_participants,
+        'total_suspect': total_suspect,
+        'total_confirmed': total_confirmed,
     })
 
 
@@ -388,6 +434,10 @@ def suspects_list(request):
 
 yesno_choices = [('false', _('No')), ('true', _('Yes')), ]
 positive_choices = [('false', _('Negative')), ('true', _('Positive')), ]
+
+Q_all = Q(document_id__isnull=False)
+Q_suspect = Q_is_suspect
+Q_confirmed = Q_confirmation_positive
 
 
 def count(items, condition, name):

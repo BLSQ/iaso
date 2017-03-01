@@ -64,13 +64,13 @@
           </li>
         {% endif %}
         {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'cases:suspects_list' %}--active{% endif %}">
-            <a href={% url "cases:suspects_list" %}>{% trans "Suspect cases" %}</a>
+          <li class="navigation__menu__item{% if 'cases:cases' in view %}--active{% endif %}">
+            <a href={% url "cases:cases_list" %}>{% trans "Cases" %}</a>
           </li>
         {% endif %}
         {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if 'cases:cases' in view %}--active{% endif %}">
-            <a href={% url "cases:cases_list" %}>{% trans "Cases" %}</a>
+          <li class="navigation__menu__item{% if view == 'cases:analysis' %}--active{% endif %}">
+            <a href={% url "cases:analysis" %}>{% trans "Analysis of cases" %}</a>
           </li>
         {% endif %}
         {% if perms.cases.reconcile_duplicates %}

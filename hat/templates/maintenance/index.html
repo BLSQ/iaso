@@ -57,7 +57,6 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:delete_db_data' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
                   <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Transformed" %}</button>
                 </form>
               </td>
@@ -67,7 +66,6 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
                   <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
                 </form>
               </td>
@@ -77,28 +75,35 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:rebuild_duplicates' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
                   <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Rebuild Duplicates" %}</button>
                 </form>
               </td>
             </tr>
             <tr>
-              <td>{% trans "Download the events log." %}</td>
+              <td>{% trans "Download the events log as csv." %}</td>
               <td>
                 <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
-                  <button type="submit" class="button--reduced">{% trans "Download events" %}</button>
+                  <button type="submit" class="button--reduced">{% trans "Download events csv" %}</button>
                 </form>
               </td>
             </tr>
             <tr>
-              <td>{% trans "Clean the events log from empty events." %}</td>
+              <td>{% trans "Download the events tables database dump." %}</td>
               <td>
-                <form method="POST" action="{% url 'maintenance:clean_events' %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'maintenance:download_events_dump' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
-                  <button type="submit" class="button--reduced">{% trans "Clean events" %}</button>
+                  <button type="submit" class="button--reduced">{% trans "Download events dump" %}</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Upload the events tables database dump." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:upload_events_dump' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input accept=".sql" id="dump_file" name="file" type="file" required="">
+                  <button type="submit" class="button--reduced">{% trans "Upload events dump" %}</button>
                 </form>
               </td>
             </tr>
@@ -107,7 +112,6 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:import_synced' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  {{ form }}
                   <button type="submit" class="button--reduced">{% trans "Import data" %}</button>
                 </form>
               </td>

@@ -89,6 +89,37 @@ def rebuild_duplicates(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
+def download_events_dump(request):
+    from django.http import FileResponse
+    from hat.import_export.dump import dump_events
+    filename = dump_events()
+    response = FileResponse(open(filename, 'rb'))
+    response['Content-Disposition'] = 'attachment; filename="hat_events.sql"'
+    return response
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
+def upload_events_dump(request):
+    from hat.common.utils import create_shared_filename
+    from hat.import_export.dump import load_events_dump
+    try:
+        filename = create_shared_filename('.sql')
+        with open(filename, 'wb') as fd:
+            fd.write(request.FILES['file'].read())
+        load_events_dump(filename)
+    except Exception as e:
+        logger.exception(e)
+        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
+    else:
+        messages.add_message(request, messages.SUCCESS, _('Upload done.'))
+    return redirect('maintenance:index')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['POST'])
 def download_events(request):
     import pandas
     from django.http import HttpResponse

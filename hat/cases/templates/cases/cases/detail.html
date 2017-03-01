@@ -1,5 +1,6 @@
 {% extends "app.html" %}
 {% load i18n %}
+{% load hat %}
 
 {% block header %}
   <h1 class="header__title">{% trans "Case" %}</h1>
@@ -32,10 +33,10 @@
             </tr>
           </thead>
           <tbody>
-            {% for row in rows %}
+            {% for field in fields %}
               <tr>
-                <td>{{ row.name }}</td>
-                <td><b>{{ row.value }}</b></td>
+                <td>{{ field }}</td>
+                <td><b>{{ case|get:field }}</b></td>
               </tr>
             {% endfor %}
           </tbody>

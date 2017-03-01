@@ -7,9 +7,10 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
 from hat.common.view_utils import paginate
+from hat.import_export.extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
-from .forms import filter_and_create_form, FieldChoice, OrderChoice
+from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice
 from .models import Case, CaseView, DuplicatesPair
 
 
@@ -192,28 +193,30 @@ def duplicatespair_ignore(request, pair_id):
 
 
 @login_required()
-@permission_required('cases.view_full')
+@permission_required('cases.view')
 @require_http_methods(['GET'])
 def cases_details(request, doc_id=None):
     back_link = request.GET.get('back', 'cases:cases_list')
     case = Case.objects.get(document_id=doc_id)
-    rows = []
-    for f in Case._meta.get_fields():
-        v = getattr(case, f.name)
-        rows.append({'name': f.name, 'value': v if v is not None else ''})
+    if request.user.has_perm('cases.view_full'):
+        fields = sorted(FULL_EXPORT_FIELDS)
+    else:
+        fields = sorted(ANON_EXPORT_FIELDS)
 
     return render(request, 'cases/cases/detail.html', {
         'back_link': back_link,
         'case': case,
-        'rows': rows,
+        'fields': fields,
     })
 
 
 @login_required()
-@permission_required('cases.view_full')
+@permission_required('cases.view')
 @require_http_methods(['GET'])
 def cases_list(request):
     items = CaseView.objects.order_by('id')
+
+    full_access = request.user.has_perm('cases.view_full')
 
     locations_filters = {
         'ZS': lambda q, v: q.filter(ZS=v),
@@ -232,10 +235,17 @@ def cases_list(request):
             id='document_id', label=_('Internal ID'), choices=None,
             filter=lambda q, v: q.filter(document_id__icontains=v)
         ),
-        FieldChoice(
-            id='full_name', label=_('Name'), choices=None,
-            filter=lambda q, v: q.filter(full_name__icontains=v)
-        ),
+    ]
+
+    if full_access:
+        fields_filters = fields_filters + [
+            FieldChoice(
+                id='full_name', label=_('Name'), choices=None,
+                filter=lambda q, v: q.filter(full_name__icontains=v)
+            ),
+        ]
+
+    fields_filters = fields_filters + [
         FieldChoice(
             id='suspect', label=_('Suspect case'),
             choices=yesno_choices,
@@ -263,7 +273,7 @@ def cases_list(request):
         ),
     ]
 
-    orders = (
+    orders = [
         OrderChoice(
             id='date', label=_('Document date'),
             asc=lambda q: q.order_by('document_date', 'ZS', 'AS', 'village'),
@@ -274,12 +284,25 @@ def cases_list(request):
             asc=lambda q: q.order_by('full_location', '-document_date'),
             desc=lambda q: q.order_by('-full_location', '-document_date'),
         ),
-        OrderChoice(
-            id='name', label=_('Name'),
-            asc=lambda q: q.order_by('full_name', '-document_date'),
-            desc=lambda q: q.order_by('-full_name', '-document_date'),
-        ),
-    )
+    ]
+
+    if full_access:
+        orders = orders + [
+            OrderChoice(
+                id='name', label=_('Name'),
+                asc=lambda q: q.order_by('full_name', '-document_date'),
+                desc=lambda q: q.order_by('-full_name', '-document_date'),
+            ),
+        ]
+
+    if full_access:
+        columns = [
+            ColumnChoice(id='full_name', label=_('Name')),
+            ColumnChoice(id='sex', label=_('Gender')),
+            ColumnChoice(id='age', label=_('Age')),
+        ]
+    else:
+        columns = []
 
     data = filter_and_create_form(request,
                                   items=items,
@@ -296,6 +319,7 @@ def cases_list(request):
     return render(request, 'cases/cases/list.html', {
         'page': current_page,
         'custom_filters': [f.id for f in fields_filters],
+        'columns': columns,
         'form': data.form
     })
 

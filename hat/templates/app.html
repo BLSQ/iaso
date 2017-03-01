@@ -68,7 +68,7 @@
             <a href={% url "cases:suspects_list" %}>{% trans "Suspect cases" %}</a>
           </li>
         {% endif %}
-        {% if perms.cases.view_full %}
+        {% if perms.cases.view %}
           <li class="navigation__menu__item{% if 'cases:cases' in view %}--active{% endif %}">
             <a href={% url "cases:cases_list" %}>{% trans "Cases" %}</a>
           </li>

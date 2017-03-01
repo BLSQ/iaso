@@ -1,5 +1,6 @@
 {% extends "app.html" %}
 {% load i18n %}
+{% load hat %}
 
 {% block header %}
   <h1 class="header__title">{% trans "Cases" %}</h1>
@@ -22,11 +23,11 @@
           <thead>
             <tr>
               <th>{% trans "Date" %}</th>
-              <th>{% trans "Name" %}</th>
-              <th>{% trans "Age" %}</th>
-              <th>{% trans "Gender" %}</th>
               <th>{% trans "Location" %}</th>
               <th>{% trans "Source" %}</th>
+              {% for column in columns %}
+                <th>{{ column.label }}</th>
+              {% endfor %}
               <th>{% trans "ID" %}</th>
             </tr>
           </thead>
@@ -34,11 +35,11 @@
             {% for case in page.items %}
               <tr>
                 <td>{{ case.document_date|date:"SHORT_DATE_FORMAT" }}</td>
-                <td>{{ case.full_name }}</td>
-                <td>{{ case.age }}</td>
-                <td>{{ case.sex }}</td>
                 <td>{{ case.full_location }}</td>
                 <td>{{ case.source }}</td>
+                {% for column in columns %}
+                  <td>{{ case|get:column.id }}</td>
+                {% endfor %}
                 <td><a href="{% url 'cases:cases_details' doc_id=case.document_id %}?back={{ request.get_full_path|urlencode }}">{{ case.document_id }}</a></td>
               </tr>
             {% endfor %}

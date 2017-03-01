@@ -1,6 +1,6 @@
 from django.db import connection
 from django_rq import job
-from hat.cases.queries import duplicates_queries
+from hat.queries import duplicates_queries
 
 
 @job('default', timeout=15*60)

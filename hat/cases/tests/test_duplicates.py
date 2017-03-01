@@ -4,7 +4,7 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from hat.cases.models import Case, DuplicatesPair, IgnoredPair
-from hat.cases.queries import duplicates_queries
+from hat.queries import duplicates_queries
 from hat.cases.duplicates import commit_merge, commit_ignore
 
 

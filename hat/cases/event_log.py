@@ -4,7 +4,7 @@ from django.db import connection
 from collections import namedtuple, OrderedDict
 from snaql.convertors import guard_string
 
-from .queries import event_log_queries as queries
+from hat.queries import event_log_queries as queries
 
 EventStats = namedtuple('EventStats', ['total', 'created', 'updated', 'deleted'])
 EventFile = namedtuple('EventFile', ['name', 'hash', 'contents'])

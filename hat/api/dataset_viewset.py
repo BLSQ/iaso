@@ -21,7 +21,7 @@ from hat.cases.filters import \
     Q_staging, \
     Q_staging_stage1, \
     Q_staging_stage2
-from .queries import stats_queries, microplanning_queries
+from hat.queries import stats_queries, microplanning_queries
 
 datasets = {}
 

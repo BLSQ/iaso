@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 from hat.cases.models import DuplicatesPair
-from hat.cases.queries import duplicates_queries
+from hat.queries import duplicates_queries
 
 
 class Command(BaseCommand):

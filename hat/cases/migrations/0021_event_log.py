@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from ..queries import migration1 as migration
+from hat.queries import migration1 as migration
 
 
 class Migration(migrations.Migration):

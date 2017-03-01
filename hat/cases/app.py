@@ -32,5 +32,5 @@ class CasesAppConfig(AppConfig):
 
 
 def setup_db(sender, **kwargs):
-    from .queries import prepare_db
+    from hat.queries import prepare_db
     prepare_db()

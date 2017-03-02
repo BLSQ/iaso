@@ -36,9 +36,10 @@ def index(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def status(request, task_id: str):
+    back_view = request.GET.get('continue_to', 'maintenance:done')
     return view_task_status(request,
                             task_id=task_id,
-                            back_view='maintenance:done',
+                            back_view=back_view,
                             texts={
                                 'title': _('Maintenance'),
                                 'expired': _('This task is expired.'),
@@ -71,7 +72,7 @@ def delete_db_data(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def reimport(request):
-    from hat.import_export.tasks import reimport_task
+    from hat.tasks.jobs import reimport_task
     task = run_task(reimport_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
 
@@ -80,7 +81,7 @@ def reimport(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def rebuild_duplicates(request):
-    from hat.cases.tasks import duplicates_task
+    from hat.tasks.jobs import duplicates_task
     task = run_task(duplicates_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
 
@@ -89,11 +90,33 @@ def rebuild_duplicates(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def download_events_dump(request):
+    from hat.tasks.jobs import dump_events_task
+    task = run_task(dump_events_task, superuser=True)
+    url = reverse('maintenance:status', kwargs={'task_id': task.id})
+    return redirect(url + '?continue_to=maintenance:events_dump_done')
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def events_dump_done(request, task_id):
+    url = reverse('maintenance:get_events_dump', kwargs={'task_id': task_id})
+    return render(request, 'maintenance/download_ready.html', {'download_link': url})
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def get_events_dump(request, task_id):
+    from hat.tasks.utils import get_task_result
     from django.http import FileResponse
-    from hat.import_export.dump import dump_events
-    filename = dump_events()
+    try:
+        filename = get_task_result(task_id, user=request.user)
+    except Exception as e:
+        messages.add_message(request, messages.ERROR,  _('Error: %(error)s') % {'error': e})
+        return redirect('maintenance:index')
     response = FileResponse(open(filename, 'rb'))
-    response['Content-Disposition'] = 'attachment; filename="hat_events.sql"'
+    response['Content-Disposition'] = 'attachment; filename="hat_events_dump.sql"'
     return response
 
 
@@ -102,12 +125,18 @@ def download_events_dump(request):
 @require_http_methods(['POST'])
 def upload_events_dump(request):
     from hat.common.utils import create_shared_filename
-    from hat.import_export.dump import load_events_dump
+    from hat.tasks.jobs import load_events_dump_task
     try:
         filename = create_shared_filename('.sql')
+        uploaded = request.FILES['file']
         with open(filename, 'wb') as fd:
-            fd.write(request.FILES['file'].read())
-        load_events_dump(filename)
+            for chunk in uploaded.chunks():
+                fd.write(chunk)
+        task = run_task(load_events_dump_task,
+                        args=[filename],
+                        superuser=True)
+        return redirect('maintenance:status', task_id=task.id)
+
     except Exception as e:
         logger.exception(e)
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
@@ -160,7 +189,7 @@ def clean_events(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def import_synced(request):
-    from hat.import_export.tasks import import_synced_devices_task
+    from hat.tasks.jobs import import_synced_devices_task
     task = run_task(import_synced_devices_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
 

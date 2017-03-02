@@ -18,7 +18,7 @@ def dump_events() -> str:
              '--no-owner',
              '-f', filename,
              # Use `custom` format, because it compresses
-             '-F', 'custom',
+             '-F', 'c',
              *tables_params,
              '-h', settings.DB_HOST,
              '-p', str(settings.DB_PORT),
@@ -28,7 +28,6 @@ def dump_events() -> str:
     return filename
 
 
-# @transaction.atomic
 def load_events_dump(filename):
     '''
     Delete any events in the database and load events from dump.

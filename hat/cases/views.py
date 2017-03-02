@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
-from hat.common.view_utils import paginate
+from hat.common.paginator import paginate
 from hat.import_export.extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive

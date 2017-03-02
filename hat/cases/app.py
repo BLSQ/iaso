@@ -20,13 +20,13 @@ class CasesAppConfig(AppConfig):
         # Run the duplicates detection task daily at night (2am)
         scheduler.cron(
             ('0 2 * * *'),
-            func='hat.cases.tasks.duplicates_task',
+            func='hat.tasks.jobs.duplicates_task',
         )
 
         # run the sync import task every hour since now
         scheduler.schedule(
             scheduled_time=datetime.utcnow(),
-            func='hat.import_export.tasks.import_synced_devices_task',
+            func='hat.tasks.jobs.import_synced_devices_task',
             interval=60*60,
         )
 

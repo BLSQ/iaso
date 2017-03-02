@@ -7,8 +7,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
-from hat.common.view_utils import task_status
-from hat.rq.utils import run_task
+from hat.tasks.utils import run_task, view_task_status
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +36,13 @@ def index(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def status(request, task_id: str):
-    return task_status(request,
-                       task_id=task_id,
-                       back_view='maintenance:done',
-                       texts={
-                           'title': _('Maintenance'),
-                           'expired': _('This task is expired, you can start a new job below'),
-                       })
+    return view_task_status(request,
+                            task_id=task_id,
+                            back_view='maintenance:done',
+                            texts={
+                                'title': _('Maintenance'),
+                                'expired': _('This task is expired.'),
+                            })
 
 
 @login_required()
@@ -171,7 +170,7 @@ def import_synced(request):
 @require_http_methods(['GET'])
 def devices_list(request):
     from hat.sync.models import DeviceDBView
-    from hat.common.view_utils import paginate
+    from hat.common.paginator import paginate
     items = DeviceDBView.objects.order_by('last_synced_date', 'device_id')
     current_page = paginate(request,
                             objects=items,

@@ -10,12 +10,11 @@ from pathlib import PurePath
 from rq.exceptions import NoSuchJobError
 
 from hat.common.utils import create_shared_filename
-from hat.common.view_utils import task_status
-from hat.rq.utils import run_task, get_task_result
+from hat.tasks.utils import run_task, get_task_result, view_task_status
 
 from .forms import \
     UploadMdbFilesForm, UploadLocationsFileForm, UploadReconciledFileForm, DownloadCsvForm
-from .tasks import \
+from hat.tasks.jobs import \
     import_task, export_task, import_locations_task, \
     import_locations_areas_task, import_reconciled_task
 
@@ -78,10 +77,10 @@ def upload_cases(request):
 @permission_required('cases.import')
 @require_http_methods(['GET'])
 def upload_cases_state(request, task_id):
-    return task_status(request, task_id=task_id,
-                       back_view='datasets:import_cases:done',
-                       texts=upload_messages
-                       )
+    return view_task_status(request, task_id=task_id,
+                            back_view='datasets:import_cases:done',
+                            texts=upload_messages
+                            )
 
 
 @login_required()
@@ -125,10 +124,10 @@ def download_cases(request):
 @permission_required('cases.export')
 @require_http_methods(['GET'])
 def download_cases_state(request, task_id):
-    return task_status(request, task_id=task_id,
-                       back_view='datasets:export_cases:done',
-                       texts=download_messages
-                       )
+    return view_task_status(request, task_id=task_id,
+                            back_view='datasets:export_cases:done',
+                            texts=download_messages
+                            )
 
 
 @login_required()
@@ -190,10 +189,10 @@ def upload_locations(request):
 @permission_required('cases.import_locations')
 @require_http_methods(['GET'])
 def upload_locations_state(request, task_id):
-    return task_status(request, task_id=task_id,
-                       back_view='datasets:import_locations:done',
-                       texts=upload_messages
-                       )
+    return view_task_status(request, task_id=task_id,
+                            back_view='datasets:import_locations:done',
+                            texts=upload_messages
+                            )
 
 
 @login_required()
@@ -234,10 +233,10 @@ def upload_reconciled(request):
 @permission_required('cases.import_reconciled')
 @require_http_methods(['GET'])
 def upload_reconciled_state(request, task_id):
-    return task_status(request, task_id=task_id,
-                       back_view='datasets:import_reconciled:done',
-                       texts=upload_messages
-                       )
+    return view_task_status(request, task_id=task_id,
+                            back_view='datasets:import_reconciled:done',
+                            texts=upload_messages
+                            )
 
 
 @login_required()

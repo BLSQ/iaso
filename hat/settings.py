@@ -108,8 +108,8 @@ INSTALLED_APPS = [
     'hat.import_export',
     'hat.integration_tests',
     'hat.maintenance',
-    'hat.rq',
     'hat.sync',
+    'hat.tasks',
 ]
 
 MIDDLEWARE_CLASSES = [

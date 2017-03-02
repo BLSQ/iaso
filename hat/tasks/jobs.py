@@ -61,3 +61,19 @@ def import_synced_devices_task() -> list:
 def duplicates_task():
     with connection.cursor() as cursor:
         cursor.execute(duplicates_queries.makepairs())
+
+
+################################################################################
+# events
+################################################################################
+
+@job('default', timeout=30*60)
+def dump_events_task():
+    from hat.import_export.dump import dump_events
+    return dump_events()
+
+
+@job('default', timeout=30*60)
+def load_events_dump_task(filename):
+    from hat.import_export.dump import load_events_dump
+    return load_events_dump(filename)

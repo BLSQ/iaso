@@ -26,6 +26,10 @@ wget https://github.com/Yelp/dumb-init/releases/download/v${DUMB_INIT}/dumb-init
 dpkg -i dumb-init_*.deb
 rm dumb-init_*.deb
 
+# Add postgres apt repo to get more recent postgres versions
+echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' > /etc/apt/sources.list.d/pgdg.list
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
 apt-get update -qq
 cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
 

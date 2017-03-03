@@ -87,7 +87,9 @@ def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) 
     event_data = OrderedDict([
         ('filename', guard_string(file.name)),
         ('file_hash', guard_string(file.hash)),
-        ('contents', guard_string(file.contents)),
+        # We do not `guard_string` the data, because
+        # it would escape the quotes in the json string
+        ('data', "$jsontoken${}$jsontoken$".format(json.dumps(file.contents))),
         ('source_type', guard_string(source_type))
     ])
     return log_event(stats, EventTable.cases_file, event_data)
@@ -114,9 +116,9 @@ def log_cases_merge(older_id, younger_id):
         'younger_id': younger_id,
     })
     event_data = OrderedDict([
-        # We do not `guard_string` documents, because it would escape
-        # the quotes in the json string
-        ('documents', "'{}'".format(documents)),
+        # We do not `guard_string` the data, because
+        # it would escape the quotes in the json string
+        ('documents', "$jsontoken${}$jsontoken$".format(documents)),
     ])
     return log_event(stats, EventTable.cases_merge, event_data)
 
@@ -124,9 +126,9 @@ def log_cases_merge(older_id, younger_id):
 def log_sync_import(stats: EventStats, docs: dict, device_id: str) -> id:
     documents = json.dumps(docs)
     event_data = OrderedDict([
-        # We do not `guard_string` documents, because it would escape
-        # the quotes in the json string
-        ('documents', "'{}'".format(documents)),
+        # We do not `guard_string` the data, because
+        # it would escape the quotes in the json string
+        ('documents', "$jsontoken${}$jsontoken$".format(documents)),
         ('device_id', guard_string(device_id)),
     ])
     return log_event(stats, EventTable.sync, event_data)

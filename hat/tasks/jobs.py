@@ -28,7 +28,7 @@ def export_task(**kwargs) -> str:
     return export_csv(**kwargs)
 
 
-@job('default', timeout=15*60)
+@job('default', timeout=30*60)
 def reimport_task() -> dict:
     return reimport()
 

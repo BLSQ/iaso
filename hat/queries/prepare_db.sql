@@ -10,39 +10,44 @@
          , E.stamp
          , E.table_name
          , A.name
+         , A.sub_type
          , E.total
          , E.created
          , E.updated
          , E.deleted
          , A.contents
-         , A.documents
+         , A.data
       FROM hat_event E
       JOIN (
          SELECT id
               , filename    AS name
               , contents
-              , NULL::jsonb AS documents
+              , data
+              , source_type AS sub_type
            FROM hat_import_cases_file_event
 
           UNION ALL
          SELECT id
               , filename    AS name
               , contents
-              , NULL::jsonb AS documents
+              , NULL::jsonb AS data
+              , NULL::text  AS sub_type
            FROM hat_import_reconciled_file_event
 
           UNION ALL
          SELECT id
               , NULL::text  AS name
               , NULL::bytea AS contents
-              , documents
+              , documents   AS data
+              , NULL::text  AS sub_type
            FROM hat_merge_cases_event
 
           UNION ALL
          SELECT id
               , device_id   AS name
               , NULL::bytea AS contents
-              , documents
+              , documents   AS data
+              , NULL::text  AS sub_type
            FROM hat_sync_cases_event
          ) A
         ON E.id = A.id

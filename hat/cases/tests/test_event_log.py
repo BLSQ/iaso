@@ -7,11 +7,6 @@ test_stats = evl.EventStats(
     updated=1,
     deleted=0
 )
-test_file = evl.EventFile(
-    name='file',
-    hash='hash',
-    contents='contents'
-)
 
 
 def assertStats(test, row, stats):
@@ -24,36 +19,50 @@ def assertStats(test, row, stats):
 def assertFile(test, row, file):
     test.assertEqual(row['filename'], file.name)
     test.assertEqual(row['file_hash'], file.hash)
-    test.assertEqual(bytes(row['contents']).decode('utf-8'), file.contents)
+    test.assertEqual(bytes(row['data']).decode('utf-8'), file.contents)
 
 
 class EventLogTests(TestCase):
     def test_log_cases_file_import(self):
+        test_file = evl.EventFile(name='file', hash='hash', contents={'foo': 'bar'})
+
         self.assertEqual(len(evl.get_events()), 0)
         id = evl.log_cases_file_import(test_stats, test_file, 'foo')
         self.assertEqual(len(evl.get_events()), 1)
+
         e = evl.get_event_of_type(evl.EventTable.cases_file, id)
+
         self.assertIsNotNone(e['stamp'])
         self.assertEqual(e['table_name'], evl.EventTable.cases_file.value)
         self.assertEqual(e['source_type'], 'foo')
+        self.assertEqual(e['filename'], test_file.name)
+        self.assertEqual(e['file_hash'], test_file.hash)
+        self.assertEqual(e['data']['foo'], 'bar')
         assertStats(self, e, test_stats)
-        assertFile(self, e, test_file)
 
     def test_log_reconciled_file_import(self):
+        test_file = evl.EventFile(name='file', hash='hash', contents='foo')
+
         self.assertEqual(len(evl.get_events()), 0)
         id = evl.log_reconciled_file_import(test_stats, test_file)
         self.assertEqual(len(evl.get_events()), 1)
+
         e = evl.get_event_of_type(evl.EventTable.reconciled_file, id)
+
         self.assertIsNotNone(e['stamp'])
         self.assertEqual(e['table_name'], evl.EventTable.reconciled_file.value)
+        self.assertEqual(e['filename'], test_file.name)
+        self.assertEqual(e['file_hash'], test_file.hash)
+        self.assertEqual(bytes(e['contents']).decode('utf-8'), test_file.contents)
         assertStats(self, e, test_stats)
-        assertFile(self, e, test_file)
 
     def test_log_cases_merge(self):
         self.assertEqual(len(evl.get_events()), 0)
         id = evl.log_cases_merge('doc1', 'doc2')
         self.assertEqual(len(evl.get_events()), 1)
+
         e = evl.get_event_of_type(evl.EventTable.cases_merge, id)
+
         self.assertIsNotNone(e['stamp'])
         self.assertEqual(e['table_name'], evl.EventTable.cases_merge.value)
         documents = e['documents']
@@ -65,7 +74,9 @@ class EventLogTests(TestCase):
         self.assertEqual(len(evl.get_events()), 0)
         id = evl.log_sync_import(test_stats, [{'foo': 'bar'}], 'device-id')
         self.assertEqual(len(evl.get_events()), 1)
+
         e = evl.get_event_of_type(evl.EventTable.sync, id)
+
         self.assertIsNotNone(e['stamp'])
         self.assertEqual(e['table_name'], evl.EventTable.sync.value)
         self.assertEqual(e['documents'][0]['foo'], 'bar')

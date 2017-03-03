@@ -1,11 +1,12 @@
 import logging
-from pathlib import PurePath
 from django.utils.translation import ugettext as _
-from hat.common.mdb import get_tablenames
 from .errors import ImportStage, ImportStageException, get_import_error
-from .extract_transform import IMPORT_CONFIG, extract_file, transform_source
+from .extract import IMPORT_CONFIG, \
+    extract_file_data, \
+    prepare_mdb_data, prepare_mobile_data
+from .transform import transform_source
 from .load import load_cases_into_db
-from .utils import hash_file, read_file_base64
+from .utils import hash_file
 from hat.cases.event_log import EventFile, log_cases_file_import, cases_file_exists
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,9 @@ def import_cases_file(orgname: str, filename: str):
         if cases_file_exists(file_hash):
             err_msg = _('This file has already been uploaded: {}').format(orgname)
             raise ImportStageException(err_msg, ImportStage.exists)
-        (stats, source_type) = import_cases_file_unchecked(orgname, filename)
+
+        (source_type, data) = extract_file_data(filename)
+        stats = import_cases_data(source_type, orgname, data)
         result['stats'] = stats
         result['typename'] = _(source_type)
 
@@ -37,33 +40,42 @@ def import_cases_file(orgname: str, filename: str):
         file = EventFile(
             name=orgname,
             hash=file_hash,
-            contents=read_file_base64(filename)
+            contents=data
         )
         log_cases_file_import(stats, file, source_type)
     return result
 
 
-def import_cases_file_unchecked(orgname: str, filename: str):
-    ''' Import a cases file without handling errors '''
-    suffix = PurePath(filename).suffix.lower()
-    if suffix in ['.mdb', '.accdb']:
-        # We infer what kind of MDB file we have by the table names
-        tables = get_tablenames(filename)
-        if IMPORT_CONFIG['historic']['main_table'] in tables:
-            source_type = 'historic'
-        elif IMPORT_CONFIG['pv']['main_table'] in tables:
-            source_type = 'pv'
-        else:
-            err_msg = _('Cannot import unkown mdb file: {}').format(orgname)
-            raise ImportStageException(err_msg, ImportStage.extract)
-    elif suffix == '.enc':
-        source_type = 'backup'
-    else:
-        err_msg = _('Cannot import unkown filetype: {}').format(suffix)
-        raise ImportStageException(err_msg, ImportStage.filetype)
+def import_historic_data(config, orgname, tables):
+    extracted = prepare_mdb_data(tables, config.get('import_options'))
+    transformed = transform_source(config, extracted)
 
+    # The name of uploaded historic files should contain
+    # the entry_name and we parse it from the filename.
+    parts = orgname.split('-')
+    parts.pop()
+    entry_name = ' '.join(parts)
+    transformed['entry_name'] = entry_name
+    return load_cases_into_db(transformed)
+
+
+def import_pv_data(config, tables):
+    extracted = prepare_mdb_data(tables, config.get('import_options'))
+    transformed = transform_source(config, extracted)
+    return load_cases_into_db(transformed)
+
+
+def import_backup_data(config, docs):
+    extracted = prepare_mobile_data(docs)
+    transformed = transform_source(config, extracted)
+    return load_cases_into_db(transformed)
+
+
+def import_cases_data(source_type, orgname, data):
     config = IMPORT_CONFIG[source_type]
-    extracted = extract_file(config, filename)
-    transformed = transform_source(config, extracted, orgname)
-    stats = load_cases_into_db(transformed)
-    return (stats, source_type)
+    if source_type == 'historic':
+        return import_historic_data(config, orgname, data)
+    elif source_type == 'pv':
+        return import_pv_data(config, data)
+    elif source_type == 'backup':
+        return import_backup_data(config, data)

@@ -11,8 +11,7 @@ def import_helper(orgname, filename):
     ''' Helper functions to bail on import errors '''
     stats = import_cases_file(orgname, filename)
     if stats['error'] is not None:
-        print(stats)
-        raise Exception(stats['error']['type'])
+        raise Exception(stats['error']['full_message'])
     return stats
 
 

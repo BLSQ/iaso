@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
 from hat.common.paginator import paginate
-from hat.import_export.extract_transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
+from hat.import_export.transform import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice

@@ -25,3 +25,10 @@ class MdbTests(TestCase):
         csv = mdb.get_table_csv(mdb_file, 'T_CARDS')
         self.assertIsInstance(csv, str)
         self.assertRegex(csv, r'F_ID')
+
+    def test_get_all_tables(self):
+        tables = mdb.get_all_tables(mdb_file)
+        self.assertIn('T_CARDS', tables)
+        self.assertIn('T_FOLLOWUPS', tables)
+        csv = tables['T_CARDS']
+        self.assertRegex(csv, 'F_TIMESTAMP;')

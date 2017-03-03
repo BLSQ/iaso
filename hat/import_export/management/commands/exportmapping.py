@@ -1,6 +1,6 @@
 import pandas
 from django.core.management.base import BaseCommand
-from hat.import_export.extract_transform import MAPPING
+from hat.import_export.transform import MAPPING
 from hat.cases.models import Case
 
 

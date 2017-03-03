@@ -57,7 +57,6 @@ class ImportSyncedTests(TestCase):
 
         # nothing to import (empty db)
         stats = import_synced_devices()[0]['stats']
-        # self.assertEqual(r['log'].source, 'synced_import')
         self.assertEqual(stats.total, 0)
         self.assertEqual(stats.created, 0)
         self.assertEqual(stats.updated, 0)

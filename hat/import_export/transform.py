@@ -1,19 +1,13 @@
 from enum import Enum
-from io import StringIO
 from functools import reduce
 from typing import Dict
 import pandas
 from pandas import DataFrame, Series
-from pandas.io.json import json_normalize
 
-import hat.common.mdb as mdb
 from .errors import handle_import_stage, ImportStage
 from .utils import hat_id, capitalize, create_documentid
 
-# This file contains the extraction and transformation functions.
-#
-# The extraction is straight forward and will convert mdb files or json data to
-# pandas dataframes.
+# This file contains the transformation functions.
 #
 # The transformation uses a mapping data structure that groups related source
 # and import fields. The transformation will walk over that list and grab the
@@ -1087,159 +1081,6 @@ SUSPECT_ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
                               if Export.suspects_anon in f['export_levels']]
 
 
-def extract_mdb(filename: str, import_options: Dict) -> Dict[str, DataFrame]:
-    result = {}
-    for table_name, options in import_options.items():
-        csv = mdb.get_table_csv(filename, table_name)
-        kwargs = {'sep': ';', **options}
-        df = pandas.read_csv(StringIO(csv), **kwargs)
-        if "parse_dates" in options:
-            # Add utc timezone to dates. The dates in the data are naive and have no timezone.
-            # The datebases requires timezones to be set on dates.
-            for date_field in options["parse_dates"]:
-                df[date_field] = df[date_field].dt.tz_localize('UTC')
-        result[table_name] = df
-    return result
-
-
-def extract_backup(filename: str, import_options=None) -> Dict[str, DataFrame]:
-    import json
-    from django.conf import settings
-    from hat.common.utils import run_cmd
-    r = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
-    data = json.loads(r)
-    return extract_mobile_docs(data)
-
-
-def extract_mobile_docs(data) -> Dict[str, DataFrame]:
-    # keep cases only for this import,
-    # (might be locations in the data as well)
-    data = [doc for doc in data if 'type' in doc and doc['type'] == 'participant']
-
-    # `df = json_normalize([)` raises `IndexError: list index out of range`
-    # skip that line if necessary
-    if len(data) == 0:
-        return {"main": DataFrame()}
-
-    df = json_normalize(data)
-
-    # TODO: We upgrade some fields manually here until we have the versioning module
-    #       ready that is supposed to provide upgrade functions for mobile data.
-    if 'person.mothersForename' in df:
-        if 'person.mothersSurname' not in df:
-            df['person.mothersSurname'] = df['person.mothersForename']
-        else:
-            df['person.mothersSurname'].fillna(df['person.mothersForename'], inplace=True)
-    if 'person.middlename' in df:
-        if 'person.postname' not in df:
-            df['person.postname'] = df['person.middlename']
-        else:
-            df['person.postname'].fillna(df['person.middlename'], inplace=True)
-    if 'person.postname' not in df:
-        df['person.postname'] = ''
-
-    # the transformation supports multiple tables -- here we only have one that we call 'main'
-    return {"main": df}
-
-
-def historic_post_process(transformed: DataFrame, orgname: str) -> DataFrame:
-    parts = orgname.split('-')
-    parts.pop()
-    entry_name = ' '.join(parts)
-    transformed['entry_name'] = entry_name
-    return transformed
-
-
-################################################################################
-# Configuration for the different sources
-#
-# `type` - The value that will be set as `source` on the model
-# `mapping_field` - the field in the mapping
-# `extract` - the function used for extracting the data from the file
-# `main_table` - name of the table with the cases/persons
-# `import_options` - Dict of tables to extract from the files.
-#                    In the case of mdb files, those are the options passed to pandas.
-# `post_process` - Optional function to do additional transformations after the
-#                  mapping has been applied.
-#
-IMPORT_CONFIG = {
-    "historic": {
-        "type": "historic",
-        "mapping_field": "historic",
-        "extract": extract_mdb,
-        "main_table": "T_CARDS",
-        "import_options": {
-            "T_CARDS": {
-                "index_col": 0,
-                "parse_dates": ['D_DATE', 'F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
-                "infer_datetime_format": True,
-            },
-            "T_FOLLOWUPS": {
-                "index_col": 1,
-                "infer_datetime_format": True,
-            }
-        },
-        "post_process": historic_post_process
-    },
-    "pv": {
-        "type": "pv",
-        "mapping_field": "pv",
-        "extract": extract_mdb,
-        "main_table": "tblFishedeDeclaration",
-        "import_options": {
-            "tblFishedeDeclaration": {
-                "index_col": 0,
-                "parse_dates": ['Date de diagnostique'],
-                "dtype": {
-                    'Années': 'str',           # nan, year(2006) or year range(2006-2007)
-                    'Latex LCR': 'str',        # nan, string('1/16')
-                    'Qualification de la personne2': 'str',  # can be nan or string
-                    'UM/CT_FchDecede': 'str',  # nan or string
-                    'Date du décès': 'str',    # nan or '02/01/09 00:00:00' datetime
-                    'Autre cause:': 'str',     # nan or string
-                    'Autres signes': 'str',    # nan or string
-                    'Autres signes1': 'str',   # nan or string
-                    'Autres signes2': 'str',   # nan or string
-                    'Autres signes3': 'str',   # nan or string
-                    "Infection du site d'injection": 'str',   # nan or string
-                },
-                "infer_datetime_format": True,
-            },
-            "tblTraitementPrescrit": {
-                "index_col": 1,
-                "parse_dates": ["Date début réel", "Date fin"],
-                "dtype": {
-                    "DDR": 'str',                   # nan and datetime
-                    "Fréq pouls": 'str',            # numbers and dates
-                    "Température": 'str',           # numbers, strings like "normal", nan
-                    "Tension artériel": "str",      # fractions(9/8) and nan
-                    "Fréq respiratoire": 'str',     # numbers, dates, strings, "NF"
-                    "Traitement Prescrit": "str",   # strings and nan
-                    "Traitement Prescrit specifique": 'str',  # strings and nan
-                    "Date de prescription": 'str',  # datetimes and nan
-                    "Centre recommandé": 'str',     # nan and strings
-                },
-                "infer_datetime_format": True,
-            },
-            "tblSuivi": {
-                "index_col": 1
-            }
-        }
-    },
-    "backup": {
-        "type": "mobile_backup",
-        "mapping_field": "mobile",
-        "extract": extract_backup,
-        "main_table": "main",
-    },
-    "sync": {
-        "type": "mobile_sync",
-        "mapping_field": "mobile",
-        "main_table": "main",
-    },
-}
-
-
 def transform_field(source_field, main_table_name, tables) -> Series:
     if isinstance(source_field, tuple):
         # source field is the field name, just transfer the value
@@ -1335,21 +1176,13 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
     return result
 
 
-@handle_import_stage(ImportStage.extract)
-def extract_file(config: Dict, filename: str) -> Dict[str, DataFrame]:
-    return config['extract'](filename, config.get('import_options', None))
-
-
 @handle_import_stage(ImportStage.transform)
-def transform_source(config: Dict, extracted: Dict[str, DataFrame], orgname: str):
-    transformed = transform(config['mapping_field'], config['main_table'], extracted)
+def transform_source(config: Dict, source_data: Dict[str, DataFrame]):
+    transformed = transform(config['mapping_field'], config['main_table'], source_data)
 
     # add common fields
     transformed['source'] = config['type']
     transformed['hat_id'] = transformed.apply(hat_id, axis=1)
     transformed['document_id'] = transformed.apply(create_documentid, axis=1)
-
-    if 'post_process' in config:
-        transformed = config['post_process'](transformed, orgname)
 
     return transformed

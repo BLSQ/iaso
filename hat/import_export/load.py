@@ -36,8 +36,16 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
 
     # Insert new docs
     if len(df) > 0:
-        cases = [Case(**row.dropna().to_dict()) for _, row in df.iterrows()]
-        Case.objects.bulk_create(cases)
+        batch_size = 200
+        i = 0
+        while True:
+            j = i + batch_size
+            df2 = df[i:j]
+            if len(df2) == 0:
+                break
+            i = j
+            cases = [Case(**row.dropna().to_dict()) for _, row in df2.iterrows()]
+            Case.objects.bulk_create(cases)
 
     # Update duplicates
     if len(duplicates) > 0:

@@ -47,7 +47,7 @@ def import_event(event):
                     UPDATE {}
                     SET data = %s, contents = NULL
                     WHERE id = %s
-                '''.format(table.value),
+                '''.format(table.value)
                 cursor.execute(sql, [json.dumps(data), id])
         else:
             data = event['data']
@@ -76,20 +76,24 @@ def import_event(event):
 def reimport(delete_data=True) -> List[dict]:
     logger.info('starting reimport')
 
-    if delete_data:
-        Case.objects.all().delete()
-
     results = []
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM hat_event_view ORDER BY stamp ASC')
-        columns = [col[0] for col in cursor.description]
-        while True:
-            event_row = cursor.fetchone()
-            if event_row is None:
-                break
-            event = dict(zip(columns, event_row))
-            stats = import_event(event)
-            results.append(stats)
+    try:
+        if delete_data:
+            Case.objects.all().delete()
+
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM hat_event_view ORDER BY stamp ASC')
+            columns = [col[0] for col in cursor.description]
+            while True:
+                event_row = cursor.fetchone()
+                if event_row is None:
+                    break
+                event = dict(zip(columns, event_row))
+                stats = import_event(event)
+                results.append(stats)
+    except Exception as ex:
+        logger.exception(ex)
+        raise ex
 
     logger.info('reimport finished')
     return results

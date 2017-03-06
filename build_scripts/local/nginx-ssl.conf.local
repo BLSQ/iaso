@@ -5,7 +5,7 @@
 server {
   listen      443 ssl;
   server_name  _;
-  client_max_body_size 500M;
+  client_max_body_size 2048M;
 
   ssl_certificate           /etc/nginx/cert.crt;
   ssl_certificate_key       /etc/nginx/cert.key;

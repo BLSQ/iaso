@@ -40,6 +40,7 @@ def import_event(event):
             # format where only the contents of the file are stored.
             # TODO: This code path can be removed when all the data was migrated
             id = event['id']
+            logger.info('migration file contents for event with id: {}'.format(id))
             filename = write_contents_to_file(orgname, contents)
             (_, data) = extract_file_data(filename)
             with connection.cursor() as cursor:
@@ -82,6 +83,10 @@ def reimport(delete_data=True) -> List[dict]:
             Case.objects.all().delete()
 
         with connection.cursor() as cursor:
+            cursor.execute('SELECT count(*), min(stamp), max(stamp) FROM hat_event_view')
+            info_row = cursor.fetchone()
+            logger.info('reimporting {} events from {} to {}'.format(*info_row))
+
             cursor.execute('SELECT * FROM hat_event_view ORDER BY stamp ASC')
             columns = [col[0] for col in cursor.description]
             while True:
@@ -89,6 +94,13 @@ def reimport(delete_data=True) -> List[dict]:
                 if event_row is None:
                     break
                 event = dict(zip(columns, event_row))
+
+                log_keys = ('id', 'table_name', 'stamp',
+                            'created', 'updated', 'deleted',
+                            'name', 'sub_type')
+                log_info = {k: v for k, v in event.items() if k in log_keys and v is not None}
+                logger.info('importing event: {}'.format(log_info))
+
                 stats = import_event(event)
                 results.append(stats)
     except Exception as ex:

@@ -1,3 +1,5 @@
+from ..import_cases import import_cases_file
+
 TEST_DATA = {
     'historic': {
         'file': 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb',
@@ -26,3 +28,11 @@ TEST_DATA = {
     # skip duplicate test files for total count
     'total_count': 11
 }
+
+
+def import_helper(orgname, filename):
+    ''' Helper functions to bail on import errors '''
+    stats = import_cases_file(orgname, filename)
+    if stats['error'] is not None:
+        raise Exception(stats['error']['full_message'])
+    return stats

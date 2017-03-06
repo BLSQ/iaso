@@ -2,17 +2,8 @@ from django.test import TestCase
 from hat.cases.models import Case
 from hat.cases.event_log import get_events, get_event_of_type, EventTable
 from ..import_cases import import_cases_file
-from ..reimport import reimport
-from . import TEST_DATA
+from . import TEST_DATA, import_helper
 import datetime
-
-
-def import_helper(orgname, filename):
-    ''' Helper functions to bail on import errors '''
-    stats = import_cases_file(orgname, filename)
-    if stats['error'] is not None:
-        raise Exception(stats['error']['full_message'])
-    return stats
 
 
 class ImportCasesTests(TestCase):
@@ -85,22 +76,6 @@ class ImportCasesTests(TestCase):
             merged_doc_date.replace(tzinfo=None),
             datetime.datetime(2016, 9, 7, 14, 59, 16, 6000)
         )
-
-    def test_reimport(self):
-        import_helper('historic.mdb', TEST_DATA['historic']['file'])
-        import_helper('backup.enc', TEST_DATA['mobile_backup']['file'])
-        import_helper('pv.mdb', TEST_DATA['pv']['file'])
-
-        count = Case.objects.count()
-        self.assertEqual(count, TEST_DATA['total_count'])
-        events = get_events()
-        self.assertEqual(len(events), 3, 'Three events from 3 imports')
-
-        Case.objects.all().delete()
-        reimport()
-        self.assertEqual(Case.objects.count(), count)
-        events = get_events()
-        self.assertEqual(len(events), 3, 'Still just 3 events')
 
     def test_import_existing_file(self):
         import_cases_file('backup', TEST_DATA['mobile_backup']['file'])

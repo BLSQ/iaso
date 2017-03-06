@@ -5,7 +5,6 @@ from pathlib import PurePath
 
 from django.db import connection, transaction
 
-from hat.cases.models import Case
 from hat.common.utils import create_shared_filename
 from .utils import write_file_base64
 
@@ -73,28 +72,54 @@ def import_event(event):
     return stats
 
 
+def iterate_events(cursor):
+    '''
+    Generator function to fetch events in batches and yield one event at a time.
+    Events will be ordered by timestamp ascending. We use the timestamp of the last
+    seen event as key for where to start the next batch after.
+    '''
+    batch_size = 10
+    # Postgres uses a special value for the lowest date possible'-infinity'
+    last_stamp = '-infinity'
+    while True:
+        cursor.execute('''
+            SELECT * FROM hat_event_view
+            WHERE stamp > %s
+            ORDER BY stamp ASC
+            LIMIT %s
+        ''', [last_stamp, batch_size])
+        columns = [col[0] for col in cursor.description]
+        last_stamp = None
+        # iterate over the batch until fetch returns None
+        while True:
+            row = cursor.fetchone()
+            if row is None:
+                break
+            event = dict(zip(columns, row))
+            last_stamp = event['stamp']
+            yield event
+
+        # last_stamp will be None if the last batch was empty and we are at the end
+        if last_stamp is None:
+            raise StopIteration
+
+
 @transaction.atomic
 def reimport(delete_data=True) -> List[dict]:
     logger.info('starting reimport')
-
-    results = []
     try:
-        if delete_data:
-            Case.objects.all().delete()
-
+        results = []
         with connection.cursor() as cursor:
+            if delete_data:
+                logger.info('deleting cases')
+                cursor.execute('TRUNCATE TABLE cases_case CASCADE')
+
+            logger.info('getting events info')
             cursor.execute('SELECT count(*), min(stamp), max(stamp) FROM hat_event_view')
             info_row = cursor.fetchone()
             logger.info('reimporting {} events from {} to {}'.format(*info_row))
 
-            cursor.execute('SELECT * FROM hat_event_view ORDER BY stamp ASC')
-            columns = [col[0] for col in cursor.description]
-            while True:
-                event_row = cursor.fetchone()
-                if event_row is None:
-                    break
-                event = dict(zip(columns, event_row))
-
+            for event in iterate_events(cursor):
                 log_keys = ('id', 'table_name', 'stamp',
                             'created', 'updated', 'deleted',
                             'name', 'sub_type')
@@ -103,6 +128,7 @@ def reimport(delete_data=True) -> List[dict]:
 
                 stats = import_event(event)
                 results.append(stats)
+
     except Exception as ex:
         logger.exception(ex)
         raise ex

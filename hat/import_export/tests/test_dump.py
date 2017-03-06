@@ -3,11 +3,12 @@ from django.test import TransactionTestCase
 import hat.cases.event_log as evl
 from ..dump import dump_events, load_events_dump
 
-NUM_EVENTS = 4
-
 
 class EventsDumpTests(TransactionTestCase):
-    def setUp(self):
+    def test_events_dump(self):
+        NUM_EVENTS = 4
+
+        # Insert some events
         stats = evl.EventStats(1, 0, 0, 0)
         file = evl.EventFile('foo', 'foo', 'foo')
         evl.log_cases_file_import(stats, file, 'foo')
@@ -16,10 +17,17 @@ class EventsDumpTests(TransactionTestCase):
         evl.log_sync_import(stats, [{'foo': 'bar'}], 'device-xxx')
         self.assertEqual(len(evl.get_events()), NUM_EVENTS)
 
-    def test_events_dump(self):
         filename = dump_events()
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE hat_event CASCADE')
         self.assertEqual(len(evl.get_events()), 0)
         load_events_dump(filename)
         self.assertEqual(len(evl.get_events()), NUM_EVENTS)
+
+        # Important:
+        # We need manually cleanup the events table, because the events
+        # created by `pg_restore` which was called by `load_events_dump`
+        # will not be removed by the `TransactionTestCase` and might lead
+        # to wierd results in subsequent tests.
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE hat_event CASCADE')

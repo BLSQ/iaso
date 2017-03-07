@@ -1,17 +1,40 @@
 {% load i18n %}
 
-<div class="widget__pagination">
-  {% if page.prev_url %}
-    <a class="button--minimised block--margin-right--xxs" href="{{ page.prev_url }}">
-      <i class="fa fa-arrow-left"></i>
-      <span>{% trans "Previous" %}</span>
-    </a>
-  {% endif %}
+{% if page.count %}
+  <div class="widget__pagination">
+    {% if page.first_url %}
+      <a class="button--minimised" href="{{ page.first_url }}">
+        <i class="fa fa-fast-backward"></i>
+        <span>{% trans "First" %}</span>
+      </a>
+    {% endif %}
 
-  {% if page.next_url %}
-    <a class="button--minimised" href="{{ page.next_url }}">
-      <span>{% trans "Next" %}</span>
-      <i class="fa fa-arrow-right icon--right"></i>
-    </a>
-  {% endif %}
-</div>
+    {% if page.prev_url %}
+      <a class="button--minimised" href="{{ page.prev_url }}">
+        <i class="fa fa-backward"></i>
+        <span>{% trans "Previous" %}</span>
+      </a>
+    {% endif %}
+
+    {% if page.current %}
+      <span class="text--small text--marked block--margin-left--small block--margin-right--small">
+        <b>{{ page.current }}</b> / <b>{{ page.total }}</b>
+      </span>
+    {% endif %}
+
+    {% if page.next_url %}
+      <a class="button--minimised" href="{{ page.next_url }}">
+        <span>{% trans "Next" %}</span>
+        <i class="fa fa-forward icon--right"></i>
+      </a>
+    {% endif %}
+
+
+    {% if page.last_url %}
+      <a class="button--minimised" href="{{ page.last_url }}">
+        <span>{% trans "Last" %}</span>
+        <i class="fa fa-fast-forward icon--right"></i>
+      </a>
+    {% endif %}
+  </div>
+{% endif %}

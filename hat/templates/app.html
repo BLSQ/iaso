@@ -34,11 +34,6 @@
                   <a href={% url "datasets:import_cases:upload" %}>{% trans "Upload cases" %}</a>
                 </li>
               {% endif %}
-              {% if perms.cases.export %}
-                <li class="navigation__menu__item--secondary{% if 'datasets:export_cases' in view %}--active{% endif %}">
-                  <a href={% url "datasets:export_cases:download" %}>{% trans "Download cases" %}</a>
-                </li>
-              {% endif %}
               {% if perms.cases.import_locations %}
                 <li class="navigation__menu__item--secondary{% if 'datasets:import_locations' in view %}--active{% endif %}">
                   <a href={% url "datasets:import_locations:upload" %}>{% trans "Upload locations" %}</a>

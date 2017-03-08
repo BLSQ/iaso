@@ -17,38 +17,68 @@
             <tr>
               <th>{% trans "Store" %}</th>
               <th>{% trans "Number of records" %}</th>
+              <th>{% trans "View" %}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>{% trans "Events" %}</td>
               <td>{{ num_events }}</td>
+              <td>
+                {% if num_events %}
+                <a class="button--reduced button--warning" href="{% url 'maintenance:events_list' %}">
+                  <i class="fa fa-eye"></i>
+                  {% trans "View" %}
+                </a>
+                <span class="block--margin-left--xs text--explanation">{% trans "No pagination" %}</span>
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td>{% trans "Transformed" %}</td>
               <td>{{ num_transformed }}</td>
+              <td>
+                {% if perms.cases.view and num_transformed %}
+                <a class="button--reduced" href="{% url 'cases:cases_list' %}">
+                  <i class="fa fa-eye"></i>
+                  {% trans "View" %}
+                </a>
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td>{% trans "Duplicate matches" %}</td>
               <td>{{ num_duplicates }}</td>
+              <td>
+                {% if perms.cases.reconcile_duplicates and num_duplicates %}
+                <a class="button--reduced" href="{% url 'cases:duplicates_list' %}">
+                  <i class="fa fa-eye"></i>
+                  {% trans "View" %}
+                </a>
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td>{% trans "Devices" %}</td>
+              <td>{{ num_devices }}</td>
               <td>
-                {{ num_devices }}
-                &nbsp;
-                <a class="button--reduced" href={% url "maintenance:devices_list" %}>{% trans "View" %}</a>
+                {% if num_devices %}
+                <a class="button--reduced" href="{% url 'maintenance:devices_list' %}">
+                  <i class="fa fa-eye"></i>
+                  {% trans "View" %}
+                </a>
+                {% endif %}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">{% trans "Actions" %}</h2>
       </div>
-
       <div class="widget__content">
         <table class="table--stats">
           <tbody>
@@ -57,7 +87,10 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:delete_db_data' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Delete Transformed" %}</button>
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">
+                    <i class="fa fa-trash"></i>
+                    {% trans "Delete transformed" %}
+                  </button>
                 </form>
               </td>
             </tr>
@@ -66,44 +99,10 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:reimport' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Reimport" %}</button>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>{% trans "Rebuild the reconciliation duplicates list." %}</td>
-              <td>
-                <form method="POST" action="{% url 'maintenance:rebuild_duplicates' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">{% trans "Rebuild Duplicates" %}</button>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>{% trans "Download the events log as csv." %}</td>
-              <td>
-                <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <button type="submit" class="button--reduced">{% trans "Download events csv" %}</button>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>{% trans "Download the events tables database dump." %}</td>
-              <td>
-                <form method="POST" action="{% url 'maintenance:download_events_dump' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <button type="submit" class="button--reduced">{% trans "Download events dump" %}</button>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>{% trans "Upload the events tables database dump." %}</td>
-              <td>
-                <form method="POST" action="{% url 'maintenance:upload_events_dump' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <input accept=".sql" id="dump_file" name="file" type="file" required="">
-                  <button type="submit" class="button--reduced">{% trans "Upload events dump" %}</button>
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">
+                    <i class="fa fa-history"></i>
+                    {% trans "Reimport" %}
+                  </button>
                 </form>
               </td>
             </tr>
@@ -112,7 +111,66 @@
               <td>
                 <form method="POST" action="{% url 'maintenance:import_synced' %}" enctype="multipart/form-data">
                   {% csrf_token %}
-                  <button type="submit" class="button--reduced">{% trans "Import data" %}</button>
+                  <button type="submit" class="button--reduced">
+                    <i class="fa fa-mobile"></i>
+                    {% trans "Import data" %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Rebuild the reconciliation duplicates list." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:rebuild_duplicates' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <button type="submit" class="button--reduced" onclick="return confirm('{% trans "Are you sure?" %}')">
+                    <i class="fa fa-users"></i>
+                    {% trans "Rebuild duplicates" %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Download the events log as csv." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <button type="submit" class="button--reduced">
+                    <i class="fa fa-download"></i>
+                    {% trans "Download events csv" %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Download the events tables database dump." %}</td>
+              <td>
+                {% if action == 'events_dump' and download_link %}
+                  <a class="button--reduced" href="{{ download_link }}">
+                    <i class="fa fa-download"></i>
+                    {% trans "Download events dump" %}
+                  </a>
+                {% else %}
+                  <form method="POST" action="{% url 'maintenance:download_events_dump' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="submit" class="button--reduced button--warning">
+                      <i class="fa fa-download"></i>
+                      {% trans "Prepare download events dump" %}
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>{% trans "Upload the events tables database dump." %}</td>
+              <td>
+                <form method="POST" action="{% url 'maintenance:upload_events_dump' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input accept=".sql" id="dump_file" name="file" type="file" required="">
+                  <button type="submit" class="button--reduced">
+                    <i class="fa fa-upload"></i>
+                    {% trans "Upload events dump" %}
+                  </button>
                 </form>
               </td>
             </tr>
@@ -121,5 +179,4 @@
       </div>
     </div>
   </div>
-
 {% endblock %}

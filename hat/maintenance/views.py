@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
-from hat.tasks.utils import run_task, view_task_status
+from hat.tasks.utils import run_task
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,21 @@ def index(request):
         cursor.execute('SELECT count(*) FROM hat_event')
         num_events = cursor.fetchone()[0]
 
+    task_id = request.GET.get('task_id', None)
+    action = request.GET.get('action', None)
+    filename = request.GET.get('filename', None)
+    download_link = None
+    if action and task_id and filename:
+        download_link = reverse('maintenance:get_file', kwargs={
+            'task_id': task_id,
+            'filename': filename,
+        })
+
     context = {
+        # task result
+        'action': action,
+        'download_link': download_link,
+        # details
         'num_events': num_events,
         'num_transformed': Case.objects.count(),
         'num_duplicates': DuplicatesPair.objects.count(),
@@ -36,21 +50,35 @@ def index(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def status(request, task_id: str):
-    back_view = request.GET.get('continue_to', 'maintenance:done')
-    return view_task_status(request,
-                            task_id=task_id,
-                            back_view=back_view,
-                            texts={
-                                'title': _('Maintenance'),
-                                'expired': _('This task is expired.'),
-                            })
+    from hat.tasks.views import task_state
+    return task_state(request,
+                      task_id=task_id,
+                      next_view='maintenance:done',
+                      expired_view='maintenance:done',
+                      error_view='maintenance:done',
+                      texts={'title': _('Maintenance')},
+                      )
 
 
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
 def done(request, task_id: str):
-    return redirect('maintenance:index')
+    url = reverse('maintenance:index')
+    return redirect(url + '?task_id={}&{}'.format(task_id, request.GET.urlencode()))
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def get_file(request, task_id: str, filename: str):
+    from hat.tasks.views import download_get
+    return download_get(request,
+                        task_id=task_id,
+                        filename=filename,
+                        error_view='maintenance:done',
+                        texts=None,
+                        )
 
 
 @login_required()
@@ -93,31 +121,7 @@ def download_events_dump(request):
     from hat.tasks.jobs import dump_events_task
     task = run_task(dump_events_task, superuser=True)
     url = reverse('maintenance:status', kwargs={'task_id': task.id})
-    return redirect(url + '?continue_to=maintenance:events_dump_done')
-
-
-@login_required()
-@user_passes_test(lambda u: u.is_superuser)
-@require_http_methods(['GET'])
-def events_dump_done(request, task_id):
-    url = reverse('maintenance:get_events_dump', kwargs={'task_id': task_id})
-    return render(request, 'maintenance/download_ready.html', {'download_link': url})
-
-
-@login_required()
-@user_passes_test(lambda u: u.is_superuser)
-@require_http_methods(['GET'])
-def get_events_dump(request, task_id):
-    from hat.tasks.utils import get_task_result
-    from django.http import FileResponse
-    try:
-        filename = get_task_result(task_id, user=request.user)
-    except Exception as e:
-        messages.add_message(request, messages.ERROR,  _('Error: %(error)s') % {'error': e})
-        return redirect('maintenance:index')
-    response = FileResponse(open(filename, 'rb'))
-    response['Content-Disposition'] = 'attachment; filename="hat_events_dump.sql"'
-    return response
+    return redirect(url + '?action=events_dump&filename=events_dump.sql')
 
 
 @login_required()
@@ -172,7 +176,9 @@ def download_events(request):
 def clean_events(request):
     ''' Delete events which have zero stats '''
     sql = '''
-        DELETE FROM hat_event WHERE created = 0 AND updated = 0 AND deleted = 0 AND total = 0
+        DELETE
+          FROM hat_event
+         WHERE created = 0 AND updated = 0 AND deleted = 0 AND total = 0
     '''
     try:
         with connection.cursor() as cursor:
@@ -205,6 +211,22 @@ def devices_list(request):
                             objects=items,
                             prefix_url=reverse('maintenance:devices_list') + '?',
                             )
-    return render(request, 'devices/list.html', {
-        'page': current_page,
-    })
+    return render(request, 'devices/list.html', {'page': current_page})
+
+
+@login_required()
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(['GET'])
+def events_list(request):
+    sql = '''
+        SELECT id, stamp, table_name, sub_type, name, total, created, updated, deleted
+          FROM hat_event_view
+         ORDER BY stamp DESC
+    '''
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        columns = [col[0] for col in cursor.description]
+        items = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    return render(request, 'events/list.html', {'items': items, 'count': len(items)})

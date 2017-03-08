@@ -29,7 +29,7 @@
   {# highlight pilot areas #}
   <section class="section--feature--pilot-area">
     <div class="section__content__image--pilot-area">
-      <img src="{% static 'images/map.png' %}" alt='Map showing pilot health zones' width="540" />
+      <img src="{% static 'images/map.png' %}" alt="Map showing pilot health zones" width="540" />
     </div>
     <div class="section__content--pilot-area">
       <h2>{% trans "Programme Mission" %}</h2>
@@ -64,9 +64,9 @@
         {% endblocktrans %}
       </p>
 
-      <a href={% url "dashboard:microplanning" %} class="button--success">
+      <a href="{% url 'dashboard:microplanning' %}" class="button--success">
         {% trans "Use the microplanning tool" %}
-        <i class='fa fa-arrow-right icon--right'></i>
+        <i class="fa fa-arrow-right icon--right"></i>
       </a>
     </div>
   </section>
@@ -74,7 +74,7 @@
   {# monthly reports #}
   <section class="section--feature--reports">
     <div class="section__content__image--reports">
-      <img src="{% static 'images/monthly-report.png' %}" alt='Monthly report example' />
+      <img src="{% static 'images/monthly-report.png' %}" alt="Monthly report example" />
     </div>
     <div class="section__content--reports">
       <h2>{% trans "See monthly campaign reports" %}</h2>
@@ -84,9 +84,9 @@
         {% endblocktrans %}
       </p>
       {% if perms.cases.view %}
-        <a href={% url "dashboard:monthly_report" %} class="button--bright">
+        <a href="{% url 'dashboard:monthly_report' %}" class="button--bright">
           {% trans "Monthly reports" %}
-          <i class='fa fa-arrow-right icon--right'></i>
+          <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
     </div>
@@ -94,32 +94,39 @@
 
   {# upload/download #}
   <section class="section--feature--data">
-    <div class="section__content__heading--data">
-      <h2>{% trans "Upload and download data from the field" %}</h2>
-      <img src="{% static 'images/upload-download.png' %}" alt='Monthly report example' width="200" />
-    </div>
     <div class="section__content--upload">
+      <h2>{% trans "Upload data from the field" %}</h2>
       <p>
         {% blocktrans %}
         Upload historical data forms from the Microsoft Access template or encrypted backup files from the Mobile Application.
         {% endblocktrans %}
       </p>
       {% if perms.cases.import %}
-        <a href={% url "datasets:import_cases:upload" %} class="button--bright">
+        <a href="{% url 'datasets:import_cases:upload' %}" class="button--bright">
           {% trans "Data upload" %}
-          <i class='fa fa-arrow-right icon--right'></i>
+          <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
     </div>
+
+    <div class="section__content__heading--data">
+      <img src="{% static 'images/upload-download.png' %}" alt="Upload data" width="200" />
+    </div>
+
     <div class="section__content--download">
-      <p>{% trans "Download data as a CSV file. Download all data from the database or selections." %}</p>
-      {% if perms.cases.export %}
-        <a href={% url "datasets:export_cases:download" %} class="button--bright">
-          {% trans "Data download" %}
-          <i class='fa fa-arrow-right icon--right'></i>
+      <h2>{% trans "Check uploaded data" %}</h2>
+      <p>
+        {% blocktrans %}
+        View the list of participants in the screening sessions, the historical cases...
+        {% endblocktrans %}
+      </p>
+      {% if perms.cases.view %}
+        <a href="{% url 'cases:cases_list' %}" class="button--bright">
+          {% trans "Data uploaded" %}
+          <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
-    </div>
+   </div>
   </section>
 
   {# suspect cases #}
@@ -134,7 +141,7 @@
       {% if perms.cases.view %}
         <a href="{% url 'cases:cases_list' %}?suspect=true" class="button--bright">
           {% trans "Go to HAT cases" %}
-          <i class='fa fa-arrow-right icon--right'></i>
+          <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
     </div>

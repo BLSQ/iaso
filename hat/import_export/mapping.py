@@ -454,16 +454,13 @@ MAPPING = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Age"),
-                "dtype": "float64",
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AGE"),
-                "dtype": "float64",
             },
             "mobile": {
                 "field": ("main", "person.age.years"),
                 "apply_to_table": mobile_get_age,
-                "dtype": "float64",
             }
         }
     },
@@ -614,7 +611,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
                 "apply_to_column": historic_get_secondary_effects,
-                "dtype": "float64",
             },
         }
     },
@@ -639,7 +635,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "D_TDR"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64"
             },
             "mobile": {
                 "field": ("main", "participant.screenings.rdt.result"),
@@ -661,12 +656,10 @@ MAPPING = [
                     {
                         "field": ("T_CARDS", "MD_CATT"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     },
                     {
                         "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
                         "apply_to_column": historic_get_catt_blood_result,
-                        "dtype": "float64",
                     }
                 ],
                 "reduce": reduce_test_result
@@ -691,17 +684,14 @@ MAPPING = [
                     {
                         "field": ("T_CARDS", "MD_MAEC"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     },
                     {
                         "field": ("T_CARDS", "MD_MAECT"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     },
                     {
                         "field": ("T_CARDS", "MD_MAECT_BC"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     }
                 ],
                 "reduce": reduce_test_result
@@ -724,7 +714,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_GE"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
             "mobile": {
                 "field": ("main", "participant.screenings.ge.result"),
@@ -755,7 +744,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_WOO"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
             "mobile": {
                 "field": ("main", "participant.screenings.ctcwoo.result"),
@@ -800,7 +788,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": CONFIRMATION_TEST
@@ -816,7 +803,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_SF"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": CONFIRMATION_TEST
@@ -834,17 +820,14 @@ MAPPING = [
                     {
                         "field": ("T_CARDS", "MD_LCR"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     },
                     {
                         "field": ("T_CARDS", "MD_LCR_FR"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     },
                     {
                         "field": ("T_CARDS", "MD_LCR_SCM"),
                         "apply_to_column": historic_get_result,
-                        "dtype": "float64",
                     }
                 ],
                 "reduce": reduce_test_result
@@ -859,7 +842,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_DIL"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -871,7 +853,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_PARASIT"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -883,7 +864,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -895,7 +875,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_IFAT"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -907,7 +886,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -919,7 +897,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "MD_OTHER"),
                 "apply_to_column": historic_get_result,
-                "dtype": "float64",
             },
         },
         "test_type": UNKNOWN_TEST
@@ -935,7 +912,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "DS_PL_LIQUID"),
                 "apply_to_column": historic_get_pl_liquid_result,
-                "dtype": "float64",
             },
         },
     },
@@ -982,7 +958,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "DS_PL_LCR"),
                 "apply_to_column": historic_get_pl_lcr_result,
-                "dtype": "float64",
             },
         }
     },
@@ -1006,7 +981,6 @@ MAPPING = [
             "historic": {
                 "field": ("T_CARDS", "DS_PL_RESULT"),
                 "apply_to_column": historic_get_pl_result,
-                "dtype": "float64",
             },
         },
         "test_type": STAGING_TEST

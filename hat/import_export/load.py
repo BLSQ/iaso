@@ -1,9 +1,24 @@
-from django.db import transaction
+from django.db import connection, transaction
 from pandas import DataFrame, concat as pandasconcat
+import pandas
 
 from hat.cases.models import Case, Location
 from .errors import handle_import_stage, ImportStage
 from hat.cases.event_log import EventStats
+
+
+def batch_dataframe(df):
+    ''' Helper generator function that yields slices of a DataFrame '''
+    if len(df) > 0:
+        size = 1000
+        start = 0
+        while True:
+            end = start + size
+            df2 = df[start:end]
+            if len(df2) == 0:
+                raise StopIteration
+            start = end
+            yield df2
 
 
 @handle_import_stage(ImportStage.load)
@@ -34,32 +49,119 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     duplicates = pandasconcat([duplicates_in_db, duplicates_in_new_data], axis=0) \
         .drop_duplicates()
 
-    # Insert new docs
-    if len(df) > 0:
-        batch_size = 200
-        i = 0
-        while True:
-            j = i + batch_size
-            df2 = df[i:j]
-            if len(df2) == 0:
-                break
-            i = j
-            cases = [Case(**row.dropna().to_dict()) for _, row in df2.iterrows()]
-            Case.objects.bulk_create(cases)
+    columns = list(df.columns) + ['version_number']
+    sql_columns = ','.join([('"' + c + '"') for c in columns])
+
+    # Some values need quoting. We create a mapping from column names to quoting function
+    mapping = {}
+    i = 0
+    for dt in df.dtypes:
+        dts = str(dt).lower()
+        name = str(df.columns[i])
+        if not (dts.startswith('int') or
+                dts.startswith('float') or
+                dts.startswith('bool')):
+            mapping[name] = lambda x: "$${}$$".format(x)
+        i = i + 1
+
+    with connection.cursor() as cursor:
+        for df2 in batch_dataframe(df):
+            # Create a sql string that inserts multiple rows as value tuples
+            sql = '''
+                INSERT INTO cases_case ({})
+                VALUES
+            '''.format(sql_columns)
+            sql_values = []
+            for _, row in df2.iterrows():
+                column_index = 0
+                values = []
+                for v in row:
+                    column_name = columns[column_index]
+                    column_index = column_index + 1
+                    if pandas.isnull(v):
+                        values.append('NULL')
+                    elif column_name in mapping:
+                        values.append(mapping[column_name](v))
+                    else:
+                        values.append(str(v))
+
+                # append the version number
+                values.append('0')
+                sql_values.append('(' + ','.join(values) + ')')
+
+            sql = sql + ','.join(sql_values) + ';'
+            cursor.execute(sql)
 
     # Update duplicates
     if len(duplicates) > 0:
-        update_entries(duplicates)
+        update_entries(duplicates, mapping)
 
-    # stats.created = len(df)
-    # stats.updated = len(duplicates)
-    # return stats
     return EventStats(
         total=total,
         created=len(df),
         updated=len(duplicates),
         deleted=0
     )
+
+
+def update_entries(duplicates, mapping):
+    # remove unwanted columns
+    # we only want to add test results:
+    duplicates.drop(
+        [
+            # meta fields, keep original
+            'source',
+            'entry_date',
+            'document_date',
+            'entry_name',
+            'mobile_unit',
+            'form_number',
+            'form_month',
+            'form_year',
+            # already the same
+            'village',
+            'province',
+            'ZS',
+            'AS',
+            'hat_id',
+            'name',
+            'lastname',
+            'prename',
+            'sex',
+            'age',
+            'year_of_birth',
+            'mothers_surname',
+        ],
+        inplace=True,
+        axis=1,
+        # ignore if some columns dont exist
+        errors='ignore'
+    )
+
+    with connection.cursor() as cursor:
+        for df2 in batch_dataframe(duplicates):
+            sql_updates = []
+            for _, row in df2.iterrows():
+                values = []
+                index = 0
+                for v in row:
+                    name = str(df2.columns[index])
+                    index = index + 1
+                    if pandas.isnull(v):
+                        continue
+                    elif name in mapping:
+                        value = mapping[name](v)
+                    else:
+                        value = str(v)
+                    values.append('{}={}'.format(name, value))
+                sql_updates.append('''
+                    UPDATE cases_case
+                    SET {}
+                    WHERE document_id = '{}';
+                '''.format(','.join(values), row['document_id']))
+
+            sql = ';'.join(sql_updates)
+            cursor.execute(sql)
 
 
 @transaction.atomic
@@ -114,42 +216,3 @@ def load_reconciled_into_db(df: DataFrame) -> EventStats:
         updated=updated,
         deleted=0
     )
-
-
-def update_entries(duplicates):
-    # remove unwanted columns
-    # we only want to add test results:
-    duplicates.drop(
-        [
-            # meta fields, keep original
-            'source',
-            'entry_date',
-            'document_date',
-            'entry_name',
-            'mobile_unit',
-            'form_number',
-            'form_month',
-            'form_year',
-            # already the same
-            'village',
-            'province',
-            'ZS',
-            'AS',
-            'hat_id',
-            'name',
-            'lastname',
-            'prename',
-            'sex',
-            'age',
-            'year_of_birth',
-            'mothers_surname',
-        ],
-        inplace=True,
-        axis=1,
-        # ignore if some columns dont exist
-        errors='ignore'
-    )
-
-    for index, row in duplicates.iterrows():
-        Case.objects.filter(document_id=row['document_id']) \
-                    .update(**row.dropna().to_dict())

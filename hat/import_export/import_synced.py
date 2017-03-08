@@ -8,11 +8,10 @@ from hat.sync.models import DeviceDB
 from .errors import get_import_error
 from .load import load_cases_into_db
 from hat.cases.event_log import log_sync_import
-from .extract import IMPORT_CONFIG, prepare_mobile_data
+from .extract import prepare_mobile_data
 from .transform import transform_source
 
 logger = logging.getLogger(__name__)
-config = IMPORT_CONFIG['sync']
 
 
 @transaction.atomic
@@ -52,6 +51,6 @@ def import_synced_devices() -> dict:
 
 def import_synced_docs(docs, device_id) -> dict:
     extracted = prepare_mobile_data(docs)
-    transformed = transform_source(config, extracted)
+    transformed = transform_source('sync', extracted)
     stats = load_cases_into_db(transformed)
     return stats

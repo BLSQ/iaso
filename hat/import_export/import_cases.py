@@ -1,9 +1,7 @@
 import logging
 from django.utils.translation import ugettext as _
 from .errors import ImportStage, ImportStageException, get_import_error
-from .extract import IMPORT_CONFIG, \
-    extract_file_data, \
-    prepare_mdb_data, prepare_mobile_data
+from .extract import extract_file_data, prepare_mdb_data, prepare_mobile_data
 from .transform import transform_source
 from .load import load_cases_into_db
 from .utils import hash_file
@@ -46,9 +44,9 @@ def import_cases_file(orgname: str, filename: str):
     return result
 
 
-def import_historic_data(config, orgname, tables):
-    extracted = prepare_mdb_data(tables, config.get('import_options'))
-    transformed = transform_source(config, extracted)
+def import_historic_data(orgname, tables):
+    extracted = prepare_mdb_data('historic', tables)
+    transformed = transform_source('historic', extracted)
 
     # The name of uploaded historic files should contain
     # the entry_name and we parse it from the filename.
@@ -59,23 +57,22 @@ def import_historic_data(config, orgname, tables):
     return load_cases_into_db(transformed)
 
 
-def import_pv_data(config, tables):
-    extracted = prepare_mdb_data(tables, config.get('import_options'))
-    transformed = transform_source(config, extracted)
+def import_pv_data(tables):
+    extracted = prepare_mdb_data('pv', tables)
+    transformed = transform_source('pv', extracted)
     return load_cases_into_db(transformed)
 
 
-def import_backup_data(config, docs):
+def import_backup_data(docs):
     extracted = prepare_mobile_data(docs)
-    transformed = transform_source(config, extracted)
+    transformed = transform_source('backup', extracted)
     return load_cases_into_db(transformed)
 
 
 def import_cases_data(source_type, orgname, data):
-    config = IMPORT_CONFIG[source_type]
     if source_type == 'historic':
-        return import_historic_data(config, orgname, data)
+        return import_historic_data(orgname, data)
     elif source_type == 'pv':
-        return import_pv_data(config, data)
+        return import_pv_data(data)
     elif source_type == 'backup':
-        return import_backup_data(config, data)
+        return import_backup_data(data)

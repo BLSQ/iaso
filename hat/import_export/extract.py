@@ -6,88 +6,7 @@ from pandas import DataFrame, read_csv
 import hat.common.mdb as mdb
 from .errors import ImportStage, ImportStageException
 from django.utils.translation import ugettext as _
-
-################################################################################
-# Configuration for the extraction of data from different sources
-#
-# `type` - The value that will be set as `source` on the model
-# `mapping_field` - the field in the mapping in `transform.py`
-# `main_table` - name of the table with the cases/persons
-# `import_options` - Dict of tables to extract from the files.
-#                    In the case of mdb files, those are the options passed to pandas.
-#
-IMPORT_CONFIG = {
-    "historic": {
-        "type": "historic",
-        "mapping_field": "historic",
-        "main_table": "T_CARDS",
-        "import_options": {
-            "T_CARDS": {
-                "index_col": 0,
-                "parse_dates": ['D_DATE', 'F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
-                "infer_datetime_format": True,
-            },
-            "T_FOLLOWUPS": {
-                "index_col": 1,
-                "infer_datetime_format": True,
-            }
-        }
-    },
-    "pv": {
-        "type": "pv",
-        "mapping_field": "pv",
-        "main_table": "tblFishedeDeclaration",
-        "import_options": {
-            "tblFishedeDeclaration": {
-                "index_col": 0,
-                "parse_dates": ['Date de diagnostique'],
-                "dtype": {
-                    'Années': 'str',           # nan, year(2006) or year range(2006-2007)
-                    'Latex LCR': 'str',        # nan, string('1/16')
-                    'Qualification de la personne2': 'str',  # can be nan or string
-                    'UM/CT_FchDecede': 'str',  # nan or string
-                    'Date du décès': 'str',    # nan or '02/01/09 00:00:00' datetime
-                    'Autre cause:': 'str',     # nan or string
-                    'Autres signes': 'str',    # nan or string
-                    'Autres signes1': 'str',   # nan or string
-                    'Autres signes2': 'str',   # nan or string
-                    'Autres signes3': 'str',   # nan or string
-                    "Infection du site d'injection": 'str',   # nan or string
-                },
-                "infer_datetime_format": True,
-            },
-            "tblTraitementPrescrit": {
-                "index_col": 1,
-                "parse_dates": ["Date début réel", "Date fin"],
-                "dtype": {
-                    "DDR": 'str',                   # nan and datetime
-                    "Fréq pouls": 'str',            # numbers and dates
-                    "Température": 'str',           # numbers, strings like "normal", nan
-                    "Tension artériel": "str",      # fractions(9/8) and nan
-                    "Fréq respiratoire": 'str',     # numbers, dates, strings, "NF"
-                    "Traitement Prescrit": "str",   # strings and nan
-                    "Traitement Prescrit specifique": 'str',  # strings and nan
-                    "Date de prescription": 'str',  # datetimes and nan
-                    "Centre recommandé": 'str',     # nan and strings
-                },
-                "infer_datetime_format": True,
-            },
-            "tblSuivi": {
-                "index_col": 1
-            }
-        }
-    },
-    "backup": {
-        "type": "mobile_backup",
-        "mapping_field": "mobile",
-        "main_table": "main",
-    },
-    "sync": {
-        "type": "mobile_sync",
-        "mapping_field": "mobile",
-        "main_table": "main",
-    },
-}
+from .mapping import IMPORT_CONFIG
 
 
 def extract_mdb_data(filename):
@@ -118,17 +37,22 @@ def extract_file_data(filename):
         raise ImportStageException(err_msg, ImportStage.filetype)
 
 
-def prepare_mdb_data(tables, import_options):
+def prepare_mdb_data(source_type, tables):
+    import_config = IMPORT_CONFIG[source_type]
     result = {}
-    for table_name, options in import_options.items():
+    for table_name, options in import_config['import_options'].items():
         csv = tables[table_name]
-        kwargs = {'sep': ';', **options}
-        df = read_csv(StringIO(csv), **kwargs)
+        df = read_csv(
+            StringIO(csv),
+            delimiter=';',
+            **options
+        )
         if "parse_dates" in options:
             # Add utc timezone to dates. The dates in the data are naive and have no timezone.
             # The datebases requires timezones to be set on dates.
             for date_field in options["parse_dates"]:
-                df[date_field] = df[date_field].dt.tz_localize('UTC')
+                if date_field in df.columns.values:
+                    df[date_field] = df[date_field].dt.tz_localize('UTC')
         result[table_name] = df
     return result
 

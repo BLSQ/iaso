@@ -1,3 +1,4 @@
+import time
 import json
 import logging
 from typing import List
@@ -108,6 +109,7 @@ def iterate_events(cursor):
 def reimport(delete_data=True) -> List[dict]:
     logger.info('starting reimport')
     try:
+        start_time = time.clock()
         results = []
         with connection.cursor() as cursor:
             if delete_data:
@@ -129,9 +131,11 @@ def reimport(delete_data=True) -> List[dict]:
                 stats = import_event(event)
                 results.append(stats)
 
+            end_time = time.clock()
+
     except Exception as ex:
         logger.exception(ex)
         raise ex
 
-    logger.info('reimport finished')
+    logger.info('reimport finished, duration: {:.2f}'.format(end_time - start_time))
     return results

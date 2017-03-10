@@ -54,8 +54,8 @@ def status(request, task_id: str):
     return task_state(request,
                       task_id=task_id,
                       next_view='maintenance:done',
-                      expired_view='maintenance:done',
-                      error_view='maintenance:done',
+                      expired_view='maintenance:index',
+                      error_view='maintenance:index',
                       texts={'title': _('Maintenance')},
                       )
 
@@ -76,8 +76,7 @@ def get_file(request, task_id: str, filename: str):
     return download_get(request,
                         task_id=task_id,
                         filename=filename,
-                        error_view='maintenance:done',
-                        texts=None,
+                        error_view='maintenance:index',
                         )
 
 
@@ -153,42 +152,15 @@ def upload_events_dump(request):
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
 def download_events(request):
-    import pandas
-    from django.http import HttpResponse
-    sql = '''
-        SELECT stamp, table_name, name, total, created, updated, deleted
-          FROM hat_event_view
-         ORDER BY stamp DESC
-    '''
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        log = cursor.fetchall()
-        pd = pandas.DataFrame(log, columns=[col[0] for col in cursor.description])
-        csv = pd.to_csv(index=False)
-        response = HttpResponse(csv, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="hat_log.csv"'
-        return response
-
-
-@login_required()
-@user_passes_test(lambda u: u.is_superuser)
-@require_http_methods(['POST'])
-def clean_events(request):
-    ''' Delete events which have zero stats '''
-    sql = '''
-        DELETE
-          FROM hat_event
-         WHERE created = 0 AND updated = 0 AND deleted = 0 AND total = 0
-    '''
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-    except Exception as e:
-        logger.exception(e)
-        messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
-    else:
-        messages.add_message(request, messages.SUCCESS, _('Task done.'))
-    return redirect('maintenance:index')
+    from hat.tasks.jobs import export_task
+    fields = 'stamp, table_name, sub_type, name, total, created, updated, deleted'
+    sql = 'SELECT {} FROM hat_event_view ORDER BY stamp DESC'.format(fields)
+    task = run_task(export_task,
+                    kwargs={'sql_sentence': sql},
+                    superuser=True
+                    )
+    url = reverse('maintenance:status', kwargs={'task_id': task.id})
+    return redirect(url + '?action=events_csv&filename=events_log.csv')
 
 
 @login_required()

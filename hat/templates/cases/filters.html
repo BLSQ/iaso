@@ -1,94 +1,164 @@
 {% load i18n %}
 
-<form name="casesfilter" method="GET" action="" enctype="multipart/form-data">
-  {% csrf_token %}
-  <div class="filter__container">
-    <h2 class="filter__label">
-      <i class="fa fa-globe"></i>
-      {% trans "Location" %}
-    </h2>
-    <div class="filter__container__select">
-      <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">{% trans "ZS" %}</label>
-      {{ form.ZS }}
-    </div>
-    {% if form.AS %}
-      <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">{% trans "AS" %}</label>
-        {{ form.AS }}
-      </div>
-    {% endif %}
-    {% if form.village %}
-      <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.village.id_for_label }}">{% trans "Village" %}</label>
-        {{ form.village }}
-      </div>
-    {% endif %}
-  </div>
-  <div class="filter__container">
-    <h2 class="filter__label">
-      <i class="fa fa-calendar"></i>
-      {% trans "Timeframe" %}
-    </h2>
-    <div class="filter__container__input">
-      <label class="filter__container__select__label" for="{{ form.date_from.id_for_label }}">{% trans "From" %}</label>
-      {{ form.date_from }}
-    </div>
-    <div class="filter__container__input">
-      <label class="filter__container__select__label" for="{{ form.date_to.id_for_label }}">{% trans "To" %}</label>
-      {{ form.date_to }}
-    </div>
-  </div>
+<script>
+// <!--
+/* very simple js to toggle content */
+function openContent () {
+  document.getElementById('reduced_content').className = 'filter__hidden'
+  document.getElementById('full_content').className = 'filter__display'
+}
+function closeContent () {
+  document.getElementById('reduced_content').className = 'filter__display'
+  document.getElementById('full_content').className = 'filter__hidden'
+}
+// -->
+</script>
 
-  {% if custom %}
-    {% for field in form%}
-      {% if field.html_name in custom %}
-        <div class="filter__container">
-          <h2 class="filter__label">
-            <i class="fa fa-search"></i>
-            {% trans "Filter" %}
-          </h2>
+<div id="reduced_content" class="filter__display">
+  <div class="filter__container">
+    <button type="button" onclick="javascript:openContent();" class="button block--margin-left--xs">
+      {% trans "Change current filters" %}
+    </button>
+    <div class="filter__container--reduced">
+      {# location #}
+      {% if form.ZS.value %}
+        <span class="filter__reduced"><b>{% trans "ZS" %}</b> {{ form.ZS.value }}</span>
+      {% endif %}
+      {% if form.AS.value %}
+        <span class="filter__reduced"><b>{% trans "AS" %}</b> {{ form.AS.value }}</span>
+      {% endif %}
+      {% if form.village.value %}
+        <span class="filter__reduced"><b>{% trans "village" %}</b> {{ form.village.value }}</span>
+      {% endif %}
 
-          {% if field.field.choices %}
-          <div class="filter__container__select">
-          {% else %}
-          <div class="filter__container__input">
+      {# timeframe #}
+      {% if form.date_from.value and form.date_to.value %}
+        <span class="filter__reduced">
+          <b>{% trans "Timeframe" %}</b>
+          {{ form.date_from.value }} - {{ form.date_to.value }}
+        </span>
+      {% elif form.date_from.value %}
+        <span class="filter__reduced"><b>{% trans "From" %}</b> {{ form.date_from.value }} </span>
+      {% elif form.date_to.value %}
+        <span class="filter__reduced"><b>{% trans "Till" %}</b> {{ form.date_to.value }}</span>
+      {% endif %}
+
+      {# custom filters #}
+      {% if custom %}
+        {% for field in form%}
+          {% if field.html_name in custom and field.value %}
+            <span class="filter__reduced"><b>{{ field.label }}</b> {{ field.value }}</span>
           {% endif %}
-            <label class="filter__container__select__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-          </div>
-          {% if not field.field.choices %}
-          <button type="submit" class="button--reduced block--margin-left--xs">{% trans "Search" %}</button>
-          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div id="full_content" class="filter__hidden">
+  <form name="casesfilter" method="GET" action="" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="filter__container">
+      <button type="button" onclick="javascript:closeContent();" class="button block--margin-left--xs">
+        {% trans "Hide filters" %}
+      </button>
+      <button type="submit" class="button block--margin-left--xs">
+        <i class="fa fa-search"></i>
+        {% trans "Search" %}
+      </button>
+    </div>
+
+    <div class="filter__container">
+      <div class="filter__container__select">
+        <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">
+          <i class="fa fa-globe"></i>
+          {% trans "ZS" %}
+        </label>
+        {{ form.ZS }}
+      </div>
+      {% if form.AS %}
+        <div class="filter__container__select">
+          <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">
+            <i class="fa fa-globe"></i>
+            {% trans "AS" %}
+          </label>
+          {{ form.AS }}
         </div>
       {% endif %}
-    {% endfor %}
-  {% endif %}
+      {% if form.village %}
+        <div class="filter__container__select">
+          <label class="filter__container__select__label" for="{{ form.village.id_for_label }}">
+            <i class="fa fa-globe"></i>
+            {% trans "Village" %}
+          </label>
+          {{ form.village }}
+        </div>
+      {% endif %}
+    </div>
 
-  {% if form.order %}
     <div class="filter__container">
-      <h2 class="filter__label">
-        <i class="fa fa-sort-alpha-asc"></i>
-        {% trans "Order" %}
-      </h2>
-      <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.order.id_for_label }}">{% trans "Field" %}</label>
-        {{ form.order }}
+      <div class="filter__container__input">
+        <label class="filter__container__select__label" for="{{ form.date_from.id_for_label }}">
+          <i class="fa fa-calendar"></i>
+          {% trans "From" %}
+        </label>
+        {{ form.date_from }}
       </div>
-      <div class="form__wrapper inline">
-        {{ form.asc_desc }}
+      <div class="filter__container__input">
+        <label class="filter__container__select__label" for="{{ form.date_to.id_for_label }}">
+          <i class="fa fa-calendar"></i>
+          {% trans "To" %}
+        </label>
+        {{ form.date_to }}
       </div>
     </div>
-  {% endif %}
 
-  {% if form.columns %}
-    <div class="filter__container">
-      <h2 class="filter__label">
-        <i class="fa fa-table"></i>
-        {% trans "Group by" %}
-      </h2>
-      <div class="form__wrapper inline">
-        {{ form.columns }}
+    {% if custom %}
+      <div class="filter__container">
+        {% for field in form%}
+          {% if field.html_name in custom %}
+            {% if field.field.choices %}
+            <div class="filter__container__select">
+            {% else %}
+            <div class="filter__container__input">
+            {% endif %}
+              <label class="filter__container__select__label" for="{{ field.id_for_label }}">
+                <i class="fa fa-search"></i>
+                {{ field.label }}
+              </label>
+              {{ field }}
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
-    </div>
-  {% endif %}
-</form>
+    {% endif %}
+
+    {% if form.order %}
+      <div class="filter__container">
+        <div class="filter__container__select">
+          <label class="filter__container__select__label" for="{{ form.order.id_for_label }}">
+            <i class="fa fa-sort-alpha-asc"></i>
+            {% trans "Order" %}
+          </label>
+          {{ form.order }}
+        </div>
+        <div class="form__wrapper inline">
+          {{ form.asc_desc }}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if form.columns %}
+      <div class="filter__container">
+        <h2 class="filter__label">
+          <i class="fa fa-table"></i>
+          {% trans "Group by" %}
+        </h2>
+        <div class="form__wrapper inline">
+          {{ form.columns }}
+        </div>
+      </div>
+    {% endif %}
+  </form>
+</div>

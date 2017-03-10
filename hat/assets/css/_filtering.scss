@@ -146,7 +146,6 @@ $filter-container-height: 2rem;
   }
 }
 
-
 input.input--minimised {
   @include text--standard;
   display: inline-block;
@@ -171,6 +170,11 @@ input.input--minimised {
   }
 }
 
+.select--minimised {
+  @include filter-select-positioning;
+  @include filter-select-style;
+}
+
 
 .react-datepicker__input-container {
   @include filter-select-positioning;
@@ -185,7 +189,13 @@ input.input--minimised {
 }
 
 
-.select--minimised {
-  @include filter-select-positioning;
-  @include filter-select-style;
+.filter__reduced {
+  padding-right: 5px;
+  font-size: $font-size-xs;
+}
+.filter__display {
+  display: block;
+}
+.filter__hidden {
+  display: none;
 }

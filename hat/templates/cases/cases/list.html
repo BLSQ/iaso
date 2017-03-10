@@ -9,7 +9,7 @@
 {% block content %}
   <div class="content">
 
-    {% include "cases/filters.html" with form=form custom=custom_filters only %}
+    {% include "cases/filters.html" with form=form custom=custom_filters %}
 
     <div class="widget__container">
       <div class="widget__header">
@@ -17,6 +17,8 @@
           {{ page.count }} {% trans "Cases found" %}
         </h2>
       </div>
+
+      {% include "cases/download.html" with form=form perms=perms download_link=download_link %}
 
       <section class="widget__content">
         <table class="table--minimised list__table list__table--list">

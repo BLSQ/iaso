@@ -16,7 +16,6 @@ urlpatterns = [
     url(r'^import_synced$', view=views.import_synced, name='import_synced'),
     url(r'^rebuild_duplicates$', view=views.rebuild_duplicates, name='rebuild_duplicates'),
 
-    url(r'^clean_events$', view=views.clean_events, name='clean_events'),
     url(r'^download_events$', view=views.download_events, name='download_events'),
     url(r'^download_events_dump$', view=views.download_events_dump, name='download_events_dump'),
     url(r'^upload_events_dump$', view=views.upload_events_dump, name='upload_events_dump'),

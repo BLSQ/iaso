@@ -84,18 +84,21 @@ def task_done(request,
 
 @login_required()
 @require_http_methods(['GET'])
-def download_get(request, task_id: str, filename: str, error_view: str, texts: dict):
-    try:
-        file = get_task_result(task_id, user=request.user)
-    except NoSuchJobError:
-        messages.add_message(request, messages.ERROR, get_message(texts, 'download_error'))
+def download_get(request, task_id: str, filename: str, error_view: str):
+    def send_to_error():
+        messages.add_message(request, messages.ERROR,  default_messages['download_error'])
         return send_to(request, task_id=task_id, view=error_view)
 
     try:
+        file = get_task_result(task_id, user=request.user)
+    except NoSuchJobError:
+        return send_to_error()
+    if file is None:
+        return send_to_error()
+    try:
         response = FileResponse(open(file, 'rb'))
     except Exception:
-        messages.add_message(request, messages.ERROR, get_message(texts, 'download_error'))
-        return send_to(request, task_id=task_id, view=error_view)
+        return send_to_error()
 
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
     return response

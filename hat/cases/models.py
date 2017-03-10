@@ -14,7 +14,7 @@ SEX_CHOICES = (
 )
 
 
-class Case(models.Model):
+class CaseAbstract(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
@@ -105,6 +105,7 @@ class Case(models.Model):
     version_number = models.PositiveIntegerField(default=0)
 
     class Meta:
+        abstract = True
         ordering = ['-document_date']
         permissions = (
             ("import", "Can import data"),
@@ -116,19 +117,18 @@ class Case(models.Model):
         )
 
 
+class Case(CaseAbstract):
+    class Meta:
+        abstract = False
+
+
 @receiver(pre_save, sender=Case)
 def increase_case_version_number(sender, instance, *args, **kwargs):
     instance.version_number = instance.version_number + 1
 
 
-class CaseView(models.Model):
-    document_id = models.TextField(unique=True)
-    hat_id = models.TextField()
-    mobile_unit = models.TextField(null=True)
-    source = models.TextField(choices=SOURCE_CHOICES, null=True)
-    device_id = models.TextField(null=True)
-
-    document_date = models.DateTimeField(db_index=True, null=True)
+class CaseView(CaseAbstract):
+    # calculated fields
     document_date_day = models.DateTimeField(null=True)
     document_date_month = models.DateTimeField(null=True)
     document_date_year = models.DateTimeField(null=True)
@@ -137,21 +137,7 @@ class CaseView(models.Model):
     document_year = models.PositiveSmallIntegerField(null=True)
 
     full_name = models.TextField(null=True)
-    name = models.TextField(null=True)
-    lastname = models.TextField(null=True)
-    prename = models.TextField(null=True)
-    sex = models.TextField(choices=SEX_CHOICES, null=True)
-    age = models.PositiveSmallIntegerField(null=True)
-    year_of_birth = models.PositiveSmallIntegerField(null=True)
-
     full_location = models.TextField(null=True)
-    province = models.TextField(null=True)
-    ZS = models.TextField(null=True)
-    AS = models.TextField(null=True)
-    village = models.TextField(null=True)
-
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
     screening_result = models.NullBooleanField()
     confirmation_result = models.NullBooleanField()

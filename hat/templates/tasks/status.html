@@ -2,7 +2,9 @@
 {% load i18n %}
 
 {% block head %}
-  <meta http-equiv="refresh" content="2">
+  {% if not complete %}
+    <meta http-equiv="refresh" content="2">
+  {% endif %}
 {% endblock %}
 
 {% block header %}
@@ -33,10 +35,12 @@
       <div class="widget__content">
         <p>{% trans "Status:" %} {{ status }}</p>
         {% if complete and download_link %}
-          <a class="button--success" href="{{ download_link }}">
-            <i class="fa fa-download"></i>
-            {% trans "Download file" %}
-          </a>
+          <p>
+            <a class="button--success" href="{{ download_link }}">
+              <i class="fa fa-download"></i>
+              {% trans "Download file" %}
+            </a>
+          </p>
         {% endif %}
       </div>
     </div>

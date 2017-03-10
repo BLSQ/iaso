@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 DATE_FORMAT = "%Y-%m-%d"
 
 
-ItemsAndForm = namedtuple('ItemsAndForm', ['items', 'form'])
+QuerysetAndForm = namedtuple('QuerysetAndForm', ['queryset', 'form'])
 FieldChoice = namedtuple('FieldChoice', ['id', 'label', 'filter', 'choices'])
 OrderChoice = namedtuple('OrderChoice', ['id', 'label', 'asc', 'desc'])
 ColumnChoice = namedtuple('ColumnChoice', ['id', 'label'])
@@ -21,18 +21,9 @@ class CasesFilterForm(forms.Form):
                  *args, **kwargs):
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
-        select_attrs = {
-            'class': 'select--minimised',
-            'onchange': 'casesfilter.submit();',
-        }
-        date_attrs = {
-            'class': 'input--minimised',
-            'onchange': 'casesfilter.submit();',
-        }
-        radio_attrs = {
-            'class': 'radio--minimised',
-            'onchange': 'casesfilter.submit();'
-        }
+        select_attrs = {'class': 'select--minimised'}
+        date_attrs = {'class': 'input--minimised'}
+        radio_attrs = {'class': 'radio--minimised'}
         input_attrs = {'class': 'input--minimised'}
         none_choice = (None, _('None'))
 
@@ -115,22 +106,22 @@ class CasesFilterForm(forms.Form):
 
 def filter_and_create_form(
     request,
-    items,
+    queryset,
     locations_filters,
     dates_filters,
     fields_filters: None,
     orders: None,
     columns: None,
-) -> ItemsAndForm:
+) -> QuerysetAndForm:
 
     ############################################################################
     # check locations fields and filters
 
-    # extract locations list from items
+    # extract locations list from queryset
     if 'all' in locations_filters:
         locations_list = locations_filters['all']
     else:
-        locations_list = items
+        locations_list = queryset
     locations_list = locations_list \
         .values('ZS', 'AS', 'village') \
         .order_by('ZS', 'AS', 'village') \
@@ -142,7 +133,7 @@ def filter_and_create_form(
     AS = None
     village = None
     if ZS:
-        items = locations_filters['ZS'](items, ZS)
+        queryset = locations_filters['ZS'](queryset, ZS)
         ASs = locations_list \
             .filter(ZS=ZS) \
             .order_by('AS') \
@@ -152,7 +143,7 @@ def filter_and_create_form(
 
         AS = request.GET.get('AS', None)
         if AS and AS in ASs:
-            items = locations_filters['AS'](items, AS)
+            queryset = locations_filters['AS'](queryset, AS)
             villages = locations_list \
                 .filter(ZS=ZS, AS=AS) \
                 .order_by('village') \
@@ -162,7 +153,7 @@ def filter_and_create_form(
 
             village = request.GET.get('village', None)
             if village and village in villages:
-                items = locations_filters['village'](items, village)
+                queryset = locations_filters['village'](queryset, village)
 
     ############################################################################
     # check dates fields and filters
@@ -172,15 +163,15 @@ def filter_and_create_form(
     if date_from and date_to:
         date_from = datetime.strptime(date_from, DATE_FORMAT)
         date_to = datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
-        items = dates_filters['between'](items, date_from, date_to)
+        queryset = dates_filters['between'](queryset, date_from, date_to)
 
     elif date_from:
         date_from = datetime.strptime(date_from, DATE_FORMAT)
-        items = dates_filters['from'](items, date_from)
+        queryset = dates_filters['from'](queryset, date_from)
 
     elif date_to:
         date_to = datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
-        items = dates_filters['to'](items, date_to)
+        queryset = dates_filters['to'](queryset, date_to)
 
     ############################################################################
     # check fields
@@ -189,7 +180,7 @@ def filter_and_create_form(
         for field in fields_filters:
             value = request.GET.get(field.id, None)
             if value:
-                items = field.filter(items, value)
+                queryset = field.filter(queryset, value)
 
     ############################################################################
     # check order
@@ -202,9 +193,9 @@ def filter_and_create_form(
             if order_choice:
                 asc_desc = request.GET.get('asc_desc', None)
                 if asc_desc != 'desc':
-                    items = order_choice.asc(items)
+                    queryset = order_choice.asc(queryset)
                 else:
-                    items = order_choice.desc(items)
+                    queryset = order_choice.desc(queryset)
     else:
         orders_choices = None
 
@@ -218,7 +209,7 @@ def filter_and_create_form(
                            request.GET or None
                            )
 
-    return ItemsAndForm(form=form, items=items)
+    return QuerysetAndForm(queryset=queryset, form=form)
 
 
 ################################################################################

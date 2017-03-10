@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 
 from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
+
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice
@@ -18,12 +19,12 @@ from .models import Case, CaseView, DuplicatesPair
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET'])
 def duplicatespair_list(request):
-    items = DuplicatesPair.objects.order_by('id')
+    queryset = DuplicatesPair.objects.order_by('id')
 
     locations_filters = {
         'all': Case.objects.filter(
-            Q(id__in=items.values_list('case1')) |
-            Q(id__in=items.values_list('case2'))
+            Q(id__in=queryset.values_list('case1')) |
+            Q(id__in=queryset.values_list('case2'))
         ),
         'ZS': lambda q, v: q.filter(Q(case1__ZS=v) | Q(case2__ZS=v)),
         'AS': lambda q, v: q.filter(Q(case1__AS=v) | Q(case2__AS=v)),
@@ -89,16 +90,16 @@ def duplicatespair_list(request):
         ),
     )
 
-    data = filter_and_create_form(request,
-                                  items=items,
-                                  locations_filters=locations_filters,
-                                  fields_filters=fields_filters,
-                                  dates_filters=dates_filters,
-                                  orders=orders,
-                                  columns=None,
-                                  )
+    queryset, form = filter_and_create_form(request,
+                                            queryset=queryset,
+                                            locations_filters=locations_filters,
+                                            fields_filters=fields_filters,
+                                            dates_filters=dates_filters,
+                                            orders=orders,
+                                            columns=None,
+                                            )
     current_page = paginate(request,
-                            objects=data.items,
+                            objects=queryset,
                             prefix_url=reverse('cases:duplicates_list') + '?',
                             page_size=10,
                             )
@@ -106,7 +107,7 @@ def duplicatespair_list(request):
     return render(request, 'cases/duplicates/list.html', {
         'page': current_page,
         'custom_filters': [f.id for f in fields_filters],
-        'form': data.form
+        'form': form,
     })
 
 
@@ -212,9 +213,9 @@ def cases_details(request, doc_id=None):
 
 @login_required()
 @permission_required('cases.view')
-@require_http_methods(['GET'])
+@require_http_methods(['GET', 'POST'])
 def cases_list(request):
-    items = CaseView.objects.order_by('id')
+    queryset = CaseView.objects.order_by('id')
 
     full_access = request.user.has_perm('cases.view_full')
 
@@ -304,23 +305,33 @@ def cases_list(request):
     else:
         columns = []
 
-    data = filter_and_create_form(request,
-                                  items=items,
-                                  locations_filters=locations_filters,
-                                  fields_filters=fields_filters,
-                                  dates_filters=dates_filters,
-                                  orders=orders,
-                                  columns=None,
-                                  )
+    queryset, form = filter_and_create_form(request,
+                                            queryset=queryset,
+                                            locations_filters=locations_filters,
+                                            fields_filters=fields_filters,
+                                            dates_filters=dates_filters,
+                                            orders=orders,
+                                            columns=None,
+                                            )
+
+    task = None
+    if request.method == 'POST':
+        task = run_download_task(request, queryset)
+    if task:
+        return task
+
     current_page = paginate(request,
-                            objects=data.items,
+                            objects=queryset,
                             prefix_url=reverse('cases:cases_list') + '?',
                             )
+    download_link = get_download_link(request)
+
     return render(request, 'cases/cases/list.html', {
         'page': current_page,
         'custom_filters': [f.id for f in fields_filters],
         'columns': columns,
-        'form': data.form
+        'form': form,
+        'download_link': download_link,
     })
 
 
@@ -328,7 +339,7 @@ def cases_list(request):
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def analysis(request):
-    items = CaseView.objects
+    queryset = CaseView.objects
 
     locations_filters = {
         'ZS': lambda q, v: q.filter(ZS=v),
@@ -366,18 +377,18 @@ def analysis(request):
         ColumnChoice(id='device_id', label=_('Device')),
     ]
 
-    data = filter_and_create_form(request,
-                                  items=items,
-                                  locations_filters=locations_filters,
-                                  fields_filters=fields_filters,
-                                  dates_filters=dates_filters,
-                                  orders=None,
-                                  columns=columns,
-                                  )
+    queryset, form = filter_and_create_form(request,
+                                            queryset=queryset,
+                                            locations_filters=locations_filters,
+                                            fields_filters=fields_filters,
+                                            dates_filters=dates_filters,
+                                            orders=None,
+                                            columns=columns,
+                                            )
 
-    total_participants = count(data.items, Q_all, 'document_id')
-    total_suspect = count(data.items, Q_suspect, 'document_id')
-    total_confirmed = count(data.items, Q_confirmed, 'document_id')
+    total_participants = count(queryset, Q_all, 'document_id')
+    total_suspect = count(queryset, Q_suspect, 'document_id')
+    total_confirmed = count(queryset, Q_confirmed, 'document_id')
 
     ############################################################################
     # analysis columns
@@ -402,30 +413,109 @@ def analysis(request):
     fields = request.GET.getlist('columns')
     if fields:
         columns_in_page = [column for column in columns if column.id in fields]
-        items = data.items.order_by(*fields).values(*fields) \
+        queryset = queryset.order_by(*fields).values(*fields) \
             .annotate(**analysisData) \
             .values(*fields, *[c.id for c in analysisColumns])
         current_page = paginate(request,
-                                objects=items,
+                                objects=queryset,
                                 prefix_url=reverse('cases:analysis') + '?',
                                 )
-
     else:
         columns_in_page = []
-        items = data.items.aggregate(**analysisData)
-        current_page = {'items': [items], 'count': 1}
+        item = queryset.aggregate(**analysisData)
+        current_page = {'items': [item], 'count': 1}
 
     columns_in_page = columns_in_page + analysisColumns
 
     return render(request, 'cases/analysis/list.html', {
         'page': current_page,
-        'form': data.form,
+        'form': form,
         'custom_filters': [f.id for f in fields_filters],
         'columns': columns_in_page,
         'total_participants': total_participants,
         'total_suspect': total_suspect,
         'total_confirmed': total_confirmed,
     })
+
+
+################################################################################
+# Download cases
+################################################################################
+
+download_messages = {
+    'title': _('Cases'),
+    'heading': _('Download cases'),
+    'inprogress': _('Preparing download...'),
+    'expired':  _('The download job you\'re looking for has expired.'),
+    'failed':  _('The download job has failed. Please try again.'),
+}
+
+
+def run_download_task(request, queryset):
+    from hat.tasks.utils import run_task
+    from hat.tasks.jobs import export_task
+
+    if request.user.has_perm('cases.export_full'):
+        fields = FULL_EXPORT_FIELDS
+        permission = 'cases.export_full'
+    elif request.user.has_perm('cases.export'):
+        fields = ANON_EXPORT_FIELDS
+        permission = 'cases.export'
+    else:
+        return None
+
+    task = run_task(export_task,
+                    kwargs={'queryset': queryset.values(*fields)},
+                    permission=permission
+                    )
+
+    url = reverse('cases:download_state', kwargs={'task_id': task.id})
+    return redirect(url + '?{}'.format(request.GET.urlencode()))
+
+
+@login_required()
+@require_http_methods(['GET'])
+def download_state(request, task_id):
+    from hat.tasks.views import task_state
+    return task_state(request,
+                      task_id=task_id,
+                      next_view='cases:download_done',
+                      expired_view='cases:download_failed',
+                      error_view='cases:download_failed',
+                      texts=download_messages,
+                      )
+
+
+@login_required()
+@require_http_methods(['GET'])
+def download_done(request, task_id):
+    url = reverse('cases:cases_list')
+    return redirect(url + '?task_id={}&{}'.format(task_id, request.GET.urlencode()))
+
+
+@login_required()
+@require_http_methods(['GET'])
+def download_failed(request, task_id):
+    url = reverse('cases:cases_list')
+    return redirect(url + '?{}'.format(request.GET.urlencode()))
+
+
+@login_required()
+@require_http_methods(['GET'])
+def download_get(request, task_id):
+    from hat.tasks.views import download_get
+    return download_get(request,
+                        task_id=task_id,
+                        filename='hat_cases.csv',
+                        error_view='cases:download_failed',
+                        )
+
+
+def get_download_link(request):
+    task_id = request.GET.get('task_id', None)
+    if task_id:
+        return reverse('cases:download_get', kwargs={'task_id': task_id})
+    return None
 
 
 ################################################################################

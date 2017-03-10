@@ -133,20 +133,27 @@
             <tr>
               <td>{% trans "Download the events log as csv." %}</td>
               <td>
-                <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <button type="submit" class="button--reduced">
+                {% if action == 'events_csv' and download_link %}
+                  <a class="button--reduced button--success" href="{{ download_link }}">
                     <i class="fa fa-download"></i>
                     {% trans "Download events csv" %}
-                  </button>
-                </form>
+                  </a>
+                {% else %}
+                  <form method="POST" action="{% url 'maintenance:download_events' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="submit" class="button--reduced button--warning">
+                      <i class="fa fa-download"></i>
+                      {% trans "Prepare download events csv" %}
+                    </button>
+                  </form>
+                {% endif %}
               </td>
             </tr>
             <tr>
               <td>{% trans "Download the events tables database dump." %}</td>
               <td>
                 {% if action == 'events_dump' and download_link %}
-                  <a class="button--reduced" href="{{ download_link }}">
+                  <a class="button--reduced button--success" href="{{ download_link }}">
                     <i class="fa fa-download"></i>
                     {% trans "Download events dump" %}
                   </a>

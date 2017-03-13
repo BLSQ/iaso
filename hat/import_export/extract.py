@@ -1,8 +1,8 @@
 import json
+import pandas
 from io import StringIO
 from pathlib import PurePath
 from pandas.io.json import json_normalize
-from pandas import DataFrame, read_csv
 import hat.common.mdb as mdb
 from .errors import ImportStage, ImportStageException
 from django.utils.translation import ugettext as _
@@ -37,12 +37,23 @@ def extract_file_data(filename):
         raise ImportStageException(err_msg, ImportStage.filetype)
 
 
+def extract_reconciliation_file(filename):
+    suffix = PurePath(filename).suffix.lower()
+    if suffix == '.csv':
+        return pandas.read_csv(filename, sep=';')
+    elif suffix == '.xlsx':
+        return pandas.read_excel(filename)
+    else:
+        err_msg = _('Cannot import unkown filetype: {}').format(suffix)
+        raise ImportStageException(err_msg, ImportStage.filetype)
+
+
 def prepare_mdb_data(source_type, tables):
     import_config = IMPORT_CONFIG[source_type]
     result = {}
     for table_name, options in import_config['import_options'].items():
         csv = tables[table_name]
-        df = read_csv(
+        df = pandas.read_csv(
             StringIO(csv),
             delimiter=';',
             **options
@@ -65,7 +76,7 @@ def prepare_mobile_data(docs):
     if len(docs) > 0:
         df = json_normalize(docs)
     else:
-        return {'main': DataFrame()}
+        return {'main': pandas.DataFrame()}
 
     # TODO: We upgrade some fields manually here until we have the versioning module
     #       ready that is supposed to provide upgrade functions for mobile data.

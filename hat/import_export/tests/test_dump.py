@@ -18,11 +18,21 @@ class EventsDumpTests(TransactionTestCase):
         self.assertEqual(len(evl.get_events()), NUM_EVENTS)
 
         filename = dump_events()
-        with connection.cursor() as cursor:
-            cursor.execute('TRUNCATE hat_event CASCADE')
-        self.assertEqual(len(evl.get_events()), 0)
+
+        # Insert another event to have a different table than in the dump
+        evl.log_cases_merge('foo', 'bar')
+        self.assertEqual(len(evl.get_events()), NUM_EVENTS + 1)
+
         load_events_dump(filename)
         self.assertEqual(len(evl.get_events()), NUM_EVENTS)
+
+        # Check that the id sequence for the events table is fine
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT max(id) FROM hat_event')
+            max_id = cursor.fetchone()[0]
+            cursor.execute("SELECT nextval('hat_event_id_seq')")
+            next_id = cursor.fetchone()[0]
+            self.assertEqual(next_id, max_id + 1)
 
         # Important:
         # We need manually cleanup the events table, because the events

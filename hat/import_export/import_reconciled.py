@@ -3,6 +3,7 @@ import pandas
 from django.utils.translation import ugettext as _
 
 from .errors import ImportStageException, ImportStage, get_import_error
+from .extract import extract_reconciliation_file
 from .load import load_reconciled_into_db
 from .utils import hash_file, read_file_base64, capitalize
 from hat.cases.event_log import EventFile, log_reconciled_file_import, reconciled_file_exists
@@ -43,15 +44,20 @@ def import_reconciled_file(orgname: str, filename: str):
 
 def import_reconciled_file_unchecked(orgname: str, filename: str):
     ''' Import a reconciled file without handling errors '''
-    df = pandas.read_excel(filename)
+    df = extract_reconciliation_file(filename)
 
     df_rec = pandas.DataFrame()
     df_rec['document_id'] = df['document_id']
-    df_rec['ZS'] = df['ZS'].apply(capitalize)
-    df_rec['AS'] = df['AS'].apply(capitalize)
-    df_rec['village'] = df['Village'].apply(capitalize)
-    df_rec['latitude'] = df['Latitude']
-    df_rec['longitude'] = df['Longitude']
+    if 'ZS' in df:
+        df_rec['ZS'] = df['ZS'].apply(capitalize)
+    if 'AS' in df:
+        df_rec['AS'] = df['AS'].apply(capitalize)
+    if 'Village' in df:
+        df_rec['village'] = df['Village'].apply(capitalize)
+    if 'Latitude' in df:
+        df_rec['latitude'] = df['Latitude']
+    if 'Longitude' in df:
+        df_rec['longitude'] = df['Longitude']
 
     stats = load_reconciled_into_db(df_rec)
     return stats

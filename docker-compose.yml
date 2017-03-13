@@ -1,20 +1,5 @@
-version: '2'
+version: '3'
 services:
-  db:
-    image: postgres:9.5
-  couchdb:
-    image: couchdb:1.6
-    ports:
-      - "5984:5984"
-    volumes:
-      # enable cors for mobile app in-browser development:
-      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
-    environment:
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
-  redis:
-    image: redis:3.2
-
   hat:
     build:
       context: .
@@ -35,6 +20,8 @@ services:
       - ./build_scripts:/opt/app/build_scripts
       # test data
       - ./testdata:/opt/app/testdata
+      # jupyter notebooks
+      - ./notebooks:/opt/notebooks
     links: &hat_links
       - db
       - couchdb
@@ -55,7 +42,33 @@ services:
       TRAVIS_JOB_NUMBER: "${TRAVIS_JOB_NUMBER}"
       # This is needed to group our build on Saucelabs
       TRAVIS_BUILD_NUMBER: "${TRAVIS_BUILD_NUMBER}"
+    # Limit logging in dev to not overflow terminal
+    logging: &hat_logging
+      driver: "json-file"
+      options:
+        max-size: "5k"
+
     command: start_dev
+
+  db:
+    image: postgres:9.5
+    logging: *hat_logging
+
+  couchdb:
+    image: couchdb:1.6
+    ports:
+      - "5984:5984"
+    volumes:
+      # enable cors for mobile app in-browser development:
+      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: secret
+    logging: *hat_logging
+
+  redis:
+    image: redis:3.2
+    logging: *hat_logging
 
   nginx:
     depends_on:
@@ -63,9 +76,9 @@ services:
     image: sense-hat
     ports:
       - "8443:443"
-    volumes_from:
-      - hat
+    volumes: *hat_volumes
     environment: *hat_environment
+    logging: *hat_logging
     command: start_dev_nginx
 
   # the webpack dev server
@@ -75,9 +88,9 @@ services:
     image: sense-hat
     ports:
       - "3000:3000"
-    volumes_from:
-      - hat
+    volumes: *hat_volumes
     environment: *hat_environment
+    logging: *hat_logging
     command: start_webpack
 
   # the worker container of the task runner
@@ -85,10 +98,10 @@ services:
     depends_on:
       - hat
     image: sense-hat
-    volumes_from:
-      - hat
+    volumes: *hat_volumes
     links: *hat_links
     environment: *hat_environment
+    logging: *hat_logging
     command: start_dev_rq
 
   # the jupyter server
@@ -98,8 +111,8 @@ services:
     image: sense-hat
     ports:
       - "8888:8888"
-    volumes_from:
-      - hat
+    volumes: *hat_volumes
     links: *hat_links
     environment: *hat_environment
+    logging: *hat_logging
     command: start_jupyter

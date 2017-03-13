@@ -54,8 +54,8 @@ def status(request, task_id: str):
     return task_state(request,
                       task_id=task_id,
                       next_view='maintenance:done',
-                      expired_view='maintenance:index',
-                      error_view='maintenance:index',
+                      expired_view='maintenance:done',
+                      error_view='maintenance:done',
                       texts={'title': _('Maintenance')},
                       )
 

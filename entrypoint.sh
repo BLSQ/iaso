@@ -106,7 +106,7 @@ case "$1" in
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
-    jupyter notebook -y --no-browser --ip=0.0.0.0
+    jupyter notebook -y --no-browser --ip=0.0.0.0 --config=/opt/notebooks/jupyter_notebook_config.py --notebook-dir=/opt/notebooks/
   ;;
   "manage" )
     ./manage.py "${@:2}"

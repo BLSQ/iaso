@@ -94,7 +94,7 @@ def upload_locations(request):
 @require_http_methods(['GET', 'POST'])
 def upload_reconciled(request):
     if request.method == 'POST':
-        form = UploadFileForm(False, '.xlsx', request.POST, request.FILES)
+        form = UploadFileForm(False, '.csv,.xlsx', request.POST, request.FILES)
         if form.is_valid():
             form_files = request.FILES.getlist('file')
             file = form_files[0]
@@ -107,5 +107,5 @@ def upload_reconciled(request):
                             permission='cases.import_reconciled')
             return redirect('datasets:import_reconciled:state', task_id=task.id)
     else:
-        form = UploadFileForm(False, '.xlsx')
+        form = UploadFileForm(False, '.csv,.xlsx')
     return render(request, 'import_export/upload_reconciled.html', {'form': form})

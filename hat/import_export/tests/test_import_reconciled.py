@@ -6,7 +6,6 @@ from ..reimport import reimport
 from hat.cases.event_log import get_events, EventTable
 
 xlsx_file = 'testdata/reconciled_cases.xlsx'
-csv_file = 'testdata/test_cases.csv'
 
 
 class ImportReconciledTests(TestCase):
@@ -17,7 +16,7 @@ class ImportReconciledTests(TestCase):
         self.assertEqual(Case.objects.filter(AS='Ipeke').count(), 0)
         self.assertEqual(Case.objects.filter(village='Ipoku').count(), 0)
 
-        r = import_reconciled_file('testdata', xlsx_file)
+        r = import_reconciled_file('testdata.xlsx', xlsx_file)
         self.assertEqual(r['error'], None)
         self.assertEqual(r['stats'].total, 7)
         self.assertEqual(r['stats'].updated, 6)
@@ -33,7 +32,7 @@ class ImportReconciledTests(TestCase):
 
     def test_reimport_reconciled(self):
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 0)
-        r = import_reconciled_file('testdata', xlsx_file)
+        r = import_reconciled_file('testdata.xlsx', xlsx_file)
         self.assertEqual(r['error'], None)
         self.assertEqual(Case.objects.filter(ZS='Bokoro').count(), 6)
         self.assertEqual(len(get_events()), 1, 'Only one event from the import')

@@ -36,6 +36,7 @@ def load_events_dump(filename):
     '''
     with connection.cursor() as cursor:
         cursor.execute('TRUNCATE hat_event CASCADE')
+
         run_cmd(['pg_restore',
                  '--exit-on-error',
                  *tables_params,
@@ -46,3 +47,11 @@ def load_events_dump(filename):
                  '-d', db_name,
                  filename],
                 env={'PGPASSWORD': settings.DB_PASSWORD or ''})
+
+        # We need to align the sequence with the restored dump manually
+        cursor.execute('''
+            SELECT setval('hat_event_id_seq', e.max_id, true)
+            FROM (
+               SELECT max("id") AS max_id FROM hat_event
+            ) AS e;
+        ''')

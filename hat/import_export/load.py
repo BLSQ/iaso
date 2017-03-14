@@ -49,52 +49,12 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     duplicates = pandasconcat([duplicates_in_db, duplicates_in_new_data], axis=0) \
         .drop_duplicates()
 
-    columns = list(df.columns) + ['version_number']
-    sql_columns = ','.join([('"' + c + '"') for c in columns])
-
-    # Some values need quoting. We create a mapping from column names to quoting function
-    mapping = {}
-    i = 0
-    for dt in df.dtypes:
-        dts = str(dt).lower()
-        name = str(df.columns[i])
-        if not (dts.startswith('int') or
-                dts.startswith('float') or
-                dts.startswith('bool')):
-            mapping[name] = lambda x: "$${}$$".format(x)
-        i = i + 1
-
-    with connection.cursor() as cursor:
-        for df2 in batch_dataframe(df):
-            # Create a sql string that inserts multiple rows as value tuples
-            sql = '''
-                INSERT INTO cases_case ({})
-                VALUES
-            '''.format(sql_columns)
-            sql_values = []
-            for _, row in df2.iterrows():
-                column_index = 0
-                values = []
-                for v in row:
-                    column_name = columns[column_index]
-                    column_index = column_index + 1
-                    if pandas.isnull(v):
-                        values.append('NULL')
-                    elif column_name in mapping:
-                        values.append(mapping[column_name](v))
-                    else:
-                        values.append(str(v))
-
-                # append the version number
-                values.append('0')
-                sql_values.append('(' + ','.join(values) + ')')
-
-            sql = sql + ','.join(sql_values) + ';'
-            cursor.execute(sql)
+    df['version_number'] = 0
+    create_cases(df)
 
     # Update duplicates
     if len(duplicates) > 0:
-        update_entries(duplicates, mapping)
+        update_entries(duplicates)
 
     return EventStats(
         total=total,
@@ -104,7 +64,7 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     )
 
 
-def update_entries(duplicates, mapping):
+def update_entries(duplicates):
     # remove unwanted columns
     # we only want to add test results:
     duplicates.drop(
@@ -137,31 +97,7 @@ def update_entries(duplicates, mapping):
         # ignore if some columns dont exist
         errors='ignore'
     )
-
-    with connection.cursor() as cursor:
-        for df2 in batch_dataframe(duplicates):
-            sql_updates = []
-            for _, row in df2.iterrows():
-                values = []
-                index = 0
-                for v in row:
-                    name = str(df2.columns[index])
-                    index = index + 1
-                    if pandas.isnull(v):
-                        continue
-                    elif name in mapping:
-                        value = mapping[name](v)
-                    else:
-                        value = str(v)
-                    values.append('{}={}'.format(name, value))
-                sql_updates.append('''
-                    UPDATE cases_case
-                    SET {}
-                    WHERE document_id = '{}';
-                '''.format(','.join(values), row['document_id']))
-
-            sql = ';'.join(sql_updates)
-            cursor.execute(sql)
+    return update_cases(duplicates)
 
 
 @transaction.atomic
@@ -205,14 +141,104 @@ def load_locations_areas_into_db(df: DataFrame) -> EventStats:
 @transaction.atomic
 def load_reconciled_into_db(df: DataFrame) -> EventStats:
     total = len(df)
-    updated = 0
-    for index, row in df.iterrows():
-        num = Case.objects.filter(document_id=row['document_id']) \
-                          .update(**row.dropna().to_dict())
-        updated += num
+    updated = update_cases(df)
     return EventStats(
         total=total,
         created=0,
         updated=updated,
         deleted=0
     )
+
+
+def get_columns_mapping(df):
+    # Some values need quoting when we want to insert them with sql.
+    # We create a mapping from column names to quoting function
+    mapping = {}
+    i = 0
+    for dt in df.dtypes:
+        dts = str(dt).lower()
+        name = str(df.columns[i])
+        if not (dts.startswith('int') or
+                dts.startswith('float') or
+                dts.startswith('bool')):
+            mapping[name] = lambda x: "$${}$$".format(x)
+        i = i + 1
+
+    return mapping
+
+
+def create_cases(df):
+    mapping = get_columns_mapping(df)
+    columns = list(df.columns)
+    sql_columns = ','.join([('"' + c + '"') for c in columns])
+
+    with connection.cursor() as cursor:
+        for df2 in batch_dataframe(df):
+            # Create a sql string that inserts multiple rows as value tuples
+            sql = '''
+                INSERT INTO cases_case ({})
+                VALUES
+            '''.format(sql_columns)
+            sql_values = []
+            for _, row in df2.iterrows():
+                index = 0
+                values = []
+                for v in row:
+                    name = str(df2.columns[index])
+                    index = index + 1
+                    if pandas.isnull(v):
+                        values.append('NULL')
+                    elif name in mapping:
+                        values.append(mapping[name](v))
+                    else:
+                        values.append(str(v))
+                sql_values.append('(' + ','.join(values) + ')')
+
+            sql = sql + ','.join(sql_values) + ';'
+            cursor.execute(sql)
+
+
+def update_cases(df):
+    mapping = get_columns_mapping(df)
+    num_updated = 0
+    with connection.cursor() as cursor:
+        for df2 in batch_dataframe(df):
+            sql_updates = []
+
+            # Check if the cases exist. Skip non-existing
+            ids = list(df2['document_id'].values)
+            sql = '''
+                SELECT document_id
+                FROM cases_case
+                WHERE document_id IN ({})
+            '''.format(','.join("'{}'".format(i) for i in ids))
+            cursor.execute(sql)
+            existing_ids = [i for (i,) in cursor.fetchall()]
+
+            for _, row in df2.iterrows():
+                if str(row['document_id']) not in existing_ids:
+                    continue
+                num_updated += 1
+                values = []
+                index = 0
+                for v in row:
+                    name = str(df2.columns[index])
+                    index = index + 1
+                    if pandas.isnull(v):
+                        continue
+                    elif name in mapping:
+                        value = mapping[name](v)
+                    else:
+                        value = str(v)
+                    values.append('"{}"={}'.format(name, value))
+                sql_updates.append('''
+                    UPDATE cases_case
+                    SET {}
+                    WHERE document_id = '{}';
+                '''.format(','.join(values), row['document_id']))
+
+            if len(sql_updates) == 0:
+                continue
+            sql = ';'.join(sql_updates)
+            cursor.execute(sql)
+    return num_updated

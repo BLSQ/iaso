@@ -13,7 +13,7 @@ services:
   - docker
 env:
   global:
-    - DOCKER_COMPOSE_VERSION: 1.7.1
+    - DOCKER_COMPOSE_VERSION: 1.11.2
     - DOCKER_IMAGE_REPO: 387526361725.dkr.ecr.eu-west-1.amazonaws.com # the url of the repo where we push/pull the image from
     - DOCKER_IMAGE_NAME: sense-hat # the name of the image
 
@@ -26,11 +26,12 @@ before_install:
   - sudo service docker restart
   # need to happen before first build
   - "./build_scripts/tfx_download.sh"
-install:
-  - pip install awscli awsebcli
+# Skip install step
+install: true
 script:
   - "docker-compose run hat test" # && docker-compose run -p 8081:8081 hat test_integration"
 
 after_success:
+  - pip install awscli awsebcli
   - "./build_scripts/tfx_upload.sh"
   - "./build_scripts/docker-build.sh"

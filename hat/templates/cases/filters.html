@@ -70,13 +70,15 @@ function closeContent () {
     </div>
 
     <div class="filter__container">
-      <div class="filter__container__select">
-        <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">
-          <i class="fa fa-globe"></i>
-          {% trans "ZS" %}
-        </label>
-        {{ form.ZS }}
-      </div>
+      {% if form.ZS %}
+        <div class="filter__container__select">
+          <label class="filter__container__select__label" for="{{ form.ZS.id_for_label }}">
+            <i class="fa fa-globe"></i>
+            {% trans "ZS" %}
+          </label>
+          {{ form.ZS }}
+        </div>
+      {% endif %}
       {% if form.AS %}
         <div class="filter__container__select">
           <label class="filter__container__select__label" for="{{ form.AS.id_for_label }}">

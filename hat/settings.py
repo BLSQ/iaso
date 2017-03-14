@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'explorer',
     'rest_framework',
     'webpack_loader',
+    'hat.users',
     'hat.api',
     'hat.cases',
     'hat.common',

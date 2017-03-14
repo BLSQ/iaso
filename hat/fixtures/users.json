@@ -1,7 +1,6 @@
 [
   {
     "model": "auth.user",
-    "pk": 1,
     "fields": {
       "password": "pbkdf2_sha256$30000$t8QEUi7Hpgxn$Hm+N7HJFOnP70e0keOsLh1o8YVdYqdzOCZQBSp2Jqnw=",
       "last_login": "2016-09-14T10:37:41.949Z",
@@ -19,7 +18,6 @@
   },
   {
     "model": "auth.user",
-    "pk": 2,
     "fields": {
       "password": "pbkdf2_sha256$30000$xwa6nkMr3bYg$kQQbvZShdE/7Rwdtvpa+ysOkJfLuwn/vV1KCG7QNJ6o=",
       "last_login": null,
@@ -37,7 +35,6 @@
   },
   {
     "model": "auth.user",
-    "pk": 3,
     "fields": {
       "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
       "last_login": null,
@@ -51,18 +48,89 @@
       "date_joined": "2016-09-27T09:32:59.863Z",
       "groups": [],
       "user_permissions": [
-        ["import", "cases", "case"],
-        ["export", "cases", "case"],
-        ["export_full", "cases", "case"],
-        ["import_reconciled", "cases", "case"],
-        ["view", "cases", "case"],
-        ["import_locations", "cases", "location"]
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ],
+        [
+          "import",
+          "cases",
+          "case"
+        ],
+        [
+          "import_reconciled",
+          "cases",
+          "case"
+        ],
+        [
+          "view",
+          "cases",
+          "case"
+        ],
+        [
+          "import_locations",
+          "cases",
+          "location"
+        ]
       ]
     }
   },
   {
     "model": "auth.user",
-    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "supervisor-mosango",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-27T09:32:59.863Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ],
+        [
+          "import",
+          "cases",
+          "case"
+        ],
+        [
+          "import_reconciled",
+          "cases",
+          "case"
+        ],
+        [
+          "view",
+          "cases",
+          "case"
+        ],
+        [
+          "import_locations",
+          "cases",
+          "location"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
     "fields": {
       "password": "pbkdf2_sha256$30000$Kssgqh8F2e6j$D8LjWoRgIZmQSK/TUQdZVEw+owg13VYJz9l7akqTOI4=",
       "last_login": null,
@@ -86,7 +154,6 @@
   },
   {
     "model": "auth.user",
-    "pk": 5,
     "fields": {
       "password": "pbkdf2_sha256$30000$LNdX7mUjGH34$M3Qko0+uZPUW0nKg1C0hKWnp5yg5c56/ipXPokeN4vo=",
       "last_login": null,
@@ -115,7 +182,6 @@
   },
   {
     "model": "auth.user",
-    "pk": 6,
     "fields": {
       "password": "pbkdf2_sha256$30000$sUaQXwEX35wG$/bKQ4BY0udmBX9QPIiUvfCLQNjmvsMzq8LqzEFQj184=",
       "last_login": null,
@@ -135,6 +201,76 @@
           "case"
         ]
       ]
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 1,
+    "fields": {
+      "user": [
+        "root"
+      ],
+      "restrict_to_zs": null
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 2,
+    "fields": {
+      "user": [
+        "admin"
+      ],
+      "restrict_to_zs": null
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 3,
+    "fields": {
+      "user": [
+        "supervisor"
+      ],
+      "restrict_to_zs": null
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 4,
+    "fields": {
+      "user": [
+        "supervisor-mosango"
+      ],
+      "restrict_to_zs": "Mosango"
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 5,
+    "fields": {
+      "user": [
+        "importer"
+      ],
+      "restrict_to_zs": null
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 6,
+    "fields": {
+      "user": [
+        "full-exporter"
+      ],
+      "restrict_to_zs": null
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 7,
+    "fields": {
+      "user": [
+        "anon-exporter"
+      ],
+      "restrict_to_zs": null
     }
   }
 ]

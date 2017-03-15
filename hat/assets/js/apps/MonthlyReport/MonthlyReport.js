@@ -183,7 +183,7 @@ export class MonthlyReport extends Component {
     const { date, location } = this.props.params
     const { dates } = this.props.config
     const { loading, data, error } = this.props.report
-    const locations = data && data.locations || []
+    const locations = (data && data.locations) || []
 
     return (
       <div>

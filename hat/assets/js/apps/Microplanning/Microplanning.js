@@ -54,7 +54,7 @@ export class Microplanning extends Component {
     const { caseyearfrom, location } = this.props.params
     const { data, error, loading } = this.props.villages
     const selectedItems = (this.props.selection.selectedItems || [])
-    const villages = (data && data.villages || [])
+    const villages = ((data && data.villages) || [])
 
     return (
       <div>

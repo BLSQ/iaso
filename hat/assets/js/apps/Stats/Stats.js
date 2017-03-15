@@ -470,7 +470,7 @@ export class Stats extends Component {
     const {formatMessage} = this.props.intl
     const { date_from, date_to, location } = this.props.params
     const { loading, data, error } = this.props.report
-    const locations = data && data.locations || []
+    const locations = (data && data.locations) || []
     const pickerFrom = date_from ? moment(date_from) : moment() // eslint-disable-line
     const pickerTo = date_to ? moment(date_to) : moment() // eslint-disable-line
 

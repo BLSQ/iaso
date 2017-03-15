@@ -497,19 +497,20 @@ export class Stats extends Component {
               onChange={this.datetoHandler} />
           </div>
 
-          <div className='filter__container__select'>
-            <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='statspage.label.location' defaultMessage='Location' /></label>
-            <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
-              <option key='all' value=''>
-                {formatMessage(MESSAGES['location-all'])}
-              </option>
-              {locations.map((loc) => {
-                var val = loc.ZS
-                return <option key={val} value={val}>{val}</option>
-              })}
-            </select>
-          </div>
-
+          {locations.length > 0 && (
+            <div className='filter__container__select'>
+              <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='statspage.label.location' defaultMessage='Location' /></label>
+              <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
+                <option key='all' value=''>
+                  {formatMessage(MESSAGES['location-all'])}
+                </option>
+                {locations.map((loc) => {
+                  var val = loc.ZS
+                  return <option key={val} value={val}>{val}</option>
+                })}
+              </select>
+            </div>
+          )}
         </div>
         <div>
           {

@@ -18,6 +18,7 @@ class CasesFilterForm(forms.Form):
                  custom_filters,
                  orders_choices,
                  columns,
+                 restricted,
                  *args, **kwargs):
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
@@ -30,11 +31,12 @@ class CasesFilterForm(forms.Form):
         ########################################################################
         # location fields
 
-        self.fields['ZS'] = forms.ChoiceField(
-            choices=[none_choice] + [(l, l) for l in locations_choices[0]],
-            widget=forms.Select(attrs=select_attrs),
-            required=False,
-        )
+        if 'ZS' not in restricted:
+            self.fields['ZS'] = forms.ChoiceField(
+                choices=[none_choice] + [(l, l) for l in locations_choices[0]],
+                widget=forms.Select(attrs=select_attrs),
+                required=False,
+            )
 
         if len(locations_choices) > 1:
             self.fields['AS'] = forms.ChoiceField(
@@ -111,7 +113,7 @@ def filter_and_create_form(
     dates_filters,
     fields_filters: None,
     orders: None,
-    columns: None,
+    columns: None
 ) -> QuerysetAndForm:
 
     ############################################################################
@@ -129,7 +131,14 @@ def filter_and_create_form(
 
     locations_choices = [locations_list.order_by('ZS').values_list('ZS', flat=True).distinct()]
 
-    ZS = request.GET.get('ZS', None)
+    restricted = {}
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        restricted['ZS'] = restrict_to_zs
+        ZS = restrict_to_zs
+    else:
+        ZS = request.GET.get('ZS', None)
+
     AS = None
     village = None
     if ZS:
@@ -206,7 +215,8 @@ def filter_and_create_form(
                            fields_filters,
                            orders_choices,
                            columns,
-                           request.GET or None
+                           restricted,
+                           request.GET or None,
                            )
 
     return QuerysetAndForm(queryset=queryset, form=form)

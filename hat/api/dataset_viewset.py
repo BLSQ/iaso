@@ -71,7 +71,7 @@ params_schema = {
 }
 
 
-def get_cases_filtered(params, ignore_params=None):
+def get_cases_filtered(request, params, ignore_params=None):
     '''
     Takes the requests parameters as args and returns a filtered CaseView QuerySet.
     '''
@@ -109,9 +109,13 @@ def get_cases_filtered(params, ignore_params=None):
         date_to = datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
         cases = cases.filter(document_date__lt=date_to)
 
-    location = get_param_value('location')
-    if location is not None:
-        cases = cases.filter(ZS=location)
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        cases = cases.filter(ZS=restrict_to_zs)
+    else:
+        location = get_param_value('location')
+        if location is not None:
+            cases = cases.filter(ZS=location)
 
     source = get_param_value('source')
     if source is not None:
@@ -121,14 +125,14 @@ def get_cases_filtered(params, ignore_params=None):
 
 
 @dataset(params_schema=params_schema)
-def list_locations(params):
-    cases = get_cases_filtered(params, ignore_params=['location'])
+def list_locations(request, params):
+    cases = get_cases_filtered(request, params, ignore_params=['location'])
     return cases.order_by().values('ZS').distinct()
 
 
 @dataset(params_schema=params_schema)
-def count_total(params):
-    cases = get_cases_filtered(params)
+def count_total(request, params):
+    cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging)
     return {
         'registered': cases.count(),
@@ -137,8 +141,8 @@ def count_total(params):
 
 
 @dataset(params_schema=params_schema)
-def count_screened(params):
-    cases = get_cases_filtered(params).filter(Q_screening)
+def count_screened(request, params):
+    cases = get_cases_filtered(request, params).filter(Q_screening)
     return {
         'total': cases.count(),
         'positive': cases.filter(Q_screening_positive).count(),
@@ -149,8 +153,8 @@ def count_screened(params):
 
 
 @dataset(params_schema=params_schema)
-def count_confirmed(params):
-    cases = get_cases_filtered(params).filter(Q_confirmation)
+def count_confirmed(request, params):
+    cases = get_cases_filtered(request, params).filter(Q_confirmation)
     return {
         'total': cases.count(),
         'positive': cases.filter(Q_confirmation_positive).count(),
@@ -159,8 +163,8 @@ def count_confirmed(params):
 
 
 @dataset(params_schema=params_schema)
-def count_staging(params):
-    cases = get_cases_filtered(params).filter(Q_staging)
+def count_staging(request, params):
+    cases = get_cases_filtered(request, params).filter(Q_staging)
     return {
         'total': cases.count(),
         'stage1': cases.filter(Q_staging_stage1).count(),
@@ -169,8 +173,8 @@ def count_staging(params):
 
 
 @dataset(params_schema=params_schema)
-def campaign_meta(params):
-    cases = get_cases_filtered(params)
+def campaign_meta(request, params):
+    cases = get_cases_filtered(request, params)
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
         'enddate': cases.aggregate(Max('document_date'))['document_date__max'],
@@ -180,8 +184,8 @@ def campaign_meta(params):
 
 
 @dataset(params_schema=params_schema)
-def tested_per_day(params):
-    cases = get_cases_filtered(params)
+def tested_per_day(request, params):
+    cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
                   .annotate(date=RawSQL('date_trunc(\'day\', document_date)', [])) \
                   .values('date') \
@@ -212,15 +216,19 @@ def tested_per_day(params):
         'location': {'type': 'string'},
     }
 })
-def population_coverage(params):
+def population_coverage(request, params):
     (date_from, date_to) = parse_date_range(params)
 
     sql_context = {
         'date_from': date_from,
         'date_to': date_to
     }
-    if 'location' in params:
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        sql_context['zone_sante'] = restrict_to_zs
+    elif 'location' in params:
         sql_context['zone_sante'] = params['location']
+
     if 'source' in params:
         sql_context['source'] = params['source']
 
@@ -243,7 +251,7 @@ def population_coverage(params):
     },
     'additionalProperties': False,
 })
-def cases_over_time(params):
+def cases_over_time(request, params):
     (date_from, date_to) = parse_date_range(params)
 
     sql_context = {
@@ -252,8 +260,12 @@ def cases_over_time(params):
         'date_interval': '1 days',
         'date_trunc_to': 'day',
     }
-    if 'location' in params:
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        sql_context['zone_sante'] = restrict_to_zs
+    elif 'location' in params:
         sql_context['zone_sante'] = params['location']
+
     if 'source' in params:
         sql_context['source'] = params['source']
 
@@ -275,7 +287,7 @@ def cases_over_time(params):
         'caseyearfrom': {'type': 'string'},
     }
 })
-def data_by_location(params):
+def data_by_location(request, params):
     '''
     View to list and retrieve the official list of villages
     with their meaningful info like confirmed cases, screened people...
@@ -291,8 +303,12 @@ def data_by_location(params):
         'date_to': date_to,
     }
 
-    if 'location' in params:
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        sql_context['zone_sante'] = restrict_to_zs
+    elif 'location' in params:
         sql_context['zones_sante'] = params['location'].lower().split(',')
+
     if 'caseyearfrom' in params:
         yearfrom = currentYear - int(params['caseyearfrom'])
         sql_context['casedatefrom'] = datetime(yearfrom, 1, 1)
@@ -329,4 +345,4 @@ class DatasetViewSet(viewsets.ViewSet):
         params = dict(request.GET.items())
         if not item['params_schema'] is None:
             DefaultValidator(item['params_schema']).validate(params)
-        return Response(item['getter'](params))
+        return Response(item['getter'](request, params))

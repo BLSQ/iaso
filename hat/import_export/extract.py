@@ -40,7 +40,7 @@ def extract_file_data(filename):
 def extract_reconciliation_file(filename):
     suffix = PurePath(filename).suffix.lower()
     if suffix == '.csv':
-        return pandas.read_csv(filename, sep=';')
+        return pandas.read_csv(filename)
     elif suffix == '.xlsx':
         return pandas.read_excel(filename)
     else:

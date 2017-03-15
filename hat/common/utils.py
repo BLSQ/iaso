@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Any
 from uuid import uuid4
 from subprocess import run, PIPE, CalledProcessError
 from django.conf import settings
 
 
-def run_cmd(cmd: List[str], **kwargs) -> str:
+def run_cmd(cmd: List[str], **kwargs: Any) -> str:
     '''Helper function to run an external command.'''
     args = {
         'stdout': PIPE,

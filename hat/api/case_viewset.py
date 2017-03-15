@@ -1,3 +1,5 @@
+from typing import List, Dict
+from django.db.models.query import QuerySet
 from collections import OrderedDict
 from rest_framework import viewsets
 from rest_framework.serializers import ModelSerializer
@@ -13,7 +15,7 @@ class CasePagination(LimitOffsetPagination):
     `limit` and `offset` values. The react frontend cannot use the links
     directly and needs to construct it's own urls from limit and offset.
     '''
-    def get_paginated_response(self, data):
+    def get_paginated_response(self, data: List) -> Dict:
         return Response(OrderedDict([
             ('count', self.count),
             ('next', self.get_next_link()),
@@ -43,7 +45,7 @@ class CaseViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CaseSerializer
     pagination_class = CasePagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         ''' Filter by query parameters '''
         queryset = CaseView.objects.all()
 

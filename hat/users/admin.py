@@ -11,11 +11,11 @@ class UserProfileInline(admin.StackedInline):
 
 
 class UserAdmin(AuthUserAdmin):
-    def add_view(self, *args, **kwargs):
+    def add_view(self, *args, **kwargs):  # type: ignore
         self.inlines = []
         return super(UserAdmin, self).add_view(*args, **kwargs)
 
-    def change_view(self, *args, **kwargs):
+    def change_view(self, *args, **kwargs):  # type: ignore
         self.inlines = [UserProfileInline]
         return super(UserAdmin, self).change_view(*args, **kwargs)
 

@@ -16,13 +16,13 @@ class DeviceDB(models.Model):
     last_synced_log_message = models.TextField(null=True)
 
     @property
-    def db_name(self):
+    def db_name(self) -> str:
         ''' Returns the device's db name. '''
         return generate_db_name(self.device_id)
 
 
 @receiver(post_save, sender=DeviceDB)
-def device_db_post_save(sender, instance, *args, **kwargs):
+def device_db_post_save(sender, instance, *args, **kwargs):  # type: ignore
     ''' Create the accompaning couchdb db for the device db record '''
     create_db(instance.device_id)
 
@@ -51,6 +51,6 @@ class MobileUser(models.Model):
 
 
 @receiver(post_delete, sender=MobileUser)
-def mobile_user_post_delete(sender, instance, *args, **kwargs):
+def mobile_user_post_delete(sender, instance, *args, **kwargs):  # type: ignore
     ''' When a Mobile User is deleted, delete the CouchDB user to revoke sync access '''
     delete_user(instance.email)

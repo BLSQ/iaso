@@ -21,7 +21,7 @@ migration2 = snaql_factory.load_queries('migration_0002.sql')
 export_queries = snaql_factory.load_queries('export.sql')
 
 
-def prepare_db():
+def prepare_db() -> None:
     with connection.cursor() as cursor:
         cursor.execute(prepare_queries.prepare_views())
         cursor.execute(duplicates_queries.prepare())

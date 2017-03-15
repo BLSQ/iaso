@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
+from django.http.request import HttpRequest
+from django.http import HttpResponse
 
 from hat.tasks.utils import run_task
 
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     from hat.cases.models import Case, DuplicatesPair
     from hat.sync.models import DeviceDBView
 
@@ -49,7 +51,7 @@ def index(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def status(request, task_id: str):
+def status(request: HttpRequest, task_id: str) -> HttpResponse:
     from hat.tasks.views import task_state
     return task_state(request,
                       task_id=task_id,
@@ -63,7 +65,7 @@ def status(request, task_id: str):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def done(request, task_id: str):
+def done(request: HttpRequest, task_id: str) -> HttpResponse:
     url = reverse('maintenance:index')
     return redirect(url + '?task_id={}&{}'.format(task_id, request.GET.urlencode()))
 
@@ -71,7 +73,7 @@ def done(request, task_id: str):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def get_file(request, task_id: str, filename: str):
+def get_file(request: HttpRequest, task_id: str, filename: str) -> HttpResponse:
     from hat.tasks.views import download_get
     return download_get(request,
                         task_id=task_id,
@@ -83,12 +85,12 @@ def get_file(request, task_id: str, filename: str):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def delete_db_data(request):
+def delete_db_data(request: HttpRequest) -> HttpResponse:
     from hat.cases.models import Case
     try:
         Case.objects.all().delete()
     except Exception as e:
-        logger.exception(e)
+        logger.exception(str(e))
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:
         messages.add_message(request, messages.SUCCESS, _('Task done.'))
@@ -98,7 +100,7 @@ def delete_db_data(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def reimport(request):
+def reimport(request: HttpRequest) -> HttpResponse:
     from hat.tasks.jobs import reimport_task
     task = run_task(reimport_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
@@ -107,7 +109,7 @@ def reimport(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def rebuild_duplicates(request):
+def rebuild_duplicates(request: HttpRequest) -> HttpResponse:
     from hat.tasks.jobs import duplicates_task
     task = run_task(duplicates_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
@@ -116,7 +118,7 @@ def rebuild_duplicates(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def download_events_dump(request):
+def download_events_dump(request: HttpRequest) -> HttpResponse:
     from hat.tasks.jobs import dump_events_task
     task = run_task(dump_events_task, superuser=True)
     url = reverse('maintenance:status', kwargs={'task_id': task.id})
@@ -126,7 +128,7 @@ def download_events_dump(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def upload_events_dump(request):
+def upload_events_dump(request: HttpRequest) -> HttpResponse:
     from hat.common.utils import create_shared_filename
     from hat.tasks.jobs import load_events_dump_task
     try:
@@ -141,7 +143,7 @@ def upload_events_dump(request):
         return redirect('maintenance:status', task_id=task.id)
 
     except Exception as e:
-        logger.exception(e)
+        logger.exception(str(e))
         messages.add_message(request, messages.ERROR, _('Error: %(error)s') % {'error': e})
     else:
         messages.add_message(request, messages.SUCCESS, _('Upload done.'))
@@ -151,7 +153,7 @@ def upload_events_dump(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def download_events(request):
+def download_events(request: HttpRequest) -> HttpResponse:
     from hat.tasks.jobs import export_task
     fields = 'stamp, table_name, sub_type, name, total, created, updated, deleted'
     sql = 'SELECT {} FROM hat_event_view ORDER BY stamp DESC'.format(fields)
@@ -166,7 +168,7 @@ def download_events(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['POST'])
-def import_synced(request):
+def import_synced(request: HttpRequest) -> HttpResponse:
     from hat.tasks.jobs import import_synced_devices_task
     task = run_task(import_synced_devices_task, superuser=True)
     return redirect('maintenance:status', task_id=task.id)
@@ -175,7 +177,7 @@ def import_synced(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def devices_list(request):
+def devices_list(request: HttpRequest) -> HttpResponse:
     from hat.sync.models import DeviceDBView
     from hat.common.paginator import paginate
     items = DeviceDBView.objects.order_by('last_synced_date', 'device_id')
@@ -189,7 +191,7 @@ def devices_list(request):
 @login_required()
 @user_passes_test(lambda u: u.is_superuser)
 @require_http_methods(['GET'])
-def events_list(request):
+def events_list(request: HttpRequest) -> HttpResponse:
     sql = '''
         SELECT id, stamp, table_name, sub_type, name, total, created, updated, deleted
           FROM hat_event_view

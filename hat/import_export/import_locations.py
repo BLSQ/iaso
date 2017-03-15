@@ -1,12 +1,15 @@
+from typing import Optional
+from .typing import ImportResult
+
 import logging
 from django.db import transaction
 from django.utils.translation import ugettext as _
-from pandas import DataFrame
+from pandas import DataFrame, Series, notnull
 from simpledbf import Dbf5
 
 from .errors import get_import_error
 from .load import load_locations_into_db, load_locations_areas_into_db
-from .utils import capitalize, get_property_by_year
+from .utils import capitalize
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def import_locations_file(orgname: str, filename: str) -> dict:
+def import_locations_file(orgname: str, filename: str) -> ImportResult:
     '''
     This method receives the COMPLETE villages list.
     It will trucate the "location" table and insert the new entries.
@@ -72,13 +75,13 @@ def import_locations_file(orgname: str, filename: str) -> dict:
         result['stats'] = stats
 
     except Exception as ex:
-        logger.exception(ex)
+        logger.exception(str(ex))
         result['error'] = ex
 
     return result
 
 
-def import_locations_areas_file(orgname: str, filename: str) -> dict:
+def import_locations_areas_file(orgname: str, filename: str) -> ImportResult:
     '''
     This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
     It will update the missing province "info" in the "location" table entries.
@@ -106,15 +109,35 @@ def import_locations_areas_file(orgname: str, filename: str) -> dict:
         result['stats'] = stats
 
     except Exception as ex:
-        logger.exception(ex)
+        logger.exception(str(ex))
         result['error'] = get_import_error(ex)
 
     return result
 
 
-def population_value(row) -> str:
+def population_value(row: Series) -> Optional[int]:
     return get_property_by_year(row, prefix='POP_', returnType='value')
 
 
-def population_year(row) -> str:
+def population_year(row: Series) -> Optional[int]:
     return get_property_by_year(row, prefix='POP_', returnType='year')
+
+
+def get_property_by_year(row: Series,
+                         prefix: str='',
+                         returnType: str='value') -> Optional[int]:
+    import datetime
+    currentYear = datetime.date.today().year
+    # the first year is `2000` but the `range` method is exclusive
+    firstYear = 1999
+
+    # iterate through the years in reverse order,
+    # last years are more "meaningful" than previous ones
+    for year in range(currentYear, firstYear, -1):
+        key = prefix + str(year)
+        if key in row and notnull(row[key]):
+            if returnType == 'value':
+                return row[key]
+            else:
+                return year
+    return None

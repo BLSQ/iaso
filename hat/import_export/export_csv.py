@@ -1,10 +1,14 @@
+from typing import Optional
 from django.conf import settings
 from django.db import connection
+from django.db.models.query import QuerySet
 from hat.common.utils import run_cmd, create_shared_filename
 from hat.queries import export_queries
 
 
-def export_csv(sql_sentence=None, queryset=None, sep=',') -> str:
+def export_csv(sql_sentence: str=None,
+               queryset: QuerySet=None,
+               sep: str=',') -> Optional[str]:
     if not sql_sentence and queryset:
         sql, params = queryset.query.sql_with_params()
         with connection.cursor() as cursor:

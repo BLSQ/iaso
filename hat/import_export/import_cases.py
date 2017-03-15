@@ -1,3 +1,6 @@
+from typing import Dict, List, Union, cast
+from hat.common.typing import JsonType
+from .typing import ImportResult
 import logging
 from django.utils.translation import ugettext as _
 from .errors import ImportStage, ImportStageException, get_import_error
@@ -5,14 +8,14 @@ from .extract import extract_file_data, prepare_mdb_data, prepare_mobile_data
 from .transform import transform_source
 from .load import load_cases_into_db
 from .utils import hash_file
-from hat.cases.event_log import EventFile, log_cases_file_import, cases_file_exists
+from hat.cases.event_log import EventFile, EventStats, log_cases_file_import, cases_file_exists
 
 logger = logging.getLogger(__name__)
 
 
-def import_cases_file(orgname: str, filename: str):
+def import_cases_file(orgname: str, filename: str) -> ImportResult:
     ''' Import a cases file with handling errors and storing the event '''
-    result = {
+    result: ImportResult = {
         'typename': None,
         'orgname': orgname,
         'filename': filename,
@@ -31,7 +34,7 @@ def import_cases_file(orgname: str, filename: str):
         result['typename'] = _(source_type)
 
     except Exception as ex:
-        logger.exception(ex)
+        logger.exception(str(ex))
         result['error'] = get_import_error(ex)
 
     else:
@@ -44,7 +47,7 @@ def import_cases_file(orgname: str, filename: str):
     return result
 
 
-def import_historic_data(orgname, tables):
+def import_historic_data(orgname: str, tables: Dict[str, str]) -> EventStats:
     extracted = prepare_mdb_data('historic', tables)
     transformed = transform_source('historic', extracted)
 
@@ -57,22 +60,26 @@ def import_historic_data(orgname, tables):
     return load_cases_into_db(transformed)
 
 
-def import_pv_data(tables):
+def import_pv_data(tables: Dict[str, str]) -> EventStats:
     extracted = prepare_mdb_data('pv', tables)
     transformed = transform_source('pv', extracted)
     return load_cases_into_db(transformed)
 
 
-def import_backup_data(docs):
+def import_backup_data(docs: List[JsonType]) -> EventStats:
     extracted = prepare_mobile_data(docs)
     transformed = transform_source('backup', extracted)
     return load_cases_into_db(transformed)
 
 
-def import_cases_data(source_type, orgname, data):
+def import_cases_data(source_type: str,
+                      orgname: str,
+                      data: Union[Dict[str, str], List[JsonType]]) -> EventStats:
     if source_type == 'historic':
-        return import_historic_data(orgname, data)
+        return import_historic_data(orgname, cast(Dict[str, str], data))
     elif source_type == 'pv':
-        return import_pv_data(data)
+        return import_pv_data(cast(Dict[str, str], data))
     elif source_type == 'backup':
-        return import_backup_data(data)
+        return import_backup_data(cast(List[JsonType], data))
+    else:
+        raise TypeError('Unknown source type: {}'.format(source_type))

@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Dict
 from .utils import run_cmd
 
 '''
@@ -7,7 +7,7 @@ Functions to extract info from mdb files via mdb-tools https://github.com/brianb
 '''
 
 
-def get_schema(mdb_file: str, table=None, namespace=None) -> str:
+def get_schema(mdb_file: str, table: str=None, namespace: str=None) -> str:
     '''Get the schema of the mdb file as sql'''
     cmd = ['mdb-schema', '--no-indexes', mdb_file, 'postgres']
     if table is not None:
@@ -27,7 +27,7 @@ def get_table_csv(mdb_file: str, table: str) -> str:
     return run_cmd(['mdb-export', '-d', ';', mdb_file, table])
 
 
-def get_all_tables(mdb_file: str) -> str:
+def get_all_tables(mdb_file: str) -> Dict[str, str]:
     # Pattern for error string raised when mdb file does not
     # contain a certain table.
     table_error_re = re.compile('Error:\sTable\s\w+\sdoes\snot\sexist')

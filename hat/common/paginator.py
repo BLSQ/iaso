@@ -1,8 +1,15 @@
+from typing import Dict, Any
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http.request import HttpRequest
+from django.db.models.query import QuerySet
 
 
-def paginate(request, objects, prefix_url: str, page_size=25) -> dict:
-    def get_page_url(p):
+def paginate(request: HttpRequest,
+             objects: QuerySet,
+             prefix_url: str,
+             page_size: int = 25) -> Dict[str, Any]:
+
+    def get_page_url(p: int) -> str:
         qs = request.GET.copy()
         qs['page'] = p
         return prefix_url + qs.urlencode()

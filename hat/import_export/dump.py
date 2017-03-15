@@ -4,7 +4,8 @@ from hat.common.utils import run_cmd, create_shared_filename
 from hat.cases.event_log import EventTable
 
 # get table names in pg_dump/restore param format
-tables_params = ['-t', 'hat_event'] + [p for t in EventTable for p in ('-t', t.value)]
+tables_params = ['-t', 'hat_event'] + \
+                [p for t in EventTable for p in ('-t', t.value)]
 
 db_name = settings.DB_NAME
 if settings.TESTING:
@@ -28,7 +29,7 @@ def dump_events() -> str:
     return filename
 
 
-def load_events_dump(filename):
+def load_events_dump(filename: str) -> None:
     '''
     Delete any events in the database and load events from dump.
     Warning: If this fails somewhere after the events have been

@@ -1,5 +1,6 @@
+from typing import Any
 import requests
-from requests import Request
+from requests import Response
 from django.conf import settings
 
 '''
@@ -10,26 +11,26 @@ url = settings.COUCHDB_URL
 defaults = {'auth': (settings.COUCHDB_USER, settings.COUCHDB_PASSWORD)}
 
 
-def get(path: str, *args, **kwargs) -> Request:
+def get(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
     return requests.get(url + '/' + path, *args, **ks)
 
 
-def head(path: str, *args, **kwargs) -> Request:
+def head(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
     return requests.get(url + '/' + path, *args, **ks)
 
 
-def post(path: str, *args, **kwargs) -> Request:
+def post(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
     return requests.post(url + '/' + path, *args, **ks)
 
 
-def put(path: str, *args, **kwargs) -> Request:
+def put(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
     return requests.put(url + '/' + path, *args, **ks)
 
 
-def delete(path: str, *args, **kwargs) -> Request:
+def delete(path: str, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
-    return requests.delete(url + '/' + path, *args, **ks)
+    return requests.delete(url + '/' + path, **ks)

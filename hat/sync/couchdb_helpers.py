@@ -1,3 +1,10 @@
+from typing import Dict
+from hat.common.typing import JsonType
+import re
+import string
+import random
+from hat.couchdb import api, setup
+
 '''
 Generate and update CouchDB credentials and dbs
 (for mobile users authenticating via their google token)
@@ -6,13 +13,9 @@ This file contains tools to create and update CouchDB credentials and dbs.
 Use the create_or_update_user function, which either creates a new set of credentials or
 generates a new password for an existing user (as an automatic 'forgot password' function)
 '''
-import re
-import string
-import random
-from hat.couchdb import api, setup
 
 
-def generate_password():
+def generate_password() -> str:
     '''
     Generate a long password string
     These passwords are never intended to be typed by hand, but rather
@@ -25,18 +28,18 @@ def generate_password():
         ) for _ in range(100))
 
 
-def generate_user_id(email):
+def generate_user_id(email: str) -> str:
     return 'org.couchdb.user:{}'.format(email)
 
 
-def generate_db_name(device_id):
+def generate_db_name(device_id: str) -> str:
     #  filter according to:  http://docs.couchdb.org/en/master/api/database/common.html#put--db
     #  + remove some more special chars, since they're annoying
     filtered_name = re.sub('[^a-z0-9_-]', '', device_id.lower())
     return 'device_{}'.format(filtered_name)
 
 
-def create_db(device_id):
+def create_db(device_id: str) -> None:
     db_name = generate_db_name(device_id)
     # Create or update the couchdb db where only the user has access
     setup.setup_db(db_name, {
@@ -47,7 +50,7 @@ def create_db(device_id):
     })
 
 
-def create_user(email, password, device_id):
+def create_user(email: str, password: str, device_id: str) -> None:
     '''
     Uses the email as username
     Creates a user for that username.
@@ -75,7 +78,7 @@ def create_user(email, password, device_id):
     r.raise_for_status()
 
 
-def update_user(url, password, device_id, existing):
+def update_user(url: str, password: str, device_id: str, existing: JsonType) -> None:
     '''
     Update existing user with new password
     '''
@@ -86,7 +89,7 @@ def update_user(url, password, device_id, existing):
     api.put(url, json=existing)
 
 
-def create_or_update_user(email, device_id):
+def create_or_update_user(email: str, device_id: str) -> Dict[str, str]:
     '''
     For emails not having a CouchDB user, creates a DB, and a couchdb user,
     returns the credentials for that DB
@@ -116,7 +119,7 @@ def create_or_update_user(email, device_id):
     }
 
 
-def delete_user(email):
+def delete_user(email: str) -> None:
     # We need to retreive the revision to delete the user
     user_url = '_users/' + generate_user_id(email)
     get_user = api.get(user_url)

@@ -90,9 +90,9 @@ def download_get(request: HttpRequest,
                  task_id: str,
                  filename: str,
                  error_view: str) -> HttpResponse:
-    def send_to_error() -> None:
+    def send_to_error() -> HttpResponse:
         messages.add_message(request, messages.ERROR,  default_messages['download_error'])
-        send_to(request, task_id=task_id, view=error_view)
+        return send_to(request, task_id=task_id, view=error_view)
 
     try:
         file = get_task_result(task_id, user=request.user)
@@ -141,6 +141,6 @@ def get_message(msgs: Dict[str, str], msg_id: str) -> str:
     return msg
 
 
-def send_to(request: HttpRequest, task_id: str, view: str) -> None:
+def send_to(request: HttpRequest, task_id: str, view: str) -> HttpResponse:
     url = reverse(view, kwargs={'task_id': task_id})
-    redirect(url + '?' + request.GET.urlencode())
+    return redirect(url + '?' + request.GET.urlencode())

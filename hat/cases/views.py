@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 from django.http.request import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse
 
 from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
@@ -465,7 +465,7 @@ def run_download_task(request: HttpRequest, queryset: QuerySet) -> HttpResponse:
         fields = ANON_EXPORT_FIELDS
         permission = 'cases.export'
     else:
-        return None
+        raise HttpResponseForbidden()
 
     task = run_task(export_task,
                     kwargs={'queryset': queryset.values(*fields)},

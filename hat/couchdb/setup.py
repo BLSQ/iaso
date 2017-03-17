@@ -1,3 +1,5 @@
+from typing import Callable
+from hat.common.typing import JsonType
 import os
 import os.path
 from pathlib import Path
@@ -14,7 +16,9 @@ class DuplicateKeyError(ValueError):
     pass
 
 
-def load_config(directory, strip=False, predicate=lambda x: True):
+def load_config(directory: str,
+                strip: bool=False,
+                predicate: Callable[[str], bool]=None) -> JsonType:
     """
     Load a couchdb configuration from the filesystem, like couchdbkit or couchdb-bootstrap.
 
@@ -31,13 +35,13 @@ def load_config(directory, strip=False, predicate=lambda x: True):
 
     for (dirpath, dirnames, filenames) in os.walk(directory, topdown=False):
         key = os.path.split(dirpath)[-1]
-        ob = {}
+        ob = {}  # type: JsonType
         objects[dirpath] = (key, ob)
 
         for name in filenames:
             fkey = os.path.splitext(name)[0]
             fullname = os.path.join(dirpath, name)
-            if not predicate(fullname):
+            if predicate and not predicate(fullname):
                 continue
             if fkey in ob:
                 raise DuplicateKeyError("file '{0}' clobbers key '{1}'"
@@ -54,7 +58,7 @@ def load_config(directory, strip=False, predicate=lambda x: True):
             if name == '_attachments':
                 raise NotImplementedError("_attachments are not supported")
             fullpath = os.path.join(dirpath, name)
-            if not predicate(fullpath):
+            if predicate and not predicate(fullpath):
                 continue
             subkey, subthing = objects[fullpath]
             if subkey in ob:
@@ -65,7 +69,7 @@ def load_config(directory, strip=False, predicate=lambda x: True):
     return ob
 
 
-def setup_db(db_name: str, config: dict, cleanup=False):
+def setup_db(db_name: str, config: JsonType, cleanup: bool=False) -> None:
     '''
     Setup up a couchdb database from a configuration
     When `cleanup` is True all the data will be wiped from the existing database!
@@ -102,7 +106,7 @@ def setup_db(db_name: str, config: dict, cleanup=False):
     force_put_doc(secdoc_url, secdoc)
 
 
-def setup_couchdb(cleanup=False):
+def setup_couchdb(cleanup: bool=False) -> None:
     ''' Setup couchdb by loading the configuration from a directory structure '''
     base_path = Path(settings.COUCHDB_DIR)
     dirs = (p for p in base_path.iterdir() if p.is_dir())

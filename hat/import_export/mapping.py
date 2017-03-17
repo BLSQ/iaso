@@ -1,7 +1,8 @@
+from typing import List, Dict, Any, Optional, cast
 from functools import reduce
 from enum import Enum
 from .utils import capitalize
-from pandas import Series
+from pandas import DataFrame, Series
 import pandas
 
 # This file contains the transformation functions.
@@ -26,45 +27,62 @@ def series_to_str(s: Series) -> str:
 ################################################################################
 
 
-def historic_get_sex(x):
-    return {'Féminin': 'female', 'Masculin': 'male'}.get(x, None)
+def historic_get_sex(x: Optional[str]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
+    return {
+        'Féminin': 'female',
+        'Masculin': 'male'
+    }.get(cast(str, x), None)
 
 
-def historic_get_result(x):
+def historic_get_result(x: Optional[int]) -> Optional[bool]:
     if pandas.isnull(x) or x == 99:
         return None
-    return x == -1
+    return cast(int, x) == -1
 
 
-def historic_get_catt_blood_result(x):
+def historic_get_catt_blood_result(x: Optional[int]) -> Optional[bool]:
     if pandas.isnull(x) or x == 99:
         return None
-    return x < 0
+    return cast(int, x) < 0
 
 
-def historic_get_catt_dil_result(x):
+def historic_get_catt_dil_result(x: Optional[int]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
     return {
         1: '1/2',
         2: '1/4',
         3: '1/8',
         4: '1/16',
         5: '1/32',
-    }.get(x, None)
+    }.get(cast(int, x), None)
 
 
-def historic_get_pl_result(x):
-    return {1: 'stage1', 2: 'stage2', 3: 'unknown'}.get(x, None)
+def historic_get_pl_result(x: Optional[int]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
+    return {
+        1: 'stage1',
+        2: 'stage2',
+        3: 'unknown'
+    }.get(cast(int, x), None)
 
 
-def historic_get_pl_liquid_result(x):
+def historic_get_pl_liquid_result(x: Optional[int]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
     return {
         1: 'clear',
         2: 'unclear',
         3: 'hemorrhagic',
-    }.get(x, None)
+    }.get(cast(int, x), None)
 
 
-def historic_get_pl_lcr_result(x):
+def historic_get_pl_lcr_result(x: Optional[int]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
     return {
         1: '1/8',
         2: '1/16',
@@ -74,20 +92,24 @@ def historic_get_pl_lcr_result(x):
         6: '1/256',
         7: '1/512',
         8: '1/1024',
-    }.get(x, None)
+    }.get(cast(int, x), None)
 
 
-def historic_get_followup_done(main_table, related_table, field):
+def historic_get_followup_done(main_table: DataFrame,
+                               related_table: DataFrame,
+                               field: str) -> Series:
     return Series(main_table.index, index=main_table.index).isin(related_table.index)
 
 
-def historic_get_secondary_effects(x):
+def historic_get_secondary_effects(x: Optional[int]) -> Optional[bool]:
     if pandas.isnull(x) or x == 99:
         return None
-    return x == 1
+    return cast(int, x) == 1
 
 
-def historic_get_followup_test_result(main_table, related_table, field):
+def historic_get_followup_test_result(main_table: DataFrame,
+                                      related_table: DataFrame,
+                                      field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(series_to_str)
 
@@ -97,19 +119,19 @@ def historic_get_followup_test_result(main_table, related_table, field):
 ################################################################################
 
 
-def mobile_get_sex(x):
+def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return x.lower()
+    return cast(str, x).lower()
 
 
-def mobile_get_result(x):
+def mobile_get_result(x: Optional[str]) -> Optional[bool]:
     if pandas.isnull(x):
         return None
-    return x == 'positive'
+    return cast(str, x) == 'positive'
 
 
-def mobile_get_age(table, field):
+def mobile_get_age(table: DataFrame, field: str) -> int:
     age_years = 0
     age_months = 0
     if 'person.age.years' in table:
@@ -124,42 +146,51 @@ def mobile_get_age(table, field):
 ################################################################################
 
 
-def pv_get_sex(value) -> str:
-    return {'Feminin': 'female', 'Masculin': 'male'}.get(value, None)
+def pv_get_sex(x: Optional[str]) -> Optional[str]:
+    if pandas.isnull(x):
+        return None
+    return {
+        'Feminin': 'female',
+        'Masculin': 'male'
+    }.get(cast(str, x), None)
 
 
-def pv_get_result(x):
+def pv_get_result(x: Optional[str]) -> Optional[bool]:
     if pandas.isnull(x):
         return None
     # 0, +, NF
-    return x == '+'
+    return cast(str, x) == '+'
 
 
-def pv_get_catt_blood_result(x):
+def pv_get_catt_blood_result(x: Optional[str]) -> Optional[bool]:
     if pandas.isnull(x):
         return None
-    if x == 'NEG':
+    if cast(str, x) == 'NEG':
         return False
     # POS+, POS++, POS+++
     return True
 
 
-def pv_get_pl_result(x):
+def pv_get_pl_result(x: Optional[str]) -> Optional[str]:
     # convert to same as historic
+    if pandas.isnull(x):
+        return None
     return {
         'STADE 1': 'stage1',
         'STADE 2': 'stage2',
         'INCONNU(non faite)': 'unknown'
-    }.get(x, None)
+    }.get(cast(str, x), None)
 
 
-def pv_get_pl_liquid_result(x):
+def pv_get_pl_liquid_result(x: Optional[str]) -> Optional[str]:
     # convert to same as historic
+    if pandas.isnull(x):
+        return None
     return {
         'clair': 'clear',
         'trouble': 'unclear',
         'hémorragique': 'hemorrhagic',
-    }.get(x, None)
+    }.get(cast(str, x), None)
 
 
 # The following apply functions for treatment and followup fields all
@@ -173,33 +204,45 @@ def pv_get_pl_liquid_result(x):
 # It might make sense to combine some of these in the future.
 
 
-def pv_get_treatment_date(main_table, related_table, field) -> Series:
+def pv_get_treatment_date(main_table: DataFrame,
+                          related_table: DataFrame,
+                          field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     # need to drop invalid dates and start on 'none'
     # otherwise invalid dates may be chosen over real dates
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series.dropna(), None))
 
 
-def pv_get_treatment(main_table, related_table, field) -> Series:
+def pv_get_treatment(main_table: DataFrame,
+                     related_table: DataFrame,
+                     field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
-def pv_get_treatment_result(main_table, related_table, field) -> Series:
+def pv_get_treatment_result(main_table: DataFrame,
+                            related_table: DataFrame,
+                            field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
-def pv_has_secondary_effects(main_table, related_table, field) -> Series:
+def pv_has_secondary_effects(main_table: DataFrame,
+                             related_table: DataFrame,
+                             field: str) -> Series:
     df_yes = related_table[related_table[field] == 'Oui']
     return Series(main_table.index, index=main_table.index).isin(df_yes.index)
 
 
-def pv_get_followup_done(main_table, related_table, field) -> Series:
+def pv_get_followup_done(main_table: DataFrame,
+                         related_table: DataFrame,
+                         field: str) -> Series:
     return Series(main_table.index, index=main_table.index).isin(related_table.index)
 
 
-def pv_get_followup_test_result(main_table, related_table, field) -> Series:
+def pv_get_followup_test_result(main_table: DataFrame,
+                                related_table: DataFrame,
+                                field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(series_to_str)
 
@@ -209,7 +252,7 @@ def pv_get_followup_test_result(main_table, related_table, field) -> Series:
 ################################################################################
 
 
-def reduce_test_result(a, b):
+def reduce_test_result(a: Optional[bool], b: Optional[bool]) -> Optional[bool]:
     # Values can be True, False or null. We have to handle null explicitely
     # to not accidentially have this return null in favor of False.
     if pandas.isnull(b):
@@ -265,7 +308,8 @@ CONFIRMATION_TEST = 'confirmation'
 STAGING_TEST = 'staging'
 UNKNOWN_TEST = 'unknown'
 
-MAPPING = [
+
+MAPPING: List[Dict[str, Any]] = [
     # meta fields
     {
         "field": "source",
@@ -1172,7 +1216,7 @@ SUSPECT_ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
 # `import_options` - Dict of tables to extract from the files.
 #                    In the case of mdb files, those are the options passed to pandas.
 #
-IMPORT_CONFIG = {
+IMPORT_CONFIG: Dict[str, Dict[str, Any]] = {
     "historic": {
         "type": "historic",
         "mapping_field": "historic",

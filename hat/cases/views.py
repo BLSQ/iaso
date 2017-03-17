@@ -1,10 +1,14 @@
+from typing import List, Tuple, Any
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F, Q, Min, Max, Count, Case as QCase, When
+from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
+from django.http.request import HttpRequest
+from django.http import HttpResponseForbidden, HttpResponse
 
 from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
@@ -18,7 +22,7 @@ from .models import Case, CaseView, DuplicatesPair
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET'])
-def duplicatespair_list(request):
+def duplicatespair_list(request: HttpRequest) -> HttpResponse:
     queryset = DuplicatesPair.objects.order_by('id')
 
     locations_filters = {
@@ -64,7 +68,7 @@ def duplicatespair_list(request):
         ),
     ]
 
-    orders = (
+    orders = [
         OrderChoice(
             id='date', label=_('Document date'),
             asc=lambda q: q.order_by('case1__document_date', 'case2__document_date', ),
@@ -88,7 +92,7 @@ def duplicatespair_list(request):
                                       '-case2__name', '-case2__prename', '-case2__lastname',
                                       ),
         ),
-    )
+    ]
 
     queryset, form = filter_and_create_form(request,
                                             queryset=queryset,
@@ -114,7 +118,7 @@ def duplicatespair_list(request):
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['GET', 'POST'])
-def duplicatespair_detail(request, pair_id):
+def duplicatespair_detail(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
     (older_case, younger_case, merged_case, steps) = merge_cases_pair(pair_id)
@@ -138,7 +142,7 @@ def duplicatespair_detail(request, pair_id):
         'test_pl_result'
     ]
 
-    def xstr(s):
+    def xstr(s: Any) -> str:
         return str(s) if s is not None else ''
 
     rows = []
@@ -172,7 +176,7 @@ def duplicatespair_detail(request, pair_id):
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['POST'])
-def duplicatespair_merge(request, pair_id):
+def duplicatespair_merge(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
     commit_merge(pair_id)
@@ -184,7 +188,7 @@ def duplicatespair_merge(request, pair_id):
 @login_required()
 @permission_required('cases.reconcile_duplicates')
 @require_http_methods(['POST'])
-def duplicatespair_ignore(request, pair_id):
+def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
     commit_ignore(pair_id)
@@ -196,7 +200,7 @@ def duplicatespair_ignore(request, pair_id):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def cases_details(request, doc_id=None):
+def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:cases_list')
     case = Case.objects.get(document_id=doc_id)
     if request.user.has_perm('cases.view_full'):
@@ -214,7 +218,7 @@ def cases_details(request, doc_id=None):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET', 'POST'])
-def cases_list(request):
+def cases_list(request: HttpRequest) -> HttpResponse:
     queryset = CaseView.objects.order_by('id')
 
     full_access = request.user.has_perm('cases.view_full')
@@ -338,7 +342,7 @@ def cases_list(request):
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def analysis(request):
+def analysis(request: HttpRequest) -> HttpResponse:
     queryset = CaseView.objects
 
     locations_filters = {
@@ -382,7 +386,6 @@ def analysis(request):
                                             locations_filters=locations_filters,
                                             fields_filters=fields_filters,
                                             dates_filters=dates_filters,
-                                            orders=None,
                                             columns=columns,
                                             )
 
@@ -451,7 +454,7 @@ download_messages = {
 }
 
 
-def run_download_task(request, queryset):
+def run_download_task(request: HttpRequest, queryset: QuerySet) -> HttpResponse:
     from hat.tasks.utils import run_task
     from hat.tasks.jobs import export_task
 
@@ -462,7 +465,7 @@ def run_download_task(request, queryset):
         fields = ANON_EXPORT_FIELDS
         permission = 'cases.export'
     else:
-        return None
+        raise HttpResponseForbidden()
 
     task = run_task(export_task,
                     kwargs={'queryset': queryset.values(*fields)},
@@ -475,7 +478,7 @@ def run_download_task(request, queryset):
 
 @login_required()
 @require_http_methods(['GET'])
-def download_state(request, task_id):
+def download_state(request: HttpRequest, task_id: str) -> HttpResponse:
     from hat.tasks.views import task_state
     return task_state(request,
                       task_id=task_id,
@@ -488,21 +491,21 @@ def download_state(request, task_id):
 
 @login_required()
 @require_http_methods(['GET'])
-def download_done(request, task_id):
+def download_done(request: HttpRequest, task_id: str) -> HttpResponse:
     url = reverse('cases:cases_list')
     return redirect(url + '?task_id={}&{}'.format(task_id, request.GET.urlencode()))
 
 
 @login_required()
 @require_http_methods(['GET'])
-def download_failed(request, task_id):
+def download_failed(request: HttpRequest, task_id: str) -> HttpResponse:
     url = reverse('cases:cases_list')
     return redirect(url + '?{}'.format(request.GET.urlencode()))
 
 
 @login_required()
 @require_http_methods(['GET'])
-def download_get(request, task_id):
+def download_get(request: HttpRequest, task_id: str) -> HttpResponse:
     from hat.tasks.views import download_get
     return download_get(request,
                         task_id=task_id,
@@ -511,7 +514,7 @@ def download_get(request, task_id):
                         )
 
 
-def get_download_link(request):
+def get_download_link(request: HttpRequest) -> HttpResponse:
     task_id = request.GET.get('task_id', None)
     if task_id:
         return reverse('cases:download_get', kwargs={'task_id': task_id})
@@ -530,21 +533,21 @@ Q_suspect = Q_is_suspect
 Q_confirmed = Q_confirmation_positive
 
 
-def count(items, condition, name):
+def count(items: QuerySet, condition: Q, name: str) -> QuerySet:
     return items.filter(condition).values_list(name).distinct().count()
 
 
-def calculated(condition, name):
+def calculated(condition: Q, name: str) -> QuerySet:
     return QCase(When(condition, then=F(name)))
 
 
-def check_boolean(condition, value):
+def check_boolean(condition: Q, value: str) -> QuerySet:
     return condition if value == 'true' else ~condition
 
 
-def get_sources_choices():
+def get_sources_choices() -> List[Tuple[str, str]]:
     return [(c, c) for c in CaseView.objects.values_list('source', flat=True).distinct()]
 
 
-def get_devices_choices():
+def get_devices_choices() -> List[Tuple[str, str]]:
     return [(c, c) for c in CaseView.objects.values_list('device_id', flat=True).distinct()]

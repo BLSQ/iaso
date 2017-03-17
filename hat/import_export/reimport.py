@@ -1,3 +1,4 @@
+from typing import Dict, Any, Iterator
 import time
 import json
 import logging
@@ -18,15 +19,18 @@ from hat.cases.event_log import EventStats, EventTable
 
 logger = logging.getLogger(__name__)
 
+EventType = Dict[str, Any]
+DBCursor = Any
 
-def write_contents_to_file(orgname, contents):
+
+def write_contents_to_file(orgname: str, contents: str) -> str:
     suffix = PurePath(orgname).suffix.lower()
     filename = create_shared_filename(suffix)
     write_file_base64(filename, contents)
     return filename
 
 
-def import_event(event):
+def import_event(event: EventType) -> EventStats:
     ''' Import a event from the hat_event_view '''
     table = EventTable(event['table_name'])
 
@@ -73,7 +77,7 @@ def import_event(event):
     return stats
 
 
-def iterate_events(cursor):
+def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
     '''
     Generator function to fetch events in batches and yield one event at a time.
     Events will be ordered by timestamp ascending. We use the timestamp of the last
@@ -82,6 +86,7 @@ def iterate_events(cursor):
     batch_size = 10
     # Postgres uses a special value for the lowest date possible'-infinity'
     last_stamp = '-infinity'
+    done = False
     while True:
         cursor.execute('''
             SELECT * FROM hat_event_view
@@ -90,23 +95,24 @@ def iterate_events(cursor):
             LIMIT %s
         ''', [last_stamp, batch_size])
         columns = [col[0] for col in cursor.description]
-        last_stamp = None
+        done = True
         # iterate over the batch until fetch returns None
         while True:
             row = cursor.fetchone()
             if row is None:
                 break
+            done = False
             event = dict(zip(columns, row))
             last_stamp = event['stamp']
             yield event
 
         # last_stamp will be None if the last batch was empty and we are at the end
-        if last_stamp is None:
+        if done:
             raise StopIteration
 
 
 @transaction.atomic
-def reimport(delete_data=True) -> List[dict]:
+def reimport(delete_data: bool=True) -> List[EventStats]:
     logger.info('starting reimport')
     try:
         start_time = time.clock()
@@ -134,7 +140,7 @@ def reimport(delete_data=True) -> List[dict]:
             end_time = time.clock()
 
     except Exception as ex:
-        logger.exception(ex)
+        logger.exception(str(ex))
         raise ex
 
     logger.info('reimport finished, duration: {:.2f}'.format(end_time - start_time))

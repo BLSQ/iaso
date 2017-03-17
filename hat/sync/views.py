@@ -10,6 +10,8 @@ from rest_framework.decorators import (
 )
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
+from django.http.request import HttpRequest
+from django.http import HttpResponse
 import logging
 
 from .couchdb_helpers import create_or_update_user
@@ -26,7 +28,7 @@ logger = logging.getLogger(__name__)
 @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
-def signin(request):
+def signin(request: HttpRequest) -> HttpResponse:
     if settings.GOOGLE_CLIENT_ID == '':
         msg = 'Server is missing google client id'
         logger.error(msg)
@@ -53,7 +55,7 @@ def signin(request):
             settings.GOOGLE_CLIENT_ID
         )
     except client.VerifyJwtTokenError as err:
-        logger.exception(err)
+        logger.exception(str(err))
         return Response('Could not verify ID token', status.HTTP_500_INTERNAL_SERVER_ERROR)
     except crypt.AppIdentityError:
         msg = 'Invalid ID Token'
@@ -80,7 +82,7 @@ def signin(request):
     try:
         couchdb_config = create_or_update_user(email, device_id)
     except ValueError as err:
-        logger.exception(err)
+        logger.exception(str(err))
         return Response('Creating credentials failed', status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Get/Create the device db record and couchdb db

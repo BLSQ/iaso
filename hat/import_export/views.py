@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
+from django.http.request import HttpRequest
+from django.http import HttpResponse
 from pathlib import PurePath
 
 from hat.common.utils import create_shared_filename
@@ -16,7 +18,7 @@ from .forms import UploadFileForm
 @login_required()
 @permission_required('cases.import')
 @require_http_methods(['GET'])
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     return render(request, 'import_export/datasets.html')
 
 
@@ -28,7 +30,7 @@ def index(request):
 @login_required()
 @permission_required('cases.import')
 @require_http_methods(['GET', 'POST'])
-def upload_cases(request):
+def upload_cases(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UploadFileForm(True, '.mdb,.accdb,.enc', request.POST, request.FILES)
         if form.is_valid():
@@ -60,7 +62,7 @@ def upload_cases(request):
 @login_required()
 @permission_required('cases.import_locations')
 @require_http_methods(['GET', 'POST'])
-def upload_locations(request):
+def upload_locations(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UploadFileForm(False, '.dbf', request.POST, request.FILES)
         if form.is_valid():
@@ -92,7 +94,7 @@ def upload_locations(request):
 @login_required()
 @permission_required('cases.import_reconciled')
 @require_http_methods(['GET', 'POST'])
-def upload_reconciled(request):
+def upload_reconciled(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UploadFileForm(False, '.csv,.xlsx', request.POST, request.FILES)
         if form.is_valid():

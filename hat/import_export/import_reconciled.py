@@ -6,12 +6,14 @@ from .errors import ImportStageException, ImportStage, get_import_error
 from .extract import extract_reconciliation_file
 from .load import load_reconciled_into_db
 from .utils import hash_file, read_file_base64, capitalize
-from hat.cases.event_log import EventFile, log_reconciled_file_import, reconciled_file_exists
+from .typing import ImportResult
+from hat.cases.event_log import EventFile, EventStats, \
+    log_reconciled_file_import, reconciled_file_exists
 
 logger = logging.getLogger(__name__)
 
 
-def import_reconciled_file(orgname: str, filename: str):
+def import_reconciled_file(orgname: str, filename: str) -> ImportResult:
     ''' Import a reconciled file with handling errors and storing the event '''
     result = {
         'typename': _('reconciled data'),
@@ -29,7 +31,7 @@ def import_reconciled_file(orgname: str, filename: str):
         result['stats'] = stats
 
     except Exception as ex:
-        logger.exception(ex)
+        logger.exception(str(ex))
         result['error'] = get_import_error(ex)
 
     else:
@@ -42,7 +44,7 @@ def import_reconciled_file(orgname: str, filename: str):
     return result
 
 
-def import_reconciled_file_unchecked(orgname: str, filename: str):
+def import_reconciled_file_unchecked(orgname: str, filename: str) -> EventStats:
     ''' Import a reconciled file without handling errors '''
     df = extract_reconciliation_file(filename)
 

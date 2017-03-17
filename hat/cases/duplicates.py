@@ -1,3 +1,4 @@
+from typing import List, NamedTuple
 from django.db import transaction
 from django.db.models import Q
 
@@ -5,16 +6,29 @@ from hat.cases.models import Case, DuplicatesPair, IgnoredPair
 from .event_log import log_cases_merge
 
 
+class MergeStep(NamedTuple):
+    name: str
+    case: Case
+    winner: int
+
+
+class MergeResult(NamedTuple):
+    older_case: Case
+    younger_case: Case
+    merged_case: Case
+    steps: List[MergeStep]
+
+
 @transaction.atomic
-def commit_ignore(pair_id):
+def commit_ignore(pair_id: str) -> None:
     pair = DuplicatesPair.objects.get(pk=int(pair_id))
     IgnoredPair(document_id1=pair.document_id1, document_id2=pair.document_id2).save()
     pair.delete()
 
 
 @transaction.atomic
-def commit_merge(pair_id):
-    (older_case, younger_case, merged_case, steps) = merge_cases_pair(pair_id)
+def commit_merge(pair_id: str) -> None:
+    (older_case, younger_case, merged_case, _) = merge_cases_pair(pair_id)
 
     # delete pair
     DuplicatesPair.objects.get(pk=int(pair_id)).delete()
@@ -68,7 +82,7 @@ def commit_merge(pair_id):
     log_cases_merge(older_case.document_id, younger_case.document_id)
 
 
-def merge_cases_pair(pair_id):
+def merge_cases_pair(pair_id: str) -> MergeResult:
     pair = DuplicatesPair.objects.get(pk=int(pair_id))
 
     # Get cases in chronological asc order
@@ -81,17 +95,17 @@ def merge_cases_pair(pair_id):
     return merge_case_models(older_case, younger_case)
 
 
-def merge_cases_by_ids(updated_doc_id, deleted_doc_id):
+def merge_cases_by_ids(updated_doc_id: str, deleted_doc_id: str) -> None:
     older_case = Case.objects.get(document_id=updated_doc_id)
     younger_case = Case.objects.get(document_id=deleted_doc_id)
-    (_, _, merged_case, _) = merge_case_models(older_case, younger_case)
+    result = merge_case_models(older_case, younger_case)
     # save merged with changes, it's the updated older case
-    merged_case.save()
+    result.merged_case.save()
     # and delete the younger one.
-    younger_case.delete()
+    result.younger_case.delete()
 
 
-def merge_case_models(older_case, younger_case):
+def merge_case_models(older_case: Case, younger_case: Case) -> MergeResult:
     '''
     Merge two case models by merging the younger cases values into the older one.
     The returned case model has the same id as the older case model and saving the
@@ -103,18 +117,18 @@ def merge_case_models(older_case, younger_case):
     for field in older_case._meta.get_fields():
         # ids belong to the older case (merge into it)
         if field.name in ['id', 'document_id', 'hat_id', 'version_number']:
-            steps.append((field.name, older_case, 1))
+            steps.append(MergeStep(field.name, older_case, 1))
             continue
 
         old_value = getattr(older_case, field.name)
         new_value = getattr(younger_case, field.name)
 
         if new_value == old_value:
-            steps.append((field.name, older_case, 0))
+            steps.append(MergeStep(field.name, older_case, 0))
         elif new_value is not None:
-            steps.append((field.name, younger_case, 2))
+            steps.append(MergeStep(field.name, younger_case, 2))
         elif old_value is not None:
-            steps.append((field.name, older_case, 1))
+            steps.append(MergeStep(field.name, older_case, 1))
 
     merged_case = Case(**{name: getattr(case, name) for (name, case, _) in steps})
-    return (older_case, younger_case, merged_case, steps)
+    return MergeResult(older_case, younger_case, merged_case, steps)

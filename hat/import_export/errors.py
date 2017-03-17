@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, cast, Callable, Any
 from enum import Enum
 from functools import wraps
 from django.utils.translation import ugettext as _
@@ -15,16 +15,16 @@ class ImportStage(Enum):
 
 
 class ImportStageException(Exception):
-    def __init__(self, message: str, stage: ImportStage):
+    def __init__(self, message: str, stage: ImportStage) -> None:
         super(Exception, self).__init__(message)
         self.stage = stage
 
 
-def handle_import_stage(stage: ImportStage):
+def handle_import_stage(stage: ImportStage) -> Callable:
     '''Decorator to wrap exceptions in ImportStageExceptions'''
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def func_wrapper(*args, **kwargs):
+        def func_wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except Exception as exc:
@@ -44,9 +44,10 @@ MESSAGES = dict([
 ])
 
 
-def get_import_error(ex: Exception) -> Dict[str, dict]:
+def get_import_error(ex: Exception) -> Dict[str, str]:
     stage = ImportStage.other
     if type(ex) is ImportStageException:
+        ex = cast(ImportStageException, ex)
         stage = ex.stage
     message = str(ex)
     short_message = MESSAGES[stage.name]

@@ -1,3 +1,4 @@
+from typing import Dict, Callable
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
@@ -5,20 +6,21 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
+from django.http.request import HttpRequest
+from django.http import HttpResponse
 from rq.exceptions import NoSuchJobError
-
 from .utils import get_task_status, get_task_result
 
 
 @login_required()
 @require_http_methods(['GET'])
-def task_state(request,
+def task_state(request: HttpRequest,
                task_id: str,
                next_view: str,
                expired_view: str,
                error_view: str,
                texts: dict,
-               ):
+               ) -> HttpResponse:
 
     if not expired_view:
         expired_view = next_view
@@ -50,13 +52,13 @@ def task_state(request,
 
 @login_required()
 @require_http_methods(['GET'])
-def task_done(request,
+def task_done(request: HttpRequest,
               task_id: str,
               expired_view: str,
               template: str,
-              post_action,
+              post_action: Callable,
               texts: dict,
-              ):
+              ) -> HttpResponse:
     try:
         status = get_task_status(task_id, user=request.user)
     except NoSuchJobError:
@@ -84,8 +86,11 @@ def task_done(request,
 
 @login_required()
 @require_http_methods(['GET'])
-def download_get(request, task_id: str, filename: str, error_view: str):
-    def send_to_error():
+def download_get(request: HttpRequest,
+                 task_id: str,
+                 filename: str,
+                 error_view: str) -> HttpResponse:
+    def send_to_error() -> HttpResponse:
         messages.add_message(request, messages.ERROR,  default_messages['download_error'])
         return send_to(request, task_id=task_id, view=error_view)
 
@@ -125,7 +130,7 @@ default_messages = {
 }
 
 
-def get_message(msgs: list, msg_id: str) -> str:
+def get_message(msgs: Dict[str, str], msg_id: str) -> str:
     msg = None
     if msg_id in msgs:
         msg = msgs[msg_id]
@@ -136,6 +141,6 @@ def get_message(msgs: list, msg_id: str) -> str:
     return msg
 
 
-def send_to(request, task_id: str, view: str):
+def send_to(request: HttpRequest, task_id: str, view: str) -> HttpResponse:
     url = reverse(view, kwargs={'task_id': task_id})
     return redirect(url + '?' + request.GET.urlencode())

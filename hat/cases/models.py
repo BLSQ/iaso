@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -123,7 +124,7 @@ class Case(CaseAbstract):
 
 
 @receiver(pre_save, sender=Case)
-def increase_case_version_number(sender, instance, *args, **kwargs):
+def increase_case_version_number(sender, instance, *args, **kwargs):  # type: ignore
     instance.version_number = instance.version_number + 1
 
 
@@ -185,7 +186,7 @@ class DuplicatesPair(models.Model):
     document_id1 = models.TextField(db_index=True, null=True)
     document_id2 = models.TextField(db_index=True, null=True)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         if(self.case1_id > self.case2_id):
             super(DuplicatesPair, self).save(*args, **kwargs)
         else:

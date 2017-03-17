@@ -1,6 +1,9 @@
+from typing import Union, List, Any, Dict
+from .typing import ImportResult
 import json
 from django.conf.urls import url, include
 from django.utils.translation import ugettext as _
+from django.http.request import HttpRequest
 
 from hat.tasks.views import task_state, task_done
 from . import views
@@ -21,7 +24,9 @@ upload_messages = {
 }
 
 
-def post_task_upload(request, results) -> dict:
+def post_task_upload(request: HttpRequest,
+                     results: Union[List[ImportResult], ImportResult]) \
+                     -> Dict[str, Any]:
     if not isinstance(results, list):
         results = [results]
 
@@ -39,7 +44,7 @@ def post_task_upload(request, results) -> dict:
     }
 
 
-def get_kwargs_state(namespace):
+def get_kwargs_state(namespace: str) -> Dict[str, Any]:
     return {
         'next_view': 'datasets:{}:done'.format(namespace),
         'expired_view': 'datasets:{}:upload'.format(namespace),
@@ -48,7 +53,7 @@ def get_kwargs_state(namespace):
     }
 
 
-def get_kwargs_done(namespace):
+def get_kwargs_done(namespace: str) -> Dict[str, Any]:
     return {
         'expired_view': 'datasets:{}:done'.format(namespace),
         'template': 'import_export/upload_done.html',

@@ -1,32 +1,50 @@
-from collections import namedtuple
+from typing import NamedTuple, List, Any, Callable, Tuple, Union, Dict, Optional
 from datetime import datetime, timedelta
 from django import forms
 from django.utils.translation import ugettext as _
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
 
 DATE_FORMAT = "%Y-%m-%d"
 
 
-QuerysetAndForm = namedtuple('QuerysetAndForm', ['queryset', 'form'])
-FieldChoice = namedtuple('FieldChoice', ['id', 'label', 'filter', 'choices'])
-OrderChoice = namedtuple('OrderChoice', ['id', 'label', 'asc', 'desc'])
-ColumnChoice = namedtuple('ColumnChoice', ['id', 'label'])
+class FieldChoice(NamedTuple):
+    id: str
+    label: str
+    filter: Callable[[QuerySet, Any], None]
+    choices: Optional[List[Tuple[str, str]]]
+
+
+class OrderChoice(NamedTuple):
+    id: str
+    label: str
+    asc: Callable[[QuerySet], None]
+    desc: Callable[[QuerySet], None]
+
+
+class ColumnChoice(NamedTuple):
+    id: Union[None, str]
+    label: str
 
 
 class CasesFilterForm(forms.Form):
     def __init__(self,
-                 locations_choices,
-                 custom_filters,
-                 orders_choices,
-                 columns,
-                 restricted,
-                 *args, **kwargs):
+                 locations_choices: List[List[str]],
+                 custom_filters: Optional[List[FieldChoice]],
+                 orders_choices: Optional[List[Tuple[str, str]]],
+                 columns: Optional[List[ColumnChoice]],
+                 restricted: Dict[str, Any],
+                 *args: Any, **kwargs: Any) -> None:
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
         select_attrs = {'class': 'select--minimised'}
         date_attrs = {'class': 'input--minimised'}
         radio_attrs = {'class': 'radio--minimised'}
         input_attrs = {'class': 'input--minimised'}
-        none_choice = (None, _('None'))
+
+        # Specify type to make choices list concatenation work
+        # none_choice: Tuple[Optional[str], str] = (None, _('None'))
+        none_choice = ('', _('None'))
 
         ########################################################################
         # location fields
@@ -107,14 +125,14 @@ class CasesFilterForm(forms.Form):
 
 
 def filter_and_create_form(
-    request,
-    queryset,
-    locations_filters,
-    dates_filters,
-    fields_filters: None,
-    orders: None,
-    columns: None
-) -> QuerysetAndForm:
+    request: HttpRequest,
+    queryset: QuerySet,
+    locations_filters: Dict[str, Any],
+    dates_filters: Dict[str, Any],
+    fields_filters: List[FieldChoice]=None,
+    orders: List[OrderChoice]=None,
+    columns: List[ColumnChoice]=None,
+) -> Tuple[QuerySet, forms.Form]:
 
     ############################################################################
     # check locations fields and filters
@@ -194,6 +212,7 @@ def filter_and_create_form(
     ############################################################################
     # check order
 
+    orders_choices = None
     if orders:
         orders_choices = [(o.id, o.label) for o in orders]
         order = request.GET.get('order', None)
@@ -205,8 +224,6 @@ def filter_and_create_form(
                     queryset = order_choice.asc(queryset)
                 else:
                     queryset = order_choice.desc(queryset)
-    else:
-        orders_choices = None
 
     ############################################################################
     # create form
@@ -219,7 +236,7 @@ def filter_and_create_form(
                            request.GET or None,
                            )
 
-    return QuerysetAndForm(queryset=queryset, form=form)
+    return queryset, form
 
 
 ################################################################################

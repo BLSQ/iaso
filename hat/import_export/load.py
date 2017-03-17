@@ -1,3 +1,4 @@
+from typing import Iterator, Dict, Callable, Any
 from django.db import connection, transaction
 from pandas import DataFrame, concat as pandasconcat
 import pandas
@@ -7,7 +8,7 @@ from .errors import handle_import_stage, ImportStage
 from hat.cases.event_log import EventStats
 
 
-def batch_dataframe(df):
+def batch_dataframe(df: DataFrame) -> Iterator[DataFrame]:
     ''' Helper generator function that yields slices of a DataFrame '''
     if len(df) > 0:
         size = 1000
@@ -64,7 +65,7 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     )
 
 
-def update_entries(duplicates):
+def update_entries(duplicates: DataFrame) -> int:
     # remove unwanted columns
     # we only want to add test results:
     duplicates.drop(
@@ -150,7 +151,7 @@ def load_reconciled_into_db(df: DataFrame) -> EventStats:
     )
 
 
-def get_columns_mapping(df):
+def get_columns_mapping(df: DataFrame) -> Dict[str, Callable[[Any], str]]:
     # Some values need quoting when we want to insert them with sql.
     # We create a mapping from column names to quoting function
     mapping = {}
@@ -167,7 +168,7 @@ def get_columns_mapping(df):
     return mapping
 
 
-def create_cases(df):
+def create_cases(df: DataFrame) -> None:
     mapping = get_columns_mapping(df)
     columns = list(df.columns)
     sql_columns = ','.join([('"' + c + '"') for c in columns])
@@ -198,7 +199,7 @@ def create_cases(df):
             cursor.execute(sql)
 
 
-def update_cases(df):
+def update_cases(df: DataFrame) -> int:
     mapping = get_columns_mapping(df)
     num_updated = 0
     with connection.cursor() as cursor:

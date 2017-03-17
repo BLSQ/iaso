@@ -7,7 +7,7 @@ from django_rq import get_scheduler
 class CasesAppConfig(AppConfig):
     name = 'hat.cases'
 
-    def ready(self):
+    def ready(self) -> None:
         post_migrate.connect(setup_db, sender=self)
 
         # schedule jobs
@@ -31,6 +31,6 @@ class CasesAppConfig(AppConfig):
         )
 
 
-def setup_db(sender, **kwargs):
+def setup_db(sender, **kwargs):  # type: ignore
     from hat.queries import prepare_db
     prepare_db()

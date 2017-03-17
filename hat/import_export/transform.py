@@ -1,5 +1,5 @@
+from typing import Dict, Any
 from functools import reduce
-from typing import Dict
 from pandas import DataFrame, Series
 
 from .errors import handle_import_stage, ImportStage
@@ -7,16 +7,19 @@ from .utils import hat_id, create_documentid
 from .mapping import MAPPING, IMPORT_CONFIG
 
 
-def transform_field(source_field, main_table_name, tables) -> Series:
+def transform_field(source_field: Dict[str, Any],
+                    main_table_name: str,
+                    tables: Dict[str, DataFrame]) -> Series:
     if "fields" in source_field:
         # We have multiple source fields that must be reduced to a single import field
         reduce_func = source_field.get('reduce', None)
         if reduce_func is None:
-            raise ValueError('Multifield: ' + source_field + ' must have a "reduce" property')
+            raise ValueError('Multifield must have a "reduce" property: {}'.format(source_field))
         result_series = []
         for acc_field in source_field["fields"]:
             if 'field' not in acc_field:
-                raise ValueError('Multifield: ' + source_field + ' must have a "field" property')
+                raise ValueError(
+                    'Multifield must have a "field" property: {}'.format(source_field))
             result_series.append(transform_field(acc_field, main_table_name, tables))
         # Reduce the result set by combining the result Series one by one after another
         # The result of each combination is used for the next reduce iteration.
@@ -90,7 +93,7 @@ def transform(mapping_field: str, main_table_name: str, tables: Dict[str, DataFr
 
 
 @handle_import_stage(ImportStage.transform)
-def transform_source(source_type: str, source_data: Dict[str, DataFrame]):
+def transform_source(source_type: str, source_data: Dict[str, DataFrame]) -> DataFrame:
     config = IMPORT_CONFIG[source_type]
     transformed = transform(config['mapping_field'], config['main_table'], source_data)
 

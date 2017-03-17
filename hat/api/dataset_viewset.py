@@ -1,3 +1,5 @@
+from typing import Dict, Tuple, List, Any, Union, Callable, Optional
+from hat.common.typing import JsonType
 from functools import wraps
 from datetime import datetime, timedelta, date
 from calendar import monthrange
@@ -5,8 +7,10 @@ import pytz
 from django.db import connection
 from django.db.models import Count, Min, Max
 from django.db.models.expressions import RawSQL
+from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
@@ -28,7 +32,9 @@ datasets = {}
 DATE_FORMAT = "%Y-%m-%d"
 
 
-def parse_date_range(params, default_date_from=None):
+def parse_date_range(params: Dict[str, str],
+                     default_date_from: datetime=None) \
+                     -> Tuple[datetime, datetime]:
     today = date.today()
     date_from = default_date_from or datetime(today.year, today.month, today.day)
     date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
@@ -39,14 +45,14 @@ def parse_date_range(params, default_date_from=None):
     return (date_from, date_to)
 
 
-def dataset(params_schema=None):
+def dataset(params_schema: JsonType=None) -> Callable:
     '''
     Decorator to add a query function to the dataset.
     Takes an optional schema to validate the request parameters against.
     '''
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
         datasets[func.__name__] = {
             'getter': wrapper,
@@ -71,11 +77,14 @@ params_schema = {
 }
 
 
-def get_cases_filtered(request, params, ignore_params=None):
+def get_cases_filtered(request: Request,
+                       params: Dict[str, str],
+                       ignore_params: List[str]=None) \
+                       -> QuerySet:
     '''
     Takes the requests parameters as args and returns a filtered CaseView QuerySet.
     '''
-    def get_param_value(key):
+    def get_param_value(key: str) -> Optional[str]:
         if ignore_params is not None and key in ignore_params:
             return None
         else:
@@ -100,13 +109,13 @@ def get_cases_filtered(request, params, ignore_params=None):
         (date_from, date_to) = resolve_dateperiod(dateperiod)
         cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
-    date_from = get_param_value('date_from')
-    date_to = get_param_value('date_to')
-    if date_from is not None:
-        date_from = datetime.strptime(date_from, DATE_FORMAT)
+    date_from_param = get_param_value('date_from')
+    date_to_param = get_param_value('date_to')
+    if date_from_param is not None:
+        date_from = datetime.strptime(date_from_param, DATE_FORMAT)
         cases = cases.filter(document_date__gte=date_from)
-    if date_to is not None:
-        date_to = datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+    if date_to_param is not None:
+        date_to = datetime.strptime(date_to_param, DATE_FORMAT) + timedelta(days=1)
         cases = cases.filter(document_date__lt=date_to)
 
     restrict_to_zs = request.user.profile.restrict_to_zs
@@ -125,13 +134,13 @@ def get_cases_filtered(request, params, ignore_params=None):
 
 
 @dataset(params_schema=params_schema)
-def list_locations(request, params):
+def list_locations(request: Request, params: Dict[str, str]) -> List[str]:
     cases = get_cases_filtered(request, params, ignore_params=['location'])
     return cases.order_by().values('ZS').distinct()
 
 
 @dataset(params_schema=params_schema)
-def count_total(request, params):
+def count_total(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging)
     return {
@@ -141,7 +150,7 @@ def count_total(request, params):
 
 
 @dataset(params_schema=params_schema)
-def count_screened(request, params):
+def count_screened(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     cases = get_cases_filtered(request, params).filter(Q_screening)
     return {
         'total': cases.count(),
@@ -153,7 +162,7 @@ def count_screened(request, params):
 
 
 @dataset(params_schema=params_schema)
-def count_confirmed(request, params):
+def count_confirmed(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     cases = get_cases_filtered(request, params).filter(Q_confirmation)
     return {
         'total': cases.count(),
@@ -163,7 +172,7 @@ def count_confirmed(request, params):
 
 
 @dataset(params_schema=params_schema)
-def count_staging(request, params):
+def count_staging(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     cases = get_cases_filtered(request, params).filter(Q_staging)
     return {
         'total': cases.count(),
@@ -173,7 +182,7 @@ def count_staging(request, params):
 
 
 @dataset(params_schema=params_schema)
-def campaign_meta(request, params):
+def campaign_meta(request: Request, params: Dict[str, str]) -> Dict[str, Union[str, int]]:
     cases = get_cases_filtered(request, params)
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
@@ -184,7 +193,7 @@ def campaign_meta(request, params):
 
 
 @dataset(params_schema=params_schema)
-def tested_per_day(request, params):
+def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, int]]:
     cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
                   .annotate(date=RawSQL('date_trunc(\'day\', document_date)', [])) \
@@ -216,10 +225,10 @@ def tested_per_day(request, params):
         'location': {'type': 'string'},
     }
 })
-def population_coverage(request, params):
+def population_coverage(request: Request, params: Dict[str, str]) -> Dict[str, Any]:
     (date_from, date_to) = parse_date_range(params)
 
-    sql_context = {
+    sql_context: Dict[str, Any] = {
         'date_from': date_from,
         'date_to': date_to
     }
@@ -251,7 +260,7 @@ def population_coverage(request, params):
     },
     'additionalProperties': False,
 })
-def cases_over_time(request, params):
+def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, Any]]:
     (date_from, date_to) = parse_date_range(params)
 
     sql_context = {
@@ -287,7 +296,7 @@ def cases_over_time(request, params):
         'caseyearfrom': {'type': 'string'},
     }
 })
-def data_by_location(request, params):
+def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str, Any]]:
     '''
     View to list and retrieve the official list of villages
     with their meaningful info like confirmed cases, screened people...
@@ -298,7 +307,7 @@ def data_by_location(request, params):
     # last expected date is 31st December current year
     currentYear = date.today().year
 
-    sql_context = {
+    sql_context: Dict[str, Any] = {
         'date_from': date_from,
         'date_to': date_to,
     }
@@ -326,7 +335,7 @@ class DatasetViewSet(viewsets.ViewSet):
     '''
     View to list and retrieve registered datasets
     '''
-    def list(self, request):
+    def list(self, request: Request) -> Response:
         items = []
         for k, v in datasets.items():
             items.append({
@@ -336,10 +345,10 @@ class DatasetViewSet(viewsets.ViewSet):
             })
         return Response(items)
 
-    def retrieve(self, request, pk=None):
-        item = datasets.get(pk, None)
-        if item is None:
+    def retrieve(self, request: Request, pk: str) -> Response:
+        if pk not in datasets:
             raise NotFound()
+        item = datasets[pk]
         # We have to convert the query dict to a regular dict, because the json schema validation
         # might mutate the params dict with default values.
         params = dict(request.GET.items())

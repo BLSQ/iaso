@@ -6,6 +6,7 @@ django-sql-explorer==1.0
 django-webpack-loader==0.4.0
 djangorestframework==3.5.3
 flake8==3.3.0
+flake8-mypy==17.3.2
 jsonschema==2.6.0
 jupyter==1.0.0
 mock==2.0.0
@@ -23,3 +24,4 @@ simpledbf==0.2.6
 snaql==0.4
 uwsgi==2.0.14
 xlrd==1.0.0
+Sphinx==1.5.3

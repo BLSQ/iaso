@@ -1,3 +1,4 @@
+from typing import List, Dict
 import logging
 from typing import Any
 from django.contrib.auth.models import User
@@ -10,7 +11,11 @@ from rq.job import Job
 logger = logging.getLogger(__name__)
 
 
-def run_task(task, args=None, kwargs=None, permission=None, superuser=False):
+def run_task(task: Job,
+             args: List=None,
+             kwargs: Dict=None,
+             permission: str=None,
+             superuser: bool=False) -> Job:
     if args is None:
         args = []
     if kwargs is None:
@@ -24,7 +29,7 @@ def run_task(task, args=None, kwargs=None, permission=None, superuser=False):
     return job
 
 
-def raise_on_permission(job, user: User):
+def raise_on_permission(job: Job, user: User) -> None:
     require_superuser = job.meta.get('superuser_required', None)
     if require_superuser and (not user or not user.is_superuser):
         raise PermissionDenied()

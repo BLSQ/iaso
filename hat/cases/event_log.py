@@ -1,13 +1,24 @@
+from typing import NamedTuple, List, Dict, Any, Union, Optional
 import json
 from enum import Enum
 from django.db import connection
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 from snaql.convertors import guard_string
-
+from hat.common.typing import JsonType
 from hat.queries import event_log_queries as queries
 
-EventStats = namedtuple('EventStats', ['total', 'created', 'updated', 'deleted'])
-EventFile = namedtuple('EventFile', ['name', 'hash', 'contents'])
+
+class EventStats(NamedTuple):
+    total: int
+    created: int
+    updated: int
+    deleted: int
+
+
+class EventFile(NamedTuple):
+    name: str
+    hash: str
+    contents: Union[str, JsonType]
 
 
 class EventTable(Enum):
@@ -23,7 +34,7 @@ class EventTable(Enum):
 # 'SELECT * FROM {}'.format(sql.Identifier(table_name))
 
 
-def get_events():
+def get_events() -> List[Dict[str, Any]]:
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM hat_event_view')
         columns = [col[0] for col in cursor.description]
@@ -31,7 +42,7 @@ def get_events():
         return events
 
 
-def get_event_of_type(table_type, id):
+def get_event_of_type(table_type: EventTable, id: int) -> Dict[str, Any]:
     with connection.cursor() as cursor:
         # Join the row from the main event table and the specific event table
         sql = '''
@@ -44,7 +55,7 @@ def get_event_of_type(table_type, id):
         return dict(zip(columns, cursor.fetchone()))
 
 
-def cases_file_exists(file_hash):
+def cases_file_exists(file_hash: str) -> bool:
     with connection.cursor() as cursor:
         sql = queries.cases_file_by_hash(file_hash=file_hash)
         cursor.execute(sql)
@@ -52,7 +63,7 @@ def cases_file_exists(file_hash):
         return r is not None
 
 
-def reconciled_file_exists(file_hash):
+def reconciled_file_exists(file_hash: str) -> bool:
     with connection.cursor() as cursor:
         sql = queries.reconciled_file_by_hash(file_hash=file_hash)
         cursor.execute(sql)
@@ -60,7 +71,9 @@ def reconciled_file_exists(file_hash):
         return r is not None
 
 
-def log_event(stats: EventStats, event_table: EventTable, event_data: OrderedDict) -> int:
+def log_event(stats: EventStats,
+              event_table: EventTable,
+              event_data: OrderedDict) -> Optional[int]:
     ''' Create a log entry for an event. We only want to log events when they
         changed any data and return `None` in case the event did not. For This
         to work it is important that correct `EventStats` are provided.
@@ -83,7 +96,7 @@ def log_event(stats: EventStats, event_table: EventTable, event_data: OrderedDic
         return id
 
 
-def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) -> int:
+def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) -> Optional[int]:
     event_data = OrderedDict([
         ('filename', guard_string(file.name)),
         ('file_hash', guard_string(file.hash)),
@@ -95,7 +108,7 @@ def log_cases_file_import(stats: EventStats, file: EventFile, source_type: str) 
     return log_event(stats, EventTable.cases_file, event_data)
 
 
-def log_reconciled_file_import(stats: EventStats, file: EventFile) -> int:
+def log_reconciled_file_import(stats: EventStats, file: EventFile) -> Optional[int]:
     event_data = OrderedDict([
         ('filename', guard_string(file.name)),
         ('file_hash', guard_string(file.hash)),
@@ -104,7 +117,7 @@ def log_reconciled_file_import(stats: EventStats, file: EventFile) -> int:
     return log_event(stats, EventTable.reconciled_file, event_data)
 
 
-def log_cases_merge(older_id, younger_id):
+def log_cases_merge(older_id: str, younger_id: str) -> Optional[int]:
     stats = EventStats(
         created=0,
         updated=1,
@@ -123,7 +136,7 @@ def log_cases_merge(older_id, younger_id):
     return log_event(stats, EventTable.cases_merge, event_data)
 
 
-def log_sync_import(stats: EventStats, docs: dict, device_id: str) -> id:
+def log_sync_import(stats: EventStats, docs: dict, device_id: str) -> Optional[int]:
     documents = json.dumps(docs)
     event_data = OrderedDict([
         # We do not `guard_string` the data, because

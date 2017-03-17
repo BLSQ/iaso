@@ -7,15 +7,17 @@ from hat.couchdb.utils import fetch_db_docs
 from hat.sync.models import DeviceDB
 from .errors import get_import_error
 from .load import load_cases_into_db
-from hat.cases.event_log import log_sync_import
+from hat.cases.event_log import log_sync_import, EventStats
 from .extract import prepare_mobile_data
 from .transform import transform_source
+from .typing import ImportResult
+from hat.common.typing import JsonType
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def import_synced_devices() -> dict:
+def import_synced_devices() -> ImportResult:
     results = []
     for device in DeviceDB.objects.all():
         result = {
@@ -29,7 +31,7 @@ def import_synced_devices() -> dict:
             stats = import_synced_docs(docs, device.device_id)
             result['stats'] = stats
         except Exception as ex:
-            logger.exception(ex)
+            logger.exception(str(ex))
             result['error'] = get_import_error(ex)
             device.last_synced_log_status = str(ex)
         else:
@@ -49,7 +51,7 @@ def import_synced_devices() -> dict:
     return results
 
 
-def import_synced_docs(docs, device_id) -> dict:
+def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
     extracted = prepare_mobile_data(docs)
     transformed = transform_source('sync', extracted)
     stats = load_cases_into_db(transformed)

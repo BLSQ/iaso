@@ -1,35 +1,41 @@
-from typing import List, Any
+from typing import Dict, List, Any
 import random
 import string
 from datetime import datetime
 from uuid import uuid4
 
+JsonType = Dict[str, Any]
 
-def randstr(minlen=2, maxlen=10) -> str:
+
+def randstr(minlen: int=2, maxlen: int=10) -> str:
     n = min(24, random.randint(minlen, maxlen))
     return ''.join(random.sample(string.ascii_lowercase, n))
 
 
-def mock_ref(schema: dict, defs: dict) -> dict:
+def mock_ref(schema: JsonType, defs: JsonType) -> JsonType:
     ref = schema['$ref']
     # only internal definitions are supported
-    if ref[:14] == '#/definitions/':
-        d = ref[14:]
-        if d in defs:
-            return mock_schema(defs[d], defs)
+    local_path = ref[:14]
+    name = ref[14:]
+    if local_path == '#/definitions/' and name in defs:
+        return mock_schema(defs[name], defs)
+    else:
+        raise KeyError('Only internal definitions are supported')
 
 
-def mock_enum(schema: dict) -> Any:
+def mock_enum(schema: JsonType) -> Any:
     return random.choice(schema['enum'])
 
 
-def mock_object(schema: dict, defs=None) -> dict:
+def mock_object(schema: JsonType, defs: JsonType=None) -> JsonType:
     if 'properties' in schema:
         return {p: mock_schema(s, defs)
                 for p, s in schema['properties'].items()}
+    else:
+        raise TypeError('Json schema object has no "properties" property')
 
 
-def mock_array(schema: dict, defs=None) -> List[Any]:
+def mock_array(schema: JsonType, defs: JsonType=None) -> List[Any]:
     if 'minItems' in schema:
         minimum = schema['minItems']
     else:
@@ -42,9 +48,11 @@ def mock_array(schema: dict, defs=None) -> List[Any]:
     if isinstance(schema['items'], dict):
         s = schema['items']
         return [mock_schema(s, defs) for i in range(n)]
+    else:
+        raise TypeError('Json schema only supports arrays of objects')
 
 
-def mock_integer(schema: dict) -> int:
+def mock_integer(schema: JsonType) -> int:
     if 'minimum' in schema:
         minimum = schema['minimum']
     else:
@@ -56,7 +64,7 @@ def mock_integer(schema: dict) -> int:
     return random.randint(minimum, maximum)
 
 
-def mock_number(schema: dict) -> float:
+def mock_number(schema: JsonType) -> float:
     if 'minimum' in schema:
         minimum = schema['minimum']
     else:
@@ -68,7 +76,7 @@ def mock_number(schema: dict) -> float:
     return minimum + random.random() * (maximum - minimum)
 
 
-def mock_string(schema: dict) -> str:
+def mock_string(schema: JsonType) -> str:
     if 'minLength' in schema:
         minlen = schema['minLength']
     else:
@@ -80,7 +88,7 @@ def mock_string(schema: dict) -> str:
     return randstr(minlen, maxlen)
 
 
-def mock_format(schema: dict) -> Any:
+def mock_format(schema: JsonType) -> Any:
     f = schema['format']
     if f == 'date-time':
         y = datetime.today().year
@@ -105,7 +113,7 @@ def mock_format(schema: dict) -> Any:
         return 'village'
 
 
-def mock_schema(schema: dict, definitions=None) -> dict:
+def mock_schema(schema: JsonType, definitions: JsonType=None) -> Any:
     defs = definitions
     if defs is None:
         defs = {}
@@ -134,3 +142,5 @@ def mock_schema(schema: dict, definitions=None) -> dict:
             return None
         elif t == 'string':
             return mock_string(schema)
+        else:
+            raise TypeError('Unknown json schema type: {}'.format(type))

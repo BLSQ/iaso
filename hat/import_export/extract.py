@@ -1,3 +1,6 @@
+from typing import Dict, List, Union, Tuple
+from hat.common.typing import JsonType
+from pandas import DataFrame
 import json
 import pandas
 from io import StringIO
@@ -9,18 +12,18 @@ from django.utils.translation import ugettext as _
 from .mapping import IMPORT_CONFIG
 
 
-def extract_mdb_data(filename):
+def extract_mdb_data(filename: str) -> Dict[str, str]:
     return mdb.get_all_tables(filename)
 
 
-def extract_backup_data(filename):
+def extract_backup_data(filename: str) -> JsonType:
     from django.conf import settings
     from hat.common.utils import run_cmd
     data = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
     return json.loads(data)
 
 
-def extract_file_data(filename):
+def extract_file_data(filename: str) -> Tuple[str, Union[Dict[str, str], JsonType]]:
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
         tables = extract_mdb_data(filename)
@@ -28,6 +31,9 @@ def extract_file_data(filename):
             return ('historic', tables)
         elif IMPORT_CONFIG['pv']['main_table'] in tables:
             return ('pv', tables)
+        else:
+            err_msg = _('Cannot import unkown mdb schema')
+            raise ImportStageException(err_msg, ImportStage.filetype)
 
     elif suffix == '.enc':
         return ('backup', extract_backup_data(filename))
@@ -37,7 +43,7 @@ def extract_file_data(filename):
         raise ImportStageException(err_msg, ImportStage.filetype)
 
 
-def extract_reconciliation_file(filename):
+def extract_reconciliation_file(filename: str) -> DataFrame:
     suffix = PurePath(filename).suffix.lower()
     if suffix == '.csv':
         return pandas.read_csv(filename)
@@ -48,7 +54,7 @@ def extract_reconciliation_file(filename):
         raise ImportStageException(err_msg, ImportStage.filetype)
 
 
-def prepare_mdb_data(source_type, tables):
+def prepare_mdb_data(source_type: str, tables: Dict[str, str]) -> Dict[str, DataFrame]:
     import_config = IMPORT_CONFIG[source_type]
     result = {}
     for table_name, options in import_config['import_options'].items():
@@ -68,7 +74,7 @@ def prepare_mdb_data(source_type, tables):
     return result
 
 
-def prepare_mobile_data(docs):
+def prepare_mobile_data(docs: List[JsonType]) -> Dict[str, DataFrame]:
     # keep cases only for this import,
     # (might be locations in the data as well)
     docs = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']

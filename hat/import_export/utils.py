@@ -1,13 +1,13 @@
+from typing import Optional
 import pandas
 import re
-
 from base64 import b64encode, b64decode
 from hashlib import md5
 from pandas import Series
 from string import capwords
 
 
-def capitalize(x: str) -> str:
+def capitalize(x: str) -> Optional[str]:
     if pandas.isnull(x):
         return None
     return capwords(x)
@@ -110,32 +110,14 @@ def hash_file(filename: str) -> str:
     return hasher.hexdigest()
 
 
-def read_file_base64(filename: str):
+def read_file_base64(filename: str) -> str:
     ''' Read the file contents into a base64 encoded string '''
     with open(filename, 'rb') as file:
         # return b64encode(file.read()).decode('ascii')
         return b64encode(file.read()).decode('ascii')
 
 
-def write_file_base64(filename: str, b64str: str):
+def write_file_base64(filename: str, b64str: str) -> None:
     ''' Decode a base64 encoded string and write it to a file '''
     with open(filename, 'wb') as file:
         file.write(b64decode(b64str))
-
-
-def get_property_by_year(row, prefix='', returnType='value') -> str:
-    import datetime
-    currentYear = datetime.date.today().year
-    # the first year is `2000` but the `range` method is exclusive
-    firstYear = 1999
-
-    # iterate through the years in reverse order,
-    # last years are more "meaningful" than previous ones
-    for year in range(currentYear, firstYear, -1):
-        key = prefix + str(year)
-        if key in row and pandas.notnull(row[key]):
-            if returnType == 'value':
-                return row[key]
-            else:
-                return year
-    return None

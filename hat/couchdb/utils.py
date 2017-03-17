@@ -1,12 +1,16 @@
-from typing import Callable
+from typing import Callable, List, Dict
+from hat.common.typing import JsonType
 from urllib.parse import urlparse
-from requests import Request
+from requests import Response
 from django.conf import settings
 from hat.common.utils import run_cmd
 from . import api
 
 
-def walk_changes(db: str, f: Callable[[dict], None], *args, **kwargs) -> None:
+def walk_changes(db: str,
+                 f: Callable[[Dict], None],
+                 *args: List,
+                 **kwargs: Dict) -> None:
     supplied_params = kwargs.get('params', {})
     # set some defaults
     params = {'since': 0, 'limit': 100, **supplied_params}
@@ -25,7 +29,7 @@ def walk_changes(db: str, f: Callable[[dict], None], *args, **kwargs) -> None:
         params = {**params, 'since': j['last_seq']}
 
 
-def force_put_doc(path: str, document: dict) -> Request:
+def force_put_doc(path: str, document: JsonType) -> Response:
     doc = document.copy()
     r = api.get(path)
     if r.status_code == 404:
@@ -41,7 +45,7 @@ def force_put_doc(path: str, document: dict) -> Request:
     return r
 
 
-def bootstrap_couchdb(cleanup=True):
+def bootstrap_couchdb(cleanup: bool=True) -> str:
     o = urlparse(settings.COUCHDB_URL)
     couchdb_url = '{}://{}:{}@{}'.format(
         o.scheme,
@@ -59,11 +63,10 @@ def bootstrap_couchdb(cleanup=True):
             # couchdb already exists we'll delete it before recreating
             api.delete(test_db)
 
-    r = run_cmd(cmd)
-    return r
+    return run_cmd(cmd)
 
 
-def fetch_dbs_info() -> dict:
+def fetch_dbs_info() -> JsonType:
     r = api.get('_all_dbs')
 
     # get the list of non-private databases
@@ -78,7 +81,7 @@ def fetch_dbs_info() -> dict:
     return results
 
 
-def fetch_db_docs(dbname: str, last_seq: str) -> dict:
+def fetch_db_docs(dbname: str, last_seq: str) -> JsonType:
     '''
     get all changed documents in the database since last sequence
     '''

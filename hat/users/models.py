@@ -29,11 +29,7 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)
 @disable_for_loaddata
 def create_user_profile(sender, instance, created, **kwargs):  # type: ignore
-    if created:
+    if created or not hasattr(instance, 'profile'):
+        # Create a profile for new and existing users, that do not have one yet
         Profile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-@disable_for_loaddata
-def save_user_profile(sender, instance, **kwargs):  # type: ignore
     instance.profile.save()

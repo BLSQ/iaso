@@ -27,8 +27,7 @@
   },
   "standard": {
     "ignore": [
-      "hat/assets/bundles",
-      "couchdb/"
+      "hat/assets/bundles"
     ]
   },
   "devDependencies": {

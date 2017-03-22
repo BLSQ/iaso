@@ -11,12 +11,6 @@ from hat.cases.models import CaseView
 
 @login_required()
 @require_http_methods(['GET'])
-def testapp(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/testapp.html')
-
-
-@login_required()
-@require_http_methods(['GET'])
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/home.html')
 

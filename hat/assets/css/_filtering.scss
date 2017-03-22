@@ -109,41 +109,35 @@ $filter-container-height: 2rem;
   }
 }
 
-.filter__container__multiselect {
-  label {
-    border: none;
+Select {
+  border-left: 1px solid $light-gray;
+  max-width: 300px;
+  min-width: 200px;
+  display: inline-block;
+  font-size: $font-size-s;
+  vertical-align: bottom;
+}
+.Select-control {
+  border: 1px solid $light-gray;
+  height: auto;
+}
+.Select-input {
+  height: $filter-container-height;
+  display: inline-block;
+  input {
+    width: 2px;
   }
-
-  .Select {
-    border-left: 1px solid $light-gray;
-    max-width: 300px;
-    min-width: 200px;
-    display: inline-block;
-    font-size: $font-size-s;
-    vertical-align: bottom;
-  }
-  .Select-control {
-    border: none;
-    height: auto;
-  }
-  .Select-input {
-    height: $filter-container-height;
-    display: inline-block;
-    input {
-      width: 2px;
-    }
-  }
-  .Select-value {
-    color: $blue;
-  }
-  .Select-menu-outer {
-    max-height: 150px;
-    margin: 0 -1px;
-  }
-  .Select-menu {
-    max-height: 148px;
-    overflow-y: auto;
-  }
+}
+.Select-value {
+  color: $blue;
+}
+.Select-menu-outer {
+  max-height: 170px;
+  margin: 0 -1px;
+}
+.Select-menu {
+  max-height: 165px;
+  overflow-y: auto;
 }
 
 input.input--minimised {

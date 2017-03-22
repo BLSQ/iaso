@@ -98,8 +98,7 @@ export const DataTable = ({
           <Row className='list__item--stats'
             label={<FormattedMessage id='monthlyreport.items.date_range' defaultMessage='Data collection period' />}
             definition={<FormattedMessage id='monthlyreport.items.date_range.definition' defaultMessage='Taken from date of first entry and date of last entry' />}
-            value={dataCollectionPeriod}
-            />
+            value={dataCollectionPeriod} />
 
           <div className='widget__content list__item--graph' data-qa='monthly-report-data-loaded'>
             <p>
@@ -150,7 +149,9 @@ export const DataTable = ({
       </section>
       <div className='widget__footer'>
         <span className='text--data'>
-          <FormattedMessage id='monthlyreport.datasource.label' defaultMessage='Data source' />:&nbsp;
+          <FormattedMessage id='monthlyreport.datasource.label' defaultMessage='Data source' />
+          {':'}
+          &nbsp;
           <FormattedMessage id='monthlyreport.datasource.mobiledata' defaultMessage='HAT mobile application data' />
         </span>
       </div>

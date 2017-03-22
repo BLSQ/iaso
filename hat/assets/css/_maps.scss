@@ -1,9 +1,8 @@
-/* my god, this whole maps partial is a mess */
-/* could certainly use a sanity check at some stage */
-
 /* colours */
+$active: $blue;
 $buffer: $yellow;
-$highlight: $bright-blue;
+$highlight-buffer: $bright-blue;
+$highlight: $bright-pink;
 $selected: $bright-yellow;
 
 /* village types */
@@ -19,7 +18,7 @@ $types: (
   official: $official,
   other: $other,
   unknown: $unknown,
-  highlight: $bright-pink
+  highlight: $highlight
 );
 
 @each $type, $color in $types {
@@ -31,95 +30,10 @@ $types: (
   }
 }
 
-.widget__toggle-group {
-  display: inline-block;
-  vertical-align: top;
-  margin-bottom: 20px;
-  margin-right: $padding-unit/2;
-  &:last-of-type {
-    margin-right: 0;
-  }
-}
-.widget__toggle-group__legend {
-  display: inline-block;
-  font-size: $font-size-s;
-  font-weight: bold;
-  color: $mid-gray;
-  margin-bottom: 6px;
-  margin-right: $padding-unit/2;
-}
 
-/* legends/checkbox filters for charts */
-[class*="widget__filter__item"] {
-  position: relative;
-  display: inline-block;
-  margin-right: 6px;
-  margin-bottom: 6px;
-}
-
-.widget__filter__item {
-  margin-right: 16px;
-  margin-bottom: 0;
-  &:last-of-type {
-    margin-right: 0;
-  }
-}
-
-[class*="widget__filterplus__text"] {
-  padding: 6px 10px;
-  border-radius: 3px;
-  background-color: $light-gray;
-  font-weight: bold;
-  font-size: 15px;
-  -webkit-font-smoothing: antialiased;
-  color: $mid-gray;
-  cursor: pointer;
-  transition: all .1s ease-in-out;
-  i {
-    margin-right: 6px;
-  }
-
-  &.official {
-    background-color: $official !important;
-    color: white;
-  }
-  &.other {
-    background-color: $other !important;
-    color: white;
-  }
-  &.unknown {
-    background-color: $unknown !important;
-    color: white;
-  }
-}
-
-.widget__filter__text {
-  display: inline-block;
-  vertical-align: middle;
-  font-weight: normal;
-}
-
-input.widget__filter__numberinput {
-  display: inline-block;
-  vertical-align: middle;
-  width: 3rem;
-  height: 1.5rem;
-  border: 1px solid $mid-gray;
-  box-shadow: inset 0 1px 2px 0 rgba(black,.4);
-  border-radius: 2px;
-  margin: 0 .25rem;
-  font-size: $font-size-s;
-}
-
-.widget__filter__input {
-  margin-top: 0;
-  vertical-align: middle;
-  &:checked + .widget__filter__text {
-    color: $dark-blue;
-    font-weight: bold;
-  }
-}
-/* end filters */
+/******************************************************************************
+ * map containers
+ ******************************************************************************/
 
 .map__panel {
   display: inline-block;
@@ -137,38 +51,38 @@ input.widget__filter__numberinput {
     width: 100%;
     z-index: 0;
   }
+
+  &--left {
+    display: inline-block;
+    height: $map-height;
+    width: calc(100% - #{$map-sidebar-width});
+  }
+
+  &--right {
+    border-left: 1px solid $gray;
+    box-shadow: -1px 0 1px 0 rgba(black, 0.08);
+    display: inline-block;
+    height: $map-height;
+    overflow: hidden;
+    vertical-align: top;
+    width: $map-sidebar-width;
+  }
 }
 
-.map__panel--left {
-  display: inline-block;
-  height: $map-height;
-  width: calc(100% - #{$map-sidebar-width});
+[class*="map__header"] {
+  display: flex;
+  padding: 0 5px;
 }
-
-.map__panel--right {
+.map__header--legend {
+  flex-basis: 30%;
+}
+.map__header--filters {
+  flex-basis: 50%;
   position: relative;
-  display: inline-block;
-  vertical-align: top;
-  width: $map-sidebar-width;
-  height: $map-height;
-  background: rgba(255,255,255,0.97);
-  border-left: 1px solid $gray;
-  box-shadow: -1px 0 1px 0 rgba(black, 0.08);
-  overflow-y: scroll;
+  z-index: 1000;
 }
-
-.map__sidebar__export {
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  box-sizing: border-box;
-  padding: $padding-unit/2;
-  text-align: center;
-  background: white;
-  border-top: 1px solid $gray;
-  box-shadow: 0 -1px 1px 0 rgba(black, 0.13);
+.map__header--layers {
+  flex-basis: 20%;
 }
 
 .map-container {
@@ -178,101 +92,84 @@ input.widget__filter__numberinput {
   overflow: hidden;
 }
 
-/* map controls */
-.map__control__container {
-  display: flex;
-  width: 100%;
-  input.small {
-    width: 26px;
-    text-align: center;
-    font-weight: bold;
-    padding: 0.45em 0.25em;
-  }
+.leaflet-container {
+  color: $text-color;
+  cursor: default !important;
+  font-family: $body-font-family;
+  font-weight: normal;
+  margin: 0 auto;
 }
 
-.map__control__tooltip:not(:empty) {
-  background-color: white;
-  border-radius: 4px;
-  border: 1px solid $gray;
-  box-shadow: 0 0 10px rgba(black, 0.2);
-  vertical-align: middle;
-  padding: 0.5em 1em;
+.map__text--select {
+  display: block;
 }
 
-/* common styles for map controls */
-[class*="map__control__button"] {
-  background-color: white;
-  border-radius: 4px;
-  border: 2px solid $gray;
-  box-shadow: 0 0 10px rgba(black, 0.2);
-  cursor: pointer !important;
-  font-size: $font-size-s;
-  line-height: 30px;
-  width: 34px;
-  height: 34px;
-  margin: 0;
-  text-align: center;
-  .active {
-    color: $selected;
-  }
-}
-
-.leaflet-touch .map__control__button {
-  border: 2px solid rgba(0,0,0,0.2);
-  background-clip: padding-box;
-}
-
-.map__control__button.active {
-  background-color: $light-gray;
-}
-
-/* village selection controls */
-[class^="map__control__button--selection"] {
-  box-sizing: border-box;
-  width: auto;
-  height: auto;
-  margin-right: 10px;
-  border: 1px solid $gray;
-  box-shadow: 0 0 2px 0 #865A0B;
-  border-radius: 2px;
-  padding: 8px;
+.map__filters {
   font-size: $font-size-xs;
-  text-transform: uppercase;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  @include small-screen {
-    text-transform: none;
-  }
-}
-
-
-.map__control__container {
-  /* active items have a highlighted border */
-  div[class*="active"] {
-    border-color: $yellow;
-    .map__icon--select {
-      filter: initial;
+  .map__filters--option {
+    padding-bottom: 8px;
+    span.map__text--select {
+      font-weight: bold;
+      color: $mid-gray;
+      margin-bottom: 6px;
     }
   }
 }
 
-.map__banner {
+.interactive {
+  cursor: pointer;
+}
+
+
+/******************************************************************************
+ * map controls
+ ******************************************************************************/
+
+[class*="leaflet-control-zoom-"] {
+  font-size: $font-size-s;
+  font-weight: bold;
+  height: 34px;
+  line-height: 30px;
+  margin: 0;
+  text-align: center;
+  width: 34px;
+}
+
+.leaflet-control-zoom-box:after {
+  color: $dark-gray;
+  content: '\f096'; /* empty square icon */
+  font-family: $icon-font;
+  font-size: $font-size-standard;
+}
+.leaflet-control-zoom-box.active {
+  color: $active;
+  background: lighten($active, 35%);
+}
+.leaflet-control-zoom-box.active:after {
+  color: $active;
+}
+
+.leaflet-control-zoom-fit:after {
+  color: $dark-gray;
+  content: '\f041'; /* map marker icon */
+  font-family: $icon-font;
+  font-size: $font-size-standard;
 }
 
 .map__control__button--printer {
-  box-sizing: border-box;
-  width: auto;
-  height: auto;
-  margin-right: 10px;
+  align-items: center;
+  background: white;
+  border-radius: 10px;
   border: 2px solid $blue;
   box-shadow: 0 0 3px 0 $dark-gray;
-  border-radius: 2px;
-  padding: 8px;
-  font-size: $font-size-xs;
-  text-align: left;
+  box-sizing: border-box;
   display: flex;
-  align-items: center;
+  font-size: $font-size-xs;
+  height: auto;
+  margin-right: 10px;
+  padding: 8px;
+  text-align: left;
+  width: auto;
 
   .map__icon--printer {
     box-sizing: border-box;
@@ -295,310 +192,189 @@ input.widget__filter__numberinput {
   }
 }
 
-/* the select/deselect icon */
-.map__icon--select {
-  /* sizes */
-  $icon-size: 28px;
-  $icon-center-size: 8px;
-  /* styles */
-  box-sizing: border-box;
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  width: $icon-size;
-  height: $icon-size;
-  border-radius: 50%;
-  background: rgba($yellow, 0.85);
-  box-shadow: 0 0 2px 0 #865A0B;
-  margin-right: 6px;
-  filter: grayscale(100%);
-  @include small-screen {
-    display: none;
-  }
-  &:after {
-    display: block;
-    position: absolute;
-    box-sizing: border-box;
-    content: '';
-    width: $icon-center-size;
-    height: $icon-center-size;
-    border-radius: 50%;
-    left: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
-    top: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
-    z-index: 1;
-    background: $bright-yellow;
-    border: 1px solid rgba($bright-pink, 0.85);
-    box-shadow: 0 0 1px 1px rgba($bright-pink,0.45);
+/*
+ * BOXZOOM
+ * https://github.com/gregallensworth/L.Control.BoxZoom
+ */
+
+.leaflet-container.leaflet-control-boxzoom-active {
+  cursor: crosshair !important;
+
+  path.leaflet-interactive {
+    cursor: crosshair !important;
   }
 }
 
-@mixin deselect-icon($color) {
-  position: absolute;
-  display: block;
-  content: '';
-  width: 12px;
-  height: 4px;
-  border-radius: 2px;
-  background: $red;
-  z-index: 2;
-  right: -3px;
-  top: 25%;
-}
 
-[class^="map__control__button--selection--deselect"] {
-  .map__icon--select:before {
-    position: absolute;
-    display: block;
-    content: '';
-    width: 12px;
-    height: 4px;
-    border-radius: 2px;
-    background: $bright-pink;
-    z-index: 2;
-    right: -4px;
-    top: 30%;
-  }
-}
-.map__control__button--selection {
-  &--cancel {
-    /*color: $red;*/
-    line-height: 28px;
-    .fa {
-      margin-right: 4px;
-      @include small-screen {
-        display: none;
-      }
-    }
-  }
-}
+/******************************************************************************
+ * map options: legend / layers / overlays
+ ******************************************************************************/
 
-.map__text--select {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-/* map legend */
-.legend {
+.map__option {
   color: $text-color;
   font-family: $body-font-family;
   font-size: $font-size-xs;
-  .points {
-    display: inline-block;
-    vertical-align: top;
-  }
 }
 
-.legend__list {
+.map__option__header {
+  font-weight: bold;
+  color: $mid-gray;
+}
+
+.map__option__list {
   @include reset-list-style;
   clear: both;
-  display: inline-block;
 }
 
-.legend__list__item {
-  display: inline-block;
+.map__option__list__item {
+  line-height: 12px;
   margin: $padding-unit/4;
   white-space: nowrap;
   span {
     display: inline-block;
     vertical-align: middle;
   }
+  &.active {
+    color: $active;
+  }
 }
 
-[class^="map__legend__icon"] {
+.map__option__action {
+  margin-left: 6px;
+  color: $mid-gray;
+  cursor: pointer;
+  &:hover {
+    border-bottom: 1px dotted $mid-gray;
+  }
+}
+
+[class^="map__option__icon"] {
   display: inline-block;
   vertical-align: middle;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  margin-right: 6px;
-  background: $gray;
-  border: 2px solid $mid-gray;
+  margin-left: 2px;
+  margin-right: 8px;
+  background: white;
+  border: 2px solid $light-gray;
 }
 
-.map__legend__icon {
+.map__option__icon {
+  &--official {
+    background: $official;
+    border-color: darken($official, 15%);
+  }
+  &--other {
+    background: $other;
+    border-color: darken($other, 15%);
+  }
+  &--unknown {
+    background: $unknown;
+    border-color: darken($unknown, 15%);
+  }
   &--highlight {
-    background: $bright-blue;
-    border-color: $bright-pink;
+    background: $highlight;
+    border: 4px solid darken($highlight, 15%);
+    margin-left: 0px;
+    margin-right: 6px;
   }
   &--selected {
-    background: $yellow;
-    border-color: $bright-pink;
+    background: $selected;
+    border: 4px solid darken($selected, 15%);
+    margin-left: 0px;
+    margin-right: 6px;
+  }
+
+  &.square {
+    border-radius: 5px;
+  }
+
+  &.active {
+    border-color: $active;
+    background: lighten($active, 35%);
   }
 }
 
-.popup-close-button {
-  color: $bright-blue;
-  font-family: $body-font-family;
-  font-size: $font-size-xs;
-  margin-bottom: 14px;
-  margin-left: 3px;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.popup-close-button:hover {
-  color: $bright-navy;
+
+/******************************************************************************
+ * tooltips (warning, map: small and large)
+ ******************************************************************************/
+
+.tooltip--warning {
+  .tooltip__warning {
+    @include text--x-small;
+    background-color: black;
+    border-radius: 4px;
+    color: white;
+    line-height: 1.2em;
+    margin-top: $padding-unit/2;
+    padding: $padding-unit/3;
+    position: absolute;
+    visibility: hidden;
+    z-index: 1;
+    span {
+      border: none;
+    }
+  }
+  span {
+    border-bottom: 1px dotted $mid-gray;
+  }
+
+  &:hover .tooltip__warning {
+    visibility: visible;
+  }
 }
 
 .map__tooltip {
+  min-width: 250px;
   div.property {
-    padding: 6px 0;
-    border-top: 1px solid rgba(white, 0.4);
-    &:last-of-type {
-      border-bottom: 1px solid rgba(white, 0.4);
-    }
+    padding: 0.4em 0;
+    border-top: 1px solid $gray;
+
     div.label {
       display: inline-block;
-      width: 50%;
+      width: 40%;
       font-size: $font-size-xs;
     }
     div.value {
       display: inline-block;
-      width: 50%;
+      width: 60%;
       font-weight: bold;
       font-size: $font-size-s;
       text-align: right;
       line-height: 1.2;
     }
   }
-}
-
-.map__marker__label {
-  font-size: $font-size-s;
-  white-space: nowrap;
-  color: $dark-gray;
-  text-shadow: 0px 0px 2px white;
-  font-variant: small-caps;
-  font-weight: 800;
-
-  &.official {
-    font-size: $font-size-s;
-  }
-  &.other {
+  &--close {
+    font-family: $body-font-family;
     font-size: $font-size-xs;
-  }
-}
+    margin-bottom: 14px;
+    margin-left: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: $gray;
+    text-align: right;
 
-/* map sidebar with selection UI */
-
-.map__selection {
-  height: 100%;
-  overflow: hidden;
-}
-
-.map__selection__content {
-  height: $map-height;
-  padding: $padding-unit/2;
-}
-
-/* selection title and summary */
-.map__selection__title {
-  @include heading--medium;
-  margin-bottom: 1em;
-}
-
-.map__selection__actions {
-  margin: 1em 0;
-  padding: 1em 0;
-  border-top: 1px solid $light-gray;
-  border-bottom: 1px solid $light-gray;
-  overflow: hidden;
-  font-size: $font-size-s;
-  input.small {
-    width: 26px;
-    font-weight: bold;
-    padding: 0.45em;
-  }
-  input {
-    display: inline-block;
-    margin: .5em .5em .5em 0;
-  }
-  .button--reduced {
-    margin-top: .25em;
-  }
-}
-
-.map__selection__summary--empty {
-  @include text--small;
-  .text--explanation {
-    display: block;
-    margin-top: 2em;
-    line-height: 1.25;
-  }
-}
-
-.map__selection__summary {
-  margin: $padding-unit/2 0;
-}
-
-.map__selection__summary__heading {
-  @include heading--small;
-  margin-bottom: $padding-unit/2;
-}
-
-.map__selection__summary__item {
-  display: flex;
-  justify-content: space-between;
-  padding: $padding-unit/2 0;
-  border-top: 1px solid $gray;
-  border-bottom: 1px solid $gray;
-  margin-top: -1px;
-  @include text--small;
-}
-
-.map__selection__summary__number {
-  font-weight: bold;
-}
-
-.map__text--warning {
-  margin-top: $padding-unit/2;
-  @include text--x-small;
-  font-style: italic;
-}
-.map__text--select {
-  display: block;
-}
-
-/* list of villages in selection */
-
-.map__selection__list__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: $padding-unit/4;
-  h3 {
-    font-size: $font-size-s;
-  }
-  .button--danger {
-    background-color: $mid-gray;
     &:hover {
-      background-color: $red;
+      color: $red;
     }
   }
 }
 
-ul.map__selection__list {
-  @include reset-list-style;
-  clear: both;
-  overflow: auto;
-  max-height: ($map-height - 400);
-}
-.map__selection__list__item {
-  line-height: 1.3;
-  white-space: nowrap;
-  @include text--small;
-  span.remove {
-    @include text--error;
-    cursor: pointer;
-    margin-right: $padding-unit/4;
-  }
-  span.view {
-    cursor: pointer;
-    margin-right: $padding-unit/4;
-  }
+.map__control__tooltip:not(:empty) {
+  background-color: rgba(white, 0.95);
+  border-radius: 4px;
+  border: 1px solid $gray;
+  box-shadow: 0 0 10px rgba(black, 0.2);
+  vertical-align: middle;
+  padding: 0.5em 1em;
 }
 
 
-/* boundaries */
+/******************************************************************************
+ * map markers and boundaries
+ ******************************************************************************/
 
 @mixin layer($stroke-color: $mid-gray, $stroke-width: 3) {
   fill: transparent;
@@ -627,10 +403,10 @@ path.map-layer {
   }
 }
 
-
-/* markers */
-
-@mixin marker($color: $gray, $fill-opacity: 0.85, $stroke-color: darken($color, 15%), $stroke-width: 2) {
+@mixin marker($color: $gray,
+              $fill-opacity: 0.85,
+              $stroke-color: darken($color, 15%),
+              $stroke-width: 2) {
   fill-opacity: $fill-opacity;
   fill: $color;
   stroke: $stroke-color;
@@ -659,31 +435,285 @@ path.map-marker {
   }
 
   &.highlight {
-    @include marker($highlight, 0.95, $bright-pink, 3);
+    @include marker($highlight, $stroke-width: 5);
   }
   &.selected {
-    @include marker($selected, 0.95, $bright-pink, 3);
+    @include marker($selected, $stroke-width: 5);
   }
 
   &.highlight-buffer {
-    @include marker($highlight, 0.3, $bright-pink, 0);
+    @include marker($highlight-buffer, $fill-opacity: 0.3, $stroke-width: 0);
     &:hover {
       fill-opacity: 0.3;
-      fill: $highlight;
+      fill: $highlight-buffer;
     }
   }
   &.buffer {
-    @include marker($buffer, 0.3, $buffer, 1)
+    @include marker($buffer, $fill-opacity: 0.3, $stroke-width: 1)
     &:hover {
       fill-opacity: 0.3;
       fill: $buffer;
     }
   }
   &.shadow {
-    @include marker($bright-pink, 0.3, $bright-pink, 0);
+    @include marker($highlight, $fill-opacity: 0.3, $stroke-width: 0);
     &:hover {
       fill-opacity: 0.3;
-      fill: $bright-pink;
+      fill: $highlight;
     }
+  }
+  &.chosen {
+    @include marker($active, $fill-opacity: 0.7, $stroke-width: 0);
+    &:hover {
+      fill-opacity: 1;
+      fill: $active;
+    }
+  }
+}
+
+.map__marker__label {
+  font-size: $font-size-s;
+  white-space: nowrap;
+  color: $dark-gray;
+  text-shadow: 0px 0px 2px white;
+  font-variant: small-caps;
+  font-weight: 800;
+
+  &.other {
+    font-size: $font-size-xs;
+  }
+}
+
+
+/******************************************************************************
+ * map selection list
+ ******************************************************************************/
+
+.map__selection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.map__selection__top {
+  padding: $padding-unit/4 $padding-unit/3;
+}
+
+.map__selection__middle {
+  height: 100%;
+  overflow: auto;
+  padding: $padding-unit/4 $padding-unit/3;
+}
+
+.map__selection__bottom {
+  border-top: 1px solid $gray;
+  padding: $padding-unit/6;
+  text-align: center;
+}
+
+.map__selection__title {
+  @include heading--medium;
+  margin-bottom: 1em;
+}
+
+.map__selection__summary--empty {
+  @include text--small;
+  font-weight: bold;
+  margin: $padding-unit/2 0;
+  padding: $padding-unit/2 0;
+  text-align: center;
+}
+
+.map__selection__summary {
+  padding: $padding-unit/3 0;
+  border-top: 1px solid $gray;
+  border-bottom: 1px solid $gray;
+}
+
+.map__selection__summary__heading {
+  @include heading--small;
+  margin-bottom: $padding-unit/3;
+}
+
+.map__selection__summary__item {
+  @include text--x-small;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $padding-unit/4;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+  .map__selection__summary__number {
+    font-weight: bold;
+  }
+}
+
+.map__selection__list__header {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $padding-unit/4;
+  h3 {
+    font-size: $font-size-s;
+  }
+  .button--danger {
+    background-color: $mid-gray;
+    &:hover {
+      background-color: $red;
+    }
+  }
+}
+
+ul.map__selection__list {
+  @include reset-list-style;
+}
+
+li.map__selection__list__item {
+  @include text--small;
+  line-height: 1.3;
+  white-space: nowrap;
+  span.remove {
+    @include text--error;
+    cursor: pointer;
+    margin-right: $padding-unit/4;
+  }
+  span.view {
+    cursor: pointer;
+    margin-right: $padding-unit/4;
+  }
+}
+
+.button--export {
+  padding: $padding-unit/4;
+  width: ($map-sidebar-width - $padding-unit*2);
+  font-size: $font-size-xs;
+}
+
+.button--print {
+  margin-top: 4px;
+  width: ($map-sidebar-width - 50);
+  font-size: $font-size-xs;
+}
+
+
+/******************************************************************************
+ * map selection controls
+ ******************************************************************************/
+
+.map__selection__control__container {
+  width: 100%;
+  font-size: $font-size-xs;
+
+  .map__text--select {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* active items have a highlighted border */
+  div[class*="active"] {
+    border-color: $buffer;
+    color: $red;
+    background-color: $background-highlight-gray;
+    .map__icon--select {
+      filter: initial;
+    }
+  }
+}
+
+.map__selection__actions {
+  margin: 0.2em 0;
+  overflow: hidden;
+
+  input {
+    display: inline-block;
+    margin: .5em;
+  }
+  input.small {
+    width: 32px;
+    font-weight: bold;
+    padding: 0.4em 0.25em;
+  }
+}
+
+.map__control__button--highlight {
+  @include button($mid-gray);
+  color: white;
+  font-size: $font-size-xs;
+  padding: 6px;
+
+  &:hover{
+    background-color: $red;
+    color: white;
+  }
+}
+
+[class^="map__control__button--selection"] {
+  font-size: $font-size-xs;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  margin-bottom: 10px;
+  border: 1px solid $gray;
+  box-shadow: 0 0 2px 0 #865A0B;
+  border-radius: 5px;
+  padding: 6px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+[class^="map__control__button--selection--deselect"] {
+  .map__icon--select:before {
+    position: absolute;
+    display: block;
+    content: '';
+    width: 12px;
+    height: 4px;
+    border-radius: 2px;
+    background: $highlight;
+    z-index: 2;
+    right: -4px;
+    top: 30%;
+  }
+}
+
+/* the select/deselect icon */
+.map__icon--select {
+  /* sizes */
+  $icon-size: 28px;
+  $icon-center-size: 8px;
+  /* styles */
+  box-sizing: border-box;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: $icon-size;
+  height: $icon-size;
+  border-radius: 50%;
+  background: rgba($buffer, 0.85);
+  box-shadow: 0 0 4px 0 darken($selected, 15%);
+  margin-right: 6px;
+  filter: grayscale(100%);
+
+  @include small-screen {
+    display: none;
+  }
+
+  &:after {
+    display: block;
+    position: absolute;
+    box-sizing: border-box;
+    content: '';
+    width: $icon-center-size;
+    height: $icon-center-size;
+    border-radius: 50%;
+    left: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+    top: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+    z-index: 1;
+    background: darken($buffer, 5%);
+    border: 2px solid rgba($highlight, 0.85);
+    box-shadow: 0 0 1px 1px rgba($highlight,0.45);
   }
 }

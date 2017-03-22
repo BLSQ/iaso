@@ -6,48 +6,64 @@
        , a.village
        , a.longitude
        , a.latitude
-       , a.gps_source AS "gpsSource"
+       , a.gps_source   AS "gpsSource"
 
        , TRIM(BOTH
             TO_CHAR(a.longitude, '000.00000000')
             || ':' ||
-            TO_CHAR(a.latitude, '000.00000000')) AS id
-       , TRIM(BOTH a."ZS" || ' - ' || a."AS" || ' - ' || a.village) AS label
+            TO_CHAR(a.latitude, '000.00000000'))
+         AS id
+       , TRIM(BOTH a."ZS" || ' - ' || a."AS" || ' - ' || a.village)
+         AS label
        , CASE a.village_official
             WHEN 'YES' THEN 'official'
             WHEN 'NO'  THEN 'other'
             WHEN 'NA'  THEN 'unknown'
-          END AS type
+         END
+         AS type
 
-       , COALESCE(a.population, 0) AS population
-       , a.population_year AS "populationYear"
-       , a.population_source AS "populationSource"
-       , COALESCE(b."confirmedCases", 0) AS "confirmedCases"
+       , COALESCE(a.population, 0)       AS population
+       , a.population_year               AS "populationYear"
+       , a.population_source             AS "populationSource"
+
+       , b."lastConfirmedCaseYear"
        , b."lastConfirmedCaseDate"
+       , COALESCE(b."confirmedCases", 0) AS "confirmedCases"
 
     FROM cases_location a
 
-    LEFT OUTER JOIN (
-      SELECT "ZS"
-           , "AS"
-           , village
+    LEFT OUTER JOIN
+      {# select the aggregated cases by location and year #}
+      (
+        SELECT "ZS"
+             , "AS"
+             , village
+             , document_year
+             , MAX(document_date)                      AS "lastConfirmedCaseDate"
+             , COUNT(DISTINCT document_id)             AS "confirmedCases"
 
-           , count(DISTINCT document_id) FILTER (WHERE confirmation_result IS TRUE) AS "confirmedCases"
-           , max(document_date) FILTER (WHERE confirmation_result IS TRUE) AS "lastConfirmedCaseDate"
+             {# this is last case year within the location #}
+             , MAX(document_year)
+               OVER (PARTITION BY "ZS", "AS", village) AS "lastConfirmedCaseYear"
 
-        FROM cases_case_view
-       WHERE document_date BETWEEN {{ date_from|guards.date }} AND {{ date_to|guards.date }}
-
-        {% if casedatefrom is defined %}
-         AND confirmation_result IS TRUE
-         AND document_date >= {{ casedatefrom|guards.date }}
-        {% endif %}
-    GROUP BY "ZS", "AS", village
-    ) b
+          FROM cases_case_view
+         WHERE document_date BETWEEN {{ date_from|guards.date }}
+                                 AND {{ date_to|guards.date }}
+           AND confirmation_result IS TRUE
+         GROUP BY "ZS", "AS", village, document_year
+      ) b
 
       ON a."ZS" = b."ZS"
      AND a."AS" = b."AS"
      AND a.village = b.village
+
+     {# take only the last case year record #}
+     AND b.document_year = b."lastConfirmedCaseYear"
+
+    {# filter the location with last case in certain years #}
+    {% if caseyears is defined %}
+     AND b."lastConfirmedCaseYear" IN ({{ caseyears|join(',') }})
+    {% endif %}
 
    WHERE a.village_official IN ('YES', 'NO', 'NA')
 

@@ -77,7 +77,7 @@ const isXLSXPossible = (window.ArrayBuffer && window.Uint8Array)
 class ExportButton extends Component {
   render () {
     const {formatMessage, formatDate} = this.props.intl
-    const {data, columns, messages} = this.props
+    const {data, columns, messages, className} = this.props
 
     const filename = this.props.filename || 'data'
     const format = (isXLSXPossible && this.props.format === 'xlsx' ? 'xlsx' : 'csv')
@@ -160,15 +160,13 @@ class ExportButton extends Component {
       const name = filename + '-' + (new Date().toISOString()) + '.' + format
 
       return (
-        <div ref={(node) => (this.container = node)}>
-          <a href={blobUrl} download={name} className='button--big'>
-            <i className='fa fa-download' />
-            {this.props.children}
-          </a>
-        </div>
+        <a href={blobUrl} download={name} className={className || 'button'}>
+          <i className='fa fa-download' />
+          {this.props.children}
+        </a>
       )
     } else {
-      return <div ref={(node) => (this.container = node)} />
+      return <div />
     }
   }
 }
@@ -180,6 +178,7 @@ ExportButton.propTypes = {
   format: PropTypes.string,
   sep: PropTypes.string,
   filename: PropTypes.string,
+  className: PropTypes.string,
   intl: intlShape.isRequired
 }
 

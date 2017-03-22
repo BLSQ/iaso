@@ -8,15 +8,19 @@ import createStore from './redux/createStore'
 import App from './apps/App'
 
 import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
-import { selectionReducer, selectionInitialState } from './apps/Microplanning/selection'
+import { selectionReducer, selectionInitialState } from './apps/Microplanning/redux/selection'
+import { mapReducer, mapInitialState } from './apps/Microplanning/redux/map'
 import { loadReducer } from './redux/load'
 
 export default function microplanningApp (element, baseUrl) {
+  const currentYear = new Date().getFullYear()
+  const caseyears = [ 0, 1, 2, 3, 4 ].map((i) => currentYear - i)
+  const defaultPath = 'charts/caseyears/' + caseyears.join(',')
   const routes = [
     <Route
-      path='charts(/date_from/:date_from)(/date_to/:date_to)(/caseyearfrom/:caseyearfrom)(/location/:location)'
+      path='charts(/date_from/:date_from)(/date_to/:date_to)(/caseyears/:caseyears)(/location/:location)'
       component={MicroplanningContainer} />,
-    <Redirect path='*' to='charts/caseyearfrom/5' />
+    <Redirect path='*' to={defaultPath} />
   ]
 
   let history = useRouterHistory(createHistory)({
@@ -26,12 +30,14 @@ export default function microplanningApp (element, baseUrl) {
 
   const store = createStore({
     config: {},
-    villages: {},
-    selection: selectionInitialState
+    load: {},
+    selection: selectionInitialState,
+    map: mapInitialState
   }, {
     config: (state = {}) => state,
-    villages: loadReducer,
-    selection: selectionReducer
+    load: loadReducer,
+    selection: selectionReducer,
+    map: mapReducer
   }, [
     routerMiddleware(history)
   ])

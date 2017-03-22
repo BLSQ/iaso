@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
-from hat.cases.models import CaseView
+from hat.cases.models import CaseView, Location
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
     resolve_dateperiod, \
@@ -293,7 +293,7 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, 
         'date_from': {'type': 'string'},
         'date_to': {'type': 'string'},
         'location': {'type': 'string'},
-        'caseyearfrom': {'type': 'string'},
+        'caseyears': {'type': 'string'},
     }
 })
 def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str, Any]]:
@@ -304,8 +304,6 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
 
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
-    # last expected date is 31st December current year
-    currentYear = date.today().year
 
     sql_context: Dict[str, Any] = {
         'date_from': date_from,
@@ -314,13 +312,12 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
 
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        sql_context['zone_sante'] = restrict_to_zs
+        sql_context['zones_sante'] = [restrict_to_zs.lower()]
     elif 'location' in params:
         sql_context['zones_sante'] = params['location'].lower().split(',')
 
-    if 'caseyearfrom' in params:
-        yearfrom = currentYear - int(params['caseyearfrom'])
-        sql_context['casedatefrom'] = datetime(yearfrom, 1, 1)
+    if 'caseyears' in params:
+        sql_context['caseyears'] = params['caseyears'].split(',')
 
     sql = microplanning_queries.data_by_location(**sql_context)
 
@@ -329,6 +326,25 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
         columns = [col[0] for col in cursor.description]
         # convert the row tuple to dicts to dicts
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {},
+})
+def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
+    '''
+    Retrives the valid list of Zones de Sante in the `location` table.
+    Those zones come from the dbf files so we can assume that their
+    shapes are contained in the `shapes.json` file.
+    '''
+
+    locations = Location.objects.order_by('ZS')
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        locations = locations.filter(ZS=restrict_to_zs)
+
+    return locations.values_list('ZS', flat=True).distinct()
 
 
 class DatasetViewSet(viewsets.ViewSet):

@@ -42,9 +42,9 @@
   animation: fade-in 1s;
 }
 
-/* where elements use 100vh layouts, adjusts for 
+/* where elements use 100vh layouts, adjusts for
   presence of fixed-position staging site warning */
-@mixin height-if-body-has-banner-layout { 
+@mixin height-if-body-has-banner-layout {
   min-height: 100vh;
   .body--banner & {
     min-height: calc(100vh - #{$banner-height});
@@ -52,7 +52,7 @@
 }
 
 /*  media queries, just small laptop/desktop screens for now */
-/*  site not optimised for anything smaller than than */
+/*  site not optimised for anything smaller than that */
 
 $desktop-small: 1280px;
 

@@ -1,17 +1,20 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import Microplanning from './Microplanning'
-import { clone } from '../../utils'
-import { fetchUrls } from '../../utils/fetchData'
-
 /*
- * Handles state
- * and data loading
- * for the Microplanning page
+ * The MicroplanningContainer is responsible for loading data
+ * for the micro-planning
  *
- * TODO: This is very similar to the MonthlyReportContainer.
- *       We might want refactor to both be the same Component.
+ * It has a few behaviors:
+ * - load data when mounted
+ * - make sure only filter params changing triggers a new data load
+ * - emit success/fail events
+ *
+ * Handles state and data loading for the Microplanning page
  */
+
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
+import {clone} from '../../utils'
+import {fetchUrls} from '../../utils/fetchData'
+import Microplanning from './Microplanning'
 
 // This is where we configure the app data urls:
 // the order is used in the success handler below
@@ -32,8 +35,13 @@ export const urls = [
       'confirmedCases': 2,
       'lastConfirmedCase': '2016-08-21T12:27:17.420000Z',
       'village': 'Kikonzi-mf',
-      'ZS': 'Yasa-bonga'
+      'ZS': 'Yasa Bonga'
     }]
+  },
+  {
+    name: 'locations',
+    url: '/api/datasets/locations_with_shape/',
+    mock: ['Mosango', 'Yasa Bonga']
   }
 ]
 

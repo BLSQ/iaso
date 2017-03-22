@@ -1,3 +1,15 @@
+/*
+ * This component displays the properties of a given object.
+ *
+ * The `ROWS` array includes the properties list.
+ *
+ * The `MESSAGES` object includes the labels needed. If the row type is `message`
+ * the possible property values MUST be included as message entry keys.
+ * In our case the key `type` represents the village internal classification,
+ * `official`, `other` and `unknown`; with this option those values are changed
+ * to user readable/understandable texts.
+ */
+
 import React, {Component, PropTypes} from 'react'
 import {
   FormattedDate,
@@ -19,11 +31,11 @@ const MESSAGES = defineMessages({
   },
   ZS: {
     id: 'microplanning.tooltip.zone',
-    defaultMessage: 'Zone de Sante'
+    defaultMessage: 'Zone de sante'
   },
   AS: {
     id: 'microplanning.tooltip.area',
-    defaultMessage: 'Aire de Sante'
+    defaultMessage: 'Aire de sante'
   },
   village: {
     id: 'microplanning.tooltip.village',
@@ -71,13 +83,17 @@ const MESSAGES = defineMessages({
     defaultMessage: 'Population year'
   },
 
-  confirmedCases: {
-    id: 'microplanning.tooltip.cases',
-    defaultMessage: '# Confirmed Cases'
-  },
   lastConfirmedCaseDate: {
     id: 'microplanning.tooltip.case.date',
-    defaultMessage: 'Last case date'
+    defaultMessage: 'Last confirmed HAT case date'
+  },
+  lastConfirmedCaseYear: {
+    id: 'microplanning.tooltip.case.year',
+    defaultMessage: 'Last confirmed HAT case year'
+  },
+  confirmedCases: {
+    id: 'microplanning.tooltip.cases',
+    defaultMessage: 'Confirmed HAT cases in that last year'
   },
 
   // type values
@@ -111,8 +127,9 @@ const ROWS = [
   { key: 'population', type: 'integer' },
   { key: 'populationYear' },
   { key: 'populationSource' },
-  { key: 'confirmedCases', type: 'integer' },
-  { key: 'lastConfirmedCaseDate', type: 'date' }
+  { key: 'lastConfirmedCaseDate', type: 'date' },
+  { key: 'lastConfirmedCaseYear' },
+  { key: 'confirmedCases', type: 'integer' }
 ]
 
 class MapTooltip extends Component {
@@ -129,7 +146,7 @@ class MapTooltip extends Component {
 
               switch (row.type) {
                 case 'date':
-                  value = <FormattedDate value={value} />
+                  value = <FormattedDate value={value} year='numeric' month='long' day='numeric' />
                   break
                 case 'capitalize':
                   value = capitalize(value)

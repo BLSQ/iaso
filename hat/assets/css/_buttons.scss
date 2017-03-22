@@ -17,7 +17,7 @@
   background: $color;
   color: white;
   @include button-text-style;
-  transition: all .25s cubic-bezier(0.250, 0.460, 0.450, 0.940); 
+  transition: all .25s cubic-bezier(0.250, 0.460, 0.450, 0.940);
   cursor: pointer;
   &:hover {
     background: darken($color, 10%);

@@ -84,3 +84,13 @@ In development the django dev server will restart when it detects a file change.
 ## Frontend Assets:
 
 [See separate README](https://github.com/eHealthAfrica/sense-hat/blob/development/hat/assets/README.md)
+
+
+## Credit
+
+Brought to you by [eHealth Africa](http://ehealthafrica.org/)
+— good tech for hard places.
+
+## License
+
+Apache-2.0

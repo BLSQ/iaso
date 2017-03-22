@@ -199,7 +199,8 @@ class RegisteredWidget extends Component {
         <section className='wrapper__column'>
           <div className='column--4'>
             <h2 className='block--margin-bottom--xs'>
-              {percentageMissing}&nbsp;
+              {percentageMissing}
+              &nbsp;
               <FormattedMessage id='statspage.registered.subheader' defaultMessage='missing tests' />
             </h2>
             <p>
@@ -256,7 +257,8 @@ class ScreeningWidget extends Component {
         <section className='wrapper__column'>
           <div className='column--4'>
             <h2 className='block--margin-bottom--xs'>
-              {percentagePositiveScreening}&nbsp;
+              {percentagePositiveScreening}
+              &nbsp;
               <FormattedMessage id='statspage.screening.subheader' defaultMessage='HAT probable' />
             </h2>
             <p>
@@ -319,7 +321,8 @@ class ConfirmationWidget extends Component {
         <section className='wrapper__column'>
           <div className='column--4'>
             <h2 className='block--margin-bottom--xs'>
-              {percentagePositiveConfirmation}&nbsp;
+              {percentagePositiveConfirmation}
+              &nbsp;
               <FormattedMessage id='statspage.confirmation.subheader' defaultMessage='HAT confirmed' />
             </h2>
             <p>
@@ -412,9 +415,15 @@ class StageWidget extends Component {
       </div>
       <div>
         <span className='text--data'>
-          <FormattedMessage id='statspage.datasource.label' defaultMessage='Data sources' />:&nbsp;
-          <FormattedMessage id='statspage.datasource.mobiledata' defaultMessage='HAT mobile application data' />,&nbsp;
-          <FormattedMessage id='statspage.datasource.historical' defaultMessage='HAT historical forms' />,&nbsp;
+          <FormattedMessage id='statspage.datasource.label' defaultMessage='Data sources' />
+          {':'}
+          &nbsp;
+          <FormattedMessage id='statspage.datasource.mobiledata' defaultMessage='HAT mobile application data' />
+          {','}
+          &nbsp;
+          <FormattedMessage id='statspage.datasource.historical' defaultMessage='HAT historical forms' />
+          {','}
+          &nbsp;
           <FormattedMessage id='statspage.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
         </span>
       </div>

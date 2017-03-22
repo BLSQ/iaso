@@ -1,13 +1,14 @@
 /* global describe, it, beforeEach, afterEach */
 import assert from 'assert'
-import { renderWithStore } from '../../test/utils'
+import {renderWithStore} from '../../test/utils'
 import React from 'react'
 import {createStore} from 'redux'
 import nock from 'nock'
 import sinon from 'sinon'
 
-import { urls, MicroplanningContainer } from './MicroplanningContainer'
-import { selectionInitialState } from './selection'
+import {urls, MicroplanningContainer} from './MicroplanningContainer'
+import {selectionInitialState} from './redux/selection'
+import {mapInitialState} from './redux/map'
 
 // create a single nock scope chaining all requests
 function createNockScope () {
@@ -18,16 +19,6 @@ function createNockScope () {
   return ns
 }
 
-/*
- * The MicroplanningContainer is responsible for loading data
- * for the micro-planning
- *
- * it has a few behaviors:
- * - load data when mounted
- * - make sure only filter params changing triggers a new data load
- * - emit success/fail events
- *
- */
 describe('MicroplanningContainer Loading Data', () => {
   let reduxStore
   let defaultProps
@@ -36,15 +27,17 @@ describe('MicroplanningContainer Loading Data', () => {
   beforeEach(function () {
     defaultProps = {
       config: {},
-      villages: {},
+      load: {},
       selection: selectionInitialState,
-      params: { caseyearfrom: '5' },
+      map: mapInitialState,
+      params: {caseyears: '2015'},
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
       config: {},
-      villages: {},
-      selection: selectionInitialState
+      load: {},
+      selection: selectionInitialState,
+      map: mapInitialState
     })
     nockScope = createNockScope()
   })
@@ -76,7 +69,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        caseyearfrom: '3'
+        caseyears: '2012'
       }
     }
     renderWithStore(
@@ -90,7 +83,7 @@ describe('MicroplanningContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        caseyearfrom: '3'
+        caseyears: '2012'
       }
     }
     renderWithStore(

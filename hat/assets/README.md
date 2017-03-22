@@ -54,3 +54,13 @@ JS Unit Testing
 --------
 
 The JS Unit test setup is the same as Sense-HAT-Mobile, you can run tests and linting via `npm test`
+
+
+## Credit
+
+Brought to you by [eHealth Africa](http://ehealthafrica.org/)
+— good tech for hard places.
+
+## License
+
+Apache-2.0

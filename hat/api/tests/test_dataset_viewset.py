@@ -99,21 +99,32 @@ class DatasetTests(APITestCase):
         self.assertEqual(data[1]['staging_total'], 0)
 
     def test_data_by_location(self):
-        url = '{}?date_from=2016-01-01&date_to=2016-01-31'.format(
+        url = '{}?caseyears=2016'.format(
             reverse('api:datasets-detail', args=['data_by_location']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
         self.assertEqual(response.data[0]['village'], 'Kisala-lupa')
-        self.assertEqual(response.data[0]['confirmedCases'], 0)
         self.assertEqual(response.data[0]['population'], 10)
-        self.assertEqual(response.data[0]['lastConfirmedCaseDate'], None)
+        self.assertEqual(response.data[0]['confirmedCases'], None)
 
         self.assertEqual(response.data[1]['village'], 'Polongo')
-        self.assertEqual(response.data[1]['confirmedCases'], 1)
         self.assertEqual(response.data[1]['population'], 5)
+        self.assertEqual(response.data[1]['confirmedCases'], 1)
         self.assertEqual(
             response.data[1]['lastConfirmedCaseDate'].replace(tzinfo=None),
             datetime(2016, 1, 5, 0, 0)
         )
+
+    def test_data_by_location_without_caseyears(self):
+        url = '{}?'.format(
+            reverse('api:datasets-detail', args=['data_by_location']))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+        for entry in response.data:
+            self.assertFalse('confirmedCases' in entry)
+            self.assertFalse('lastConfirmedCaseDate' in entry)
+            self.assertFalse('lastConfirmedCaseYear' in entry)

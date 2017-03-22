@@ -26,12 +26,17 @@
        , a.population_year               AS "populationYear"
        , a.population_source             AS "populationSource"
 
+      {# include confirmed cases data only if requested #}
+      {% if caseyears is defined %}
        , b."lastConfirmedCaseYear"
        , b."lastConfirmedCaseDate"
-       , COALESCE(b."confirmedCases", 0) AS "confirmedCases"
+       , b."confirmedCases"
+      {% endif %}
 
     FROM cases_location a
 
+    {# include confirmed cases data only if requested #}
+    {% if caseyears is defined %}
     LEFT OUTER JOIN
       {# select the aggregated cases by location and year #}
       (
@@ -47,8 +52,7 @@
                OVER (PARTITION BY "ZS", "AS", village) AS "lastConfirmedCaseYear"
 
           FROM cases_case_view
-         WHERE document_date BETWEEN {{ date_from|guards.date }}
-                                 AND {{ date_to|guards.date }}
+         WHERE document_date       IS NOT NULL
            AND confirmation_result IS TRUE
          GROUP BY "ZS", "AS", village, document_year
       ) b
@@ -60,10 +64,8 @@
      {# take only the last case year record #}
      AND b.document_year = b."lastConfirmedCaseYear"
 
-    {# filter the location with last case in certain years #}
-    {% if caseyears is defined %}
      AND b."lastConfirmedCaseYear" IN ({{ caseyears|join(',') }})
-    {% endif %}
+  {% endif %}
 
    WHERE a.village_official IN ('YES', 'NO', 'NA')
 

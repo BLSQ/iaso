@@ -18,7 +18,7 @@ export default function microplanningApp (element, baseUrl) {
   const defaultPath = 'charts/caseyears/' + caseyears.join(',')
   const routes = [
     <Route
-      path='charts(/date_from/:date_from)(/date_to/:date_to)(/caseyears/:caseyears)(/location/:location)'
+      path='charts(/caseyears/:caseyears)(/location/:location)'
       component={MicroplanningContainer} />,
     <Redirect path='*' to={defaultPath} />
   ]

@@ -279,8 +279,6 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, 
 @dataset(params_schema={
     'type': 'object',
     'properties': {
-        'date_from': {'type': 'string'},
-        'date_to': {'type': 'string'},
         'location': {'type': 'string'},
         'caseyears': {'type': 'string'},
     }
@@ -294,10 +292,7 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
 
-    sql_context: Dict[str, Any] = {
-        'date_from': date_from,
-        'date_to': date_to,
-    }
+    sql_context: Dict[str, Any] = {}
 
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:

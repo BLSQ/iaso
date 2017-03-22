@@ -45,16 +45,22 @@ def historic_get_sex(x: Optional[str]) -> Optional[str]:
     }.get(cast(str, x), None)
 
 
-def historic_get_result(x: Optional[int]) -> Optional[bool]:
+def historic_get_result(x: Optional[int]) -> Optional[int]:
     if pandas.isnull(x) or x == 99:
         return None
-    return cast(int, x) == -1
+    if cast(int, x) == -1:
+        return ResultValues.positive.value
+    else:
+        return ResultValues.negative.value
 
 
-def historic_get_catt_blood_result(x: Optional[int]) -> Optional[bool]:
+def historic_get_catt_blood_result(x: Optional[int]) -> Optional[int]:
     if pandas.isnull(x) or x == 99:
         return None
-    return cast(int, x) < 0
+    if cast(int, x) < 0:
+        return ResultValues.positive.value
+    else:
+        return ResultValues.negative.value
 
 
 def historic_get_catt_dil_result(x: Optional[int]) -> Optional[str]:
@@ -134,10 +140,11 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
-def mobile_get_result(x: Optional[str]) -> Optional[bool]:
+def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    return cast(str, x) == 'positive'
+    if x in {ResultValues.positive, ResultValues.negative, ResultValues.missing, ResultValues.absent}:
+        return x
 
 
 def mobile_get_age(table: DataFrame, field: str) -> int:
@@ -164,20 +171,25 @@ def pv_get_sex(x: Optional[str]) -> Optional[str]:
     }.get(cast(str, x), None)
 
 
-def pv_get_result(x: Optional[str]) -> Optional[bool]:
+def pv_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     # 0, +, NF
-    return cast(str, x) == '+'
+    if cast(str, x) == '+':
+        return ResultValues.positive.value
+    elif cast(str, x) == 'NF':
+        return ResultValues.missing.value
+    else:
+        return ResultValues.negative.value
 
 
-def pv_get_catt_blood_result(x: Optional[str]) -> Optional[bool]:
+def pv_get_catt_blood_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     if cast(str, x) == 'NEG':
-        return False
+        return ResultValues.negative.value
     # POS+, POS++, POS+++
-    return True
+    return ResultValues.positive.value
 
 
 def pv_get_pl_result(x: Optional[str]) -> Optional[str]:

@@ -4,7 +4,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>{% trans "Sense HAT Dashboard" %}</title>
+    <title>{% trans 'Sense HAT Dashboard' %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="{% static 'print.css' %}" type="text/css" media="print" />
 
     {# favicon #}
-    <link rel='icon' href={% static 'favicon.png' %} />
+    <link rel="icon" href="{% static 'images/favicon.png' %}" />
 
     {% block head %}
     {% endblock %}
@@ -31,8 +31,8 @@
     <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
     {% endif %}
   </head>
-  <body{% if environment == "staging" %} class="body--banner"{% endif %}>
-    {% if environment == "staging" %}
+  <body{% if environment == 'staging' %} class="body--banner"{% endif %}>
+    {% if environment == 'staging' %}
       <div class="banner--stage-warning">
         <span>
         {% blocktrans %}

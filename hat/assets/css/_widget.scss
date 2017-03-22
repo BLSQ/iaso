@@ -102,3 +102,21 @@
     margin-left: $navigation-width;
   }
 }
+
+.data--sources {
+  color: $text-color;
+  font-size: $font-size-xs;
+  padding: 0 $padding-unit;
+  ul {
+    display: inline-block;
+    li {
+      display: inline-block;
+      &:not(:last-of-type):after {
+        content: ', ';
+      }
+      &:last-of-type:after {
+        content: '.';
+      }
+    }
+  }
+}

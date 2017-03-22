@@ -15,8 +15,6 @@ module.exports = {
 
   entry: {
     'common': ['react', 'react-dom', 'react-intl'],
-    'import': './assets/js/import',
-    'testapp': './assets/js/testapp',
     'stats': './assets/js/stats',
     'monthly_report': './assets/js/monthlyReport',
     'microplanning': './assets/js/microplanning',
@@ -152,14 +150,6 @@ module.exports = {
         options: {
           limit: 10000,
           mimetype: 'image/png'
-        }
-      },
-      // favicon
-      {
-        test: 'images/favicon-prod.png',
-        loader: 'url-loader',
-        options: {
-          name: 'favicon.png'
         }
       }
     ]

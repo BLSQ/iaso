@@ -11,10 +11,6 @@ import { LOAD_SUCCESS } from '../../redux/load'
 import { urls, MonthlyReportContainer } from './MonthlyReportContainer'
 
 const appConfig = {
-  'locations': [
-    { 'ZS': 'Mosango' },
-    { 'ZS': 'Yasa-bonga' }
-  ],
   'dates': [
     '2016-03',
     '2016-04',
@@ -22,9 +18,6 @@ const appConfig = {
     '2016-06',
     '2016-07',
     '2016-08'
-  ],
-  'sources': [
-    'mobile_backup'
   ]
 }
 
@@ -174,7 +167,7 @@ describe('MonthlyReportContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        location: 'Yasa-bonga' // in mock data
+        location: 'Yasa Bonga' // in mock data
       }
     }
     renderWithStore(

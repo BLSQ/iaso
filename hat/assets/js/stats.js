@@ -11,18 +11,7 @@ import App from './apps/App'
 import StatsContainer from './apps/Stats/StatsContainer'
 import {loadReducer} from './redux/load'
 
-export default function statsApp (appConfig, element, baseUrl) {
-  /*
-  This creates a default route using the parameters
-  in the 'appConfig' object from django
-  showing 'all' for the last month
-  Example appConfig object:
-  {
-    dates: ['2016-04', '2016-05', '2016-06'],
-    sources: ['all', 'pv', 'mobilebackup', 'historic'],
-    locations: [{ 'ZS': 'Mosango' }]
-  }
-  */
+export default function statsApp (element, baseUrl) {
   const dateFrom = moment().startOf('year').format('YYYY-MM-DD')
   const dateTo = moment().format('YYYY-MM-DD')
 
@@ -39,7 +28,7 @@ export default function statsApp (appConfig, element, baseUrl) {
   })
 
   const store = createStore({
-    config: appConfig,
+    config: {},
     report: {}
   }, {
     config: (state = {}) => state,

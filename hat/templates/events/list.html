@@ -1,8 +1,8 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Events" %}</h1>
+  <h1 class="header__title">{% trans 'Events' %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ count }} {% trans "Events" %}
+          {{ count }} {% trans 'Events' %}
         </h2>
       </div>
 
@@ -18,21 +18,21 @@
         <table class="table--minimised list__table list__table--list" data-qa="events-data-loaded">
           <thead>
             <tr>
-              <th>{% trans "ID" %}</th>
-              <th>{% trans "Date" %}</th>
-              <th>{% trans "Type" %}</th>
-              <th>{% trans "Name" %}</th>
-              <th>{% trans "Total" %}</th>
-              <th>{% trans "Created" %}</th>
-              <th>{% trans "Updated" %}</th>
-              <th>{% trans "Deleted" %}</th>
+              <th>{% trans 'ID' %}</th>
+              <th>{% trans 'Date' %}</th>
+              <th>{% trans 'Type' %}</th>
+              <th>{% trans 'Name' %}</th>
+              <th>{% trans 'Total' %}</th>
+              <th>{% trans 'Created' %}</th>
+              <th>{% trans 'Updated' %}</th>
+              <th>{% trans 'Deleted' %}</th>
             </tr>
           </thead>
           <tbody>
             {% for event in items %}
               <tr>
                 <td>{{ event.id }}</td>
-                <td>{{ event.stamp|date:"Y-m-d H:i:s.u" }}</td>
+                <td>{{ event.stamp|date:'Y-m-d H:i:s.u' }}</td>
                 <td>
                   {{ event.table_name }}
                   {% if event.sub_type %}

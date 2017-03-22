@@ -263,21 +263,6 @@ export class Microplanning extends Component {
               </div>
             }
           </div>
-
-          <div className='widget__footer'>
-            <span className='text--data'>
-              <FormattedMessage id='microplanning.datasource.label' defaultMessage='Data sources' />
-              {':'}
-              &nbsp;
-              <FormattedMessage id='microplanning.datasource.mobiledata' defaultMessage='HAT mobile application data' />
-              {','}
-              &nbsp;
-              <FormattedMessage id='microplanning.datasource.historical' defaultMessage='HAT historical forms' />
-              {','}
-              &nbsp;
-              <FormattedMessage id='microplanning.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
-            </span>
-          </div>
         </div>
       </div>
     )

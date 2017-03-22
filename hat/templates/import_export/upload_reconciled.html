@@ -1,16 +1,16 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Datasets – reconciled data" %}</h1>
+  <h1 class="header__title">{% trans 'Datasets – reconciled data' %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Upload reconciled data" %}</h2>
+        <h2 class="widget__heading">{% trans 'Upload reconciled data' %}</h2>
       </div>
       <div class="widget__content">
         <p>
@@ -21,7 +21,7 @@
         </p>
         <ul class="list--instructions">
           <li class="list__item--instructions">
-            {% trans "To begin, your file must be in .xlsx format." %}
+            {% trans 'To begin, your file must be in .xlsx format.' %}
           </li>
           <li class="list__item--instructions">
             {% blocktrans %}
@@ -30,7 +30,7 @@
             {% endblocktrans %}
           </li>
           <li class="list__item--instructions">
-            {% trans "Column headers must match exactly the headers used in the exported data." %}
+            {% trans 'Column headers must match exactly the headers used in the exported data.' %}
           </li>
           <li class="list__item--instructions">
             {% blocktrans %}
@@ -63,16 +63,10 @@
           {% csrf_token %}
           {{ form }}
           <div class="block--margin-top--xs">
-            <button type="submit" class="button">{% trans "Upload reconciled data" %}</button>
-          </div>
-
-          <div id='import'>
+            <button type="submit" class="button">{% trans 'Upload reconciled data' %}</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-
-  {% render_bundle 'common' %}
-  {% render_bundle 'import' %}
 {% endblock %}

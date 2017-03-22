@@ -1,9 +1,6 @@
 from typing import Callable, List, Dict
 from hat.common.typing import JsonType
-from urllib.parse import urlparse
 from requests import Response
-from django.conf import settings
-from hat.common.utils import run_cmd
 from . import api
 
 
@@ -43,27 +40,6 @@ def force_put_doc(path: str, document: JsonType) -> Response:
     r = api.put(path, json=doc)
     r.raise_for_status()
     return r
-
-
-def bootstrap_couchdb(cleanup: bool=True) -> str:
-    o = urlparse(settings.COUCHDB_URL)
-    couchdb_url = '{}://{}:{}@{}'.format(
-        o.scheme,
-        settings.COUCHDB_USER, settings.COUCHDB_PASSWORD,
-        o.netloc
-    )
-    cmd = ['couchdb-bootstrap', couchdb_url, settings.COUCHDB_DIR]
-    # When testing, the db name will be '*_test' and if it already
-    # exists, it will be dropped to start with an empty db.
-    if cleanup:
-        test_db = settings.COUCHDB_DB
-        cmd.append('--mapDbName={"hat":"' + test_db + '"}')
-        r = api.get(test_db)
-        if r.status_code < 400:
-            # couchdb already exists we'll delete it before recreating
-            api.delete(test_db)
-
-    return run_cmd(cmd)
 
 
 def fetch_dbs_info() -> JsonType:

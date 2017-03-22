@@ -1,26 +1,26 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 {% load hat %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Analysis of cases" %}</h1>
+  <h1 class="header__title">{% trans 'Analysis of cases' %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
 
-    {% include "cases/filters.html" with form=form custom=custom_filters %}
+    {% include 'cases/filters.html' with form=form custom=custom_filters %}
 
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          <span class="text--marked">{{ page.count }}</span> {% trans "Entries" %}
+          <span class="text--marked">{{ page.count }}</span> {% trans 'Entries' %}
           -
-          <span class="text--marked">{{ total_participants }}</span> {% trans "Participants" %}
+          <span class="text--marked">{{ total_participants }}</span> {% trans 'Participants' %}
           -
-          <span class="text--marked">{{ total_suspect }}</span> {% trans "Suspect cases" %}
+          <span class="text--marked">{{ total_suspect }}</span> {% trans 'Suspect cases' %}
           -
-          <span class="text--marked">{{ total_confirmed }}</span> {% trans "Confirmed cases" %}
+          <span class="text--marked">{{ total_confirmed }}</span> {% trans 'Confirmed cases' %}
         </h2>
       </div>
 
@@ -38,7 +38,7 @@
               <tr>
                 {% for column in columns %}
                   {% if case|get:column.id|date %}
-                  <td>{{ case|get:column.id|date:"j F Y" }}</td>
+                  <td>{{ case|get:column.id|date:'j F Y' }}</td>
                   {% else %}
                   <td>{{ case|get:column.id }}</td>
                   {% endif %}
@@ -49,7 +49,10 @@
         </table>
       </section>
 
-      {% include "pagination.html" with page=page only %}
+      {% include 'pagination.html' with page=page only %}
     </div>
+
+    {% include 'data_sources.html' with mobile='true' historical='true' pv='true' only %}
+
   </div>
 {% endblock %}

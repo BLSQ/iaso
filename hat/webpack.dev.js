@@ -12,16 +12,6 @@ module.exports = {
   entry: {
     // use same settings as in Prod
     'common': ['react', 'react-dom', 'react-intl'],
-    'import': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/import'
-    ],
-    'testapp': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/testapp'
-    ],
     'stats': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
@@ -161,14 +151,6 @@ module.exports = {
         options: {
           limit: 10000,
           mimetype: 'image/png'
-        }
-      },
-      // favicon
-      {
-        test: 'images/favicon-dev.png',
-        loader: 'url-loader',
-        options: {
-          name: 'favicon.png'
         }
       }
     ]

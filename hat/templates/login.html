@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load i18n %}
 
 {% block body %}
   <div class="login__container">
     <div class="login__content">
       <header class="login__header">
-        <h1 class="login__heading">{% trans "Sense HAT Dashboard" %}</h1>
-        <p>{% trans "Please log in to continue" %}
+        <h1 class="login__heading">{% trans 'Sense HAT Dashboard' %}</h1>
+        <p>{% trans 'Please log in to continue' %}</p>
       </header>
       <form method="post" data-qa="login-form" action="{% url 'login' %}" class="login__form">
         {% if next %}
@@ -19,19 +19,21 @@
             </p>
           {% else %}
             <p class="login__text--warning">
-              {% trans "Please login to see this page." %}
+              {% trans 'Please login to see this page.' %}
             </p>
           {% endif %}
         {% endif %}
         {% if form.errors %}
           <p class="login__text--error">
-            {% trans "Your username and password didn't match. Please try again." %}
+            {% blocktrans %}
+            Your username and password didn't match. Please try again.
+            {% endblocktrans %}
           </p>
         {% endif %}
         {% csrf_token %}
         {{ form }}
         <input type="hidden" name="next" value="{{ next }}" />
-        <button type="submit" class="button">{% trans "Login" %}</button>
+        <button type="submit" class="button">{% trans 'Login' %}</button>
       </form>
     </div>
   </div>

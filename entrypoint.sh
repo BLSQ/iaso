@@ -29,7 +29,6 @@ case "$1" in
     npm run lint
     # Then tests
     ./scripts/wait_for_dbs.sh
-    ./manage.py setupcouchdb
     # Run python tests and pass on any args to e.g. run individual tests
     ./manage.py test --exclude-tag selenium "${@:2}"
     npm run mocha
@@ -40,7 +39,6 @@ case "$1" in
   "test_integration" )
     export TESTING=true
     ./scripts/wait_for_dbs.sh
-    ./manage.py setupcouchdb
     # create static files
     npm run webpack
     ./manage.py test --tag=selenium --failfast
@@ -50,7 +48,6 @@ case "$1" in
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
-    ./manage.py setupcouchdb
     ./scripts/start_web.sh
   ;;
   "start_dev" )
@@ -62,7 +59,6 @@ case "$1" in
       ./manage.py migrate --noinput
       npm run webpack
       ./manage.py collectstatic --noinput
-      ./manage.py setupcouchdb
       ./scripts/start_web.sh
     else
       export DEV_SERVER=true
@@ -70,7 +66,6 @@ case "$1" in
       ./scripts/wait_for_dbs.sh
       ./manage.py migrate --noinput
       ./manage.py loaddata users
-      ./manage.py setupcouchdb
       ./manage.py runserver 0.0.0.0:8080
     fi
   ;;

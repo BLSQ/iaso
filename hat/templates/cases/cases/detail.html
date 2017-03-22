@@ -1,18 +1,18 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 {% load hat %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Case" %}</h1>
+  <h1 class="header__title">{% trans 'Case' %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
 
-    <div>
-      <a class="button--minimised" href="{{ back_link}}">
+    <div class="hide-on-print">
+      <a class="button--minimised" href="{{ back_link }}">
         <i class="fa fa-arrow-left"></i>
-        <span>{% trans "Back to list" %}</span>
+        <span>{% trans 'Back to list' %}</span>
       </a>
     </div>
     <br/>
@@ -21,15 +21,15 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {% trans "Case" %} {{ case.document_id }}
+          {% trans 'Case' %} {{ case.document_id }}
         </h2>
       </div>
       <div class="widget__content">
         <table class="table--minimised">
           <thead>
             <tr>
-              <th>{% trans "Field" %}</th>
-              <th>{% trans "Value" %}</th>
+              <th>{% trans 'Field' %}</th>
+              <th>{% trans 'Value' %}</th>
             </tr>
           </thead>
           <tbody>

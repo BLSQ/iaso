@@ -13,12 +13,10 @@ import {loadReducer} from './redux/load'
 export default function monthlyReportApp (appConfig, element, baseUrl) {
   /*
   This creates a default route using the parameters
-  in the 'appConfig' object from django
-  showing 'all' for the last month
+  in the 'appConfig' object from django showing the last month
   Example appConfig object:
   {
-    dates: ['2016-04', '2016-05', '2016-06'],
-    locations: [{ 'ZS': 'Mosango' }]
+    dates: ['2016-04', '2016-05', '2016-06']
   }
   */
   const defaultRoute = (config) => {
@@ -28,7 +26,7 @@ export default function monthlyReportApp (appConfig, element, baseUrl) {
 
   const routes = [
     <Route
-      path='charts(/location/:location)(/source/:source)(/date/:date)'
+      path='charts(/location/:location)(/date/:date)'
       component={MonthlyReportContainer} />,
     <Redirect path='*' to={defaultRoute(appConfig)} />
   ]

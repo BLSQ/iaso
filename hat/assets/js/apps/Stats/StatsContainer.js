@@ -18,7 +18,7 @@ export const urls = [
   {
     name: 'locations',
     url: '/api/datasets/list_locations/',
-    mock: [{ 'ZS': 'Yasa-bonga' }]
+    mock: ['Yasa Bonga']
   },
   {
     name: 'total',

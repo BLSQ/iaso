@@ -1,15 +1,15 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Datasets" %} – {{ dataset }}</h1>
+  <h1 class="header__title">{% trans 'Datasets' %} – {{ dataset }}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
     <div class="widget__container">
       <div class="widget__header">
-        <h2 class="widget__heading">{% trans "Upload" %} {{ dataset }}</h2>
+        <h2 class="widget__heading">{% trans 'Upload' %} {{ dataset }}</h2>
       </div>
       <div class="widget__content">
         {% if error_count > 0 %}
@@ -27,14 +27,14 @@
         <table class="job-result-table" style="width: 100%">
           <thead>
             <tr>
-              <th>{% trans "File" %}</th>
-              <th>{% trans "Type" %}</th>
-              <th>{% trans "Result" %}</th>
-              <th>{% trans "Total" %}</th>
-              <th>{% trans "Created" %}</th>
-              <th>{% trans "Updated" %}</th>
-              <th>{% trans "Deleted" %}</th>
-              <th>{% trans "Error" %}</th>
+              <th>{% trans 'File' %}</th>
+              <th>{% trans 'Type' %}</th>
+              <th>{% trans 'Result' %}</th>
+              <th>{% trans 'Total' %}</th>
+              <th>{% trans 'Created' %}</th>
+              <th>{% trans 'Updated' %}</th>
+              <th>{% trans 'Deleted' %}</th>
+              <th>{% trans 'Error' %}</th>
             </tr>
           </thead>
           <tbody>
@@ -44,16 +44,16 @@
                 <td>{{ file.typename }}</td>
                 <td>
                   {% if file.ok %}
-                    <span class="text--success"><i class="fa fa-check"></i> {% trans "Success" %}</span>
+                    <span class="text--success"><i class="fa fa-check"></i> {% trans 'Success' %}</span>
                   {% else %}
-                    <span class="text--error"><i class="fa fa-times"></i> {% trans "Error" %}</span>
+                    <span class="text--error"><i class="fa fa-times"></i> {% trans 'Error' %}</span>
                   {% endif %}
                 </td>
                 {% if file.stats %}
-                  <td>{{ file.stats.total}}</td>
-                  <td>{{ file.stats.created}}</td>
-                  <td>{{ file.stats.updated}}</td>
-                  <td>{{ file.stats.deleted}}</td>
+                  <td>{{ file.stats.total }}</td>
+                  <td>{{ file.stats.created }}</td>
+                  <td>{{ file.stats.updated }}</td>
+                  <td>{{ file.stats.deleted }}</td>
                 {% else %}
                   <td>-</td>
                   <td>-</td>

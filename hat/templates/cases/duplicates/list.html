@@ -1,19 +1,19 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Duplicate cases reconciliation" %}</h1>
+  <h1 class="header__title">{% trans 'Duplicate cases reconciliation' %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
 
-    {% include "cases/filters.html" with form=form custom=custom_filters only %}
+    {% include 'cases/filters.html' with form=form custom=custom_filters only %}
 
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ page.count }} {% trans "Duplicate matches found" %}
+          {{ page.count }} {% trans 'Duplicate matches found' %}
         </h2>
       </div>
       <div class="widget__content">
@@ -28,25 +28,25 @@
         <table class="table--minimised list__table list__table--list">
           <thead>
             <tr>
-              <th>{% trans "Case 1" %}</th>
-              <th>{% trans "Case 2" %}</th>
-              <th></th>
+              <th>{% trans 'Case 1' %}</th>
+              <th>{% trans 'Case 2' %}</th>
+              <th class="hide-on-print"></th>
             </tr>
           </thead>
           <tbody>
             {% for pair in page.items %}
               <tr>
                 <td>
-                  {% include "cases/duplicates/list_detail.html" with case=pair.case1 only %}
+                  {% include 'cases/duplicates/list_detail.html' with case=pair.case1 only %}
                 </td>
                 <td>
-                  {% include "cases/duplicates/list_detail.html" with case=pair.case2 only %}
+                  {% include 'cases/duplicates/list_detail.html' with case=pair.case2 only %}
                 </td>
-                <td>
+                <td class="hide-on-print">
                   <a
                     class="button--minimised"
                     href="{% url 'cases:duplicates_details' pair_id=pair.id %}?back={{ request.get_full_path|urlencode }}">
-                    {% trans "Compare" %}
+                    {% trans 'Compare' %}
                   </a>
                 </td>
               </tr>
@@ -55,7 +55,10 @@
         </table>
       </section>
 
-      {% include "pagination.html" with page=page only %}
+      {% include 'pagination.html' with page=page only %}
     </div>
+
+    {% include 'data_sources.html' with mobile='true' historical='true' pv='true' only %}
+
   </div>
 {% endblock %}

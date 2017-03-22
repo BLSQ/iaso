@@ -1,17 +1,17 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Duplicate cases reconciliation" %}</h1>
+  <h1 class="header__title">{% trans 'Duplicate cases reconciliation' %}</h1>
 {% endblock %}
 
 {% block content %}
   <div class="content">
 
-    <div>
-      <a class="button--minimised" href="{{ back_link}}">
+    <div class="hide-on-print">
+      <a class="button--minimised" href="{{ back_link }}">
         <i class="fa fa-arrow-left"></i>
-        <span>{% trans "Back to list" %}</span>
+        <span>{% trans 'Back to list' %}</span>
       </a>
     </div>
     <br/>
@@ -20,7 +20,7 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {% trans "Comparison of matching cases" %}
+          {% trans 'Comparison of matching cases' %}
         </h2>
       </div>
       <div class="widget__content">
@@ -50,22 +50,22 @@
                       {% if forloop.first %}
                         <b>{{ column }}</b>
                       {% else %}
-                        <span style='float:left; margin-left:-10px'>{{ column.indicator }}</span> {{ column.value }}
+                        <span style="float:left; margin-left:-10px">{{ column.indicator }}</span> {{ column.value }}
                       {% endif %}
                     </td>
                   {% endfor %}
                 </tr>
               {% endfor %}
-              <tr>
+              <tr class="hide-on-print">
                 <td colspan="3"></td>
                 <td>
                   <form method="POST" action="{% url 'cases:duplicates_merge' pair_id %}?back={{ back_link }}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <button type="submit" class="button">{% trans "Merge" %}</button>
+                    <button type="submit" class="button">{% trans 'Merge' %}</button>
                   </form>
                   <form method="POST" action="{% url 'cases:duplicates_ignore' pair_id %}?back={{ back_link }}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <button type="submit" class="button">{% trans "Ignore" %}</button>
+                    <button type="submit" class="button">{% trans 'Ignore' %}</button>
                   </form>
                 </td>
               </tr>

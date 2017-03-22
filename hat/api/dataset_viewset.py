@@ -6,30 +6,26 @@ from calendar import monthrange
 import pytz
 from django.db import connection
 from django.db.models import Count, Min, Max
-from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
+
 from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
+
 from hat.cases.models import CaseView, Location
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
-    resolve_dateperiod, \
-    Q_screening, \
-    Q_screening_positive, \
-    Q_confirmation, \
-    Q_confirmation_positive, \
-    Q_staging, \
-    Q_staging_stage1, \
-    Q_staging_stage2
+    Q_screening, Q_screening_positive, Q_screening_negative, \
+    Q_confirmation, Q_confirmation_positive, Q_confirmation_negative, \
+    Q_staging, Q_staging_stage1, Q_staging_stage2
 from hat.queries import stats_queries, microplanning_queries
 
 datasets = {}
 
-DATE_FORMAT = "%Y-%m-%d"
+DATE_FORMAT = '%Y-%m-%d'
 
 
 def parse_date_range(params: Dict[str, str],
@@ -66,7 +62,6 @@ params_schema = {
     'type': 'object',
     'properties': {
         'date': {'type': 'string'},
-        'dateperiod': {'type': 'string'},
         'date_from': {'type': 'string'},
         'date_to': {'type': 'string'},
         'location': {'type': 'string'},
@@ -96,17 +91,12 @@ def get_cases_filtered(request: Request,
     date = get_param_value('date')
     if date is not None:
         # Parse time with manually added UTC timezone offset
-        date_from = datetime.strptime(date + "-+0000", "%Y-%m-%z")
+        date_from = datetime.strptime(date + '-+0000', '%Y-%m-%z')
         # Get the last day of the month
         (_, last_day) = monthrange(date_from.year, date_from.month)
         # Construct the upper bound of our date range
         date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC) \
             + timedelta(days=1)
-        cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
-
-    dateperiod = get_param_value('dateperiod')
-    if dateperiod is not None:
-        (date_from, date_to) = resolve_dateperiod(dateperiod)
         cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
 
     date_from_param = get_param_value('date_from')
@@ -136,7 +126,7 @@ def get_cases_filtered(request: Request,
 @dataset(params_schema=params_schema)
 def list_locations(request: Request, params: Dict[str, str]) -> List[str]:
     cases = get_cases_filtered(request, params, ignore_params=['location'])
-    return cases.order_by().values('ZS').distinct()
+    return cases.order_by('ZS').values_list('ZS', flat=True).distinct()
 
 
 @dataset(params_schema=params_schema)
@@ -155,7 +145,7 @@ def count_screened(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     return {
         'total': cases.count(),
         'positive': cases.filter(Q_screening_positive).count(),
-        'negative': cases.exclude(Q_screening_positive).count(),
+        'negative': cases.filter(Q_screening_negative).count(),
         'missing_confirmation': cases.filter(Q_screening_positive)
                                      .exclude(Q_confirmation).count()
     }
@@ -167,7 +157,7 @@ def count_confirmed(request: Request, params: Dict[str, str]) -> Dict[str, int]:
     return {
         'total': cases.count(),
         'positive': cases.filter(Q_confirmation_positive).count(),
-        'negative': cases.exclude(Q_confirmation_positive).count()
+        'negative': cases.filter(Q_confirmation_negative).count()
     }
 
 
@@ -196,10 +186,9 @@ def campaign_meta(request: Request, params: Dict[str, str]) -> Dict[str, Union[s
 def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, int]]:
     cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
-                  .annotate(date=RawSQL('date_trunc(\'day\', document_date)', [])) \
-                  .values('date') \
+                  .values('document_date_day') \
                   .annotate(count=Count('document_id')) \
-                  .order_by('date')
+                  .order_by('document_date_day')
     # order_by is needed to remove 'document_date' from the GROUP BY statement
     # see comment on https://jira.ehealthafrica.org/browse/HAT-262
 
@@ -212,7 +201,7 @@ def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, i
     (_, num_days) = monthrange(year, month)
     result = [{'count': 0, 'day': i+1} for i in range(num_days)]
     for t in tested:
-        day = t['date'].day
+        day = t['document_date_day'].day
         result[day - 1] = {'count': t['count'], 'day': day}
     return result
 

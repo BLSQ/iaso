@@ -22,7 +22,7 @@ export function checkLocation (params, results, dispatch) {
   const selectedLocation = params.location &&
         decodeURIComponent(params.location)
   const validLocation = results.locations.some((location) => {
-    return location.ZS === selectedLocation
+    return location === selectedLocation
   })
   if (selectedLocation && !validLocation) {
     // No data for this location, redirect to all

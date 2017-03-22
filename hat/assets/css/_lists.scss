@@ -8,6 +8,9 @@
   @include reset-list-style;
   margin-top: $padding-unit*.5;
   margin-bottom: $padding-unit*2;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 [class*="list__item--stats"] {
@@ -84,6 +87,7 @@
 }
 
 .list__header {
+  margin-top: $padding-unit;
   padding: 0 $padding-unit;
   color: $mid-gray;
   font-weight: normal;

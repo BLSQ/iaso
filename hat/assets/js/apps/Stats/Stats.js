@@ -139,7 +139,9 @@ class ParticipationWidget extends Component {
           <div className='column--4'>
             <h2 className='block--margin-bottom--xs'>
               <FormattedMessage id='statspage.participation.subheader' defaultMessage='Participation rate' />
-              :&nbsp;{percentageScreened}
+              {':'}
+              &nbsp;
+              {percentageScreened}
             </h2>
             <p>
               <FormattedMessage id='statspage.participation.description' defaultMessage='The percentage of the target population of the screened areas for this time period' />
@@ -413,20 +415,6 @@ class StageWidget extends Component {
           </section>
         </div>
       </div>
-      <div>
-        <span className='text--data'>
-          <FormattedMessage id='statspage.datasource.label' defaultMessage='Data sources' />
-          {':'}
-          &nbsp;
-          <FormattedMessage id='statspage.datasource.mobiledata' defaultMessage='HAT mobile application data' />
-          {','}
-          &nbsp;
-          <FormattedMessage id='statspage.datasource.historical' defaultMessage='HAT historical forms' />
-          {','}
-          &nbsp;
-          <FormattedMessage id='statspage.datasource.pharmacovigilance' defaultMessage='Pharmacovigilance' />
-        </span>
-      </div>
     </div>
   }
 }
@@ -513,32 +501,28 @@ export class Stats extends Component {
                 <option key='all' value=''>
                   {formatMessage(MESSAGES['location-all'])}
                 </option>
-                {locations.map((loc) => {
-                  var val = loc.ZS
-                  return <option key={val} value={val}>{val}</option>
-                })}
+                {locations.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
               </select>
             </div>
           )}
         </div>
-        <div>
-          {
-            error && <div className='widget__container'>
-              <div className='widget__header'>
-                <h2 className='widget__heading text--error'><FormattedMessage id='statspage.header.error' defaultMessage='Error:' /></h2>
-              </div>
-              <div className='widget__content'>
-                {error}
-              </div>
+
+        {
+          error && <div className='widget__container'>
+            <div className='widget__header'>
+              <h2 className='widget__heading text--error'><FormattedMessage id='statspage.header.error' defaultMessage='Error:' /></h2>
             </div>
-          }
-          {
-            loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
-          }
-          {
-            data && <Widgets data={data} />
-          }
-        </div>
+            <div className='widget__content'>
+              {error}
+            </div>
+          </div>
+        }
+        {
+          loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
+        }
+        {
+          data && <Widgets data={data} />
+        }
       </div>
     )
   }

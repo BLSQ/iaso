@@ -1,28 +1,26 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Microplanning" %}</h1>
+  <h1 class="header__title">{% trans 'Microplanning' %}</h1>
 {% endblock %}
 
 {% block content %}
 
   <div class="content">
-    <div id='app'></div>
+    <div id="app"></div>
   </div>
 
   {% render_bundle 'common' %}
   {% render_bundle 'microplanning' %}
   <script>
-  {% comment %}
-    The microplanning app requires a config object populated via django
-    The app is started manually with that config:
-  {% endcomment %}
     HAT.microplanning.default(
       document.getElementById('app'),
       '/dashboard/microplanning/'
     )
   </script>
+
+  {% include 'data_sources.html' with mobile='true' historical='true' pv='true' only %}
 
 {% endblock %}

@@ -1,8 +1,8 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block header %}
-  <h1 class="header__title">{% trans "Devices" %}</h1>
+  <h1 class="header__title">{% trans 'Devices' %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,7 @@
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
-          {{ page.count }} {% trans "Devices" %}
+          {{ page.count }} {% trans 'Devices' %}
         </h2>
       </div>
 
@@ -19,27 +19,27 @@
         <table class="table--minimised list__table list__table--list" data-qa="devices-data-loaded">
           <thead>
             <tr>
-              <th colspan="2" class="main">{% trans "Device" %}</th>
+              <th colspan="2" class="main">{% trans 'Device' %}</th>
               <th></th>
-              <th colspan="3" class="main">{% trans "Surveillance activity summary" %}</th>
+              <th colspan="3" class="main">{% trans 'Surveillance activity summary' %}</th>
               <th></th>
-              <th colspan="5" class="main">{% trans "Last synchronisation summary" %}</th>
+              <th colspan="5" class="main">{% trans 'Last synchronisation summary' %}</th>
             </tr>
             <tr>
-              <th>{% trans "ID" %}</th>
-              <th>{% trans "Synced?" %}</th>
+              <th>{% trans 'ID' %}</th>
+              <th>{% trans 'Synced?' %}</th>
 
               <th></th>
-              <th>{% trans "Period" %}</th>
-              <th>{% trans "# Locations" %}</th>
-              <th>{% trans "# Participants" %}</th>
+              <th>{% trans 'Period' %}</th>
+              <th>{% trans '# Locations' %}</th>
+              <th>{% trans '# Participants' %}</th>
 
               <th></th>
-              <th>{% trans "Date" %}</th>
-              <th>{% trans "Total" %}</th>
-              <th>{% trans "Created" %}</th>
-              <th>{% trans "Updated" %}</th>
-              <th>{% trans "Deleted" %}</th>
+              <th>{% trans 'Date' %}</th>
+              <th>{% trans 'Total' %}</th>
+              <th>{% trans 'Created' %}</th>
+              <th>{% trans 'Updated' %}</th>
+              <th>{% trans 'Deleted' %}</th>
             </tr>
           </thead>
           <tbody>
@@ -56,15 +56,15 @@
 
                 <td></td>
                 <td>
-                  {{ device.date_first|date:"d/m/Y" }}
+                  {{ device.date_first|date:'d/m/Y' }}
                   -
-                  {{ device.date_last|date:"d/m/Y" }}
+                  {{ device.date_last|date:'d/m/Y' }}
                 </td>
                 <td>{{ device.locations }}</td>
                 <td>{{ device.participants }}</td>
 
                 <td></td>
-                <td>{{ device.last_synced_date|date:"d/m/Y" }}</td>
+                <td>{{ device.last_synced_date|date:'d/m/Y' }}</td>
                 <td>{{ device.last_synced_stats.0 }}</td>
                 <td>{{ device.last_synced_stats.1 }}</td>
                 <td>{{ device.last_synced_stats.2 }}</td>
@@ -75,7 +75,7 @@
         </table>
       </section>
 
-      {% include "pagination.html" with page=page only %}
+      {% include 'pagination.html' with page=page only %}
     </div>
   </div>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 {% load static %}
@@ -12,7 +12,7 @@
   <section class="section--feature--welcome">
     <div class="section__content">
       <div class="section__content--welcome">
-        <h1>{% trans "Welcome to the SENSE HAT Dashboard" %}</h1>
+        <h1>{% trans 'Welcome to the SENSE HAT Dashboard' %}</h1>
         <div class="welcome__images">
           <img src="{% static 'images/drc-flag.png' %}" alt="DRC flag">
           <img src="{% static 'images/pnltha-logo.png' %}" alt="PNLTHA logo">
@@ -29,43 +29,43 @@
   {# highlight pilot areas #}
   <section class="section--feature--pilot-area">
     <div class="section__content__image--pilot-area">
-      <img src="{% static 'images/map.png' %}" alt="Map showing pilot health zones" width="540" />
+      <img src="{% static 'images/map.png' %}" alt="{% trans 'Map showing pilot health zones' %}" width="540" />
     </div>
     <div class="section__content--pilot-area">
-      <h2>{% trans "Programme Mission" %}</h2>
+      <h2>{% trans 'Programme Mission' %}</h2>
       <p>
         {% blocktrans %}
         To coordinate and organise the strugge against HAT in RD Congo
         {% endblocktrans %}
       </p>
-      <h2>{% trans "Programme Objective" %}</h2>
+      <h2>{% trans 'Programme Objective' %}</h2>
       <p>
         {% blocktrans %}
-        To reduce the morbidity and mortality due to HAT to a level compatible with a normal productive life for the inhabitants of areas where the disease in endemic (1 case per 10,000 inhabitants)
+        To reduce the morbidity and mortality due to HAT to a level compatible with a normal productive life for the inhabitants of areas where the disease is endemic (1 case per 10,000 inhabitants)
         {% endblocktrans %}
       </p>
-      <h2>{% trans "Programme Organisation" %}</h2>
+      <h2>{% trans 'Programme Organisation' %}</h2>
       <p>
-        <strong>{% trans "Central level" %}:</strong>
+        <strong>{% trans 'Central level' %}:</strong>
         {% blocktrans %}
         Normative and develop strategies and technical support for the provincial levels
         {% endblocktrans %}
       </p>
       <p>
-        <strong>{% trans "Provincial level" %}:</strong>
+        <strong>{% trans 'Provincial level' %}:</strong>
         {% blocktrans %}
         Organize and coordinate fighting in the province. Provide basic technical support and advice to provincial physicians
         {% endblocktrans %}
       </p>
       <p>
-        <strong>{% trans "Peripheral Operational level" %}:</strong>
+        <strong>{% trans 'Peripheral Operational level' %}:</strong>
         {% blocktrans %}
         Execution of the fight
         {% endblocktrans %}
       </p>
 
       <a href="{% url 'dashboard:microplanning' %}" class="button--success">
-        {% trans "Use the microplanning tool" %}
+        {% trans 'Use the microplanning tool' %}
         <i class="fa fa-arrow-right icon--right"></i>
       </a>
     </div>
@@ -74,10 +74,10 @@
   {# monthly reports #}
   <section class="section--feature--reports">
     <div class="section__content__image--reports">
-      <img src="{% static 'images/monthly-report.png' %}" alt="Monthly report example" />
+      <img src="{% static 'images/monthly-report.png' %}" alt="{% trans 'Monthly report example' %}" />
     </div>
     <div class="section__content--reports">
-      <h2>{% trans "See monthly campaign reports" %}</h2>
+      <h2>{% trans 'See monthly campaign reports' %}</h2>
       <p>
         {% blocktrans %}
         Report showing monthly statistics from active screening using the HAT mobile application. Statistics include: number of suspect and confirmed cases, participants missing tests, and more.
@@ -85,7 +85,7 @@
       </p>
       {% if perms.cases.view %}
         <a href="{% url 'dashboard:monthly_report' %}" class="button--bright">
-          {% trans "Monthly reports" %}
+          {% trans 'Monthly reports' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
@@ -95,7 +95,7 @@
   {# upload/download #}
   <section class="section--feature--data">
     <div class="section__content--upload">
-      <h2>{% trans "Upload data from the field" %}</h2>
+      <h2>{% trans 'Upload data from the field' %}</h2>
       <p>
         {% blocktrans %}
         Upload historical data forms from the Microsoft Access template or encrypted backup files from the Mobile Application.
@@ -103,18 +103,18 @@
       </p>
       {% if perms.cases.import %}
         <a href="{% url 'datasets:import_cases:upload' %}" class="button--bright">
-          {% trans "Data upload" %}
+          {% trans 'Data upload' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
     </div>
 
     <div class="section__content__heading--data">
-      <img src="{% static 'images/upload-download.png' %}" alt="Upload data" width="200" />
+      <img src="{% static 'images/upload-download.png' %}" alt="{% trans 'Upload data' %}" width="200" />
     </div>
 
     <div class="section__content--download">
-      <h2>{% trans "Check uploaded data" %}</h2>
+      <h2>{% trans 'Check uploaded data' %}</h2>
       <p>
         {% blocktrans %}
         View the list of participants in the screening sessions, the historical cases...
@@ -122,7 +122,7 @@
       </p>
       {% if perms.cases.view %}
         <a href="{% url 'cases:cases_list' %}" class="button--bright">
-          {% trans "Data uploaded" %}
+          {% trans 'Data uploaded' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
@@ -132,7 +132,7 @@
   {# suspect cases #}
   <section class="section--feature--suspect">
     <div class="section__content--suspect">
-      <h2>{% trans "Follow up on unconfirmed cases" %}</h2>
+      <h2>{% trans 'Follow up on unconfirmed cases' %}</h2>
       <p>
         {% blocktrans %}
         Download a list of participants who screened positive for HAT, but <strong>did not</strong> have a follow-up test to confirm.
@@ -140,7 +140,7 @@
       </p>
       {% if perms.cases.view %}
         <a href="{% url 'cases:cases_list' %}?suspect=true" class="button--bright">
-          {% trans "Go to HAT cases" %}
+          {% trans 'Go to HAT cases' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}
@@ -149,9 +149,8 @@
 
   {# partners #}
   <section class="section--feature--partners">
-    <h2>{% trans "A proud partnership" %}</h2>
+    <h2>{% trans 'A proud partnership' %}</h2>
     <div class="section__content--partners">
-
       <ul class="section__list--partners">
         <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
         <li>Institute of Tropical Medicine</li>

@@ -1,4 +1,4 @@
-{% extends "app.html" %}
+{% extends 'app.html' %}
 {% load i18n %}
 
 {% block head %}
@@ -17,7 +17,7 @@
     <div>
       <a class="button--minimised" href="{{ back_link }}">
         <i class="fa fa-arrow-left"></i>
-        <span>{% trans "Back" %}</span>
+        <span>{% trans 'Back' %}</span>
       </a>
     </div>
     <br/>
@@ -33,12 +33,12 @@
         </h2>
       </div>
       <div class="widget__content">
-        <p>{% trans "Status:" %} {{ status }}</p>
+        <p>{% trans 'Status:' %} {{ status }}</p>
         {% if complete and download_link %}
           <p>
             <a class="button--success" href="{{ download_link }}">
               <i class="fa fa-download"></i>
-              {% trans "Download file" %}
+              {% trans 'Download file' %}
             </a>
           </p>
         {% endif %}

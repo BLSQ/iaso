@@ -73,6 +73,7 @@ export const DataTable = ({
           <FormattedMessage id='monthlyreport.header.results' defaultMessage='Monthly statistics from active screening using the HAT mobile application' />
         </h2>
       </div>
+
       <section>
         <h3 className='list__header block--margin-top--small'>
           <FormattedMessage id='monthlyreport.header.campaign_activity' defaultMessage='Campaign activity' />
@@ -109,6 +110,7 @@ export const DataTable = ({
 
         </ul>
       </section>
+
       <section>
         <h3 className='list__header'>
           <FormattedMessage id='monthlyreport.header.cases' defaultMessage='Case information' />
@@ -147,14 +149,6 @@ export const DataTable = ({
             value={total.registered - total.tested} />
         </ul>
       </section>
-      <div className='widget__footer'>
-        <span className='text--data'>
-          <FormattedMessage id='monthlyreport.datasource.label' defaultMessage='Data source' />
-          {':'}
-          &nbsp;
-          <FormattedMessage id='monthlyreport.datasource.mobiledata' defaultMessage='HAT mobile application data' />
-        </span>
-      </div>
     </div>
   )
 }
@@ -200,35 +194,36 @@ export class MonthlyReport extends Component {
               ))}
             </select>
           </div>
-          { locations.length > 0 && (
+          {
+            locations.length > 0 &&
             <div className='filter__container__select'>
               <label htmlFor='location' className='filter__container__select__label'><i className='fa fa-globe' /><FormattedMessage id='monthlyreport.label.location' defaultMessage='Location' /></label>
               <select disabled={loading} name='location' value={location || ''} onChange={this.locationHandler} className='select--minimised'>
                 <option key='all' value=''>
                   {formatMessage(MESSAGES['location-all'])}
                 </option>
-                {locations.map((loc) => {
-                  var val = loc.ZS
-                  return <option key={val} value={val}>{val}</option>
-                })}
+                {locations.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
               </select>
             </div>
-          )}
-        </div>
-        <div>
-          {
-            error && <div className='widget__container'>
-              <div className='widget__header'>
-                <h2 className='widget__heading text--error'><FormattedMessage id='monthlyreport.header.error' defaultMessage='Error:' /></h2>
-              </div>
-              <div className='widget__content'>
-                {error}
-              </div>
-            </div>
           }
-          {loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />}
-          {data && <DataTable data={data} />}
         </div>
+
+        {
+          error && <div className='widget__container'>
+            <div className='widget__header'>
+              <h2 className='widget__heading text--error'><FormattedMessage id='monthlyreport.header.error' defaultMessage='Error:' /></h2>
+            </div>
+            <div className='widget__content'>
+              {error}
+            </div>
+          </div>
+        }
+        {
+          loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
+        }
+        {
+          data && <DataTable data={data} />
+        }
       </div>
     )
   }

@@ -1,6 +1,7 @@
 import os
 from django.db import connection
 from snaql.factory import Snaql
+from hat.import_export.mapping import ResultValues
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')
@@ -20,8 +21,14 @@ migration2 = snaql_factory.load_queries('migration_0002.sql')
 # export
 export_queries = snaql_factory.load_queries('export.sql')
 
+result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
 
-def prepare_db() -> None:
+def prepare_premigration() -> None:
     with connection.cursor() as cursor:
-        cursor.execute(prepare_queries.prepare_views())
+        cursor.execute(prepare_queries.run_premigration())
+
+
+def prepare_postmigration() -> None:
+    with connection.cursor() as cursor:
+        cursor.execute(prepare_queries.run_postmigration(**result_values))
         cursor.execute(duplicates_queries.prepare())

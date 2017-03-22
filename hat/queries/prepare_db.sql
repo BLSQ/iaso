@@ -1,11 +1,17 @@
-{% sql 'prepare_views', note='Create any views' %}
-  {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
-  {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
-  {# CASCADE option will skip problems if the view is used in other views #}
+{% sql 'run_premigration', note='Delete old views' %}
+   {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
+   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
+   {# CASCADE option will skip problems if the view is used in other views #}
 
+   DROP VIEW IF EXISTS hat_event_view CASCADE;
+   DROP VIEW IF EXISTS cases_case_view CASCADE;
+   DROP VIEW IF EXISTS sync_devicedb_view CASCADE;
+
+{% endsql %}
+
+{% sql 'run_postmigration', note='Create any views' %}
   {# View joining the hat event tables #}
-  DROP VIEW IF EXISTS hat_event_view CASCADE;
-  CREATE VIEW hat_event_view AS
+  CREATE OR REPLACE VIEW hat_event_view AS
     SELECT E.id
          , E.stamp
          , E.table_name
@@ -55,8 +61,7 @@
 
 
   {# View of cases with aggregated results for test types #}
-  DROP VIEW IF EXISTS cases_case_view CASCADE;
-  CREATE VIEW cases_case_view AS
+  CREATE OR REPLACE VIEW cases_case_view AS
     SELECT *
 
          , DATE_TRUNC('day',   document_date) AS document_date_day
@@ -76,32 +81,54 @@
            COALESCE(lastname, '')                         AS full_name
 
          , CASE
-             WHEN test_catt
-               OR test_rdt
-             THEN TRUE
-             WHEN test_catt IS FALSE
-               OR test_rdt  IS FALSE
-             THEN FALSE
+             WHEN test_catt={{positive}}
+               OR test_rdt={{positive}}
+             THEN {{positive}}
+             WHEN test_catt={{negative}}
+               OR test_rdt={{negative}}
+             THEN {{negative}}
+             WHEN test_catt={{missing}}
+               OR test_rdt={{missing}}
+             THEN {{missing}}
+             WHEN test_catt={{absent}}
+               OR test_rdt={{absent}}
+             THEN {{absent}}
              ELSE NULL
            END AS screening_result
 
          , CASE
-             WHEN test_maect
-               OR test_ge
-               OR test_pg
-               OR test_ctcwoo
-               OR test_lymph_node_puncture
-               OR test_sf
-               OR test_lcr
-             THEN TRUE
-             WHEN test_maect               IS FALSE
-               OR test_ge                  IS FALSE
-               OR test_pg                  IS FALSE
-               OR test_ctcwoo              IS FALSE
-               OR test_lymph_node_puncture IS FALSE
-               OR test_sf                  IS FALSE
-               OR test_lcr                 IS FALSE
-             THEN FALSE
+             WHEN test_maect={{positive}}
+               OR test_ge={{positive}}
+               OR test_pg={{positive}}
+               OR test_ctcwoo={{positive}}
+               OR test_lymph_node_puncture={{positive}}
+               OR test_sf={{positive}}
+               OR test_lcr={{positive}}
+             THEN {{positive}}
+             WHEN test_maect={{negative}}
+               OR test_ge={{negative}}
+               OR test_pg={{negative}}
+               OR test_ctcwoo={{negative}}
+               OR test_lymph_node_puncture={{negative}}
+               OR test_sf={{negative}}
+               OR test_lcr={{negative}}
+             THEN {{negative}}
+             WHEN test_maect={{missing}}
+               OR test_ge={{missing}}
+               OR test_pg={{missing}}
+               OR test_ctcwoo={{missing}}
+               OR test_lymph_node_puncture={{missing}}
+               OR test_sf={{missing}}
+               OR test_lcr={{missing}}
+             THEN {{missing}}
+             WHEN test_maect={{absent}}
+               OR test_ge={{absent}}
+               OR test_pg={{absent}}
+               OR test_ctcwoo={{absent}}
+               OR test_lymph_node_puncture={{absent}}
+               OR test_sf={{absent}}
+               OR test_lcr={{absent}}
+             THEN {{absent}}
              ELSE NULL
            END AS confirmation_result
 
@@ -112,8 +139,7 @@
 
 
   {# View joining devices and aggregated cases by device #}
-  DROP VIEW IF EXISTS sync_devicedb_view CASCADE;
-  CREATE VIEW sync_devicedb_view AS
+  CREATE OR REPLACE VIEW sync_devicedb_view AS
     SELECT COALESCE(D.device_id, C.device_id)                      AS device_id
          , CASE WHEN D.device_id IS NULL THEN FALSE ELSE TRUE END  AS is_synced
          , regexp_split_to_array(D.last_synced_log_message, ' - ') AS last_synced_stats

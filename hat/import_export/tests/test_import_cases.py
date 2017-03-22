@@ -3,6 +3,7 @@ from hat.cases.models import Case
 from hat.cases.event_log import get_events, get_event_of_type, EventTable
 from ..import_cases import import_cases_file
 from . import TEST_DATA, import_helper
+from ..mapping import ResultValues
 import datetime
 
 
@@ -65,9 +66,9 @@ class ImportCasesTests(TestCase):
         merged = Case.objects.first()
         # Merges in all test results
         self.assertEqual(merged.hat_id, 'AAXXBBF1999C')
-        self.assertEqual(merged.test_rdt, True)
-        self.assertEqual(merged.test_maect, True)
-        self.assertEqual(merged.test_pg, False)
+        self.assertEqual(merged.test_rdt, ResultValues.positive.value)
+        self.assertEqual(merged.test_maect, ResultValues.positive.value)
+        self.assertEqual(merged.test_pg, ResultValues.negative.value)
         # Keep document_date, entry_date as the first entry
 
         # '2016-09-07T14:59:16.006Z'

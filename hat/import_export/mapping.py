@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional, cast
 from functools import reduce
-from enum import Enum
+from enum import Enum, IntEnum, unique
 from .utils import capitalize
 from pandas import DataFrame, Series
 import pandas
@@ -16,6 +16,15 @@ import pandas
 # return the right result, it is important to use the foreign keys of related
 # tables as DataFrame indices, so that columns of Series assigned to the
 # DataFrame end up in the correct row.
+
+
+@unique
+class ResultValues(IntEnum):
+    '''store screening values.'''
+    positive = 2
+    negative = 1
+    missing = -1
+    absent = 0
 
 
 def series_to_str(s: Series) -> str:

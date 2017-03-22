@@ -24,11 +24,11 @@
                AS registered_total
              , COUNT(*) FILTER (WHERE screening_result IS NOT NULL)
                AS screening_total
-             , COUNT(*) FILTER (WHERE screening_result IS TRUE)
+             , COUNT(*) FILTER (WHERE screening_result=2)
                AS screening_pos
              , COUNT(*) FILTER (WHERE confirmation_result IS NOT NULL)
                AS confirmation_total
-             , COUNT(*) FILTER (WHERE confirmation_result IS TRUE)
+             , COUNT(*) FILTER (WHERE confirmation_result=2)
                AS confirmation_pos
              , COUNT(*) FILTER (WHERE stage_result IS NOT NULL)
                AS staging_total

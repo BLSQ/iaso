@@ -3,19 +3,23 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-SOURCE_CHOICES = (
-    ('historic', 'Historic'),
-    ('mobile_backup', 'Mobile backup'),
-    ('pv', 'Pharmacovigilance'),
-)
-
-SEX_CHOICES = (
-    ('female', 'Female'),
-    ('male', 'Male'),
+CASES_PERMISSIONS = (
+    ('import', 'Can import data'),
+    ('import_reconciled', 'Can import reconciliation data'),
+    ('export', 'Can export anonymized cases data'),
+    ('export_full', 'Can export non anonymized cases data'),
+    ('view', 'Can view anonymized cases data'),
+    ('view_full', 'Can view non anonymized cases data'),
 )
 
 
 class CaseAbstract(models.Model):
+    SOURCE_CHOICES = (
+        ('historic', 'Historic'),
+        ('mobile_backup', 'Mobile backup'),
+        ('mobile_sync', 'Mobile synced'),
+        ('pv', 'Pharmacovigilance'),
+    )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
@@ -33,6 +37,11 @@ class CaseAbstract(models.Model):
     name = models.TextField(null=True)
     lastname = models.TextField(null=True)
     prename = models.TextField(null=True)
+
+    SEX_CHOICES = (
+        ('female', 'Female'),
+        ('male', 'Male'),
+    )
     sex = models.TextField(choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField(null=True)
     year_of_birth = models.PositiveSmallIntegerField(null=True)
@@ -108,19 +117,14 @@ class CaseAbstract(models.Model):
     class Meta:
         abstract = True
         ordering = ['-document_date']
-        permissions = (
-            ("import", "Can import data"),
-            ("import_reconciled", "Can import reconciliation data"),
-            ("export", "Can export anonymized cases data"),
-            ("export_full", "Can export non anonymized cases data"),
-            ("view", "Can view anonymized cases data"),
-            ("view_full", "Can view non anonymized cases data"),
-        )
+        permissions = CASES_PERMISSIONS
 
 
 class Case(CaseAbstract):
     class Meta:
         abstract = False
+        ordering = ['-document_date']
+        permissions = CASES_PERMISSIONS
 
 
 @receiver(pre_save, sender=Case)
@@ -147,6 +151,8 @@ class CaseView(CaseAbstract):
     class Meta:
         managed = False
         db_table = 'cases_case_view'
+        ordering = ['-document_date']
+        permissions = CASES_PERMISSIONS
 
 
 class Location(models.Model):
@@ -176,7 +182,7 @@ class Location(models.Model):
 
     class Meta:
         permissions = (
-            ("import_locations", "Can import location data"),
+            ('import_locations', 'Can import location data'),
         )
 
 
@@ -195,7 +201,7 @@ class DuplicatesPair(models.Model):
     class Meta:
         unique_together = (('case1', 'case2'),)
         permissions = (
-            ("reconcile_duplicates", "Can reconcile duplicates"),
+            ('reconcile_duplicates', 'Can reconcile duplicates'),
         )
 
 

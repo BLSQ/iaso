@@ -23,6 +23,7 @@ export_queries = snaql_factory.load_queries('export.sql')
 
 result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
 
+
 def prepare_premigration() -> None:
     with connection.cursor() as cursor:
         cursor.execute(prepare_queries.run_premigration())

@@ -143,8 +143,13 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
 def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if x in {ResultValues.positive, ResultValues.negative, ResultValues.missing, ResultValues.absent}:
+    if x in {
+              ResultValues.positive,
+              ResultValues.negative,
+              ResultValues.missing,
+              ResultValues.absent }:
         return x
+    return None
 
 
 def mobile_get_age(table: DataFrame, field: str) -> int:

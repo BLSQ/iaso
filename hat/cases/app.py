@@ -32,11 +32,11 @@ class CasesAppConfig(AppConfig):
         )
 
 
-def setup_premigration_db(sender, **kwargs): # type: ignore
+def setup_premigration_db(sender, **kwargs):  # type: ignore
     from hat.queries import prepare_premigration
     prepare_premigration()
 
 
-def setup_postmigration_db(sender, **kwargs): # type: ignore
+def setup_postmigration_db(sender, **kwargs):  # type: ignore
     from hat.queries import prepare_postmigration
     prepare_postmigration()

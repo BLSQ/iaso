@@ -187,10 +187,10 @@ def pv_get_result(x: Optional[str]) -> Optional[int]:
 def pv_get_catt_blood_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if cast(str, x) == 'NEG':
-        return ResultValues.negative.value
     # POS+, POS++, POS+++
-    return ResultValues.positive.value
+    if cast(str, x) in ['POS+', 'POS++', 'POS+++']:
+        return ResultValues.positive.value
+    return ResultValues.negative.value
 
 
 def pv_get_pl_result(x: Optional[str]) -> Optional[str]:

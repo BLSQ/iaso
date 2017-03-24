@@ -57,5 +57,5 @@ class MappingTests(TestCase):
         self.assertEqual(pv_get_catt_blood_result(None), None)
         self.assertEqual(pv_get_catt_blood_result('NEG'),
                          ResultValues.negative.value)
-        self.assertEqual(pv_get_catt_blood_result('pos++'),
+        self.assertEqual(pv_get_catt_blood_result('POS++'),
                          ResultValues.positive.value)

@@ -28,8 +28,8 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "male",
-      "test_maect": false,
-      "test_rdt": true
+      "test_maect": 1,
+      "test_rdt": 2
     }
   },
   {
@@ -45,7 +45,7 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "male",
-      "test_rdt": false
+      "test_rdt": 1
     }
   },
   {
@@ -61,7 +61,7 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "female",
-      "test_catt": true
+      "test_catt": 2
     }
   },
   {
@@ -77,7 +77,7 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "female",
-      "test_maect": true
+      "test_maect": 2
     }
   },
   {
@@ -93,7 +93,7 @@
       "latitude": "4.3871",
       "longitude": "15.9700",
       "sex": "female",
-      "test_ge": true,
+      "test_ge": 2,
       "test_pl_result": "stage1"
     }
   }

@@ -143,7 +143,7 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
 def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if x in ['positive', 'negative', 'missing', 'absent']:
+    if cast(str, x) in ['positive', 'negative', 'missing', 'absent']:
         return ResultValues[x].value
     return None
 

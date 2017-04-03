@@ -144,7 +144,7 @@ def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     if cast(str, x) in ['positive', 'negative', 'missing', 'absent']:
-        return ResultValues[x].value
+        return ResultValues[cast(str, x)].value
     return None
 
 

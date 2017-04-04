@@ -16,12 +16,12 @@ Parameters:
     - staging
     - prod
     ConstraintDescription: 'Allowed environment types: development/staging/prod'
-    
+
   HostedZone:
     Description: Hosted zone name
     Type: String
     MinLength: 3
-    
+
   SNSTopic:
     Description: ARN of SNS Topic for alarms
     Type: String
@@ -33,28 +33,28 @@ Parameters:
     Type: String
     AllowedPattern: arn:aws:lambda:.*
     ConstraintDescription: Expected valid ARN (starting with arn:aws:lambda:)
-    
+
   ConfigurationTemplate:
     Description: Reference to Beanstalk ConfigurationTemplate
     Type: String
     MinLength: 3
-    
+
   Subnet:
     Description: Reference to VPC Subnet
     Type: String
     MinLength: 3
-    
+
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the Elastic
       Beanstalk hosts
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
-    
+
   ApplicationVersion:
     Description: Reference to Benastalk ApplicationVersion
     Type: String
     MinLength: 3
-    
+
   Application:
     Description: Reference to Beanstalk Application
     Type: String
@@ -63,7 +63,7 @@ Parameters:
   Subnets:
     Description: Reference to VPC Subnets list
     Type: CommaDelimitedList
-    
+
   VPC:
     Description: Reference to VPC
     Type: String
@@ -100,7 +100,6 @@ Mappings:
   Variables:
     development:
       SpotPrice: ''
-      NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
@@ -110,7 +109,6 @@ Mappings:
 
     staging:
       SpotPrice: ''
-      NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
@@ -120,7 +118,6 @@ Mappings:
 
     prod:
       SpotPrice: ''
-      NewRelicLogLevel: 'info'
       CouchDBUser: 'admin'
       DbAllocatedStorage: 100
       DbInstanceType: db.t2.micro
@@ -327,16 +324,13 @@ Resources:
         OptionName: RDS_HOSTNAME
         Value: !GetAtt [DBInstance, Endpoint.Address]
       - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: COUCHDB_PASSWORD 
+        OptionName: COUCHDB_PASSWORD
         Value: !GetAtt [GetOrCreateCouchdbPassword, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: SECRET_KEY 
+        OptionName: SECRET_KEY
         Value: !GetAtt [GetOrCreateSecretKey, RecordValue]
       - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: NEW_RELIC_LOG_LEVEL 
-        Value: !FindInMap [Variables, !Ref Environment, NewRelicLogLevel]
-      - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: COUCHDB_USER 
+        OptionName: COUCHDB_USER
         Value: !FindInMap [Variables, !Ref Environment, CouchDBUser]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: HAT_MOBILE_KEY
@@ -344,9 +338,6 @@ Resources:
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: GOOGLE_CLIENT_ID
         Value: !GetAtt [GetOrCreateGoogleClientId, RecordValue]
-      - Namespace: aws:elasticbeanstalk:application:environment
-        OptionName: NEW_RELIC_APP_NAME
-        Value: !Join ['', [!Ref ProjectName, !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix]]]
       - Namespace: aws:elasticbeanstalk:application:environment
         OptionName: COUCHDB_URL
         Value: !Join ['', ['http://', !Ref ProjectName, "-couchdb", !FindInMap [DomainNameSuffix, !Ref Environment, DomainNameSuffix], '.', !Ref HostedZone, ':5984']]

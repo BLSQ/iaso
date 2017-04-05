@@ -50,7 +50,7 @@ const checkSuccess = (calls) => checkAction(calls, LOAD_SUCCESS)
  * - load data when mounted
  * - make sure only filter params changing triggers a new data load
  * - emit success/fail events
- * - redirect the page to 'all' if data is not available for a location
+ * - redirect the page to 'all' if data are not available for a location
  *
  */
 describe('MonthlyReportContainer Loading Data', () => {
@@ -62,7 +62,7 @@ describe('MonthlyReportContainer Loading Data', () => {
     defaultProps = {
       config: appConfig,
       report: {},
-      params: { date: appConfig.dates[1] },
+      params: { date_month: appConfig.dates[1] },
       dispatch: sinon.spy()
     }
     reduxStore = createStore((e) => e, {
@@ -99,7 +99,7 @@ describe('MonthlyReportContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        date: appConfig.dates[2]
+        date_month: appConfig.dates[2]
       }
     }
     renderWithStore(
@@ -113,7 +113,7 @@ describe('MonthlyReportContainer Loading Data', () => {
       ...defaultProps,
       params: {
         ...defaultProps.params,
-        date: appConfig.dates[2]
+        date_month: appConfig.dates[2]
       }
     }
     renderWithStore(
@@ -135,10 +135,10 @@ describe('MonthlyReportContainer Loading Data', () => {
       reduxStore, <MonthlyReportContainer {...props} />
     )
     setTimeout(function () {
-      let redirect = checkRedirect(defaultProps.dispatch.args)
+      const redirect = checkRedirect(defaultProps.dispatch.args)
       assert(!redirect, 'no redirect call was made')
 
-      let success = checkSuccess(defaultProps.dispatch.args)
+      const success = checkSuccess(defaultProps.dispatch.args)
       assert(success, 'success event dispatched')
       done()
     }, 200)
@@ -156,7 +156,7 @@ describe('MonthlyReportContainer Loading Data', () => {
       reduxStore, <MonthlyReportContainer {...props} />
     )
     setTimeout(function () {
-      let redirect = checkRedirect(defaultProps.dispatch.args)
+      const redirect = checkRedirect(defaultProps.dispatch.args)
       assert(redirect, 'a redirect call was made')
       done()
     }, 200)
@@ -174,10 +174,10 @@ describe('MonthlyReportContainer Loading Data', () => {
       reduxStore, <MonthlyReportContainer {...props} />
     )
     setTimeout(function () {
-      let redirect = checkRedirect(defaultProps.dispatch.args)
+      const redirect = checkRedirect(defaultProps.dispatch.args)
       assert(!redirect, 'no redirect call was made')
 
-      let success = checkSuccess(defaultProps.dispatch.args)
+      const success = checkSuccess(defaultProps.dispatch.args)
       assert(success, 'success event dispatched')
       done()
     }, 200)

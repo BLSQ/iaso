@@ -30,6 +30,9 @@ def export_csv(sql_sentence: str=None,
     }
     sql = export_queries.export(**sql_context)
 
+    # the last `psql` version complains against line-endings ¯\_(ツ)_/¯
+    sql = sql.replace('\n', '')
+
     run_cmd(['psql',
              '-v', 'ON_ERROR_STOP=1',
              '-h', settings.DB_HOST,

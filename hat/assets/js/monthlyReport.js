@@ -20,13 +20,17 @@ export default function monthlyReportApp (appConfig, element, baseUrl) {
   }
   */
   const defaultRoute = (config) => {
-    var latestMonth = config.dates.slice(-1).pop()
-    return `charts/date/${latestMonth}`
+    if (config.dates.length) {
+      const latestMonth = config.dates.slice(-1).pop()
+      return `charts/date_month/${latestMonth}`
+    } else {
+      return `charts`
+    }
   }
 
   const routes = [
     <Route
-      path='charts(/location/:location)(/date/:date)'
+      path='charts(/location/:location)(/date_month/:date_month)'
       component={MonthlyReportContainer} />,
     <Redirect path='*' to={defaultRoute(appConfig)} />
   ]

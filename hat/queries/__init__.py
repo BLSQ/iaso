@@ -20,8 +20,38 @@ migration2 = snaql_factory.load_queries('migration_0002.sql')
 # export
 export_queries = snaql_factory.load_queries('export.sql')
 
+# helpers
+filters_queries = snaql_factory.load_queries('filters.sql')
+
+sql_context = {
+    # list of tests used in screening sessions
+    'screening': (
+        'test_catt',
+        'test_rdt',
+    ),
+
+    # list of tests used to confirm the disease
+    'confirmation': (
+        'test_ctcwoo',
+        'test_ge',
+        'test_lcr',
+        'test_lymph_node_puncture',
+        'test_maect',
+        'test_pg',
+        'test_sf',
+    ),
+
+    # possible test results in order of importance
+    'results': (
+        'true',  # positive
+        'false',  # negative
+    ),
+}
+
+print(sql_context)
+
 
 def prepare_db() -> None:
     with connection.cursor() as cursor:
-        cursor.execute(prepare_queries.prepare_views())
+        cursor.execute(prepare_queries.prepare_views(**sql_context))
         cursor.execute(duplicates_queries.prepare())

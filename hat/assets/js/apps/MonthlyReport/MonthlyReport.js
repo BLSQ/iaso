@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
   }
 })
 
-const Row = ({ className, label, value, definition, download }) => {
+const Row = ({ className, label, value, definition }) => {
   return (
     <li className={className}>
       <span>
@@ -32,7 +32,6 @@ const Row = ({ className, label, value, definition, download }) => {
       </span>
       <span>
         <span className='list__item__number'>{value}</span>
-        {download}
       </span>
     </li>
   )
@@ -49,8 +48,8 @@ export const DataTable = ({
   }
 }) => {
   // Minimum one day out, otherwise we'll get more participants screened per day than we actually screened
-  var daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
-  let dataCollectionPeriod = (meta.enddate && meta.startdate)
+  const daysOut = Math.max((new Date(meta.enddate) - new Date(meta.startdate)) / (1000 * 3600 * 24), 1)
+  const dataCollectionPeriod = (meta.enddate && meta.startdate)
     ? (
       <span>
         <FormattedDate value={new Date(meta.startdate)} />
@@ -161,37 +160,31 @@ export class MonthlyReport extends Component {
   }
 
   dateHandler (event) {
-    let date = event.target.value
-    let url = createUrl({...this.props.params, date})
+    const url = createUrl({...this.props.params, date_month: event.target.value})
     this.props.dispatch(push(url))
   }
 
   locationHandler (event) {
-    let location = event.target.value
-    let url = createUrl({...this.props.params, location})
+    const url = createUrl({...this.props.params, location: event.target.value})
     this.props.dispatch(push(url))
   }
 
   render () {
     const {formatMessage} = this.props.intl
-    // source, sources also available
-    const { date, location } = this.props.params
+    const { location } = this.props.params
     const { dates } = this.props.config
     const { loading, data, error } = this.props.report
     const locations = (data && data.locations) || []
+    const dateMonth = this.props.params.date_month || ''
 
     return (
       <div>
         <div className='filter__container'>
           <h2 className='filter__label'><FormattedMessage id='monthlyreport.label.select' defaultMessage='Select:' /></h2>
           <div className='filter__container__select'>
-            <label htmlFor='date' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='monthlyreport.label.month' defaultMessage='Month' /></label>
-            <select disabled={loading} name='date' value={date} onChange={this.dateHandler} className='select--minimised'>
-              {dates.map((date) => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))}
+            <label htmlFor='dateMonth' className='filter__container__select__label'><i className='fa fa-calendar' /><FormattedMessage id='monthlyreport.label.month' defaultMessage='Month' /></label>
+            <select disabled={loading} name='dateMonth' value={dateMonth} onChange={this.dateHandler} className='select--minimised'>
+              {dates.map((date) => <option key={date} value={date}>{date}</option>)}
             </select>
           </div>
           {

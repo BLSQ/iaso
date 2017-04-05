@@ -71,37 +71,30 @@
            COALESCE("ZS", '***') || ' - ' ||
            COALESCE("AS", '***') || ' - ' ||
            COALESCE(village, '***')                       AS full_location
+
          , COALESCE(name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||
            COALESCE(lastname, '')                         AS full_name
 
          , CASE
-             WHEN test_catt
-               OR test_rdt
-             THEN TRUE
-             WHEN test_catt IS FALSE
-               OR test_rdt  IS FALSE
-             THEN FALSE
+
+            {% for result in results %}
+              {% for test in screening %}
+             WHEN {{ test }} = {{ result }} THEN {{ result }}
+              {% endfor %}
+            {% endfor %}
+
              ELSE NULL
            END AS screening_result
 
          , CASE
-             WHEN test_maect
-               OR test_ge
-               OR test_pg
-               OR test_ctcwoo
-               OR test_lymph_node_puncture
-               OR test_sf
-               OR test_lcr
-             THEN TRUE
-             WHEN test_maect               IS FALSE
-               OR test_ge                  IS FALSE
-               OR test_pg                  IS FALSE
-               OR test_ctcwoo              IS FALSE
-               OR test_lymph_node_puncture IS FALSE
-               OR test_sf                  IS FALSE
-               OR test_lcr                 IS FALSE
-             THEN FALSE
+
+            {% for result in results %}
+              {% for test in confirmation %}
+             WHEN {{ test }} = {{ result }} THEN {{ result }}
+              {% endfor %}
+            {% endfor %}
+
              ELSE NULL
            END AS confirmation_result
 
@@ -123,7 +116,9 @@
          , C.date_last
          , C.locations
          , C.participants
+
       FROM sync_devicedb D
+
       FULL OUTER JOIN (
         SELECT device_id
              , MIN(document_date)                         AS date_first

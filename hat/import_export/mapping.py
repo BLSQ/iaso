@@ -1,7 +1,8 @@
 from typing import List, Dict, Any, Optional, cast
 from functools import reduce
-from enum import Enum, IntEnum, unique
+from enum import Enum
 from .utils import capitalize
+from .typing import ResultValues
 from pandas import DataFrame, Series
 import pandas
 
@@ -16,15 +17,6 @@ import pandas
 # return the right result, it is important to use the foreign keys of related
 # tables as DataFrame indices, so that columns of Series assigned to the
 # DataFrame end up in the correct row.
-
-
-@unique
-class ResultValues(IntEnum):
-    '''store screening values.'''
-    positive = 2
-    negative = 1
-    missing = -1
-    absent = 0
 
 
 def series_to_str(s: Series) -> str:
@@ -140,10 +132,13 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
+result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
+
+
 def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if cast(str, x) in ['positive', 'negative', 'missing', 'absent']:
+    if cast(str, x) in result_values:
         return ResultValues[cast(str, x)].value
     return None
 
@@ -274,7 +269,7 @@ def pv_get_followup_test_result(main_table: DataFrame,
 ################################################################################
 
 
-def reduce_test_result(a: Optional[bool], b: Optional[bool]) -> Optional[bool]:
+def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
     # Values can be True, False or null. We have to handle null explicitely
     # to not accidentially have this return null in favor of False.
     if pandas.isnull(b):

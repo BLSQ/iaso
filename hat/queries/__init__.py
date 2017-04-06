@@ -1,7 +1,7 @@
 import os
 from django.db import connection
 from snaql.factory import Snaql
-from hat.import_export.mapping import ResultValues
+from hat.import_export.typing import ResultValues
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')

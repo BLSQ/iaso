@@ -1,5 +1,5 @@
 from django.db.models import Q
-from hat.import_export.mapping import ResultValues
+from hat.import_export.typing import ResultValues
 
 Q_screening = Q(screening_result__isnull=False)
 Q_screening_positive = Q(screening_result=ResultValues.positive.value)

@@ -53,7 +53,7 @@
 
           FROM cases_case_view
          WHERE document_date       IS NOT NULL
-           AND confirmation_result=2
+           AND confirmation_result = {{ positive }}
          GROUP BY "ZS", "AS", village, document_year
       ) b
 

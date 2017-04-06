@@ -1,5 +1,5 @@
-var jsdom = require('jsdom')
-var babelRegister = require('babel-register')
+const jsdom = require('jsdom')
+const babelRegister = require('babel-register')
 
 babelRegister({
   presets: ['es2015', 'react', 'stage-2'],
@@ -11,14 +11,3 @@ global.window = document.defaultView
 global.window.device = {uuid: 'string'}
 
 global.navigator = {userAgent: 'node.js', platform: 'Chrome'}
-
-// make leaflet work and render SVG
-global.console.debug = () => {}
-global.L = require('leaflet')
-global.L.Browser.svg = true
-
-// ignore webpack loader imports
-var noop = function () {}
-require.extensions['.scss'] = noop
-require.extensions['.css'] = noop
-require.extensions['.ttf'] = noop

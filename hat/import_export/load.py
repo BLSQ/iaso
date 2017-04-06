@@ -4,8 +4,8 @@ from pandas import DataFrame, concat as pandasconcat
 import pandas
 
 from hat.cases.models import Case, Location
-from .errors import handle_import_stage, ImportStage
 from hat.cases.event_log import EventStats
+from .errors import handle_import_stage, ImportStage
 
 
 def batch_dataframe(df: DataFrame) -> Iterator[DataFrame]:
@@ -155,15 +155,15 @@ def get_columns_mapping(df: DataFrame) -> Dict[str, Callable[[Any], str]]:
     # Some values need quoting when we want to insert them with sql.
     # We create a mapping from column names to quoting function
     mapping = {}
-    i = 0
-    for dt in df.dtypes:
-        dts = str(dt).lower()
-        name = str(df.columns[i])
-        if not (dts.startswith('int') or
-                dts.startswith('float') or
-                dts.startswith('bool')):
-            mapping[name] = lambda x: "$${}$$".format(x)
-        i = i + 1
+
+    for column in list(df.columns):
+        # use Case model to get real column types
+        propertyType = Case._meta.get_field(column).get_internal_type()
+
+        if not (propertyType.endswith('IntegerField') or
+                propertyType.endswith('DecimalField') or
+                propertyType.endswith('BooleanField')):
+            mapping[column] = lambda x: "$${}$$".format(x)
 
     return mapping
 

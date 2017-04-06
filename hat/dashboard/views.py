@@ -23,7 +23,7 @@ def monthly_report(request: HttpRequest) -> HttpResponse:
     today = datetime.today()
     max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
     dates = CaseView.objects \
-                    .filter(source='mobile_backup') \
+                    .filter(source__icontains='mobile') \
                     .filter(document_date__isnull=False) \
                     .filter(document_date__lt=max_date) \
                     .order_by('document_date_month') \

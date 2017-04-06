@@ -1,26 +1,43 @@
-django==1.10.5
+# django
+django==1.10.6
 django-cors-headers==2.0.2
-django-debug-toolbar==1.6
-django-rq==0.9.4
-django-sql-explorer==1.0
-django-webpack-loader==0.4.0
-djangorestframework==3.5.3
-flake8==3.3.0
-flake8-mypy==17.3.2
-jsonschema==2.6.0
-jupyter==1.0.0
-mock==2.0.0
-oauth2client==4.0.0
+django-debug-toolbar==1.7
+django-rq==0.9.5
+django-sql-explorer==1.1.1
+djangorestframework==3.6.2
 pandas==0.19.2
-psycopg2==2.6.2
-redis==2.10.5
+
+# web server and auth
+oauth2client==4.0.0
 requests==2.13.0
-rq-scheduler==0.7.0
+uwsgi==2.0.15
+
+# scheduler
+redis==2.10.5
 rq==0.7.1
-sauceclient==0.2.1
-selenium==3.0.2
+rq-scheduler==0.7.0
+
+# postgresql and sql
+psycopg2==2.7.1
+snaql==0.4.1
+
+# webpack loader
+django-webpack-loader==0.4.0
+
+# notes
+jupyter==1.0.0
+
+# importing tools
+jsonschema==2.6.0
 simpledbf==0.2.6
-snaql==0.4
-uwsgi==2.0.14
 xlrd==1.0.0
-Sphinx==1.5.3
+
+# Documentation
+Sphinx==1.5.4
+
+# test and linting
+flake8==3.3.0
+flake8-mypy==17.3.3
+mock==2.0.0
+sauceclient==0.2.1
+selenium==3.3.1

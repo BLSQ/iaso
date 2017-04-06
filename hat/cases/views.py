@@ -389,9 +389,9 @@ def analysis(request: HttpRequest) -> HttpResponse:
                                             columns=columns,
                                             )
 
-    total_participants = count(queryset, Q_all, 'document_id')
-    total_suspect = count(queryset, Q_suspect, 'document_id')
-    total_confirmed = count(queryset, Q_confirmed, 'document_id')
+    total_participants = count_by(queryset, Q_all, 'document_id')
+    total_suspect = count_by(queryset, Q_suspect, 'document_id')
+    total_confirmed = count_by(queryset, Q_confirmed, 'document_id')
 
     ############################################################################
     # analysis columns
@@ -399,7 +399,7 @@ def analysis(request: HttpRequest) -> HttpResponse:
         ColumnChoice(id='date_from', label=_('From')),
         ColumnChoice(id='date_to', label=_('To')),
         ColumnChoice(id='participants', label=_('# Participants')),
-        ColumnChoice(id='suspected', label=_('# Suspected cases')),
+        ColumnChoice(id='suspected', label=_('# Suspect cases')),
         ColumnChoice(id='confirmed', label=_('# Confirmed cases')),
     ]
 
@@ -533,7 +533,7 @@ Q_suspect = Q_is_suspect
 Q_confirmed = Q_confirmation_positive
 
 
-def count(items: QuerySet, condition: Q, name: str) -> QuerySet:
+def count_by(items: QuerySet, condition: Q, name: str) -> QuerySet:
     return items.filter(condition).values_list(name).distinct().count()
 
 
@@ -545,9 +545,20 @@ def check_boolean(condition: Q, value: str) -> QuerySet:
     return condition if value == 'true' else ~condition
 
 
+def get_field_choices(field: str) -> List[Tuple[str, str]]:
+    from django.db import connection
+    from hat.queries import filters_queries
+
+    sql = filters_queries.list_of_field_values(field=field)
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        return [(row[0], row[0]) for row in cursor.fetchall()]
+
+
 def get_sources_choices() -> List[Tuple[str, str]]:
-    return [(c, c) for c in CaseView.objects.values_list('source', flat=True).distinct()]
+    return get_field_choices('source')
 
 
 def get_devices_choices() -> List[Tuple[str, str]]:
-    return [(c, c) for c in CaseView.objects.values_list('device_id', flat=True).distinct()]
+    return get_field_choices('device_id')

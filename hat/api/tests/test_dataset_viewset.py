@@ -58,7 +58,7 @@ class DatasetTests(APITestCase):
         )
 
     def test_tested_per_day(self):
-        url = '{}?date=2016-01'.format(
+        url = '{}?date_month=2016-01'.format(
             reverse('api:datasets-detail', args=['tested_per_day']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)

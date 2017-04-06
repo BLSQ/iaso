@@ -1,4 +1,20 @@
 {% query 'prepare', note='Create view used in finding duplicate pairs' %}
+
+  {# Load the trigrams extension #}
+  CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+
+  {# Create trigram indexes for cases names. #}
+  CREATE INDEX IF NOT EXISTS cases_case_names_trgm_idx
+    ON cases_case
+    USING gin (
+      name            gin_trgm_ops,
+      prename         gin_trgm_ops,
+      lastname        gin_trgm_ops,
+      mothers_surname gin_trgm_ops
+    );
+
+
   {# the reason of this view is to check manually the efficiency of the algorithm #}
   DROP VIEW IF EXISTS cases_duplicatespair_search_view;
   CREATE VIEW cases_duplicatespair_search_view AS
@@ -28,6 +44,8 @@
            (SELECT document_id1, document_id2 FROM cases_ignoredpair)
   ;
 
+
+  {# Creates function that inserts the duplicates pairs #}
   CREATE OR REPLACE FUNCTION cases_duplicatespair_makepairs()
     RETURNS BOOLEAN AS $$
     BEGIN

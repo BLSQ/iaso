@@ -45,7 +45,7 @@ class ObjectInput extends Component {
     const {schema, name} = this.props
     const {value} = this.state
     const properties = Object.keys(schema.properties).map((n) => {
-      let s = schema.properties[n]
+      const s = schema.properties[n]
       let v = null
       if (value.hasOwnProperty(n)) {
         v = value[n]
@@ -76,7 +76,7 @@ class ArrayInput extends Component {
     this.handleAppend = this.handleAppend.bind(this)
   }
   handleChange (index, value) {
-    let items = this.state.value
+    const items = this.state.value
     items[index] = value
     this.setState({value: items})
     if (this.props.onChange) {
@@ -84,7 +84,7 @@ class ArrayInput extends Component {
     }
   }
   handleAppend () {
-    let items = this.state.value
+    const items = this.state.value
     items.push(createValue(this.itemSchema))
     this.setState({value: items})
     if (this.props.onChange) {

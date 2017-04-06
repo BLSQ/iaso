@@ -76,59 +76,30 @@
            COALESCE("ZS", '***') || ' - ' ||
            COALESCE("AS", '***') || ' - ' ||
            COALESCE(village, '***')                       AS full_location
+
          , COALESCE(name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||
            COALESCE(lastname, '')                         AS full_name
 
          , CASE
-             WHEN test_catt={{positive}}
-               OR test_rdt={{positive}}
-             THEN {{positive}}
-             WHEN test_catt={{negative}}
-               OR test_rdt={{negative}}
-             THEN {{negative}}
-             WHEN test_catt={{missing}}
-               OR test_rdt={{missing}}
-             THEN {{missing}}
-             WHEN test_catt={{absent}}
-               OR test_rdt={{absent}}
-             THEN {{absent}}
+
+            {% for result in results %}
+              {% for test in screening %}
+             WHEN {{ test }} = {{ result }} THEN {{ result }}
+              {% endfor %}
+            {% endfor %}
+
              ELSE NULL
            END AS screening_result
 
          , CASE
-             WHEN test_maect={{positive}}
-               OR test_ge={{positive}}
-               OR test_pg={{positive}}
-               OR test_ctcwoo={{positive}}
-               OR test_lymph_node_puncture={{positive}}
-               OR test_sf={{positive}}
-               OR test_lcr={{positive}}
-             THEN {{positive}}
-             WHEN test_maect={{negative}}
-               OR test_ge={{negative}}
-               OR test_pg={{negative}}
-               OR test_ctcwoo={{negative}}
-               OR test_lymph_node_puncture={{negative}}
-               OR test_sf={{negative}}
-               OR test_lcr={{negative}}
-             THEN {{negative}}
-             WHEN test_maect={{missing}}
-               OR test_ge={{missing}}
-               OR test_pg={{missing}}
-               OR test_ctcwoo={{missing}}
-               OR test_lymph_node_puncture={{missing}}
-               OR test_sf={{missing}}
-               OR test_lcr={{missing}}
-             THEN {{missing}}
-             WHEN test_maect={{absent}}
-               OR test_ge={{absent}}
-               OR test_pg={{absent}}
-               OR test_ctcwoo={{absent}}
-               OR test_lymph_node_puncture={{absent}}
-               OR test_sf={{absent}}
-               OR test_lcr={{absent}}
-             THEN {{absent}}
+
+            {% for result in results %}
+              {% for test in confirmation %}
+             WHEN {{ test }} = {{ result }} THEN {{ result }}
+              {% endfor %}
+            {% endfor %}
+
              ELSE NULL
            END AS confirmation_result
 
@@ -149,7 +120,9 @@
          , C.date_last
          , C.locations
          , C.participants
+
       FROM sync_devicedb D
+
       FULL OUTER JOIN (
         SELECT device_id
              , MIN(document_date)                         AS date_first

@@ -15,7 +15,7 @@ export DUMB_INIT=1.2.0
 
 # https://nodejs.org
 export NPM_CONFIG_LOGLEVEL=info
-export NODE_VERSION=6.9.5
+export NODE_VERSION=6.10.2
 
 
 ################################################################################

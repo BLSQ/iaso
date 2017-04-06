@@ -22,22 +22,37 @@ from hat.cases.filters import \
     Q_confirmation, Q_confirmation_positive, Q_confirmation_negative, \
     Q_staging, Q_staging_stage1, Q_staging_stage2
 from hat.queries import stats_queries, microplanning_queries
+from hat.import_export.typing import ResultValues
 
 datasets = {}
 
 DATE_FORMAT = '%Y-%m-%d'
+
+test_results = {
+    'positive': ResultValues.positive.value,
+    'negative': ResultValues.negative.value,
+    'missing': ResultValues.missing.value,
+    'absent': ResultValues.absent.value,
+}
+
+
+def localize_date(date: datetime) -> datetime:
+    return pytz.UTC.localize(date)
 
 
 def parse_date_range(params: Dict[str, str],
                      default_date_from: datetime=None) \
                      -> Tuple[datetime, datetime]:
     today = date.today()
-    date_from = default_date_from or datetime(today.year, today.month, today.day)
-    date_to = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    date_from = localize_date(
+      default_date_from or datetime(today.year, today.month, today.day))
+    date_to = localize_date(
+      datetime(today.year, today.month, today.day) + timedelta(days=1))
     if 'date_from' in params:
-        date_from = datetime.strptime(params['date_from'], DATE_FORMAT)
+        date_from = localize_date(datetime.strptime(params['date_from'], DATE_FORMAT))
     if 'date_to' in params:
-        date_to = datetime.strptime(params['date_to'], DATE_FORMAT) + timedelta(days=1)
+        date_to = localize_date(
+          datetime.strptime(params['date_to'], DATE_FORMAT) + timedelta(days=1))
     return (date_from, date_to)
 
 
@@ -61,7 +76,7 @@ def dataset(params_schema: JsonType=None) -> Callable:
 params_schema = {
     'type': 'object',
     'properties': {
-        'date': {'type': 'string'},
+        'date_month': {'type': 'string'},
         'date_from': {'type': 'string'},
         'date_to': {'type': 'string'},
         'location': {'type': 'string'},
@@ -88,24 +103,18 @@ def get_cases_filtered(request: Request,
 
     cases = CaseView.objects
 
-    date = get_param_value('date')
-    if date is not None:
-        # Parse time with manually added UTC timezone offset
-        date_from = datetime.strptime(date + '-+0000', '%Y-%m-%z')
-        # Get the last day of the month
-        (_, last_day) = monthrange(date_from.year, date_from.month)
-        # Construct the upper bound of our date range
-        date_to = datetime(date_from.year, date_from.month, last_day, tzinfo=pytz.UTC) \
-            + timedelta(days=1)
-        cases = cases.filter(document_date__gte=date_from, document_date__lt=date_to)
+    date_month_param = get_param_value('date_month')
+    if date_month_param is not None:
+        date_month = localize_date(datetime.strptime(date_month_param + '-01', DATE_FORMAT))
+        cases = cases.filter(document_date_month=date_month)
 
     date_from_param = get_param_value('date_from')
     date_to_param = get_param_value('date_to')
     if date_from_param is not None:
-        date_from = datetime.strptime(date_from_param, DATE_FORMAT)
+        date_from = localize_date(datetime.strptime(date_from_param, DATE_FORMAT))
         cases = cases.filter(document_date__gte=date_from)
     if date_to_param is not None:
-        date_to = datetime.strptime(date_to_param, DATE_FORMAT) + timedelta(days=1)
+        date_to = localize_date(datetime.strptime(date_to_param, DATE_FORMAT) + timedelta(days=1))
         cases = cases.filter(document_date__lt=date_to)
 
     restrict_to_zs = request.user.profile.restrict_to_zs
@@ -118,7 +127,7 @@ def get_cases_filtered(request: Request,
 
     source = get_param_value('source')
     if source is not None:
-        cases = cases.filter(source=source)
+        cases = cases.filter(source__icontains=source)
 
     return cases
 
@@ -192,12 +201,13 @@ def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, i
     # order_by is needed to remove 'document_date' from the GROUP BY statement
     # see comment on https://jira.ehealthafrica.org/browse/HAT-262
 
-    date = params.get('date', None)
-    if date is None or date == '':
-        raise ValidationError('Dataset requires date query string parameter')
+    date_month = params.get('date_month', None)
+    if date_month is None or date_month == '':
+        raise ValidationError('Dataset requires date_month query string parameter')
+
     # Generate a result list that includes every day in the month.
     # Otherwise the list would only contain the days that have data.
-    (year, month) = [int(x) for x in date.split('-')]
+    (year, month) = [int(x) for x in date_month.split('-')]
     (_, num_days) = monthrange(year, month)
     result = [{'count': 0, 'day': i+1} for i in range(num_days)]
     for t in tested:
@@ -253,6 +263,7 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, 
     (date_from, date_to) = parse_date_range(params)
 
     sql_context = {
+        **test_results,
         'date_from': date_from,
         'date_to': date_to,
         'date_interval': '1 days',
@@ -272,7 +283,7 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, 
     with connection.cursor() as cursor:
         cursor.execute(sql)
         columns = [col[0] for col in cursor.description]
-        # convert the row tuple to dicts to dicts
+        # convert the row tuple to dicts
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
@@ -292,7 +303,9 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
     # first expected date is 2000-01-01
     (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
 
-    sql_context: Dict[str, Any] = {}
+    sql_context: Dict[str, Any] = {
+        **test_results,
+    }
 
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:

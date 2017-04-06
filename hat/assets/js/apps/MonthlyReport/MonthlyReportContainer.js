@@ -57,10 +57,12 @@ export class MonthlyReportContainer extends Component {
     const {dispatch} = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
-    // force the source to `mobile_backup`
-    // (it makes no sense with historical or pv data)
+    // force the source to `mobile`
+    // (includes `mobile_backup` and `mobile_sync`)
+    // (it makes no sense with `historical` or `pv` data)
+    const source = 'mobile'
+
     // to avoid fetching again because params changed include it in both sides, new and old.
-    const source = 'mobile_backup'
     fetchUrls(urls, {...params, source}, {...oldParams, source}, dispatch, checkLocation)
   }
 

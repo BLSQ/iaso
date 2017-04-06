@@ -74,3 +74,5 @@ class MappingTests(TestCase):
                          ResultValues.positive.value)
         self.assertEqual(reduce_test_result(missing, absent),
                          ResultValues.absent.value)
+        self.assertEqual(reduce_test_result(None, positive),
+                         ResultValues.positive.value)

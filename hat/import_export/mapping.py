@@ -275,6 +275,8 @@ def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
     # to not accidentially have this return null in favor of missing.
     if pandas.isnull(b):
         return a
+    if pandas.isnull(a):
+        return b
     return max(a, b)
 
 

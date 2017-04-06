@@ -21,8 +21,6 @@ migration2 = snaql_factory.load_queries('migration_0002.sql')
 # export
 export_queries = snaql_factory.load_queries('export.sql')
 
-result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
-
 # helpers
 filters_queries = snaql_factory.load_queries('filters.sql')
 
@@ -46,10 +44,10 @@ sql_context = {
 
     # possible test results in order of importance
     'results': (
-        result_values['positive'],  # positive
-        result_values['negative'],  # negative
-        result_values['missing'],  # missing
-        result_values['absent'],  # absent
+        ResultValues.positive.value,  # positive
+        ResultValues.negative.value,  # negative
+        ResultValues.absent.value,  # missing
+        ResultValues.missing.value,  # absent
     ),
 }
 

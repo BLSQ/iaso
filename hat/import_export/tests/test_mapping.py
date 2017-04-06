@@ -1,6 +1,7 @@
 from django.test import TestCase
 from ..mapping import (ResultValues, historic_get_result, historic_get_catt_blood_result,
-                       mobile_get_result, pv_get_result, pv_get_catt_blood_result)
+                       mobile_get_result, pv_get_result, pv_get_catt_blood_result,
+                       reduce_test_result)
 
 
 class MappingTests(TestCase):
@@ -59,3 +60,17 @@ class MappingTests(TestCase):
                          ResultValues.negative.value)
         self.assertEqual(pv_get_catt_blood_result('POS++'),
                          ResultValues.positive.value)
+
+    def test_reduce_test_result(self):
+
+        positive = 2
+        negative = 1
+        missing = -1
+        absent = 0
+
+        self.assertEqual(reduce_test_result(positive, None),
+                         ResultValues.positive.value)
+        self.assertEqual(reduce_test_result(positive, negative),
+                         ResultValues.positive.value)
+        self.assertEqual(reduce_test_result(missing, absent),
+                         ResultValues.absent.value)

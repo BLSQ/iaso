@@ -270,11 +270,12 @@ def pv_get_followup_test_result(main_table: DataFrame,
 
 
 def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
-    # Values can be True, False or null. We have to handle null explicitely
-    # to not accidentially have this return null in favor of False.
+    # Values can be positive, negative, missing and absent or null.
+    # We have to handle null explicitely
+    # to not accidentially have this return null in favor of missing.
     if pandas.isnull(b):
         return a
-    return a or b
+    return max(a, b)
 
 
 ################################################################################

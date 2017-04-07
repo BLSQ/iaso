@@ -1,3 +1,16 @@
+'''
+Load data
+---------
+
+This module contains the load functions.
+
+The cases load processes are done in batches and using SQL sentences that are
+faster and less CPU/memory consuming than the same Django ORM methods.
+
+If the locations load processes experiment low performance in the future they
+should also be switched to the same SQL sentences.
+'''
+
 from typing import Iterator, Dict, Callable, Any
 from django.db import connection, transaction
 from pandas import DataFrame, concat as pandasconcat
@@ -8,24 +21,17 @@ from hat.cases.event_log import EventStats
 from .errors import handle_import_stage, ImportStage
 
 
-def batch_dataframe(df: DataFrame) -> Iterator[DataFrame]:
-    ''' Helper generator function that yields slices of a DataFrame '''
-    if len(df) > 0:
-        size = 1000
-        start = 0
-        while True:
-            end = start + size
-            df2 = df[start:end]
-            if len(df2) == 0:
-                raise StopIteration
-            start = end
-            yield df2
-
-
 @handle_import_stage(ImportStage.load)
 @transaction.atomic
 def load_cases_into_db(df: DataFrame) -> EventStats:
-    '''Load the dataframe into postgres'''
+    '''
+    Loads the dataframe into postgresql cases table
+
+    Decides if each entry should create a new record or update an old one.
+
+    The returned dict will contain information about how many entries
+    were extracted and transformed and how many records were created, updated or deleted.
+    '''
     total = len(df)
 
     # remove rows with existing ids from the data
@@ -65,44 +71,39 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     )
 
 
-def update_entries(duplicates: DataFrame) -> int:
-    # remove unwanted columns
-    # we only want to add test results:
-    duplicates.drop(
-        [
-            # meta fields, keep original
-            'source',
-            'entry_date',
-            'document_date',
-            'entry_name',
-            'mobile_unit',
-            'form_number',
-            'form_month',
-            'form_year',
-            # already the same
-            'village',
-            'province',
-            'ZS',
-            'AS',
-            'hat_id',
-            'name',
-            'lastname',
-            'prename',
-            'sex',
-            'age',
-            'year_of_birth',
-            'mothers_surname',
-        ],
-        inplace=True,
-        axis=1,
-        # ignore if some columns dont exist
-        errors='ignore'
+@transaction.atomic
+def load_reconciled_into_db(df: DataFrame) -> EventStats:
+    '''
+    Loads the dataframe into postgresql cases table
+
+    Decides which record should be updated with the extracted and transformed entries.
+
+    The returned dict will contain information about how many entries
+    were extracted and transformed and how many records were created, updated or deleted.
+    '''
+
+    total = len(df)
+    updated = update_cases(df)
+    return EventStats(
+        total=total,
+        created=0,
+        updated=updated,
+        deleted=0
     )
-    return update_cases(duplicates)
 
 
 @transaction.atomic
 def load_locations_into_db(df: DataFrame) -> EventStats:
+    '''
+    Loads the dataframe into postgresql location table
+
+    Deletes all the previous location data and creates new records with the
+    extracted and transformed entries.
+
+    The returned dict will contain information about how many entries
+    were extracted and transformed and how many records were created, updated or deleted.
+    '''
+
     total = len(df)
 
     locations = [Location(**row.dropna().to_dict()) for _, row in df.iterrows()]
@@ -124,6 +125,15 @@ def load_locations_into_db(df: DataFrame) -> EventStats:
 
 @transaction.atomic
 def load_locations_areas_into_db(df: DataFrame) -> EventStats:
+    '''
+    Loads the dataframe into postgresql location table
+
+    Updates current records with the entries info.
+
+    The returned dict will contain information about how many entries
+    were extracted and transformed and how many records were created, updated or deleted.
+    '''
+
     total = len(df)
     updated = 0
     for index, row in df.iterrows():
@@ -131,6 +141,7 @@ def load_locations_areas_into_db(df: DataFrame) -> EventStats:
                               .filter(AS=row['AS']) \
                               .update(**row.dropna().to_dict())
         updated += num
+
     return EventStats(
         total=total,
         created=0,
@@ -139,16 +150,23 @@ def load_locations_areas_into_db(df: DataFrame) -> EventStats:
     )
 
 
-@transaction.atomic
-def load_reconciled_into_db(df: DataFrame) -> EventStats:
-    total = len(df)
-    updated = update_cases(df)
-    return EventStats(
-        total=total,
-        created=0,
-        updated=updated,
-        deleted=0
-    )
+################################################################################
+# Helper functions
+################################################################################
+
+
+def batch_dataframe(df: DataFrame) -> Iterator[DataFrame]:
+    # Helper generator function that yields slices of a DataFrame
+    if len(df) > 0:
+        size = 1000
+        start = 0
+        while True:
+            end = start + size
+            df2 = df[start:end]
+            if len(df2) == 0:
+                raise StopIteration
+            start = end
+            yield df2
 
 
 def get_columns_mapping(df: DataFrame) -> Dict[str, Callable[[Any], str]]:
@@ -243,3 +261,39 @@ def update_cases(df: DataFrame) -> int:
             sql = ';'.join(sql_updates)
             cursor.execute(sql)
     return num_updated
+
+
+def update_entries(duplicates: DataFrame) -> int:
+    # remove unwanted columns
+    # we only want to add test results:
+    duplicates.drop(
+        [
+            # meta fields, keep original
+            'source',
+            'entry_date',
+            'document_date',
+            'entry_name',
+            'mobile_unit',
+            'form_number',
+            'form_month',
+            'form_year',
+            # already the same
+            'village',
+            'province',
+            'ZS',
+            'AS',
+            'hat_id',
+            'name',
+            'lastname',
+            'prename',
+            'sex',
+            'age',
+            'year_of_birth',
+            'mothers_surname',
+        ],
+        inplace=True,
+        axis=1,
+        # ignore if some columns don't exist
+        errors='ignore'
+    )
+    return update_cases(duplicates)

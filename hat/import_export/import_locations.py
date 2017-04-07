@@ -1,3 +1,12 @@
+'''
+Import locations
+----------------
+
+The ``import_locations`` module can import or update location data from DBF shapefiles.
+
+'''
+
+
 from typing import Optional
 from .typing import ImportResult
 
@@ -14,25 +23,19 @@ from .utils import capitalize
 
 logger = logging.getLogger(__name__)
 
-'''
-    ** import_locations_file
-    This method receives the COMPLETE villages list.
-    It will trucate the "location" table and insert the new entries.
-
-    ** import_locations_areas_file
-    This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
-    It will update the missing "province" info in the "location" table entries.
-    No new entries will be created, either other properties will be updated.
-'''
-
 
 @transaction.atomic
 def import_locations_file(orgname: str, filename: str) -> ImportResult:
     '''
-    This method receives the COMPLETE villages list.
+    This method receives the **COMPLETE** villages list.
+
     It will trucate the "location" table and insert the new entries.
+
+    The returned dict will contain information about how many records were imported
+    or any errors that happened.
     '''
-    result = {
+
+    result: ImportResult = {
         'typename': _('locations'),
         'orgname': orgname,
         'filename': filename,
@@ -83,11 +86,16 @@ def import_locations_file(orgname: str, filename: str) -> ImportResult:
 
 def import_locations_areas_file(orgname: str, filename: str) -> ImportResult:
     '''
-    This method receives the HEALTH AREAS list, it can be INCOMPLETE but not recommended.
+    This method receives the HEALTH AREAS list, it **CAN BE INCOMPLETE** but not recommended.
+
     It will update the missing province "info" in the "location" table entries.
     No new entries will be created, either other properties will be updated.
+
+    The returned dict will contain information about how many records were updated
+    or any errors that happened.
     '''
-    result = {
+
+    result: ImportResult = {
         'typename': _('health areas'),
         'orgname': orgname,
         'filename': filename,

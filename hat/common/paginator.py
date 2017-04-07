@@ -1,13 +1,25 @@
-from typing import Dict, Any
+from typing import NamedTuple, Any, Optional
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http.request import HttpRequest
 from django.db.models.query import QuerySet
 
 
+class Page(NamedTuple):
+    items: Any
+    count: int
+    current: int
+    total: int
+
+    first_url: Optional[str]
+    prev_url: Optional[str]
+    next_url: Optional[str]
+    last_url: Optional[str]
+
+
 def paginate(request: HttpRequest,
              objects: QuerySet,
              prefix_url: str,
-             page_size: int = 25) -> Dict[str, Any]:
+             page_size: int = 20) -> Page:
 
     def get_page_url(p: int) -> str:
         qs = request.GET.copy()
@@ -15,12 +27,13 @@ def paginate(request: HttpRequest,
         return prefix_url + qs.urlencode()
 
     paginator = Paginator(objects, page_size)
+    total = paginator.num_pages
     count = objects.count()
     page = request.GET.get('page')
-    total = paginator.num_pages
 
     try:
         items = paginator.page(page)
+        page = int(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         page = 1
@@ -36,7 +49,6 @@ def paginate(request: HttpRequest,
     last_url = None
 
     if count:
-        page = int(page)
         if page > 1:
             first_url = get_page_url(1)
         if page > 2:
@@ -46,13 +58,14 @@ def paginate(request: HttpRequest,
         if page < total:
             last_url = get_page_url(total)
 
-    return {
-        'items': items,
-        'count': count,
-        'current': page,
-        'total': total,
-        'first_url': first_url,
-        'prev_url': prev_url,
-        'next_url': next_url,
-        'last_url': last_url,
-    }
+    return Page(
+        items=items,
+        count=count,
+        current=page,
+        total=total,
+
+        first_url=first_url,
+        prev_url=prev_url,
+        next_url=next_url,
+        last_url=last_url,
+    )

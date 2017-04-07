@@ -5,11 +5,11 @@ import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
 import moment from 'moment'
 
-import createStore from './redux/createStore'
-import App from './apps/App'
+import createStore from '../../redux/createStore'
+import {loadReducer} from '../../redux/load'
+import App from '../App'
 
-import StatsContainer from './apps/Stats/StatsContainer'
-import {loadReducer} from './redux/load'
+import StatsContainer from './StatsContainer'
 
 export default function statsApp (element, baseUrl) {
   const dateFrom = moment().startOf('year').format('YYYY-MM-DD')

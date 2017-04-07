@@ -1,10 +1,9 @@
-from typing import Dict, List, Any
+from typing import List, Any
+from .typing import JsonType
 import random
 import string
 from datetime import datetime
 from uuid import uuid4
-
-JsonType = Dict[str, Any]
 
 
 def randstr(minlen: int=2, maxlen: int=10) -> str:

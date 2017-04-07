@@ -1,4 +1,4 @@
-from typing import NamedTuple, List, Dict, Any, Union, Optional
+from typing import NamedTuple, List, Union, Optional
 import json
 from enum import Enum
 from django.db import connection
@@ -34,7 +34,7 @@ class EventTable(Enum):
 # 'SELECT * FROM {}'.format(sql.Identifier(table_name))
 
 
-def get_events() -> List[Dict[str, Any]]:
+def get_events() -> List[JsonType]:
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM hat_event_view')
         columns = [col[0] for col in cursor.description]
@@ -42,7 +42,7 @@ def get_events() -> List[Dict[str, Any]]:
         return events
 
 
-def get_event_of_type(table_type: EventTable, id: int) -> Dict[str, Any]:
+def get_event_of_type(table_type: EventTable, id: int) -> JsonType:
     with connection.cursor() as cursor:
         # Join the row from the main event table and the specific event table
         sql = '''

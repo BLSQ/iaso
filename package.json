@@ -27,7 +27,8 @@
   },
   "standard": {
     "ignore": [
-      "hat/assets/bundles"
+      "hat/assets/bundles",
+      "hat/dashboard/static/docs"
     ]
   },
   "devDependencies": {

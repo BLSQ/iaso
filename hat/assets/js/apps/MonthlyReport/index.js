@@ -4,11 +4,11 @@ import { Route, Redirect, useRouterHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
 
-import createStore from './redux/createStore'
-import App from './apps/App'
+import createStore from '../../redux/createStore'
+import {loadReducer} from '../../redux/load'
+import App from '../App'
 
-import MonthlyReportContainer from './apps/MonthlyReport/MonthlyReportContainer'
-import {loadReducer} from './redux/load'
+import MonthlyReportContainer from './MonthlyReportContainer'
 
 export default function monthlyReportApp (appConfig, element, baseUrl) {
   /*

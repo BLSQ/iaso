@@ -1,10 +1,10 @@
+import datetime
 from django.test import TestCase
-from hat.cases.models import Case
 from hat.cases.event_log import get_events, get_event_of_type, EventTable
+from hat.cases.filters import ResultValues
+from hat.cases.models import Case
 from ..import_cases import import_cases_file
 from . import TEST_DATA, import_helper
-from ..mapping import ResultValues
-import datetime
 
 
 class ImportCasesTests(TestCase):

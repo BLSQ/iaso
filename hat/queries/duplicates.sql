@@ -1,4 +1,4 @@
-{% query 'prepare', note='Create view used in finding duplicate pairs' %}
+{% query 'prepare', note='Create objects used in finding duplicate pairs' %}
 
   {# Load the trigrams extension #}
   CREATE EXTENSION IF NOT EXISTS pg_trgm;

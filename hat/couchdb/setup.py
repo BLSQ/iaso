@@ -75,7 +75,7 @@ def setup_db(db_name: str, config: JsonType, cleanup: bool=False) -> None:
     When `cleanup` is True all the data will be wiped from the existing database!
     '''
     ddoc = config.copy()
-    # The {db}/_security is its own document in couchdb and we push it seperately.
+    # The {db}/_security is its own document in couchdb and we push it separately.
     # A security document is required.
     if '_security' in config:
         secdoc = ddoc['_security']

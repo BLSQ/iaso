@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from typing import Dict
+from hat.common.typing import JsonType
 from functools import reduce
 from pandas import DataFrame, Series
 
@@ -7,7 +8,7 @@ from .utils import hat_id, create_documentid
 from .mapping import MAPPING, IMPORT_CONFIG
 
 
-def transform_field(source_field: Dict[str, Any],
+def transform_field(source_field: JsonType,
                     main_table_name: str,
                     tables: Dict[str, DataFrame]) -> Series:
     if "fields" in source_field:

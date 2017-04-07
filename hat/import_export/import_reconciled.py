@@ -1,3 +1,13 @@
+'''
+Import reconciled cases
+-----------------------
+
+The ``import_reconciled`` module can import files which modify existing cases.
+Sometimes we want to reconcile certain columns, e.g. the locations of the cases
+data we have, manually or via a separate process.
+This reconciled data can then be fed back into the database via this import process.
+'''
+
 import logging
 import pandas
 from django.utils.translation import ugettext as _
@@ -14,8 +24,17 @@ logger = logging.getLogger(__name__)
 
 
 def import_reconciled_file(orgname: str, filename: str) -> ImportResult:
-    ''' Import a reconciled file with handling errors and storing the event '''
-    result = {
+    '''
+    Import a reconciled file in CSV or XLSX format.
+
+    The file must contain a ``document_id`` column to identify each case that should be updated.
+    Currently a limited set of columns is supported, but that can easily be extended.
+
+    The returned dict will contain information about how many records were imported
+    or any errors that happened.
+    '''
+
+    result: ImportResult = {
         'typename': _('reconciled data'),
         'orgname': orgname,
         'filename': filename,
@@ -45,7 +64,7 @@ def import_reconciled_file(orgname: str, filename: str) -> ImportResult:
 
 
 def import_reconciled_file_unchecked(orgname: str, filename: str) -> EventStats:
-    ''' Import a reconciled file without handling errors '''
+    # Import a reconciled file without handling errors
     df = extract_reconciliation_file(filename)
 
     df_rec = pandas.DataFrame()

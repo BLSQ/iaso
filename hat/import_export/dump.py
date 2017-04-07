@@ -1,3 +1,17 @@
+'''
+Events data
+-----------
+
+This module contains the methods to export/import the event logs generated
+by import processes.
+
+Every time that a source file is uploaded or a device sync process is executed
+the system creates an Event log that is saved in postgresql.
+
+This will allow the system to reproduce in order the steps that ended up in
+the current data state.
+'''
+
 from django.conf import settings
 from django.db import connection
 from hat.common.utils import run_cmd, create_shared_filename
@@ -13,6 +27,9 @@ if settings.TESTING:
 
 
 def dump_events() -> str:
+    '''
+    Create a database dump with all the events.
+    '''
     filename = create_shared_filename('.sql')
     run_cmd(['pg_dump',
              '-v',
@@ -31,9 +48,11 @@ def dump_events() -> str:
 
 def load_events_dump(filename: str) -> None:
     '''
-    Delete any events in the database and load events from dump.
-    Warning: If this fails somewhere after the events have been
-             deleted, the data is not recoverable.
+    Delete any events in the database and load events from dump file.
+
+    .. warning:: If this fails somewhere after the events have been deleted,
+                 the data are not recoverable.
+
     '''
     with connection.cursor() as cursor:
         cursor.execute('TRUNCATE hat_event CASCADE')

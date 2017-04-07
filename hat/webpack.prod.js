@@ -15,10 +15,10 @@ module.exports = {
 
   entry: {
     'common': ['react', 'react-dom', 'react-intl'],
-    'stats': './assets/js/stats',
-    'monthly_report': './assets/js/monthlyReport',
-    'microplanning': './assets/js/microplanning',
-    'styles': './assets/css/index.scss'
+    'styles': './assets/css/index.scss',
+    'microplanning': './assets/js/apps/Microplanning/index',
+    'monthly_report': './assets/js/apps/MonthlyReport/index',
+    'stats': './assets/js/apps/Stats/index'
   },
 
   output: {

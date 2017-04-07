@@ -1,3 +1,13 @@
+'''
+Generates and updates CouchDB credentials and dbs
+(for mobile users and devices authenticating via their google token).
+
+This file contains tools to create and update CouchDB credentials and dbs.
+Use the :func:`.create_or_update_user` function, which either creates a
+new set of credentials or generates a new password for an existing user
+(as an automatic “forgot password” function).
+'''
+
 from typing import Dict
 from hat.common.typing import JsonType
 import re
@@ -5,34 +15,33 @@ import string
 import random
 from hat.couchdb import api, setup
 
-'''
-Generate and update CouchDB credentials and dbs
-(for mobile users authenticating via their google token)
-
-This file contains tools to create and update CouchDB credentials and dbs.
-Use the create_or_update_user function, which either creates a new set of credentials or
-generates a new password for an existing user (as an automatic 'forgot password' function)
-'''
-
 
 def generate_password() -> str:
     '''
-    Generate a long password string
-    These passwords are never intended to be typed by hand, but rather
-    used behind the scene to authenticate the mobile app
+    Generates a long password string.
 
-    http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+    These passwords are never intended to be typed by hand, but rather
+    used behind the scene to authenticate the mobile app.
     '''
+
+    # http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
     return ''.join(random.SystemRandom().choice(
             string.ascii_uppercase + string.digits + string.ascii_lowercase
         ) for _ in range(100))
 
 
 def generate_user_id(email: str) -> str:
+    '''
+    Generates CouchDB user using email.
+    '''
     return 'org.couchdb.user:{}'.format(email)
 
 
 def generate_db_name(device_id: str) -> str:
+    '''
+    Generates device CouchDB name (uses ``device_id`` but removes special chars).
+    '''
+
     #  filter according to:  http://docs.couchdb.org/en/master/api/database/common.html#put--db
     #  + remove some more special chars, since they're annoying
     filtered_name = re.sub('[^a-z0-9_-]', '', device_id.lower())
@@ -40,6 +49,10 @@ def generate_db_name(device_id: str) -> str:
 
 
 def create_db(device_id: str) -> None:
+    '''
+    Creates device CouchDB database.
+    '''
+
     db_name = generate_db_name(device_id)
     # Create or update the couchdb db where only the user has access
     setup.setup_db(db_name, {
@@ -52,9 +65,11 @@ def create_db(device_id: str) -> None:
 
 def create_user(email: str, password: str, device_id: str) -> None:
     '''
-    Uses the email as username
-    Creates a user for that username.
+    - Uses the email as username.
+    - Creates a user for that username.
+    - Grants permission to sync this device.
     '''
+
     # couchdb stops empty username
     # should throw on invalid password,
     if password is None or password == '':
@@ -80,8 +95,9 @@ def create_user(email: str, password: str, device_id: str) -> None:
 
 def update_user(url: str, password: str, device_id: str, existing: JsonType) -> None:
     '''
-    Update existing user with new password
+    Updates existing user with new password.
     '''
+
     del existing['derived_key']
     del existing['salt']
     existing['password'] = password
@@ -91,12 +107,13 @@ def update_user(url: str, password: str, device_id: str, existing: JsonType) -> 
 
 def create_or_update_user(email: str, device_id: str) -> Dict[str, str]:
     '''
-    For emails not having a CouchDB user, creates a DB, and a couchdb user,
-    returns the credentials for that DB
+    - For emails not having a CouchDB user: creates a couchdb user
+      and returns the credentials for that user.
 
-    For emails with an existing user, generate a new password, update
-    the user and return the new credentials set
+    - For emails with an existing user: generates a new password, updates the user
+      and returns the new credentials set.
     '''
+
     if email is None or email == '':
         raise ValueError('No email provided')
 
@@ -120,7 +137,11 @@ def create_or_update_user(email: str, device_id: str) -> Dict[str, str]:
 
 
 def delete_user(email: str) -> None:
-    # We need to retreive the revision to delete the user
+    '''
+    Removes user. Revokes sync access to any Device with this user account.
+    '''
+
+    # We need to retrieve the revision to delete the user
     user_url = '_users/' + generate_user_id(email)
     get_user = api.get(user_url)
 

@@ -1,22 +1,161 @@
-from typing import List, Dict, Any, Optional, cast
+'''
+Transform data
+--------------
+
+This module contains the transformation functions.
+
+The transformation uses a mapping data structure that groups related source
+and import fields. The transformation will walk over that list and grab the
+source values, apply optional transformations and assign these as columns to
+to a single result DataFrame that contains all the import values.
+
+Some of the data are in multiple related tables. For the transformations to
+return the right result, it is important to use the foreign keys of related
+tables as DataFrame indices, so that columns of Series assigned to the
+DataFrame end up in the correct row.
+
+
+Mapping for import and export fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the export every field needs to define a ``export_levels`` property that
+is used to collect the export fields for ``anon`` and ``full`` export.
+
+For the import each field must define the ``field`` property and a ``sources``
+property that contains the field configuration for each import source.
+In some cases this can be a one-to-one mapping, but in others we need to apply a
+function to transform from the source value to the import value.
+
+Each source field is a dict with a ``field`` or ``fields`` property and an optional
+apply function. The supported apply functions are:
+
+- ``apply_to_column(x: Value) -> t``
+
+  Gets called on each item in the source column and should return a single value
+
+- ``apply_to_row(row: Series) -> t``
+
+  Gets called on each row in the source table and should return a single value
+
+- ``apply_to_table(table, field) -> Series(t)``
+
+  Gets called once for the tables and should return a Series of values
+
+- ``apply_to_table(main_table, related_table, field) -> Series(t)``
+
+  If the table specified in ``field`` is not the main table as set in the import
+  options, the transformation will call this variant of the function which gets
+  called once and receives the main table and the related table as parameters.
+  The related table is the one specified in the `field` property
+
+Multiple source fields can be specified for a single import field via the ``fields``
+property. The value must be a list of dicts, where each item has to have a ``field``
+configuration like described above. Additionaly a reduce function must be given,
+that will combine the series from the multiple source fields input the import field.
+
+
+.. code:: python
+
+    MAPPING: List[JsonType] = [
+        {
+            "field": "sex",
+            "export_levels": [
+                Export.full,
+                Export.suspects_full,
+            ],
+
+            "sources": {
+                "pv": {
+                    "field": ("tblFishedeDeclaration", "Sexe"),
+                    "apply_to_column": pv_get_sex
+                },
+
+                "historic": {
+                    "field": ("T_CARDS", "IM_SEX"),
+                    "apply_to_column": historic_get_sex
+                },
+
+                "mobile": {
+                    "field": ("main", "person.gender"),
+                    "apply_to_column": mobile_get_sex
+                }
+            }
+        },
+
+        {
+            "field": "treatment_secondary_effects",
+            "export_levels": [
+                Export.full,
+                Export.anon
+            ],
+
+            "sources": {
+                "pv": {
+                    "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
+                    "apply_to_table": pv_has_secondary_effects
+                },
+
+                "historic": {
+                    "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
+                    "apply_to_column": historic_get_secondary_effects,
+                },
+            }
+        },
+    ]
+
+
+Configuration for the extraction of data from different sources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``type``           -- The value that will be set as ``source`` on the model.
+- ``mapping_field``  -- the field in the mapping in ``transform.py``.
+- ``main_table``     -- name of the table with the cases/persons.
+- ``import_options`` -- Dict of tables to extract from the files.
+  In the case of mdb files, those are the options passed to pandas.
+
+
+.. code:: python
+
+    IMPORT_CONFIG: JsonType = {
+        "historic": {
+            "type": "historic",
+            "mapping_field": "historic",
+            "main_table": "T_CARDS",
+            "import_options": {
+                ...
+            }
+        },
+        "pv": {
+            "type": "pv",
+            "mapping_field": "pv",
+            "main_table": "tblFishedeDeclaration",
+            "import_options": {
+                ...
+            }
+        },
+        "backup": {
+            "type": "mobile_backup",
+            "mapping_field": "mobile",
+            "main_table": "main",
+        },
+        "sync": {
+            "type": "mobile_sync",
+            "mapping_field": "mobile",
+            "main_table": "main",
+        },
+    }
+
+
+'''
+
+from typing import List, Optional, cast
+from hat.common.typing import JsonType
 from functools import reduce
 from enum import Enum
 from .utils import capitalize
-from .typing import ResultValues
+from hat.cases.filters import ResultValues
 from pandas import DataFrame, Series
 import pandas
-
-# This file contains the transformation functions.
-#
-# The transformation uses a mapping data structure that groups related source
-# and import fields. The transformation will walk over that list and grab the
-# source values, apply optional transformations and assign these as columns to
-# to a single result DataFrame that contains all the import values.
-#
-# Some of the data is in multiple related tables. For the transformations to
-# return the right result, it is important to use the foreign keys of related
-# tables as DataFrame indices, so that columns of Series assigned to the
-# DataFrame end up in the correct row.
 
 
 def series_to_str(s: Series) -> str:
@@ -132,15 +271,13 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
-result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
-
-
 def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if cast(str, x) in result_values:
+    try:
         return ResultValues[cast(str, x)].value
-    return None
+    except:
+        return None
 
 
 def mobile_get_age(table: DataFrame, field: str) -> int:
@@ -210,6 +347,7 @@ def pv_get_pl_liquid_result(x: Optional[str]) -> Optional[str]:
     }.get(cast(str, x), None)
 
 
+################################################################################
 # The following apply functions for treatment and followup fields all
 # operate on two tables, the main table and some related table like "followups"
 # or "treatments". Each of these is very similar or even the same, it
@@ -219,6 +357,7 @@ def pv_get_pl_liquid_result(x: Optional[str]) -> Optional[str]:
 # Because the result DataFrame the values are merged into uses the same index,
 # all the fields will be assigned to the right rows automatically.
 # It might make sense to combine some of these in the future.
+################################################################################
 
 
 def pv_get_treatment_date(main_table: DataFrame,
@@ -286,8 +425,8 @@ def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
 # For the export every field needs to define a `export_levels` property that
 # is used to collect the export fields for `anon` and `full` export.
 #
-# For the import each field must define the `field` property and a
-# `sources` property that contains the field configuration for each import source.
+# For the import each field must define the `field` property and a `sources`
+# property that contains the field configuration for each import source.
 # In some cases this can be a one-to-one mapping, but in others we need to apply a
 # function to transform from the source value to the import value.
 #
@@ -314,6 +453,7 @@ def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
 # configuration like described above. Additionaly a reduce function must be given,
 # that will combine the series from the multiple source fields input the import field.
 #
+################################################################################
 
 # The export levels
 class Export(Enum):
@@ -329,7 +469,7 @@ STAGING_TEST = 'staging'
 UNKNOWN_TEST = 'unknown'
 
 
-MAPPING: List[Dict[str, Any]] = [
+MAPPING: List[JsonType] = [
     # meta fields
     {
         "field": "source",
@@ -1230,13 +1370,15 @@ SUSPECT_ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
 ################################################################################
 # Configuration for the extraction of data from different sources
 #
-# `type` - The value that will be set as `source` on the model
-# `mapping_field` - the field in the mapping in `transform.py`
-# `main_table` - name of the table with the cases/persons
+# `type`           - The value that will be set as `source` on the model.
+# `mapping_field`  - the field in the mapping in `transform.py`.
+# `main_table`     - name of the table with the cases/persons.
 # `import_options` - Dict of tables to extract from the files.
 #                    In the case of mdb files, those are the options passed to pandas.
 #
-IMPORT_CONFIG: Dict[str, Dict[str, Any]] = {
+################################################################################
+
+IMPORT_CONFIG: JsonType = {
     "historic": {
         "type": "historic",
         "mapping_field": "historic",

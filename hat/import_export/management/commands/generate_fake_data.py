@@ -101,7 +101,7 @@ def add_cases(file, num, locations):
             location['latitude'],  # latitude
             location['longitude'],  # longitude
         ]
-        # All fields for a record go on one line with values tab seperated
+        # All fields for a record go on one line with values tab separated
         file.write('\t'.join(c) + '\n')
 
     file.write('\\.\n')

@@ -29,6 +29,61 @@ logger = logging.getLogger(__name__)
 @authentication_classes([])
 @permission_classes([])
 def signin(request: HttpRequest) -> HttpResponse:
+    '''
+    Sync credentials endpoint.
+    Allows only **POST** http method.
+    `It's throttled. <http://www.django-rest-framework.org/api-guide/throttling/>`__
+    Needs to be open since the mobile app doesn't have any dashboard credentials.
+
+    **Steps**
+
+    1. Checks internal ``GOOGLE_CLIENT_ID``.
+
+       .. warning:: If missing responses **500 -- Internal server error**.
+
+    2. Checks ``idToken`` parameter.
+
+       .. warning:: If missing responses **400 -- Bad request**.
+
+    3. Checks ``deviceId`` parameter.
+
+       .. warning:: If missing responses **400 -- Bad request**.
+
+    4. Verifies *ID token* against `GOOGLE API
+       <https://console.developers.google.com/apis/credentials?project=sense-hat-mobile>`__
+       and receives google user account data.
+
+        .. warning:: If could not verify *ID token* responses **500 -- Internal server error**.
+        .. warning:: If invalid *ID token* responses **401 -- Unauthorized**.
+
+    5. Checks ``email`` in user account.
+
+       .. warning:: If missing responses **500 -- Internal server error**.
+
+    6. Checks if user account does exist and is therefore allowed to sync.
+
+       .. warning:: If missing (was not added to :class:`hat.sync.models.MobileUser`)
+                    responses **403 -- Forbidden**.
+
+    7. Creates/Updates the CouchDB user of the mobile user and grants
+       permissions to the device database.
+
+       .. warning:: The same google user account cannot be shared among devices
+                    at the same time because every time the device signs in,
+                    it changes the user CouchDB credentials.
+
+       .. note:: The same device can have different google user accounts.
+
+    8. Creates the DeviceDB record and the CouchDB database if missing.
+
+
+    9. Responses **201 -- Created** with a payload with this schema:
+
+        * ``username`` -- CouchDB credentials: username.
+        * ``password`` -- CouchDB credentials: password.
+        * ``url`` -- CouchDB device database url.
+
+    '''
     if settings.GOOGLE_CLIENT_ID == '':
         msg = 'Server is missing google client id'
         logger.error(msg)
@@ -64,7 +119,7 @@ def signin(request: HttpRequest) -> HttpResponse:
 
     email = user_data.get('email', '')
     if email == '':
-        msg = 'User data is missing email'
+        msg = 'User data are missing email'
         logger.error(msg)
         return Response(msg, status.HTTP_500_INTERNAL_SERVER_ERROR)
 

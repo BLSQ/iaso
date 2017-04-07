@@ -1,4 +1,16 @@
+'''
+Import synced cases
+-------------------
+
+The ``import_synced`` module can import cases that have been synced from the HAT mobile app.
+The data are transfered to a CouchDB database on the server.
+Each device will get its own database in CouchDB and will use PouchDB to
+CouchDB replication to transmit data to the server.
+A more detailed description can be found in the ``hat.sync`` module.
+'''
+
 import logging
+from typing import List
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
@@ -17,10 +29,21 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def import_synced_devices() -> ImportResult:
+def import_synced_devices() -> List[ImportResult]:
+    '''
+    Import cases data from devices sync databases.
+
+    The devices with the HAT mobile app installed will sync cases data to CouchDB.
+    This reads the latest data from the devices CouchDB databases and imports them
+    into the main store.
+
+    The returned dict list will contain information about how many records were imported
+    or any errors that happened.
+    '''
+
     results = []
     for device in DeviceDB.objects.all():
-        result = {
+        result: ImportResult = {
             'typename': _('synced data'),
             'error': None,
             'stats': None

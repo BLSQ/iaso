@@ -1,4 +1,20 @@
-from typing import Dict, Tuple, List, Any, Union, Callable, Optional
+'''
+
+.. |sources| replace:: Available sources:
+                       ``mobile_backup``,
+                       ``mobile_sync``,
+                       ``historic``,
+                       ``pv``.
+
+.. |p_date_month| replace:: Filters results by document date month.
+.. |p_date_from|  replace:: Filters participants with document date after parameter value.
+.. |p_date_to|    replace:: Filters participants with document date before parameter value.
+.. |p_location|   replace:: Filters results by “zone de santé”.
+.. |p_source|     replace:: Filters results by document source. -- |sources|
+
+'''
+
+from typing import Dict, Tuple, List, Any, Callable, Optional
 from hat.common.typing import JsonType
 from functools import wraps
 from datetime import datetime, timedelta, date
@@ -20,23 +36,17 @@ from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
     Q_screening, Q_screening_positive, Q_screening_negative, \
     Q_confirmation, Q_confirmation_positive, Q_confirmation_negative, \
-    Q_staging, Q_staging_stage1, Q_staging_stage2
+    Q_staging, Q_staging_stage1, Q_staging_stage2, \
+    test_results
 from hat.queries import stats_queries, microplanning_queries
-from hat.import_export.typing import ResultValues
 
 datasets = {}
 
 DATE_FORMAT = '%Y-%m-%d'
 
-test_results = {
-    'positive': ResultValues.positive.value,
-    'negative': ResultValues.negative.value,
-    'missing': ResultValues.missing.value,
-    'absent': ResultValues.absent.value,
-}
-
 
 def localize_date(date: datetime) -> datetime:
+    # get rid of "naive date" warnings
     return pytz.UTC.localize(date)
 
 
@@ -57,10 +67,8 @@ def parse_date_range(params: Dict[str, str],
 
 
 def dataset(params_schema: JsonType=None) -> Callable:
-    '''
-    Decorator to add a query function to the dataset.
-    Takes an optional schema to validate the request parameters against.
-    '''
+    # Decorator to add a query function to the dataset.
+    # Takes an optional schema to validate the query string parameters against.
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -91,9 +99,7 @@ def get_cases_filtered(request: Request,
                        params: Dict[str, str],
                        ignore_params: List[str]=None) \
                        -> QuerySet:
-    '''
-    Takes the requests parameters as args and returns a filtered CaseView QuerySet.
-    '''
+    # Takes the requests parameters as args and returns a filtered CaseView QuerySet.
     def get_param_value(key: str) -> Optional[str]:
         if ignore_params is not None and key in ignore_params:
             return None
@@ -134,12 +140,40 @@ def get_cases_filtered(request: Request,
 
 @dataset(params_schema=params_schema)
 def list_locations(request: Request, params: Dict[str, str]) -> List[str]:
+    '''
+    Retrieves the list of “zones de santé” in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+
+    :return: The flat list of “zones de santé”.
+    :rtype:  List[str]
+
+    '''
     cases = get_cases_filtered(request, params, ignore_params=['location'])
     return cases.order_by('ZS').values_list('ZS', flat=True).distinct()
 
 
 @dataset(params_schema=params_schema)
-def count_total(request: Request, params: Dict[str, str]) -> Dict[str, int]:
+def count_total(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves figures about participants in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``registered`` -- Number of registered participants.
+        * ``tested``     -- Number of participants with screening, confirmation or staging result.
+
+    '''
     cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging)
     return {
@@ -149,7 +183,26 @@ def count_total(request: Request, params: Dict[str, str]) -> Dict[str, int]:
 
 
 @dataset(params_schema=params_schema)
-def count_screened(request: Request, params: Dict[str, str]) -> Dict[str, int]:
+def count_screened(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves figures about screening results in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``total``    -- Number of participants with an screening result.
+        * ``positive`` -- Number of participants with a positive screening result.
+        * ``negative`` -- Number of participants with a negative screening result.
+        * ``missing_confirmation`` -- Number of participants with a positive screening result
+          but without a confirmation result.
+
+    '''
     cases = get_cases_filtered(request, params).filter(Q_screening)
     return {
         'total': cases.count(),
@@ -161,7 +214,24 @@ def count_screened(request: Request, params: Dict[str, str]) -> Dict[str, int]:
 
 
 @dataset(params_schema=params_schema)
-def count_confirmed(request: Request, params: Dict[str, str]) -> Dict[str, int]:
+def count_confirmed(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves figures about confirmation results in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``total``    -- Number of participants with a confirmation result.
+        * ``positive`` -- Number of participants with a positive confirmation result.
+        * ``negative`` -- Number of participants with a negative confirmation result.
+
+    '''
     cases = get_cases_filtered(request, params).filter(Q_confirmation)
     return {
         'total': cases.count(),
@@ -171,7 +241,24 @@ def count_confirmed(request: Request, params: Dict[str, str]) -> Dict[str, int]:
 
 
 @dataset(params_schema=params_schema)
-def count_staging(request: Request, params: Dict[str, str]) -> Dict[str, int]:
+def count_staging(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves figures about staging results in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``total``  -- Number of participants with an staging result.
+        * ``stage1`` -- Number of participants with an “Stage 1” result.
+        * ``stage2`` -- Number of participants with an “Stage 2” result.
+
+    '''
     cases = get_cases_filtered(request, params).filter(Q_staging)
     return {
         'total': cases.count(),
@@ -181,7 +268,25 @@ def count_staging(request: Request, params: Dict[str, str]) -> Dict[str, int]:
 
 
 @dataset(params_schema=params_schema)
-def campaign_meta(request: Request, params: Dict[str, str]) -> Dict[str, Union[str, int]]:
+def campaign_meta(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves screening sessions data in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``startdate``        -- First date with screening sessions.
+        * ``enddate``          -- Last date with screening sessions.
+        * ``as_visited``       -- Number of visited “aires de santé”.
+        * ``villages_visited`` -- Number of visited villages.
+
+    '''
     cases = get_cases_filtered(request, params)
     return {
         'startdate': cases.aggregate(Min('document_date'))['document_date__min'],
@@ -192,7 +297,26 @@ def campaign_meta(request: Request, params: Dict[str, str]) -> Dict[str, Union[s
 
 
 @dataset(params_schema=params_schema)
-def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, int]]:
+def tested_per_day(request: Request, params: Dict[str, str]) -> List[JsonType]:
+    '''
+    Retrieves the number of participants per day of the month
+    in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: A list with the figures.
+    :rtype:  List[JsonType]
+
+        * ``day``   -- Day of the month.
+        * ``count`` -- Number of participants with a screening, confirmation or staging result.
+
+    :raises ValidationError: if parameter **date_month** is missing.
+
+    '''
     cases = get_cases_filtered(request, params)
     tested = cases.filter(Q_screening | Q_confirmation | Q_staging) \
                   .values('document_date_day') \
@@ -224,10 +348,28 @@ def tested_per_day(request: Request, params: Dict[str, str]) -> List[Dict[str, i
         'location': {'type': 'string'},
     }
 })
-def population_coverage(request: Request, params: Dict[str, str]) -> Dict[str, Any]:
+def population_coverage(request: Request, params: Dict[str, str]) -> JsonType:
+    '''
+    Retrieves the figures of visited villages with population data
+    joining :class:`hat.cases.models.CaseView` and :class:`hat.cases.models.Location`.
+
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          location:   |p_location|
+
+    :return: a dictionary with the figures.
+    :rtype:  JsonType
+
+        * ``total_visited``              -- Number of visited villages.
+        * ``visited_with_population``    -- Number of visited villages with population data.
+        * ``registered_with_population``
+          -- Number of participants in villages with population data.
+        * ``population``                 -- Total population.
+
+    '''
     (date_from, date_to) = parse_date_range(params)
 
-    sql_context: Dict[str, Any] = {
+    sql_context: JsonType = {
         'date_from': date_from,
         'date_to': date_to
     }
@@ -259,7 +401,32 @@ def population_coverage(request: Request, params: Dict[str, str]) -> Dict[str, A
     },
     'additionalProperties': False,
 })
-def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, Any]]:
+def cases_over_time(request: Request, params: Dict[str, str]) -> List[JsonType]:
+    '''
+    Retrieves the cases figures over time in :class:`hat.cases.models.CaseView`.
+
+    :param “YYYY-MM”    date_month: |p_date_month|
+    :param “YYYY-MM-DD” date_from:  |p_date_from|
+    :param “YYYY-MM-DD” date_to:    |p_date_to|
+    :param str          source:     |p_source|
+    :param str          location:   |p_location|
+
+    :return: a list with the figures.
+    :rtype:  List[JsonType]
+
+        * ``date``               -- Document date.
+        * ``registered_total``   -- Number of participants.
+        * ``screening_total``    -- Number of participants with an screening result.
+        * ``screening_pos``      -- Number of participants with a positive screening result.
+        * ``screening_neg``      -- Number of participants with a negative screening result.
+        * ``confirmation_total`` -- Number of participants with a confirmation result.
+        * ``confirmation_pos``   -- Number of participants with a positive confirmation result.
+        * ``confirmation_neg``   -- Number of participants with a negative confirmation result.
+        * ``staging_total``      -- Number of participants with an staging result.
+        * ``stage1``             -- Number of participants with an “Stage 1” result.
+        * ``stage2``             -- Number of participants with an “Stage 2” result.
+
+    '''
     (date_from, date_to) = parse_date_range(params)
 
     sql_context = {
@@ -294,16 +461,45 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[Dict[str, 
         'caseyears': {'type': 'string'},
     }
 })
-def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str, Any]]:
+def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]:
     '''
-    View to list and retrieve the official list of villages
-    with their meaningful info like confirmed cases, screened people...
+    Retrieves the official list of villages (:class:`hat.cases.models.Location`)
+    with their last HAT case data (:class:`hat.cases.models.CaseView`) if requested.
+
+    .. |c|  replace:: Only available with ``caseyears`` parameter.
+    .. |c2| replace:: Includes HAT cases figures if the village last HAT case
+                      was confirmed in these years.
+
+    :param List[str] location:  Filters villages by “zones de santé”.
+    :param List[int] caseyears: |c2|
+
+    :return: A list with the villages data.
+    :rtype:  List[JsonType]
+
+        * ``province``       -- Current official province.
+        * ``formerProvince`` -- Former province.
+        * ``ZS``             -- Zone de santé.
+        * ``AS``             -- Aire de santé.
+        * ``village``        -- Official village name.
+        * ``longitude``      -- Coordinates: longitude.
+        * ``latitude``       -- Coordinates: latitude.
+        * ``gpsSource``      -- GPS source: organization that provided GPS coordinates.
+        * ``id``             -- Calculated id used to plot the village in the map.
+        * ``label``          -- Village label used in the map.
+        * ``type``           -- Village classification.
+            - ``official``: from “zone de santé”.
+            - ``other``:    not from “zone de santé”.
+            - ``unknown``:  visible from satellite.
+        * ``population`` -- Village population, only ``official`` villages have population data.
+        * ``populationYear``   -- Year in which the census was taken.
+        * ``populationSource`` -- Name of the organization that provided population data.
+        * ``lastConfirmedCaseYear`` -- The last year in which a HAT case was confirmed. |c|
+        * ``lastConfirmedCaseDate`` -- The date in which the last HAT case was confirmed. |c|
+        * ``confirmedCases``        -- Number of HAT cases in that last year. |c|
+
     '''
 
-    # first expected date is 2000-01-01
-    (date_from, date_to) = parse_date_range(params, datetime(2000, 1, 1))
-
-    sql_context: Dict[str, Any] = {
+    sql_context: JsonType = {
         **test_results,
     }
 
@@ -331,9 +527,12 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[Dict[str,
 })
 def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
     '''
-    Retrives the valid list of Zones de Sante in the `location` table.
+    Retrives the valid list of “zones de santé” (:class:`hat.cases.models.Location`).
     Those zones come from the dbf files so we can assume that their
-    shapes are contained in the `shapes.json` file.
+    shapes are contained in the ``shapes.json`` file.
+
+    :return: The flat list of “zones de santé”.
+    :rtype:  List[str]
     '''
 
     locations = Location.objects.order_by('ZS')
@@ -345,9 +544,7 @@ def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
 
 
 class DatasetViewSet(viewsets.ViewSet):
-    '''
-    View to list and retrieve registered datasets
-    '''
+    # View to list and retrieve registered datasets
     def list(self, request: Request) -> Response:
         items = []
         for k, v in datasets.items():
@@ -362,7 +559,8 @@ class DatasetViewSet(viewsets.ViewSet):
         if pk not in datasets:
             raise NotFound()
         item = datasets[pk]
-        # We have to convert the query dict to a regular dict, because the json schema validation
+        # We have to convert the query dict to a regular dict,
+        # because the json schema validation
         # might mutate the params dict with default values.
         params = dict(request.GET.items())
         if not item['params_schema'] is None:

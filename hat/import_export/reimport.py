@@ -1,3 +1,16 @@
+'''
+Reimport data
+-------------
+
+This module contains the methods to reimport again all the case data from their sources.
+
+It could happen that a new property should be included in the case schema or
+that an old one was misunderstood and it should be *recalculated* again.
+In that case the transform methods should be redefined and the data
+*re-transformed* or *re-imported*.
+
+'''
+
 from typing import Dict, Any, Iterator
 import time
 import json
@@ -31,7 +44,7 @@ def write_contents_to_file(orgname: str, contents: str) -> str:
 
 
 def import_event(event: EventType) -> EventStats:
-    ''' Import a event from the hat_event_view '''
+    # Import a event from the hat_event_view
     table = EventTable(event['table_name'])
 
     if table == EventTable.cases_file:
@@ -42,7 +55,7 @@ def import_event(event: EventType) -> EventStats:
             # The complete file is stored in the database. This is the old
             # way we stored the data. We need to convert this to the newer
             # format where only the contents of the file are stored.
-            # TODO: This code path can be removed when all the data was migrated
+            # TODO: This code path can be removed when all the data were migrated
             id = event['id']
             logger.info('migration file contents for event with id: {}'.format(id))
             filename = write_contents_to_file(orgname, contents)
@@ -78,11 +91,10 @@ def import_event(event: EventType) -> EventStats:
 
 
 def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
-    '''
-    Generator function to fetch events in batches and yield one event at a time.
-    Events will be ordered by timestamp ascending. We use the timestamp of the last
-    seen event as key for where to start the next batch after.
-    '''
+    # Generator function to fetch events in batches and yield one event at a time.
+    # Events will be ordered by timestamp ascending. We use the timestamp of the last
+    # seen event as key for where to start the next batch after.
+
     batch_size = 10
     # Postgres uses a special value for the lowest date possible'-infinity'
     last_stamp = '-infinity'
@@ -113,6 +125,13 @@ def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
 
 @transaction.atomic
 def reimport(delete_data: bool=True) -> List[EventStats]:
+    '''
+    Deletes ALL cases (``delete_data``) and
+    reimports the data in the same chronological order they were successfully uploaded.
+
+    The returned dict list will contain information about how many records were imported
+    or any errors that happened.
+    '''
     logger.info('starting reimport')
     try:
         start_time = time.clock()
@@ -136,6 +155,9 @@ def reimport(delete_data: bool=True) -> List[EventStats]:
 
                 stats = import_event(event)
                 results.append(stats)
+
+            # rebuild indices in table
+            cursor.execute('REINDEX TABLE cases_case')
 
             end_time = time.clock()
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Decrypt a mobile backup file using a private rsa key in JWK format.
-// e.g. `decrypt.js '{...private-key-str...}' 2016.backup.enc > data.json`
+// e.g. `decrypt_mobilebackup.js '{...private-key-str...}' 2016.backup.enc > data.json`
 
 'use strict'
 
@@ -9,7 +9,7 @@ const fs = require('fs')
 const jose = require('node-jose')
 
 if (process.argv.length < 4) {
-  console.error('usage: decrypt.js privatekey-str encrypted-file')
+  console.error('usage: decrypt_mobilebackup.js privatekey-str encrypted-file')
   process.exit(1)
 }
 

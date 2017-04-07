@@ -21,7 +21,7 @@ class ImportLocationsTests(TestCase):
                          Location.objects.filter(population__isnull=False).count())
 
         # When we import again, the number of rows should be the same,
-        # because existing data gets wiped before new rows are inserted.
+        # because existing data get wiped before new rows are inserted.
         r2 = import_locations_file('testdata', dbf_file)
         self.assertEqual(r2['stats'].created, r['stats'].created)
         self.assertEqual(r2['stats'].deleted, 9)

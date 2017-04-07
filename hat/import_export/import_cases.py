@@ -1,3 +1,12 @@
+'''
+Import cases files
+------------------
+
+The ``import_cases`` module can import cases data from MS Access MDB files
+and Sense HAT mobile app backup files.
+
+'''
+
 from typing import Dict, List, Union, cast
 from hat.common.typing import JsonType
 from .typing import ImportResult
@@ -14,7 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 def import_cases_file(orgname: str, filename: str) -> ImportResult:
-    ''' Import a cases file with handling errors and storing the event '''
+    '''
+    Import a cases file.
+
+    Supported files are MS Access MDB with HAT Historic schema and Pharmacovigilance schema,
+    as well as HAT mobile app backup files.
+
+    The returned dict will contain information about how many records were imported
+    or any errors that happened.
+    '''
+
     result: ImportResult = {
         'typename': None,
         'orgname': orgname,

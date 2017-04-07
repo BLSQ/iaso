@@ -4,13 +4,13 @@ import { Route, Redirect, useRouterHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
 
-import createStore from './redux/createStore'
-import App from './apps/App'
+import createStore from '../../redux/createStore'
+import {loadReducer} from '../../redux/load'
+import App from '../App'
 
-import MicroplanningContainer from './apps/Microplanning/MicroplanningContainer'
-import { selectionReducer, selectionInitialState } from './apps/Microplanning/redux/selection'
-import { mapReducer, mapInitialState } from './apps/Microplanning/redux/map'
-import { loadReducer } from './redux/load'
+import MicroplanningContainer from './MicroplanningContainer'
+import { selectionReducer, selectionInitialState } from './redux/selection'
+import { mapReducer, mapInitialState } from './redux/map'
 
 export default function microplanningApp (element, baseUrl) {
   const currentYear = new Date().getFullYear()

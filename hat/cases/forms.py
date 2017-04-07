@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 
-DATE_FORMAT = "%Y-%m-%d"
+DATE_FORMAT = '%Y-%m-%d'
 
 
 class FieldChoice(NamedTuple):
@@ -244,5 +244,5 @@ def filter_and_create_form(
 ################################################################################
 
 class DateInput(forms.DateInput):
-    ''' Django uses type="text" by default, but we want type="date" '''
+    # Django uses type="text" by default, but we want type="date"
     input_type = 'date'

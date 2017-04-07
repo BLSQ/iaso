@@ -12,25 +12,25 @@ module.exports = {
   entry: {
     // use same settings as in Prod
     'common': ['react', 'react-dom', 'react-intl'],
-    'stats': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/stats'
-    ],
-    'monthly_report': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/monthlyReport'
-    ],
-    'microplanning': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/microplanning'
-    ],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/css/index.scss'
+    ],
+    'microplanning': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/Microplanning/index'
+    ],
+    'monthly_report': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/MonthlyReport/index'
+    ],
+    'stats': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/Stats/index'
     ]
   },
 

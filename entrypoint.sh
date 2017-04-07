@@ -7,6 +7,7 @@ show_help() {
   test             : run tests
   test_js          : run javascript tests
   test_integration : run integration tests
+  gen_docs         : generate docs
   start            : start django + uwsgi
   start_dev        : start django devserver
   start_webpack    : start webpack server (only in DEV mode)
@@ -43,11 +44,15 @@ case "$1" in
     npm run webpack
     ./manage.py test --tag=selenium --failfast
   ;;
+  "gen_docs" )
+    ./scripts/gen_docs.sh
+  ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
+    ./scripts/gen_docs.sh
     ./scripts/start_web.sh
   ;;
   "start_dev" )
@@ -55,6 +60,7 @@ case "$1" in
       # Test prod configuration
       envsubst "\$COUCHDB_URL" < build_scripts/local/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
+      ./scripts/gen_docs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
       npm run webpack
@@ -64,6 +70,7 @@ case "$1" in
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
+      ./scripts/gen_docs.sh
       ./manage.py migrate --noinput
       ./manage.py loaddata users
       ./manage.py runserver 0.0.0.0:8080

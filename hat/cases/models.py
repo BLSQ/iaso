@@ -14,6 +14,142 @@ CASES_PERMISSIONS = (
 
 
 class CaseAbstract(models.Model):
+    '''
+    Models case object with generic properties, treatment, followup, tests...
+
+    - **Generic**
+
+    :ivar text     source:
+        Case data source.
+
+            - **historic**      -- Historic
+            - **mobile_backup** -- Mobile backup
+            - **mobile_sync**   -- Mobile synced
+            - **pv**            -- Pharmacovigilance
+
+    :ivar datetime document_date:   Document date.
+    :ivar text     document_id:     Unique hash that identifies the case.
+
+    :ivar text     hat_id:          HAT Case id.
+    :ivar datetime entry_date:      Entry form: Date.
+    :ivar text     entry_name:      Entry form: name.
+
+    :ivar integer  form_number:     Entry form: number.
+    :ivar integer  form_year:       Entry form: year.
+    :ivar integer  form_month:      Entry form: month.
+
+    :ivar text     name:            Name.
+    :ivar text     lastname:        Lastname/surname.
+    :ivar text     prename:         Prename.
+    :ivar text     mothers_surname: Mothers surname.
+
+    :ivar integer  age:             Age at the moment of the test.
+    :ivar integer  year_of_birth:   Year of birth.
+    :ivar text     sex:
+        Gender.
+
+            - **female** --  Female
+            - **male**   -- Male
+
+    :ivar text     province:        Province name.
+    :ivar text     ZS:              “Health zone” / “zone de santé” name.
+    :ivar text     AS:              “Health area” / “aire de santé” name.
+    :ivar text     village:         Official location name.
+    :ivar double   longitude:       GPS coordinates: longitude.
+    :ivar double   latitude:        GPS coordinates: latitude.
+
+    :ivar text     mobile_unit:     Mobile unit responsible of the tests.
+    :ivar text     device_id:       Id of the device used during screening.
+
+    :ivar integer  version_number:  Indicates how many times has been updated
+
+
+    - **Treatment**
+
+    :ivar text     treatment_center:            Where the treatment took place.
+    :ivar datetime treatment_start_date:        Start date of the treatment.
+    :ivar datetime treatment_end_date:          End date of the treatment.
+    :ivar text     treatment_prescribed:        Prescribed treatment.
+    :ivar text     treatment_result:            Result.
+    :ivar boolean  treatment_secondary_effects: Secondary effects due treatment?
+
+
+    - **Followup**
+
+    :ivar boolean followup_done:             Is there any followup?
+    :ivar text test_followup_decision:       Medical decision.
+    :ivar text test_followup_ge:             “Goutte Épaisse”.
+    :ivar text test_followup_maect:          “mini Anion Exchange Centrifugation Technique”.
+    :ivar text test_followup_pg:             “Ponction ganglionnaire”.
+    :ivar text test_followup_pl:             “Ponction lombaire”.
+    :ivar text test_followup_pl_gb:          “Ponction lombaire, Gb/mm³³”.
+    :ivar text test_followup_pl_trypanosome: “Ponction lombaire, Présence trypanosomes”.
+    :ivar text test_followup_sf:             “Sang Frais”.
+    :ivar text test_followup_woo:            Woo (“haematocrit centrifuge technique”).
+    :ivar text test_followup_woo_maect:      Woo / mAECT.
+
+
+    - **Tests**
+
+    :ivar integer test_clinical_sickness:    “Malade clinique”.
+    :ivar integer test_ctcwoo:               “Woo (haematocrit centrifuge technique)”.
+    :ivar integer test_dil:                  “Dil = ou > + à 1/16 en zone hyperendémique”.
+    :ivar integer test_ge:                   “Goutte Épaisse”.
+    :ivar integer test_ifat:                 “ImmunoFluorescence Antibody Test”.
+    :ivar integer test_lcr:                  “LCR (liquide céphalo-rachidien)”.
+    :ivar integer test_lymph_node_puncture:  “Ponction ganglionnaire”.
+    :ivar integer test_maect:                “mini Anion Exchange Centrifugation Technique”.
+    :ivar integer test_parasit:              “Confirmation Parasitologique”.
+    :ivar integer test_pg:                   “Ponction ganglionnaire”.
+    :ivar integer test_rdt:                  “Rapid Diagnostic Test”.
+    :ivar integer test_sf:                   “Sang Frais”.
+    :ivar integer test_sternal_puncture:     “Ponction sternale”.
+
+    :ivar integer test_catt:                 “Card Agglutination Test for Trypanosomiasis”.
+    :ivar text    test_catt_dilution:        “Card Agglutination Test for Trypanosomiasis”.
+        Dilution positive at:
+
+            - 1 / 2
+            - 1 / 4
+            - 1 / 8
+            - 1 / 16
+            - 1 / 32
+            - > 1 / 32
+
+    :ivar integer test_pl:                   “Ponction lombaire”.
+    :ivar text    test_pl_albumine:          “Ponction lombaire”: Albumine (centrigr. ‰)
+    :ivar text    test_pl_comments:          “Ponction lombaire”: Comments.
+    :ivar text    test_pl_gb_mm3:            “Ponction lombaire”: Gb/mm³.
+    :ivar text    test_pl_liquid:            “Ponction lombaire”:
+        Liquid:
+
+            - clair
+            - trouble
+            - hemorragique
+
+    :ivar text    test_pl_trypanosome:       “Ponction lombaire”: Présence trypanosomes.
+    :ivar text    test_pl_lcr:               “Ponction lombaire”:
+        Latex LCR (liquide céphalo-rachidien)
+
+            - 1 / 8
+            - 1 / 16
+            - 1 / 32
+            - 1 / 64
+            - 1 / 128
+            - 1 / 256
+            - 1 / 512
+            - 1 / 1024
+
+    :ivar text    test_pl_result:            “Ponction lombaire”:
+        Stage results:
+
+            - **stage1** -- “Stage 1”
+            - **stage2** -- “Stage 2”
+
+    :ivar integer test_other:                Other test.
+
+    '''
+
     SOURCE_CHOICES = (
         ('historic', 'Historic'),
         ('mobile_backup', 'Mobile backup'),
@@ -23,8 +159,7 @@ class CaseAbstract(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
     document_date = models.DateTimeField(db_index=True, null=True)
-    # The id is currently a hash over the row to be able to
-    # catch duplicates
+    # The id is currently a hash over the row to be able to catch duplicates
     document_id = models.TextField(unique=True)
     hat_id = models.TextField()
     entry_date = models.DateTimeField(null=True)
@@ -64,23 +199,24 @@ class CaseAbstract(models.Model):
     treatment_secondary_effects = models.NullBooleanField()
     treatment_result = models.TextField(null=True)
 
-    test_rdt = models.IntegerField(null=True)
     test_catt = models.IntegerField(null=True)
-    test_maect = models.IntegerField(null=True)
-    test_ge = models.IntegerField(null=True)
-    test_pg = models.IntegerField(null=True)
-    test_ctcwoo = models.IntegerField(null=True)
-    test_pl = models.IntegerField(null=True)
     test_catt_dilution = models.TextField(null=True)
-    test_lymph_node_puncture = models.IntegerField(null=True)
-    test_sf = models.IntegerField(null=True)
-    test_lcr = models.IntegerField(null=True)
-    test_dil = models.IntegerField(null=True)
-    test_parasit = models.IntegerField(null=True)
-    test_sternal_puncture = models.IntegerField(null=True)
-    test_ifat = models.IntegerField(null=True)
     test_clinical_sickness = models.IntegerField(null=True)
+    test_ctcwoo = models.IntegerField(null=True)
+    test_dil = models.IntegerField(null=True)
+    test_ge = models.IntegerField(null=True)
+    test_ifat = models.IntegerField(null=True)
+    test_lcr = models.IntegerField(null=True)
+    test_lymph_node_puncture = models.IntegerField(null=True)
+    test_maect = models.IntegerField(null=True)
+    test_parasit = models.IntegerField(null=True)
+    test_pg = models.IntegerField(null=True)
+    test_pl = models.IntegerField(null=True)
+    test_rdt = models.IntegerField(null=True)
+    test_sf = models.IntegerField(null=True)
+    test_sternal_puncture = models.IntegerField(null=True)
     test_other = models.IntegerField(null=True)
+
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.
     test_pl_liquid = models.TextField(null=True)
@@ -92,7 +228,7 @@ class CaseAbstract(models.Model):
     PL_TEST_RESULT_CHOICES = (
         ('stage1', 'Stage1'),
         ('stage2', 'Stage2'),
-        ('unknown', 'Unknown')
+        ('unknown', 'Unknown'),
     )
     test_pl_result = models.TextField(choices=PL_TEST_RESULT_CHOICES, null=True)
 
@@ -110,8 +246,7 @@ class CaseAbstract(models.Model):
     test_followup_pl_gb = models.TextField(null=True)
     test_followup_decision = models.TextField(null=True)
 
-    # log fields
-    # just to know how many times has been updated
+    # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -121,6 +256,20 @@ class CaseAbstract(models.Model):
 
 
 class Case(CaseAbstract):
+    '''
+    Implements :class:`hat.cases.models.CaseAbstract`
+
+    **Permissions**
+
+    - **import**            -- Can import data.
+    - **import_reconciled** -- Can import reconciliation data.
+    - **export**            -- Can export anonymized cases data.
+    - **export_full**       -- Can export non anonymized cases data.
+    - **view**              -- Can view anonymized cases data.
+    - **view_full**         -- Can view non anonymized cases data.
+
+    '''
+
     class Meta:
         abstract = False
         ordering = ['-document_date']
@@ -133,6 +282,33 @@ def increase_case_version_number(sender, instance, *args, **kwargs):  # type: ig
 
 
 class CaseView(CaseAbstract):
+    '''
+    References a postgresql view that extends :class:`hat.cases.models.CaseAbstract`
+    with calculated properties.
+
+    :ivar datetime document_date_day:   Taken **document_date** goes to the beginning of the day.
+    :ivar datetime document_date_month: Taken **document_date** goes to the beginning of the month.
+    :ivar datetime document_date_year:  Taken **document_date** goes to the beginning of the year.
+
+    :ivar integer document_day:   Extracts **document_date** day.
+    :ivar integer document_month: Extracts **document_date** month.
+    :ivar integer document_year:  Extracts **document_date** year.
+
+    :ivar text full_name:     Concats **name** **prename** **lastname**.
+    :ivar text full_location: Concats **province** - **ZS** - **AS** - **village**.
+
+    :ivar integer screening_result: Takes the most significant result of the
+        screening tests.
+
+    :ivar integer confirmation_result: Takes the most significant result of the
+        confirmation tests.
+
+    :ivar text stage_result: Renames **test_pl_result**.
+
+    .. seealso:: :any:`hat.cases.filters` to get the list of test classification.
+
+    '''
+
     # calculated fields
     document_date_day = models.DateTimeField(null=True)
     document_date_month = models.DateTimeField(null=True)
@@ -156,6 +332,43 @@ class CaseView(CaseAbstract):
 
 
 class Location(models.Model):
+    '''
+    The official location list created by
+    :func:`hat.import_export.import_locations.import_locations_file`
+    and updated by
+    :func:`hat.import_export.import_locations.import_locations_areas_file`.
+
+    :ivar text province:     Current province name.
+    :ivar text province_old: Former province name.
+    :ivar text ZS:           “Health zone” / “zone de santé” name.
+    :ivar text AS:           “Health area” / “aire de santé” name.
+    :ivar text AS_alt:       Alternative spelling for the “health area” / “aire de santé” name.
+    :ivar text village:      Official location name.
+    :ivar text village_alt:  Alternative spelling for this location.
+    :ivar text village_type: Location type: village, hospital, camp, farm...
+
+    :ivar text village_official:
+        Is this location classified as “official”?
+
+            - **YES**:   Location from “zone de santé”.
+            - **NO**:    Location not from “zone de santé”.
+            - **OTHER**: Location where people are found during campaigns.
+            - **NA**:    Location visible from satellite (unknown).
+
+    :ivar double  longitude:  GPS coordinates: longitude.
+    :ivar double  latitude:   GPS coordinates: latitude.
+    :ivar text    gps_source: GPS source: organization that provided GPS coordinates.
+
+    :ivar integer population: Village population, only *official* villages have population data.
+    :ivar integer population_year:   Year in which the census was taken.
+    :ivar text    population_source: Name of the organization that provided population data.
+
+
+    **Permissions**
+
+    - **import_locations** -- Can import location data.
+    '''
+
     province = models.TextField(null=True)
     province_old = models.TextField(null=True)
     ZS = models.TextField(null=True)
@@ -167,7 +380,7 @@ class Location(models.Model):
     VILLAGE_OFFICIAL_CHOICES = (
         ('YES', 'Villages from Z.S.'),
         ('NO', 'Villages not from Z.S.'),
-        ('OTHER', 'Locations in which people work/study...'),
+        ('OTHER', 'Locations where people are found during campaigns'),
         ('NA', 'Villages from satellite (unknown)'),
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
@@ -187,6 +400,31 @@ class Location(models.Model):
 
 
 class DuplicatesPair(models.Model):
+    '''
+    Potential duplicate cases. Two cases are considered potential duplicates if:
+        - Have **same** values in:
+            - **ZS**
+            - **AS**
+            - **village**
+            - **sex**
+        - Have **similar** values in:
+            - **name**
+            - **prename**
+            - **lastname**
+            - **mothers_surname**
+
+    :ivar Case case1: Case 1 **reference**.
+    :ivar Case case2: Case 2 **reference**.
+
+    :ivar text document_id1: Case 1 **document_id**.
+    :ivar text document_id2: Case 2 **document_id**.
+
+    **Permissions**
+
+    - **reconcile_duplicates** -- Can reconcile duplicates.
+
+    '''
+
     case1 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
     case2 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
     document_id1 = models.TextField(db_index=True, null=True)
@@ -210,7 +448,11 @@ class IgnoredPair(models.Model):
     This table tracks all duplicates pairs that have been found not to be actual matches.
     When the process for finding duplicates reruns, we don't want any previously ignored
     pairs to show up again and need to keep track of them. The pairs are tracked by the
-    document_id, so that they are not dependent on the table instance.
+    ``document_id``, so that they are not dependent on the table instance.
+
+    :ivar text document_id1: Case 1 **document_id**.
+    :ivar text document_id2: Case 2 **document_id**.
+
     '''
     document_id1 = models.TextField(db_index=True)
     document_id2 = models.TextField(db_index=True)

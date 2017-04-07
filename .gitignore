@@ -61,8 +61,8 @@ coverage.xml
 # Django stuff:
 *.log
 
-# Sphinx documentation
-docs/_build/
+# Sphinx built documentation
+hat/dashboard/static/docs/
 
 # PyBuilder
 target/
@@ -95,3 +95,5 @@ build_scripts/deploy.zip
 ### Built JS ###
 hat/assets/bundles/
 hat/assets/messages/**/*.json
+
+docs/build

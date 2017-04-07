@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Encrypt a mobile backup file using the public key
-// e.g. `encrypt.js 2016.backup.enc > data.json`
+// e.g. `encrypt_mobilebackup.js data.backup.json > data.backup.enc`
 
 'use strict'
 
@@ -9,7 +9,7 @@ const fs = require('fs')
 const jose = require('node-jose')
 
 if (process.argv.length < 3) {
-  console.error('usage: encrypt.js privatekey-str file')
+  console.error('usage: encrypt_mobilebackup.js privatekey-str file')
   process.exit(1)
 }
 const file = process.argv[3]

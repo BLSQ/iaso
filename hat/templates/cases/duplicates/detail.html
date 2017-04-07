@@ -16,7 +16,6 @@
     </div>
     <br/>
 
-
     <div class="widget__container">
       <div class="widget__header">
         <h2 class="widget__heading">
@@ -28,7 +27,8 @@
           {% blocktrans %}
           This page shows a detailed field by field comparison of the matching cases.
           In the most right column is a preview of the result fields of the merge.
-          The merge can be performed by clicking the “Merge” button on the bottom right.
+          The merge can be performed by clicking the <b>“Merge”</b> button on the bottom right.
+          To mark them as <b><i>false positive</i></b> click the <b>“Ignore”</b> button.
           {% endblocktrans %}
         </p>
       </div>
@@ -50,7 +50,14 @@
                       {% if forloop.first %}
                         <b>{{ column }}</b>
                       {% else %}
-                        <span style="float:left; margin-left:-10px">{{ column.indicator }}</span> {{ column.value }}
+                        <span
+                            {% if   column.indicator == '+' %} class="text--success"
+                            {% elif column.indicator == '-' %} class="text--error"
+                            {% endif %}
+                        >
+                          <span style="float:left; margin-left:-10px"><b>{{ column.indicator }}</b></span>
+                          {{ column.value }}
+                        </span>
                       {% endif %}
                     </td>
                   {% endfor %}

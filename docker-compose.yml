@@ -14,7 +14,8 @@ services:
       - ./hat:/opt/app/hat
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
-      - ./setup.cfg:/opt/app/setup.cfg
+      - ./docs:/opt/app/docs
+      - ./README.rst:/opt/app/README.rst
       # shared dir between containers
       - ./shared:/opt/shared
       # build scripts for testing prod version

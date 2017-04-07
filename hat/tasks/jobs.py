@@ -1,9 +1,8 @@
-from typing import Any, Optional
+from typing import Any, Optional, List, Tuple
 from django.db import connection
 from django_rq import job
-from typing import List, Tuple
 
-from hat.queries import duplicates_queries
+from hat.import_export.dump import dump_events, load_events_dump
 from hat.import_export.export_csv import export_csv
 from hat.import_export.import_cases import import_cases_file
 from hat.import_export.import_locations import import_locations_file, import_locations_areas_file
@@ -12,48 +11,87 @@ from hat.import_export.import_synced import import_synced_devices
 from hat.import_export.reimport import reimport
 from hat.import_export.typing import ImportResult
 from hat.cases.event_log import EventStats
+from hat.queries import duplicates_queries
 
 
 ################################################################################
 # upload/download
 ################################################################################
 
+
+@job('default', timeout=15*60, result_ttl=60*60)
+def export_task(**kwargs: Any) -> Optional[str]:
+    '''
+    Export SQL query or Django ORM Queryset task.
+
+    (:func:`hat.import_export.export_csv.export_csv`).
+    '''
+    return export_csv(**kwargs)
+
+
 @job('default', timeout=15*60)
 def import_task(fileinfos: List[Tuple[str, str]]) -> List[ImportResult]:
+    '''
+    Import HAT cases files (encrypted or MDB format) task.
+
+    (:func:`hat.import_export.import_cases.import_cases_file`).
+    '''
     results = []
     for (name, filename) in fileinfos:
         results.append(import_cases_file(name, filename))
     return results
 
 
-@job('default', timeout=15*60, result_ttl=60*60)
-def export_task(**kwargs: Any) -> Optional[str]:
-    return export_csv(**kwargs)
-
-
-@job('default', timeout=120*60)
-def reimport_task() -> List[EventStats]:
-    return reimport()
-
-
-@job('default', timeout=15*60)
-def import_locations_task(name: str, filename: str) -> ImportResult:
-    return import_locations_file(name, filename)
-
-
-@job('default', timeout=15*60)
-def import_locations_areas_task(name: str, filename: str) -> ImportResult:
-    return import_locations_areas_file(name, filename)
-
-
 @job('default', timeout=15*60)
 def import_reconciled_task(name: str, filename: str) -> ImportResult:
+    '''
+    Import reconciled cases file (CSV/Excel format) task.
+
+    (:func:`hat.import_export.import_reconciled.import_reconciled_file`).
+    '''
     return import_reconciled_file(name, filename)
 
 
 @job('default', timeout=15*60)
 def import_synced_devices_task() -> ImportResult:
+    '''
+    Import synced devices data task.
+
+    (:func:`hat.import_export.import_synced.import_synced_devices`).
+
+    .. Note:: The task is executed every hour.
+    '''
     return import_synced_devices()
+
+
+@job('default', timeout=15*60)
+def import_locations_task(name: str, filename: str) -> ImportResult:
+    '''
+    Import villages file (DBF format) task.
+
+    (:func:`hat.import_export.import_locations.import_locations_file`).
+    '''
+    return import_locations_file(name, filename)
+
+
+@job('default', timeout=15*60)
+def import_locations_areas_task(name: str, filename: str) -> ImportResult:
+    '''
+    Import health areas file (DBF format) task.
+
+    (:func:`hat.import_export.import_locations.import_locations_areas_file`).
+    '''
+    return import_locations_areas_file(name, filename)
+
+
+@job('default', timeout=120*60)
+def reimport_task() -> List[EventStats]:
+    '''
+    Reimport task.
+
+    (:func:`hat.import_export.reimport.reimport`).
+    '''
+    return reimport()
 
 
 ################################################################################
@@ -62,6 +100,17 @@ def import_synced_devices_task() -> ImportResult:
 
 @job('default', timeout=15*60)
 def duplicates_task() -> None:
+    '''
+    Duplicates detection task.
+
+    Due to all the different sources it's possible and probable that the same HAT case
+    is contained in many files (encrypted backup, historial and even pharmacovigilance).
+    The import process cannot always detect them and creates the pertinent new entries.
+    This task tries to detect similarities between records and returns a list of possible
+    matches that could be ignored or merged.
+
+    .. Note:: The task is executed every night at 02:00.
+    '''
     with connection.cursor() as cursor:
         cursor.execute(duplicates_queries.makepairs())
 
@@ -72,11 +121,19 @@ def duplicates_task() -> None:
 
 @job('default', timeout=30*60)
 def dump_events_task() -> str:
-    from hat.import_export.dump import dump_events
+    '''
+    Export events database dump task.
+
+    (:func:`hat.import_export.dump.dump_events`).
+    '''
     return dump_events()
 
 
 @job('default', timeout=30*60)
 def load_events_dump_task(filename: str) -> None:
-    from hat.import_export.dump import load_events_dump
+    '''
+    Restore events database dump task.
+
+    (:func:`hat.import_export.dump.load_events_dump`).
+    '''
     load_events_dump(filename)

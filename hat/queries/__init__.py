@@ -1,7 +1,8 @@
 import os
 from django.db import connection
 from snaql.factory import Snaql
-from hat.import_export.typing import ResultValues
+
+from hat.cases.filters import screening_tests, confirmation_tests, test_values_in_order
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')
@@ -26,29 +27,11 @@ filters_queries = snaql_factory.load_queries('filters.sql')
 
 sql_context = {
     # list of tests used in screening sessions
-    'screening': (
-        'test_catt',
-        'test_rdt',
-    ),
-
+    'screening': screening_tests,
     # list of tests used to confirm the disease
-    'confirmation': (
-        'test_ctcwoo',
-        'test_ge',
-        'test_lcr',
-        'test_lymph_node_puncture',
-        'test_maect',
-        'test_pg',
-        'test_sf',
-    ),
-
-    # possible test results in order of importance
-    'results': (
-        ResultValues.positive.value,  # positive
-        ResultValues.negative.value,  # negative
-        ResultValues.absent.value,  # missing
-        ResultValues.missing.value,  # absent
-    ),
+    'confirmation': confirmation_tests,
+    # list of test values in order of importance
+    'results': test_values_in_order,
 }
 
 
@@ -60,5 +43,4 @@ def prepare_premigration() -> None:
 def prepare_postmigration() -> None:
     with connection.cursor() as cursor:
         cursor.execute(prepare_queries.run_postmigration(**sql_context))
-        #  cursor.execute(prepare_queries.prepare_views(**sql_context))
         cursor.execute(duplicates_queries.prepare())

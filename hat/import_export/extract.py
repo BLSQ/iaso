@@ -1,3 +1,19 @@
+'''
+Extract data
+------------
+
+This module extracts the data from all the available sources.
+
+Current supported sources are:
+
+- MS Access historic cases MDB files
+- Pharmacovigilance cases MDB files
+- Sense HAT Mobile App encrypted backup files
+- Sense HAT Mobile App data that were synced to couchdb
+- Reconciled cases CSV/XLSX files
+
+'''
+
 from typing import Dict, List, Union, Tuple
 from hat.common.typing import JsonType
 from pandas import DataFrame
@@ -13,10 +29,22 @@ from .mapping import IMPORT_CONFIG
 
 
 def extract_mdb_data(filename: str) -> Dict[str, str]:
+    '''
+    Receives the MDB file address, opens it and extracts the raw data.
+
+    The returned dict contains the raw data extracted from the MDB file.
+    '''
+
     return mdb.get_all_tables(filename)
 
 
 def extract_backup_data(filename: str) -> JsonType:
+    '''
+    Receives the backup file address, decrypts it and extracts the raw data.
+
+    The returned Json contains the raw data extracted from the backup file.
+    '''
+
     from django.conf import settings
     from hat.common.utils import run_cmd
     data = run_cmd(['./scripts/decrypt_mobilebackup.js', settings.MOBILE_KEY, filename])
@@ -24,6 +52,12 @@ def extract_backup_data(filename: str) -> JsonType:
 
 
 def extract_file_data(filename: str) -> Tuple[str, Union[Dict[str, str], JsonType]]:
+    '''
+    Receives the file address, reads it and extracts the raw data.
+
+    The returned tuple contains the raw data extracted from the file.
+    '''
+
     suffix = PurePath(filename).suffix.lower()
     if suffix in ['.mdb', '.accdb']:
         tables = extract_mdb_data(filename)
@@ -44,6 +78,12 @@ def extract_file_data(filename: str) -> Tuple[str, Union[Dict[str, str], JsonTyp
 
 
 def extract_reconciliation_file(filename: str) -> DataFrame:
+    '''
+    Receives the CSV/XLSX file address, reads it and extracts the raw data.
+
+    The returned DataFrame contains the raw data extracted from the backup file.
+    '''
+
     suffix = PurePath(filename).suffix.lower()
     if suffix == '.csv':
         return pandas.read_csv(filename)

@@ -22,14 +22,17 @@ from hat.cases.filters import \
     Q_confirmation, Q_confirmation_positive, Q_confirmation_negative, \
     Q_staging, Q_staging_stage1, Q_staging_stage2
 from hat.queries import stats_queries, microplanning_queries
+from hat.import_export.typing import ResultValues
 
 datasets = {}
 
 DATE_FORMAT = '%Y-%m-%d'
 
 test_results = {
-    'positive': True,
-    'negative': False,
+    'positive': ResultValues.positive.value,
+    'negative': ResultValues.negative.value,
+    'missing': ResultValues.missing.value,
+    'absent': ResultValues.absent.value,
 }
 
 

@@ -1,6 +1,7 @@
 import os
 from django.db import connection
 from snaql.factory import Snaql
+from hat.import_export.typing import ResultValues
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')
@@ -43,15 +44,21 @@ sql_context = {
 
     # possible test results in order of importance
     'results': (
-        'true',  # positive
-        'false',  # negative
+        ResultValues.positive.value,  # positive
+        ResultValues.negative.value,  # negative
+        ResultValues.absent.value,  # missing
+        ResultValues.missing.value,  # absent
     ),
 }
 
-print(sql_context)
 
-
-def prepare_db() -> None:
+def prepare_premigration() -> None:
     with connection.cursor() as cursor:
-        cursor.execute(prepare_queries.prepare_views(**sql_context))
+        cursor.execute(prepare_queries.run_premigration())
+
+
+def prepare_postmigration() -> None:
+    with connection.cursor() as cursor:
+        cursor.execute(prepare_queries.run_postmigration(**sql_context))
+        #  cursor.execute(prepare_queries.prepare_views(**sql_context))
         cursor.execute(duplicates_queries.prepare())

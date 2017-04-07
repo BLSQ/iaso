@@ -1,11 +1,17 @@
-{% sql 'prepare_views', note='Create any views' %}
-  {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
-  {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
-  {# CASCADE option will skip problems if the view is used in other views #}
+{% sql 'run_premigration', note='Delete old views' %}
+   {# The best way is to DROP a view and CREATE it again instead of CREATE OR REPLACE #}
+   {# CREATE OR REPLACE complains if the fields order is changed or one more is added in between #}
+   {# CASCADE option will skip problems if the view is used in other views #}
 
+   DROP VIEW IF EXISTS hat_event_view CASCADE;
+   DROP VIEW IF EXISTS cases_case_view CASCADE;
+   DROP VIEW IF EXISTS sync_devicedb_view CASCADE;
+
+{% endsql %}
+
+{% sql 'run_postmigration', note='Create any views' %}
   {# View joining the hat event tables #}
-  DROP VIEW IF EXISTS hat_event_view CASCADE;
-  CREATE VIEW hat_event_view AS
+  CREATE OR REPLACE VIEW hat_event_view AS
     SELECT E.id
          , E.stamp
          , E.table_name
@@ -55,8 +61,7 @@
 
 
   {# View of cases with aggregated results for test types #}
-  DROP VIEW IF EXISTS cases_case_view CASCADE;
-  CREATE VIEW cases_case_view AS
+  CREATE OR REPLACE VIEW cases_case_view AS
     SELECT *
 
          , DATE_TRUNC('day',   document_date) AS document_date_day
@@ -105,8 +110,7 @@
 
 
   {# View joining devices and aggregated cases by device #}
-  DROP VIEW IF EXISTS sync_devicedb_view CASCADE;
-  CREATE VIEW sync_devicedb_view AS
+  CREATE OR REPLACE VIEW sync_devicedb_view AS
     SELECT COALESCE(D.device_id, C.device_id)                      AS device_id
          , CASE WHEN D.device_id IS NULL THEN FALSE ELSE TRUE END  AS is_synced
          , regexp_split_to_array(D.last_synced_log_message, ' - ') AS last_synced_stats

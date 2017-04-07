@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Optional, cast
 from functools import reduce
 from enum import Enum
 from .utils import capitalize
+from .typing import ResultValues
 from pandas import DataFrame, Series
 import pandas
 
@@ -36,16 +37,22 @@ def historic_get_sex(x: Optional[str]) -> Optional[str]:
     }.get(cast(str, x), None)
 
 
-def historic_get_result(x: Optional[int]) -> Optional[bool]:
+def historic_get_result(x: Optional[int]) -> Optional[int]:
     if pandas.isnull(x) or x == 99:
         return None
-    return cast(int, x) == -1
+    if cast(int, x) == -1:
+        return ResultValues.positive.value
+    else:
+        return ResultValues.negative.value
 
 
-def historic_get_catt_blood_result(x: Optional[int]) -> Optional[bool]:
+def historic_get_catt_blood_result(x: Optional[int]) -> Optional[int]:
     if pandas.isnull(x) or x == 99:
         return None
-    return cast(int, x) < 0
+    if cast(int, x) < 0:
+        return ResultValues.positive.value
+    else:
+        return ResultValues.negative.value
 
 
 def historic_get_catt_dil_result(x: Optional[int]) -> Optional[str]:
@@ -125,10 +132,15 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
-def mobile_get_result(x: Optional[str]) -> Optional[bool]:
+result_values = {name: member.value for (name, member) in ResultValues.__members__.items()}
+
+
+def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    return cast(str, x) == 'positive'
+    if cast(str, x) in result_values:
+        return ResultValues[cast(str, x)].value
+    return None
 
 
 def mobile_get_age(table: DataFrame, field: str) -> int:
@@ -155,20 +167,25 @@ def pv_get_sex(x: Optional[str]) -> Optional[str]:
     }.get(cast(str, x), None)
 
 
-def pv_get_result(x: Optional[str]) -> Optional[bool]:
+def pv_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     # 0, +, NF
-    return cast(str, x) == '+'
+    if cast(str, x) == '+':
+        return ResultValues.positive.value
+    elif cast(str, x) == 'NF':
+        return ResultValues.missing.value
+    else:
+        return ResultValues.negative.value
 
 
-def pv_get_catt_blood_result(x: Optional[str]) -> Optional[bool]:
+def pv_get_catt_blood_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    if cast(str, x) == 'NEG':
-        return False
     # POS+, POS++, POS+++
-    return True
+    if cast(str, x) in ['POS+', 'POS++', 'POS+++']:
+        return ResultValues.positive.value
+    return ResultValues.negative.value
 
 
 def pv_get_pl_result(x: Optional[str]) -> Optional[str]:
@@ -252,12 +269,15 @@ def pv_get_followup_test_result(main_table: DataFrame,
 ################################################################################
 
 
-def reduce_test_result(a: Optional[bool], b: Optional[bool]) -> Optional[bool]:
-    # Values can be True, False or null. We have to handle null explicitely
-    # to not accidentially have this return null in favor of False.
+def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
+    # Values can be positive, negative, missing and absent or null.
+    # We have to handle null explicitely
+    # to not accidentially have this return null in favor of missing.
     if pandas.isnull(b):
         return a
-    return a or b
+    if pandas.isnull(a):
+        return b
+    return max(a, b)
 
 
 ################################################################################

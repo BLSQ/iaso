@@ -263,8 +263,18 @@ If everything fails… **be drastic!**
     docker-compose stop && docker-compose start
 
 
-**More D R A S T I C ! ! !**
+**EXTREMELY  DRASTIC!!!**
 
 .. code:: shell
 
-    docker-compose kill && docker-compose up --build
+    # kill containers
+    docker-compose kill
+    # remove `hat` container
+    docker-compose rm -f hat
+    # build containers
+    docker-compose build
+    # start-up containers
+    docker-compose up
+
+.. warning:: NEVER remove **db** or **couchdb** containers without backup or
+             you'll loose all the data!!!

@@ -18,7 +18,6 @@ ENV HAT_COMMIT "$git_commit"
 ################################################################################
 
 COPY build_scripts/docker-setup.sh build_scripts/apt-packages.txt /tmp/
-COPY build_scripts/npmrc /root/.npmrc
 
 RUN /tmp/docker-setup.sh
 
@@ -38,10 +37,9 @@ COPY requirements.txt /opt/app/requirements.txt
 RUN pip install --quiet -r requirements.txt
 
 # NODE Deps, JS/CSS production build
-COPY .npmrc /opt/app
 COPY package.json /opt/app/package.json
 RUN npm install --loglevel silent
-RUN rm -f .npmrc
+
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
 COPY . /opt/app

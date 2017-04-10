@@ -10,6 +10,7 @@ set -x
 # Do not buffer stdout so we see log output immediatly
 export PYTHONUNBUFFERED=true
 
+# A minimal init system for Linux containers
 # https://github.com/Yelp/dumb-init/releases
 export DUMB_INIT=1.2.0
 
@@ -36,19 +37,21 @@ cat /tmp/apt-packages.txt | xargs apt-get -qq --yes --force-yes install
 
 ################################################################################
 # install nodejs, taken from the official docker nodejs Dockerfile
-# gpg keys listed at https://github.com/nodejs/node
 
+# gpg keys listed at https://github.com/nodejs/node#release-team
 for key in \
-    9554F04D7259F04124DE6B476D5A82AC7E37093B \
-    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-    0034A06D9D9B0064CE8ADF6BF1747F4AD2306D93 \
-    FD3A5288F042B6850C66B31F09FE44734EB7990E \
+    56730D5401028683275BD23C23EFEFE93C4CFFFE \
     71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+    9554F04D7259F04124DE6B476D5A82AC7E37093B \
     B9AE9905FFD7803F25714661B63B535A4C206CA9 \
     C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+    FD3A5288F042B6850C66B31F09FE44734EB7990E \
   ; do \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
+    gpg --keyserver pgp.mit.edu                --recv-keys "$key" || \
+    gpg --keyserver keyserver.pgp.com          --recv-keys "$key" ; \
   done
 
 curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz"

@@ -26,8 +26,9 @@
                                     ON DELETE CASCADE,
     filename      text            NOT NULL,
     file_hash     text            NOT NULL UNIQUE,
-    contents      bytea           NOT NULL,
-    source_type   text            NOT NULL
+    contents      bytea           NULL,
+    source_type   text            NOT NULL,
+    data          jsonb           NOT NULL DEFAULT '{}'::jsonb
   );
 
   CREATE TABLE hat_import_reconciled_file_event (
@@ -54,14 +55,4 @@
     device_id     text            NOT NULL
   );
 
-  {# cleanup some tables and triggers from pre migration times #}
-  DROP TRIGGER IF EXISTS cases_case_action_update ON cases_case;
-  DROP TRIGGER IF EXISTS cases_case_action_delete ON cases_case;
-
-  DROP FUNCTION IF EXISTS cases_case_update();
-  DROP FUNCTION IF EXISTS cases_case_delete();
-
-  DROP VIEW  IF EXISTS cases_history_log_view;
-  DROP TABLE IF EXISTS cases_history_log_document;
-  DROP TABLE IF EXISTS cases_history_log;
 {% endsql %}

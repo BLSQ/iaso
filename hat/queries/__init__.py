@@ -17,7 +17,6 @@ prepare_queries = snaql_factory.load_queries('prepare_db.sql')
 event_log_queries = snaql_factory.load_queries('event_log.sql')
 
 migration1 = snaql_factory.load_queries('migration_0001.sql')
-migration2 = snaql_factory.load_queries('migration_0002.sql')
 
 # export
 export_queries = snaql_factory.load_queries('export.sql')

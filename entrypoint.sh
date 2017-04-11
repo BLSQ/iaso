@@ -4,15 +4,20 @@ set -e
 show_help() {
   echo """
   Commands
+  ---------------------------------------------------------------
+  
   test             : run tests
   test_js          : run javascript tests
   test_integration : run integration tests
-  gen_docs         : generate docs
+  
+  gen_docs         : generate app docs
+  
   start            : start django + uwsgi
   start_dev        : start django devserver
   start_webpack    : start webpack server (only in DEV mode)
   start_rq         : start rq worker
   start_jupyter    : start jupyter notebook
+  
   manage           : run django manage.py
   eval             : eval shell command
   bash             : run bash
@@ -51,8 +56,8 @@ case "$1" in
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
-    ./manage.py collectstatic --noinput
     ./scripts/gen_docs.sh
+    ./manage.py collectstatic --noinput
     ./scripts/start_web.sh
   ;;
   "start_dev" )

@@ -91,6 +91,8 @@ Technical notes
 .. toctree::
    :maxdepth: 2
 
+   Architecture diagram <diagram.rst>
+
    Data sources <model>
    Importing and exporting data <import_export/index>
    Sync devices data <sync/index>

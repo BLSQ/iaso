@@ -23,12 +23,12 @@ def head(path: str, *args: Any, **kwargs: Any) -> Response:
 
 def post(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
-    return requests.post(url + '/' + path, *args, **ks)
+    return requests.post(url + '/' + path, *args, **ks)  # type: ignore
 
 
 def put(path: str, *args: Any, **kwargs: Any) -> Response:
     ks = {**defaults, **kwargs}
-    return requests.put(url + '/' + path, *args, **ks)
+    return requests.put(url + '/' + path, *args, **ks)  # type: ignore
 
 
 def delete(path: str, **kwargs: Any) -> Response:

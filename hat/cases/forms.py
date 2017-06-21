@@ -11,15 +11,15 @@ DATE_FORMAT = '%Y-%m-%d'
 class FieldChoice(NamedTuple):
     id: str
     label: str
-    filter: Callable[[QuerySet, Any], None]
+    filter: Callable[[QuerySet, Any], QuerySet]
     choices: Optional[List[Tuple[str, str]]]
 
 
 class OrderChoice(NamedTuple):
     id: str
     label: str
-    asc: Callable[[QuerySet], None]
-    desc: Callable[[QuerySet], None]
+    asc: Callable[[QuerySet], QuerySet]
+    desc: Callable[[QuerySet], QuerySet]
 
 
 class ColumnChoice(NamedTuple):

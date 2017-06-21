@@ -565,4 +565,4 @@ class DatasetViewSet(viewsets.ViewSet):
         params = dict(request.GET.items())
         if not item['params_schema'] is None:
             DefaultValidator(item['params_schema']).validate(params)
-        return Response(item['getter'](request, params))
+        return Response(item['getter'](request, params))  # type: ignore

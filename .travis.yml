@@ -1,9 +1,10 @@
 language: python
 
 python:
-  - '3.6'
+  - '3.5'
 
 sudo: required
+group: edge
 
 # Integration tests are temporarily disabled
 # addons:
@@ -11,6 +12,7 @@ sudo: required
 
 services:
   - docker
+
 env:
   global:
     - DOCKER_COMPOSE_VERSION: 1.11.2
@@ -18,16 +20,12 @@ env:
     - DOCKER_IMAGE_NAME: sense-hat # the name of the image
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -qq --yes --force-yes docker-engine gettext-base
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-  - sudo service docker restart
   # need to happen before first build
   - "./build_scripts/tfx_download.sh"
+
 # Skip install step
 install: true
+
 script:
   - "docker-compose run hat test" # && docker-compose run -p 8081:8081 hat test_integration"
 

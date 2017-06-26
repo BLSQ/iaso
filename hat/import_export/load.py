@@ -205,7 +205,8 @@ def create_cases(df: DataFrame) -> None:
                 for v in row:
                     name = str(df2.columns[index])
                     index = index + 1
-                    if pandas.isnull(v):
+                    # treat null and empty strings as null
+                    if pandas.isnull(v) or v == '':
                         values.append('NULL')
                     elif name in mapping:
                         values.append(mapping[name](v))

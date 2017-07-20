@@ -5,19 +5,19 @@ show_help() {
   echo """
   Commands
   ---------------------------------------------------------------
-  
+
   test             : run tests
   test_js          : run javascript tests
   test_integration : run integration tests
-  
+
   gen_docs         : generate app docs
-  
+
   start            : start django + uwsgi
   start_dev        : start django devserver
   start_webpack    : start webpack server (only in DEV mode)
   start_rq         : start rq worker
   start_jupyter    : start jupyter notebook
-  
+
   manage           : run django manage.py
   eval             : eval shell command
   bash             : run bash
@@ -38,6 +38,11 @@ case "$1" in
     # Run python tests and pass on any args to e.g. run individual tests
     ./manage.py test --exclude-tag selenium "${@:2}"
     npm run mocha
+  ;;
+  "test_lint" )
+    export TESTING=true
+    flake8 ./hat -v
+    npm run lint
   ;;
   "test_js" )
     npm run test

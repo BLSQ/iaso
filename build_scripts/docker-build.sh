@@ -47,5 +47,5 @@ if [ "${PR}" = "false" ] && [ "${BRANCH}" = "development" -o "${BRANCH}" = "mast
     exit 0
   esac
 
-  eb deploy "${BEANSTALK_ENV}" -l "${TAG}"
+  eb deploy "${BEANSTALK_ENV}" -l "${TAG}" --timeout 30
 fi

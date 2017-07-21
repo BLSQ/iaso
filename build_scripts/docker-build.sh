@@ -4,11 +4,22 @@ set -x
 
 TAG="${TRAVIS_TAG}"
 COMMIT="${TRAVIS_COMMIT}"
-BRANCH="${TRAVIS_BRANCH}"
 PR="${TRAVIS_PULL_REQUEST}"
 
+case "${TRAVIS_BRANCH}" in
+    "master")
+      ENV="prod"
+    ;;
+    "staging")
+      ENV="staging"
+    ;;
+    "development")
+      ENV="development"
+    ;;
+esac
+
 export TAG
-export BRANCH
+export ENV
 
 if [ -z "${TAG}" ]; then
     echo "No tags, tagging as: $COMMIT"
@@ -18,7 +29,7 @@ else
 fi
 
 # if this is on the master/dev branch and is not a PR, deploy it
-if [ "${PR}" = "false" ] && [ "${BRANCH}" = "development" -o "${BRANCH}" = "master" -o "${BRANCH}" = "staging" ]; then
+if [ "${PR}" = "false" ] && [ "${TRAVIS_BRANCH}" = "development" -o "${TRAVIS_BRANCH}" = "master" -o "${TRAVIS_BRANCH}" = "staging" ]; then
   aws ecr get-login --region eu-west-1 | bash
 
   docker tag sense-hat:latest "${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_NAME}:${TAG}"
@@ -32,7 +43,7 @@ if [ "${PR}" = "false" ] && [ "${BRANCH}" = "development" -o "${BRANCH}" = "mast
   zip -FSj build_scripts/deploy.zip build_scripts/Dockerrun.aws.json
   zip -r build_scripts/deploy.zip .ebextensions/
 
-  case "$BRANCH" in
+  case "$TRAVIS_BRANCH" in
     "master")
       BEANSTALK_ENV="sense-hat-prod"
     ;;
@@ -43,7 +54,7 @@ if [ "${PR}" = "false" ] && [ "${BRANCH}" = "development" -o "${BRANCH}" = "mast
       BEANSTALK_ENV="sense-hat-development"
     ;;
     *)
-    echo "cannot find environment for ${BRANCH}"
+    echo "cannot find environment for ${TRAVIS_BRANCH}"
     exit 0
   esac
 

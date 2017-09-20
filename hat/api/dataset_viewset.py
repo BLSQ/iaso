@@ -510,7 +510,7 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
         restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        sql_context['zones_sante'] = restricted_zones
+        sql_context['zones_sante'] = ','.join(restricted_zones).lower().split(',')
     elif 'location' in params:
         sql_context['zones_sante'] = params['location'].lower().split(',')
 

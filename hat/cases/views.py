@@ -351,7 +351,12 @@ def cases_list(request: HttpRequest) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def analysis(request: HttpRequest) -> HttpResponse:
-    queryset = CaseView.objects
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    if restrict_to_zs:
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        queryset = CaseView.objects.filter(ZS__in=restricted_zones)
+    else:
+        queryset = CaseView.objects
 
     locations_filters = {
         'ZS': lambda q, v: q.filter(ZS=v),

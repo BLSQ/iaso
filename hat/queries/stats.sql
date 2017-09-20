@@ -56,9 +56,9 @@
          WHERE document_date >= {{ date_from|guards.date }}
            AND document_date <  {{ date_to|guards.date }}
 
-          {% if zone_sante is defined %}
-           AND "ZS" = {{ zone_sante|guards.string }}
-          {% endif %}
+           {% if zones_sante is defined %}
+            AND "ZS" IN ('{{ zones_sante|join("','") }}')
+           {% endif %}
 
           {% if source is defined %}
            AND source ILIKE {{ source|guards.string }}
@@ -100,8 +100,8 @@
          WHERE document_date >= {{ date_from|guards.date }}
            AND document_date <  {{ date_to|guards.date }}
 
-          {% if zone_sante is defined %}
-           AND "ZS" = {{ zone_sante|guards.string }}
+          {% if zones_sante is defined %}
+           AND "ZS" IN ('{{ zones_sante|join("','") }}')
           {% endif %}
 
           {% if source is defined %}

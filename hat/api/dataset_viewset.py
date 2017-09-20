@@ -13,7 +13,6 @@
 .. |p_source|     replace:: Filters results by document source. -- |sources|
 
 '''
-
 from typing import Dict, Tuple, List, Any, Callable, Optional
 from hat.common.typing import JsonType
 from functools import wraps
@@ -39,6 +38,8 @@ from hat.cases.filters import \
     Q_staging, Q_staging_stage1, Q_staging_stage2, \
     test_results
 from hat.queries import stats_queries, microplanning_queries
+
+from hat.cases.utils import create_list_from_restrict_to_zs
 
 datasets = {}
 
@@ -125,7 +126,8 @@ def get_cases_filtered(request: Request,
 
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        cases = cases.filter(ZS=restrict_to_zs)
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        cases = cases.filter(ZS__in=restricted_zones)
     else:
         location = get_param_value('location')
         if location is not None:
@@ -375,9 +377,10 @@ def population_coverage(request: Request, params: Dict[str, str]) -> JsonType:
     }
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        sql_context['zone_sante'] = restrict_to_zs
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        sql_context['zones_sante'] = restricted_zones
     elif 'location' in params:
-        sql_context['zone_sante'] = params['location']
+        sql_context['zones_sante'] = [params['location']]
 
     if 'source' in params:
         sql_context['source'] = params['source']
@@ -438,9 +441,10 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[JsonType]:
     }
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        sql_context['zone_sante'] = restrict_to_zs
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        sql_context['zones_sante'] = restricted_zones
     elif 'location' in params:
-        sql_context['zone_sante'] = params['location']
+        sql_context['zones_sante'] = [params['location']]
 
     if 'source' in params:
         sql_context['source'] = params['source']
@@ -505,7 +509,8 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]
 
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        sql_context['zones_sante'] = [restrict_to_zs.lower()]
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        sql_context['zones_sante'] = restricted_zones
     elif 'location' in params:
         sql_context['zones_sante'] = params['location'].lower().split(',')
 
@@ -538,7 +543,8 @@ def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
     locations = Location.objects.order_by('ZS')
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        locations = locations.filter(ZS=restrict_to_zs)
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        locations = locations.filter(ZS__in=restricted_zones)
 
     return locations.values_list('ZS', flat=True).distinct()
 

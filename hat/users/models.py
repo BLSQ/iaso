@@ -30,7 +30,7 @@ class Profile(models.Model):
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    restrict_to_zs = models.TextField(null=True)
+    restrict_to_zs = models.TextField(null=True, blank=True)
 
 
 @receiver(post_save, sender=User)

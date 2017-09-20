@@ -5,6 +5,8 @@ from django.utils.translation import ugettext as _
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 
+from .utils import create_list_from_restrict_to_zs
+
 DATE_FORMAT = '%Y-%m-%d'
 
 
@@ -33,7 +35,7 @@ class CasesFilterForm(forms.Form):
                  custom_filters: Optional[List[FieldChoice]],
                  orders_choices: Optional[List[Tuple[str, str]]],
                  columns: Optional[List[ColumnChoice]],
-                 restricted: Dict[str, Any],
+                 restricted: List[str],
                  *args: Any, **kwargs: Any) -> None:
         super(CasesFilterForm, self).__init__(*args, **kwargs)
 
@@ -48,8 +50,13 @@ class CasesFilterForm(forms.Form):
 
         ########################################################################
         # location fields
-
-        if 'ZS' not in restricted:
+        if restricted:
+            self.fields['ZS'] = forms.ChoiceField(
+                choices=[none_choice] + [(l, l) for l in restricted],
+                widget=forms.Select(attrs=select_attrs),
+                required=False,
+            )
+        else:
             self.fields['ZS'] = forms.ChoiceField(
                 choices=[none_choice] + [(l, l) for l in locations_choices[0]],
                 widget=forms.Select(attrs=select_attrs),
@@ -149,13 +156,12 @@ def filter_and_create_form(
 
     locations_choices = [locations_list.order_by('ZS').values_list('ZS', flat=True).distinct()]
 
-    restricted = {}
+    restricted = []  # type: List[str]
     restrict_to_zs = request.user.profile.restrict_to_zs
     if restrict_to_zs:
-        restricted['ZS'] = restrict_to_zs
-        ZS = restrict_to_zs
-    else:
-        ZS = request.GET.get('ZS', None)
+        restricted = create_list_from_restrict_to_zs(restrict_to_zs)
+
+    ZS = request.GET.get('ZS', None)
 
     AS = None
     village = None

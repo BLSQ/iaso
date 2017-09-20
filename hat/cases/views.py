@@ -18,6 +18,8 @@ from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice
 from .models import Case, CaseView, DuplicatesPair
 
+from .utils import create_list_from_restrict_to_zs
+
 
 @login_required()
 @permission_required('cases.reconcile_duplicates')
@@ -219,7 +221,13 @@ def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET', 'POST'])
 def cases_list(request: HttpRequest) -> HttpResponse:
-    queryset = CaseView.objects.order_by('id')
+    restrict_to_zs = request.user.profile.restrict_to_zs
+    # To check this is not an empty string:
+    if restrict_to_zs:
+        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
+        queryset = CaseView.objects.filter(ZS__in=restricted_zones).order_by('id')
+    else:
+        queryset = CaseView.objects.order_by('id')
 
     full_access = request.user.has_perm('cases.view_full')
 

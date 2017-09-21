@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
+from django.utils.translation import ugettext as _
 
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
@@ -30,7 +31,12 @@ class Profile(models.Model):
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    restrict_to_zs = models.TextField(null=True)
+    restrict_to_zs = models.TextField(
+        null=True,
+        blank=True,
+        help_text=_('When including Yasa Bonga, please also add Yassa Bonga\
+         or Yasa-Bonga to take into account spelling differences.')
+    )
 
 
 @receiver(post_save, sender=User)

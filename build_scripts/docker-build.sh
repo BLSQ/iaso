@@ -30,7 +30,7 @@ fi
 
 # if this is on the master/dev branch and is not a PR, deploy it
 if [ "${PR}" = "false" ] && [ "${TRAVIS_BRANCH}" = "development" -o "${TRAVIS_BRANCH}" = "master" -o "${TRAVIS_BRANCH}" = "staging" ]; then
-  aws ecr get-login --region eu-west-1 | bash
+  aws ecr get-login --region eu-west-1 --no-include-email | bash
 
   docker tag sense-hat:latest "${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_NAME}:${TAG}"
   docker push "${DOCKER_IMAGE_REPO}/${DOCKER_IMAGE_NAME}:${TAG}"

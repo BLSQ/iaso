@@ -41,6 +41,39 @@
             {% endfor %}
           </tbody>
         </table>
+      {% if images %}
+          <br/>
+          <h2>Images</h2>
+          <table class="table--minimised">
+          <tbody>
+          {% for image in images %}
+              <tr>
+                <td>{{ image.upload_date|date }}</td>
+                <td><img src="{{ image.image.url }}" width="200px"/></b></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+      {% endif %}
+      {% if videos %}
+          <br/>
+          <h2>Videos</h2>
+          <table class="table--minimised">
+          <tbody>
+          {% for video in videos %}
+              <tr>
+                <td>{{ video.upload_date|date }}</td>
+                  <td><video width="640" height="264" controls="controls">
+                      <source src="{{ video.video.url }}" type="video/mp4">
+                  </video></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+
+
+      {% endif %}
+
       </div>
     </div>
   </div>

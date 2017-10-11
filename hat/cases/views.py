@@ -17,6 +17,7 @@ from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice
 from .models import Case, CaseView, DuplicatesPair
+from ..sync.models import ImageUpload, VideoUpload
 
 from .utils import create_list_from_restrict_to_zs
 
@@ -205,6 +206,10 @@ def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
 def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:cases_list')
     case = Case.objects.get(document_id=doc_id)
+
+    images = ImageUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
+    videos = VideoUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
+
     if request.user.has_perm('cases.view_full'):
         fields = sorted(FULL_EXPORT_FIELDS)
     else:
@@ -214,6 +219,8 @@ def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
         'back_link': back_link,
         'case': case,
         'fields': fields,
+        'images': images,
+        'videos': videos
     })
 
 

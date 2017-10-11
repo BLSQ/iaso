@@ -12,6 +12,10 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from django.http.request import HttpRequest
 from django.http import HttpResponse
+from django.http import JsonResponse
+from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 import logging
 
 from .couchdb_helpers import create_or_update_user
@@ -155,3 +159,31 @@ def signin(request: HttpRequest) -> HttpResponse:
         'url': request.build_absolute_uri('/_couchdb/' + device_db.db_name)
     }
     return Response(payload, status.HTTP_201_CREATED)
+
+
+@csrf_exempt
+@api_view(http_method_names=['POST'])
+@throttle_classes([AnonRateThrottle])
+@authentication_classes([])
+@permission_classes([])
+def image_upload(request: HttpRequest) -> HttpResponse:
+    img = ImageUploadForm(request.POST, request.FILES)
+    if img.is_valid():
+        img.save()
+        return JsonResponse({"Result": "Upload ok"})
+    else:
+        return JsonResponse(img.errors, status=400)
+
+
+@csrf_exempt
+@api_view(http_method_names=['POST'])
+@throttle_classes([AnonRateThrottle])
+@authentication_classes([])
+@permission_classes([])
+def video_upload(request: HttpRequest) -> HttpResponse:
+    video_form = ImageUploadForm(request.POST, request.FILES)
+    if video_form.is_valid():
+        video_form.save()
+        return JsonResponse({"Result": "Upload ok"})
+    else:
+        return JsonResponse(video_form.errors, status=400)

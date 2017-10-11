@@ -1,7 +1,8 @@
 import logging
-from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from django.db import models
+from django.forms import ModelForm
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -90,3 +91,31 @@ class MobileUser(models.Model):
 def mobile_user_post_delete(sender, instance, *args, **kwargs):  # type: ignore
     # When a Mobile User is deleted, delete the CouchDB user to revoke sync access
     delete_user(instance.email)
+
+
+class ImageUpload(models.Model):
+    participant_uuid = models.TextField()
+    hat_id = models.TextField()
+    document_id = models.TextField()
+    image = models.FileField(upload_to="images/")
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+
+class VideoUpload(models.Model):
+    participant_uuid = models.TextField()
+    hat_id = models.TextField()
+    document_id = models.TextField()
+    video = models.FileField(upload_to="videos/")
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+
+class ImageUploadForm(ModelForm):
+    class Meta:
+        model = ImageUpload
+        fields = ('image', 'participant_uuid', 'hat_id', 'document_id')
+
+
+class VideoUploadForm(ModelForm):
+    class Meta:
+        model = VideoUpload
+        fields = ('video', 'participant_uuid', 'hat_id', 'document_id')

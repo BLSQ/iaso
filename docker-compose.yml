@@ -55,6 +55,8 @@ services:
   db:
     image: postgres:9.5
     logging: *hat_logging
+    ports:
+      - "5433:5432"
 
   couchdb:
     image: couchdb:1.6

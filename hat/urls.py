@@ -2,6 +2,8 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin, auth
 from django.views.generic import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='dashboard:home', permanent=False), name='index'),
@@ -18,6 +20,8 @@ urlpatterns = [
     url(r'^rq/', include('django_rq.urls')),
     url(r'^sync/', include('hat.sync.urls', 'sync')),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar

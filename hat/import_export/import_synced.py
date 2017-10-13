@@ -59,6 +59,10 @@ def import_synced_devices() -> List[ImportResult]:
             device.last_synced_log_status = str(ex)
         else:
             log_sync_import(stats, docs, device.device_id)
+
+        results.append(result)
+        if stats.total:
+            device.last_synced_date = timezone.now()
             device.last_synced_log_status = 'success'
             device.last_synced_seq = data['last_seq']
             device.last_synced_log_message = '{} - {} - {} - {}'.format(
@@ -67,9 +71,7 @@ def import_synced_devices() -> List[ImportResult]:
                 stats.updated,
                 stats.deleted,
             )
-        results.append(result)
-        device.last_synced_date = timezone.now()
-        device.save()
+            device.save()
 
     return results
 

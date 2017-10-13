@@ -27,6 +27,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/apps/MonthlyReport/index'
     ],
+    'teams_devices': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/TeamsDevices/index'
+    ],
     'stats': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',

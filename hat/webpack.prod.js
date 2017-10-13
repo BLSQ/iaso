@@ -18,7 +18,8 @@ module.exports = {
     'styles': './assets/css/index.scss',
     'microplanning': './assets/js/apps/Microplanning/index',
     'monthly_report': './assets/js/apps/MonthlyReport/index',
-    'stats': './assets/js/apps/Stats/index'
+    'stats': './assets/js/apps/Stats/index',
+    'teams_devices': './assets/js/apps/TeamsDevices/index',
   },
 
   output: {

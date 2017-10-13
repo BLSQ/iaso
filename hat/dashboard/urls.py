@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^monthly-report/.*$', views.monthly_report, name='monthly_report'),
     url(r'^stats/.*$', views.stats, name='stats'),
     url(r'^microplanning/.*$', views.microplanning, name='microplanning'),
+    url(r'^teams-devices/.*$', views.teams_devices, name='teams-devices'),
 ]

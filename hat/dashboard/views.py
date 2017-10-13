@@ -50,3 +50,26 @@ def stats(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def microplanning(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/microplanning.html')
+
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def teams_devices(request: HttpRequest) -> HttpResponse:
+    # Use the start of tomorrow as the maxium date to omit records with wrong future dates
+    today = datetime.today()
+    max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    dates = CaseView.objects \
+                    .filter(source__icontains='mobile') \
+                    .filter(document_date__isnull=False) \
+                    .filter(document_date__lt=max_date) \
+                    .order_by('document_date_month') \
+                    .values_list('document_date_month', flat=True) \
+                    .distinct()
+
+    json_data = json.dumps({
+        # dates formatted as 2014-06
+        'dates': [d.strftime('%Y-%m') for d in dates]
+    })
+
+    return render(request, 'dashboard/teams_devices.html', {'json_data': json_data})

@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db import models
 from django.forms import ModelForm
+from django.utils import timezone
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ class DeviceDB(models.Model):
     def db_name(self) -> str:
         ''' Returns the device CouchDB database name. '''
         return generate_db_name(self.device_id)
+
+    def days_since_sync(self):
+        return (timezone.now() - self.last_synced_date).days
 
 
 @receiver(post_save, sender=DeviceDB)

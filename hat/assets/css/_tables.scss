@@ -15,7 +15,6 @@ table {
   }
 }
 
-
 th {
   @include table-cell-styles;
   background: $light-gray;
@@ -30,6 +29,22 @@ td {
   background: $background-highlight-gray;
 
 }
+
+td.error {
+  background: $red;
+  color: white;
+}
+
+td.warning {
+  background: $orange;
+  color: white;
+}
+
+td.ok {
+  background: $green;
+  color: white;
+}
+
 tr:first-child td {
   border-top:1px solid $light-gray;
 }

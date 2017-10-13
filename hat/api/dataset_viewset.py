@@ -31,6 +31,7 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 
 from hat.cases.models import CaseView, Location
+from hat.sync.models import DeviceDB
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
     Q_screening, Q_screening_positive, Q_screening_negative, \
@@ -296,6 +297,22 @@ def campaign_meta(request: Request, params: Dict[str, str]) -> JsonType:
         'as_visited': cases.values('ZS', 'AS').distinct().count(),
         'villages_visited': cases.values('ZS', 'AS', 'village').distinct().count()
     }
+
+
+@dataset(params_schema=params_schema)
+def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
+    devices = DeviceDB.objects.order_by("-last_synced_date").order_by('last_synced_date')
+    res = []
+    for device in devices:
+        device_dict = {
+                   'last_synced_date': device.last_synced_date,
+                   'last_synced_log_message': device.last_synced_log_message,
+                   'device_id': device.device_id,
+                   'days_since_sync': device.days_since_sync()
+
+        }
+        res.append(device_dict)
+    return res
 
 
 @dataset(params_schema=params_schema)

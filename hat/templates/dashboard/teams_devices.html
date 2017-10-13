@@ -1,0 +1,31 @@
+{% extends 'app.html' %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans 'Teams/Devices Monitoring' %}</h1>
+{% endblock %}
+
+{% block content %}
+
+  <div class="content">
+    <div id="app"></div>
+  </div>
+
+  {% render_bundle 'common' %}
+  {% render_bundle 'teams_devices' %}
+  <script>
+    {% comment %}
+      The Monthly report app requires a config object populated via django
+      The app is started manually with that config:
+    {% endcomment %}
+    HAT.teams_devices.default(
+      {{ json_data|safe }},
+      document.getElementById('app'),
+      '/dashboard/teams-devices/'
+    )
+  </script>
+
+  {% include 'data_sources.html' with mobile='true' only %}
+
+{% endblock %}

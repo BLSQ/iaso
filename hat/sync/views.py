@@ -13,9 +13,11 @@ from rest_framework.response import Response
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm
-from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required, permission_required
+from django.shortcuts import render, get_object_or_404 ,redirect
+
+from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
+
 import logging
 
 from .couchdb_helpers import create_or_update_user
@@ -187,3 +189,27 @@ def video_upload(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"Result": "Upload ok"})
     else:
         return JsonResponse(video_form.errors, status=400)
+
+
+@login_required
+@csrf_exempt
+def device_event_form(request: HttpRequest, device_id) -> HttpResponse:
+    if request.method == "POST":
+        form = DeviceEventForm(request.POST)
+        if form.is_valid():
+
+            device_event = form.save(commit=False)
+            device_event.reporter = request.user
+            device_event.device_id = device_id
+            device_event.save()
+            return redirect("/dashboard/teams-devices")
+        else:
+            return JsonResponse(form.errors, status=400)
+    else:
+        form = DeviceEventForm()
+    return render(request, 'devices/device_event_form.html',
+                              {'user': request.user, 'form': form}
+                              )
+
+
+

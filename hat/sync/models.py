@@ -3,7 +3,9 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db import models
 from django.forms import ModelForm
+from django.contrib.auth.models import User
 from django.utils import timezone
+
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -34,6 +36,9 @@ class DeviceDB(models.Model):
 
     def days_since_sync(self):
         return (timezone.now() - self.last_synced_date).days
+
+    def __str__(self):
+        return self.device_id
 
 
 @receiver(post_save, sender=DeviceDB)
@@ -78,6 +83,54 @@ class DeviceDBView(models.Model):
     class Meta:
         managed = False
         db_table = 'sync_devicedb_view'
+
+
+class DeviceStatus(models.Model):
+    label = models.TextField()
+
+    def __str__(self):
+        return self.label
+
+
+class DeviceAction(models.Model):
+    label = models.TextField()
+
+    def __str__(self):
+        return self.label
+
+
+class DeviceEvent(models.Model):
+    STATUS_CHANGE = 0
+    ACTION = 1
+    COMMENT = 2
+
+    EVENT_TYPES = (
+        (STATUS_CHANGE, 'Status Change'),
+        (ACTION, 'Action'),
+        (COMMENT, 'Comment')
+    )
+
+    device = models.ForeignKey(DeviceDB)
+    date = models.DateTimeField(null=True, auto_now_add=True)
+    status = models.ForeignKey(DeviceStatus, null=True, blank=True)
+    action = models.ForeignKey(DeviceAction, null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    event_type = models.IntegerField(choices=EVENT_TYPES, default=STATUS_CHANGE)
+    reporter = models.ForeignKey(User, null=True)
+
+    def __str__(self):
+        return ("event %s - device %s - status %s - action %s - comment %s" % (self.event_type,
+                                                                               self.device_id,
+                                                                               self.status,
+                                                                               self.action,
+                                                                               self.comment
+                                                                               ))
+
+
+class DeviceEventForm(ModelForm):
+    class Meta:
+        model = DeviceEvent
+        fields = ('status', 'action', 'comment', 'event_type')
 
 
 class MobileUser(models.Model):

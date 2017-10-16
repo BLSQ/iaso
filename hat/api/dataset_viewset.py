@@ -31,7 +31,7 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 
 from hat.cases.models import CaseView, Location
-from hat.sync.models import DeviceDB
+from hat.sync.models import DeviceDB, DeviceEvent
 from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import \
     Q_screening, Q_screening_positive, Q_screening_negative, \
@@ -92,6 +92,7 @@ params_schema = {
         'location': {'type': 'string'},
         'source': {'type': 'string'},
         'offset': {'type': 'string'},
+        'device_id': {'type': 'string'}
     },
     'additionalProperties': False,
 }
@@ -301,18 +302,33 @@ def campaign_meta(request: Request, params: Dict[str, str]) -> JsonType:
 
 @dataset(params_schema=params_schema)
 def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
+    print(params)
     devices = DeviceDB.objects.order_by("-last_synced_date").order_by('last_synced_date')
+
+
     res = []
     for device in devices:
+        event = DeviceEvent.objects.filter(device=device, event_type=DeviceEvent.STATUS_CHANGE).order_by('date').last()
+        status_label = None,
+        if event:
+            status_label = event.status.label
         device_dict = {
                    'last_synced_date': device.last_synced_date,
                    'last_synced_log_message': device.last_synced_log_message,
                    'device_id': device.device_id,
-                   'days_since_sync': device.days_since_sync()
+                   'days_since_sync': device.days_since_sync(),
+                   'last_status': status_label,
+                   'id': device.id
 
         }
         res.append(device_dict)
     return res
+
+@dataset(params_schema=params_schema)
+def device_events(request: Request, params: Dict[str, str]) -> List[JsonType]:
+    device_id = params.get('device_id', None)
+    return DeviceEvent.objects.filter(device_id=device_id).order_by('-date').values()
+
 
 
 @dataset(params_schema=params_schema)

@@ -459,3 +459,8 @@ class IgnoredPair(models.Model):
 
     class Meta:
         unique_together = (('document_id1', 'document_id2'),)
+
+
+class CaseImports(models.Model):
+    case = models.ForeignKey(Case)
+    participant_uuid = models.TextField(unique=True)

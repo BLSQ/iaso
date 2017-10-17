@@ -1,6 +1,8 @@
-import React, { Component } from 'react'
+import React, { Component, fetch } from 'react'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
+import superagent from 'superagent'
+
 import {
   FormattedMessage,
   FormattedDate,
@@ -22,6 +24,67 @@ const MESSAGES = defineMessages({
     id: 'teamsdevices.labels.loading'
   }
 })
+export class DeviceEventsList extends Component {
+  constructor () {
+    super()
+    this.state = {
+      data: []
+    }
+  }
+
+  render () {
+    return <table>
+      <thead>
+      <tr>
+        <th>Type</th>
+        <th>Message</th>
+        <th>Date</th>
+        <th>User</th>
+      </tr>
+      </thead>
+      <tbody>{
+        this.state.data.map(function (event, i) {
+          let eventType
+          let eventLabel
+          if (event.event_type == 0) {
+            eventType = 'Status'
+            eventLabel = event.status__label
+          }
+
+          if (event.event_type == 1) {
+            eventType = 'Action'
+            eventLabel = event.action__label
+          }
+          if (event.event_type == 2) {
+            eventType = 'Comment'
+            eventLabel = event.comment
+          }
+          return <tr>
+            <td>{eventType}</td>
+            <td>{eventLabel}</td>
+            <td><FormattedDate value={new Date(event.date)}/></td>
+            <td>{event.reporter__username}</td>
+          </tr>
+        })
+      }
+      </tbody>
+    </table>
+  }
+  componentDidMount () {
+    var that = this
+    var url = '/api/datasets/device_events/?device_id=' + this.props.deviceId
+    superagent.get(url).end((err, res) => {
+      if (err) {
+        console.log('error accessing url ', url, err)
+        return
+      }
+
+      that.setState({
+        'data': res.body
+      })
+    })
+  }
+}
 
 export const DeviceEventForm = ({
   deviceId
@@ -104,7 +167,7 @@ export const DataTable = ({
                 <td className={daysClass}>{status.days_since_sync}</td>
                 <td>{status.last_synced_log_message}</td>
                 <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Edit'}</a></td>
-                <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>More</a></td>
+                <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>More</a></td>
               </tr>
             })}
           </tbody>
@@ -121,7 +184,8 @@ export class TeamsDevices extends Component {
     this.locationHandler = this.locationHandler.bind(this)
     this.state = {
       isOpen: false,
-      currentDeviceId: false
+      currentDeviceId: false,
+      edit: false
     }
   }
 
@@ -135,12 +199,13 @@ export class TeamsDevices extends Component {
     this.props.dispatch(push(url))
   }
 
-  toggleModal (event, deviceId) {
+  toggleModal (edit, event, deviceId) {
     event.stopPropagation()
     event.nativeEvent.stopImmediatePropagation()
     this.setState({
       isOpen: !this.state.isOpen,
-      currentDeviceId: deviceId
+      currentDeviceId: deviceId,
+      edit: edit
     })
   }
   render () {
@@ -150,13 +215,17 @@ export class TeamsDevices extends Component {
     const { loading, data, error } = this.props.report
     const locations = (data && data.locations) || []
     const dateMonth = this.props.params.date_month || ''
+    let modalContent;
+    if (this.state.edit) {
+      modalContent = <DeviceEventForm deviceId={this.state.currentDeviceId}/>
+    } else {
+      modalContent = <DeviceEventsList deviceId={this.state.currentDeviceId}/>
+    }
 
     return (
-
       <div>
-        <Modal show={this.state.isOpen} onClose={this.toggleModal.bind(this)}>
-
-          <DeviceEventForm deviceId={this.state.currentDeviceId}></DeviceEventForm>
+        <Modal show={this.state.isOpen} onClose={this.toggleModal.bind(this, false)}>
+          {modalContent}
         </Modal>
         <div className='filter__container'>
           <h2 className='filter__label'><FormattedMessage id='teamsdevices.label.select' defaultMessage='Select:' /></h2>
@@ -194,7 +263,7 @@ export class TeamsDevices extends Component {
           loading && <LoadingSpinner message={formatMessage(MESSAGES['loading'])} />
         }
         {
-          data && <DataTable data={data} auditClickHandler={this.toggleModal.bind(this)} />
+          data && <DataTable data={data} auditClickHandler={this.toggleModal.bind(this, true)} moreClickHandler={this.toggleModal.bind(this, false)} />
         }
       </div>
     )

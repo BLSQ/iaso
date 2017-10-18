@@ -91,22 +91,22 @@ export const DeviceEventForm = ({
 }) => {
   return <form method='post' action={'/sync/device_event_form/' + deviceId + '/'}>
 
-    <div className='teamsdevices__event__field__title'>Change Status</div>
+    <div className='teamsdevices__event__field__title'>Changer Statut</div>
     <select id='id_status' name='status'>
       <option value='' selected='selected'>---------</option>
-      <option value='1'>Connection issues</option>
-      <option value='2'>Problem solved</option>
-      <option value='3'>Technical Issue</option>
+      <option value='1'>Problèmes de connexion</option>
+      <option value='2'>Problème résolu</option>
+      <option value='3'>Problème technique</option>
     </select>
     <button name='event_type' value='0'>Envoyer</button>
-    <div className='teamsdevices__event__field__title'>Register Action</div>
+    <div className='teamsdevices__event__field__title'>Action</div>
     <select id='id_action' name='action'>
       <option value='' selected='selected'>---------</option>
-      <option value='1'>Called the owner</option>
-      <option value='2'>Did field survey</option>
+      <option value='1'>Utilisateur appelé</option>
+      <option value='2'>Enquête de terrain</option>
     </select>
     <button name='event_type' value='1'>Envoyer</button>
-    <div className='teamsdevices__event__field__title'>Add a comment</div>
+    <div className='teamsdevices__event__field__title'>Ajouter commentaire</div>
     <textarea cols='40' id='id_comment' name='comment' rows='10'/>
     <button name='event_type' value='2'>Envoyer</button>
   </form>
@@ -124,7 +124,7 @@ export const DataTable = ({
     <div className='widget__container' data-qa='monthly-report-data-loaded'>
       <div className='widget__header'>
         <h2 className='widget__heading'>
-          <FormattedMessage id='teamsdevices.header.results' defaultMessage='Synchronization of Devices' />
+          <FormattedMessage id='teamsdevices.header.results' defaultMessage='Synchronisation des Appareils' />
         </h2>
       </div>
 
@@ -133,19 +133,19 @@ export const DataTable = ({
           <thead>
             <tr>
               <th>
-                <FormattedMessage id='teamsdevices.device_id' defaultMessage='Device id' />
+                <FormattedMessage id='teamsdevices.device_id' defaultMessage='Identifiant' />
               </th>
               <th>
-                <FormattedMessage id='teamsdevices.last_sync' defaultMessage='Last Sync' />
+                <FormattedMessage id='teamsdevices.last_sync' defaultMessage='Dernière Sync' />
               </th>
               <th>
-                <FormattedMessage id='teamsdevices.days_ago' defaultMessage='Days Ago' />
+                <FormattedMessage id='teamsdevices.days_ago' defaultMessage='Jours passés' />
               </th>
               <th>
-                <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Total-Created-Updated-Deleted' />
+                <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Total-Créé-Màj-Effacé' />
               </th>
               <th>
-                <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Audit Status' />
+                <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Statut Audit' />
               </th>
               <th>
                 <FormattedMessage id='dd' defaultMessage=' ' />
@@ -167,7 +167,7 @@ export const DataTable = ({
                 <td className={daysClass}>{status.days_since_sync}</td>
                 <td>{status.last_synced_log_message}</td>
                 <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Edit'}</a></td>
-                <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>More</a></td>
+                <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>Historique</a></td>
               </tr>
             })}
           </tbody>

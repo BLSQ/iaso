@@ -49,7 +49,7 @@
           {% for image in images %}
               <tr>
                 <td>{{ image.upload_date|date }}</td>
-                <td><img src="{{ image.image.url }}" width="200px"/></b></td>
+                <td><a href="{{ image.image.url }}"><img src="{{ image.image.url }}" width="200px"/></a></b></td>
               </tr>
             {% endfor %}
           </tbody>

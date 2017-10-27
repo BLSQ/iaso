@@ -73,3 +73,9 @@ def teams_devices(request: HttpRequest) -> HttpResponse:
     })
 
     return render(request, 'dashboard/teams_devices.html', {'json_data': json_data})
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def quality_control(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7)})

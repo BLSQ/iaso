@@ -166,7 +166,7 @@ export const DataTable = ({
                 <td><FormattedDate value={new Date(status.last_synced_date)}/></td>
                 <td className={daysClass}>{status.days_since_sync}</td>
                 <td>{status.last_synced_log_message}</td>
-                <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Edit'}</a></td>
+                <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Editer'}</a></td>
                 <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>Historique</a></td>
               </tr>
             })}

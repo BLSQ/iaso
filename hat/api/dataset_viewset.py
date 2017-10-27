@@ -328,7 +328,10 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
 @dataset(params_schema=params_schema)
 def device_events(request: Request, params: Dict[str, str]) -> List[JsonType]:
     device_id = params.get('device_id', None)
-    return DeviceEvent.objects.filter(device_id=device_id).order_by('-date').values('date', 'status__label', 'event_type', 'comment', 'reporter__username', 'action__label')
+    return DeviceEvent.objects\
+        .filter(device_id=device_id)\
+        .order_by('-date')\
+        .values('date', 'status__label', 'event_type', 'comment', 'reporter__username', 'action__label')[:6]
 
 
 @dataset(params_schema=params_schema)

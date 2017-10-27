@@ -1,0 +1,34 @@
+{% extends 'app.html' %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans 'Contrôle Qualité' %}</h1>
+{% endblock %}
+
+{% block content %}
+    <table>
+    <thead>
+    <tr><th>Photo</th><th>Numéro</th><th>Résultat</th><th> </th></tr>
+    </thead>
+    <tbody>
+    {% for i in test_count %}
+        <tr>
+            <td><img src="/media/images/20160409_131659.jpg" height="400px"/></td>
+            <td style="font-size:4em;text-align:center;">{{ i }}</td>
+            <td style="font-size:2em;">
+                <input type="radio" name="gender" value="male"> -<br/>
+                <input type="radio" name="gender" value="female"> +/-<br/>
+                <input type="radio" name="gender" value="other"> +<br/>
+                <input type="radio" name="gender" value="other"> ++<br/>
+                <input type="radio" name="gender" value="other"> +++<br/>
+            </td>
+            <td style="font-size:4em;text-align:center;"><button>Valider</button></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+  {% render_bundle 'common' %}
+
+
+{% endblock %}

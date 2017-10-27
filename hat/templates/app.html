@@ -83,6 +83,11 @@
           <a href="{% url 'dashboard:teams-devices' %}">{% trans 'Equipes/Appareils' %}</a>
         </li>
         {% endif %}
+        {% if perms.cases.view %}
+          <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
+          <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
+        </li>
+        {% endif %}
       </ul>
       {% endwith %}
 

@@ -145,10 +145,10 @@ export const DataTable = ({
                 <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Total-Créé-Màj-Effacé' />
               </th>
               <th>
-                <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Statut Audit' />
+                <FormattedMessage id='teamsdevices.status_audit' defaultMessage='Statut Audit' />
               </th>
               <th>
-                <FormattedMessage id='dd' defaultMessage=' ' />
+                <span></span>
               </th>
             </tr>
           </thead>

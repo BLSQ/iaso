@@ -14,6 +14,7 @@ from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import  User
 from django.shortcuts import render, get_object_or_404 ,redirect
 
 from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
@@ -24,6 +25,99 @@ from .couchdb_helpers import create_or_update_user
 from .models import MobileUser, DeviceDB
 
 logger = logging.getLogger(__name__)
+
+
+@csrf_exempt
+@api_view(http_method_names=['POST'])
+@throttle_classes([AnonRateThrottle])
+@authentication_classes([])
+@permission_classes([])
+def user_signin(request: HttpRequest) -> HttpResponse:
+    """
+    Endpoint that receives django user credentials and outputs corresponding couchdb credentials
+    Allows only **POST** http method.
+    `It's throttled. <http://www.django-rest-framework.org/api-guide/throttling/>`__
+    Needs to be open since the mobile app doesn't have any dashboard credentials.
+
+    **Steps**
+
+    1. Checks ``deviceId`` parameter.
+
+       .. warning:: If missing responses **400 -- Bad request**.
+    2. Checks ``password`` and ``username`` parameters
+    3. Creates/Updates the CouchDB user of the mobile user and grants
+       permissions to the device database.
+
+       .. warning:: The same google user account cannot be shared among devices
+                    at the same time because every time the device signs in,
+                    it changes the user CouchDB credentials.
+
+       .. note:: The same device can have different google user accounts.
+
+    4. Creates the DeviceDB record and the CouchDB database if missing.
+
+
+    5. Responses **201 -- Created** with a payload with this schema:
+
+        * ``username`` -- CouchDB credentials: username.
+        * ``password`` -- CouchDB credentials: password.
+        * ``url`` -- CouchDB device database url.
+
+    """
+    device_id = request.data.get('deviceId', '')
+    if device_id == '':
+        msg = 'No "deviceId" sent'
+        logger.error(msg)
+        return Response(msg, status.HTTP_400_BAD_REQUEST)
+
+    username = request.data.get('username', '')
+    if username == '':
+        msg = 'No "username" sent'
+        logger.error(msg)
+        return Response(msg, status.HTTP_400_BAD_REQUEST)
+
+    password = request.data.get('password', '')
+    if password == '':
+        msg = 'No "password" sent'
+        logger.error(msg)
+        return Response(msg, status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        msg = 'Username unknown'
+        logger.error(msg)
+        return Response(msg, status.HTTP_400_BAD_REQUEST)
+
+    password_ok = user.check_password(password)
+
+    if not password_ok:
+        msg = 'Bad password'
+        logger.error(msg)
+        return Response(msg, status.HTTP_400_BAD_REQUEST)
+
+    # Create/Update the couch user of the mobile user and give permissions to the device db
+    try:
+        couchdb_config = create_or_update_user(username, device_id)
+    except ValueError as err:
+        logger.exception(str(err))
+        return Response('Creating credentials failed', status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # Get/Create the device db record and couchdb db
+    try:
+        device_db = DeviceDB.objects.get(device_id=device_id)
+    except DeviceDB.DoesNotExist:
+        logger.info('Creating db for device {}'.format(device_id))
+        device_db = DeviceDB(device_id=device_id)
+        device_db.save()
+
+    payload = {
+        'username': couchdb_config['username'],
+        'password': couchdb_config['password'],
+        # Send the url of the couchdb device-db for replication
+        'url': request.build_absolute_uri('/_couchdb/' + device_db.db_name)
+    }
+    return Response(payload, status.HTTP_201_CREATED)
 
 
 # Sync credentials endpoint

@@ -82,7 +82,6 @@ case "$1" in
       ./scripts/wait_for_dbs.sh
       ./scripts/gen_docs.sh
       ./manage.py migrate --noinput
-      ./manage.py loaddata users
       ./manage.py runserver 0.0.0.0:8080
     fi
   ;;

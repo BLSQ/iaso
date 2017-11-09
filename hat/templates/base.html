@@ -15,6 +15,7 @@
       {% render_bundle 'common' %}
       {% render_bundle 'styles' %}
     {% else %}
+        <!-- we're in the non dev-server part -->
       {% render_bundle 'styles' 'css' %}
     {% endif %}
 

@@ -2,135 +2,159 @@
 {% load i18n %}
 
 {% block body %}
-  <div class="navigation__container">
-    <div class="navigation__content">
-      <div class="brand">
-        <a class="brand__heading" href="{% url 'index' %}">{% trans 'Sense HAT Dashboard' %}</a>
-      </div>
+    <div class="navigation__container">
+        <div class="navigation__content">
+            <div class="brand">
+                <a class="brand__heading" href="{% url 'index' %}">{% trans 'Trypelim' %}</a>
+            </div>
 
-      <!-- Menu toggle -->
-      <a href=".navigation" id="menuLink" class="menu-link">
-        <!-- Hamburger icon -->
-        <span></span>
-      </a>
+            <!-- Menu toggle -->
+            <a href=".navigation" id="menuLink" class="menu-link">
+                <!-- Hamburger icon -->
+                <span></span>
+            </a>
 
-      {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
-      <ul class="navigation__menu">
-        <li class="navigation__menu__item{% if view == 'dashboard:home' %}--active{% endif %}">
-          <a href="{% url 'dashboard:home' %}">{% trans 'Home' %}</a>
-        </li>
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
-            <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.import or perms.cases.export %}
-          <li class="navigation__menu__item{% if 'datasets' in ns %}--active{% endif %}">
-            <a href="{% url 'datasets:index' %}">{% trans 'Datasets' %}</a>
-            {% if 'datasets' in ns %}
-            <ul>
-              {% if perms.cases.import %}
-                <li class="navigation__menu__item--secondary{% if 'datasets:import_cases' in view %}--active{% endif %}">
-                  <a href="{% url 'datasets:import_cases:upload' %}">{% trans 'Upload cases' %}</a>
-                </li>
-              {% endif %}
-              {% if perms.cases.import_locations %}
-                <li class="navigation__menu__item--secondary{% if 'datasets:import_locations' in view %}--active{% endif %}">
-                  <a href="{% url 'datasets:import_locations:upload' %}">{% trans 'Upload locations' %}</a>
-                </li>
-              {% endif %}
-              {% if perms.cases.import_reconciled %}
-                <li class="navigation__menu__item--secondary{% if 'datasets:import_reconciled' in view %}--active{% endif %}">
-                  <a href="{% url 'datasets:import_reconciled:upload' %}">{% trans 'Upload reconciled data' %}</a>
-                </li>
-              {% endif %}
-            </ul>
-            {% endif %}
-          </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:stats' %}--active{% endif %}">
-            <a href="{% url 'dashboard:stats' %}">{% trans 'Stats' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
-            <a href="{% url 'dashboard:monthly_report' %}">{% trans 'Monthly reports' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if 'cases:cases' in view %}--active{% endif %}">
-            <a href="{% url 'cases:cases_list' %}">{% trans 'Cases' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'cases:analysis' %}--active{% endif %}">
-            <a href="{% url 'cases:analysis' %}">{% trans 'Analysis of cases' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.reconcile_duplicates %}
-          <li class="navigation__menu__item{% if 'cases:duplicates' in view %}--active{% endif %}">
-            <a href="{% url 'cases:duplicates_list' %}">{% trans 'Reconciliation' %}</a>
-          </li>
-        {% endif %}
-        {% if user.is_superuser %}
-          <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
-            <a href="{% url 'maintenance:index' %}">{% trans 'Maintenance' %}</a>
-          </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:teams-devices' %}--active{% endif %}">
-          <a href="{% url 'dashboard:teams-devices' %}">{% trans 'Equipes/Appareils' %}</a>
-        </li>
-        {% endif %}
-        {% if perms.cases.view %}
-          <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
-          <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
-        </li>
-        {% endif %}
-      </ul>
-      {% endwith %}
+            {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
 
-      <div class="navigation__footer">
-        <span class="label--user">{% trans 'Logged in as' %} “{{ user }}”</span>
-        <a href="{% url 'logout' %}" class="navigation__logout-link">
-          {% trans 'Log out' %}
-          <i class="fa fa-sign-out"></i>
-        </a>
-        <span class="label--version">Rev: “{{version_commit}}”</span>
-      </div>
+                <ul class="navigation__menu">
+                    <li class="navigation__menu__item{% if view == 'dashboard:home' %}--active{% endif %}">
+
+                        <a href="{% url 'dashboard:home' %}">{% trans 'Home' %}</a>
+                    </li>
+                    {% if perms.cases.import or perms.cases.export %}
+                        <li class="navigation__menu__item{% if 'datasets' in ns %}--active{% endif %}">
+                            <a href="{% url 'datasets:index' %}">{% trans 'Jeux de données' %}</a>
+                            {% if 'datasets' in ns %}
+                                <ul>
+                                    {% if perms.cases.import %}
+                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_cases' in view %}--active{% endif %}">
+                                            <a href="{% url 'datasets:import_cases:upload' %}">{% trans 'Upload de cas' %}</a>
+                                        </li>
+                                    {% endif %}
+                                    {% if perms.cases.import_locations %}
+                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_locations' in view %}--active{% endif %}">
+                                            <a href="{% url 'datasets:import_locations:upload' %}">{% trans 'Upload coordonnées villages' %}</a>
+                                        </li>
+                                    {% endif %}
+                                    {% if perms.cases.import_reconciled %}
+                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_reconciled' in view %}--active{% endif %}">
+                                            <a href="{% url 'datasets:import_reconciled:upload' %}">{% trans 'Upload données réconciliées' %}</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                    <li class="navigation__menu__item{% if 'dashboard' in ns %}--active{% endif %}">
+                        <a href="{% url 'dashboard:stats' %}">{% trans 'Statistiques' %}</a>
+                        {% if 'dashboard' in ns %}
+                            <ul>
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:stats' %}--active{% endif %}">
+                                        <a href="{% url 'dashboard:stats' %}">{% trans 'Graphes' %}</a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
+                                        <a href="{% url 'dashboard:monthly_report' %}">{% trans 'Rapports' %}</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                    <li class="navigation__menu__item{% if 'cases' in ns %}--active{% endif %}">
+                        <a href="{% url 'cases:cases_list' %}">{% trans 'Données Cas' %}</a>
+                        <ul>
+                            {% if 'cases' in ns %}
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == "cases:cases_list" %}--active{% endif %}">
+                                        <a href="{% url 'cases:cases_list' %}">{% trans 'Cas' %}</a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == 'cases:analysis' %}--active{% endif %}">
+                                        <a href="{% url 'cases:analysis' %}">{% trans 'Analyse des cas' %}</a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.cases.reconcile_duplicates %}
+                                    <li class="navigation__menu__item--secondary{% if 'cases:duplicates_list' in view %}--active{% endif %}">
+                                        <a href="{% url 'cases:duplicates_list' %}">{% trans 'Réconciliation' %}</a>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        </ul>
+                        {% if False %}{% if user.is_superuser %}
+                            <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
+                                <a href="{% url 'maintenance:index' %}">{% trans 'Maintenance' %}</a>
+                            </li>
+                        {% endif %}
+                        {% endif %}
+                    <li class="navigation__menu__item{% if view == 'dashboard:teams-devices' %}--active{% endif %}">
+                        <a href="{% url 'dashboard:teams-devices' %}">{% trans 'Equipes/Appareils' %}</a>
+                    </li>
+                    <li class="navigation__menu__item{% if 'quality' in ns %}--active{% endif %}">
+                        <a href="{% url 'quality:quality-control' %}">{% trans 'Qualité' %}</a>
+                        <ul>
+                            {% if perms.cases.view %}
+                                <li class="navigation__menu__item--secondary{% if view == 'quality:quality-control' %}--active{% endif %}">
+                                    <a href="{% url 'quality:quality-control' %}">{% trans 'Contrôles de qualité' %}</a>
+                                </li>
+                            {% endif %}
+                            {% if perms.cases.view %}
+                                <li class="navigation__menu__item--secondary{% if view == 'quality:alerts' %}--active{% endif %}">
+                                    <a href="{% url 'quality:alerts' %}">{% trans 'Alertes' %}</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% if perms.cases.view %}
+                        <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
+                            <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% endwith %}
+
+            <div class="navigation__footer">
+                <span class="label--user">{% trans 'Logged in as' %} “{{ user }}”</span>
+                <a href="{% url 'logout' %}" class="navigation__logout-link">
+                    {% trans 'Log out' %}
+                    <i class="fa fa-sign-out"></i>
+                </a>
+                <span class="label--version">Rev: “{{ version_commit }}”</span>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="container--main">
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li{% if message.tags %} class="message message--{{ message.tags }}"{% endif %}>
-            <span class="message__title">{{ message }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+    <div class="container--main">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="message message--{{ message.tags }}"{% endif %}>
+                        <span class="message__title">{{ message }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-    {% if not request.resolver_match.view_name == 'dashboard:home' %}
-      <header class="header">
-        {% block header %}
-          <h1 class="header__title">{% trans 'Sense HAT' %}</h1>
+        {% if not request.resolver_match.view_name == 'dashboard:home' %}
+            <header class="header">
+                {% block header %}
+                    <h1 class="header__title">{% trans 'Sense HAT' %}</h1>
+                {% endblock %}
+            </header>
+        {% endif %}
+
+
+        {% block content %}
         {% endblock %}
-      </header>
-    {% endif %}
+
+        {% if not request.resolver_match.view_name == 'dashboard:home' %}
+            <a href="javascript:window.print()" class="link--print">
+                <i class="fa fa-print"></i> {% trans 'Print this page' %}
+            </a>
+        {% endif %}
 
 
-    {% block content %}
-    {% endblock %}
-
-    {% if not request.resolver_match.view_name == 'dashboard:home' %}
-      <a href="javascript:window.print()" class="link--print">
-        <i class="fa fa-print"></i> {% trans 'Print this page' %}
-      </a>
-    {% endif %}
-
-
-  </div>
+    </div>
 {% endblock %}

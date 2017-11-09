@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'hat.common',
     'hat.couchdb',
     'hat.dashboard',
+    'hat.quality',
     'hat.import_export',
     'hat.integration_tests',
     'hat.maintenance',

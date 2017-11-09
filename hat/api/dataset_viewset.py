@@ -14,6 +14,7 @@
 
 '''
 from typing import Dict, Tuple, List, Any, Callable, Optional
+import logging
 from hat.common.typing import JsonType
 from functools import wraps
 from datetime import datetime, timedelta, date
@@ -554,7 +555,9 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]
         sql_context['caseyears'] = params['caseyears'].split(',')
 
     sql = microplanning_queries.data_by_location(**sql_context)
-
+    print(sql)
+    logger = logging.getLogger(__name__)
+    logger.error(sql)
     with connection.cursor() as cursor:
         cursor.execute(sql)
         columns = [col[0] for col in cursor.description]

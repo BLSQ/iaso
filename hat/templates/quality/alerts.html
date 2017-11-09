@@ -1,0 +1,33 @@
+{% extends 'app.html' %}
+{% load i18n %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+  <h1 class="header__title">{% trans 'Contrôle Qualité' %}</h1>
+{% endblock %}
+
+{% block content %}
+    <table>
+    <thead>
+    <tr><th>Cas</th><th>Numéro de test</th></th><th>Image</th><th>Résultat 1</th><th>Rapporteur 1</th><th>Résultat 2</th><th> Rapporteur 2</th></tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td><a href="">Kambamba Lazine Kalunda</a></td>
+            <td>2</td>
+            <td><img src="{% static 'images/20160409_131659.jpg' %}"  height="200px"/></td>
+            <td>++</td>
+            <td ><a href="">madewulf</a></td>
+            <td>+</td>
+            <td ><a href="">yclaeys</a></td>
+            <td ><button>Résoudre</button></td>
+        </tr>
+
+    </tbody>
+</table>
+  {% render_bundle 'common' %}
+
+
+{% endblock %}

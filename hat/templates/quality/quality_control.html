@@ -1,5 +1,6 @@
 {% extends 'app.html' %}
 {% load i18n %}
+{% load static %}
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
@@ -14,7 +15,7 @@
     <tbody>
     {% for i in test_count %}
         <tr>
-            <td><img src="/media/images/20160409_131659.jpg" height="400px"/></td>
+            <td><img src="{% static 'images/20160409_131659.jpg' %}"  height="400px"/></td>
             <td style="font-size:4em;text-align:center;">{{ i }}</td>
             <td style="font-size:2em;">
                 <input type="radio" name="gender" value="male"> -<br/>

@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
+    url(r'^quality/', include('hat.quality.urls', 'quality')),
     url(r'^rq/', include('django_rq.urls')),
     url(r'^sync/', include('hat.sync.urls', 'sync')),
 ]

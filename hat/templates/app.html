@@ -94,18 +94,20 @@
                     </li>
                     <li class="navigation__menu__item{% if 'quality' in ns %}--active{% endif %}">
                         <a href="{% url 'quality:quality-control' %}">{% trans 'Qualité' %}</a>
-                        <ul>
-                            {% if perms.cases.view %}
-                                <li class="navigation__menu__item--secondary{% if view == 'quality:quality-control' %}--active{% endif %}">
-                                    <a href="{% url 'quality:quality-control' %}">{% trans 'Contrôles de qualité' %}</a>
-                                </li>
-                            {% endif %}
-                            {% if perms.cases.view %}
-                                <li class="navigation__menu__item--secondary{% if view == 'quality:alerts' %}--active{% endif %}">
-                                    <a href="{% url 'quality:alerts' %}">{% trans 'Alertes' %}</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+                        {% if 'quality' in ns %}
+                            <ul>
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == 'quality:quality-control' %}--active{% endif %}">
+                                        <a href="{% url 'quality:quality-control' %}">{% trans 'Contrôles de qualité' %}</a>
+                                    </li>
+                                {% endif %}
+                                {% if perms.cases.view %}
+                                    <li class="navigation__menu__item--secondary{% if view == 'quality:alerts' %}--active{% endif %}">
+                                        <a href="{% url 'quality:alerts' %}">{% trans 'Alertes' %}</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        {% endif %}
                     </li>
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">

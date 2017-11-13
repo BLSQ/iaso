@@ -10,13 +10,14 @@ A more detailed description can be found in the ``hat.sync`` module.
 '''
 
 import logging
+import json
 from typing import List
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
 
 from hat.couchdb.utils import fetch_db_docs
-from hat.sync.models import DeviceDB
+from hat.sync.models import DeviceDB, JSONDocument
 from .errors import get_import_error
 from .load import load_cases_into_db
 from hat.cases.event_log import log_sync_import, EventStats
@@ -77,6 +78,28 @@ def import_synced_devices() -> List[ImportResult]:
 
 
 def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
+    device = DeviceDB.objects.get(device_id=device_id)
+    patient_docs = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
+    for doc in patient_docs:
+        logger.error(json.dumps(doc))
+        couch_document = JSONDocument()
+
+        couch_document.device = device
+
+        revision = doc.get('_rev', None)
+        couch_document.doc_revision = revision
+
+        doc_id = doc.get('_id', None)
+        couch_document.doc_id = doc_id
+        couch_document.doc = doc
+        
+        if doc_id is not None and revision is not None:
+            couch_document.save()
+        else:
+            logger.error("Impossible to store document in postgres: " + json.dumps(doc))
+
+
+
     extracted = prepare_mobile_data(docs)
     transformed = transform_source('sync', extracted)
     stats = load_cases_into_db(transformed)

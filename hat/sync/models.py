@@ -5,6 +5,7 @@ from django.db import models
 from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.contrib.postgres.fields import JSONField
 
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
@@ -178,3 +179,16 @@ class VideoUploadForm(ModelForm):
     class Meta:
         model = VideoUpload
         fields = ('video', 'participant_uuid', 'hat_id', 'document_id')
+
+
+class CouchDocument(models.Model):
+    doc_id = models.TextField()
+    doc_revision = models.TextField()
+    device = models.ForeignKey(DeviceDB)
+    doc = JSONField()
+
+class JSONDocument(models.Model):
+    doc_id = models.TextField()
+    doc_revision = models.TextField()
+    device = models.ForeignKey(DeviceDB)
+    doc = JSONField()

@@ -144,6 +144,7 @@ export const DataTable = ({
               <th>
                 <FormattedMessage id='teamsdevices.sync_summary' defaultMessage='Total-Créé-Màj-Effacé' />
               </th>
+              <th>Equipe</th>
               <th>
                 <FormattedMessage id='teamsdevices.status_audit' defaultMessage='Statut Audit' />
               </th>
@@ -172,11 +173,13 @@ export const DataTable = ({
                 daysClass = 'warning'
               }
 
+              let randomTeam = "Equipe " + Math.ceil(Math.random() * 10)
               return <tr>
                 <td>{status.device_id}</td>
                 <td><FormattedDate value={new Date(status.last_synced_date)}/></td>
                 <td className={daysClass}>{daysString}</td>
                 <td>{status.last_synced_log_message}</td>
+                <td>{ randomTeam }</td>
                 <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Editer'}</a></td>
                 <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>Historique</a></td>
               </tr>

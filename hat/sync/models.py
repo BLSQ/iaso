@@ -35,6 +35,8 @@ class DeviceDB(models.Model):
         return generate_db_name(self.device_id)
 
     def days_since_sync(self):
+        if not self.last_synced_date:
+            return -1
         return (timezone.now() - self.last_synced_date).days
 
     def __str__(self):

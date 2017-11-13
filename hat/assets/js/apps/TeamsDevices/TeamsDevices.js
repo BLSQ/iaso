@@ -155,16 +155,27 @@ export const DataTable = ({
           <tbody>
             {device_status.map(function (status, i) {
               let daysClass = 'ok'
+              let daysString
+              if (status.days_since_sync < 0 )
+              {
+                daysString = "Jamais Synchronisé"
+              }
+              else
+              {
+                daysString = status.days_since_sync
+              }
+
+              if (status.days_since_sync > 40 ) {
+                daysClass = 'error'
+              }
               if (status.days_since_sync > 20) {
                 daysClass = 'warning'
               }
-              if (status.days_since_sync > 40) {
-                daysClass = 'error'
-              }
+
               return <tr>
                 <td>{status.device_id}</td>
                 <td><FormattedDate value={new Date(status.last_synced_date)}/></td>
-                <td className={daysClass}>{status.days_since_sync}</td>
+                <td className={daysClass}>{daysString}</td>
                 <td>{status.last_synced_log_message}</td>
                 <td><a className='pointerClick' onClick={(e) => { auditClickHandler(e, status.id) }}>{status.last_status !='' ? status.last_status : 'Editer'}</a></td>
                 <td><a className='pointerClick' onClick={(e) => { moreClickHandler(e, status.id) }}>Historique</a></td>

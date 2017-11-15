@@ -1,0 +1,1209 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-22 11:55+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Obdulia Losantos <obdulia.losantos@ehealthnigeria.org>, 2016\n"
+"Language-Team: French (https://www.transifex.com/ehealth-africa-1/teams/30587/fr/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: hat/cases/forms.py:49
+msgid "None"
+msgstr "Aucun"
+
+#: hat/cases/forms.py:118
+msgid "Ascendent"
+msgstr "Ascendant"
+
+#: hat/cases/forms.py:118
+msgid "Descendent"
+msgstr "Ascendant"
+
+#: hat/cases/views.py:54 hat/cases/views.py:248
+msgid "Internal ID"
+msgstr "ID interne"
+
+#: hat/cases/views.py:61 hat/cases/views.py:89 hat/cases/views.py:256
+#: hat/cases/views.py:305 hat/cases/views.py:313
+#: hat/templates/events/list.html:24
+msgid "Name"
+msgstr "Nom"
+
+#: hat/cases/views.py:75 hat/cases/views.py:291
+msgid "Document date"
+msgstr "Date du document"
+
+#: hat/cases/views.py:80 hat/cases/views.py:296
+#: hat/templates/cases/cases/list.html:28
+msgid "Location"
+msgstr "Localité"
+
+#: hat/cases/views.py:186
+msgid "Merge done."
+msgstr "Fusion terminée."
+
+#: hat/cases/views.py:198
+msgid "Match ignored."
+msgstr "Correspondance ignorée."
+
+#: hat/cases/views.py:263
+msgid "Suspect case"
+msgstr "Cas suspect"
+
+#: hat/cases/views.py:268
+msgid "Screening result"
+msgstr "Résultat de dépistage"
+
+#: hat/cases/views.py:273
+msgid "Confirmation result"
+msgstr "Résultat de confirmation"
+
+#: hat/cases/views.py:278 hat/cases/views.py:375 hat/cases/views.py:393
+#: hat/templates/cases/cases/list.html:29
+msgid "Source"
+msgstr "Source"
+
+#: hat/cases/views.py:283 hat/cases/views.py:380 hat/cases/views.py:394
+#: hat/templates/devices/list.html:22
+msgid "Device"
+msgstr "Tablette"
+
+#: hat/cases/views.py:314
+msgid "Gender"
+msgstr "Sexe"
+
+#: hat/cases/views.py:315
+msgid "Age"
+msgstr "Âge"
+
+#: hat/cases/views.py:387
+msgid "Year"
+msgstr "Année"
+
+#: hat/cases/views.py:388
+msgid "Month"
+msgstr "Mois"
+
+#: hat/cases/views.py:389
+msgid "Day"
+msgstr "Jour"
+
+#: hat/cases/views.py:390
+msgid "Zone de Sante"
+msgstr "Zone de Santé"
+
+#: hat/cases/views.py:391
+msgid "Aire de Sante"
+msgstr "Aire de Santé"
+
+#: hat/cases/views.py:392 hat/templates/cases/filters.html:96
+msgid "Village"
+msgstr "Village"
+
+#: hat/cases/views.py:412 hat/templates/cases/filters.html:41
+#: hat/templates/cases/filters.html:107
+msgid "From"
+msgstr "De"
+
+#: hat/cases/views.py:413 hat/templates/cases/filters.html:114
+msgid "To"
+msgstr "À"
+
+#: hat/cases/views.py:414 hat/templates/devices/list.html:35
+msgid "# Participants"
+msgstr "# Participants"
+
+#: hat/cases/views.py:415
+msgid "# Suspect cases"
+msgstr "# Cas suspects"
+
+#: hat/cases/views.py:416
+msgid "# Confirmed cases"
+msgstr "# Cas confirmés"
+
+#: hat/cases/views.py:462 hat/templates/app.html:63
+#: hat/templates/cases/cases/list.html:6
+msgid "Cases"
+msgstr "Cas"
+
+#: hat/cases/views.py:463 hat/templates/cases/download.html:10
+msgid "Download cases"
+msgstr "Télécharger des cas"
+
+#: hat/cases/views.py:464
+msgid "Preparing download..."
+msgstr "Préparation du téléchargement en cours..."
+
+#: hat/cases/views.py:465
+msgid "The download job you're looking for has expired."
+msgstr "La tâche de téléchargement recherchée a expiré."
+
+#: hat/cases/views.py:466
+msgid "The download job has failed. Please try again."
+msgstr "La tâche de téléchargement a échoué. Veuillez réessayer."
+
+#: hat/cases/views.py:541
+msgid "No"
+msgstr "Non"
+
+#: hat/cases/views.py:541
+msgid "Yes"
+msgstr "Oui"
+
+#: hat/cases/views.py:542
+msgid "Negative"
+msgstr "Négatif"
+
+#: hat/cases/views.py:542
+msgid "Positive"
+msgstr "Positif"
+
+#: hat/import_export/errors.py:37
+msgid "Unknown file type. Only .mdb, .accdb and .enc accepted"
+msgstr "Type de fichier inconnu. Seul les .mdb, .accdb et .enc sont acceptés"
+
+#: hat/import_export/errors.py:38
+msgid "Could not extract data from file for import"
+msgstr "Impossible d'extraire des données du fichier pour l'importation"
+
+#: hat/import_export/errors.py:39
+msgid "File is missing values, can not be automatically imported"
+msgstr ""
+"Le fichier contient des valeurs manquantes, il ne peut pas être "
+"automatiquement importé"
+
+#: hat/import_export/errors.py:40
+msgid "Could not load data into database"
+msgstr "Impossible de charger des données dans la base de données"
+
+#: hat/import_export/errors.py:41
+msgid "Could not store file for re-import"
+msgstr "Impossible de stocker le fichier pour la réimportation."
+
+#: hat/import_export/errors.py:42
+msgid "File has already been uploaded"
+msgstr "Le fichier a déjà été envoyé"
+
+#: hat/import_export/errors.py:43
+msgid "An unforseen error occurred"
+msgstr "Une erreur imprévue s'est produite"
+
+#: hat/import_export/extract.py:69
+msgid "Cannot import unkown mdb schema"
+msgstr "Impossible d'importer un schéma inconnu mdb"
+
+#: hat/import_export/extract.py:76 hat/import_export/extract.py:93
+msgid "Cannot import unkown filetype: {}"
+msgstr "Impossible d'importer un type de fichier inconnu: {}"
+
+#: hat/import_export/forms.py:14
+msgid "Upload file"
+msgstr "Envoyer un fichier"
+
+#: hat/import_export/import_cases.py:46
+#: hat/import_export/import_reconciled.py:47
+msgid "This file has already been uploaded: {}"
+msgstr "Ce fichier a déjà été envoyé: {}"
+
+#: hat/import_export/import_locations.py:39 hat/import_export/urls.py:22
+msgid "locations"
+msgstr "localités"
+
+#: hat/import_export/import_locations.py:99
+msgid "health areas"
+msgstr "aires de santé"
+
+#: hat/import_export/import_reconciled.py:38 hat/import_export/urls.py:23
+msgid "reconciled data"
+msgstr "données réconciliées"
+
+#: hat/import_export/import_synced.py:47
+msgid "synced data"
+msgstr "données synchronisées"
+
+#: hat/import_export/urls.py:17
+msgid "Uploading data"
+msgstr "Envoi de données en cours"
+
+#: hat/import_export/urls.py:18
+msgid "The file upload is in progress..."
+msgstr "Envoi du fichier en cours..."
+
+#: hat/import_export/urls.py:19
+msgid "The upload job you're looking for has expired."
+msgstr "La tâche d'envoi recherchée a expiré."
+
+#: hat/import_export/urls.py:20
+msgid "The upload job has failed."
+msgstr "La tâche d'envoi a échoué. "
+
+#: hat/import_export/urls.py:21
+msgid "cases"
+msgstr "cas"
+
+#: hat/maintenance/views.py:61 hat/templates/app.html:78
+#: hat/templates/maintenance/index.html:5
+msgid "Maintenance"
+msgstr "Maintenance"
+
+#: hat/maintenance/views.py:94 hat/maintenance/views.py:147
+#, python-format
+msgid "Error: %(error)s"
+msgstr "Erreur: %(error)s"
+
+#: hat/maintenance/views.py:96 hat/tasks/views.py:121
+msgid "Task done."
+msgstr "Tâche terminée."
+
+#: hat/maintenance/views.py:149
+msgid "Upload done."
+msgstr "Envoi terminé."
+
+#: hat/tasks/views.py:118
+msgid "Task deferred."
+msgstr "Tâche reportée."
+
+#: hat/tasks/views.py:119
+msgid "This task is expired."
+msgstr "Cette tâche est expirée."
+
+#: hat/tasks/views.py:120
+msgid "Task failed.  Please try again."
+msgstr "La tâche a échouée. Veuillez réessayer."
+
+#: hat/tasks/views.py:122
+msgid "Task in queue."
+msgstr "Tâche en attente."
+
+#: hat/tasks/views.py:123
+msgid "Task started."
+msgstr "Tâche commencée."
+
+#: hat/tasks/views.py:126
+msgid "Task complete."
+msgstr "Tâche complètée."
+
+#: hat/tasks/views.py:127
+msgid "Task in progress..."
+msgstr "Tâche en cours..."
+
+#: hat/tasks/views.py:128
+msgid "Task status"
+msgstr "Etat de la tâche"
+
+#: hat/tasks/views.py:129
+msgid "Could not get the file."
+msgstr "Impossible d'obtenir le fichier."
+
+#: hat/templates/app.html:8 hat/templates/base.html:7
+#: hat/templates/login.html:8
+msgid "Sense HAT Dashboard"
+msgstr "Le Tableau de Bord de Sense HAT"
+
+#: hat/templates/app.html:20
+msgid "Home"
+msgstr "Accueil "
+
+#: hat/templates/app.html:24 hat/templates/dashboard/microplanning.html:6
+msgid "Microplanning"
+msgstr "Reprogrammation"
+
+#: hat/templates/app.html:29 hat/templates/import_export/datasets.html:6
+#: hat/templates/import_export/upload_done.html:5
+msgid "Datasets"
+msgstr "Portail de données"
+
+#: hat/templates/app.html:34 hat/templates/import_export/datasets.html:14
+#: hat/templates/import_export/upload_cases.html:13
+#: hat/templates/import_export/upload_cases.html:52
+msgid "Upload cases"
+msgstr "Envoyer des cas"
+
+#: hat/templates/app.html:39 hat/templates/import_export/datasets.html:35
+#: hat/templates/import_export/upload_locations.html:13
+#: hat/templates/import_export/upload_locations.html:57
+msgid "Upload locations"
+msgstr "Envoyer des localités"
+
+#: hat/templates/app.html:44 hat/templates/import_export/datasets.html:56
+#: hat/templates/import_export/upload_reconciled.html:13
+#: hat/templates/import_export/upload_reconciled.html:66
+msgid "Upload reconciled data"
+msgstr "Envoyer des données réconciliées"
+
+#: hat/templates/app.html:53 hat/templates/dashboard/stats.html:6
+#: hat/templates/maintenance/index.html:12
+msgid "Stats"
+msgstr "Statistiques"
+
+#: hat/templates/app.html:58 hat/templates/dashboard/home.html:88
+#: hat/templates/dashboard/monthly_report.html:6
+msgid "Monthly reports"
+msgstr "Rapports mensuels"
+
+#: hat/templates/app.html:68 hat/templates/cases/analysis/list.html:6
+msgid "Analysis of cases"
+msgstr "Analyse des cas"
+
+#: hat/templates/app.html:73
+msgid "Reconciliation"
+msgstr "Réconciliation"
+
+#: hat/templates/app.html:85
+msgid "Logged in as"
+msgstr "Connecté en tant que"
+
+#: hat/templates/app.html:87
+msgid "Log out"
+msgstr "Se déconnecter"
+
+#: hat/templates/app.html:109
+msgid "Sense HAT"
+msgstr "Sense HAT"
+
+#: hat/templates/app.html:120
+msgid "Print this page"
+msgstr "Imprimer cette page"
+
+#: hat/templates/base.html:38
+msgid ""
+"\n"
+"        This is the staging site, which is for testing purposes only. Data may be periodically deleted.\n"
+"        Access main site at: <a href=\"https://sense-hat.eocng.org\">sense-hat.eocng.org</a>\n"
+"        "
+msgstr ""
+"\n"
+"Ceci est un site de pré-production qui a été conçu à des fins de tests. Les données peuvent être supprimées périodiquement. \n"
+"Accéder au site principal à:   <a href=\"https://sense-hat.eocng.org\">sense-hat.eocng.org</a>"
+
+#: hat/templates/cases/analysis/list.html:17
+msgid "Entries"
+msgstr "Entrées"
+
+#: hat/templates/cases/analysis/list.html:19
+msgid "Participants"
+msgstr "Participants"
+
+#: hat/templates/cases/analysis/list.html:21
+msgid "Suspect cases"
+msgstr "Cas Suspects"
+
+#: hat/templates/cases/analysis/list.html:23
+msgid "Confirmed cases"
+msgstr "Cas confirmés"
+
+#: hat/templates/cases/cases/detail.html:6
+#: hat/templates/cases/cases/detail.html:24
+msgid "Case"
+msgstr "Cas"
+
+#: hat/templates/cases/cases/detail.html:15
+#: hat/templates/cases/duplicates/detail.html:14
+msgid "Back to list"
+msgstr "Retour à la liste"
+
+#: hat/templates/cases/cases/detail.html:31
+msgid "Field"
+msgstr "Champ"
+
+#: hat/templates/cases/cases/detail.html:32
+msgid "Value"
+msgstr "Valeur"
+
+#: hat/templates/cases/cases/list.html:17
+msgid "Cases found"
+msgstr "Cas trouvés"
+
+#: hat/templates/cases/cases/list.html:27 hat/templates/devices/list.html:38
+#: hat/templates/events/list.html:22
+msgid "Date"
+msgstr "Date"
+
+#: hat/templates/cases/cases/list.html:33 hat/templates/devices/list.html:29
+#: hat/templates/events/list.html:21
+msgid "ID"
+msgstr "ID"
+
+#: hat/templates/cases/download.html:21
+msgid "Prepare download"
+msgstr "Préparer le téléchargement"
+
+#: hat/templates/cases/download.html:27
+msgid ""
+"\n"
+"      Download data as a CSV file.\n"
+"      Download all data from the database or a subset of the data based on your current filters.\n"
+"      "
+msgstr ""
+"\n"
+"Télécharger les données en tant que fichier CSV. \n"
+"Télécharger toutes les données de la base de données ou un sous-ensemble des données en fonction de vos filtres actuels."
+
+#: hat/templates/cases/duplicates/detail.html:5
+#: hat/templates/cases/duplicates/list.html:5
+msgid "Duplicate cases reconciliation"
+msgstr "Réconciliation des cas en double"
+
+#: hat/templates/cases/duplicates/detail.html:22
+msgid "Comparison of matching cases"
+msgstr "Comparaison des cas correspondants"
+
+#: hat/templates/cases/duplicates/detail.html:27
+msgid ""
+"\n"
+"          This page shows a detailed field by field comparison of the matching cases.\n"
+"          In the most right column is a preview of the result fields of the merge.\n"
+"          The merge can be performed by clicking the <b>“Merge”</b> button on the bottom right.\n"
+"          To mark them as <b><i>false positive</i></b> click the <b>“Ignore”</b> button.\n"
+"          "
+msgstr ""
+"\n"
+"Cette page montre une comparaison détaillée champ par champ des cas correspondants. \n"
+"Dans la dernière colonne droite se trouve un aperçu des champs de résultat de la fusion.\n"
+"La fusion peut être effectuée en cliquant sur le bouton <b>\"Fusionner\"</b> en bas à droite. \n"
+"Pour les marquer comme <b><i>faux positif</i></b>, veuillez cliquer sur le bouton <b>\"Ignorer\"</b>."
+
+#: hat/templates/cases/duplicates/detail.html:71
+msgid "Merge"
+msgstr "Fusionner"
+
+#: hat/templates/cases/duplicates/detail.html:75
+msgid "Ignore"
+msgstr "Ignorer"
+
+#: hat/templates/cases/duplicates/list.html:16
+msgid "Duplicate matches found"
+msgstr "Correspondances en double retrouvées"
+
+#: hat/templates/cases/duplicates/list.html:21
+msgid ""
+"\n"
+"          This list shows potential duplicate cases. Click on “Compare” for a detailed comparison.\n"
+"          "
+msgstr ""
+"\n"
+"Cette liste montre les cas en double possibles. Cliquer sur \"Comparer\" pour une comparaison détaillée."
+
+#: hat/templates/cases/duplicates/list.html:31
+msgid "Case 1"
+msgstr "Cas 1"
+
+#: hat/templates/cases/duplicates/list.html:32
+msgid "Case 2"
+msgstr "Cas 2"
+
+#: hat/templates/cases/duplicates/list.html:49
+msgid "Compare"
+msgstr "Comparer"
+
+#: hat/templates/cases/filters.html:20
+msgid "Change current filters"
+msgstr "Changer les filtres actuels"
+
+#: hat/templates/cases/filters.html:25 hat/templates/cases/filters.html:78
+msgid "ZS"
+msgstr "ZS"
+
+#: hat/templates/cases/filters.html:28 hat/templates/cases/filters.html:87
+msgid "AS"
+msgstr "AS"
+
+#: hat/templates/cases/filters.html:31
+msgid "village"
+msgstr "village"
+
+#: hat/templates/cases/filters.html:37
+msgid "Timeframe"
+msgstr "Délai"
+
+#: hat/templates/cases/filters.html:43
+msgid "Till"
+msgstr "Jusqu'à"
+
+#: hat/templates/cases/filters.html:65
+msgid "Hide filters"
+msgstr "Masquer les filtres"
+
+#: hat/templates/cases/filters.html:69
+msgid "Search"
+msgstr "Rechercher"
+
+#: hat/templates/cases/filters.html:145
+msgid "Order"
+msgstr "Ordonner"
+
+#: hat/templates/cases/filters.html:159
+msgid "Group by"
+msgstr "Grouper par"
+
+#: hat/templates/dashboard/home.html:15
+msgid "Welcome to the SENSE HAT Dashboard"
+msgstr "Bienvenue au tableau de bord de Sense HAT"
+
+#: hat/templates/dashboard/home.html:21
+msgid ""
+"\n"
+"          Programme National de Lutte contre la Trypanosomiase Humaine Africaine (PNLTHA) of the DRC Ministry of Health drives the programme to diagnose, treat and reduce HAT cases in the DRC.\n"
+"          "
+msgstr ""
+"\n"
+"Republique Democratique du Congo, Ministere de la Santé Publique, Programme National de Lutte contre la THA (PNLTHA)."
+
+#: hat/templates/dashboard/home.html:32
+msgid "Map showing pilot health zones"
+msgstr "Carte montrant les zones de santé pilotes"
+
+#: hat/templates/dashboard/home.html:35
+msgid "Programme Mission"
+msgstr "Mission du Programme"
+
+#: hat/templates/dashboard/home.html:37
+msgid ""
+"\n"
+"        To coordinate and organise the strugge against HAT in RD Congo\n"
+"        "
+msgstr ""
+"\n"
+"Coordonner et Organiser la lutte contre la THA en R.D.Congo"
+
+#: hat/templates/dashboard/home.html:41
+msgid "Programme Objective"
+msgstr "Objectif du Programme"
+
+#: hat/templates/dashboard/home.html:43
+msgid ""
+"\n"
+"        To reduce the morbidity and mortality due to HAT to a level compatible with a normal productive life for the inhabitants of areas where the disease is endemic (1 case per 10,000 inhabitants)\n"
+"        "
+msgstr ""
+"\n"
+"Réduire la morbidité et la mortalité due au THA à un niveau compatible avec une vie productive normale pour les habitants des zones où la maladie est endémique (1 cas par 10000 habitants)"
+
+#: hat/templates/dashboard/home.html:47
+msgid "Programme Organisation"
+msgstr "Organisation du Programme"
+
+#: hat/templates/dashboard/home.html:49
+msgid "Central level"
+msgstr "Niveau Central"
+
+#: hat/templates/dashboard/home.html:50
+msgid ""
+"\n"
+"        Normative and develop strategies and technical support for the provincial levels\n"
+"        "
+msgstr ""
+"\n"
+"Normatif et élaborer des stratégies et appui technique au niveau provincial"
+
+#: hat/templates/dashboard/home.html:55
+msgid "Provincial level"
+msgstr "Niveau Provincial"
+
+#: hat/templates/dashboard/home.html:56
+msgid ""
+"\n"
+"        Organize and coordinate fighting in the province. Provide basic technical support and advice to provincial physicians\n"
+"        "
+msgstr ""
+"\n"
+"Organiser et Coordonner la lutte dans la province. Fournir un appui technique de base et des conseils aux médecins provinciaux"
+
+#: hat/templates/dashboard/home.html:61
+msgid "Peripheral Operational level"
+msgstr "Niveau Périphérique Opérationnel"
+
+#: hat/templates/dashboard/home.html:62
+msgid ""
+"\n"
+"        Execution of the fight\n"
+"        "
+msgstr ""
+"\n"
+"Exécution de la lutte"
+
+#: hat/templates/dashboard/home.html:68
+msgid "Use the microplanning tool"
+msgstr "Utiliser l'outil de reprogrammation"
+
+#: hat/templates/dashboard/home.html:77
+msgid "Monthly report example"
+msgstr "Exemple de rapport mensuel"
+
+#: hat/templates/dashboard/home.html:80
+msgid "See monthly campaign reports"
+msgstr "Voir les rapports de campagne mensuels"
+
+#: hat/templates/dashboard/home.html:82
+msgid ""
+"\n"
+"        Report showing monthly statistics from active screening using the HAT mobile application. Statistics include: number of suspect and confirmed cases, participants missing tests, and more.\n"
+"        "
+msgstr ""
+"\n"
+"Rapport montrant les statistiques mensuel et annuel sur les dépistages actifs et passifs de la THA, les statistiques comprenent le nombre de cas suspects confirmé, la PTR, la PTE et plus encore."
+
+#: hat/templates/dashboard/home.html:98
+msgid "Upload data from the field"
+msgstr "Envoyer des données du terrain"
+
+#: hat/templates/dashboard/home.html:100
+msgid ""
+"\n"
+"        Upload historical data forms from the Microsoft Access template or encrypted backup files from the Mobile Application.\n"
+"        "
+msgstr ""
+"\n"
+"Envoyer des formulaires de données historiques à partir du modèle Microsoft Access ou des fichiers de sauvegarde cryptés à partir de l'application mobile."
+
+#: hat/templates/dashboard/home.html:106
+msgid "Data upload"
+msgstr "Envoi des données "
+
+#: hat/templates/dashboard/home.html:113
+msgid "Upload data"
+msgstr "Envoyer des données"
+
+#: hat/templates/dashboard/home.html:117
+msgid "Check uploaded data"
+msgstr "Vérifier des données envoyées"
+
+#: hat/templates/dashboard/home.html:119
+msgid ""
+"\n"
+"        View the list of participants in the screening sessions, the historical cases...\n"
+"        "
+msgstr ""
+"\n"
+"Voir la liste des participants aux séances de dépistage, les cas historiques ..."
+
+#: hat/templates/dashboard/home.html:125
+msgid "Data uploaded"
+msgstr "Données envoyées"
+
+#: hat/templates/dashboard/home.html:135
+msgid "Follow up on unconfirmed cases"
+msgstr "Suivi des cas non confirmés"
+
+#: hat/templates/dashboard/home.html:137
+msgid ""
+"\n"
+"        Download a list of participants who screened positive for HAT, but <strong>did not</strong> have a follow-up test to confirm.\n"
+"        "
+msgstr ""
+"\n"
+"Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."
+
+#: hat/templates/dashboard/home.html:143
+msgid "Go to HAT cases"
+msgstr "Aller sur Les cas THA"
+
+#: hat/templates/dashboard/home.html:152
+msgid "A proud partnership"
+msgstr "Un partenariat fier"
+
+#: hat/templates/data_sources.html:4
+msgid "Data sources"
+msgstr "Sources de données  "
+
+#: hat/templates/data_sources.html:7
+msgid "HAT mobile application data"
+msgstr "Données de l'application mobile HAT"
+
+#: hat/templates/data_sources.html:11
+msgid "HAT historical forms"
+msgstr "Formulaires historiques de THA "
+
+#: hat/templates/data_sources.html:15
+msgid "Pharmacovigilance"
+msgstr "Pharmacovigilance"
+
+#: hat/templates/devices/list.html:5 hat/templates/devices/list.html:14
+#: hat/templates/maintenance/index.html:62
+msgid "Devices"
+msgstr "Tablettes"
+
+#: hat/templates/devices/list.html:24
+msgid "Surveillance activity summary"
+msgstr "Résumé de l'activité de surveillance"
+
+#: hat/templates/devices/list.html:26
+msgid "Last synchronisation summary"
+msgstr "Résumé de la dernière synchronisation"
+
+#: hat/templates/devices/list.html:30
+msgid "Synced?"
+msgstr "Synchronisé?"
+
+#: hat/templates/devices/list.html:33
+msgid "Period"
+msgstr "Période"
+
+#: hat/templates/devices/list.html:34
+msgid "# Locations"
+msgstr "# Localités"
+
+#: hat/templates/devices/list.html:39 hat/templates/events/list.html:25
+#: hat/templates/import_export/upload_done.html:33
+msgid "Total"
+msgstr "Total"
+
+#: hat/templates/devices/list.html:40 hat/templates/events/list.html:26
+#: hat/templates/import_export/upload_done.html:34
+msgid "Created"
+msgstr "Créé"
+
+#: hat/templates/devices/list.html:41 hat/templates/events/list.html:27
+#: hat/templates/import_export/upload_done.html:35
+msgid "Updated"
+msgstr "Actualisé"
+
+#: hat/templates/devices/list.html:42 hat/templates/events/list.html:28
+#: hat/templates/import_export/upload_done.html:36
+msgid "Deleted"
+msgstr "Supprimé"
+
+#: hat/templates/events/list.html:5 hat/templates/events/list.html:13
+#: hat/templates/maintenance/index.html:25
+msgid "Events"
+msgstr "Événements"
+
+#: hat/templates/events/list.html:23
+#: hat/templates/import_export/upload_done.html:31
+msgid "Type"
+msgstr "Type"
+
+#: hat/templates/import_export/datasets.html:18
+msgid ""
+"\n"
+"          Upload historical data forms from the Microsoft Access historical forms template or encrypted backup files from the Mobile Application.\n"
+"        "
+msgstr ""
+"\n"
+"Envoyer des formulaires de données historiques à partir du modèle de formulaires historiques de Microsoft Access ou des fichiers de sauvegarde cryptés à partir de l'application mobile."
+
+#: hat/templates/import_export/datasets.html:24
+msgid "Go to upload cases"
+msgstr "Aller sur Envoyer des cas"
+
+#: hat/templates/import_export/datasets.html:39
+msgid ""
+"\n"
+"          Upload updated locations. Use this section when the canonical locations files are updated.\n"
+"          "
+msgstr ""
+"\n"
+"Envoyer les mises à jour des localités. Utiliser cette section lorsque les fichiers des localités canoniques sont mis à jour."
+
+#: hat/templates/import_export/datasets.html:45
+msgid "Go to upload locations"
+msgstr "Aller sur Envoyer des localités"
+
+#: hat/templates/import_export/datasets.html:60
+msgid ""
+"\n"
+"            Upload reconciled data. From time to time, it may be necessary to manually reconcile data.  Can be used for participant or location reconciliation.\n"
+"          "
+msgstr ""
+"\n"
+"Envoyer les données réconciliées. De temps en temps, il peut être nécessaire de réconcilier manuellement les données. Peut être utilisée pour la reconciliation des participants ou des localités."
+
+#: hat/templates/import_export/datasets.html:66
+msgid "Go to upload reconciled data"
+msgstr "Aller sur Envoyer les données réconciliées"
+
+#: hat/templates/import_export/upload_cases.html:6
+msgid "Datasets – cases"
+msgstr "Portail de données - cas"
+
+#: hat/templates/import_export/upload_cases.html:17
+msgid ""
+"\n"
+"          Upload historical data forms from the Microsoft Access template or encrypted backup files from the mobile application.\n"
+"          "
+msgstr ""
+"\n"
+"Envoyer des formulaires de données historiques à partir du modèle de formulaires historiques de Microsoft Access ou des fichiers de sauvegarde cryptés à partir de l'application mobile."
+
+#: hat/templates/import_export/upload_cases.html:23
+msgid ""
+"\n"
+"            To upload data, click “Choose files” and select the file from your computer. Hit “Upload cases”.\n"
+"            "
+msgstr ""
+"\n"
+"Pour envoyer des données, cliquez sur \"Choisir des fichiers\" et sélectionnez le fichier à partir de votre ordinateur. Appuyer sur \"Envoyer des cas\" ."
+
+#: hat/templates/import_export/upload_cases.html:28
+#: hat/templates/import_export/upload_locations.html:32
+#: hat/templates/import_export/upload_locations.html:84
+#: hat/templates/import_export/upload_reconciled.html:42
+msgid ""
+"\n"
+"            You will see a screen showing that the the upload is in progress.\n"
+"            <strong>Please stay on this screen until you get a notification that the upload has finished.</strong>\n"
+"            "
+msgstr ""
+"\n"
+"Vous verrez un écran montrant que le téléchargement est en cours. \n"
+"<strong>Veuillez rester sur cet écran jusqu'à ce que vous receviez une notification selon laquelle l'envoi est terminé.</strong>"
+
+#: hat/templates/import_export/upload_cases.html:34
+msgid ""
+"\n"
+"            You will see a screen showing successful uploads and any files which could not be imported.\n"
+"            Files won't be imported if they've already been uploaded, or if there are errors in the file.\n"
+"            "
+msgstr ""
+"\n"
+"Vous verrez un écran montrant les envois réussis et tous les fichiers qui ne pouvaient pas être importés. \n"
+"Les fichiers ne seront pas importés s'ils ont déjà été envoyés ou s'il y a des erreurs dans le fichier."
+
+#: hat/templates/import_export/upload_cases.html:40
+#: hat/templates/import_export/upload_locations.html:44
+#: hat/templates/import_export/upload_locations.html:96
+#: hat/templates/import_export/upload_reconciled.html:54
+msgid ""
+"\n"
+"            The data will be available immediately after the confirmation message is shown.\n"
+"            "
+msgstr ""
+"\n"
+"Les données seront disponibles immédiatement après l'affichage du message de confirmation."
+
+#: hat/templates/import_export/upload_done.html:12
+msgid "Upload"
+msgstr "Envoyer des données"
+
+#: hat/templates/import_export/upload_done.html:18
+#, python-format
+msgid ""
+"\n"
+"            %(error_count)s file resulted in errors, please review the file marked below and try again!\n"
+"            "
+msgid_plural ""
+"\n"
+"            %(error_count)s files resulted in errors, please review the files marked below and try again!\n"
+"            "
+msgstr[0] ""
+"\n"
+"%(error_count)s les fichiers ont donné lieu à des erreurs, s'il vous plaît consulter les fichiers marqués ci-dessous et essayez à nouveau!  "
+msgstr[1] ""
+"\n"
+"%(error_count)s les fichiers ont donné lieu à des erreurs, s'il vous plaît consulter les fichiers marqués ci-dessous et essayez à nouveau!"
+
+#: hat/templates/import_export/upload_done.html:30
+msgid "File"
+msgstr "Fichier"
+
+#: hat/templates/import_export/upload_done.html:32
+msgid "Result"
+msgstr "Résultat"
+
+#: hat/templates/import_export/upload_done.html:37
+#: hat/templates/import_export/upload_done.html:49
+msgid "Error"
+msgstr "Erreur "
+
+#: hat/templates/import_export/upload_done.html:47
+msgid "Success"
+msgstr "Succès "
+
+#: hat/templates/import_export/upload_locations.html:6
+msgid "Datasets – locations"
+msgstr "Portail de données - localités"
+
+#: hat/templates/import_export/upload_locations.html:17
+msgid ""
+"\n"
+"          Upload a .dbf file containing the locations (file should contain all locations, not just new ones).\n"
+"          Use this section when the canonical locations files are updated.\n"
+"          This is useful if new locations are added to the official list, or if population estimates or other information about a location is updated.\n"
+"          If the province data are not included in the file you will need to upload the health areas file next.\n"
+"          "
+msgstr ""
+"\n"
+"Envoyer un fichier .dbf contenant les localités (le fichier doit contenir toutes les localités, et pas seulement les nouvelles). \n"
+"Utilisez cette section lorsque les fichiers des localités canoniques sont mis à jour.\n"
+"Ceci est utile si de nouvelles localités sont ajoutés à la liste officielle, ou si des estimations de la population ou d'autres informations sur une localité sont mises à jour. \n"
+"Si les données de la province ne sont pas incluses dans le fichier, vous devrez ensuite envoyer le fichier des aires de santé."
+
+#: hat/templates/import_export/upload_locations.html:26
+msgid ""
+"\n"
+"            To upload data, click “Choose file” and select the file from your computer.\n"
+"            Hit “Upload locations”.\n"
+"            "
+msgstr ""
+"\n"
+"Pour envoyer des données, cliquez sur \"Choisir des fichiers\" et sélectionnez le fichier à partir de votre ordinateur.\n"
+"Appuyer sur \"Envoyer des localités\"."
+
+#: hat/templates/import_export/upload_locations.html:38
+#: hat/templates/import_export/upload_locations.html:90
+#: hat/templates/import_export/upload_reconciled.html:48
+msgid ""
+"\n"
+"            You will see a screen showing successful upload or if the file could not be imported.\n"
+"            Fix any issues with the file if it could not be imported and re-upload.\n"
+"            "
+msgstr ""
+"\n"
+"Vous verrez un écran affichant un envoi réussi ou si le fichier n'a pas pu être importé. \n"
+"Résoudre tous les problèmes avec le fichier si elle ne pouvait pas être importé et renvoyé."
+
+#: hat/templates/import_export/upload_locations.html:65
+#: hat/templates/import_export/upload_locations.html:110
+msgid "Upload health areas"
+msgstr "Envoyer des aires de santé"
+
+#: hat/templates/import_export/upload_locations.html:69
+msgid ""
+"\n"
+"          Upload a .dbf file containing the complete health areas list\n"
+"          (file should contain provinces and health zones and areas data).\n"
+"          This file will <em>update</em> the missing info about provinces in the locations list.\n"
+"          No new locations will be created.\n"
+"          "
+msgstr ""
+"\n"
+"Envoyer un fichier .dbf contenant la liste complète des aires de santé \n"
+"(le fichier doit contenir les données sur les provinces et les zones et les aires de santé).\n"
+"Ce fichier <em>mettra à jour</em> les informations manquantes sur les provinces dans la liste des localités.\n"
+"Aucune nouvelle localité ne sera créée."
+
+#: hat/templates/import_export/upload_locations.html:78
+msgid ""
+"\n"
+"            To upload data, click “Choose file” and select the file from your computer.\n"
+"            Hit “Upload health areas”.\n"
+"            "
+msgstr ""
+"\n"
+"Pour envoyer des données, cliquez sur \"Choisir des fichiers\" et sélectionnez le fichier à partir de votre ordinateur. Appuyer \"Envoyer les aires de santé\"."
+
+#: hat/templates/import_export/upload_reconciled.html:6
+msgid "Datasets – reconciled data"
+msgstr "Portail de données - données réconciliées "
+
+#: hat/templates/import_export/upload_reconciled.html:17
+msgid ""
+"\n"
+"          From time to time, it may be necessary to manually reconcile data.\n"
+"          This section can be used for participant or location reconciliation.\n"
+"          "
+msgstr ""
+"\n"
+"De temps en temps, il peut être nécessaire de réconcilier manuellement les données. \n"
+"Cette section peut être utilisée pour la reconciliation des participants ou des localités."
+
+#: hat/templates/import_export/upload_reconciled.html:24
+msgid "To begin, your file must be in .xlsx format."
+msgstr "Pour commencer, votre fichier doit être en format .xlsx."
+
+#: hat/templates/import_export/upload_reconciled.html:27
+msgid ""
+"\n"
+"            File must contain the document_id field of the record you want to update.\n"
+"            Beyond that only the fields which need correcting need to be included.\n"
+"            "
+msgstr ""
+"\n"
+"Le fichier doit contenir le champ document_id de l'enregistrement que vous souhaitez mettre à jour. \n"
+"Au-delà de cela, seuls les champs nécessitant une correction doivent être inclus."
+
+#: hat/templates/import_export/upload_reconciled.html:33
+msgid ""
+"Column headers must match exactly the headers used in the exported data."
+msgstr ""
+"Les en-têtes de colonne doivent correspondre exactement aux en-têtes "
+"utilisés dans les données exportées. "
+
+#: hat/templates/import_export/upload_reconciled.html:36
+msgid ""
+"\n"
+"            To upload data, click “Choose file” and upload the .xlsx file with the corrected fields.\n"
+"            Hit “Upload reconciled data”.\n"
+"            "
+msgstr ""
+"\n"
+"Pour envoyer des données, cliquer sur \"Choisir un fichier\" et envoyer le fichier .xlsx avec les champs corrigés. \n"
+"Appuyer sur \"Envoyer des données réconciliées\"."
+
+#: hat/templates/login.html:9
+msgid "Please log in to continue"
+msgstr "Veuillez vous connecter pour continuer"
+
+#: hat/templates/login.html:15
+msgid ""
+"\n"
+"            Your account doesn't have access to this page. To proceed,\n"
+"            please login with an account that has access.\n"
+"            "
+msgstr ""
+"\n"
+"Votre compte n'a pas accès à cette page. Pour continuer, s'il vous plaît connectez-vous avec un compte qui a accès. "
+
+#: hat/templates/login.html:22
+msgid "Please login to see this page."
+msgstr "Veuillez vous connecter pour voir cette page."
+
+#: hat/templates/login.html:28
+msgid ""
+"\n"
+"            Your username and password didn't match. Please try again.\n"
+"            "
+msgstr ""
+"\n"
+"Votre nom d'utilisateur et votre mot de passe ne correspondent pas. Veuillez réessayer."
+
+#: hat/templates/login.html:36
+msgid "Login"
+msgstr "Connexion"
+
+#: hat/templates/maintenance/index.html:18
+msgid "Store"
+msgstr "Stockage "
+
+#: hat/templates/maintenance/index.html:19
+msgid "Number of records"
+msgstr "Nombre d'enregistrements"
+
+#: hat/templates/maintenance/index.html:20
+#: hat/templates/maintenance/index.html:31
+#: hat/templates/maintenance/index.html:44
+#: hat/templates/maintenance/index.html:56
+#: hat/templates/maintenance/index.html:68
+msgid "View"
+msgstr "Afficher"
+
+#: hat/templates/maintenance/index.html:33
+msgid "No pagination"
+msgstr "Pas de pagination"
+
+#: hat/templates/maintenance/index.html:38
+msgid "Transformed"
+msgstr "Transformé"
+
+#: hat/templates/maintenance/index.html:50
+msgid "Duplicate matches"
+msgstr "Correspondances en double"
+
+#: hat/templates/maintenance/index.html:80
+msgid "Actions"
+msgstr "Actions"
+
+#: hat/templates/maintenance/index.html:86
+msgid "Delete the transformed data."
+msgstr "Supprimer les données transformées."
+
+#: hat/templates/maintenance/index.html:90
+#: hat/templates/maintenance/index.html:102
+#: hat/templates/maintenance/index.html:126
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr?"
+
+#: hat/templates/maintenance/index.html:92
+msgid "Delete transformed"
+msgstr "Supprimer les données transformés"
+
+#: hat/templates/maintenance/index.html:98
+msgid "Delete the transformed data and reimport from raw."
+msgstr "Supprimer les données transformées and réimporter des données brutes."
+
+#: hat/templates/maintenance/index.html:104
+msgid "Reimport"
+msgstr "Réimporter"
+
+#: hat/templates/maintenance/index.html:110
+msgid "Import synced devices data."
+msgstr "Importer des données des tablettes synchronisées."
+
+#: hat/templates/maintenance/index.html:116
+msgid "Import data"
+msgstr "Importer des données"
+
+#: hat/templates/maintenance/index.html:122
+msgid "Rebuild the reconciliation duplicates list."
+msgstr "Reconstruire la liste de réconciliation en double."
+
+#: hat/templates/maintenance/index.html:128
+msgid "Rebuild duplicates"
+msgstr "Reconstruire les doublons"
+
+#: hat/templates/maintenance/index.html:134
+msgid "Download the events log as csv."
+msgstr "Télécharger le journal des événements en tant que csv."
+
+#: hat/templates/maintenance/index.html:139
+msgid "Download events csv"
+msgstr "Télécharger les événements csv"
+
+#: hat/templates/maintenance/index.html:146
+msgid "Prepare download events csv"
+msgstr "Préparer le téléchargement des événements csv"
+
+#: hat/templates/maintenance/index.html:153
+msgid "Download the events tables database dump."
+msgstr "Télécharger la sauvegarde des tables des événements."
+
+#: hat/templates/maintenance/index.html:158
+msgid "Download events dump"
+msgstr "Télécharger la sauvegarde des événements."
+
+#: hat/templates/maintenance/index.html:165
+msgid "Prepare download events dump"
+msgstr "Préparer le téléchargement de la sauvegarde des événements."
+
+#: hat/templates/maintenance/index.html:172
+msgid "Upload the events tables database dump."
+msgstr "Envoyer la sauvegarde des tables des événements."
+
+#: hat/templates/maintenance/index.html:179
+msgid "Upload events dump"
+msgstr "Envoyer la sauvegarde des événements."
+
+#: hat/templates/pagination.html:8
+msgid "First"
+msgstr "Premier"
+
+#: hat/templates/pagination.html:15
+msgid "Previous"
+msgstr "Précédent"
+
+#: hat/templates/pagination.html:27
+msgid "Next"
+msgstr "Suivant"
+
+#: hat/templates/pagination.html:35
+msgid "Last"
+msgstr "Dernier"
+
+#: hat/templates/tasks/status.html:20
+msgid "Back"
+msgstr "Retour"
+
+#: hat/templates/tasks/status.html:36
+msgid "Status:"
+msgstr "Statut:"
+
+#: hat/templates/tasks/status.html:41
+msgid "Download file"
+msgstr "Télécharger le fichier"
+
+#: hat/users/models.py:37
+msgid ""
+"When including Yasa Bonga, please also add Yassa Bonga         or Yasa-Bonga"
+" to take into account spelling differences."
+msgstr ""

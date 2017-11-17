@@ -5,7 +5,7 @@ services:
       context: .
       args:
         NODE_ENV: "${NODE_ENV}"
-    image: trypelim-staging
+    image: trypelim-prod
     # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
     ports:
       - "80:80"
@@ -22,15 +22,19 @@ services:
       - couchdb
       - redis
     environment: &hat_environment
-      SENSE_HAT_ENVIRONMENT: 'staging'
+      SENSE_HAT_ENVIRONMENT: 'prod'
       DEBUG: 'false'
-      TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
+      RDS_DB_NAME: "${RDS_DB_NAME}"
+      RDS_USERNAME: "${RDS_USERNAME}"
+      RDS_PASSWORD: "${RDS_PASSWORD}"
+      RDS_HOSTNAME: "${RDS_HOSTNAME}"
+      RDS_PORT: "${RDS_PORT}"
     # Limit logging in dev to not overflow terminal
     logging: &hat_logging
       driver: "json-file"
@@ -55,12 +59,11 @@ services:
     image: redis:3.2
     logging: *hat_logging
 
-
   # the worker container of the task runner
   rq:
     depends_on:
       - hat
-    image: trypelim-staging
+    image: trypelim-prod
     volumes: *hat_volumes
     links: *hat_links
     environment: *hat_environment

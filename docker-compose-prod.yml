@@ -30,11 +30,11 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
-      RDS_DB_NAME: "${RDS_DB_NAME}"
-      RDS_USERNAME: "${RDS_USERNAME}"
-      RDS_PASSWORD: "${RDS_PASSWORD}"
-      RDS_HOSTNAME: "${RDS_HOSTNAME}"
-      RDS_PORT: "${RDS_PORT}"
+      DB_NAME: "${RDS_DB_NAME}"
+      DB_USERNAME: "${RDS_USERNAME}"
+      DB_PASSWORD: "${RDS_PASSWORD}"
+      DB_HOST: "${RDS_HOSTNAME}"
+      DB_PORT: "${RDS_PORT}"
     # Limit logging in dev to not overflow terminal
     logging: &hat_logging
       driver: "json-file"

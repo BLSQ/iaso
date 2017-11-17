@@ -180,8 +180,8 @@ DATABASES = {
     'explorer': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': DB_NAME,
-        'USER': DB_EXPLORER_USERNAME,
-        'PASSWORD': DB_EXPLORER_PASSWORD,
+        'USER': DB_USERNAME,
+        'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
         'PORT': DB_PORT,
         'TEST': {

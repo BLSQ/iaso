@@ -1,6 +1,7 @@
 {% extends 'app.html' %}
 {% load i18n %}
 {% load hat %}
+{% load static %}
 
 {% block header %}
   <h1 class="header__title">{% trans 'Case' %}</h1>
@@ -41,25 +42,35 @@
             {% endfor %}
           </tbody>
         </table>
-      {% if images %}
+
           <br/>
           <h2>Images</h2>
           <table class="table--minimised">
           <tbody>
+              <tr>
+                <td>{{ image.upload_date|date }}</td>
+                <td><a href="{% static "images/20160409_131659.jpg" %}"><img src="{% static "images/20160409_131659.jpg" %}" width="200px"/></a></td>
+              </tr>
           {% for image in images %}
               <tr>
                 <td>{{ image.upload_date|date }}</td>
-                <td><a href="{{ image.image.url }}"><img src="{{ image.image.url }}" width="200px"/></a></b></td>
+                <td><a href="{% static "images/20160409_131659.jpg" %}"><img src="{% static "images/20160409_131659.jpg" %}" width="200px"/></a></td>
               </tr>
             {% endfor %}
           </tbody>
           </table>
-      {% endif %}
-      {% if videos %}
+
+
           <br/>
           <h2>Videos</h2>
           <table class="table--minimised">
           <tbody>
+                        <tr>
+                <td>{{ video.upload_date|date }}</td>
+                  <td><video width="640" height="264" controls="controls">
+                      <source src="{% static "images/fakevideo.mp4" %}" type="video/mp4">
+                  </video></td>
+              </tr>
           {% for video in videos %}
               <tr>
                 <td>{{ video.upload_date|date }}</td>
@@ -72,7 +83,7 @@
           </table>
 
 
-      {% endif %}
+
 
       </div>
     </div>

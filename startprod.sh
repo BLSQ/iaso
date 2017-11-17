@@ -5,4 +5,4 @@ export RDS_PASSWORD="BhEzVaGy2njTjVvrJV)ETw"
 export RDS_HOSTNAME="trypelim.ct6zilwq9jpp.eu-central-1.rds.amazonaws.com"
 export RDS_PORT="5432"
 
-docker-compose --verbose -f docker-compose-prod.yml up
+docker-compose  -f docker-compose-prod.yml up

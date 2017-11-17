@@ -189,7 +189,7 @@ DATABASES = {
         }
     }
 }
-
+print(DATABASES)
 
 def is_superuser(u):
     return u.is_superuser

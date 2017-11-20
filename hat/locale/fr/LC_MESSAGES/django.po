@@ -309,7 +309,7 @@ msgstr "Impossible d'obtenir le fichier."
 #: hat/templates/app.html:8 hat/templates/base.html:7
 #: hat/templates/login.html:8
 msgid "Sense HAT Dashboard"
-msgstr "Le Tableau de Bord de Sense HAT"
+msgstr "Le Tableau de Bord de Trypelim"
 
 #: hat/templates/app.html:20
 msgid "Home"
@@ -370,7 +370,7 @@ msgstr "Se déconnecter"
 
 #: hat/templates/app.html:109
 msgid "Sense HAT"
-msgstr "Sense HAT"
+msgstr "Trypelim"
 
 #: hat/templates/app.html:120
 msgid "Print this page"
@@ -549,7 +549,7 @@ msgstr "Grouper par"
 
 #: hat/templates/dashboard/home.html:15
 msgid "Welcome to the SENSE HAT Dashboard"
-msgstr "Bienvenue au tableau de bord de Sense HAT"
+msgstr "Bienvenue au tableau de bord de Trypelim"
 
 #: hat/templates/dashboard/home.html:21
 msgid ""

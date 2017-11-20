@@ -59,6 +59,8 @@ case "$1" in
   ;;
   "start" )
     envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
+    cp build_scripts/prod/www.trypelim.org/fullchain.pem /etc/nginx/fullchain.pem
+    cp build_scripts/prod/www.trypelim.org/privkey.pem /etc/nginx/privkey.pem
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./scripts/gen_docs.sh

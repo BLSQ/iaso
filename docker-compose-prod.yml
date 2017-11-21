@@ -6,7 +6,6 @@ services:
       args:
         NODE_ENV: "${NODE_ENV}"
     image: trypelim-prod
-    # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
     ports:
       - "80:80"
     volumes: &hat_volumes

@@ -40,6 +40,12 @@ FIXTURE_DIRS = (
     'hat/fixtures/',
 )
 
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+
+
+
 # Logging
 
 LOGGING_LEVEL = os.getenv('DJANGO_LOGGING_LEVEL', 'INFO')
@@ -95,6 +101,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django_rq',
+    'storages',
     'corsheaders',
     'debug_toolbar',
     'explorer',
@@ -311,3 +318,20 @@ MEDIA_URL = '/media/'
 
 PREPEND_WWW = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
+
+
+
+#############
+
+
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+
+AWS_S3_FILE_OVERWRITE = False
+

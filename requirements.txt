@@ -7,6 +7,8 @@ django-sql-explorer==1.1.1
 djangorestframework==3.6.2
 pandas==0.19.2
 Pillow==4.3.0
+django-storages==1.6.5
+boto3==1.4.8
 
 # web server and auth
 oauth2client==4.0.0

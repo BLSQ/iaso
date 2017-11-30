@@ -27,7 +27,7 @@ services:
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}"
       HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
       RDS_DB_NAME: "${RDS_DB_NAME}"
       RDS_USERNAME: "${RDS_USERNAME}"
@@ -51,7 +51,7 @@ services:
       - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
     environment:
       COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
+      COUCHDB_PASSWORD:  ${COUCHDB_PASSWORD}"
     logging: *hat_logging
 
   redis:

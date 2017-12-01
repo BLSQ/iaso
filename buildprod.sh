@@ -10,4 +10,4 @@ export AWS_STORAGE_BUCKET_NAME="trypelim"
 export AWS_ACCESS_KEY_ID="AKIAJARGLYO4U2IE4TKQ"
 export AWS_SECRET_ACCESS_KEY="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"
 
-docker-compose  -f docker-compose-prod.yml up
+docker-compose  -f docker-compose-prod.yml build 

@@ -34,6 +34,9 @@ services:
       RDS_PASSWORD: "${RDS_PASSWORD}"
       RDS_HOSTNAME: "${RDS_HOSTNAME}"
       RDS_PORT: "${RDS_PORT}"
+      AWS_STORAGE_BUCKET_NAME: "${AWS_STORAGE_BUCKET_NAME}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     # Limit logging in dev to not overflow terminal
     logging: &hat_logging
       driver: "json-file"

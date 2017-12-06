@@ -47,14 +47,11 @@
           <h2>Images</h2>
           <table class="table--minimised">
           <tbody>
-              <tr>
-                <td>{{ image.upload_date|date }}</td>
-                <td><a href="{% static "images/20160409_131659.jpg" %}"><img src="{% static "images/20160409_131659.jpg" %}" width="200px"/></a></td>
-              </tr>
+
           {% for image in images %}
               <tr>
                 <td>{{ image.upload_date|date }}</td>
-                <td><a href="{% static "images/20160409_131659.jpg" %}"><img src="{% static "images/20160409_131659.jpg" %}" width="200px"/></a></td>
+                <td><a href="{{ image.image.url }}"><img src="{{ image.image.url }}" width="200px"/></a></td>
               </tr>
             {% endfor %}
           </tbody>

@@ -82,7 +82,7 @@ services:
       - hat
     image: sense-hat
     ports:
-      - "8443:443"
+      - "8081:80"
     volumes: *hat_volumes
     environment: *hat_environment
     logging: *hat_logging
@@ -110,16 +110,3 @@ services:
     environment: *hat_environment
     logging: *hat_logging
     command: start_dev_rq
-
-  # the jupyter server
-  jupyter:
-    depends_on:
-      - hat
-    image: sense-hat
-    ports:
-      - "8888:8888"
-    volumes: *hat_volumes
-    links: *hat_links
-    environment: *hat_environment
-    logging: *hat_logging
-    command: start_jupyter

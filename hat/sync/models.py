@@ -182,14 +182,11 @@ class VideoUploadForm(ModelForm):
         fields = ('video', 'participant_uuid', 'hat_id', 'group_id')
 
 
-class CouchDocument(models.Model):
-    doc_id = models.TextField()
-    doc_revision = models.TextField()
-    device = models.ForeignKey(DeviceDB)
-    doc = JSONField()
-
 class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
     device = models.ForeignKey(DeviceDB)
     doc = JSONField()
+
+    def __str__(self):
+        return "id %s - revision %s - device %s" % (self.doc_id, self.doc_revision, self.device)

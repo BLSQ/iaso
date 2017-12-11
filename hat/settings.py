@@ -332,6 +332,7 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
-
 AWS_S3_FILE_OVERWRITE = False
+S3_USE_SIGV4 = True
+AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 

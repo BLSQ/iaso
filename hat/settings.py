@@ -334,5 +334,5 @@ AWS_S3_FILE_OVERWRITE = False
 S3_USE_SIGV4 = True
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
-
+AWS_S3_REGION_NAME = "eu-central-1"
 

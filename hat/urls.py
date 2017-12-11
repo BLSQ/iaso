@@ -5,6 +5,10 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = 'Administration de Trypelim.org'
+admin.site.site_title = 'Trypelim'
+admin.site.index_title = 'Administration de Trypelim.org'
+
 urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='dashboard:home', permanent=False), name='index'),
     url(r'^accounts/', include('django.contrib.auth.urls')),

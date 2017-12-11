@@ -335,4 +335,5 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_S3_FILE_OVERWRITE = False
 S3_USE_SIGV4 = True
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+AWS_QUERYSTRING_AUTH = False
 

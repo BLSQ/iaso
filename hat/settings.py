@@ -319,8 +319,6 @@ MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 PREPEND_WWW = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
 
-
-
 #############
 
 
@@ -334,6 +332,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 AWS_S3_FILE_OVERWRITE = False
 S3_USE_SIGV4 = True
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
-AWS_QUERYSTRING_AUTH = False
+
 

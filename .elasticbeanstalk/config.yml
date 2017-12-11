@@ -1,9 +1,13 @@
 branch-defaults:
   development:
-    environment: null
+    environment: trypelim-staging
     group_suffix: null
 deploy:
   artifact: build_scripts/deploy.zip
+environment-defaults:
+  trypelim-staging:
+    branch: development
+    repository: trypelim
 global:
   application_name: trypelim-web-staging
   branch: development

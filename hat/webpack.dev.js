@@ -42,7 +42,7 @@ module.exports = {
   output: {
     library: ['HAT', '[name]'],
     libraryTarget: 'var',
-    path: path.resolve(__dirname, './assets/bundles/'),
+    path: path.resolve(__dirname, './assets/webpack/'),
     filename: '[name]-[hash].js',
     publicPath: WEBPACK_URL + '/static/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
   },
@@ -63,7 +63,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
     new BundleTracker({
       path: __dirname,
-      filename: './assets/bundles/webpack-stats.json'
+      filename: './assets/webpack/webpack-stats.json'
     }),
     new webpack.DefinePlugin({
       '__LOCALE': JSON.stringify(LOCALE)

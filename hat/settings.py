@@ -287,14 +287,14 @@ HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "hat/assets/bundles"),
+    os.path.join(BASE_DIR, "hat/assets/webpack"),
 ]
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': '/',  # used in prod
-        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/bundles', 'webpack-stats.json'),
+        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/webpack', 'webpack-stats.json'),
     }
 }
 

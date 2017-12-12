@@ -25,7 +25,7 @@ module.exports = {
   output: {
     library: ['HAT', '[name]'],
     libraryTarget: 'var',
-    path: path.resolve(__dirname, './assets/bundles'),
+    path: path.resolve(__dirname, './assets/webpack'),
     filename: '[name]-[chunkhash].js'
   },
 
@@ -41,7 +41,7 @@ module.exports = {
     ),
     new BundleTracker({
       path: __dirname,
-      filename: './assets/bundles/webpack-stats.json'
+      filename: './assets/webpack/webpack-stats.json'
     }),
     new ExtractTextPlugin({filename: '[name]-[chunkhash].css'}),
     new CommonsPlugin({

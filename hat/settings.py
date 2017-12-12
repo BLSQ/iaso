@@ -286,6 +286,9 @@ HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "hat/assets/bundles"),
+]
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -320,7 +323,6 @@ PREPEND_WWW = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
 
 #############
-
 
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

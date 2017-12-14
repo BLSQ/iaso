@@ -1,9 +1,8 @@
 import os
 import sys
 
-COUCHDB_URL = os.environ.get('COUCHDB_URL', '')
-
 file_path = sys.argv[1]
+COUCHDB_URL = sys.argv[2]
 
 f = open(file_path, "rt")
 
@@ -23,5 +22,6 @@ WSGIScriptAlias"""
     f = open(file_path, "wt")
     f.write(t)
     f.close()
+    print("Inserting proxypass done!")
 else:
     print("Already done!")

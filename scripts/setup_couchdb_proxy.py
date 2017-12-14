@@ -1,4 +1,3 @@
-import os
 import sys
 
 file_path = sys.argv[1]
@@ -11,7 +10,11 @@ f.close()
 
 already_done = "_couchdb" in t
 
-if not already_done and COUCHDB_URL:
+if already_done:
+    print("Proxypass was already inserted.")
+elif not COUCHDB_URL:
+    print("NO COUCHDB_URL")
+else:
     to_insert = """
 ProxyPass "/_couchdb" "%s"
 ProxyPassReverse "/_couchdb"  "%s"
@@ -23,5 +26,3 @@ WSGIScriptAlias"""
     f.write(t)
     f.close()
     print("Inserting proxypass done!")
-else:
-    print("Already done!")

@@ -25,4 +25,4 @@ WSGIScriptAlias"""
     f = open(file_path, "wt")
     f.write(t)
     f.close()
-    print("Inserting proxypass done!")
+    print("Inserting proxypass done! : %s in %s" % (COUCHDB_URL, file_path))

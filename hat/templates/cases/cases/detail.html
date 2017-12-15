@@ -57,17 +57,10 @@
           </tbody>
           </table>
 
-
           <br/>
           <h2>Videos</h2>
           <table class="table--minimised">
           <tbody>
-                        <tr>
-                <td>{{ video.upload_date|date }}</td>
-                  <td><video width="640" height="264" controls="controls">
-                      <source src="{% static "images/fakevideo.mp4" %}" type="video/mp4">
-                  </video></td>
-              </tr>
           {% for video in videos %}
               <tr>
                 <td>{{ video.upload_date|date }}</td>

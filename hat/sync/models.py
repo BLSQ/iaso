@@ -161,6 +161,15 @@ class ImageUpload(models.Model):
     image = models.FileField(upload_to="images/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
+    def semantic_id(self):
+        if self.participant_uuid:
+            return self.participant_uuid
+        else:
+            return self.group_id
+
+    def __str__(self):
+        return "%s - %s" % (str(self.upload_date), self.semantic_id())
+
 
 class VideoUpload(models.Model):
     participant_uuid = models.TextField()
@@ -169,11 +178,21 @@ class VideoUpload(models.Model):
     video = models.FileField(upload_to="videos/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
+    def semantic_id(self):
+        if self.participant_uuid:
+            return self.participant_uuid
+        else:
+            return self.group_id
+
+    def __str__(self):
+        return "%s - %s" % (str(self.upload_date), self.semantic_id())
+
 
 class ImageUploadForm(ModelForm):
     class Meta:
         model = ImageUpload
         fields = ('image', 'participant_uuid', 'hat_id', 'group_id')
+
 
 
 class VideoUploadForm(ModelForm):

@@ -4,78 +4,87 @@
 {% load static %}
 
 {% block header %}
-  <h1 class="header__title">{% trans 'Case' %}</h1>
+    <h1 class="header__title">{% trans 'Case' %}</h1>
 {% endblock %}
 
 {% block content %}
-  <div class="content">
+    <div class="content">
 
-    <div class="hide-on-print">
-      <a class="button--minimised" href="{{ back_link }}">
-        <i class="fa fa-arrow-left"></i>
-        <span>{% trans 'Back to list' %}</span>
-      </a>
+        <div class="hide-on-print">
+            <a class="button--minimised" href="{{ back_link }}">
+                <i class="fa fa-arrow-left"></i>
+                <span>{% trans 'Back to list' %}</span>
+            </a>
+        </div>
+        <br/>
+
+
+        <div class="widget__container">
+            <div class="widget__header">
+                <h2 class="widget__heading">
+                    {% trans 'Case' %} {{ case.document_id }}
+                </h2>
+            </div>
+            <div class="widget__content">
+                <table class="table--minimised">
+                    <thead>
+                    <tr>
+                        <th>{% trans 'Field' %}</th>
+                        <th>{% trans 'Value' %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for field in fields %}
+                        <tr>
+                            <td>{{ field }}</td>
+                            <td><b>{{ case|get:field }}</b></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <br/>
+                <h2>Images</h2>
+                <table class="table--minimised">
+                    <tbody>
+
+                    {% for image in images %}
+                        <tr>
+                            <td>{{ image.upload_date|date }}</td>
+                            <td><a href="{{ image.image.url }}"><img src="{{ image.image.url }}" width="200px"/></a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td>{% trans 'No data' %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <br/>
+                <h2>Videos</h2>
+                <table class="table--minimised">
+                    <tbody>
+                    {% for video in videos %}
+                        <tr>
+                            <td>{{ video.upload_date|date }}</td>
+                            <td>
+                                <video width="640" height="264" controls="controls">
+                                    <source src="{{ video.video.url }}" type="video/mp4">
+                                </video>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td>{% trans 'No data' %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
     </div>
-    <br/>
-
-
-    <div class="widget__container">
-      <div class="widget__header">
-        <h2 class="widget__heading">
-          {% trans 'Case' %} {{ case.document_id }}
-        </h2>
-      </div>
-      <div class="widget__content">
-        <table class="table--minimised">
-          <thead>
-            <tr>
-              <th>{% trans 'Field' %}</th>
-              <th>{% trans 'Value' %}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for field in fields %}
-              <tr>
-                <td>{{ field }}</td>
-                <td><b>{{ case|get:field }}</b></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-          <br/>
-          <h2>Images</h2>
-          <table class="table--minimised">
-          <tbody>
-
-          {% for image in images %}
-              <tr>
-                <td>{{ image.upload_date|date }}</td>
-                <td><a href="{{ image.image.url }}"><img src="{{ image.image.url }}" width="200px"/></a></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-          </table>
-
-          <br/>
-          <h2>Videos</h2>
-          <table class="table--minimised">
-          <tbody>
-          {% for video in videos %}
-              <tr>
-                <td>{{ video.upload_date|date }}</td>
-                  <td><video width="640" height="264" controls="controls">
-                      <source src="{{ video.video.url }}" type="video/mp4">
-                  </video></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-          </table>
-
-
-
-
-      </div>
-    </div>
-  </div>
 {% endblock %}

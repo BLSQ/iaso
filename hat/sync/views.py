@@ -18,6 +18,7 @@ from django.contrib.auth.models import  User
 from django.shortcuts import render, get_object_or_404 ,redirect
 
 from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
+from ..cases.models import TestGroup
 
 import logging
 
@@ -266,6 +267,10 @@ def image_upload(request: HttpRequest) -> HttpResponse:
     img = ImageUploadForm(request.POST, request.FILES)
     if img.is_valid():
         img.save()
+        if img.group_id:
+            test_group = TestGroup.objects.get_or_create(group_id=img.group_id)
+            test_group.type = img.type
+            test_group.save()
         return JsonResponse({"Result": "Upload ok"})
     else:
         return JsonResponse(img.errors, status=400)

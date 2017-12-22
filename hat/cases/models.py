@@ -255,6 +255,9 @@ class CaseAbstract(models.Model):
         permissions = CASES_PERMISSIONS
 
 
+    def __str__(self):
+        return "%s - %s - %s" % (self.lastname, self.name, self.prename)
+
 class Case(CaseAbstract):
     '''
     Implements :class:`hat.cases.models.CaseAbstract`
@@ -398,6 +401,8 @@ class Location(models.Model):
             ('import_locations', 'Can import location data'),
         )
 
+    def __str__(self):
+        return "%s - %s - %s" % (self.village,  self.AS, self.ZS)
 
 class DuplicatesPair(models.Model):
     '''
@@ -431,7 +436,7 @@ class DuplicatesPair(models.Model):
     document_id2 = models.TextField(db_index=True, null=True)
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        if(self.case1_id > self.case2_id):
+        if self.case1_id > self.case2_id:
             super(DuplicatesPair, self).save(*args, **kwargs)
         else:
             raise Exception("Case1's id MUST always be greater than case2's id")
@@ -441,6 +446,16 @@ class DuplicatesPair(models.Model):
         permissions = (
             ('reconcile_duplicates', 'Can reconcile duplicates'),
         )
+
+
+class TestGroup(models.Model):
+    type = models.TextField()
+    cases = models.ManyToManyField('Case')
+    group_id = models.TextField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.type, self.group_id, self.created_at)
 
 
 class IgnoredPair(models.Model):
@@ -459,3 +474,6 @@ class IgnoredPair(models.Model):
 
     class Meta:
         unique_together = (('document_id1', 'document_id2'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.document_id1, self.document_id2)

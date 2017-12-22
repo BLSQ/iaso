@@ -154,10 +154,10 @@ def mobile_user_post_delete(sender, instance, *args, **kwargs):  # type: ignore
 
 
 class ImageUpload(models.Model):
-    participant_uuid = models.TextField(null=True, blank=True)
+    participant_uuid = models.TextField(null=True, blank=True, db_index=True)
     hat_id = models.TextField(null=True, blank=True)
-    group_id = models.TextField(null=True, blank=True)
-
+    group_id = models.TextField(null=True, blank=True, db_index=True)
+    type = models.TextField(default='catt')
     image = models.FileField(upload_to="images/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -172,9 +172,10 @@ class ImageUpload(models.Model):
 
 
 class VideoUpload(models.Model):
-    participant_uuid = models.TextField()
+    participant_uuid = models.TextField(db_index=True)
     hat_id = models.TextField()
-    group_id = models.TextField(null=True, blank=True)
+    group_id = models.TextField(null=True, blank=True, db_index=True)
+    type = models.TextField(default='pg')
     video = models.FileField(upload_to="videos/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -192,7 +193,6 @@ class ImageUploadForm(ModelForm):
     class Meta:
         model = ImageUpload
         fields = ('image', 'participant_uuid', 'hat_id', 'group_id')
-
 
 
 class VideoUploadForm(ModelForm):

@@ -158,29 +158,29 @@ class CaseAbstract(models.Model):
     )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
-    document_date = models.DateTimeField(db_index=True, null=True)
+    document_date = models.DateTimeField("Date document", db_index=True, null=True)
     # The id is currently a hash over the row to be able to catch duplicates
     document_id = models.TextField(unique=True)
     hat_id = models.TextField()
-    entry_date = models.DateTimeField(null=True)
-    entry_name = models.TextField(null=True)
+    entry_date = models.DateTimeField("Date de collection", null=True)
+    entry_name = models.TextField("Nom d'entrée", null=True)
 
-    form_number = models.PositiveSmallIntegerField(null=True)
-    form_year = models.PositiveSmallIntegerField(null=True)
-    form_month = models.PositiveSmallIntegerField(null=True)
+    form_number = models.PositiveSmallIntegerField("Numéro de formulaire", null=True)
+    form_year = models.PositiveSmallIntegerField("Année du formulaire", null=True)
+    form_month = models.PositiveSmallIntegerField("Mois du formulaire", null=True)
 
-    name = models.TextField(null=True)
-    lastname = models.TextField(null=True)
-    prename = models.TextField(null=True)
+    name = models.TextField("Postnom", null=True)
+    lastname = models.TextField("Nom de famille", null=True)
+    prename = models.TextField("Prénom", null=True)
 
     SEX_CHOICES = (
-        ('female', 'Female'),
-        ('male', 'Male'),
+        ('female', 'Femme'),
+        ('male', 'Homme'),
     )
-    sex = models.TextField(choices=SEX_CHOICES, null=True)
-    age = models.PositiveSmallIntegerField(null=True)
-    year_of_birth = models.PositiveSmallIntegerField(null=True)
-    mothers_surname = models.TextField(null=True)
+    sex = models.TextField("Sexe", choices=SEX_CHOICES, null=True)
+    age = models.PositiveSmallIntegerField("Age", null=True)
+    year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True)
+    mothers_surname = models.TextField("Nom de la mère", null=True)
 
     village = models.TextField(null=True)
     province = models.TextField(null=True)
@@ -192,16 +192,16 @@ class CaseAbstract(models.Model):
     mobile_unit = models.TextField(null=True)
     device_id = models.TextField(null=True)
 
-    treatment_center = models.TextField(null=True)
-    treatment_start_date = models.DateTimeField(null=True)
-    treatment_end_date = models.DateTimeField(null=True)
-    treatment_prescribed = models.TextField(null=True)
-    treatment_secondary_effects = models.NullBooleanField()
-    treatment_result = models.TextField(null=True)
+    treatment_center = models.TextField("Centre de traitement", null=True)
+    treatment_start_date = models.DateTimeField("Début de traitement", null=True)
+    treatment_end_date = models.DateTimeField("Fin de traitement", null=True)
+    treatment_prescribed = models.TextField("Prescription", null=True)
+    treatment_secondary_effects = models.NullBooleanField("Effets Secondaires")
+    treatment_result = models.TextField("Résultat", null=True)
 
-    test_catt = models.IntegerField(null=True)
-    test_catt_dilution = models.TextField(null=True)
-    test_clinical_sickness = models.IntegerField(null=True)
+    test_catt = models.IntegerField("Test CATT", null=True)
+    test_catt_dilution = models.TextField("Dilution CATT", null=True)
+    test_clinical_sickness = models.IntegerField("Maladie clinique", null=True)
     test_ctcwoo = models.IntegerField(null=True)
     test_dil = models.IntegerField(null=True)
     test_ge = models.IntegerField(null=True)
@@ -232,7 +232,7 @@ class CaseAbstract(models.Model):
     )
     test_pl_result = models.TextField(choices=PL_TEST_RESULT_CHOICES, null=True)
 
-    followup_done = models.NullBooleanField()
+    followup_done = models.NullBooleanField("Suivi effectué")
 
     # fields for followup tests
     test_followup_pg = models.TextField(null=True)

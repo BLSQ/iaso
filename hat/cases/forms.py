@@ -1,11 +1,15 @@
 from typing import NamedTuple, List, Any, Callable, Tuple, Union, Dict, Optional
 from datetime import datetime, timedelta
 from django import forms
+from django.forms import ModelForm
 from django.utils.translation import ugettext as _
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
+from django.contrib.admin.widgets import AdminDateWidget
 
 from .utils import create_list_from_restrict_to_zs
+from .models import Case
+from .widgets import DateWidget
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -243,6 +247,36 @@ def filter_and_create_form(
                            )
 
     return queryset, form
+
+
+class CaseForm(ModelForm):
+    class Meta :
+        model = Case
+        exclude = ('hat_id', 'source', 'document_id', 'entry_name', 'latitude', 'longitude',
+                   'mobile_unit', 'device_id', 'version_number')
+
+        PROVINCE_choices = Case.objects.order_by('province').values_list("province", "province").distinct()
+        AS_choices = Case.objects.order_by('AS').values_list("AS", "AS").distinct()
+        ZS_choices = Case.objects.order_by('ZS').values_list("ZS", "ZS").distinct()
+        VILLAGE_choices = Case.objects.order_by('village').values_list("village", "village").distinct()
+        TREATMENT_CENTER_choices = Case.objects.order_by('treatment_center').values_list("treatment_center", "treatment_center").distinct()
+        widgets = {
+            'document_date': AdminDateWidget(),
+            'entry_date': AdminDateWidget(),
+            'sex': forms.Select(choices=Case.SEX_CHOICES),
+            'source': forms.Select(choices=Case.SOURCE_CHOICES),
+            'name': forms.TextInput(),
+            'lastname': forms.TextInput(),
+            "prename": forms.TextInput(),
+            "mothers_surname": forms.TextInput(),
+            "AS": forms.Select(choices=AS_choices),
+            "ZS": forms.Select(choices=ZS_choices),
+            "province": forms.Select(choices=PROVINCE_choices),
+            "village": forms.Select(choices=VILLAGE_choices),
+            "treatment_center": forms.Select(choices=TREATMENT_CENTER_choices),
+            "treatment_start_date": AdminDateWidget(),
+            "treatment_end_date": AdminDateWidget(),
+        }
 
 
 ################################################################################

@@ -7,7 +7,6 @@ def appversions(request: HttpRequest) -> Dict[str, str]:
     prefix = 'D-' if settings.DEBUG else ''
     return {
             'DEV_SERVER': settings.DEV_SERVER,
-            'version_commit': prefix + (settings.HAT_COMMIT[0:7] or 'local-dev')
     }
 
 

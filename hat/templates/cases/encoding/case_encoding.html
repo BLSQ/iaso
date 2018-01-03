@@ -27,13 +27,13 @@
 </head>
 <body>
 <div id="main_container">
-<h2>Encodage de cas:</h2>
+<h2>Encodage de cas</h2>
     <div id="encoding-form-div">
     <form>
          {% csrf_token %}
 
     <table>{{ case_form.as_table }}</table>
-        <input type="submit"/>
+        <input type="submit" value="Enregistrer"/>
     </form>
     </div>
 </div>

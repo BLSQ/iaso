@@ -207,14 +207,14 @@ class CaseAbstract(models.Model):
     test_ge = models.IntegerField(null=True)
     test_ifat = models.IntegerField(null=True)
     test_lcr = models.IntegerField(null=True)
-    test_lymph_node_puncture = models.IntegerField(null=True)
+    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", null=True)
     test_maect = models.IntegerField(null=True)
     test_parasit = models.IntegerField(null=True)
     test_pg = models.IntegerField(null=True)
     test_pl = models.IntegerField(null=True)
     test_rdt = models.IntegerField(null=True)
     test_sf = models.IntegerField(null=True)
-    test_sternal_puncture = models.IntegerField(null=True)
+    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", null=True)
     test_other = models.IntegerField(null=True)
 
     # Some of these could be used for validating the correctness of the pl_result.
@@ -224,27 +224,27 @@ class CaseAbstract(models.Model):
     test_pl_gb_mm3 = models.TextField(null=True)
     test_pl_albumine = models.TextField(null=True)
     test_pl_lcr = models.TextField(null=True)
-    test_pl_comments = models.TextField(null=True)
+    test_pl_comments = models.TextField("Commentaire Ponction Lombaire", null=True)
     PL_TEST_RESULT_CHOICES = (
         ('stage1', 'Stage1'),
         ('stage2', 'Stage2'),
-        ('unknown', 'Unknown'),
+        ('unknown', 'Unconnu'),
     )
-    test_pl_result = models.TextField(choices=PL_TEST_RESULT_CHOICES, null=True)
+    test_pl_result = models.TextField("Résultat de test PL", choices=PL_TEST_RESULT_CHOICES, null=True)
 
     followup_done = models.NullBooleanField("Suivi effectué")
 
     # fields for followup tests
-    test_followup_pg = models.TextField(null=True)
-    test_followup_sf = models.TextField(null=True)
-    test_followup_ge = models.TextField(null=True)
-    test_followup_woo = models.TextField(null=True)
-    test_followup_maect = models.TextField(null=True)
-    test_followup_woo_maect = models.TextField(null=True)
-    test_followup_pl = models.TextField(null=True)
-    test_followup_pl_trypanosome = models.TextField(null=True)
-    test_followup_pl_gb = models.TextField(null=True)
-    test_followup_decision = models.TextField(null=True)
+    test_followup_pg = models.TextField("Suivi PG", null=True)
+    test_followup_sf = models.TextField("Suivi SF", null=True)
+    test_followup_ge = models.TextField("Suivi GE", null=True)
+    test_followup_woo = models.TextField("Suivi WOO", null=True)
+    test_followup_maect = models.TextField("Suivi MAECT", null=True)
+    test_followup_woo_maect = models.TextField("Suivi WOO MAECT",null=True)
+    test_followup_pl = models.TextField("Suivi PL", null=True)
+    test_followup_pl_trypanosome = models.TextField("Suivi PL trypanosome", null=True)
+    test_followup_pl_gb = models.TextField("Suivi PL GB", null=True)
+    test_followup_decision = models.TextField("Suivi décision", null=True)
 
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)

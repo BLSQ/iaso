@@ -9,7 +9,7 @@ from django.contrib.admin.widgets import AdminDateWidget
 
 from .utils import create_list_from_restrict_to_zs
 from .models import Case
-from .widgets import DateWidget
+
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -250,7 +250,7 @@ def filter_and_create_form(
 
 
 class CaseForm(ModelForm):
-    class Meta :
+    class Meta:
         model = Case
         exclude = ('hat_id', 'source', 'document_id', 'entry_name', 'latitude', 'longitude',
                    'mobile_unit', 'device_id', 'version_number')
@@ -259,7 +259,9 @@ class CaseForm(ModelForm):
         AS_choices = Case.objects.order_by('AS').values_list("AS", "AS").distinct()
         ZS_choices = Case.objects.order_by('ZS').values_list("ZS", "ZS").distinct()
         VILLAGE_choices = Case.objects.order_by('village').values_list("village", "village").distinct()
-        TREATMENT_CENTER_choices = Case.objects.order_by('treatment_center').values_list("treatment_center", "treatment_center").distinct()
+        TREATMENT_CENTER_choices = Case.objects.order_by('treatment_center').values_list("treatment_center",
+                                                                                         "treatment_center").distinct()
+
         widgets = {
             'document_date': AdminDateWidget(),
             'entry_date': AdminDateWidget(),
@@ -274,8 +276,31 @@ class CaseForm(ModelForm):
             "province": forms.Select(choices=PROVINCE_choices),
             "village": forms.Select(choices=VILLAGE_choices),
             "treatment_center": forms.Select(choices=TREATMENT_CENTER_choices),
+            "test_pl_result": forms.Select(choices=Case.PL_TEST_RESULT_CHOICES),
             "treatment_start_date": AdminDateWidget(),
             "treatment_end_date": AdminDateWidget(),
+            "treatment_prescribed": forms.TextInput(),
+            "treatment_result": forms.TextInput(),
+            "test_catt_dilution": forms.TextInput(),
+
+            "test_pl_liquid": forms.TextInput(),
+            "test_pl_trypanosome": forms.TextInput(),
+            "test_pl_gb_mm3": forms.TextInput(),
+            "test_pl_albumine": forms.TextInput(),
+            "test_pl_lcr": forms.TextInput(),
+            "test_pl_comments": forms.TextInput(),
+            "test_followup_pl_trypanosome": forms.TextInput(),
+
+            "test_followup_pg": forms.TextInput(),
+            "test_followup_sf": forms.TextInput(),
+            "test_followup_ge": forms.TextInput(),
+            "test_followup_woo": forms.TextInput(),
+            "test_followup_maect": forms.TextInput(),
+            "test_followup_woo_maect": forms.TextInput(),
+            "test_followup_pl": forms.TextInput(),
+            "test_followup_pl_trypanosome": forms.TextInput(),
+            "test_followup_pl_gb": forms.TextInput(),
+            "test_followup_decision": forms.TextInput(),
         }
 
 

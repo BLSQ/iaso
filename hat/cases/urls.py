@@ -20,4 +20,6 @@ urlpatterns = [
         view=views.download_failed, name='download_failed'),
     url(r'^download/get/(?P<task_id>[a-z0-9-]+)$',
         view=views.download_get, name='download_get'),
+    url(r'^encoding$',
+        view=views.encoding, name='encoding'),
 ]

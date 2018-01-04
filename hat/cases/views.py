@@ -15,7 +15,7 @@ from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
-from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice
+from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice, CaseForm
 from .models import Case, CaseView, DuplicatesPair
 from ..sync.models import ImageUpload, VideoUpload
 
@@ -539,6 +539,16 @@ def get_download_link(request: HttpRequest) -> HttpResponse:
     if task_id:
         return reverse('cases:download_get', kwargs={'task_id': task_id})
     return None
+
+
+################################################################################
+# manual encoding form
+################################################################################
+
+def encoding(request: HttpRequest) -> HttpResponse:
+    case_form = CaseForm()
+    return render(request, 'cases/encoding/case_encoding.html',
+                  { "case_form": case_form})
 
 
 ################################################################################

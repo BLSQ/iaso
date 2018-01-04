@@ -9,7 +9,8 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 from django.http.request import HttpRequest
 from django.http import HttpResponseForbidden, HttpResponse
-
+from django.http import HttpResponseRedirect
+import uuid
 from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 
@@ -546,7 +547,14 @@ def get_download_link(request: HttpRequest) -> HttpResponse:
 ################################################################################
 
 def encoding(request: HttpRequest) -> HttpResponse:
-    case_form = CaseForm()
+    if request.POST:
+        case_form = CaseForm(request.POST)
+        if case_form.is_valid():
+            case = case_form.save(commit=False)
+            case.document_id = uuid.uuid4()
+            return HttpResponseRedirect(reverse('cases:encoding'))
+    else:
+        case_form = CaseForm()
     return render(request, 'cases/encoding/case_encoding.html',
                   { "case_form": case_form})
 

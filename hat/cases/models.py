@@ -402,7 +402,7 @@ class Location(models.Model):
         )
 
     def __str__(self):
-        return "%s - %s - %s" % (self.village,  self.AS, self.ZS)
+        return "%s - %s - %s - %s" % (self.village,  self.AS, self.ZS, self.village_type)
 
 class DuplicatesPair(models.Model):
     '''

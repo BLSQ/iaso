@@ -21,6 +21,13 @@ def disable_for_loaddata(signal_handler: Callable) -> Callable:
     return wrapper
 
 
+class Team(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class Profile(models.Model):
     '''
     User profile.
@@ -28,6 +35,8 @@ class Profile(models.Model):
     :ivar User user:           User reference.
     :ivar text restrict_to_zs: If present give access only to the data
         belonging to the indicated “zone de santé”.
+    :ivar Team team:           User team.
+
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -37,6 +46,7 @@ class Profile(models.Model):
         help_text=_('When including Yasa Bonga, please also add Yassa Bonga\
          or Yasa-Bonga to take into account spelling differences.')
     )
+    team = models.ForeignKey(Team, null=True, blank=True)
 
 
 @receiver(post_save, sender=User)

@@ -119,6 +119,7 @@ INSTALLED_APPS = [
     'hat.maintenance',
     'hat.sync',
     'hat.tasks',
+    'hat.geo',
 ]
 
 MIDDLEWARE_CLASSES = [

@@ -42,6 +42,7 @@ from hat.cases.filters import \
 from hat.queries import stats_queries, microplanning_queries
 
 from hat.cases.utils import create_list_from_restrict_to_zs
+from hat.geo.models import AS, ZS, Village
 
 datasets = {}
 
@@ -571,7 +572,7 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]
 })
 def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
     '''
-    Retrives the valid list of “zones de santé” (:class:`hat.cases.models.Location`).
+    Retrieves the valid list of “zones de santé” (:class:`hat.cases.models.Location`).
     Those zones come from the dbf files so we can assume that their
     shapes are contained in the ``shapes.json`` file.
 
@@ -586,6 +587,39 @@ def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
         locations = locations.filter(ZS__in=restricted_zones)
 
     return locations.values_list('ZS', flat=True).distinct()
+
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {
+        'province_id': {'type': 'string'},
+    },
+})
+def health_zones(request: Request, params: Dict[str, str]) -> List[str]:
+    province_id = params.get("province_id")
+    return ZS.objects.filter(province_id=province_id).values_list('id', 'name')
+
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {
+        'zs_id': {'type': 'string'},
+    },
+})
+def health_areas(request: Request, params: Dict[str, str]) -> List[str]:
+    zs_id = params.get("zs_id")
+    print(zs_id)
+    return AS.objects.filter(ZS_id=zs_id).values_list('id', 'name')
+
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {
+        'as_id': {'type': 'string'},
+    },
+})
+
+def villages(request: Request, params: Dict[str, str]) -> List[str]:
+    as_id = params.get("as_id")
+    return Village.objects.filter(AS_id=as_id).values_list('id', 'name')
+
 
 
 class DatasetViewSet(viewsets.ViewSet):

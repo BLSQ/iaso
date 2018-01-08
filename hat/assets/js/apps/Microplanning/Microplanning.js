@@ -128,7 +128,7 @@ export class Microplanning extends Component {
     }
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
-
+    const teams = ((data && data.teams) || []);
     // selection
     const { selection } = this.props;
     const selectedVillages = (selection.selectedItems || []);
@@ -262,6 +262,7 @@ export class Microplanning extends Component {
             {/* Map */}
             <div className={mapClass} id="planning-map">
               <Map
+                teams={teams}
                 baseLayer={baseLayer}
                 overlays={overlays}
                 legend={legend}

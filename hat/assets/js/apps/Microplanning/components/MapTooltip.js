@@ -112,14 +112,14 @@ const MESSAGES = defineMessages({
 })
 
 const ROWS = [
+  { key: 'village' },
+  { key: 'AS' },
+  { key: 'ZS' },
   { key: 'province' },
   { key: 'formerProvince' },
-  { key: 'ZS' },
-  { key: 'AS' },
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
-  { key: 'village' },
   { key: 'type', type: 'message' },
   { key: 'latitude', type: 'coordinates' },
   { key: 'longitude', type: 'coordinates' },
@@ -143,7 +143,6 @@ class MapTooltip extends Component {
             .filter((row) => item[row.key] && item[row.key] !== '')
             .map((row) => {
               let value = item[row.key]
-
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} year='numeric' month='long' day='numeric' />

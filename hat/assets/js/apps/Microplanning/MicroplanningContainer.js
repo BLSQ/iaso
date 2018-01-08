@@ -59,6 +59,24 @@ export const urls = [
       1,
       "Kinzamba Ii"
     ]
+  },
+  {
+    name: 'teams',
+    url: '/api/datasets/teams/',
+    mock: [
+      [
+        1,
+        "team 1"
+      ]
+    ]
+  },
+  {
+    name: 'areas',
+    url: '/api/datasets/health_areas/',
+    mock: [
+      1,
+      "Kinzamba Ii"
+    ]
   }
 ]
 

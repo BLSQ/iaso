@@ -11,6 +11,17 @@ class Planning(models.Model):
     def __str__(self):
         return "%s - % s" % (self.year, self.name)
 
+    def as_dict(self):
+        assignations = []
+        for assignation in self.assignation_set.all():
+            assignations.append(assignation.as_dict())
+
+        return {
+            'id': self.id,
+            'year': self.year,
+            'name': self.name,
+            'assignations': assignations
+        }
 
 class Assignation(models.Model):
     planning = models.ForeignKey(Planning)
@@ -21,3 +32,9 @@ class Assignation(models.Model):
     def __str__(self):
         return "%s - % s - %s" % (self.planning, self.village, self.team)
 
+
+    def as_dict(self):
+        return {
+            'village': self.village_id,
+            'team': self.team_id,
+        }

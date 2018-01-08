@@ -43,6 +43,7 @@ from hat.queries import stats_queries, microplanning_queries
 
 from hat.cases.utils import create_list_from_restrict_to_zs
 from hat.geo.models import AS, ZS, Village
+from hat.users.models import Team
 
 datasets = {}
 
@@ -637,7 +638,21 @@ def villages(request: Request, params: Dict[str, str]) -> List[str]:
 
     return queryset.values_list('id', 'name').order_by('name')
 
+@dataset(params_schema={
+    'type': 'object',
+    'properties': {
+        'coordination_id': {'type': 'string'},
+    },
+})
+def teams(request: Request, params: Dict[str, str]) -> List[str]:
+    coordination_id = params.get("coordination_id")
 
+    if coordination_id:
+        queryset = Team.objects.filter(coordination_id=coordination_id)
+    else:
+        queryset = Team.objects.all()
+
+    return queryset.values_list('id', 'name').order_by('name')
 
 class DatasetViewSet(viewsets.ViewSet):
     # View to list and retrieve registered datasets

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile
+from .models import Profile, Team, Coordination
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 
@@ -24,3 +24,6 @@ class UserAdmin(AuthUserAdmin):
 admin.site.unregister(User)
 # register new user admin
 admin.site.register(User, UserAdmin)
+
+admin.site.register(Team)
+admin.site.register(Coordination)

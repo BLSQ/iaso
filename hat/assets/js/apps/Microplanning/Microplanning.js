@@ -48,10 +48,40 @@ const MESSAGES = defineMessages({
 })
 
 export class Microplanning extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      locations: []
+    }
+  }
+
+  componentWillReceiveProps(newProps) {
+    const { data, error, loading } = newProps.load;
+    const locations = ((data && data.locations) || []);
+    this.setState({
+      locations
+    })
+  }
 
   /* ***************************************************************************
    * HANDLERS
    ****************************************************************************/
+
+  changeLocationHandler (location) {
+    let zs_id = null;
+    this.state.locations.map(
+      l => {
+        if (l[1] === location ) {
+          zs_id = l[0];
+        }
+      }
+    )
+    this.props.redirect({
+      ...this.props.params,
+      location,
+      zs_id
+    })
+  }
 
   changeSelectionModeHandler(mode) {
     if (this.props.selection.mode === mode) {
@@ -87,9 +117,8 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { caseyears, location } = this.props.params;
+    const { caseyears, location, area } = this.props.params;
     const { data, error, loading } = this.props.load;
-
     // possible years from 2000 to current year
     const firstYear = 2000;
     const currentYear = new Date().getFullYear();
@@ -97,8 +126,7 @@ export class Microplanning extends Component {
     for (let y = currentYear; y >= firstYear; y--) {
       years.push('' + y); // parse to string (Select component needs it)
     }
-
-    const locations = ((data && data.locations) || []);
+    const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
 
     // selection
@@ -166,7 +194,7 @@ export class Microplanning extends Component {
                   <span className='map__text--select'>
                     <FormattedMessage
                       id='microplanning.filter.zones'
-                      defaultMessage='Show villages in the Zones de Sante' />
+                      defaultMessage='Zones de santé' />
                   </span>
                   <Select
                     multi
@@ -176,8 +204,27 @@ export class Microplanning extends Component {
                     name='location'
                     value={location || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={locations.map((value) => ({ label: value, value }))}
-                    onChange={location =>  this.props.redirect({ ...this.props.params, location })}
+                    options={this.state.locations.map((value) => ({ label: value[1], value: value[1] }))}
+                    onChange={(location) =>  this.changeLocationHandler(location)}
+                  />
+                </div>
+
+                <div className='map__filters--option'>
+                  <span className='map__text--select'>
+                    <FormattedMessage
+                      id='microplanning.filter.area'
+                      defaultMessage='Aires de santé' />
+                  </span>
+                  <Select
+                    multi
+                    simpleValue
+                    autosize={false}
+                    disabled={loading}
+                    name='area'
+                    value={area || ''}
+                    placeholder={formatMessage(MESSAGES['location-all'])}
+                    options={areas.map((value) => ({ label: value[1], value: value[1] }))}
+                    onChange={area =>  this.props.redirect({ ...this.props.params, area })}
                   />
                 </div>
 

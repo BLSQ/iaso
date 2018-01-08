@@ -10,10 +10,10 @@
  * Handles state and data loading for the Microplanning page
  */
 
-import React, {Component} from 'react'
-import {connect} from 'react-redux'
-import {clone} from '../../utils'
-import {fetchUrls} from '../../utils/fetchData'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { clone } from '../../utils'
+import { fetchUrls } from '../../utils/fetchData'
 import Microplanning from './Microplanning'
 
 // This is where we configure the app data urls:
@@ -40,33 +40,50 @@ export const urls = [
   },
   {
     name: 'locations',
-    url: '/api/datasets/locations_with_shape/',
-    mock: ['Mosango', 'Yasa Bonga']
+    url: '/api/datasets/health_zones/',
+    mock: [
+      [
+        1,
+        "Mosango"
+      ],
+      [
+        2,
+        "Yasa-bonga"
+      ]
+    ]
+  },
+  {
+    name: 'areas',
+    url: '/api/datasets/health_areas/',
+    mock: [
+      1,
+      "Kinzamba Ii"
+    ]
   }
 ]
 
 export class MicroplanningContainer extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.currentParams = ''
   }
 
-  loadData (params) {
-    const {dispatch} = this.props
+  loadData(params) {
+    const { dispatch } = this.props
     const oldParams = clone(this.currentParams)
     this.currentParams = clone(params)
     fetchUrls(urls, params, oldParams, dispatch)
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.loadData(this.props.params)
   }
 
-  componentWillReceiveProps (newProps) {
+  componentWillReceiveProps(newProps) {
     this.loadData(newProps.params)
   }
 
-  render () {
+  render() {
     return (
       <Microplanning params={this.props.params} />
     )

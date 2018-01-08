@@ -596,7 +596,13 @@ def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
 })
 def health_zones(request: Request, params: Dict[str, str]) -> List[str]:
     province_id = params.get("province_id")
-    return ZS.objects.filter(province_id=province_id).values_list('id', 'name')
+
+    if province_id:
+        queryset = ZS.objects.filter(province_id=province_id)
+    else:
+        queryset = ZS.objects.all()
+
+    return queryset.values_list('id', 'name').order_by('name')
 
 @dataset(params_schema={
     'type': 'object',
@@ -606,8 +612,13 @@ def health_zones(request: Request, params: Dict[str, str]) -> List[str]:
 })
 def health_areas(request: Request, params: Dict[str, str]) -> List[str]:
     zs_id = params.get("zs_id")
-    print(zs_id)
-    return AS.objects.filter(ZS_id=zs_id).values_list('id', 'name')
+
+    if zs_id:
+        queryset = AS.objects.filter(ZS_id=zs_id)
+    else:
+        queryset = AS.objects.all()
+
+    return queryset.values_list('id', 'name').order_by('name')
 
 @dataset(params_schema={
     'type': 'object',
@@ -618,7 +629,13 @@ def health_areas(request: Request, params: Dict[str, str]) -> List[str]:
 
 def villages(request: Request, params: Dict[str, str]) -> List[str]:
     as_id = params.get("as_id")
-    return Village.objects.filter(AS_id=as_id).values_list('id', 'name')
+
+    if as_id:
+        queryset = Village.objects.filter(as_id=as_id)
+    else:
+        queryset = Village.objects.all()
+
+    return queryset.values_list('id', 'name').order_by('name')
 
 
 

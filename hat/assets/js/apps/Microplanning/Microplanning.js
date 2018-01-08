@@ -29,7 +29,8 @@ import {
   MapSelectionControl,
   MapSelectionExport,
   MapSelectionList,
-  MapSelectionSummary
+  MapSelectionSummary,
+  TeamSelection
 } from './components';
 
 const MESSAGES = defineMessages({
@@ -176,7 +177,7 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-
+        <TeamSelection />
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}

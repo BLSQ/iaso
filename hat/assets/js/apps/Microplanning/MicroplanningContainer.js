@@ -71,13 +71,22 @@ export const urls = [
     ]
   },
   {
-    name: 'areas',
-    url: '/api/datasets/health_areas/',
+    name: 'plannings',
+    url: '/api/planning/',
     mock: [
-      1,
-      "Kinzamba Ii"
+        "Test",
+        1
     ]
   }
+  // ,
+  // {
+  //   name: 'areas',
+  //   url: '/api/datasets/health_areas/',
+  //   mock: [
+  //     1,
+  //     "Kinzamba Ii"
+  //   ]
+  // }
 ]
 
 export class MicroplanningContainer extends Component {

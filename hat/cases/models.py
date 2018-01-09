@@ -16,9 +16,12 @@ CASES_PERMISSIONS = (
 )
 
 CURRENT_YEAR = datetime.now().year
-years = range(CURRENT_YEAR - 20, CURRENT_YEAR+1)
+years =  range(CURRENT_YEAR, CURRENT_YEAR - 20, -1)
 YEAR_CHOICES = zip(years, years)
-MONTH_CHOICES = [(str(i), calendar.month_name[i]) for i in range(1,13)]
+MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+MONTH_CHOICES = [(i+1, MONTHS[i]) for i in range(0, 12)]
+
+
 class CaseAbstract(models.Model):
     '''
     Models case object with generic properties, treatment, followup, tests...
@@ -189,10 +192,10 @@ class CaseAbstract(models.Model):
     year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True)
     mothers_surname = models.TextField("Nom de la mère", null=True)
 
-    village = models.TextField(null=True)
     province = models.TextField(null=True)
     ZS = models.TextField(null=True)
     AS = models.TextField(null=True)
+    village = models.TextField(null=True)
 
     normalized_village = models.ForeignKey(Village, null=True)
 

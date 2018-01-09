@@ -2,6 +2,9 @@ from typing import Any
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from hat.geo.models import Village
+from datetime import datetime
+import calendar
 
 CASES_PERMISSIONS = (
     ('import', 'Can import data'),
@@ -12,7 +15,10 @@ CASES_PERMISSIONS = (
     ('view_full', 'Can view non anonymized cases data'),
 )
 
-
+CURRENT_YEAR = datetime.now().year
+years = range(CURRENT_YEAR - 20, CURRENT_YEAR+1)
+YEAR_CHOICES = zip(years, years)
+MONTH_CHOICES = [(str(i), calendar.month_name[i]) for i in range(1,13)]
 class CaseAbstract(models.Model):
     '''
     Models case object with generic properties, treatment, followup, tests...
@@ -166,8 +172,9 @@ class CaseAbstract(models.Model):
     entry_name = models.TextField("Nom d'entrée", null=True)
 
     form_number = models.PositiveSmallIntegerField("Numéro de formulaire", null=True, blank=True)
-    form_year = models.PositiveSmallIntegerField("Année du formulaire", null=True, blank=True)
-    form_month = models.PositiveSmallIntegerField("Mois du formulaire", null=True, blank=True)
+
+    form_year = models.PositiveSmallIntegerField("Année du formulaire", choices=YEAR_CHOICES, null=True, blank=True)
+    form_month = models.PositiveSmallIntegerField("Mois du formulaire", choices=MONTH_CHOICES, null=True, blank=True)
 
     name = models.TextField("Postnom", null=True)
     lastname = models.TextField("Nom de famille", null=True)
@@ -186,6 +193,9 @@ class CaseAbstract(models.Model):
     province = models.TextField(null=True)
     ZS = models.TextField(null=True)
     AS = models.TextField(null=True)
+
+    normalized_village = models.ForeignKey(Village, null=True)
+
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
@@ -199,23 +209,30 @@ class CaseAbstract(models.Model):
     treatment_secondary_effects = models.NullBooleanField("Effets Secondaires", blank=True)
     treatment_result = models.TextField("Résultat", null=True, blank=True)
 
-    test_catt = models.IntegerField("Test CATT", null=True, blank=True)
-    test_catt_dilution = models.TextField("Dilution CATT", null=True, blank=True)
-    test_clinical_sickness = models.IntegerField("Maladie clinique", null=True, blank=True)
-    test_ctcwoo = models.IntegerField(null=True, blank=True)
-    test_dil = models.IntegerField(null=True, blank=True)
-    test_ge = models.IntegerField(null=True, blank=True)
-    test_ifat = models.IntegerField(null=True, blank=True)
-    test_lcr = models.IntegerField(null=True, blank=True)
-    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", null=True, blank=True)
-    test_maect = models.IntegerField(null=True, blank=True)
-    test_parasit = models.IntegerField(null=True, blank=True)
-    test_pg = models.IntegerField(null=True, blank=True)
-    test_pl = models.IntegerField(null=True, blank=True)
-    test_rdt = models.IntegerField(null=True, blank=True)
-    test_sf = models.IntegerField(null=True, blank=True)
-    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", null=True, blank=True)
-    test_other = models.IntegerField(null=True, blank=True)
+    GENERAL_TEST_RESULT_CHOICES = (
+        (2, 'Positif'),
+        (1, 'Négatif'),
+        (0, 'Absent'),
+        (-1, 'Manquant'),
+    )
+
+    test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_catt_dilution = models.TextField("Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_ctcwoo = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_dil = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_ge = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_ifat = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_lcr = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_maect = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_parasit = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_pg = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_pl = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_rdt = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_sf = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_other = models.IntegerField("Autre test", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
 
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.

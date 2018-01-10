@@ -8,6 +8,13 @@ class Province(models.Model):
     def __str__(self):
         return self.name
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "old_name": self.old_name
+        }
+
 
 class ZS(models.Model):
     name = models.CharField(max_length=255)
@@ -19,6 +26,14 @@ class ZS(models.Model):
     class Meta():
         verbose_name_plural = "ZS"
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "province_id": self.province_id
+        }
+
+
 class AS(models.Model):
     name = models.CharField(max_length=255)
     ZS = models.ForeignKey(ZS)
@@ -29,6 +44,12 @@ class AS(models.Model):
     def __str__(self):
         return self.name
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "zs_id": self.ZS_id
+        }
 
 
 class Village(models.Model):

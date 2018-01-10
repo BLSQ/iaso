@@ -16,13 +16,11 @@ class VillageViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
         values = ('name', 'id', 'longitude', 'latitude',)
-        planning_id = request.GET.get("planning_id", None)
         province_id = request.GET.get("province_id", None)
         zs_id = request.GET.get("zs_id", None)
         as_id = request.GET.get("as_id", None)
-
+        years = request.GET.get("years", None)
         queryset = Village.objects.all()
 
         if province_id:
@@ -32,12 +30,11 @@ class VillageViewSet(viewsets.ViewSet):
         if as_id:
             queryset = queryset.filter(AS_id=as_id)
 
-        if planning_id:
-            nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True))
+        if years:
+            years_array = years.split(",")
+            nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True, case__document_date__year__in=years_array))
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ('nr_positive_cases', )
-
-        print(queryset.query)
 
         res = queryset.values(*values )
 

@@ -412,7 +412,7 @@ class Map extends Component {
           items
             // .filter((item) => item.type === key)
             .forEach((item, index) => {
-              console.log(item);
+              // console.log(item);
               const options = {
                 className: String.raw`map-marker ${item._class}`,
                 pane: String.raw`custom-pane-${item._pane}`,

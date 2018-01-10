@@ -82,7 +82,7 @@ const extendDivisionInfo = (division, villages, legend) => {
 }
 
 const extendVillageInfo = (village) => {
-  console.log(village);
+  //console.log(village);
   const _latlon = L.latLng(village.latitude, village.longitude)
   const _isHighlight = (village.nr_positive_cases > 0)
   if (!village.type) {

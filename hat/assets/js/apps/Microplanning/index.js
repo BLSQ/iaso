@@ -14,11 +14,11 @@ import { mapReducer, mapInitialState } from './redux/map'
 
 export default function microplanningApp (element, baseUrl) {
   const currentYear = new Date().getFullYear()
-  const caseyears = [ 0, 1, 2, 3, 4 ].map((i) => currentYear - i)
-  const defaultPath = 'charts/caseyears/' + caseyears.join(',')
+  const years = [ 0, 1, 2, 3, 4 ].map((i) => currentYear - i)
+  const defaultPath = 'charts/years/' + years.join(',')
   const routes = [
     <Route
-      path='charts(/caseyears/:caseyears)(/zs_id/:zs_id)(/planning_id/:planning_id)(/team/:team)'
+      path='charts(/years/:years)(/zs_id/:zs_id)(/planning_id/:planning_id)(/team/:team)'
       component={MicroplanningContainer} />,
     <Redirect path='*' to={defaultPath} />
   ]

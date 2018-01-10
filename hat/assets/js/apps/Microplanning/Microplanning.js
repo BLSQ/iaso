@@ -51,13 +51,15 @@ export class Microplanning extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      locations: []
+      locations: [],
+      selectedLocation: null
     }
   }
 
   componentWillReceiveProps(newProps) {
     const { data, error, loading } = newProps.load;
     const locations = ((data && data.locations) || []);
+    
     this.setState({
       locations
     })
@@ -66,22 +68,6 @@ export class Microplanning extends Component {
   /* ***************************************************************************
    * HANDLERS
    ****************************************************************************/
-
-  changeLocationHandler (location) {
-    let zs_id = null;
-    this.state.locations.map(
-      l => {
-        if (l[1] === location ) {
-          zs_id = l[0];
-        }
-      }
-    )
-    this.props.redirect({
-      ...this.props.params,
-      location,
-      zs_id
-    })
-  }
 
   changeSelectionModeHandler(mode) {
     if (this.props.selection.mode === mode) {
@@ -117,15 +103,15 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { caseyears, location, area, team_id } = this.props.params;
+    const { years, zs_id, area, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     console.log(data);
     // possible years from 2000 to current year
     const firstYear = 2000;
     const currentYear = new Date().getFullYear();
-    const years = [];
+    const possibleYears = [];
     for (let y = currentYear; y >= firstYear; y--) {
-      years.push('' + y); // parse to string (Select component needs it)
+      possibleYears.push('' + y); // parse to string (Select component needs it)
     }
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
@@ -204,11 +190,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='location'
-                    value={location || ''}
+                    name='zs_id'
+                    value={zs_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={this.state.locations.map((value) => ({ label: value[1], value: value[1] }))}
-                    onChange={(location) =>  this.changeLocationHandler(location)}
+                    options={this.state.locations.map((value) => ({ label: value[1], value: value[0] }))}
+                    onChange={zs_id =>  this.props.redirect({ ...this.props.params, zs_id })}
                   />
                 </div>
 
@@ -242,11 +228,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='caseyears'
-                    value={caseyears || ''}
+                    name='years'
+                    value={years || ''}
                     placeholder={formatMessage(MESSAGES['years-select'])}
-                    options={years.map((value) => ({ label: value, value }))}
-                    onChange={caseyears => this.props.redirect({ ...this.props.params, caseyears })}
+                    options={possibleYears.map((value) => ({ label: value, value }))}
+                    onChange={years => this.props.redirect({ ...this.props.params, years })}
                   />
                 </div>
               </div>

@@ -14,9 +14,13 @@ class VillageViewSet(viewsets.ViewSet):
     """
     retrieve:
     Get all information about a given village
+    If you add the request parameter planning_id, information about the assigned team for tha planning will be added
     Example:
 
     /api/villages/19450
+    /api/villages/39978/?planning_id=2
+
+
 
     list:
     API allowing to list villages with their coordinates, and the corresponding number of confirmed cases (depending on the years parameter)
@@ -80,7 +84,20 @@ class VillageViewSet(viewsets.ViewSet):
             'population': village.population,
             'population_year': village.population_year,
             'population_source': village.population_source,
-
-
         }
+        planning_id = request.GET.get("planning_id", None)
+        if planning_id:
+            assignations = Assignation.objects.filter(planning_id=planning_id, village=village)
+            if assignations.exists():
+                team = assignations[0].team
+                res["team"] = {
+                    "id": team.id,
+                    "name": team.name,
+                    "coordination": {
+                        "id": team.coordination_id,
+                        "name": team.coordination.name
+                    }
+                }
+            else:
+                res["team"] = None
         return Response(res)

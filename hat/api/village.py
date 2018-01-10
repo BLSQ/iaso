@@ -12,7 +12,21 @@ from django.db.models import Count
 
 class VillageViewSet(viewsets.ViewSet):
     """
-    API allowing listing villages with cases info
+    list:
+    API allowing to list villages with their coordinates, and the corresponding number of confirmed cases (depending on the years parameter)
+    Filterable on province_ids, zs_ids, as_ids, years and types. Possible types are
+        'YES': Villages from Z.S.
+        'NO': Villages not from Z.S.
+        'OTHER': Locations where people are found during campaigns
+        'NA': Villages from satellite (unknown)
+    Default values are all empty, except for types, where the default values is "YES"
+
+    examples:
+    /api/villages/?zs_id=3
+    /api/villages/?as_id=506
+    /api/villages/?province_id=3
+    /api/villages/?years=2017,2015,2016
+    /api/villages/?types=YES,NA
     """
 
     def list(self, request):

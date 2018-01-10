@@ -5,6 +5,9 @@ from hat.geo.models import Province
 
 
 class ProvinceViewSet(viewsets.ViewSet):
+    """
+    Api to list all provinces, or retrieve information about just one.
+    """
     def list(self, request):
         return Response(Province.objects.all().values('name', 'old_name', 'id'))
 

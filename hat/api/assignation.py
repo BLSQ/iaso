@@ -11,29 +11,21 @@ from rest_framework import generics
 from rest_framework import serializers
 
 
-class AssignationSerializer(serializers.ModelSerializer):
-    AS_name = serializers.CharField(source='village.AS.name')
-    village_name = serializers.CharField(source='village.name')
-    village_id = serializers.CharField(source='village.id')
-
-    class Meta:
-        model = Assignation
-        fields = ('team_id', 'AS_name', 'village_name', 'village_id')
-
-
-class AssignationList(generics.ListAPIView):
+class AssignationViewSet(viewsets.ViewSet):
     """
-    Provide /planning_id/team_id/ to get a list of villages assigned to that team in that planning.
+    Given a team_id and a planning_id, returns a list of villages assigned to that team in that planning.
+    Example: /api/assignations/?team_id=2&planning_id=2
     """
-    serializer_class = AssignationSerializer
-    paginator = None
 
-    def get_queryset(self):
-        """
-        This view should return a list of all the purchases for
-        the user as determined by the username portion of the URL.
-        """
-        planning_id = self.kwargs['planning_id']
-        team_id = self.kwargs['team_id']
-        return Assignation.objects.filter(team_id=team_id, planning_id=planning_id).order_by("village__name").select_related('village__AS')
+    def list(self, request):
+        planning_id = request.GET.get('planning_id', None)
+        team_id = request.GET.get('team_id', None)
+
+        assignations =  Assignation.objects.filter(team_id=team_id, planning_id=planning_id).order_by(
+            "village__name").select_related('village__AS')
+        res = []
+        for assignation in assignations:
+            res.append(assignation.as_dict())
+
+        return Response(res)
 

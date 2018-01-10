@@ -5,6 +5,18 @@ from hat.geo.models import AS
 
 
 class ASViewSet(viewsets.ViewSet):
+    """
+    list:
+    Returns a list of AS, that can be filtered by providing a zs_id
+        /api/as/
+        /api/as/?zs_id=2
+
+    retrieve:
+    It is also possible to get additional information on a given AS by providing directly its id
+        /api/as/2
+
+
+    """
     def list(self, request):
         zs_id = request.GET.get("zs_id", None)
         queryset = AS.objects.all()

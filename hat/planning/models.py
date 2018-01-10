@@ -38,6 +38,8 @@ class Assignation(models.Model):
 
     def as_dict(self):
         return {
-            'village': self.village_id,
-            'team': self.team_id,
+            'village_id': self.village_id,
+            'village_name': self.village.name,
+            'team_id': self.team_id,
+            'AS_name': self.village.AS.name,
         }

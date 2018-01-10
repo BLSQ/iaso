@@ -5,6 +5,18 @@ from hat.geo.models import ZS
 
 
 class ZSViewSet(viewsets.ViewSet):
+    """
+    list:
+    Returns a list of ZS, that can be filtered by providing a province_id
+        /api/zs/
+        /api/zs/?province_id=2
+
+    retrieve:
+    It is also possible to get additional information on a given ZS by providing directly its id
+        /api/zs/2
+
+
+    """
     def list(self, request):
         province_id = request.GET.get("province_id", None)
         queryset = ZS.objects.all()

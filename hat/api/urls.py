@@ -6,12 +6,13 @@ from .village import VillageViewSet
 from .province import ProvinceViewSet
 from .ZS import ZSViewSet
 from .AS import ASViewSet
+from .assignation import AssignationViewSet
 
-from .assignation import AssignationList
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')
 router.register(r'plannings', PlanningViewSet, base_name='planning')
-router.register(r'provinces', ProvinceViewSet, base_name='province')
+router.register(r'assignations', AssignationViewSet, base_name='assignations')
+router.register(r'provinces', ProvinceViewSet, base_name='provinces')
 router.register(r'as', ASViewSet, base_name='as')
 router.register(r'zs', ZSViewSet, base_name='zs')
 
@@ -19,5 +20,4 @@ router.register(r'villages', VillageViewSet, base_name='village')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^assignations/(?P<planning_id>.+)/(?P<team_id>.+)/$', AssignationList.as_view()),
 ]

@@ -56,9 +56,13 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
   })
 
   const promises = urls.map((config) => {
-    const ps = {...config.defaultParams, ...params}
+    const ps = {...config.defaultParams, ...params};
+    let url = config.url;
+    if (typeof config.id !== 'undefined' && ps[config.id]) {
+      url = `${config.url}${ps[config.id]}`;
+    }
     return request([
-      ['get', config.url],
+      ['get', url],
       ['set', 'accept', 'application/json'],
       ['query', ps]
     ])

@@ -412,7 +412,6 @@ class Map extends Component {
           items
             // .filter((item) => item.type === key)
             .forEach((item, index) => {
-              // console.log(item);
               const options = {
                 className: String.raw`map-marker ${item._class}`,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -557,7 +556,6 @@ class Map extends Component {
     const { chosenItem, showItem, legend, items } = this.props
     const team = null
     const { formatMessage } = this.props.intl;
-
     // clean previous
     tooltipLarge.innerHTML = ''
     if (map.hasLayer(chosenMarker)) {
@@ -587,7 +585,7 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        <div className="map__tooltip">
+        {/* <div className="map__tooltip">
           <div className="property">
             <Select
               simpleValue
@@ -599,7 +597,7 @@ class Map extends Component {
               onChange={teams => this.props.redirect({ ...this.props.params, teams })}
             />
           </div>
-        </div>
+        </div> */}
         <MapTooltip item={item} />
       </div>
     )

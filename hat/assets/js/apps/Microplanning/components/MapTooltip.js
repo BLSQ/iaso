@@ -37,7 +37,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.area',
     defaultMessage: 'Aire de sante'
   },
-  village: {
+  name: {
     id: 'microplanning.tooltip.village',
     defaultMessage: 'Village'
   },
@@ -91,7 +91,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.case.year',
     defaultMessage: 'Last confirmed HAT case year'
   },
-  confirmedCases: {
+  nr_positive_cases: {
     id: 'microplanning.tooltip.cases',
     defaultMessage: 'Confirmed HAT cases in that last year'
   },
@@ -112,7 +112,7 @@ const MESSAGES = defineMessages({
 })
 
 const ROWS = [
-  { key: 'village' },
+  { key: 'name' },
   { key: 'AS' },
   { key: 'ZS' },
   { key: 'province' },
@@ -129,13 +129,12 @@ const ROWS = [
   { key: 'populationSource' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
   { key: 'lastConfirmedCaseYear' },
-  { key: 'confirmedCases', type: 'integer' }
+  { key: 'nr_positive_cases', type: 'integer' }
 ]
 
 class MapTooltip extends Component {
   render () {
     const {item} = this.props
-
     return (
       <div key={item.id} className='map__tooltip'>
         {

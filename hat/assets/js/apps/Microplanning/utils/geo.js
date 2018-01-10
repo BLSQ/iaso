@@ -59,7 +59,9 @@ const extendDivisionInfo = (division, villages, legend) => {
   const max = (key) => (prev, curr) => (!curr[key] || prev >= curr[key] ? prev : curr[key])
 
   // find the villages in shape and the plotted ones
-  const inDivision = villages.filter((village) => areEqual(division, village, division._keys))
+  // const inDivision = villages.filter((village) => areEqual(division, village, division._keys))
+
+  const inDivision = []
   const plotted = inDivision.filter((village) => legend[village.type])
 
   // find out the date of the last confirmed HAT case
@@ -82,7 +84,6 @@ const extendDivisionInfo = (division, villages, legend) => {
 }
 
 const extendVillageInfo = (village) => {
-  //console.log(village);
   const _latlon = L.latLng(village.latitude, village.longitude)
   const _isHighlight = (village.nr_positive_cases > 0)
   if (!village.type) {
@@ -92,15 +93,13 @@ const extendVillageInfo = (village) => {
   const _radius = RADIUS[village.type] + (_isHighlight ? RADIUS.highlight : 0)
   const _class = (_isHighlight ? 'highlight' : village.type)
   const _pane = (_isHighlight ? 'highlight' : 'markers')
-
-  let label = village.label
   // if (_isHighlight) {
   //   // include last case info
   //   label += ' (' + village.lastConfirmedCaseYear +
   //            ', ' + village.confirmedCases + ')'
   // }
 
-  return {...village, label, _isHighlight, _radius, _class, _pane, _latlon}
+  return {...village, _isHighlight, _radius, _class, _pane, _latlon}
 }
 
 const villagesInBuffer = (plotted, buffer) => {

@@ -28,6 +28,7 @@ class MapSelectionList extends Component {
 
         <ul className='map__selection__list'>
           {data.map((item) => {
+            console.log(item);
             return (
               <li className='map__selection__list__item' key={item.id}>
                 <span className='remove' onClick={() => deselect([item])}>
@@ -41,7 +42,7 @@ class MapSelectionList extends Component {
                 <span>
                   {item.AS}
                   {' - '}
-                  {item.village}
+                  {item.name}
                 </span>
               </li>
             )

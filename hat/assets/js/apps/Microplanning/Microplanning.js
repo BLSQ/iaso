@@ -29,8 +29,7 @@ import {
   MapSelectionControl,
   MapSelectionExport,
   MapSelectionList,
-  MapSelectionSummary,
-  TeamSelection
+  MapSelectionSummary
 } from './components';
 
 const MESSAGES = defineMessages({
@@ -118,8 +117,9 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { caseyears, location, area } = this.props.params;
+    const { caseyears, location, area, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
+    console.log(data);
     // possible years from 2000 to current year
     const firstYear = 2000;
     const currentYear = new Date().getFullYear();
@@ -130,9 +130,12 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
+
+
     // selection
     const { selection } = this.props;
     const selectedVillages = (selection.selectedItems || []);
+
 
     // buffer sizes
     const bufferSize = (
@@ -177,7 +180,6 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-        <TeamSelection />
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}

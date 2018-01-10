@@ -59,7 +59,8 @@ export const urls = [
       1,
       "Kinzamba Ii"
     ]
-  },
+  }
+  ,
   {
     name: 'teams',
     url: '/api/datasets/teams/',
@@ -71,15 +72,7 @@ export const urls = [
     ]
   },
   {
-    name: 'plannings',
-    url: '/api/planning/',
-    mock: [
-        "Test",
-        1
-    ]
-  },
-  {
-    name: 'plannings',
+    name: 'planning',
     url: '/api/planning/',
     mock: [
         "Test",

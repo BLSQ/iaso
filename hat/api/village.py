@@ -21,6 +21,7 @@ class VillageViewSet(viewsets.ViewSet):
         zs_id = request.GET.get("zs_id", None)
         as_id = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
+        types= request.GET.get("types", "YES")
         queryset = Village.objects.all()
 
         if province_id:
@@ -35,6 +36,10 @@ class VillageViewSet(viewsets.ViewSet):
             nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True, case__document_date__year__in=years_array))
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ('nr_positive_cases', )
+
+        if types:
+            types_array = types.split(",")
+            queryset = queryset.filter(village_official__in=types_array)
 
         res = queryset.values(*values )
 

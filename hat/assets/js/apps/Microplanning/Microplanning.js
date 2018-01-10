@@ -103,7 +103,7 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { years, zs_id, area, team_id } = this.props.params;
+    const { years, zs_id, as_id, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     console.log(data);
     // possible years from 2000 to current year
@@ -209,11 +209,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='area'
-                    value={area || ''}
+                    name='as_id'
+                    value={as_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={areas.map((value) => ({ label: value[1], value: value[1] }))}
-                    onChange={area =>  this.props.redirect({ ...this.props.params, area })}
+                    options={areas.map((value) => ({ label: value[1], value: value[0] }))}
+                    onChange={as_id =>  this.props.redirect({ ...this.props.params, as_id })}
                   />
                 </div>
 

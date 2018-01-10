@@ -12,6 +12,12 @@ from django.db.models import Count
 
 class VillageViewSet(viewsets.ViewSet):
     """
+    retrieve:
+    Get all information about a given village
+    Example:
+
+    /api/villages/19450
+
     list:
     API allowing to list villages with their coordinates, and the corresponding number of confirmed cases (depending on the years parameter)
     Filterable on province_ids, zs_ids, as_ids, years and types. Possible types are
@@ -30,7 +36,7 @@ class VillageViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        values = ('name', 'id', 'longitude', 'latitude',)
+        values = ('name', 'id', 'longitude', 'latitude', 'population')
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
@@ -57,4 +63,24 @@ class VillageViewSet(viewsets.ViewSet):
 
         res = queryset.values(*values )
 
+        return Response(res)
+
+    def retrieve(self, request, pk=None):
+        village = get_object_or_404(Village, pk=pk)
+
+        res = {
+            'province': village.AS.ZS.province.name,
+            'former_province': village.AS.ZS.province.old_name,
+            'zs': village.AS.ZS.name,
+            'as': village.AS.name,
+            'type': village.village_official,
+            'latitude': village.latitude,
+            'longitude': village.longitude,
+            'gps_source': village.gps_source,
+            'population': village.population,
+            'population_year': village.population_year,
+            'population_source': village.population_source,
+
+
+        }
         return Response(res)

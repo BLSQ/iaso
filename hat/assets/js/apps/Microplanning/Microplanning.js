@@ -295,7 +295,7 @@ export class Microplanning extends Component {
                     <MapSelectionList
                       data={selectedVillages}
                       show={item => this.props.displayItem(item)}
-                      deselect={() => this.props.deselectItems()}
+                      deselect={list => this.props.deselectItems(list)}
                     />
                   </div>
 
@@ -341,7 +341,7 @@ const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
-  deselectItems: item => dispatch(selectionActions.deselectItems(typeof list !== 'undefined' ? list : null)),
+  deselectItems: list => dispatch(selectionActions.deselectItems(typeof list !== 'undefined' ? list : null)),
   displayItem: item => dispatch(selectionActions.displayItem(item)),
   toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
   changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),

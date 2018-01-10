@@ -325,7 +325,6 @@ class Map extends Component {
         const { legend, items } = this.props
         const plotted = items.filter((item) => legend[item.type])
         const inBuffer = geoUtils.villagesInBuffer(plotted, bufferMarker)
-
         if (inBuffer.length) {
           this.props.selectionAction(inBuffer)
         }

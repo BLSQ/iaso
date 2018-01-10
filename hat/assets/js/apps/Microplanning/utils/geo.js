@@ -114,16 +114,7 @@ const villagesInBuffer = (plotted, buffer) => {
 
   const inBuffer = []
   for (let i = 0; i < length; i++) {
-    // the villages are ordered by `longitude`
-
-    // compare `longitude` with west and east
-    // if the `longitude` is easter than the current position
-    // then exit the loop
     const village = plotted[i]
-    if (village.longitude < west) continue // ignore and continue
-    if (village.longitude > east) break // exit the loop
-
-    // compare distance
     const distance = latlon.distanceTo(village._latlon)
     if (distance <= (bufferRadius + village._radius)) {
       inBuffer.push(village)

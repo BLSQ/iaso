@@ -102,7 +102,7 @@ class Map extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { map } = this.state
     const hasChanged = (prev, curr, key) => (prev[key] !== curr[key])
-    const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'confirmedCases'])
+    const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'nr_positive_cases'])
     const containSameItems = (prev, curr, key) => {
       if (!hasChanged(prev, curr, key)) return true
       const arr1 = prev[key]
@@ -410,8 +410,9 @@ class Map extends Component {
         // check if the layer has markers
         if (markers.getLayers().length === 0) {
           items
-            .filter((item) => item.type === key)
+            // .filter((item) => item.type === key)
             .forEach((item, index) => {
+              console.log(item);
               const options = {
                 className: String.raw`map-marker ${item._class}`,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -567,7 +568,6 @@ class Map extends Component {
     if (!chosenItem) {
       return
     }
-    console.log(chosenItem);
     const item = (!chosenItem.village
       ? geoUtils.extendDivisionInfo(chosenItem, items, legend)
       : chosenItem

@@ -82,20 +82,23 @@ const extendDivisionInfo = (division, villages, legend) => {
 }
 
 const extendVillageInfo = (village) => {
+  console.log(village);
   const _latlon = L.latLng(village.latitude, village.longitude)
-  const _isHighlight = (village.confirmedCases > 0)
-
+  const _isHighlight = (village.nr_positive_cases > 0)
+  if (!village.type) {
+    village.type = 'official';
+  }
   // take size from village type and increase it if there are cases
   const _radius = RADIUS[village.type] + (_isHighlight ? RADIUS.highlight : 0)
   const _class = (_isHighlight ? 'highlight' : village.type)
   const _pane = (_isHighlight ? 'highlight' : 'markers')
 
   let label = village.label
-  if (_isHighlight) {
-    // include last case info
-    label += ' (' + village.lastConfirmedCaseYear +
-             ', ' + village.confirmedCases + ')'
-  }
+  // if (_isHighlight) {
+  //   // include last case info
+  //   label += ' (' + village.lastConfirmedCaseYear +
+  //            ', ' + village.confirmedCases + ')'
+  // }
 
   return {...village, label, _isHighlight, _radius, _class, _pane, _latlon}
 }

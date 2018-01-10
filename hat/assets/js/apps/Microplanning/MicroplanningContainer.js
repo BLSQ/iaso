@@ -23,7 +23,8 @@ import Microplanning from './Microplanning'
 export const urls = [
   {
     name: 'villages',
-    url: '/api/datasets/data_by_location/',
+    // url: '/api/datasets/data_by_location/',
+    url: ' /api/villages/',
     mock: [{
       'AS': 'Muwanda-koso',
       'confirmedCases': 1,
@@ -70,15 +71,16 @@ export const urls = [
         "team 1"
       ]
     ]
-  },
-  {
-    name: 'planning',
-    url: '/api/planning/',
-    mock: [
-        "Test",
-        1
-    ]
   }
+  // ,
+  // {
+  //   name: 'planning',
+  //   url: '/api/planning/',
+  //   mock: [
+  //       "Test",
+  //       1
+  //   ]
+  // }
   // ,
   // {
   //   name: 'areas',

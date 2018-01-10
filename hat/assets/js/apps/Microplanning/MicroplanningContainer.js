@@ -77,6 +77,14 @@ export const urls = [
         "Test",
         1
     ]
+  },
+  {
+    name: 'plannings',
+    url: '/api/planning/',
+    mock: [
+        "Test",
+        1
+    ]
   }
   // ,
   // {

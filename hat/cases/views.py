@@ -552,6 +552,7 @@ def encoding(request: HttpRequest) -> HttpResponse:
         if case_form.is_valid():
             case = case_form.save(commit=False)
             case.document_id = uuid.uuid4()
+            case.save()
             return HttpResponseRedirect(reverse('cases:encoding'))
     else:
         case_form = CaseForm()

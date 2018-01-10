@@ -21,6 +21,11 @@ YEAR_CHOICES = zip(years, years)
 MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 MONTH_CHOICES = [(i+1, MONTHS[i]) for i in range(0, 12)]
 
+RES_POSITIVE = 2
+RES_NEGATIVE = 1
+RES_ABSENT = 0
+RES_MISSING = -1
+
 
 class CaseAbstract(models.Model):
     '''
@@ -213,10 +218,10 @@ class CaseAbstract(models.Model):
     treatment_result = models.TextField("Résultat", null=True, blank=True)
 
     GENERAL_TEST_RESULT_CHOICES = (
-        (2, 'Positif'),
-        (1, 'Négatif'),
-        (0, 'Absent'),
-        (-1, 'Manquant'),
+        (RES_POSITIVE, 'Positif'),
+        (RES_NEGATIVE, 'Négatif'),
+        (RES_ABSENT, 'Absent'),
+        (RES_MISSING, 'Manquant'),
     )
 
     test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
@@ -266,17 +271,35 @@ class CaseAbstract(models.Model):
     test_followup_pl_gb = models.TextField("Suivi PL GB", null=True, blank=True)
     test_followup_decision = models.TextField("Suivi décision", null=True, blank=True)
 
+    confirmed_case = models.BooleanField("Cas confirmé", default=False)
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True
-        ordering = ['-document_date']
+        ordering = ['-id']
         permissions = CASES_PERMISSIONS
 
+    def confirmed(self):
+        if self.test_ctcwoo == RES_POSITIVE:
+            return True
+        if self.test_ge == RES_POSITIVE:
+            return True
+        if self.test_lcr == RES_POSITIVE:
+            return True
+        if self.test_lymph_node_puncture == RES_POSITIVE:
+            return True
+        if self.test_maect == RES_POSITIVE:
+            return True
+        if self.test_pg == RES_POSITIVE:
+            return True
+        if self.test_sf == RES_POSITIVE:
+            return True
+        return False
 
     def __str__(self):
         return "%s - %s - %s" % (self.lastname, self.name, self.prename)
+
 
 class Case(CaseAbstract):
     '''
@@ -295,8 +318,14 @@ class Case(CaseAbstract):
 
     class Meta:
         abstract = False
-        ordering = ['-document_date']
+        ordering = ['-id']
         permissions = CASES_PERMISSIONS
+
+
+def compute_confirmation(sender, instance: Case, **kwargs):
+    instance.confirmed_case = instance.confirmed()
+
+models.signals.pre_save.connect(compute_confirmation, sender=Case)
 
 
 @receiver(pre_save, sender=Case)

@@ -253,7 +253,7 @@ class CaseForm(ModelForm):
     class Meta:
         model = Case
         exclude = ('hat_id', 'source', 'document_id', 'entry_name', 'latitude', 'longitude',
-                   'mobile_unit', 'device_id', 'version_number', 'normalized_village')
+                   'mobile_unit', 'device_id', 'version_number', 'normalized_village', 'confirmed_case')
 
         PROVINCE_choices = Case.objects.order_by('province').values_list("province", "province").distinct()
         AS_choices = Case.objects.order_by('AS').values_list("AS", "AS").distinct()

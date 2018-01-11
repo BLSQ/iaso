@@ -343,8 +343,6 @@ export class Microplanning extends Component {
   }
 }
 
-const MicroplanningWithIntl = injectIntl(Microplanning);
-
 Microplanning.propTypes = {
   changeBufferSize: PropTypes.func.isRequired,
   changeHighlightBufferSize: PropTypes.func.isRequired,
@@ -361,6 +359,7 @@ Microplanning.propTypes = {
   redirect: PropTypes.func.isRequired
 };
 
+const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),

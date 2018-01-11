@@ -10,7 +10,8 @@
  * to user readable/understandable texts.
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, { Component, PropTypes } from 'react'
+import Select from 'react-select'
 import {
   FormattedDate,
   FormattedMessage,
@@ -18,22 +19,42 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
-import {capitalize} from '../../../utils'
+import { fetchUrl } from '../../../utils/fetchData'
+import { capitalize } from '../../../utils'
+
+export const urls = [{
+    name: 'village_detail',
+    id: 'village_id',
+    url: ' /api/villages/',
+    mock: [{
+      "province": "Kwilu",
+      "former_province": "",
+      "zs": "Bagata",
+      "as": "Bangumi",
+      "type": "YES",
+      "latitude": -3.4995401,
+      "longitude": 17.681,
+      "gps_source": "ITM",
+      "population": 799,
+      "population_year": 2016,
+      "population_source": "BCZ BAGATA"
+    }]
+  }];
 
 const MESSAGES = defineMessages({
   province: {
     id: 'microplanning.tooltip.province',
     defaultMessage: 'Province'
   },
-  formerProvince: {
+  former_province: {
     id: 'microplanning.tooltip.province.former',
     defaultMessage: 'Former province'
   },
-  ZS: {
+  zs: {
     id: 'microplanning.tooltip.zone',
     defaultMessage: 'Zone de sante'
   },
-  AS: {
+  as: {
     id: 'microplanning.tooltip.area',
     defaultMessage: 'Aire de sante'
   },
@@ -65,7 +86,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.longitude',
     defaultMessage: 'Longitude'
   },
-  gpsSource: {
+  gps_source: {
     id: 'microplanning.tooltip.gps.source',
     defaultMessage: 'GPS source'
   },
@@ -74,11 +95,11 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.population',
     defaultMessage: 'Population'
   },
-  populationSource: {
+  population_source: {
     id: 'microplanning.tooltip.population.source',
     defaultMessage: 'Population source'
   },
-  populationYear: {
+  population_year: {
     id: 'microplanning.tooltip.population.year',
     defaultMessage: 'Population year'
   },
@@ -94,6 +115,10 @@ const MESSAGES = defineMessages({
   nr_positive_cases: {
     id: 'microplanning.tooltip.cases',
     defaultMessage: 'Confirmed HAT cases in that last year'
+  },
+  team_all: {
+    defaultMessage: 'All teams',
+    id: 'microplanning.label.team.all'
   },
 
   // type values
@@ -117,41 +142,92 @@ const MESSAGES = defineMessages({
 
 const ROWS = [
   { key: 'name' },
-  { key: 'AS' },
-  { key: 'ZS' },
+  { key: 'as' },
+  { key: 'zs' },
   { key: 'province' },
-  { key: 'formerProvince' },
+  { key: 'former_province' },
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
   { key: 'village_official', type: 'message' },
   { key: 'latitude', type: 'coordinates' },
   { key: 'longitude', type: 'coordinates' },
-  { key: 'gpsSource' },
+  { key: 'gps_source' },
   { key: 'population', type: 'integer' },
-  { key: 'populationYear' },
-  { key: 'populationSource' },
+  { key: 'population_year' },
+  { key: 'population_source' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
   { key: 'lastConfirmedCaseYear' },
   { key: 'nr_positive_cases', type: 'integer' }
 ]
 
 class MapTooltip extends Component {
-  render () {
-    const {item} = this.props
+  constructor(props) {
+    super(props)
+    this.state = {
+      item: props.item,
+      isloading: true
+    }
+
+  }
+
+  componentDidMount() {
+    // If this is a village we need to fetch the detail of it
+    if (this.state.item.name) {
+      this.loadData(this.state.item.id);
+    } else {
+      this.setState({isloading: false});
+    }
+  }
+
+  componentWillReceiveProps(newProps) {
+    this.setState({
+      item: newProps.item
+    })
+  }
+
+  updateItemField(value) {
+    this.setState({
+        item: Object.assign({}, this.state.item, value)
+    });
+}
+
+  loadData(item_id) {
+    this.setState({isloading: true});
+    fetchUrl(urls, {village_id: item_id}, '').then((result) =>{
+      this.updateItemField(result.village_detail);
+      this.setState({isloading: false});
+    });
+  }
+
+  render() {
+    const team = null;
+    const { formatMessage } = this.props.intl;
+    if (!this.state.item || this.state.isloading) {
+      return null;
+    }
     return (
-      <div key={item.id} className='map__tooltip'>
+      <div key={this.state.item.id} className='map__tooltip'>
+        {this.state.item.name ? (
+          <div className="property">
+            <Select
+              simpleValue
+              autosize={false}
+              name='teams'
+              value={team || ''}
+              placeholder={formatMessage(MESSAGES['team_all'])}
+              options={this.props.teams.map((value) => ({ label: value[1], value: value[1] }))}
+              onChange={teams => this.updateVillageTeam()}
+            />
+          </div>) :
+          null}
         {
           ROWS
             .filter((row) => {
-              if (row.key === 'population') {
-                console.log(item[row.key]);
-                console.log(row.key);
-              }
-              return item[row.key] && item[row.key] !== '';
+              return this.state.item[row.key] && this.state.item[row.key] !== '';
             })
             .map((row) => {
-              let value = item[row.key]
+              let value = this.state.item[row.key]
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} year='numeric' month='long' day='numeric' />
@@ -191,8 +267,10 @@ class MapTooltip extends Component {
   }
 }
 
+
 MapTooltip.propTypes = {
-  item: PropTypes.object.isRequired
+  item: PropTypes.object.isRequired,
+  teams: PropTypes.array.isRequired
 }
 
 export default injectIntl(MapTooltip)

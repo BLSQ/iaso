@@ -37,10 +37,6 @@ const MESSAGES = defineMessages({
   'info-zoom-title': {
     defaultMessage: 'Current zoom level',
     id: 'microplanning.label.zoom.info'
-  },
-  'team-all': {
-    defaultMessage: 'All teams',
-    id: 'microplanning.label.team.all'
   }
 })
 
@@ -553,7 +549,6 @@ class Map extends Component {
     const { tooltipSmall, tooltipLarge } = this.state.containers
     const { chosenMarker } = this.state.layers
     const { chosenItem, showItem, legend, items } = this.props
-    const team = null
     const { formatMessage } = this.props.intl;
     // clean previous
     tooltipLarge.innerHTML = ''
@@ -583,20 +578,7 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        {/* <div className="map__tooltip">
-          <div className="property">
-            <Select
-              simpleValue
-              autosize={false}
-              name='teams'
-              value={team || ''}
-              placeholder={formatMessage(MESSAGES['team-all'])}
-              options={this.props.teams.map((value) => ({ label: value[1], value: value[1] }))}
-              onChange={teams => this.props.redirect({ ...this.props.params, teams })}
-            />
-          </div>
-        </div> */}
-        <MapTooltip item={item} />
+        <MapTooltip item={item} teams={this.props.teams} />
       </div>
     )
     ReactDOM.render(this.injectI18n(tootltip), tooltipLarge)

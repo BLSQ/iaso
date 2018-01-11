@@ -50,7 +50,6 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
   if (deepEqual(oldParams, params, true)) {
     return
   }
-
   dispatch({
     type: LOAD
   })
@@ -90,5 +89,32 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
         type: LOAD_ERROR,
         payload: err
       })
+    })
+}
+
+
+export function fetchUrl (urls, params) {
+  const promises = urls.map((config) => {
+    const ps = {...config.defaultParams, ...params};
+    let url = config.url;
+    if (typeof config.id !== 'undefined' && ps[config.id]) {
+      url = `${config.url}${ps[config.id]}`;
+    }
+    return request([
+      ['get', url],
+      ['set', 'accept', 'application/json'],
+      ['query', ps]
+    ])
+  })
+  return Promise.all(promises)
+    .then((results) => {
+      const payloads = results.reduce((payload, result, i) => {
+        payload[urls[i].name] = result
+        return payload
+      }, {})
+      return payloads;
+    })
+    .catch((err) => {
+      return false
     })
 }

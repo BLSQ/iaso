@@ -74,6 +74,20 @@ export const urls = [
           "id": 1
       }
     ]
+  },
+  {
+    name: 'teams',
+    url: '/api/datasets/teams/',
+    mock: [
+      [
+          2,
+          "qsdf"
+      ],
+      [
+          1,
+          "team 1"
+      ]
+    ]
   }
 ]
 

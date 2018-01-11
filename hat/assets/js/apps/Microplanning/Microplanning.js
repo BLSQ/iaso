@@ -52,14 +52,15 @@ export class Microplanning extends Component {
     super(props)
     this.state = {
       locations: [],
-      selectedLocation: null
+      selectedLocation: null,
+      isVillageListEdited: false
     }
   }
 
   componentWillReceiveProps(newProps) {
     const { data, error, loading } = newProps.load;
     const locations = ((data && data.locations) || []);
-    
+
     this.setState({
       locations
     })
@@ -68,6 +69,12 @@ export class Microplanning extends Component {
   /* ***************************************************************************
    * HANDLERS
    ****************************************************************************/
+  deSelectVillage(list) {
+    this.setState({
+      isVillageListEdited: true
+    });
+    this.props.deselectItems(list);
+  }
 
   changeSelectionModeHandler(mode) {
     if (this.props.selection.mode === mode) {
@@ -103,7 +110,7 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { years, zs_id, as_id, team_id } = this.props.params;
+    const { years, zs_id, as_id, planning_id, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     console.log(data);
     // possible years from 2000 to current year
@@ -116,12 +123,30 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
+    const plannings = ((data && data.plannings  ) || []);
 
 
     // selection
     const { selection } = this.props;
-    const selectedVillages = (selection.selectedItems || []);
-
+    let selectedVillages = (selection.selectedItems || []);
+    // planning selection
+    // if a planning is selected we need to preselect the villages from the planning
+    if (planning_id &&
+        plannings.length !== 0 &&
+        villages.length !== 0 &&
+        selectedVillages.length === 0 &&
+        !this.state.isVillageListEdited) {
+      let tempSelectedVillages = [];
+      plannings.assignations.map(villagePlanified => {
+        villages.map(village => {
+          if (villagePlanified.village_id === village.id){
+            tempSelectedVillages.push(village);
+          }
+        });
+      });
+      selectedVillages = tempSelectedVillages;
+      selection.selectedItems = selectedVillages;
+    }
 
     // buffer sizes
     const bufferSize = (
@@ -139,14 +164,13 @@ export class Microplanning extends Component {
     const selectHighlightBuffer = () => {
       const inBuffer = geoUtils.villagesInHighlightBuffer(
         this.props.map.leafletMap,
-        villages.filter((item) => legend[item.type]),
+        villages.filter((item) => legend[item.village_official]),
         selection.highlightBufferSize
       )
       if (inBuffer.length > 0) {
         this.props.executeSelectionAction(inBuffer);
       }
     }
-
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>
         {
@@ -295,7 +319,7 @@ export class Microplanning extends Component {
                     <MapSelectionList
                       data={selectedVillages}
                       show={item => this.props.displayItem(item)}
-                      deselect={list => this.props.deselectItems(list)}
+                      deselect={list => this.deSelectVillage(list)}
                     />
                   </div>
 

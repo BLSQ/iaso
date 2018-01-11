@@ -47,9 +47,10 @@ divisions.forEach((type) => {
 
 // circle size in metres depending on the village type
 const RADIUS = {
-  official: 350,
-  other: 150,
-  unknown: 150,
+  YES: 350,
+  NO: 150,
+  OTHER: 100,
+  NA: 150,
   highlight: 80 // amount to increase if there were cases
 }
 
@@ -59,9 +60,8 @@ const extendDivisionInfo = (division, villages, legend) => {
   const max = (key) => (prev, curr) => (!curr[key] || prev >= curr[key] ? prev : curr[key])
 
   // find the villages in shape and the plotted ones
-  // const inDivision = villages.filter((village) => areEqual(division, village, division._keys))
+  const inDivision = villages.filter((village) => areEqual(division, village, division._keys))
 
-  const inDivision = []
   const plotted = inDivision.filter((village) => legend[village.type])
 
   // find out the date of the last confirmed HAT case
@@ -69,9 +69,10 @@ const extendDivisionInfo = (division, villages, legend) => {
 
   // find out the population and number of villages by type
   const population = inDivision.reduce(sum('population'), 0)
-  const villagesOfficial = inDivision.reduce(countByType('official'), 0)
-  const villagesOther = inDivision.reduce(countByType('other'), 0)
-  const villagesUnknown = inDivision.reduce(countByType('unknown'), 0)
+  const villagesOfficial = inDivision.reduce(countByType('YES'), 0)
+  const villagesNotOfficial = inDivision.reduce(countByType('NO'), 0)
+  const villagesOther = inDivision.reduce(countByType('OTHER'), 0)
+  const villagesUnknown = inDivision.reduce(countByType('NA'), 0)
 
   return {
     ...division,
@@ -86,18 +87,10 @@ const extendDivisionInfo = (division, villages, legend) => {
 const extendVillageInfo = (village) => {
   const _latlon = L.latLng(village.latitude, village.longitude)
   const _isHighlight = (village.nr_positive_cases > 0)
-  if (!village.type) {
-    village.type = 'official';
-  }
   // take size from village type and increase it if there are cases
-  const _radius = RADIUS[village.type] + (_isHighlight ? RADIUS.highlight : 0)
-  const _class = (_isHighlight ? 'highlight' : village.type)
+  const _radius = RADIUS[village.village_official] + (_isHighlight ? RADIUS.highlight : 0)
+  const _class = (_isHighlight ? 'highlight' : village.village_official)
   const _pane = (_isHighlight ? 'highlight' : 'markers')
-  // if (_isHighlight) {
-  //   // include last case info
-  //   label += ' (' + village.lastConfirmedCaseYear +
-  //            ', ' + village.confirmedCases + ')'
-  // }
 
   return {...village, _isHighlight, _radius, _class, _pane, _latlon}
 }
@@ -157,7 +150,6 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
 
       // if the `longitude` is easter than the current position
       // then exit the loop
-      if (villageB.longitude > east) break // exit the loop
       if (!villageA._isHighlight &&
           !villageB._isHighlight) continue // ignore and continue
 

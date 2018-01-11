@@ -6,9 +6,11 @@
  * In our case,
  *
  * The markers are the village types divided as:
- * - `official`: villages in the Z.S.
- * - `other`: locations NOT in the Z.S.
- * - `unknown`: villages visible in satellite pictures but not identified yet.
+ * 'YES': Villages from Z.S.
+ * 'NO': Villages not from Z.S.
+ * 'OTHER': Locations where people are found during campaigns
+ * 'NA': Villages from satellite (unknown)
+ * Default values are all empty, except for types, where the default values is "YES"
  *
  * Other entries are:
  * - `selected`: Selected villages
@@ -24,15 +26,19 @@ import React, {Component, PropTypes} from 'react'
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 
 const MESSAGES = defineMessages({
-  official: {
+  YES: {
     id: 'microplanning.legend.official',
     defaultMessage: 'Villages from Z.S.'
   },
-  other: {
-    id: 'microplanning.legend.other',
+  NO: {
+    id: 'microplanning.legend.notofficial',
     defaultMessage: 'Villages not from Z.S.'
   },
-  unknown: {
+  OTHER: {
+    id: 'microplanning.legend.other',
+    defaultMessage: 'Locations where people are found during campaigns'
+  },
+  NA: {
     id: 'microplanning.legend.unknown',
     defaultMessage: 'Villages visible from satellite'
   },

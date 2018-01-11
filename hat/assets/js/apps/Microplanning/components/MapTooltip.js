@@ -53,7 +53,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.villages.unknown',
     defaultMessage: 'Villages satellite'
   },
-  type: {
+  village_official: {
     id: 'microplanning.tooltip.type',
     defaultMessage: 'Classification'
   },
@@ -97,15 +97,19 @@ const MESSAGES = defineMessages({
   },
 
   // type values
-  official: {
+  YES: {
     id: 'microplanning.tooltip.village.type.official',
     defaultMessage: 'from Z.S.'
   },
-  other: {
-    id: 'microplanning.tooltip.village.type.other',
+  NO: {
+    id: 'microplanning.tooltip.village.type.notofficial',
     defaultMessage: 'not from Z.S.'
   },
-  unknown: {
+  OTHER: {
+    id: 'microplanning.tooltip.village.type.other',
+    defaultMessage: 'found during campaigns'
+  },
+  NA: {
     id: 'microplanning.tooltip.village.type.unknown',
     defaultMessage: 'visible from satellite'
   }
@@ -120,7 +124,7 @@ const ROWS = [
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
-  { key: 'type', type: 'message' },
+  { key: 'village_official', type: 'message' },
   { key: 'latitude', type: 'coordinates' },
   { key: 'longitude', type: 'coordinates' },
   { key: 'gpsSource' },
@@ -139,7 +143,13 @@ class MapTooltip extends Component {
       <div key={item.id} className='map__tooltip'>
         {
           ROWS
-            .filter((row) => item[row.key] && item[row.key] !== '')
+            .filter((row) => {
+              if (row.key === 'population') {
+                console.log(item[row.key]);
+                console.log(row.key);
+              }
+              return item[row.key] && item[row.key] !== '';
+            })
             .map((row) => {
               let value = item[row.key]
               switch (row.type) {
@@ -160,6 +170,7 @@ class MapTooltip extends Component {
                   break
                 case 'message':
                   value = <FormattedMessage {...MESSAGES[value]} />
+                  const temp = <FormattedMessage {...MESSAGES[row.key]} />
                   break
               }
 

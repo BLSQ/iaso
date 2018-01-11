@@ -64,22 +64,24 @@ class Map extends Component {
         // split in different groups based on type and use
         markersGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup(),
-          unknown: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup(),
+          OTHER: new L.FeatureGroup(),
+          NA: new L.FeatureGroup()
         },
 
         shadowsGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup(),
-          unknown: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup(),
+          OTHER: new L.FeatureGroup(),
+          NA: new L.FeatureGroup()
         },
 
         labelsGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup()
           // unknown: new L.FeatureGroup() // it's always `Inconnu`
         }
       }
@@ -323,7 +325,7 @@ class Map extends Component {
       click: (event) => {
         L.DomEvent.stop(event)
         const { legend, items } = this.props
-        const plotted = items.filter((item) => legend[item.type])
+        const plotted = items.filter((item) => legend[item.village_official])
         const inBuffer = geoUtils.villagesInBuffer(plotted, bufferMarker)
         if (inBuffer.length) {
           this.props.selectionAction(inBuffer)
@@ -391,13 +393,11 @@ class Map extends Component {
       const markers = markersGroups[key]
       const shadows = shadowsGroups[key]
       const labels = labelsGroups[key]
-
       if (force) {
         markers.clearLayers()
         shadows.clearLayers()
         if (labels) labels.clearLayers()
       }
-
       if (legend[key]) {
         // include layers in group
         if (!markersGroups.group.hasLayer(markers)) {
@@ -409,7 +409,7 @@ class Map extends Component {
         // check if the layer has markers
         if (markers.getLayers().length === 0) {
           items
-            // .filter((item) => item.type === key)
+            .filter((item) => item.village_official === key)
             .forEach((item, index) => {
               const options = {
                 className: String.raw`map-marker ${item._class}`,
@@ -427,7 +427,7 @@ class Map extends Component {
                   icon: L.divIcon({
                     className: '',
                     iconAnchor: [20, 20],
-                    html: String.raw`<div className="map__marker__label ${key}">${item.village}</div>`
+                    html: String.raw`<div className="map__marker__label ${key}">${item.name}</div>`
                   }),
                   pane: 'custom-pane-labels'
                 })
@@ -500,7 +500,7 @@ class Map extends Component {
     // include buffer zone
     if (highlightBufferSize > 0) {
       const { items } = this.props
-      const highlight = items.filter((item) => legend[item.type] && item._isHighlight)
+      const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
       const bufferSize = highlightBufferSize * 1000
 
       highlight.forEach((item) => {
@@ -561,11 +561,10 @@ class Map extends Component {
       chosenMarker.setRadius(0)
       map.removeLayer(chosenMarker)
     }
-
     if (!chosenItem) {
       return
     }
-    const item = (!chosenItem.village
+    const item = (!chosenItem.name
       ? geoUtils.extendDivisionInfo(chosenItem, items, legend)
       : chosenItem
     )
@@ -629,9 +628,9 @@ class Map extends Component {
         map.fitBounds(selectedGroup.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (shadowsGroups.group.getBounds().isValid()) {
         map.fitBounds(shadowsGroups.group.getBounds(), { maxZoom: MAX_ZOOM })
-      } else if (markersGroups.group.hasLayer(markersGroups.official) &&
-        markersGroups.official.getBounds().isValid()) {
-        map.fitBounds(markersGroups.official.getBounds(), { maxZoom: MAX_ZOOM })
+      } else if (markersGroups.group.hasLayer(markersGroups.YES) &&
+        markersGroups.YES.getBounds().isValid()) {
+        map.fitBounds(markersGroups.YES.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (defaultBounds) {
         map.fitBounds(defaultBounds, { maxZoom: MAX_ZOOM })
       } else {

@@ -89,9 +89,10 @@ export const mapActions = {
 
 export const mapInitialState = {
   legend: {
-    official: true,
-    other: false,
-    unknown: false
+    YES: true,
+    NO: false,
+    OTHER: false,
+    NA: false
   },
   baseLayer: 'arcgis-topo',
   overlays: {

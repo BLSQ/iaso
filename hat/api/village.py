@@ -40,12 +40,12 @@ class VillageViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        values = ('name', 'id', 'longitude', 'latitude', 'population')
+        values = ('name', 'id', 'longitude', 'latitude', 'population', 'village_official')
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
-        types= request.GET.get("types", "YES")
+        types= request.GET.get("types", None)
         queryset = Village.objects.all()
 
         if province_ids:

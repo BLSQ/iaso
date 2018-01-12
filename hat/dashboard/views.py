@@ -4,6 +4,10 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 from django.http.request import HttpRequest
 from django.http import HttpResponse
+
+from hat.planning.models import Planning
+from hat.users.models import Team, Coordination
+
 import json
 
 from hat.cases.models import CaseView
@@ -50,6 +54,34 @@ def stats(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def microplanning(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/microplanning.html')
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def plannings(request: HttpRequest) -> HttpResponse:
+    plannings = Planning.objects.order_by('-updated_at').filter(deleted=False)
+    coordinations = Coordination.objects.order_by('name')
+    teams = Team.objects.order_by('name')
+
+    return render(request, 'dashboard/plannings.html',
+    {
+        "plannings": plannings,
+        "coordinations": coordinations,
+        "teams": teams
+    })
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def planning(request: HttpRequest, planning_id) -> HttpResponse:
+    return render(request, 'dashboard/microplanning.html')
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def coordination(request: HttpRequest, coordination_id) -> HttpResponse:
+    return render(request, 'dashboard/microplanning.html')
+
 
 
 @login_required()

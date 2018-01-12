@@ -6,7 +6,9 @@ from ..users.models import Team
 class Planning(models.Model):
     year = models.PositiveIntegerField()
     name = models.CharField(max_length=255)
+    updated_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - % s" % (self.year, self.name)

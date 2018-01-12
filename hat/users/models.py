@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
 from django.utils.translation import ugettext as _
-
+from hat.geo.models import AS, ZS
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
     # Disable signalhandler when model is created by `manage loaddata`.
@@ -23,7 +23,16 @@ def disable_for_loaddata(signal_handler: Callable) -> Callable:
 
 class Coordination(models.Model):
     name = models.CharField(max_length=255)
+    ZS = models.ManyToManyField(ZS)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'teams': map(lambda x:x.as_dict(),  self.team_set.order_by("name")),
+            'zs': map(lambda x:x.as_dict(),  self.ZS.order_by("name"))
+        }
 
     def __str__(self):
         return self.name
@@ -32,7 +41,14 @@ class Coordination(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True)
+    AS = models.ManyToManyField(AS)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'id': self.id
+        }
 
     def __str__(self):
         return self.name

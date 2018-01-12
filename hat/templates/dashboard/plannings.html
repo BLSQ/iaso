@@ -1,0 +1,69 @@
+{% extends 'app.html' %}
+{% load i18n %}
+{% load static %}
+
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+    <h1 class="header__title">{% trans 'Microplanning' %}</h1>
+    <link rel="stylesheet" href="{% static 'base.css' %}" type="text/css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    {% render_bundle 'common' %}
+    <div class="planning-picker-container">
+        <h2>Que voulez-vous planifier?</h2>
+        <div>
+            <select name="planning_id" id="planning_select">
+                {% for planning in plannings %}
+                    <option value="{{ planning.id }}">{{ planning.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="coordination_id" id="coordination_select">
+                <option value="-1">------</option>
+                {% for coordination in coordinations %}
+                    <option value="{{ coordination.id }}">{{ coordination.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="team_id" id="team_select" class="hidden">
+                {% for team in teams %}
+                    <option value="{{ team.id }}">{{ team.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <script>
+        var teamSelect = $('#team_select');
+        teamSelect.on('change', function(event)
+        {
+          var planning_id = $("#planning_select").val();
+
+          var team_id = teamSelect.val();
+          var nextUrl = "/dashboard/microplanning/charts/years/2018,2017,2016,2015,2014/planning_id/" + planning_id;
+          nextUrl = nextUrl + "/team_id/" + team_id;
+          window.location.href = nextUrl;
+
+        });
+      $('#coordination_select').on('change', function (event) {
+        var coordinationId = this.value
+
+        if (coordinationId != -1) {
+
+          $.get('/api/coordination/1/', function (coordination) {
+            teamSelect.removeClass('hidden')
+            $('#team_select option').remove()
+            for (var i = 0; i < coordination.teams.length; i++) {
+
+              var team = coordination.teams[i]
+              teamSelect.append('<option value="' + team.id + '" >' + team.name + '</option>')
+            }
+          })
+        }
+        else {
+          teamSelect.addClass('hidden')
+        }
+      })
+    </script>
+{% endblock %}

@@ -62,21 +62,14 @@ export class Microplanning extends Component {
     }
   }
 
-  componentWillReceiveProps(newProps) {
-    const { data, error, loading } = newProps.load;
+  componentWillReceiveProps(nextProps) {
+    const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
+    // TODO : Check if data are the same, not nl the length
     this.setState({
+      isSelectionModified: this.props.selection.selectedItems.length !== nextProps.selection.selectedItems.length,
       locations
     })
-  }
-
-  componentWillReceiveProps(nextProps) {
-    // TODO : Check if data are the same, not nl the length
-    if (this.props.selection.selectedItems.length !== nextProps.selection.selectedItems.length) {
-      this.setState({
-        isSelectionModified: true
-      })
-    }
   }
 
   renderPlanningTitle(plannings, teams, loading) {

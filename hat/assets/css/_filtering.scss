@@ -1,195 +1,222 @@
 $filter-container-height: 2rem;
-
 @mixin filter-container-common {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  background: $background-highlight-gray;
-  border-bottom: 1px solid $gray;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    background: $background-highlight-gray;
+    border-bottom: 1px solid $gray;
 }
 
 .filter__container {
-  @include filter-container-common;
-  padding: $padding-unit*.75 $padding-unit;
-  margin: -$padding-unit;
-  margin-bottom: $padding-unit;
-  padding-bottom: $padding-unit*.25;
+    @include filter-container-common;
+    padding: $padding-unit*.75 $padding-unit;
+    margin: -$padding-unit;
+    margin-bottom: $padding-unit;
+    padding-bottom: $padding-unit*.25;
 }
 
 .filter__container--reduced {
-  @include filter-container-common;
-  padding: $padding-unit/2 $padding-unit;
-  margin-bottom: 0;
-  border-bottom: none;
+    @include filter-container-common;
+    padding: $padding-unit/2 $padding-unit;
+    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .filter__label {
-  @include text--label;
-  margin-right: $padding-unit/2;
+    @include text--label;
+    margin-right: $padding-unit/2;
 }
 
-.filter__container__input, .filter__container__multiselect, .filter__container__select {
-  position: relative;
-  border: 1px solid $light-gray;
-  border-radius: 2px;
-  margin-right: $padding-unit/2;
-  margin-bottom: $padding-unit/2;
-  &:last-of-type {
-    margin-right: 0;
-  }
+.filter__container__input,
+.filter__container__multiselect,
+.filter__container__select {
+    position: relative;
+    border: 1px solid $light-gray;
+    border-radius: 2px;
+    margin-right: $padding-unit/2;
+    margin-bottom: $padding-unit/2;
+    &:last-of-type {
+        margin-right: 0;
+    }
 }
 
 .filter__container__select {
-  $triangle-size: 4px;
-  &:after {
-    position: absolute;
-    right: 10px;
-    top: calc(#{$filter-container-height}/2 - #{$triangle-size}/2);
-    pointer-events: none;
-    @include triangle(bottom, $dark-blue, $triangle-size);
-  }
+    $triangle-size: 4px;
+    &:after {
+        position: absolute;
+        right: 10px;
+        top: calc(#{$filter-container-height}/2 - #{$triangle-size}/2);
+        pointer-events: none;
+        @include triangle(bottom, $dark-blue, $triangle-size);
+    }
 }
 
 .filter__container__select__label {
-  background: #F0F4F5;
-  border-right: 1px solid $light-gray;
-  display: inline-block;
-  vertical-align: middle;
-  width: auto;
-  height: $filter-container-height;
-  line-height: $filter-container-height;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin: 0;
-  font-weight: normal;
-  color: $mid-gray;
-  font-size: $font-size-s;
-  .fa {
-    margin-right: 0.4em;
-  }
+    background: #F0F4F5;
+    border-right: 1px solid $light-gray;
+    display: inline-block;
+    vertical-align: middle;
+    width: auto;
+    height: $filter-container-height;
+    line-height: $filter-container-height;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin: 0;
+    font-weight: normal;
+    color: $mid-gray;
+    font-size: $font-size-s;
+    .fa {
+        margin-right: 0.4em;
+    }
 }
 
 @mixin filter-select-positioning {
-  display: inline-block;
-  vertical-align: middle;
-  width: 200px;
-  height: $filter-container-height;
-  margin: 0;
+    display: inline-block;
+    vertical-align: middle;
+    width: 200px;
+    height: $filter-container-height;
+    margin: 0;
 }
 
 @mixin filter-select-style {
-  @include text--standard;
-  padding: 0 10px;
-  border: 0;
-  background: white;
-  -webkit-appearance: none;
-  font-size: $font-size-s;
-  &:focus {
-    outline: #E0E5EB auto 4px;
-    outline-offset: -3px;
-  }
+    @include text--standard;
+    padding: 0 10px;
+    border: 0;
+    background: white;
+    -webkit-appearance: none;
+    font-size: $font-size-s;
+    &:focus {
+        outline: #E0E5EB auto 4px;
+        outline-offset: -3px;
+    }
 }
 
 .filter__container__select__label__after {
-  background: #F0F4F5;
-  border-left: 1px solid $light-gray;
-  display: inline-block;
-  vertical-align: middle;
-  width: auto;
-  height: $filter-container-height;
-  line-height: $filter-container-height;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin: 0;
-  font-weight: normal;
-  color: $mid-gray;
-  font-size: $font-size-s;
-  .fa {
-    margin-right: 0.2em;
-  }
+    background: #F0F4F5;
+    border-left: 1px solid $light-gray;
+    display: inline-block;
+    vertical-align: middle;
+    width: auto;
+    height: $filter-container-height;
+    line-height: $filter-container-height;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin: 0;
+    font-weight: normal;
+    color: $mid-gray;
+    font-size: $font-size-s;
+    .fa {
+        margin-right: 0.2em;
+    }
 }
 
 Select {
-  border-left: 1px solid $light-gray;
-  max-width: 300px;
-  min-width: 200px;
-  display: inline-block;
-  font-size: $font-size-s;
-  vertical-align: bottom;
+    border-left: 1px solid $light-gray;
+    max-width: 300px;
+    min-width: 200px;
+    display: inline-block;
+    font-size: $font-size-s;
+    vertical-align: bottom;
 }
+
 .Select-control {
-  border: 1px solid $light-gray;
-  height: auto;
+    border: 1px solid $light-gray;
+    height: auto;
 }
+
 .Select-input {
-  height: $filter-container-height;
-  display: inline-block;
-  input {
-    width: 2px;
-  }
+    height: $filter-container-height;
+    display: inline-block;
+    input {
+        width: 2px;
+    }
 }
+
+.styled-select {
+    background: none;
+    height: 29px;
+    overflow: hidden;
+    width: 100%;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    box-shadow: none !important;
+    select {
+        background: transparent;
+        border: none !important;
+        font-size: 14px;
+        height: 29px;
+        padding: 5px;
+        /* If you add too much padding here, the options won't show in IE */
+        width: 100%;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+}
+
 .Select-value {
-  color: $blue;
+    color: $blue;
 }
+
 .Select-menu-outer {
-  max-height: 170px;
-  margin: 0 -1px;
+    max-height: 170px;
+    margin: 0 -1px;
 }
+
 .Select-menu {
-  max-height: 165px;
-  overflow-y: auto;
+    max-height: 165px;
+    overflow-y: auto;
 }
 
 input.input--minimised {
-  @include text--standard;
-  display: inline-block;
-  vertical-align: middle;
-  &[type="number"] {
-    width: 30px;
-  }
-  &[type="text"] {
-    width: 200px;
-  }
-  height: $filter-container-height;
-  margin: 0;
-  padding: 0 10px;
-  border: none;
-  border-radius: 0;
-  background: white;
-  -webkit-appearance: none;
-  font-size: $font-size-s;
-  &:focus {
-    outline: #E0E5EB auto 4px;
-    outline-offset: -3px;
-  }
+    @include text--standard;
+    display: inline-block;
+    vertical-align: middle;
+    &[type="number"] {
+        width: 30px;
+    }
+    &[type="text"] {
+        width: 200px;
+    }
+    height: $filter-container-height;
+    margin: 0;
+    padding: 0 10px;
+    border: none;
+    border-radius: 0;
+    background: white;
+    -webkit-appearance: none;
+    font-size: $font-size-s;
+    &:focus {
+        outline: #E0E5EB auto 4px;
+        outline-offset: -3px;
+    }
 }
 
 .select--minimised {
-  @include filter-select-positioning;
-  @include filter-select-style;
+    @include filter-select-positioning;
+    @include filter-select-style;
 }
-
 
 .react-datepicker__input-container {
-  @include filter-select-positioning;
-  input[type="text"] {
-    @include filter-select-style;
-    /* some stuff to override text input styles: */
-    box-sizing: border-box;
-    width: 200px;
-    height: $filter-container-height;
-    box-shadow: none;
-  }
+    @include filter-select-positioning;
+    input[type="text"] {
+        @include filter-select-style;
+        /* some stuff to override text input styles: */
+        box-sizing: border-box;
+        width: 200px;
+        height: $filter-container-height;
+        box-shadow: none;
+    }
 }
-
 
 .filter__reduced {
-  padding-right: 5px;
-  font-size: $font-size-xs;
+    padding-right: 5px;
+    font-size: $font-size-xs;
 }
+
 .filter__display {
-  display: block;
+    display: block;
 }
+
 .filter__hidden {
-  display: none;
+    display: none;
 }

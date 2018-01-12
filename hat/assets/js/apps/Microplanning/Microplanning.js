@@ -112,7 +112,6 @@ export class Microplanning extends Component {
     // params filters & load status
     const { years, zs_id, as_id, planning_id, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
-    console.log(data);
     // possible years from 2000 to current year
     const firstYear = 2000;
     const currentYear = new Date().getFullYear();
@@ -123,10 +122,12 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
-    const plannings = ((data && data.plannings  ) || []);
-
-
-    // selection
+    let plannings = ((data && data.plannings  ) || []);
+    if (data) {
+      if (!plannings.length) {
+        plannings = [plannings];
+      }
+    }
     const { selection } = this.props;
     let selectedVillages = (selection.selectedItems || []);
     // planning selection
@@ -137,7 +138,7 @@ export class Microplanning extends Component {
         selectedVillages.length === 0 &&
         !this.state.isVillageListEdited) {
       let tempSelectedVillages = [];
-      plannings.assignations.map(villagePlanified => {
+      plannings[0].assignations.map(villagePlanified => {
         villages.map(village => {
           if (villagePlanified.village_id === village.id){
             tempSelectedVillages.push(village);
@@ -281,6 +282,7 @@ export class Microplanning extends Component {
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}
+                plannings={plannings}
                 selectedItems={selectedVillages}
                 bufferSize={bufferSize}
                 highlightBufferSize={highlightBufferSize}

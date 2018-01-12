@@ -338,6 +338,7 @@ class Map extends Component {
       }
     })
 
+
     // create marker for the chosen item
     const chosenMarker = L.circle(map.getCenter(), {
       className: 'map-marker chosen',
@@ -578,7 +579,7 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        <MapTooltip item={item} teams={this.props.teams} />
+        <MapTooltip item={item} teams={this.props.teams} plannings={this.props.plannings} />
       </div>
     )
     ReactDOM.render(this.injectI18n(tootltip), tooltipLarge)
@@ -674,7 +675,8 @@ Map.propTypes = {
   showItem: PropTypes.func,
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
-  teams: PropTypes.arrayOf(PropTypes.array)
+  teams: PropTypes.arrayOf(PropTypes.array),
+  plannings: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default injectIntl(Map)

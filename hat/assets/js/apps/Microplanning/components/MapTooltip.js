@@ -23,23 +23,23 @@ import { fetchUrl } from '../../../utils/fetchData'
 import { capitalize } from '../../../utils'
 
 export const urls = [{
-    name: 'village_detail',
-    id: 'village_id',
-    url: ' /api/villages/',
-    mock: [{
-      "province": "Kwilu",
-      "former_province": "",
-      "zs": "Bagata",
-      "as": "Bangumi",
-      "type": "YES",
-      "latitude": -3.4995401,
-      "longitude": 17.681,
-      "gps_source": "ITM",
-      "population": 799,
-      "population_year": 2016,
-      "population_source": "BCZ BAGATA"
-    }]
-  }];
+  name: 'village_detail',
+  id: 'village_id',
+  url: ' /api/villages/',
+  mock: [{
+    "province": "Kwilu",
+    "former_province": "",
+    "zs": "Bagata",
+    "as": "Bangumi",
+    "type": "YES",
+    "latitude": -3.4995401,
+    "longitude": 17.681,
+    "gps_source": "ITM",
+    "population": 799,
+    "population_year": 2016,
+    "population_source": "BCZ BAGATA"
+  }]
+}];
 
 const MESSAGES = defineMessages({
   province: {
@@ -117,8 +117,12 @@ const MESSAGES = defineMessages({
     defaultMessage: 'Confirmed HAT cases in that last year'
   },
   team_all: {
-    defaultMessage: 'All teams',
+    defaultMessage: 'None',
     id: 'microplanning.label.team.all'
+  },
+  team_select: {
+    defaultMessage: 'Team',
+    id: 'microplanning.label.team.select'
   },
 
   // type values
@@ -166,7 +170,12 @@ class MapTooltip extends Component {
     super(props)
     this.state = {
       item: props.item,
-      isloading: true
+      teams: props.teams,
+      isloading: true,
+      isVillage: false,
+      isPlanifiyng: false,
+      isPlanified: false,
+      selectedTeamId: ''
     }
 
   }
@@ -174,9 +183,9 @@ class MapTooltip extends Component {
   componentDidMount() {
     // If this is a village we need to fetch the detail of it
     if (this.state.item.name) {
-      this.loadData(this.state.item.id);
+      this.loadVillageDetail(this.state.item.id);
     } else {
-      this.setState({isloading: false});
+      this.setState({ isloading: false });
     }
   }
 
@@ -188,37 +197,76 @@ class MapTooltip extends Component {
 
   updateItemField(value) {
     this.setState({
-        item: Object.assign({}, this.state.item, value)
-    });
-}
-
-  loadData(item_id) {
-    this.setState({isloading: true});
-    fetchUrl(urls, {village_id: item_id}, '').then((result) =>{
-      this.updateItemField(result.village_detail);
-      this.setState({isloading: false});
+      item: Object.assign({}, this.state.item, value)
     });
   }
 
+  loadVillageDetail(item_id) {
+    const isPlanifiyng = this.props.plannings[0] && this.props.plannings[0].assignations;
+    let isPlanified = false;
+    let selectedTeamId = '';
+    if (isPlanifiyng) {
+      isPlanified = this.props.plannings[0].assignations.map(assignation => {
+        const isPresent = assignation.village_id === item_id;
+        if (isPresent) {
+          selectedTeamId = assignation.team_id;
+        }
+        return isPresent;
+      });
+    }
+    this.setState({
+      isloading: true,
+      isVillage: true,
+      isPlanifiyng,
+      isPlanified,
+      selectedTeamId
+    });
+    fetchUrl(urls, { village_id: item_id }, '').then((result) => {
+      this.updateItemField(result.village_detail);
+      this.setState({ isloading: false });
+    });
+  }
+
+
   render() {
-    const team = null;
     const { formatMessage } = this.props.intl;
     if (!this.state.item || this.state.isloading) {
       return null;
     }
     return (
       <div key={this.state.item.id} className='map__tooltip'>
-        {this.state.item.name ? (
+        {this.state.item.name && this.state.isPlanifiyng ? (
           <div className="property">
-            <Select
+            <FormattedMessage
+              id='microplanning.label.team.select'
+              defaultMessage='Team' />
+            <div>
+              <select
+                value={this.state.selectedTeamId || ''}
+                className="styled-select"
+                onChange={event => {
+                  this.setState({ selectedTeamId: event.currentTarget.value })
+              }}>
+                <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
+                {this.state.teams.map((value) => {
+                  return (<option value={value[0]}>
+                            {value[1]}
+                          </option>)
+                })}
+              </select>
+            </div>
+            {/* <Select
               simpleValue
               autosize={false}
-              name='teams'
-              value={team || ''}
+              disabled={this.state.isloading}
+              name='selectedTeamId'
+              value={this.state.selectedTeamId || ''}
               placeholder={formatMessage(MESSAGES['team_all'])}
-              options={this.props.teams.map((value) => ({ label: value[1], value: value[1] }))}
-              onChange={teams => this.updateVillageTeam()}
-            />
+              options={this.state.teams.map((value) => ({ label: value[1], value: value[0] }))}
+              onChange={team => {
+                console.log('change')
+              }}
+            /> */}
           </div>) :
           null}
         {
@@ -270,7 +318,8 @@ class MapTooltip extends Component {
 
 MapTooltip.propTypes = {
   item: PropTypes.object.isRequired,
-  teams: PropTypes.array.isRequired
+  teams: PropTypes.array.isRequired,
+  plannings: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default injectIntl(MapTooltip)

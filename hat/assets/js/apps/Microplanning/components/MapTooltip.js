@@ -249,24 +249,12 @@ class MapTooltip extends Component {
               }}>
                 <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
                 {this.state.teams.map((value) => {
-                  return (<option value={value[0]}>
+                  return (<option key={value[0]} value={value[0]}>
                             {value[1]}
                           </option>)
                 })}
               </select>
             </div>
-            {/* <Select
-              simpleValue
-              autosize={false}
-              disabled={this.state.isloading}
-              name='selectedTeamId'
-              value={this.state.selectedTeamId || ''}
-              placeholder={formatMessage(MESSAGES['team_all'])}
-              options={this.state.teams.map((value) => ({ label: value[1], value: value[0] }))}
-              onChange={team => {
-                console.log('change')
-              }}
-            /> */}
           </div>) :
           null}
         {

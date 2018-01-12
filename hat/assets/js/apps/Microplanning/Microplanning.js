@@ -19,6 +19,7 @@ import Select from 'react-select';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl } from '../../utils/fetchData';
+import { saveTeams } from '../../utils/saveData';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
 import { mapActions } from './redux/map';
@@ -48,22 +49,110 @@ const MESSAGES = defineMessages({
 })
 
 export class Microplanning extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.state = {
       locations: [],
       selectedLocation: null,
-      isVillageListEdited: false
+      isVillageListEdited: false,
+      planning_id: parseInt(props.params.planning_id, 10),
+      team_id: parseInt(props.params.team_id, 10),
+      isSelectionModified: false,
+      errorOnSave: undefined
     }
   }
 
   componentWillReceiveProps(newProps) {
     const { data, error, loading } = newProps.load;
     const locations = ((data && data.locations) || []);
-
     this.setState({
       locations
     })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // TODO : Check if data are the same, not nl the length
+    if (this.props.selection.selectedItems.length !== nextProps.selection.selectedItems.length) {
+      this.setState({
+        isSelectionModified: true
+      })
+    }
+  }
+
+  renderPlanningTitle(plannings, teams, loading) {
+    if (!this.state.planning_id || loading) {
+      return null;
+    }
+    const planningName = plannings.map(p => {
+      if (p.id === this.state.planning_id) {
+        return p.name
+      }
+    });
+
+    const teamTitle = this.state.team_id ? teams.map(t => {
+      if (t[0] === this.state.team_id) {
+        return (
+          <span>
+            {` - `}
+            <FormattedMessage id='microplanning.label.teams' defaultMessage='team:' />
+            {` ${t[1]}`}
+          </span>
+        ) ;
+      }
+    }) : '';
+    return (
+      <div className='widget__container'>
+        <div className='widget__header'>
+          <h2 className='widget__heading'>
+            <FormattedMessage id='microplanning.label.plannings' defaultMessage='Planning:' />
+            {` ${planningName}`}
+            {teamTitle}
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
+  renderSaveTeamButton() {
+    if (!this.state.team_id) {
+      return null;
+    }
+    return (
+      <div>
+        {
+          typeof this.state.errorOnSave !== 'undefined' ?
+            !this.state.errorOnSave ?
+              <div className="success"><FormattedMessage id='microplanning.label.save.success' defaultMessage='Selection saved' /></div> :
+              <div className="error"><FormattedMessage id='microplanning.label.save.error' defaultMessage='Error while saving' /></div>
+            : null
+        }
+        <button
+          className='button--save'
+          disabled={!this.state.isSelectionModified || this.state.isSavingTeam}
+          onClick={() => this.saveTeam()}
+        >
+          {
+            this.state.isSavingTeam ? <i className='fa fa-spinner' /> : <i className='fa fa-save' />
+          }
+          <FormattedMessage id='microplanning.label.save' defaultMessage='Save Selection' />
+        </button>
+      </div>
+    );
+  }
+
+  saveTeam() {
+    const tempVillages = [];
+    this.props.selection.selectedItems.map(v => {
+      tempVillages.push({ 'village_id': v.id, 'team_id': this.state.team_id });
+    });
+    this.setState({ isSavingTeam: true });
+    saveTeams(tempVillages, parseInt(this.state.planning_id), 10).then(isSaved => {
+      this.setState({
+        isSavingTeam: false,
+        isSelectionModified: !isSaved,
+        errorOnSave: !isSaved
+      });
+    });
   }
 
   /* ***************************************************************************
@@ -110,7 +199,7 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { years, zs_id, as_id, planning_id, team_id } = this.props.params;
+    const { years, zs_id, as_id, planning_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     // possible years from 2000 to current year
     const firstYear = 2000;
@@ -122,7 +211,7 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
-    let plannings = ((data && data.plannings  ) || []);
+    let plannings = ((data && data.plannings) || []);
     if (data) {
       if (!plannings.length) {
         plannings = [plannings];
@@ -133,15 +222,17 @@ export class Microplanning extends Component {
     // planning selection
     // if a planning is selected we need to preselect the villages from the planning
     if (planning_id &&
-        plannings.length !== 0 &&
-        villages.length !== 0 &&
-        selectedVillages.length === 0 &&
-        !this.state.isVillageListEdited) {
+      plannings.length !== 0 &&
+      villages.length !== 0 &&
+      selectedVillages.length === 0 &&
+      !this.state.isVillageListEdited) {
       let tempSelectedVillages = [];
       plannings[0].assignations.map(villagePlanified => {
         villages.map(village => {
-          if (villagePlanified.village_id === village.id){
-            tempSelectedVillages.push(village);
+          if (villagePlanified.village_id === village.id) {
+            if ((typeof this.state.team_id === 'undefined') || (parseInt(villagePlanified.team_id, 10) === this.state.team_id, 10)) {
+              tempSelectedVillages.push(village);
+            }
           }
         });
       });
@@ -191,6 +282,7 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
+        {this.renderPlanningTitle(plannings, teams, loading)}
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}
@@ -219,7 +311,7 @@ export class Microplanning extends Component {
                     value={zs_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
                     options={this.state.locations.map((value) => ({ label: value[1], value: value[0] }))}
-                    onChange={zs_id =>  this.props.redirect({ ...this.props.params, zs_id })}
+                    onChange={zs_id => this.props.redirect({ ...this.props.params, zs_id })}
                   />
                 </div>
 
@@ -238,7 +330,7 @@ export class Microplanning extends Component {
                     value={as_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
                     options={areas.map((value) => ({ label: value[1], value: value[0] }))}
-                    onChange={as_id =>  this.props.redirect({ ...this.props.params, as_id })}
+                    onChange={as_id => this.props.redirect({ ...this.props.params, as_id })}
                   />
                 </div>
 
@@ -327,6 +419,7 @@ export class Microplanning extends Component {
 
                   <div className='map__selection__bottom'>
                     {/* actions */}
+                    {this.renderSaveTeamButton()}
                     <MapSelectionExport data={selectedVillages} />
                     <div>
                       <button className='button--print' onClick={() => this.activateFullscreenHandler()}>

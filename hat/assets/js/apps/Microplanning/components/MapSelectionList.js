@@ -40,8 +40,8 @@ class MapSelectionList extends Component {
                   <i className='fa fa-map-marker' />
                 </span>
                 <span>
-                  {item.AS}
-                  {' - '}
+                  {/* {item.AS}
+                  {' - '} */}
                   {item.name}
                 </span>
               </li>

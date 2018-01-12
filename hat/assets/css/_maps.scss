@@ -605,6 +605,17 @@ li.map__selection__list__item {
   font-size: $font-size-xs;
 }
 
+.button--save {
+  margin-bottom: 4px;
+  width: ($map-sidebar-width - 50);
+  font-size: $font-size-xs;
+  &:disabled{
+    background-color: #007fff !important;
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
 
 /******************************************************************************
  * map selection controls

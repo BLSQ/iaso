@@ -8,6 +8,11 @@ from hat.planning.models import Planning, Assignation
 from hat.users.models import Team, Coordination
 from hat.geo.models import Village
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
 
 class PlanningViewSet(viewsets.ViewSet):
     """
@@ -39,9 +44,12 @@ class PlanningViewSet(viewsets.ViewSet):
     conflict with the body of the request. For example, if you associate village 3 with team 3 and it was previously
     associated with team 2, this assignation to team 2 will be deleted.
     """
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
 
     def list(self, request):
         return Response(Planning.objects.all().values('name', 'id').order_by('-created_at'))
+
 
     def retrieve(self, request, pk=None):
         planning = get_object_or_404(Planning, pk=pk)

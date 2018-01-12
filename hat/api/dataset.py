@@ -612,10 +612,10 @@ def health_zones(request: Request, params: Dict[str, str]) -> List[str]:
     },
 })
 def health_areas(request: Request, params: Dict[str, str]) -> List[str]:
-    zs_id = params.get("zs_id")
+    zs_ids = params.get("zs_id")
 
-    if zs_id:
-        queryset = AS.objects.filter(ZS_id=zs_id)
+    if zs_ids:
+        queryset = AS.objects.filter(ZS_id__in=zs_ids.split(','))
     else:
         queryset = AS.objects.all()
 

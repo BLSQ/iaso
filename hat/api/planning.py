@@ -41,7 +41,7 @@ class PlanningViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        return Response(Planning.objects.all().values_list('name', 'id'))
+        return Response(Planning.objects.all().values('name', 'id').order_by('-created_at'))
 
     def retrieve(self, request, pk=None):
         planning = get_object_or_404(Planning, pk=pk)

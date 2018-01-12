@@ -51,13 +51,16 @@ export class Microplanning extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      locations: []
+      locations: [],
+      selectedLocation: null,
+      isVillageListEdited: false
     }
   }
 
   componentWillReceiveProps(newProps) {
     const { data, error, loading } = newProps.load;
     const locations = ((data && data.locations) || []);
+
     this.setState({
       locations
     })
@@ -66,21 +69,11 @@ export class Microplanning extends Component {
   /* ***************************************************************************
    * HANDLERS
    ****************************************************************************/
-
-  changeLocationHandler (location) {
-    let zs_id = null;
-    this.state.locations.map(
-      l => {
-        if (l[1] === location ) {
-          zs_id = l[0];
-        }
-      }
-    )
-    this.props.redirect({
-      ...this.props.params,
-      location,
-      zs_id
-    })
+  deSelectVillage(list) {
+    this.setState({
+      isVillageListEdited: true
+    });
+    this.props.deselectItems(list);
   }
 
   changeSelectionModeHandler(mode) {
@@ -117,21 +110,44 @@ export class Microplanning extends Component {
     const { formatMessage } = this.props.intl;
 
     // params filters & load status
-    const { caseyears, location, area } = this.props.params;
+    const { years, zs_id, as_id, planning_id, team_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     // possible years from 2000 to current year
     const firstYear = 2000;
     const currentYear = new Date().getFullYear();
-    const years = [];
+    const possibleYears = [];
     for (let y = currentYear; y >= firstYear; y--) {
-      years.push('' + y); // parse to string (Select component needs it)
+      possibleYears.push('' + y); // parse to string (Select component needs it)
     }
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
-
-    // selection
+    const teams = ((data && data.teams) || []);
+    let plannings = ((data && data.plannings  ) || []);
+    if (data) {
+      if (!plannings.length) {
+        plannings = [plannings];
+      }
+    }
     const { selection } = this.props;
-    const selectedVillages = (selection.selectedItems || []);
+    let selectedVillages = (selection.selectedItems || []);
+    // planning selection
+    // if a planning is selected we need to preselect the villages from the planning
+    if (planning_id &&
+        plannings.length !== 0 &&
+        villages.length !== 0 &&
+        selectedVillages.length === 0 &&
+        !this.state.isVillageListEdited) {
+      let tempSelectedVillages = [];
+      plannings[0].assignations.map(villagePlanified => {
+        villages.map(village => {
+          if (villagePlanified.village_id === village.id){
+            tempSelectedVillages.push(village);
+          }
+        });
+      });
+      selectedVillages = tempSelectedVillages;
+      selection.selectedItems = selectedVillages;
+    }
 
     // buffer sizes
     const bufferSize = (
@@ -149,14 +165,13 @@ export class Microplanning extends Component {
     const selectHighlightBuffer = () => {
       const inBuffer = geoUtils.villagesInHighlightBuffer(
         this.props.map.leafletMap,
-        villages.filter((item) => legend[item.type]),
+        villages.filter((item) => legend[item.village_official]),
         selection.highlightBufferSize
       )
       if (inBuffer.length > 0) {
         this.props.executeSelectionAction(inBuffer);
       }
     }
-
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>
         {
@@ -176,7 +191,6 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}
@@ -201,11 +215,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='location'
-                    value={location || ''}
+                    name='zs_id'
+                    value={zs_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={this.state.locations.map((value) => ({ label: value[1], value: value[1] }))}
-                    onChange={(location) =>  this.changeLocationHandler(location)}
+                    options={this.state.locations.map((value) => ({ label: value[1], value: value[0] }))}
+                    onChange={zs_id =>  this.props.redirect({ ...this.props.params, zs_id })}
                   />
                 </div>
 
@@ -220,11 +234,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='area'
-                    value={area || ''}
+                    name='as_id'
+                    value={as_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={areas.map((value) => ({ label: value[1], value: value[1] }))}
-                    onChange={area =>  this.props.redirect({ ...this.props.params, area })}
+                    options={areas.map((value) => ({ label: value[1], value: value[0] }))}
+                    onChange={as_id =>  this.props.redirect({ ...this.props.params, as_id })}
                   />
                 </div>
 
@@ -239,11 +253,11 @@ export class Microplanning extends Component {
                     simpleValue
                     autosize={false}
                     disabled={loading}
-                    name='caseyears'
-                    value={caseyears || ''}
+                    name='years'
+                    value={years || ''}
                     placeholder={formatMessage(MESSAGES['years-select'])}
-                    options={years.map((value) => ({ label: value, value }))}
-                    onChange={caseyears => this.props.redirect({ ...this.props.params, caseyears })}
+                    options={possibleYears.map((value) => ({ label: value, value }))}
+                    onChange={years => this.props.redirect({ ...this.props.params, years })}
                   />
                 </div>
               </div>
@@ -262,11 +276,13 @@ export class Microplanning extends Component {
             {/* Map */}
             <div className={mapClass} id="planning-map">
               <Map
+                teams={teams}
                 baseLayer={baseLayer}
                 overlays={overlays}
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}
+                plannings={plannings}
                 selectedItems={selectedVillages}
                 bufferSize={bufferSize}
                 highlightBufferSize={highlightBufferSize}
@@ -305,7 +321,7 @@ export class Microplanning extends Component {
                     <MapSelectionList
                       data={selectedVillages}
                       show={item => this.props.displayItem(item)}
-                      deselect={list => this.props.deselectItems(list)}
+                      deselect={list => this.deSelectVillage(list)}
                     />
                   </div>
 
@@ -329,8 +345,6 @@ export class Microplanning extends Component {
   }
 }
 
-const MicroplanningWithIntl = injectIntl(Microplanning);
-
 Microplanning.propTypes = {
   changeBufferSize: PropTypes.func.isRequired,
   changeHighlightBufferSize: PropTypes.func.isRequired,
@@ -347,11 +361,12 @@ Microplanning.propTypes = {
   redirect: PropTypes.func.isRequired
 };
 
+const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
-  deselectItems: item => dispatch(selectionActions.deselectItems(list)),
+  deselectItems: list => dispatch(selectionActions.deselectItems(typeof list !== 'undefined' ? list : null)),
   displayItem: item => dispatch(selectionActions.displayItem(item)),
   toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
   changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),

@@ -3,9 +3,10 @@
  * and options indicated in the rest of components.
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, { Component, PropTypes } from 'react'
 import ReactDOM from 'react-dom'
-import {FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape} from 'react-intl'
+import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
+import Select from 'react-select';
 
 import L from 'leaflet'
 import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
@@ -14,14 +15,14 @@ import geoUtils from '../utils/geo'
 import MapTooltip from './MapTooltip'
 
 // map base layers
-const tileOptions = {keepBuffer: 4}
+const tileOptions = { keepBuffer: 4 }
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg'
 const BASE_LAYERS = {
   'blank': L.tileLayer(''),
   'osm': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
   'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
-  'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), {...tileOptions, maxZoom: 16}),
-  'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), {...tileOptions, maxZoom: 17})
+  'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
+  'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 })
 }
 
 const MESSAGES = defineMessages({
@@ -40,7 +41,7 @@ const MESSAGES = defineMessages({
 })
 
 class Map extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -59,29 +60,31 @@ class Map extends Component {
         // split in different groups based on type and use
         markersGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup(),
-          unknown: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup(),
+          OTHER: new L.FeatureGroup(),
+          NA: new L.FeatureGroup()
         },
 
         shadowsGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup(),
-          unknown: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup(),
+          OTHER: new L.FeatureGroup(),
+          NA: new L.FeatureGroup()
         },
 
         labelsGroups: {
           group: new L.FeatureGroup(),
-          official: new L.FeatureGroup(),
-          other: new L.FeatureGroup()
+          YES: new L.FeatureGroup(),
+          NO: new L.FeatureGroup()
           // unknown: new L.FeatureGroup() // it's always `Inconnu`
         }
       }
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.createMap()
     this.includeControlsInMap()
     this.includeDefaultLayersInMap()
@@ -94,10 +97,10 @@ class Map extends Component {
     this.props.leafletMap(this.state.map)
   }
 
-  componentDidUpdate (prevProps, prevState) {
-    const {map} = this.state
+  componentDidUpdate(prevProps, prevState) {
+    const { map } = this.state
     const hasChanged = (prev, curr, key) => (prev[key] !== curr[key])
-    const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'confirmedCases'])
+    const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'nr_positive_cases'])
     const containSameItems = (prev, curr, key) => {
       if (!hasChanged(prev, curr, key)) return true
       const arr1 = prev[key]
@@ -150,13 +153,13 @@ class Map extends Component {
     })
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     if (this.state.map) {
       this.state.map.remove()
     }
   }
 
-  render () {
+  render() {
     return <div ref={(node) => (this.state.containers.map = node)} className='map-container' />
   }
 
@@ -164,7 +167,7 @@ class Map extends Component {
    * CREATE MAP
    ****************************************************************************/
 
-  createMap () {
+  createMap() {
     const map = L.map(this.state.containers.map, {
       attributionControl: false,
       zoomControl: false, // zoom control will be added manually
@@ -186,10 +189,10 @@ class Map extends Component {
     this.state.map = map
   }
 
-  includeControlsInMap () {
+  includeControlsInMap() {
     // The order in which the controls are added matters
-    const {formatMessage} = this.props.intl
-    const {map, containers} = this.state
+    const { formatMessage } = this.props.intl
+    const { map, containers } = this.state
 
     //
     // In TOP-LEFT
@@ -216,32 +219,32 @@ class Map extends Component {
     }).addTo(map)
 
     // control to visualize warnings
-    const warningControl = L.control({position: 'topright'})
+    const warningControl = L.control({ position: 'topright' })
     warningControl.onAdd = () => (L.DomUtil.create('div', 'hide-on-print'))
     warningControl.addTo(map)
     containers.warning = warningControl.getContainer()
 
     // metric scale
-    L.control.scale({imperial: false, position: 'bottomright'}).addTo(map)
+    L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map)
 
     // controls to visualize the shape/marker tooltip
-    const tooltipSmallControl = L.control({position: 'bottomleft'})
+    const tooltipSmallControl = L.control({ position: 'bottomleft' })
     tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print')
     tooltipSmallControl.addTo(map)
     containers.tooltipSmall = tooltipSmallControl.getContainer()
 
-    const tooltipLargeControl = L.control({position: 'bottomleft'})
+    const tooltipLargeControl = L.control({ position: 'bottomleft' })
     tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print')
     tooltipLargeControl.addTo(map)
     containers.tooltipLarge = tooltipLargeControl.getContainer()
   }
 
-  includeDefaultLayersInMap () {
+  includeDefaultLayersInMap() {
     //
     // include relevant and constant layers
     //
 
-    const {map, layers, overlays} = this.state
+    const { map, layers, overlays } = this.state
     map.addLayer(layers.selectedGroup)
     map.addLayer(layers.markersGroups.group)
     map.addLayer(layers.shadowsGroups.group)
@@ -268,7 +271,7 @@ class Map extends Component {
 
     const shapeOptions = (type) => ({
       pane: 'custom-pane-shapes',
-      style: () => ({className: String.raw`map-layer ${type}`}),
+      style: () => ({ className: String.raw`map-layer ${type}` }),
       onEachFeature: (feature, layer) => {
         this.addLayerEvents(layer, feature.properties)
       }
@@ -317,10 +320,9 @@ class Map extends Component {
     bufferMarker.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        const {legend, items} = this.props
-        const plotted = items.filter((item) => legend[item.type])
+        const { legend, items } = this.props
+        const plotted = items.filter((item) => legend[item.village_official])
         const inBuffer = geoUtils.villagesInBuffer(plotted, bufferMarker)
-
         if (inBuffer.length) {
           this.props.selectionAction(inBuffer)
         }
@@ -336,6 +338,7 @@ class Map extends Component {
       }
     })
 
+
     // create marker for the chosen item
     const chosenMarker = L.circle(map.getCenter(), {
       className: 'map-marker chosen',
@@ -349,9 +352,9 @@ class Map extends Component {
    * UPDATE STATE
    ****************************************************************************/
 
-  updateBaseLayer () {
-    const {baseLayer} = this.props
-    const {map} = this.state
+  updateBaseLayer() {
+    const { baseLayer } = this.props
+    const { map } = this.state
 
     Object.keys(BASE_LAYERS).forEach((key) => {
       const layer = BASE_LAYERS[key]
@@ -363,8 +366,8 @@ class Map extends Component {
     })
   }
 
-  updateOverlays () {
-    const {map} = this.state
+  updateOverlays() {
+    const { map } = this.state
 
     Object.keys(this.props.overlays).forEach((key) => {
       const active = this.props.overlays[key]
@@ -377,23 +380,21 @@ class Map extends Component {
     })
   }
 
-  updateItems (force) {
-    const {legend, items} = this.props
-    const {layers} = this.state
-    const {labelsGroups, markersGroups, shadowsGroups} = layers
+  updateItems(force) {
+    const { legend, items } = this.props
+    const { layers } = this.state
+    const { labelsGroups, markersGroups, shadowsGroups } = layers
 
     // plot indicated villages (active in legend)
     Object.keys(legend).forEach((key) => {
       const markers = markersGroups[key]
       const shadows = shadowsGroups[key]
       const labels = labelsGroups[key]
-
       if (force) {
         markers.clearLayers()
         shadows.clearLayers()
         if (labels) labels.clearLayers()
       }
-
       if (legend[key]) {
         // include layers in group
         if (!markersGroups.group.hasLayer(markers)) {
@@ -405,7 +406,7 @@ class Map extends Component {
         // check if the layer has markers
         if (markers.getLayers().length === 0) {
           items
-            .filter((item) => item.type === key)
+            .filter((item) => item.village_official === key)
             .forEach((item, index) => {
               const options = {
                 className: String.raw`map-marker ${item._class}`,
@@ -423,7 +424,7 @@ class Map extends Component {
                   icon: L.divIcon({
                     className: '',
                     iconAnchor: [20, 20],
-                    html: String.raw`<div class="map__marker__label ${key}">${item.village}</div>`
+                    html: String.raw`<div className="map__marker__label ${key}">${item.name}</div>`
                   }),
                   pane: 'custom-pane-labels'
                 })
@@ -454,9 +455,9 @@ class Map extends Component {
     })
   }
 
-  updateSelectedItems () {
-    const {selectedItems} = this.props
-    const {selectedGroup} = this.state.layers
+  updateSelectedItems() {
+    const { selectedItems } = this.props
+    const { selectedGroup } = this.state.layers
 
     selectedGroup.clearLayers()
     selectedItems.forEach((item) => {
@@ -467,15 +468,15 @@ class Map extends Component {
       }
 
       const marker = L.circle(item._latlon, options)
-      this.addLayerEvents(marker, {...item, selected: true})
+      this.addLayerEvents(marker, { ...item, selected: true })
       selectedGroup.addLayer(marker)
     })
   }
 
-  updateMouseBuffer () {
-    const {bufferSize} = this.props
-    const {map} = this.state
-    const {mouseSelectionMarker} = this.state.layers
+  updateMouseBuffer() {
+    const { bufferSize } = this.props
+    const { map } = this.state
+    const { mouseSelectionMarker } = this.state.layers
 
     if (bufferSize > 0) {
       // in metres (buffer size = radius)
@@ -487,16 +488,16 @@ class Map extends Component {
     }
   }
 
-  updateHighlightBuffer () {
-    const {legend, highlightBufferSize} = this.props
-    const {highlightBufferGroup} = this.state.layers
+  updateHighlightBuffer() {
+    const { legend, highlightBufferSize } = this.props
+    const { highlightBufferGroup } = this.state.layers
 
     highlightBufferGroup.clearLayers()
 
     // include buffer zone
     if (highlightBufferSize > 0) {
-      const {items} = this.props
-      const highlight = items.filter((item) => legend[item.type] && item._isHighlight)
+      const { items } = this.props
+      const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
       const bufferSize = highlightBufferSize * 1000
 
       highlight.forEach((item) => {
@@ -512,10 +513,10 @@ class Map extends Component {
     }
   }
 
-  updateFullscreenMode () {
-    const {fullscreen} = this.props
-    const {map} = this.state
-    const {warning} = this.state.containers
+  updateFullscreenMode() {
+    const { fullscreen } = this.props
+    const { map } = this.state
+    const { warning } = this.state.containers
 
     warning.innerHTML = ''
     if (fullscreen) {
@@ -536,7 +537,7 @@ class Map extends Component {
     map.invalidateSize()
   }
 
-  updateTooltipSmall (item) {
+  updateTooltipSmall(item) {
     if (!this.props.chosenItem && item) {
       this.state.containers.tooltipSmall.innerHTML = item.label
     } else {
@@ -544,24 +545,22 @@ class Map extends Component {
     }
   }
 
-  updateTooltipLarge () {
-    const {map} = this.state
-    const {tooltipSmall, tooltipLarge} = this.state.containers
-    const {chosenMarker} = this.state.layers
-    const {chosenItem, showItem, legend, items} = this.props
-
+  updateTooltipLarge() {
+    const { map } = this.state
+    const { tooltipSmall, tooltipLarge } = this.state.containers
+    const { chosenMarker } = this.state.layers
+    const { chosenItem, showItem, legend, items } = this.props
+    const { formatMessage } = this.props.intl;
     // clean previous
     tooltipLarge.innerHTML = ''
     if (map.hasLayer(chosenMarker)) {
       chosenMarker.setRadius(0)
       map.removeLayer(chosenMarker)
     }
-
     if (!chosenItem) {
       return
     }
-
-    const item = (!chosenItem.village
+    const item = (!chosenItem.name
       ? geoUtils.extendDivisionInfo(chosenItem, items, legend)
       : chosenItem
     )
@@ -580,7 +579,7 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        <MapTooltip item={item} />
+        <MapTooltip item={item} teams={this.props.teams} plannings={this.props.plannings} />
       </div>
     )
     ReactDOM.render(this.injectI18n(tootltip), tooltipLarge)
@@ -591,9 +590,9 @@ class Map extends Component {
    * ACTIONS
    ****************************************************************************/
 
-  fitToBounds () {
-    const {map, layers, defaultBounds} = this.state
-    const {selectedGroup, shadowsGroups, markersGroups} = layers
+  fitToBounds() {
+    const { map, layers, defaultBounds } = this.state
+    const { selectedGroup, shadowsGroups, markersGroups } = layers
     // maximum zoom allowed to fit to relevant markers
     const MAX_ZOOM = 13
 
@@ -609,14 +608,14 @@ class Map extends Component {
 
     setTimeout(() => {
       if (selectedGroup.getBounds().isValid()) {
-        map.fitBounds(selectedGroup.getBounds(), {maxZoom: MAX_ZOOM})
+        map.fitBounds(selectedGroup.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (shadowsGroups.group.getBounds().isValid()) {
-        map.fitBounds(shadowsGroups.group.getBounds(), {maxZoom: MAX_ZOOM})
-      } else if (markersGroups.group.hasLayer(markersGroups.official) &&
-                 markersGroups.official.getBounds().isValid()) {
-        map.fitBounds(markersGroups.official.getBounds(), {maxZoom: MAX_ZOOM})
+        map.fitBounds(shadowsGroups.group.getBounds(), { maxZoom: MAX_ZOOM })
+      } else if (markersGroups.group.hasLayer(markersGroups.YES) &&
+        markersGroups.YES.getBounds().isValid()) {
+        map.fitBounds(markersGroups.YES.getBounds(), { maxZoom: MAX_ZOOM })
       } else if (defaultBounds) {
-        map.fitBounds(defaultBounds, {maxZoom: MAX_ZOOM})
+        map.fitBounds(defaultBounds, { maxZoom: MAX_ZOOM })
       } else {
         map.setView(geoUtils.center, geoUtils.zoom)
       }
@@ -628,7 +627,7 @@ class Map extends Component {
    * HELPERS
    ****************************************************************************/
 
-  addLayerEvents (layer, item) {
+  addLayerEvents(layer, item) {
     // layer.bindTooltip(item.label, {sticky: true})
     layer.on({
       click: (event) => {
@@ -650,9 +649,9 @@ class Map extends Component {
     })
   }
 
-  injectI18n (component) {
+  injectI18n(component) {
     // we need to wrap it with `IntlProvider` to use i18n features
-    const {locale, messages} = this.props.intl
+    const { locale, messages } = this.props.intl
 
     return (
       <IntlProvider locale={locale} messages={messages}>
@@ -675,7 +674,9 @@ Map.propTypes = {
   chosenItem: PropTypes.object,
   showItem: PropTypes.func,
   leafletMap: PropTypes.func,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
+  teams: PropTypes.arrayOf(PropTypes.array),
+  plannings: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default injectIntl(Map)

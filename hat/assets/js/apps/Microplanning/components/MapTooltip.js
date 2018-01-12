@@ -10,7 +10,8 @@
  * to user readable/understandable texts.
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, { Component, PropTypes } from 'react'
+import Select from 'react-select'
 import {
   FormattedDate,
   FormattedMessage,
@@ -18,26 +19,46 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
-import {capitalize} from '../../../utils'
+import { fetchUrl } from '../../../utils/fetchData'
+import { capitalize } from '../../../utils'
+
+export const urls = [{
+  name: 'village_detail',
+  id: 'village_id',
+  url: ' /api/villages/',
+  mock: [{
+    "province": "Kwilu",
+    "former_province": "",
+    "zs": "Bagata",
+    "as": "Bangumi",
+    "type": "YES",
+    "latitude": -3.4995401,
+    "longitude": 17.681,
+    "gps_source": "ITM",
+    "population": 799,
+    "population_year": 2016,
+    "population_source": "BCZ BAGATA"
+  }]
+}];
 
 const MESSAGES = defineMessages({
   province: {
     id: 'microplanning.tooltip.province',
     defaultMessage: 'Province'
   },
-  formerProvince: {
+  former_province: {
     id: 'microplanning.tooltip.province.former',
     defaultMessage: 'Former province'
   },
-  ZS: {
+  zs: {
     id: 'microplanning.tooltip.zone',
     defaultMessage: 'Zone de sante'
   },
-  AS: {
+  as: {
     id: 'microplanning.tooltip.area',
     defaultMessage: 'Aire de sante'
   },
-  village: {
+  name: {
     id: 'microplanning.tooltip.village',
     defaultMessage: 'Village'
   },
@@ -53,7 +74,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.villages.unknown',
     defaultMessage: 'Villages satellite'
   },
-  type: {
+  village_official: {
     id: 'microplanning.tooltip.type',
     defaultMessage: 'Classification'
   },
@@ -65,7 +86,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.longitude',
     defaultMessage: 'Longitude'
   },
-  gpsSource: {
+  gps_source: {
     id: 'microplanning.tooltip.gps.source',
     defaultMessage: 'GPS source'
   },
@@ -74,11 +95,11 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.population',
     defaultMessage: 'Population'
   },
-  populationSource: {
+  population_source: {
     id: 'microplanning.tooltip.population.source',
     defaultMessage: 'Population source'
   },
-  populationYear: {
+  population_year: {
     id: 'microplanning.tooltip.population.year',
     defaultMessage: 'Population year'
   },
@@ -91,59 +112,170 @@ const MESSAGES = defineMessages({
     id: 'microplanning.tooltip.case.year',
     defaultMessage: 'Last confirmed HAT case year'
   },
-  confirmedCases: {
+  nr_positive_cases: {
     id: 'microplanning.tooltip.cases',
     defaultMessage: 'Confirmed HAT cases in that last year'
   },
+  team_all: {
+    defaultMessage: 'None',
+    id: 'microplanning.label.team.all'
+  },
+  team_select: {
+    defaultMessage: 'Team',
+    id: 'microplanning.label.team.select'
+  },
 
   // type values
-  official: {
+  YES: {
     id: 'microplanning.tooltip.village.type.official',
     defaultMessage: 'from Z.S.'
   },
-  other: {
-    id: 'microplanning.tooltip.village.type.other',
+  NO: {
+    id: 'microplanning.tooltip.village.type.notofficial',
     defaultMessage: 'not from Z.S.'
   },
-  unknown: {
+  OTHER: {
+    id: 'microplanning.tooltip.village.type.other',
+    defaultMessage: 'found during campaigns'
+  },
+  NA: {
     id: 'microplanning.tooltip.village.type.unknown',
     defaultMessage: 'visible from satellite'
   }
 })
 
 const ROWS = [
+  { key: 'name' },
+  { key: 'as' },
+  { key: 'zs' },
   { key: 'province' },
-  { key: 'formerProvince' },
-  { key: 'ZS' },
-  { key: 'AS' },
+  { key: 'former_province' },
   { key: 'villagesOfficial', type: 'integer' },
   { key: 'villagesOther', type: 'integer' },
   { key: 'villagesUnknown', type: 'integer' },
-  { key: 'village' },
-  { key: 'type', type: 'message' },
+  { key: 'village_official', type: 'message' },
   { key: 'latitude', type: 'coordinates' },
   { key: 'longitude', type: 'coordinates' },
-  { key: 'gpsSource' },
+  { key: 'gps_source' },
   { key: 'population', type: 'integer' },
-  { key: 'populationYear' },
-  { key: 'populationSource' },
+  { key: 'population_year' },
+  { key: 'population_source' },
   { key: 'lastConfirmedCaseDate', type: 'date' },
   { key: 'lastConfirmedCaseYear' },
-  { key: 'confirmedCases', type: 'integer' }
+  { key: 'nr_positive_cases', type: 'integer' }
 ]
 
 class MapTooltip extends Component {
-  render () {
-    const {item} = this.props
+  constructor(props) {
+    super(props)
+    this.state = {
+      item: props.item,
+      teams: props.teams,
+      isloading: true,
+      isVillage: false,
+      isPlanifiyng: false,
+      isPlanified: false,
+      selectedTeamId: ''
+    }
 
+  }
+
+  componentDidMount() {
+    // If this is a village we need to fetch the detail of it
+    if (this.state.item.name) {
+      this.loadVillageDetail(this.state.item.id);
+    } else {
+      this.setState({ isloading: false });
+    }
+  }
+
+  componentWillReceiveProps(newProps) {
+    this.setState({
+      item: newProps.item
+    })
+  }
+
+  updateItemField(value) {
+    this.setState({
+      item: Object.assign({}, this.state.item, value)
+    });
+  }
+
+  loadVillageDetail(item_id) {
+    const isPlanifiyng = this.props.plannings[0] && this.props.plannings[0].assignations;
+    let isPlanified = false;
+    let selectedTeamId = '';
+    if (isPlanifiyng) {
+      isPlanified = this.props.plannings[0].assignations.map(assignation => {
+        const isPresent = assignation.village_id === item_id;
+        if (isPresent) {
+          selectedTeamId = assignation.team_id;
+        }
+        return isPresent;
+      });
+    }
+    this.setState({
+      isloading: true,
+      isVillage: true,
+      isPlanifiyng,
+      isPlanified,
+      selectedTeamId
+    });
+    fetchUrl(urls, { village_id: item_id }, '').then((result) => {
+      this.updateItemField(result.village_detail);
+      this.setState({ isloading: false });
+    });
+  }
+
+
+  render() {
+    const { formatMessage } = this.props.intl;
+    if (!this.state.item || this.state.isloading) {
+      return null;
+    }
     return (
-      <div key={item.id} className='map__tooltip'>
+      <div key={this.state.item.id} className='map__tooltip'>
+        {this.state.item.name && this.state.isPlanifiyng ? (
+          <div className="property">
+            <FormattedMessage
+              id='microplanning.label.team.select'
+              defaultMessage='Team' />
+            <div>
+              <select
+                value={this.state.selectedTeamId || ''}
+                className="styled-select"
+                onChange={event => {
+                  this.setState({ selectedTeamId: event.currentTarget.value })
+              }}>
+                <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
+                {this.state.teams.map((value) => {
+                  return (<option value={value[0]}>
+                            {value[1]}
+                          </option>)
+                })}
+              </select>
+            </div>
+            {/* <Select
+              simpleValue
+              autosize={false}
+              disabled={this.state.isloading}
+              name='selectedTeamId'
+              value={this.state.selectedTeamId || ''}
+              placeholder={formatMessage(MESSAGES['team_all'])}
+              options={this.state.teams.map((value) => ({ label: value[1], value: value[0] }))}
+              onChange={team => {
+                console.log('change')
+              }}
+            /> */}
+          </div>) :
+          null}
         {
           ROWS
-            .filter((row) => item[row.key] && item[row.key] !== '')
+            .filter((row) => {
+              return this.state.item[row.key] && this.state.item[row.key] !== '';
+            })
             .map((row) => {
-              let value = item[row.key]
-
+              let value = this.state.item[row.key]
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} year='numeric' month='long' day='numeric' />
@@ -162,6 +294,7 @@ class MapTooltip extends Component {
                   break
                 case 'message':
                   value = <FormattedMessage {...MESSAGES[value]} />
+                  const temp = <FormattedMessage {...MESSAGES[row.key]} />
                   break
               }
 
@@ -182,8 +315,11 @@ class MapTooltip extends Component {
   }
 }
 
+
 MapTooltip.propTypes = {
-  item: PropTypes.object.isRequired
+  item: PropTypes.object.isRequired,
+  teams: PropTypes.array.isRequired,
+  plannings: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default injectIntl(MapTooltip)

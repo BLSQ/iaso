@@ -7,6 +7,7 @@ $selected: $bright-yellow;
 
 /* village types */
 $official: $green;
+$notofficial: $light-gray;
 $other: $mid-gray;
 $unknown: $dark-gray;
 
@@ -15,9 +16,10 @@ $map-height: 720px;
 $map-sidebar-width: 260px;
 
 $types: (
-  official: $official,
-  other: $other,
-  unknown: $unknown,
+  YES: $official,
+  NO: $notofficial,
+  OTHER: $other,
+  NA: $unknown,
   highlight: $highlight
 );
 
@@ -261,15 +263,19 @@ $types: (
 }
 
 .map__option__icon {
-  &--official {
+  &--YES {
     background: $official;
     border-color: darken($official, 15%);
   }
-  &--other {
+  &--NO {
+    background: $notofficial;
+    border-color: darken($notofficial, 15%);
+  }
+  &--OTHER {
     background: $other;
     border-color: darken($other, 15%);
   }
-  &--unknown {
+  &--NA {
     background: $unknown;
     border-color: darken($unknown, 15%);
   }
@@ -424,13 +430,16 @@ path.map-layer {
 path.map-marker {
   @include marker($gray);
 
-  &.official {
+  &.YES {
     @include marker($official);
   }
-  &.other {
+  &.NO {
+    @include marker($notofficial);
+  }
+  &.OTHER {
     @include marker($other);
   }
-  &.unknown {
+  &.NA {
     @include marker($unknown);
   }
 

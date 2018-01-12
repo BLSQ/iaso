@@ -8,8 +8,9 @@ import React, {Component, PropTypes} from 'react'
 import {FormattedMessage, injectIntl} from 'react-intl'
 
 class MapSelectionList extends Component {
+
   render () {
-    const {data, show, deselect} = this.props
+    const {data, show} = this.props
 
     if (!data || data.length === 0) {
       return <div />
@@ -21,7 +22,7 @@ class MapSelectionList extends Component {
           <h3>
             <FormattedMessage id='microplanning.selected.list' defaultMessage='Village list:' />
           </h3>
-          <a onClick={() => deselect()} className='button--tiny button--danger'>
+          <a onClick={() => this.props.deselect()} className='button--tiny button--danger'>
             <FormattedMessage id='microplanning.selected.reset' defaultMessage='Deselect all' />
           </a>
         </div>
@@ -30,7 +31,7 @@ class MapSelectionList extends Component {
           {data.map((item) => {
             return (
               <li className='map__selection__list__item' key={item.id}>
-                <span className='remove' onClick={() => deselect([item])}>
+                <span className='remove' onClick={(e, list) => this.props.deselect([item])}>
                   <i className='fa fa-close' />
                 </span>
                 <span
@@ -41,7 +42,7 @@ class MapSelectionList extends Component {
                 <span>
                   {item.AS}
                   {' - '}
-                  {item.village}
+                  {item.name}
                 </span>
               </li>
             )

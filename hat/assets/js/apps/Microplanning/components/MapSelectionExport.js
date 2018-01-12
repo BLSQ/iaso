@@ -62,16 +62,20 @@ const MESSAGES = defineMessages({
   },
 
   // type values
-  official: {
-    id: 'microplanning.export.village.type.official',
+  YES: {
+    id: 'microplanning.tooltip.village.type.official',
     defaultMessage: 'from Z.S.'
   },
-  other: {
-    id: 'microplanning.export.village.type.other',
+  NO: {
+    id: 'microplanning.tooltip.village.type.notofficial',
     defaultMessage: 'not from Z.S.'
   },
-  unknown: {
-    id: 'microplanning.export.village.type.unknown',
+  OTHER: {
+    id: 'microplanning.tooltip.village.type.other',
+    defaultMessage: 'found during campaigns'
+  },
+  NA: {
+    id: 'microplanning.tooltip.village.type.unknown',
     defaultMessage: 'visible from satellite'
   }
 })

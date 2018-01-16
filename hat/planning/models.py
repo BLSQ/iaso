@@ -14,9 +14,9 @@ class Planning(models.Model):
         return "%s - % s" % (self.year, self.name)
 
     def as_dict(self):
-        assignations = []
+        assignations = {}
         for assignation in self.assignation_set.all():
-            assignations.append(assignation.as_dict())
+            assignations[assignation.village_id] = assignation.as_dict()
 
         return {
             'id': self.id,

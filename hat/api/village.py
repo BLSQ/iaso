@@ -45,7 +45,7 @@ class VillageViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
-        types= request.GET.get("types", None)
+        types= request.GET.get("types", "YES")
         queryset = Village.objects.all()
 
         if province_ids:

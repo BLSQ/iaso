@@ -28,7 +28,7 @@ import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 const MESSAGES = defineMessages({
   YES: {
     id: 'microplanning.legend.official',
-    defaultMessage: 'Villages from Z.S.'
+    defaultMessage: 'Villages without HAT cases.'
   },
   NO: {
     id: 'microplanning.legend.notofficial',

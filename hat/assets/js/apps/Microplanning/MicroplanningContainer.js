@@ -88,6 +88,24 @@ export const urls = [
           "team 1"
       ]
     ]
+  },
+  {
+    name: 'assignations',
+    url: '/api/assignations/',
+    mock: [
+      {
+        "village_id": 15372,
+        "village_name": "Bagata",
+        "team_id": 2,
+        "AS_name": "Kumbi Mbwana"
+    },
+    {
+        "village_id": 15192,
+        "village_name": "Beasth / Kongo",
+        "team_id": 2,
+        "AS_name": "Mudiambu"
+    }
+    ]
   }
 ]
 

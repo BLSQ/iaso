@@ -5,14 +5,10 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from hat.planning.models import Planning, Assignation
-from hat.users.models import Team, Coordination
-from hat.geo.models import Village
 
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
 
-class CsrfExemptSessionAuthentication(SessionAuthentication):
-    def enforce_csrf(self, request):
-        return  # To not perform the csrf check previously happening
 
 class PlanningViewSet(viewsets.ViewSet):
     """

@@ -19,7 +19,7 @@ import Select from 'react-select';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl } from '../../utils/fetchData';
-import { saveTeams } from '../../utils/saveData';
+import { saveTeamPlanning } from '../../utils/saveData';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
 import { mapActions } from './redux/map';
@@ -136,10 +136,10 @@ export class Microplanning extends Component {
   saveTeam() {
     const tempVillages = [];
     this.props.selection.selectedItems.map(v => {
-      tempVillages.push({ 'village_id': v.id, 'team_id': this.state.team_id });
+      tempVillages.push({ 'village_id': v.id });
     });
     this.setState({ isSavingTeam: true });
-    saveTeams(tempVillages, parseInt(this.state.planning_id), 10).then(isSaved => {
+    saveTeamPlanning(tempVillages, parseInt(this.state.planning_id), this.state.team_id).then(isSaved => {
       this.setState({
         isSavingTeam: false,
         isSelectionModified: !isSaved,
@@ -205,6 +205,7 @@ export class Microplanning extends Component {
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
     let plannings = ((data && data.plannings) || []);
+    let assignations = ((data && data.assignations) || []);
     if (data) {
       if (!plannings.length) {
         plannings = [plannings];
@@ -220,7 +221,7 @@ export class Microplanning extends Component {
       selectedVillages.length === 0 &&
       !this.state.isVillageListEdited) {
       let tempSelectedVillages = [];
-      plannings[0].assignations.map(villagePlanified => {
+      assignations.map(villagePlanified => {
         villages.map(village => {
           if (villagePlanified.village_id === village.id) {
             if ((typeof this.state.team_id === 'undefined') || (parseInt(villagePlanified.team_id, 10) === this.state.team_id, 10)) {

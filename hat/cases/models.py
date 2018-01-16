@@ -198,9 +198,13 @@ class CaseAbstract(models.Model):
     mothers_surname = models.TextField("Nom de la mère", null=True)
 
     province = models.TextField(null=True)
+    corrected_province = models.TextField(null=True)
     ZS = models.TextField(null=True)
+    corrected_ZS = models.TextField(null=True)
     AS = models.TextField(null=True)
+    corrected_AS = models.TextField(null=True)
     village = models.TextField(null=True)
+    corrected_village = models.TextField(null=True)
 
     normalized_village = models.ForeignKey(Village, null=True)
 

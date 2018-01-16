@@ -5,7 +5,7 @@ from .models import Case, Location, TestGroup
 
 class CaseAdmin(admin.ModelAdmin):
     date_hierarchy = 'document_date'
-    list_filter = ('test_catt', 'ZS')
+    list_filter = ('test_catt', 'source', 'confirmed_case')
     search_fields = ('name', 'lastname', 'prename')
 
 admin.site.register(Case, CaseAdmin)

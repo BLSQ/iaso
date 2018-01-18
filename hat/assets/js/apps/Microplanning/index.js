@@ -14,7 +14,7 @@ import { mapReducer, mapInitialState } from './redux/map'
 
 export default function microplanningApp (element, baseUrl) {
   const currentYear = new Date().getFullYear()
-  const years = [ 0, 1, 2, 3, 4 ].map((i) => currentYear - i)
+  const years = [ 1, 2, 3, 4, 5 ].map((i) => currentYear - i)
   const defaultPath = 'charts/years/' + years.join(',')
   const routes = [
     <Route

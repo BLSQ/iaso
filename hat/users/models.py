@@ -42,6 +42,8 @@ class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True)
     AS = models.ManyToManyField(AS)
+    capacity = models.IntegerField()
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def as_dict(self):

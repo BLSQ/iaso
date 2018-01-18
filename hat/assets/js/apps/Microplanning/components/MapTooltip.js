@@ -205,14 +205,11 @@ class MapTooltip extends Component {
     const isPlanifiyng = this.props.plannings[0] && this.props.plannings[0].assignations;
     let isPlanified = false;
     let selectedTeamId = '';
+
     if (isPlanifiyng) {
-      isPlanified = this.props.plannings[0].assignations.map(assignation => {
-        const isPresent = assignation.village_id === item_id;
-        if (isPresent) {
-          selectedTeamId = assignation.team_id;
-        }
-        return isPresent;
-      });
+      isPlanified = !! this.props.plannings[0].assignations[item_id]
+      if (isPlanified)
+        selectedTeamId = this.props.plannings[0].assignations[item_id].team_id
     }
     this.setState({
       isloading: true,

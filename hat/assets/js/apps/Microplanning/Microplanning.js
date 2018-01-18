@@ -82,24 +82,23 @@ export class Microplanning extends Component {
       }
     });
 
-    const teamTitle = this.state.team_id ? teams.map(t => {
-      if (t[0] === this.state.team_id) {
-        return (
-          <span>
-            {` - `}
-            <FormattedMessage id='microplanning.label.teams' defaultMessage='team:' />
-            {` ${t[1]}`}
-          </span>
-        ) ;
-      }
-    }) : '';
+
     return (
       <div className='widget__container'>
         <div className='widget__header'>
           <h2 className='widget__heading'>
             <FormattedMessage id='microplanning.label.plannings' defaultMessage='Planning:' />
-            {` ${planningName}`}
-            {teamTitle}
+            {` ${planningName}`}<br/>
+           <Select
+              simpleValue
+              autosize={false}
+              disabled={loading}
+              name='team_id'
+              value={this.state.team_id || ''}
+              placeholder='--'
+              options={teams.map((village) => ({ label: village.name, value: village.id }))}
+
+            />
           </h2>
         </div>
       </div>
@@ -206,6 +205,7 @@ export class Microplanning extends Component {
     const teams = ((data && data.teams) || []);
     let plannings = ((data && data.plannings) || []);
     let assignations = ((data && data.assignations) || []);
+
     if (data) {
       if (!plannings.length) {
         plannings = [plannings];
@@ -363,6 +363,7 @@ export class Microplanning extends Component {
             <div className={mapClass} id="planning-map">
               <Map
                 teams={teams}
+                teamId={this.props.params.team_id}
                 baseLayer={baseLayer}
                 overlays={overlays}
                 legend={legend}

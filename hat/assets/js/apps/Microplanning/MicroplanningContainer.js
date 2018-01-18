@@ -77,7 +77,7 @@ export const urls = [
   },
   {
     name: 'teams',
-    url: '/api/datasets/teams/',
+    url: '/api/teams/',
     mock: [
       [
           2,

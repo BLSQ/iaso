@@ -638,23 +638,6 @@ def villages(request: Request, params: Dict[str, str]) -> List[str]:
 
     return queryset.values_list('id', 'name').order_by('name')
 
-@dataset(params_schema={
-    'type': 'object',
-    'properties': {
-        'coordination_id': {'type': 'string'},
-    },
-})
-def teams(request: Request, params: Dict[str, str]) -> List[str]:
-    coordination_id = params.get("coordination_id")
-
-    if coordination_id:
-        queryset = Team.objects.filter(coordination_id=coordination_id)
-    else:
-        queryset = Team.objects.all()
-
-    return queryset.values_list('id', 'name').order_by('name')
-
-
 
 
 class DatasetViewSet(viewsets.ViewSet):

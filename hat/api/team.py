@@ -43,7 +43,13 @@ class TeamViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-        return Response(Team.objects.all().values('name', 'id').order_by('-created_at'))
+        coordination_id = request.GET.get("coordination_id", None)
+
+        queryset = Team.objects.all()
+        if coordination_id:
+            queryset = queryset.filter(coordination_id=coordination_id)
+
+        return Response(queryset.values('name', 'id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         team = get_object_or_404(Team, pk=pk)

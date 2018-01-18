@@ -412,12 +412,13 @@ path.map-layer {
 @mixin marker($color: $gray,
               $fill-opacity: 0.85,
               $stroke-color: darken($color, 15%),
-              $stroke-width: 2) {
+              $stroke-width: 2,
+              $stroke-opacity: 0.8) {
   fill-opacity: $fill-opacity;
   fill: $color;
   stroke: $stroke-color;
   stroke-dasharray: 1,0;
-  stroke-opacity: 0.8;
+  stroke-opacity: $stroke-opacity;
   stroke-width: $stroke-width;
   &:hover {
     fill-opacity: 1;
@@ -444,10 +445,19 @@ path.map-marker {
   }
 
   &.highlight {
-    @include marker($highlight, $stroke-width: 5);
+    @include marker($highlight);
+    &.assignedToOtherTeam {
+      @include marker($highlight, $stroke-color: blue);
+    }
   }
+
+
   &.selected {
-    @include marker($selected, $stroke-width: 5);
+    @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
+  }
+
+  &.assignedToOtherTeam {
+    @include marker($green, $stroke-color: blue);
   }
 
   &.highlight-buffer {

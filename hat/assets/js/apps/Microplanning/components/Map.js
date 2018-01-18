@@ -408,8 +408,22 @@ class Map extends Component {
           items
             .filter((item) => item.village_official === key)
             .forEach((item, index) => {
+              const assignation = this.props.plannings[0].assignations[item.id]
+              var className =  String.raw`map-marker ${item._class}`
+              if (assignation)
+              {
+                if (assignation.team_id == this.props.teamId )
+                {
+                  className += " assignedToCurrentTeam"
+                }
+                else
+                {
+                  className += " assignedToOtherTeam"
+                }
+              }
+              console.log(className)
               const options = {
-                className: String.raw`map-marker ${item._class}`,
+                className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
                 radius: item._radius
               }
@@ -431,7 +445,7 @@ class Map extends Component {
                 labels.addLayer(label)
               }
 
-              if (item._isHighlight) {
+/*              if (item._isHighlight) {
                 // the shadow
                 const shadowOptions = {
                   className: 'map-marker shadow',
@@ -441,7 +455,7 @@ class Map extends Component {
                 const markerShadow = L.circle(item._latlon, shadowOptions)
                 this.addLayerEvents(markerShadow, item)
                 shadows.addLayer(markerShadow)
-              }
+              }*/
             })
         }
       } else {
@@ -676,7 +690,8 @@ Map.propTypes = {
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
   teams: PropTypes.arrayOf(PropTypes.array),
-  plannings: PropTypes.arrayOf(PropTypes.object)
+  plannings: PropTypes.arrayOf(PropTypes.object),
+  teamId: PropTypes.string
 }
 
 export default injectIntl(Map)

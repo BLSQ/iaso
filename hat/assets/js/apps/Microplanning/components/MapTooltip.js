@@ -230,6 +230,7 @@ class MapTooltip extends Component {
     if (!this.state.item || this.state.isloading) {
       return null;
     }
+
     return (
       <div key={this.state.item.id} className='map__tooltip'>
         {this.state.item.name && this.state.isPlanifiyng ? (
@@ -245,9 +246,11 @@ class MapTooltip extends Component {
                   this.setState({ selectedTeamId: event.currentTarget.value })
               }}>
                 <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
-                {this.state.teams.map((value) => {
-                  return (<option key={value[0]} value={value[0]}>
-                            {value[1]}
+                {
+                  
+                  this.state.teams.map((value) => {
+                  return (<option key={value.id} value={value.id}>
+                            {value.name}
                           </option>)
                 })}
               </select>

@@ -55,8 +55,6 @@ export class Microplanning extends Component {
       locations: [],
       selectedLocation: null,
       isVillageListEdited: false,
-      planning_id: parseInt(props.params.planning_id, 10),
-      team_id: parseInt(props.params.team_id, 10),
       isSelectionModified: false,
       errorOnSave: undefined
     }
@@ -72,33 +70,49 @@ export class Microplanning extends Component {
     })
   }
 
-  renderPlanningTitle(plannings, teams, loading) {
-    if (!this.state.planning_id || loading) {
+  renderPlanningTitle(plannings, coordinations, teams, loading) {
+    if (!this.props.params.planning_id || loading) {
       return null;
     }
     const planningName = plannings.map(p => {
-      if (p.id === this.state.planning_id) {
+      if (p.id === this.props.params.planning_id) {
         return p.name
       }
     });
-
 
     return (
       <div className='widget__container'>
         <div className='widget__header'>
           <h2 className='widget__heading'>
             <FormattedMessage id='microplanning.label.plannings' defaultMessage='Planning:' />
-            {` ${planningName}`}<br/>
-           <Select
-              simpleValue
-              autosize={false}
-              disabled={loading}
-              name='team_id'
-              value={this.state.team_id || ''}
-              placeholder='--'
-              options={teams.map((village) => ({ label: village.name, value: village.id }))}
-
-            />
+            {` ${planningName} `}
+            <span> | </span>
+            <FormattedMessage id='microplanning.label.team' defaultMessage='Coordination: ' />
+            <select defaultValue="-1"
+                    value={this.props.params.coordination_id}
+                    onChange={event => this.props.redirect({ ...this.props.params, coordination_id: event.target.value })}
+            >
+              <option value="-1" >--</option>
+              {
+                coordinations.map(function(coordination) {
+                  return <option key={coordination.id}
+                    value={coordination.id}>{coordination.name}</option>;
+                })
+              }
+            </select>
+            <span> | </span>
+            <FormattedMessage id='microplanning.label.team' defaultMessage='Team: ' />
+            <select defaultValue="-1"
+                    value={this.props.params.team_id}
+                    onChange={event => { this.props.redirect({ ...this.props.params, team_id: event.target.value })}}>
+              <option value="-1" >--</option>
+              {
+                teams.map(function(team) {
+                  return <option key={team.id}
+                    value={team.id} >{team.name}</option>;
+                })
+              }
+            </select>
           </h2>
         </div>
       </div>
@@ -138,7 +152,7 @@ export class Microplanning extends Component {
       tempVillages.push({ 'village_id': v.id });
     });
     this.setState({ isSavingTeam: true });
-    saveTeamPlanning(tempVillages, parseInt(this.state.planning_id), this.state.team_id).then(isSaved => {
+    saveTeamPlanning(tempVillages, parseInt(this.props.params.planning_id), this.props.params.team_id).then(isSaved => {
       this.setState({
         isSavingTeam: false,
         isSelectionModified: !isSaved,
@@ -203,6 +217,7 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
     const teams = ((data && data.teams) || []);
+    const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
     let assignations = ((data && data.assignations) || []);
 
@@ -224,7 +239,8 @@ export class Microplanning extends Component {
       assignations.map(villagePlanified => {
         villages.map(village => {
           if (villagePlanified.village_id === village.id) {
-            if ((typeof this.state.team_id === 'undefined') || (parseInt(villagePlanified.team_id, 10) === this.state.team_id, 10)) {
+            let team_id = this.props.params.team_id
+            if ((typeof team_id === 'undefined') || (parseInt(villagePlanified.team_id, 10) === team_id, 10)) {
               tempSelectedVillages.push(village);
             }
           }
@@ -276,7 +292,7 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-        {this.renderPlanningTitle(plannings, teams, loading)}
+        {this.renderPlanningTitle(plannings, coordinations, teams, loading)}
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}
@@ -304,7 +320,7 @@ export class Microplanning extends Component {
                     name='zs_id'
                     value={zs_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={this.state.locations.map((value) => ({ label: value[1], value: value[0] }))}
+                    options={this.state.locations.map((zs) => ({ label: zs.name, value: zs.id }))}
                     onChange={zs_id => this.props.redirect({ ...this.props.params, zs_id })}
                   />
                 </div>
@@ -323,7 +339,7 @@ export class Microplanning extends Component {
                     name='as_id'
                     value={as_id || ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
-                    options={areas.map((value) => ({ label: value[1], value: value[0] }))}
+                    options={areas.map((as) => ({ label: as.name, value: as.id }))}
                     onChange={as_id => this.props.redirect({ ...this.props.params, as_id })}
                   />
                 </div>

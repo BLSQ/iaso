@@ -421,7 +421,7 @@ class Map extends Component {
                   className += " assignedToOtherTeam"
                 }
               }
-              console.log(className)
+
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -689,7 +689,7 @@ Map.propTypes = {
   showItem: PropTypes.func,
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
-  teams: PropTypes.arrayOf(PropTypes.array),
+  teams: PropTypes.arrayOf(PropTypes.object),
   plannings: PropTypes.arrayOf(PropTypes.object),
   teamId: PropTypes.string
 }

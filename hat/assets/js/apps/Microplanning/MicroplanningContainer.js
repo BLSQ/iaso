@@ -40,7 +40,21 @@ export const urls = [
   },
   {
     name: 'locations',
-    url: '/api/datasets/health_zones/',
+    url: '/api/zs/',
+    mock: [
+      [
+        1,
+        "Mosango"
+      ],
+      [
+        2,
+        "Yasa-bonga"
+      ]
+    ]
+  },
+  {
+    name: 'coordinations',
+    url: '/api/coordinations/',
     mock: [
       [
         1,
@@ -54,7 +68,7 @@ export const urls = [
   },
   {
     name: 'areas',
-    url: '/api/datasets/health_areas/',
+    url: '/api/as/',
     mock: [
       1,
       "Kinzamba Ii"

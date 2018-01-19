@@ -76,7 +76,6 @@ export const urls = [
   },
   {
     name: 'plannings',
-    id: 'planning_id',
     url: '/api/plannings/',
     mock: [
       {

@@ -390,6 +390,13 @@ class Map extends Component {
       const markers = markersGroups[key]
       const shadows = shadowsGroups[key]
       const labels = labelsGroups[key]
+
+      let assignationMap = {}
+      this.props.assignations.map(assignation =>
+      {
+        assignationMap[assignation.village_id] = assignation.team_id
+      });
+
       if (force) {
         markers.clearLayers()
         shadows.clearLayers()
@@ -408,11 +415,11 @@ class Map extends Component {
           items
             .filter((item) => item.village_official === key)
             .forEach((item, index) => {
-              const assignation = this.props.plannings[0].assignations[item.id]
+              const team_id = assignationMap[item.id]
               var className =  String.raw`map-marker ${item._class}`
-              if (assignation)
+              if (team_id)
               {
-                if (assignation.team_id == this.props.teamId )
+                if (team_id == this.props.teamId )
                 {
                   className += " assignedToCurrentTeam"
                 }
@@ -421,7 +428,7 @@ class Map extends Component {
                   className += " assignedToOtherTeam"
                 }
               }
-
+              
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -593,7 +600,7 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        <MapTooltip item={item} teams={this.props.teams} plannings={this.props.plannings} />
+        <MapTooltip item={item} teams={this.props.teams} planningId={this.props.planningId} />
       </div>
     )
     ReactDOM.render(this.injectI18n(tootltip), tooltipLarge)
@@ -690,8 +697,9 @@ Map.propTypes = {
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
   teams: PropTypes.arrayOf(PropTypes.object),
-  plannings: PropTypes.arrayOf(PropTypes.object),
-  teamId: PropTypes.string
+  assignations: PropTypes.arrayOf(PropTypes.object),
+  teamId: PropTypes.string,
+  planningId: PropTypes.string
 }
 
 export default injectIntl(Map)

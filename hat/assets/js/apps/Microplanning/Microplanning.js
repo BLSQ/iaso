@@ -70,12 +70,12 @@ export class Microplanning extends Component {
     })
   }
 
-  renderPlanningTitle(plannings, coordinations, teams, loading) {
-    if (!this.props.params.planning_id || loading) {
+  renderPlanningTitle(plannings, coordinations, teams) {
+    if (!this.props.params.planning_id) {
       return null;
     }
     const planningName = plannings.map(p => {
-      if (p.id === this.props.params.planning_id) {
+      if (p.id == this.props.params.planning_id) {
         return p.name
       }
     });
@@ -90,7 +90,7 @@ export class Microplanning extends Component {
             <FormattedMessage id='microplanning.label.team' defaultMessage='Coordination: ' />
             <select defaultValue="-1"
                     value={this.props.params.coordination_id}
-                    onChange={event => this.props.redirect({ ...this.props.params, coordination_id: event.target.value })}
+                    onChange={event => this.props.redirect({ ...this.props.params, coordination_id: event.target.value})}
             >
               <option value="-1" >--</option>
               {
@@ -120,7 +120,7 @@ export class Microplanning extends Component {
   }
 
   renderSaveTeamButton() {
-    if (!this.state.team_id) {
+    if (!this.props.params.team_id) {
       return null;
     }
     return (
@@ -219,13 +219,8 @@ export class Microplanning extends Component {
     const teams = ((data && data.teams) || []);
     const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
-    let assignations = ((data && data.assignations) || []);
+    const assignations = ((data && data.assignations) || []);
 
-    if (data) {
-      if (!plannings.length) {
-        plannings = [plannings];
-      }
-    }
     const { selection } = this.props;
     let selectedVillages = (selection.selectedItems || []);
     // planning selection
@@ -292,7 +287,7 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-        {this.renderPlanningTitle(plannings, coordinations, teams, loading)}
+        {this.renderPlanningTitle(plannings, coordinations, teams)}
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}
@@ -380,12 +375,13 @@ export class Microplanning extends Component {
               <Map
                 teams={teams}
                 teamId={this.props.params.team_id}
+                planningId={this.props.params.planning_id}
                 baseLayer={baseLayer}
                 overlays={overlays}
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}
-                plannings={plannings}
+                assignations={assignations}
                 selectedItems={selectedVillages}
                 bufferSize={bufferSize}
                 highlightBufferSize={highlightBufferSize}

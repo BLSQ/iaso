@@ -172,10 +172,7 @@ class MapTooltip extends Component {
       item: props.item,
       teams: props.teams,
       isloading: true,
-      isVillage: false,
-      isPlanifiyng: false,
-      isPlanified: false,
-      selectedTeamId: ''
+      isVillage: false
     }
 
   }
@@ -202,25 +199,15 @@ class MapTooltip extends Component {
   }
 
   loadVillageDetail(item_id) {
-    const isPlanifiyng = this.props.plannings[0] && this.props.plannings[0].assignations;
-    let isPlanified = false;
-    let selectedTeamId = '';
 
-    if (isPlanifiyng) {
-      isPlanified = !! this.props.plannings[0].assignations[item_id]
-      if (isPlanified)
-        selectedTeamId = this.props.plannings[0].assignations[item_id].team_id
-    }
     this.setState({
       isloading: true,
-      isVillage: true,
-      isPlanifiyng,
-      isPlanified,
-      selectedTeamId
+      isVillage: true
     });
-    fetchUrl(urls, { village_id: item_id }, '').then((result) => {
+    fetchUrl(urls, { village_id: item_id, planning_id: this.props.planningId }, '').then((result) => {
       this.updateItemField(result.village_detail);
-      this.setState({ isloading: false });
+      this.setState({ isloading: false })
+      this.setState({selectedTeamId: result.village_detail.team.id})
     });
   }
 
@@ -233,7 +220,7 @@ class MapTooltip extends Component {
 
     return (
       <div key={this.state.item.id} className='map__tooltip'>
-        {this.state.item.name && this.state.isPlanifiyng ? (
+        {this.state.item.name && this.props.planningId ? (
           <div className="property">
             <FormattedMessage
               id='microplanning.label.team.select'
@@ -307,7 +294,7 @@ class MapTooltip extends Component {
 MapTooltip.propTypes = {
   item: PropTypes.object.isRequired,
   teams: PropTypes.array.isRequired,
-  plannings: PropTypes.arrayOf(PropTypes.object)
+  planningId: PropTypes.string
 }
 
 export default injectIntl(MapTooltip)

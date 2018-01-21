@@ -21,7 +21,6 @@ class VillageViewSet(viewsets.ViewSet):
     /api/villages/39978/?planning_id=2
 
 
-
     list:
     API allowing to list villages with their coordinates, and the corresponding number of confirmed cases (depending on the years parameter)
     Filterable on province_ids, zs_ids, as_ids, years and types. Possible types are
@@ -40,12 +39,12 @@ class VillageViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        values = ('name', 'id', 'longitude', 'latitude', 'population', 'village_official')
+        values = ('name', 'id', 'longitude', 'latitude', 'population', 'AS_id', 'AS__name', 'village_official')
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
-        types= request.GET.get("types", "YES")
+        types = request.GET.get("types", "YES")
         queryset = Village.objects.all()
 
         if province_ids:
@@ -65,9 +64,11 @@ class VillageViewSet(viewsets.ViewSet):
             types_array = types.split(",")
             queryset = queryset.filter(village_official__in=types_array)
 
-        res = queryset.values(*values )
+        res = queryset.values(*values)
 
-        return Response(res)
+        d = {v["id"]: v for v in res}
+
+        return Response(d)
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)

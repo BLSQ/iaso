@@ -19,12 +19,13 @@ class AssignationViewSet(viewsets.ViewSet):
 
     def list(self, request):
         planning_id = request.GET.get('planning_id', None)
-       # team_id = request.GET.get('team_id', None)
         coordination_id = request.GET.get('coordination_id', None)
+
         assignations = Assignation.objects
         if coordination_id:
-            assignations = assignations.filter(team__coordination__id=coordination_id)
-        assignations =  assignations.filter(planning_id=planning_id).order_by(
+            teams = Team.objects.filter(coordination_id=coordination_id)
+            assignations = assignations.filter(team__in=teams)
+        assignations = assignations.filter(planning_id=planning_id).order_by(
             "village__name").select_related('village__AS')
 
         res = []

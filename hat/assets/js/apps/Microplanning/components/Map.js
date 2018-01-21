@@ -25,6 +25,8 @@ const BASE_LAYERS = {
   'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 })
 }
 
+const radius = 400;
+
 const MESSAGES = defineMessages({
   'fit-to-bounds': {
     defaultMessage: 'Center to relevant villages',
@@ -125,13 +127,14 @@ class Map extends Component {
       if (hasChanged(prevProps, this.props, 'overlays')) {
         this.updateOverlays()
       }
+    this.updateItems(true)
 
       // only call if legend or items changed
-      if (!containSameItems(prevProps, this.props, 'items')) {
+     /* if (!containSameItems(prevProps, this.props, 'items')) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
-      }
+      }*/
 
       // only call if the number of selected items changed
       if (!containSameItems(prevProps, this.props, 'selectedItems')) {
@@ -149,7 +152,7 @@ class Map extends Component {
       }
 
       this.updateMouseBuffer()
-      this.updateHighlightBuffer()
+      //this.updateHighlightBuffer()
     })
   }
 
@@ -320,11 +323,13 @@ class Map extends Component {
     bufferMarker.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        const { legend, items } = this.props
-        const plotted = items.filter((item) => legend[item.village_official])
-        const inBuffer = geoUtils.villagesInBuffer(plotted, bufferMarker)
+        const {items } = this.props
+        const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker)
+        const teamId = this.props.teamId;
+        const assignations = inBuffer.map(function(village) { return {village_id: village.id, team_id:teamId}})
+        console.log("assignations in buffer", assignations)
         if (inBuffer.length) {
-          this.props.selectionAction(inBuffer)
+          this.props.selectionAction(assignations)
         }
       }
     })
@@ -392,6 +397,7 @@ class Map extends Component {
       const labels = labelsGroups[key]
 
       let assignationMap = {}
+      console.log("this.props.assignations", this.props.assignations)
       this.props.assignations.map(assignation =>
       {
         assignationMap[assignation.village_id] = assignation.team_id
@@ -414,11 +420,12 @@ class Map extends Component {
         if (markers.getLayers().length === 0) {
           items
             .filter((item) => item.village_official === key)
-            .forEach((item, index) => {
+            .forEach((item) => {
               const team_id = assignationMap[item.id]
               var className =  String.raw`map-marker ${item._class}`
               if (team_id)
               {
+                console.log("team_id", team_id, "this.props.teamId", this.props.teamId)
                 if (team_id == this.props.teamId )
                 {
                   className += " assignedToCurrentTeam"
@@ -428,11 +435,11 @@ class Map extends Component {
                   className += " assignedToOtherTeam"
                 }
               }
-              
+
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
-                radius: item._radius
+                radius: radius
               }
 
               const marker = L.circle(item._latlon, options)
@@ -441,6 +448,7 @@ class Map extends Component {
 
               // the label
               if (labels) {
+
                 const label = L.marker(item._latlon, {
                   icon: L.divIcon({
                     className: '',
@@ -451,18 +459,6 @@ class Map extends Component {
                 })
                 labels.addLayer(label)
               }
-
-/*              if (item._isHighlight) {
-                // the shadow
-                const shadowOptions = {
-                  className: 'map-marker shadow',
-                  pane: 'custom-pane-shadows',
-                  radius: (2 * item._radius)
-                }
-                const markerShadow = L.circle(item._latlon, shadowOptions)
-                this.addLayerEvents(markerShadow, item)
-                shadows.addLayer(markerShadow)
-              }*/
             })
         }
       } else {
@@ -485,7 +481,7 @@ class Map extends Component {
       const options = {
         className: 'map-marker selected',
         pane: 'custom-pane-selected',
-        radius: item._radius
+        radius: radius
       }
 
       const marker = L.circle(item._latlon, options)
@@ -509,30 +505,30 @@ class Map extends Component {
     }
   }
 
-  updateHighlightBuffer() {
-    const { legend, highlightBufferSize } = this.props
-    const { highlightBufferGroup } = this.state.layers
-
-    highlightBufferGroup.clearLayers()
-
-    // include buffer zone
-    if (highlightBufferSize > 0) {
-      const { items } = this.props
-      const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
-      const bufferSize = highlightBufferSize * 1000
-
-      highlight.forEach((item) => {
-        const options = {
-          className: 'map-marker highlight-buffer',
-          pane: 'custom-pane-highlight-buffer',
-          radius: item._radius + bufferSize
-        }
-
-        const marker = L.circle(item._latlon, options)
-        highlightBufferGroup.addLayer(marker)
-      })
-    }
-  }
+  // updateHighlightBuffer() {
+  //   const { legend, highlightBufferSize } = this.props
+  //   const { highlightBufferGroup } = this.state.layers
+  //
+  //   highlightBufferGroup.clearLayers()
+  //
+  //   // include buffer zone
+  //   if (highlightBufferSize > 0) {
+  //     const { items } = this.props
+  //     console.log("items", items)
+  //     const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
+  //
+  //     highlight.forEach((item) => {
+  //       const options = {
+  //         className: 'map-marker highlight-buffer',
+  //         pane: 'custom-pane-highlight-buffer',
+  //         radius: radius
+  //       }
+  //
+  //       const marker = L.circle(item._latlon, options)
+  //       highlightBufferGroup.addLayer(marker)
+  //     })
+  //   }
+  // }
 
   updateFullscreenMode() {
     const { fullscreen } = this.props
@@ -588,7 +584,7 @@ class Map extends Component {
 
     if (item._latlon) {
       map.addLayer(chosenMarker)
-      chosenMarker.setRadius(item._radius - 10)
+      chosenMarker.setRadius(radius)
       chosenMarker.setLatLng(item._latlon)
       map.panTo(item._latlon)
     }

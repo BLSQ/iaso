@@ -23,33 +23,43 @@ export const selectionModes = {
 // Note: `TypeError: Object.values is not a function` in tests :'(
 const validSelectionModes = Object.keys(selectionModes).map((key) => selectionModes[key])
 
-const calculateSelectedItems = (mode, suggestedItems, selectedItems) => {
+const calculateAssignations = (mode, patchAssignations, existingAssignations) => {
+
   switch (mode) {
     case selectionModes.select: {
-      const _find = (list, item) => (list.find((entry) => entry.id === item.id))
+      let result = patchAssignations;
+      let patchIds = {}
 
-      // check one by one, if someone is repeated will be ignored
-      suggestedItems.forEach((item) => {
-        if (!_find(selectedItems, item)) {
-          selectedItems = [item, ...selectedItems] // new elements go first
+      for (var j = 0; j < patchAssignations.length ; j++) {
+        patchIds[patchAssignations[j].village_id] = true
+      }
+
+      for (var i = 0; i < existingAssignations.length; i++) {
+        let existingAssignation = existingAssignations[i]
+        if (!patchIds[existingAssignation.village_id]) {
+          result.push(existingAssignation)
         }
-      })
+      }
 
-      return selectedItems
+      return result
     }
-
+    break;
     case selectionModes.deselect: {
+
       // no suggested means remove ALL
-      if (suggestedItems.length === 0) {
+      if (patchAssignations.length === 0) {
         return []
       }
       // otherwise, remove indicated
-      const ids = suggestedItems.map((item) => item.id)
-      return selectedItems.filter((item) => (ids.indexOf(item.id) === -1))
+      const ids = patchAssignations.map((item) => item.village_id)
+
+      var res = existingAssignations.filter((item) => (ids.indexOf(item.village_id) === -1))
+      return res;
     }
+    break;
   }
 
-  return selectedItems
+  return existingAssignations
 }
 
 export const disableSelection = () => (changeMode(selectionModes.none))
@@ -94,17 +104,17 @@ export const selectionActions = {
   changeHighlightBufferSize,
   changeMode,
   deselectItems,
+  selectItems,
   disableSelection,
   displayItem,
-  executeSelection,
-  selectItems
+  executeSelection
 }
 
 export const selectionInitialState = {
   mode: selectionModes.none,
   bufferSize: 1,
   highlightBufferSize: 1,
-  selectedItems: [],
+  assignations: [],
   displayedItem: null
 }
 
@@ -140,34 +150,36 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
     case SELECTION_EXECUTE: {
       return {
         ...state,
-        selectedItems: calculateSelectedItems(
+        assignations: calculateAssignations(
           state.mode,
           action.payload || [],
-          state.selectedItems
+          state.assignations
         )
       }
     }
-
     case SELECT_ITEMS: {
       return {
         ...state,
-        selectedItems: calculateSelectedItems(
+        assignations: calculateAssignations(
           selectionModes.select,
           action.payload || [],
-          state.selectedItems
+          state.assignations
         )
       }
     }
 
     case DESELECT_ITEMS: {
-      return {
+
+      let newState = {
         ...state,
-        selectedItems: calculateSelectedItems(
+        assignations: calculateAssignations(
           selectionModes.deselect,
           action.payload || [],
-          state.selectedItems
+          state.assignations
         )
       }
+
+      return newState
     }
 
     case DISPLAY_ITEM: {

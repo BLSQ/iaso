@@ -114,7 +114,7 @@ const MESSAGES = defineMessages({
   },
   nr_positive_cases: {
     id: 'microplanning.tooltip.cases',
-    defaultMessage: 'Confirmed HAT cases in that last year'
+    defaultMessage: 'Confirmed HAT cases'
   },
   team_all: {
     defaultMessage: 'None',

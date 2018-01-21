@@ -36,12 +36,15 @@ class Assignation(models.Model):
         return "%s - % s - %s" % (self.planning, self.village, self.team)
 
     class Meta():
-        unique_together = (('planning', 'village', 'team'),)
+        unique_together = (('planning', 'village'),)
 
     def as_dict(self):
         return {
             'village_id': self.village_id,
-            'village_name': self.village.name,
+           # 'village_name': self.village.name,
+           # 'longitude': self.village.longitude,
+           # 'latitude': self.village.latitude,
             'team_id': self.team_id,
-            'AS_name': self.village.AS.name,
+           # 'AS_name': self.village.AS.name,
+           # 'population': self.village.population
         }

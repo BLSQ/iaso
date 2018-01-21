@@ -63,6 +63,7 @@ class TeamViewSet(viewsets.ViewSet):
         Assignation.objects.filter(team=team, planning=planning).delete()
 
         for obj in request.data['assignations']:
+            Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
             assignation = Assignation()
             assignation.planning = planning
             assignation.village_id = obj['village_id']

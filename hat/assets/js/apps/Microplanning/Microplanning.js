@@ -28,7 +28,6 @@ import {
   MapLayers,
   MapLegend,
   MapSelectionControl,
-  MapSelectionExport,
   MapSelectionList,
   MapSelectionSummary
 } from './components';
@@ -63,9 +62,10 @@ export class Microplanning extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
-    // TODO : Check if data are the same, not nl the length
+    console.log("locations", locations )
+    // TODO : make this work again
     this.setState({
-      isSelectionModified: this.props.selection.selectedItems.length !== nextProps.selection.selectedItems.length,
+      isSelectionModified: true ,
       locations
     })
   }
@@ -147,10 +147,12 @@ export class Microplanning extends Component {
   }
 
   saveTeam() {
-    const tempVillages = [];
-    this.props.selection.selectedItems.map(v => {
-      tempVillages.push({ 'village_id': v.id });
-    });
+    // WE SHOULD SEND AN ACTION HERE, NOT MAKE A REQUEST DIRECTLY
+    let tempVillages;
+    if (this.props.params.team_id)
+      tempVillages = this.props.selection.assignations.filter(v => v.team_id == this.props.params.team_id);
+    else
+      tempVillages = this.props.selection.assignations;
     this.setState({ isSavingTeam: true });
     saveTeamPlanning(tempVillages, parseInt(this.props.params.planning_id), this.props.params.team_id).then(isSaved => {
       this.setState({
@@ -203,9 +205,8 @@ export class Microplanning extends Component {
 
   render() {
     const { formatMessage } = this.props.intl;
-
     // params filters & load status
-    const { years, zs_id, as_id, planning_id } = this.props.params;
+    const { years, zs_id, as_id, planning_id, coordination_id } = this.props.params;
     const { data, error, loading } = this.props.load;
     // possible years from 2000 to current year
     const firstYear = 2000;
@@ -215,34 +216,39 @@ export class Microplanning extends Component {
       possibleYears.push('' + y); // parse to string (Select component needs it)
     }
     const areas = ((data && data.areas) || []);
-    const villages = ((data && data.villages) || []).map(geoUtils.extendVillageInfo);
+    let villages = [];
+    let villagesMap = {}
+    if (data && data.villagesMap)
+    {
+      for (const villageId of Object.keys(data.villagesMap))
+      {
+        villagesMap[villageId] = geoUtils.extendVillageInfo(data.villagesMap[villageId])
+      }
+      villages = Object.keys(villagesMap).map(key => villagesMap[key])
+    }
+
     const teams = ((data && data.teams) || []);
     const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
-    const assignations = ((data && data.assignations) || []);
-
+    const assignations = (this.props.selection.assignations) || [];
+    console.log("assignations --", assignations)
     const { selection } = this.props;
-    let selectedVillages = (selection.selectedItems || []);
+
+    let selectedVillages = [];
     // planning selection
     // if a planning is selected we need to preselect the villages from the planning
     if (planning_id &&
-      plannings.length !== 0 &&
-      villages.length !== 0 &&
-      selectedVillages.length === 0 &&
-      !this.state.isVillageListEdited) {
-      let tempSelectedVillages = [];
-      assignations.map(villagePlanified => {
-        villages.map(village => {
-          if (villagePlanified.village_id === village.id) {
-            let team_id = this.props.params.team_id
-            if ((typeof team_id === 'undefined') || (parseInt(villagePlanified.team_id, 10) === team_id, 10)) {
-              tempSelectedVillages.push(village);
-            }
-          }
-        });
-      });
-      selectedVillages = tempSelectedVillages;
-      selection.selectedItems = selectedVillages;
+      !this.state.isVillageListEdited && 
+      data &&
+      data.villagesMap) {
+
+      let assignationsTempList = assignations;
+
+      if (this.props.params.team_id ) {
+        assignationsTempList = assignationsTempList.filter( x =>  x.team_id == this.props.params.team_id)
+      }
+
+      selectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
     }
 
     // buffer sizes
@@ -427,7 +433,6 @@ export class Microplanning extends Component {
                   <div className='map__selection__bottom'>
                     {/* actions */}
                     {this.renderSaveTeamButton()}
-                    <MapSelectionExport data={selectedVillages} />
                     <div>
                       <button className='button--print' onClick={() => this.activateFullscreenHandler()}>
                         <i className='fa fa-print' />
@@ -450,6 +455,7 @@ Microplanning.propTypes = {
   changeHighlightBufferSize: PropTypes.func.isRequired,
   executeSelectionAction: PropTypes.func.isRequired,
   deselectItems: PropTypes.func.isRequired,
+  selectItems: PropTypes.func.isRequired,
   displayItem: PropTypes.func.isRequired,
   toggleLegend: PropTypes.func.isRequired,
   changeLayer: PropTypes.func.isRequired,
@@ -465,8 +471,10 @@ const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
+
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
-  deselectItems: list => dispatch(selectionActions.deselectItems(typeof list !== 'undefined' ? list : null)),
+  deselectItems: list => dispatch(selectionActions.deselectItems(list)),
+  selectItems: list => dispatch(selectionActions.selectItems(list)),
   displayItem: item => dispatch(selectionActions.displayItem(item)),
   toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
   changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),

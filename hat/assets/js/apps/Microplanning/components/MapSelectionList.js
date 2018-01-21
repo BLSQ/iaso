@@ -31,7 +31,7 @@ class MapSelectionList extends Component {
           {data.map((item) => {
             return (
               <li className='map__selection__list__item' key={item.id}>
-                <span className='remove' onClick={(e, list) => this.props.deselect([item])}>
+                <span className='remove' onClick={() => this.props.deselect([{'village_id':item.id}])}>
                   <i className='fa fa-close' />
                 </span>
                 <span
@@ -40,8 +40,8 @@ class MapSelectionList extends Component {
                   <i className='fa fa-map-marker' />
                 </span>
                 <span>
-                  {/* {item.AS}
-                  {' - '} */}
+                  {item.AS__name}
+                  {' - '}
                   {item.name}
                 </span>
               </li>

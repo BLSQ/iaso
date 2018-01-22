@@ -41,7 +41,7 @@ class Coordination(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True)
-    AS = models.ManyToManyField(AS)
+    AS = models.ManyToManyField(AS, null=True, blank=True)
     capacity = models.IntegerField()
     UM = models.BooleanField(default=True)
 
@@ -52,6 +52,12 @@ class Team(models.Model):
             'name': self.name,
             'id': self.id
         }
+
+    def get_as(self):
+        if not self.AS.all():
+            return AS.objects.filter(ZS__in=self.coordination.ZS.all())
+        else:
+            return self.AS.all()
 
     def __str__(self):
         return self.name

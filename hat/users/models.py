@@ -43,6 +43,7 @@ class Team(models.Model):
     coordination = models.ForeignKey(Coordination, null=True)
     AS = models.ManyToManyField(AS)
     capacity = models.IntegerField()
+    UM = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

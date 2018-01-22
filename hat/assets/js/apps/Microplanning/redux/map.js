@@ -103,7 +103,6 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
     case LEGEND_TOGGLE: {
       const {legend} = state
       const option = action.payload
-
       if (legend[option] === undefined) {
         return state
       }
@@ -117,7 +116,6 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
       if (mapBaseLayers.indexOf(baseLayer) === -1) {
         return state
       }
-
       return {...state, baseLayer}
     }
 

@@ -397,7 +397,6 @@ class Map extends Component {
       const labels = labelsGroups[key]
 
       let assignationMap = {}
-      console.log("this.props.assignations", this.props.assignations)
       this.props.assignations.map(assignation =>
       {
         assignationMap[assignation.village_id] = assignation.team_id
@@ -425,7 +424,6 @@ class Map extends Component {
               var className =  String.raw`map-marker ${item._class}`
               if (team_id)
               {
-                console.log("team_id", team_id, "this.props.teamId", this.props.teamId)
                 if (team_id == this.props.teamId )
                 {
                   className += " assignedToCurrentTeam"

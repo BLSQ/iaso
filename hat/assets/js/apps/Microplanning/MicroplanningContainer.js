@@ -119,7 +119,6 @@ export class MicroplanningContainer extends Component {
     fetchUrl([{
     name: 'assignations',
     url: '/api/assignations/'}], params).then((result) => {
-      console.log("RESULT RESULT", result)
       dispatch(selectionActions.selectItems(result.assignations))
     });
   }

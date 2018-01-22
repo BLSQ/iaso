@@ -16,13 +16,14 @@ class MapSelectionList extends Component {
       return <div />
     }
 
+
     return (
       <div>
         <div className='map__selection__list__header'>
           <h3>
             <FormattedMessage id='microplanning.selected.list' defaultMessage='Village list:' />
           </h3>
-          <a onClick={() => this.props.deselect()} className='button--tiny button--danger'>
+          <a onClick={() => this.props.deselect(data.map(village => ({village_id: village.id})))} className='button--tiny button--danger'>
             <FormattedMessage id='microplanning.selected.reset' defaultMessage='Deselect all' />
           </a>
         </div>

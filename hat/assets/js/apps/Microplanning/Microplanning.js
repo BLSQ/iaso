@@ -62,7 +62,6 @@ export class Microplanning extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
-    console.log("locations", locations )
     // TODO : make this work again
     this.setState({
       isSelectionModified: true ,
@@ -231,14 +230,13 @@ export class Microplanning extends Component {
     const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
     const assignations = (this.props.selection.assignations) || [];
-    console.log("assignations --", assignations)
+
     const { selection } = this.props;
 
     let selectedVillages = [];
     // planning selection
     // if a planning is selected we need to preselect the villages from the planning
     if (planning_id &&
-      !this.state.isVillageListEdited && 
       data &&
       data.villagesMap) {
 
@@ -249,6 +247,7 @@ export class Microplanning extends Component {
       }
 
       selectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
+
     }
 
     // buffer sizes

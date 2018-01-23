@@ -39,9 +39,9 @@ class MapSelectionControl extends Component {
               className='map__control__button--highlight'
               onClick={() => selectHighlightBuffer()}>
               <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages' />
+                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select. villages' />
                 &nbsp;
-                <FormattedMessage id='microplanning.selection.buffer.highlight.label' defaultMessage='around confirmed HAT cases' />
+                <FormattedMessage id='microplanning.selection.buffer.highlight.label' defaultMessage='autour des cas confirmés' />
               </span>
             </div>
 
@@ -70,7 +70,7 @@ class MapSelectionControl extends Component {
           onClick={() => changeMode(selectionModes.select)}>
           <i className='map__icon--select'/>
           <span className='map__text--select'>
-            <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages'/>
+            <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select. villages'/>
           </span>
         </div>
         }
@@ -80,7 +80,7 @@ class MapSelectionControl extends Component {
           onClick={() => changeMode(selectionModes.deselect)}>
           <i className='map__icon--select'/>
           <span className='map__text--select'>
-            <FormattedMessage id='microplanning.selection.active.deselect' defaultMessage='Deselect villages'/>
+            <FormattedMessage id='microplanning.selection.active.deselect' defaultMessage='Deselect. villages'/>
           </span>
         </div>
         }

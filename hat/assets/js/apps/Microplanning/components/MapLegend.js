@@ -28,62 +28,36 @@ import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 const MESSAGES = defineMessages({
   YES: {
     id: 'microplanning.legend.official',
-    defaultMessage: 'Villages without HAT cases.'
-  },
-  NO: {
-    id: 'microplanning.legend.notofficial',
-    defaultMessage: 'Villages not from Z.S.'
+    defaultMessage: 'Villages NON endémiques'
   },
   OTHER: {
     id: 'microplanning.legend.other',
-    defaultMessage: 'Locations where people are found during campaigns'
-  },
-  NA: {
-    id: 'microplanning.legend.unknown',
-    defaultMessage: 'Villages visible from satellite'
+    defaultMessage: "VIllages sélectionnés pour une autre équipe que l'équipe courante"
   },
 
   selected: {
     id: 'microplanning.legend.selected',
-    defaultMessage: 'Selected villages'
+    defaultMessage: 'Villages sélectionnés'
   },
   highlight: {
     id: 'microplanning.legend.highlight',
-    defaultMessage: 'Villages with confirmed HAT cases'
-  },
-
-  // actions
-  show: {
-    id: 'microplanning.legend.show',
-    defaultMessage: 'Show'
-  },
-  hide: {
-    id: 'microplanning.legend.hide',
-    defaultMessage: 'Hide'
+    defaultMessage: 'Villages endémiques'
   }
 })
 
 class MapLegend extends Component {
   render () {
-    const {legend, toggle} = this.props
-    const fixedItems = [ 'selected', 'highlight' ]
+    const fixedItems = ['highlight', 'YES', 'selected', 'OTHER']
 
     return (
       <div className='map__option'>
         <span className='map__option__header'>
-          <FormattedMessage id='microplanning.legend.key' defaultMessage='Map key' />
+          <FormattedMessage id='microplanning.legend.key' defaultMessage='Légende' />
         </span>
         <form>
           <ul className='map__option__list'>
-            { Object.keys(legend).map((key) => (
-              <li key={key} className='map__option__list__item'>
-                <i className={'map__option__icon--' + key} />
-                <FormattedMessage {...MESSAGES[key]} />
-                <span onClick={() => toggle(key)} className='map__option__action'>
-                  <FormattedMessage {...MESSAGES[(legend[key] ? 'hide' : 'show')]} />
-                </span>
-              </li>
-            )) }
+
+
             { fixedItems.map((key) => (
               <li key={key} className='map__option__list__item'>
                 <i className={'map__option__icon--' + key} />
@@ -98,8 +72,6 @@ class MapLegend extends Component {
 }
 
 MapLegend.propTypes = {
-  legend: PropTypes.object,
-  toggle: PropTypes.func
 }
 
 export default injectIntl(MapLegend)

@@ -300,8 +300,6 @@ export class Microplanning extends Component {
             {/* Map legend */}
             <div className='map__header--legend'>
               <MapLegend
-                legend={legend}
-                toggle={legend => this.props.toggleLegend(legend)}
               />
             </div>
 

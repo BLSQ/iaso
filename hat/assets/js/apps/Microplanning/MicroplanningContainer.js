@@ -120,9 +120,10 @@ export class MicroplanningContainer extends Component {
       .get(`/api/coordinations/`)
       .query(params)
       .then(result => {
-        if (result.body[0].zs.length > 0) {
+        let coordination = result.body.filter(coordination => coordination.id == params.coordination_id)[0]
+        if (coordination.zs.length > 0) {
           let tempParams = clone(params);
-          result.body[0].zs.map(
+          coordination.zs.map(
             zs => {
               if (typeof tempParams.zs_id === 'undefined') {
                 tempParams.zs_id = `${zs.id}`;

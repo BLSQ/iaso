@@ -25,8 +25,7 @@ class AssignationViewSet(viewsets.ViewSet):
         if coordination_id:
             teams = Team.objects.filter(coordination_id=coordination_id)
             assignations = assignations.filter(team__in=teams)
-        assignations = assignations.filter(planning_id=planning_id).order_by(
-            "village__name").select_related('village__AS')
+        assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('-team__UM', '-team__capacity', 'team__id',  'village__name')
 
         res = []
         for assignation in assignations:

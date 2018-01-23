@@ -32,6 +32,7 @@ class MapSelectionList extends Component {
           {data.map((item) => {
             return (
               <li className='map__selection__list__item' key={item.id}>
+                <span> {this.props.teamsMap[this.props.assignationsMap[item.id]]} </span>
                 <span className='remove' onClick={() => this.props.deselect([{'village_id':item.id}])}>
                   <i className='fa fa-close' />
                 </span>
@@ -56,6 +57,8 @@ class MapSelectionList extends Component {
 
 MapSelectionList.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
+  assignationsMap: PropTypes.object,
+  teamsMap: PropTypes.object,
   show: PropTypes.func,
   deselect: PropTypes.func
 }

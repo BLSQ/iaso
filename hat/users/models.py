@@ -61,7 +61,10 @@ class Team(models.Model):
             return self.AS.all()
 
     def __str__(self):
-        return self.name
+        type = "MUM"
+        if self.UM:
+            type = "UM"
+        return "%s - %s - %s - %s" % (self.name, self.capacity, type, self.coordination.name)
 
 
 class Profile(models.Model):

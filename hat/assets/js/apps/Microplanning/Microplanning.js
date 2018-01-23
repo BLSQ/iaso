@@ -196,6 +196,19 @@ export class Microplanning extends Component {
     const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
     const assignations = (this.props.selection.assignations) || [];
+    let teamsMap = {};
+    for (var i=0; i< teams.length; i++)
+    {
+      let team = teams[i];
+      teamsMap[team.id] = team.name;
+    }
+
+    let assignationsMap = {};
+    for (var i=0; i< assignations.length; i++)
+    {
+       let assignation = assignations[i];
+       assignationsMap[assignation.village_id] = assignation.team_id;
+    }
 
     const { selection } = this.props;
 
@@ -247,14 +260,12 @@ export class Microplanning extends Component {
       .get(`/api/algo/`)
       .query(algoParams)
       .then(result => {
+        this.props.deselectItems()
         this.props.selectItems(result.body)
       }).catch((err) => {
         console.error('Error when calling algo');
       });
-
-     /* if (inBuffer.length > 0) {
-        this.props.executeSelectionAction(inBuffer);
-      }*/
+      
     }
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>
@@ -398,6 +409,7 @@ export class Microplanning extends Component {
                     {/* Selection actions */}
                     <MapSelectionControl
                       mode={selection.mode}
+
                       changeMode={mode => this.changeSelectionModeHandler(mode)}
                       bufferSize={selection.bufferSize}
                       changeBufferSize={event => this.props.changeBufferSize(event)}
@@ -416,6 +428,8 @@ export class Microplanning extends Component {
                       data={selectedVillages}
                       show={item => this.props.displayItem(item)}
                       deselect={list => this.deSelectVillage(list)}
+                      assignationsMap={assignationsMap}
+                      teamsMap={teamsMap}
                     />
                   </div>
 

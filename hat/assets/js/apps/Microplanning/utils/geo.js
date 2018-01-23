@@ -100,9 +100,6 @@ const villagesInBuffer = (plotted, buffer) => {
 
   // find out the points within the buffer zone
   const latlon = buffer.getLatLng()
-  const bounds = buffer.getBounds()
-  const west = bounds.getWest()
-  const east = bounds.getEast()
   const length = plotted.length
 
   const inBuffer = []
@@ -142,8 +139,6 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
     bufferCircle._latlng = villageA._latlon
     bufferCircle.setRadius(radius)
     bufferCircle.redraw()
-
-    const east = bufferCircle.getBounds().getEast()
 
     for (let j = i + 1; j < length; j++) {
       const villageB = plotted[j]

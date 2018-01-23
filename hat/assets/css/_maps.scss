@@ -411,7 +411,7 @@ path.map-layer {
 
 @mixin marker($color: $gray,
               $fill-opacity: 0.85,
-              $stroke-color: darken($color, 15%),
+              $stroke-color: $color,
               $stroke-width: 2,
               $stroke-opacity: 0.8) {
   fill-opacity: $fill-opacity;

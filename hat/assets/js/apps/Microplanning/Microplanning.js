@@ -29,7 +29,8 @@ import {
   MapLegend,
   MapSelectionControl,
   MapSelectionList,
-  MapSelectionSummary
+  MapSelectionSummary,
+  TeamSelectionTool
 } from './components';
 
 const MESSAGES = defineMessages({
@@ -67,55 +68,6 @@ export class Microplanning extends Component {
       isSelectionModified: true ,
       locations
     })
-  }
-
-  renderPlanningTitle(plannings, coordinations, teams) {
-    if (!this.props.params.planning_id) {
-      return null;
-    }
-    const planningName = plannings.map(p => {
-      if (p.id == this.props.params.planning_id) {
-        return p.name
-      }
-    });
-
-    return (
-      <div className='widget__container'>
-        <div className='widget__header'>
-          <h2 className='widget__heading'>
-            <FormattedMessage id='microplanning.label.plannings' defaultMessage='Planning:' />
-            {` ${planningName} `}
-            <span> | </span>
-            <FormattedMessage id='microplanning.label.team' defaultMessage='Coordination: ' />
-            <select defaultValue="-1"
-                    value={this.props.params.coordination_id}
-                    onChange={event => this.props.redirect({ ...this.props.params, coordination_id: event.target.value})}
-            >
-              <option value="-1" >--</option>
-              {
-                coordinations.map(function(coordination) {
-                  return <option key={coordination.id}
-                    value={coordination.id}>{coordination.name}</option>;
-                })
-              }
-            </select>
-            <span> | </span>
-            <FormattedMessage id='microplanning.label.team' defaultMessage='Team: ' />
-            <select defaultValue="-1"
-                    value={this.props.params.team_id}
-                    onChange={event => { this.props.redirect({ ...this.props.params, team_id: event.target.value })}}>
-              <option value="-1" >--</option>
-              {
-                teams.map(function(team) {
-                  return <option key={team.id}
-                    value={team.id} >{team.name}</option>;
-                })
-              }
-            </select>
-          </h2>
-        </div>
-      </div>
-    );
   }
 
   renderSaveTeamButton() {
@@ -216,7 +168,7 @@ export class Microplanning extends Component {
     }
     const areas = ((data && data.areas) || []);
     let villages = [];
-    let villagesMap = {}
+    let villagesMap = {};
     if (data && data.villagesMap)
     {
       for (const villageId of Object.keys(data.villagesMap))
@@ -292,7 +244,13 @@ export class Microplanning extends Component {
             </div>
           </div>
         }
-        {this.renderPlanningTitle(plannings, coordinations, teams)}
+        <TeamSelectionTool
+          params={this.props.params}
+          plannings={plannings}
+          coordinations={coordinations}
+          teams={teams}
+          redirect={params => this.props.redirect(params)}
+        />
         <div className='widget__container'>
           <div className='widget__header'>
             {/* Map legend */}

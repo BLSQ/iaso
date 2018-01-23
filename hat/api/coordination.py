@@ -9,7 +9,8 @@ class CoordinationViewSet(viewsets.ViewSet):
     Api to list all coordinations, or retrieve information about just one.
     """
     def list(self, request):
-        return Response(Coordination.objects.all().values('name', 'id'))
+
+        return Response(map(lambda x: x.as_dict(), Coordination.objects.all()))
 
     def retrieve(self, request, pk=None):
         coordination = get_object_or_404(Coordination, pk=pk)

@@ -31,7 +31,8 @@ class Coordination(models.Model):
         return {
             'name': self.name,
             'teams': map(lambda x:x.as_dict(),  self.team_set.order_by("name")),
-            'zs': map(lambda x:x.as_dict(),  self.ZS.order_by("name"))
+            'zs': map(lambda x:x.as_dict(),  self.ZS.order_by("name")),
+            'id': self.id
         }
 
     def __str__(self):

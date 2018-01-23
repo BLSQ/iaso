@@ -17,9 +17,11 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
 
+const request = require('superagent');
+
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl } from '../../utils/fetchData';
-import { saveTeamPlanning } from '../../utils/saveData';
+import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
 import { mapActions } from './redux/map';
@@ -71,7 +73,7 @@ export class Microplanning extends Component {
   }
 
   renderSaveTeamButton() {
-    if (!this.props.params.team_id) {
+    if (!this.props.params.coordination_id && !this.props.params.team_id) {
       return null;
     }
     return (
@@ -97,21 +99,33 @@ export class Microplanning extends Component {
     );
   }
 
-  saveTeam() {
-    // WE SHOULD SEND AN ACTION HERE, NOT MAKE A REQUEST DIRECTLY
-    let tempVillages;
-    if (this.props.params.team_id)
-      tempVillages = this.props.selection.assignations.filter(v => v.team_id == this.props.params.team_id);
-    else
-      tempVillages = this.props.selection.assignations;
-    this.setState({ isSavingTeam: true });
-    saveTeamPlanning(tempVillages, parseInt(this.props.params.planning_id), this.props.params.team_id).then(isSaved => {
-      this.setState({
-        isSavingTeam: false,
-        isSelectionModified: !isSaved,
-        errorOnSave: !isSaved
-      });
-    });
+  saveTeam () {
+
+    if (this.props.params.team_id) {
+      let tempVillages = this.props.selection.assignations.filter(v => v.team_id == this.props.params.team_id)
+      this.setState({isSavingTeam: true})
+      saveTeamPlanning(tempVillages, parseInt(this.props.params.planning_id), this.props.params.team_id).then(isSaved => {
+        this.setState({
+          isSavingTeam: false,
+          isSelectionModified: !isSaved,
+          errorOnSave: !isSaved
+        })
+      })
+    }
+    else {
+      this.setState({isSavingTeam: true})
+      saveCoordinationPlanning(
+        this.props.selection.assignations,
+        parseInt(this.props.params.planning_id),
+        this.props.params.coordination_id).then(isSaved =>{
+              this.setState({
+          isSavingTeam: false,
+          isSelectionModified: !isSaved,
+          errorOnSave: !isSaved
+        })
+      })
+    }
+
   }
 
   /* ***************************************************************************
@@ -216,14 +230,31 @@ export class Microplanning extends Component {
     const { baseLayer, overlays, legend, fullscreen } = this.props.map;
     const mapClass = 'map__panel' + (fullscreen ? '--fullscreen' : '--left');
     const selectHighlightBuffer = () => {
+
       const inBuffer = geoUtils.villagesInHighlightBuffer(
         this.props.map.leafletMap,
-        villages.filter((item) => legend[item.village_official]),
+        villages,
         selection.highlightBufferSize
       )
-      if (inBuffer.length > 0) {
-        this.props.executeSelectionAction(inBuffer);
+
+      let algoParams = {
+        'village_id': inBuffer.map(x => x.id).join(','),
+        'coordination_id': this.props.params.coordination_id,
+        'years': this.props.params.years
       }
+
+      request
+      .get(`/api/algo/`)
+      .query(algoParams)
+      .then(result => {
+        this.props.selectItems(result.body)
+      }).catch((err) => {
+        console.error('Error when calling algo');
+      });
+
+     /* if (inBuffer.length > 0) {
+        this.props.executeSelectionAction(inBuffer);
+      }*/
     }
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>

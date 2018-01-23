@@ -28,3 +28,19 @@ export function saveTeamPlanning(villagesList, planning_id, team_id) {
             return false
         })
 }
+
+export function saveCoordinationPlanning(assignations, planning_id, coordination_id) {
+    return request
+        .put(`/api/coordinations/${coordination_id}/`)
+        .set('Content-Type', 'application/json')
+        .send({
+          planning_id:planning_id,
+          assignations: assignations
+        })
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}

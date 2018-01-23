@@ -9,6 +9,7 @@ from .AS import ASViewSet
 from .assignation import AssignationViewSet
 from .coordination import CoordinationViewSet
 from .team import TeamViewSet
+from .algo import AlgoViewSet
 
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')
@@ -20,6 +21,7 @@ router.register(r'zs', ZSViewSet, base_name='zs')
 router.register(r'coordinations', CoordinationViewSet, base_name='coordinations')
 router.register(r'teams', TeamViewSet, base_name='teams')
 router.register(r'villages', VillageViewSet, base_name='village')
+router.register(r'algo', AlgoViewSet, base_name='algo')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

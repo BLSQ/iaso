@@ -45,9 +45,6 @@ class TempAssignation:
 
 
 def assign(village_id_list, coordination_id, years=[]):
-    planning = Planning.objects.get(pk=2)
-    Assignation.objects.filter(planning=planning).delete()
-
     village_list = sort_villages(village_id_list, years)
     teams = Team.objects.filter(coordination_id=coordination_id).order_by('-UM', '-capacity')
     assignations = {team.id: TempAssignation() for team in teams}
@@ -56,7 +53,6 @@ def assign(village_id_list, coordination_id, years=[]):
     for village in village_list:
         village.assigned = False
         for team in teams:
-
             temp_assignation = assignations[team.id]
             if temp_assignation.population_reached + village.population < team.capacity:
                 #test if village in ZS/AS of team
@@ -68,14 +64,7 @@ def assign(village_id_list, coordination_id, years=[]):
         if not village.assigned:
             not_assigned.append(village)
 
-    for team_id in assignations.keys():
-        temp_assignation = assignations[team_id]
-        for village in temp_assignation.villages:
-            ass = Assignation()
-            ass.team_id = team_id
-            ass.village = village
-            ass.planning = planning
-            ass.save()
+    return assignations, not_assigned
 
 
 

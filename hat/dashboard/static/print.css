@@ -38,3 +38,7 @@
 .hide-on-print {
   display: none;
 }
+
+.toggle-menu-container {
+  display: none;
+}

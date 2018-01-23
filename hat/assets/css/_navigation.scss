@@ -1,26 +1,23 @@
 /***
   (→_→)  first, define some styles used throughout nav  (←_←)
 ***/
+
 @mixin nav-link-styles {
-  display: block;
-  padding: 1rem;
-  border-left: 5px solid $dark-blue;
-  font-weight: bold;
-  font-size: $font-size-standard;
-  line-height: 1.5;
-  text-decoration: none;
-  color: $mid-gray;
-  transition: all 0.2s linear;
+    display: block;
+    padding: 1rem;
+    border-left: 5px solid $dark-blue;
+    font-weight: bold;
+    font-size: $font-size-standard;
+    line-height: 1.5;
+    text-decoration: none;
+    color: $mid-gray;
+    transition: all 0.2s linear;
 }
 
-@mixin active-nav-link-styles(
-  $background: darken($dark-blue, 8%), 
-  $border-color: $blue, 
-  $color: white
-  ) {
-  background-color: $background;
-  border-left-color: $border-color;
-  color: $color;
+@mixin active-nav-link-styles( $background: darken($dark-blue, 8%), $border-color: $blue, $color: white) {
+    background-color: $background;
+    border-left-color: $border-color;
+    color: $color;
 }
 
 $nav-border-style: 1px solid rgba(white, 0.15);
@@ -28,117 +25,158 @@ $nav-border-style: 1px solid rgba(white, 0.15);
 /***
   (→_→)  now let's use those styles  (←_←)
 ***/
+
 .navigation__container {
-  position: fixed;
-  flex-wrap: nowrap;
-  flex: 1 1 auto;
-  height: 100%;
-  overflow: auto;
+    position: fixed;
+    flex-wrap: nowrap;
+    flex: 1 1 auto;
+    height: 100%;
+    overflow: auto;
+    transition: left 0.2s ease-in-out;
+    left: 0;
+    z-index: 1001;
 }
 
 .navigation__content {
-  @include height-if-body-has-banner-layout;
-  display: flex;
-  flex-direction: column;
-  width: $navigation-width;
-  background: $dark-blue;
-  -webkit-font-smoothing: antialiased;
+    @include height-if-body-has-banner-layout;
+    display: flex;
+    flex-direction: column;
+    width: $navigation-width;
+    background: $dark-blue;
+    -webkit-font-smoothing: antialiased;
 }
 
 .brand__heading {
-  position: relative;
-  display: block;
-  padding: 1.275rem 1rem;
-  margin: 0;
-  font-weight: bold;
-  color: white;
-  text-decoration: none;
+    position: relative;
+    display: block;
+    padding: 1.275rem 1rem;
+    margin: 0;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
 }
 
 .navigation__menu {
-  flex: 1;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: $nav-border-style;
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: $nav-border-style;
 }
 
 [class^='navigation__menu__item'] a {
-  @include nav-link-styles;
-  border-bottom: $nav-border-style;
+    @include nav-link-styles;
+    border-bottom: $nav-border-style;
 }
 
 [class^='navigation__menu__item'] a:hover,
-.navigation__menu__item--active > a {
-  @include active-nav-link-styles;
+.navigation__menu__item--active>a {
+    @include active-nav-link-styles;
 }
 
 [class^='navigation__menu__item'] a:hover {
-  border-left-color: darken($blue, 10%);
+    border-left-color: darken($blue, 10%);
 }
+
 
 /* sub-navigation items; a bit smaller */
 
 .navigation__menu__item--secondary a,
 .navigation__menu__item--secondary--active a {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  font-size: $font-size-s;
-  font-weight: normal;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: $font-size-s;
+    font-weight: normal;
 }
 
 .navigation__menu__item--active {
-  [class^="navigation__menu__item--secondary"] a {
-    @include active-nav-link-styles(
-      $background: darken($dark-blue, 4%), 
-      $border-color: darken($blue, 20%),
-      $color: rgba(white, 0.7)
-    );
-  }
-  .navigation__menu__item--secondary--active a,
-  [class^="navigation__menu__item--secondary"] a:hover {
-    @include active-nav-link-styles;
-  }
-  .navigation__menu__item--secondary--active a {font-weight: bold;}
+    [class^="navigation__menu__item--secondary"] a {
+        @include active-nav-link-styles( $background: darken($dark-blue, 4%), $border-color: darken($blue, 20%), $color: rgba(white, 0.7));
+    }
+    .navigation__menu__item--secondary--active a,
+    [class^="navigation__menu__item--secondary"] a:hover {
+        @include active-nav-link-styles;
+    }
+    .navigation__menu__item--secondary--active a {
+        font-weight: bold;
+    }
 }
+
 
 /* navigation footer */
 
 .navigation__footer {
-  background-color: darken($dark-blue, 8%);
-  padding: 1rem;
-  padding-left: calc(1rem + 5px);
-  border-top: $nav-border-style;
-  margin-top: -1px;
+    background-color: darken($dark-blue, 8%);
+    padding: 1rem;
+    padding-left: calc(1rem + 5px);
+    border-top: $nav-border-style;
+    margin-top: -1px;
 }
 
 .navigation__logout-link {
-  @include nav-link-styles;
-  padding: 0;
-  margin-bottom: 1rem;
-  border-left: none;
-  color: white;
-  font-weight: normal;
-  text-transform: uppercase;
-  font-size: $font-size-s;
-  &:hover {
-    color: $blue;
-  }
+    @include nav-link-styles;
+    padding: 0;
+    margin-bottom: 1rem;
+    border-left: none;
+    color: white;
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: $font-size-s;
+    &:hover {
+        color: $blue;
+    }
 }
 
 @mixin footer-label-styles {
-  display: block;
-  color: $mid-gray;
-  font-size: $font-size-s;
-  font-weight: bold;
+    display: block;
+    color: $mid-gray;
+    font-size: $font-size-s;
+    font-weight: bold;
 }
 
 .label--user {
-  @include footer-label-styles;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    @include footer-label-styles;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .label--version {
-  @include footer-label-styles;
+    @include footer-label-styles;
+}
+
+// TOGGLE NAV
+.container--main {
+    transition: padding 0.2s ease-in-out;
+    position: relative;
+}
+
+body.menu-close {
+    .navigation__container {
+        left: -20%;
+    }
+    .container--main {
+        padding-left: 0;
+    }
+    .toggle-menu-container {
+        left: 0;
+    }
+}
+
+.toggle-menu-container {
+    position: fixed;
+    top: 60px;
+    z-index: 1001;
+    left: $navigation-width;
+    transition: left 0.2s ease-in-out;
+    button {
+        font-size: 25px;
+        cursor: pointer !important;
+        box-shadow: none !important;
+        outline: none !important;
+        transition: all 0.2s ease-in-out;
+        &:hover {
+            background-color: $blue;
+            color: white;
+        }
+    }
 }

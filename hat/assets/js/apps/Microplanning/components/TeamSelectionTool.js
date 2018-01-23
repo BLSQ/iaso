@@ -53,7 +53,6 @@ class TeamSelectionTool extends Component {
             return null;
         }
         return (
-
             <div className='widget__container'>
                 <div className='widget__header'>
                     <h2 className='widget__heading'>

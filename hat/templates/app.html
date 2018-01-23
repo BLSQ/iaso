@@ -128,6 +128,14 @@
         </div>
     </div>
 
+    <div class='toggle-menu-container'>
+        <button
+            class='toggle-menu-button'
+            onClick="document.body.className = document.body.className === 'menu-close' ? document.body.className.replace('menu-close', '') : 'menu-close'"
+        >
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
     <div class="container--main">
         {% if messages %}
             <ul class="messages">

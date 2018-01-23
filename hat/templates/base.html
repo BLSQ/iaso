@@ -32,7 +32,7 @@
     <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
     {% endif %}
   </head>
-  <body{% if environment == 'staging' %} class="body--banner"{% endif %}>
+  <body class="menu-close">
     {% if environment == 'staging' %}
       <div class="banner--stage-warning">
         <span>

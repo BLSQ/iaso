@@ -25,25 +25,31 @@ class MapSelectionControl extends Component {
 
     return (
       <div className='map__selection__control__container'>
-        <div
-          className={'map__control__button--selection--select' + (mode === selectionModes.select ? '--active' : '')}
-          onClick={() => changeMode(selectionModes.select)}>
-          <i className='map__icon--select' />
-          <span className='map__text--select'>
-            <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages' />
-          </span>
-        </div>
+        { this.props.coordinationId && !this.props.teamId &&
+          <div>
+                        <div className='map__selection__actions'>
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selection.buffer.highlight' defaultMessage='Highlight buffer' />
+              </span>
+              <input type='number' className='small' min='0' name='buffer-value' value={highlightBufferSize} onChange={changeHighlightBufferSize} />
+              <span className='map__text--select'>{'km'}</span>
+            </div>
 
-        <div
-          className={'map__control__button--selection--deselect' + (mode === selectionModes.deselect ? '--active' : '')}
-          onClick={() => changeMode(selectionModes.deselect)}>
-          <i className='map__icon--select' />
-          <span className='map__text--select'>
-            <FormattedMessage id='microplanning.selection.active.deselect' defaultMessage='Deselect villages' />
-          </span>
-        </div>
+            <div
+              className='map__control__button--highlight'
+              onClick={() => selectHighlightBuffer()}>
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages' />
+                &nbsp;
+                <FormattedMessage id='microplanning.selection.buffer.highlight.label' defaultMessage='around confirmed HAT cases' />
+              </span>
+            </div>
 
-        { selectionActive &&
+
+          </div>
+        }
+
+                { this.props.coordinationId &&
           <div className='map__selection__actions tooltip--warning'>
             <span className='map__text--select'>
               <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer' />
@@ -59,33 +65,36 @@ class MapSelectionControl extends Component {
           </div>
         }
 
-        { highlightBufferActive &&
-          <div>
-            <div
-              className='map__control__button--highlight'
-              onClick={() => selectHighlightBuffer()}>
-              <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages' />
-                &nbsp;
-                <FormattedMessage id='microplanning.selection.buffer.highlight.label' defaultMessage='around confirmed HAT cases' />
-              </span>
-            </div>
-
-            <div className='map__selection__actions'>
-              <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.buffer.highlight' defaultMessage='Highlight buffer' />
-              </span>
-              <input type='number' className='small' min='0' name='buffer-value' value={highlightBufferSize} onChange={changeHighlightBufferSize} />
-              <span className='map__text--select'>{'km'}</span>
-            </div>
-          </div>
+        {this.props.teamId && <div
+          className={'map__control__button--selection--select' + (mode === selectionModes.select ? '--active' : '')}
+          onClick={() => changeMode(selectionModes.select)}>
+          <i className='map__icon--select'/>
+          <span className='map__text--select'>
+            <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select villages'/>
+          </span>
+        </div>
         }
+
+        {this.props.coordinationId && <div
+          className={'map__control__button--selection--deselect' + (mode === selectionModes.deselect ? '--active' : '')}
+          onClick={() => changeMode(selectionModes.deselect)}>
+          <i className='map__icon--select'/>
+          <span className='map__text--select'>
+            <FormattedMessage id='microplanning.selection.active.deselect' defaultMessage='Deselect villages'/>
+          </span>
+        </div>
+        }
+
+
+
       </div>
     )
   }
 }
 
 MapSelectionControl.propTypes = {
+  teamId: PropTypes.number,
+  coordinationId:  PropTypes.string,
   mode: PropTypes.number,
   changeMode: PropTypes.func,
   bufferSize: PropTypes.number,

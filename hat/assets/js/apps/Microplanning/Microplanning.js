@@ -213,6 +213,7 @@ export class Microplanning extends Component {
     const { selection } = this.props;
 
     let selectedVillages = [];
+
     // planning selection
     // if a planning is selected we need to preselect the villages from the planning
     if (planning_id &&
@@ -409,7 +410,8 @@ export class Microplanning extends Component {
                     {/* Selection actions */}
                     <MapSelectionControl
                       mode={selection.mode}
-
+                      teamId={this.props.params.team_id}
+                      coordinationId={this.props.params.coordination_id}
                       changeMode={mode => this.changeSelectionModeHandler(mode)}
                       bufferSize={selection.bufferSize}
                       changeBufferSize={event => this.props.changeBufferSize(event)}

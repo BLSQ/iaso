@@ -123,17 +123,8 @@ export class MicroplanningContainer extends Component {
         let coordination = result.body.filter(coordination => coordination.id == params.coordination_id)[0]
         if (coordination.zs.length > 0) {
           let tempParams = clone(params);
-          coordination.zs.map(
-            zs => {
-              if (typeof tempParams.zs_id === 'undefined') {
-                tempParams.zs_id = `${zs.id}`;
-              } else {
-                tempParams.zs_id += `,${zs.id}`;
-              }
-            }
-          );
-          const { dispatch } = this.props;
-          dispatch(push(createUrl(tempParams)));
+          tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
+          this.props.dispatch(push(createUrl(tempParams)));
         } else {
           loadFullData(params);
         }

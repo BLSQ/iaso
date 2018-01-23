@@ -69,7 +69,7 @@
     "microplanning.labels.years.select": "Sélectionner des années",
     "microplanning.labels.loading": "Chargement des villages en cours",
     "microplanning.label.error": "Erreur:",
-    "microplanning.label.plannings": "Plannings:",
+    "microplanning.label.plannings": "Plannings: ",
     "microplanning.label.teams": "Equipes:",
     "microplanning.filter.zones": "Afficher les villages dans les Zones de Santé",
     "microplanning.filter.cases.date": "Souligner les villages avec les derniers cas THA en année",

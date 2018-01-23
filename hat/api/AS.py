@@ -18,10 +18,10 @@ class ASViewSet(viewsets.ViewSet):
 
     """
     def list(self, request):
-        zs_id = request.GET.get("zs_id", None)
+        zs_ids = request.GET.get("zs_id", None)
         queryset = AS.objects.all()
-        if zs_id:
-            queryset=queryset.filter(ZS_id=zs_id)
+        if zs_ids:
+            queryset=queryset.filter(ZS_id__in=zs_ids.split(','))
         return Response(queryset.values('name', 'id'))
 
     def retrieve(self, request, pk=None):

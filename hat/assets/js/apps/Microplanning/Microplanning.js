@@ -168,7 +168,7 @@ export class Microplanning extends Component {
     }
     const areas = ((data && data.areas) || []);
     let villages = [];
-    let villagesMap = {}
+    let villagesMap = {};
     if (data && data.villagesMap)
     {
       for (const villageId of Object.keys(data.villagesMap))

@@ -10,12 +10,16 @@
  * Handles state and data loading for the Microplanning page
  */
 
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { clone } from '../../utils'
-import { fetchUrls, fetchUrl } from '../../utils/fetchData'
-import Microplanning from './Microplanning'
-import { selectionActions } from './redux/selection'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { clone } from '../../utils';
+import { fetchUrls, fetchUrl } from '../../utils/fetchData';
+import { push } from 'react-router-redux';
+import { createUrl } from '../../utils/fetchData';
+import Microplanning from './Microplanning';
+import { selectionActions } from './redux/selection';
+
+const request = require('superagent');
 
 // This is where we configure the app data urls:
 // the order is used in the success handler below
@@ -80,12 +84,12 @@ export const urls = [
     url: '/api/plannings/',
     mock: [
       {
-          "name": "planning 2",
-          "id": 2
+        "name": "planning 2",
+        "id": 2
       },
       {
-          "name": "Test",
-          "id": 1
+        "name": "Test",
+        "id": 1
       }
     ]
   },
@@ -94,12 +98,12 @@ export const urls = [
     url: '/api/teams/',
     mock: [
       [
-          2,
-          "qsdf"
+        2,
+        "qsdf"
       ],
       [
-          1,
-          "team 1"
+        1,
+        "team 1"
       ]
     ]
   }
@@ -111,25 +115,62 @@ export class MicroplanningContainer extends Component {
     this.currentParams = ''
   }
 
-  loadData(params) {
-    const { dispatch } = this.props
-    const oldParams = clone(this.currentParams)
-    this.currentParams = clone(params)
-    fetchUrls(urls, params, oldParams, dispatch)
-    fetchUrl([{
-    name: 'assignations',
-    url: '/api/assignations/'}], params).then((result) => {
-      dispatch(selectionActions.selectItems(result.assignations))
-    });
+  updateUrlForCoordination(params) {
+    request
+      .get(`/api/coordinations/`)
+      .query(params)
+      .then(result => {
+        if (result.body[0].zs.length > 0) {
+          let tempParams = clone(params);
+          result.body[0].zs.map(
+            zs => {
+              if (typeof tempParams.zs_id === 'undefined') {
+                tempParams.zs_id = `${zs.id}`;
+              } else {
+                tempParams.zs_id += `,${zs.id}`;
+              }
+            }
+          );
+          const { dispatch } = this.props;
+          dispatch(push(createUrl(tempParams)));
+        } else {
+          loadFullData(params);
+        }
+      })
+      .catch((err) => {
+        console.error('Error when fetching coordinations details');
+      });
+  }
+
+  loadFullData(params) {
+    const { dispatch } = this.props;
+    const oldParams = clone(this.currentParams);
+    this.currentParams = clone(params);
+    fetchUrls(urls, params, oldParams, dispatch);
+    request
+      .get(`/api/assignations/`)
+      .query(params)
+      .then((result) => {
+        if (result.body.length > 0) {
+          dispatch(selectionActions.selectItems(result.body));
+        }
+      })
+      .catch((err) => {
+        console.error('Error when fetching villages details');
+      });
   }
 
   componentDidMount() {
-    this.loadData(this.props.params)
+
+    if (this.props.params.coordination_id && !this.props.params.zs_id) {
+      this.updateUrlForCoordination(this.props.params);
+    } else {
+      this.loadFullData(this.props.params);
+    }
   }
 
   componentWillReceiveProps(newProps) {
-    this.loadData(newProps.params)
-
+    this.loadFullData(newProps.params);
   }
 
   render() {

@@ -10,8 +10,8 @@
  * to user readable/understandable texts.
  */
 
-import React, { Component, PropTypes } from 'react'
-import Select from 'react-select'
+import React, { Component, PropTypes } from 'react';
+import Select from 'react-select';
 import {
   FormattedDate,
   FormattedMessage,
@@ -19,7 +19,8 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
-import { fetchUrl } from '../../../utils/fetchData'
+
+const request = require('superagent');
 import { capitalize } from '../../../utils'
 
 export const urls = [{
@@ -204,11 +205,18 @@ class MapTooltip extends Component {
       isloading: true,
       isVillage: true
     });
-    fetchUrl(urls, { village_id: item_id, planning_id: this.props.planningId }, '').then((result) => {
-      this.updateItemField(result.village_detail);
-      this.setState({ isloading: false })
-      this.setState({selectedTeamId: result.village_detail.team.id})
-    });
+
+    request
+      .get(`/api/villages/${item_id}`)
+      .query({ planning_id: this.props.planningId })
+      .then((result) => {
+        this.updateItemField(result.body);
+        this.setState({ isloading: false })
+        this.setState({ selectedTeamId: result.body.team ? result.body.team.id : null })
+      })
+      .catch((err) => {
+        console.error('Error when fetching villages details');
+      });
   }
 
 
@@ -231,15 +239,15 @@ class MapTooltip extends Component {
                 className="styled-select"
                 onChange={event => {
                   this.setState({ selectedTeamId: event.currentTarget.value })
-              }}>
+                }}>
                 <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
                 {
-                  
+
                   this.state.teams.map((value) => {
-                  return (<option key={value.id} value={value.id}>
-                            {value.name}
-                          </option>)
-                })}
+                    return (<option key={value.id} value={value.id}>
+                      {value.name}
+                    </option>)
+                  })}
               </select>
             </div>
           </div>) :

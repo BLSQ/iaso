@@ -1,7 +1,5 @@
-from hat.users.models import Coordination, Team
-from hat.geo.models import ZS, AS, Village
-from hat.planning.models import Assignation, Planning
-from geopy.distance import vincenty #distance in WGS-84
+from hat.users.models import Team
+from hat.geo.models import Village
 from django.db.models import Count
 from django.db.models import Q
 from functools import cmp_to_key

@@ -60,3 +60,8 @@ input.small {
   width: 50px;
   margin: 0 $padding-unit/5;
 }
+.Select {
+  &.is-open{
+    z-index: 1001;
+  }
+}

@@ -6,6 +6,7 @@ import React, { Component, PropTypes } from 'react';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import { createUrl } from '../../../utils/fetchData';
 import Select from 'react-select';
+import { clone } from '../../../utils';
 
 
 const MESSAGES = defineMessages({
@@ -35,6 +36,17 @@ class TeamSelectionTool extends Component {
         })
     }
 
+    onChangeCoordination(coordination_id) {
+        let tempParams = clone(this.props.params);
+        delete tempParams.team_id;
+        delete tempParams.zs_id;
+        this.props.deselectAll();
+        this.props.redirect({
+            ...tempParams,
+            coordination_id
+         });
+    }
+
     render() {
         const { formatMessage } = this.props.intl;
         if (!this.props.params.planning_id || !this.state.currentPlanning) {
@@ -59,7 +71,7 @@ class TeamSelectionTool extends Component {
                             value={this.props.params.coordination_id}
                             placeholder={formatMessage(MESSAGES['all'])}
                             options={this.state.coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
-                            onChange={event => this.props.redirect({ ...this.props.params, coordination_id: event })}
+                            onChange={event => this.onChangeCoordination(event)}
                         />
                     </div>
                     <div>
@@ -92,6 +104,7 @@ TeamSelectionTool.propTypes = {
     coordinations: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
+    deselectAll: PropTypes.func.isRequired
 }
 
 export default injectIntl(TeamSelectionTool)

@@ -115,6 +115,22 @@ export class MicroplanningContainer extends Component {
     this.currentParams = ''
   }
 
+  componentDidMount() {
+    if (this.props.params.coordination_id && !this.props.params.zs_id) {
+      this.updateUrlForCoordination(this.props.params);
+    } else {
+      this.loadFullData(this.props.params);
+    }
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (newProps.params.coordination_id && !newProps.params.zs_id) {
+      this.updateUrlForCoordination(newProps.params);
+    } else {
+      this.loadFullData(newProps.params);
+    }
+  }
+
   updateUrlForCoordination(params) {
     request
       .get(`/api/coordinations/`)
@@ -134,35 +150,27 @@ export class MicroplanningContainer extends Component {
       });
   }
 
-  loadFullData(params) {
+  getAssignations(params) {
     const { dispatch } = this.props;
-    const oldParams = clone(this.currentParams);
-    this.currentParams = clone(params);
-    fetchUrls(urls, params, oldParams, dispatch);
     request
       .get(`/api/assignations/`)
       .query(params)
       .then((result) => {
-        if (result.body.length > 0) {
-          dispatch(selectionActions.selectItems(result.body));
-        }
+        dispatch(selectionActions.selectItems(result.body));
       })
       .catch((err) => {
-        console.error('Error when fetching villages details');
+        console.error(err);
+        console.error('Error when fetching assignations details');
       });
   }
 
-  componentDidMount() {
-
-    if (this.props.params.coordination_id && !this.props.params.zs_id) {
-      this.updateUrlForCoordination(this.props.params);
-    } else {
-      this.loadFullData(this.props.params);
-    }
-  }
-
-  componentWillReceiveProps(newProps) {
-    this.loadFullData(newProps.params);
+  loadFullData(params) {
+    const { dispatch } = this.props;
+    const oldParams = clone(this.currentParams);
+    this.currentParams = clone(params);
+    fetchUrls(urls, params, oldParams, dispatch).then(() => {
+      this.getAssignations(params);
+    });
   }
 
   render() {

@@ -40,6 +40,7 @@ class TeamSelectionTool extends Component {
         let tempParams = clone(this.props.params);
         delete tempParams.team_id;
         delete tempParams.zs_id;
+        this.props.deselectAll();
         this.props.redirect({
             ...tempParams,
             coordination_id
@@ -103,6 +104,7 @@ TeamSelectionTool.propTypes = {
     coordinations: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
+    deselectAll: PropTypes.func.isRequired
 }
 
 export default injectIntl(TeamSelectionTool)

@@ -250,6 +250,7 @@ export class Microplanning extends Component {
           coordinations={coordinations}
           teams={teams}
           redirect={params => this.props.redirect(params)}
+          deselectAll={() => this.props.deselectItems()}
         />
         <div className='widget__container'>
           <div className='widget__header'>

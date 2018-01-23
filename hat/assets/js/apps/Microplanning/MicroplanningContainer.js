@@ -119,7 +119,6 @@ export class MicroplanningContainer extends Component {
     if (this.props.params.coordination_id && !this.props.params.zs_id) {
       this.updateUrlForCoordination(this.props.params);
     } else {
-      this.getAssignations(this.props.params);
       this.loadFullData(this.props.params);
     }
   }
@@ -128,7 +127,6 @@ export class MicroplanningContainer extends Component {
     if (newProps.params.coordination_id && !newProps.params.zs_id) {
       this.updateUrlForCoordination(newProps.params);
     } else {
-      this.getAssignations(newProps.param);
       this.loadFullData(newProps.params);
     }
   }
@@ -170,7 +168,9 @@ export class MicroplanningContainer extends Component {
     const { dispatch } = this.props;
     const oldParams = clone(this.currentParams);
     this.currentParams = clone(params);
-    fetchUrls(urls, params, oldParams, dispatch);
+    fetchUrls(urls, params, oldParams, dispatch).then(() => {
+      this.getAssignations(params);
+    });
   }
 
   render() {

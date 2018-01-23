@@ -40,19 +40,6 @@ class TeamSelectionTool extends Component {
         let tempParams = clone(this.props.params);
         delete tempParams.team_id;
         delete tempParams.zs_id;
-        console.warn(tempParams.zs_id);
-        const currentCoordination = this.state.coordinations.filter(coordination => coordination.id === coordination_id)[0];
-        console.warn(currentCoordination);
-        let tempZsList = 
-        currentCoordination.zs.map(
-            zs => {
-              if (typeof tempParams.zs_id === 'undefined') {
-                tempParams.zs_id = `${zs.id}`;
-              } else {
-                tempParams.zs_id += `,${zs.id}`;
-              }
-            }
-          );
         this.props.redirect({
             ...tempParams,
             coordination_id

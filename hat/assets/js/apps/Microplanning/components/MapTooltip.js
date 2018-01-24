@@ -302,7 +302,8 @@ class MapTooltip extends Component {
 MapTooltip.propTypes = {
   item: PropTypes.object.isRequired,
   teams: PropTypes.array.isRequired,
-  planningId: PropTypes.string
+  planningId: PropTypes.string,
+  assign: PropTypes.function
 }
 
 export default injectIntl(MapTooltip)

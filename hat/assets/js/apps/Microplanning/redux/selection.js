@@ -111,8 +111,8 @@ export const selectionActions = {
 
 export const selectionInitialState = {
   mode: selectionModes.none,
-  bufferSize: 1,
-  highlightBufferSize: 1,
+  bufferSize: 3,
+  highlightBufferSize: 0,
   assignations: [],
   displayedItem: null
 }

@@ -127,14 +127,14 @@ class Map extends Component {
       if (hasChanged(prevProps, this.props, 'overlays')) {
         this.updateOverlays()
       }
-    this.updateItems(true)
+
 
       // only call if legend or items changed
-     /* if (!containSameItems(prevProps, this.props, 'items')) {
+     if (!containSameItems(prevProps, this.props, 'items')) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
-      }*/
+      }
 
       // only call if the number of selected items changed
       if (!containSameItems(prevProps, this.props, 'selectedItems')) {
@@ -152,7 +152,7 @@ class Map extends Component {
       }
 
       this.updateMouseBuffer()
-      //this.updateHighlightBuffer()
+      this.updateHighlightBuffer()
     })
   }
 
@@ -503,30 +503,30 @@ class Map extends Component {
     }
   }
 
-  // updateHighlightBuffer() {
-  //   const { legend, highlightBufferSize } = this.props
-  //   const { highlightBufferGroup } = this.state.layers
-  //
-  //   highlightBufferGroup.clearLayers()
-  //
-  //   // include buffer zone
-  //   if (highlightBufferSize > 0) {
-  //     const { items } = this.props
-  //     console.log("items", items)
-  //     const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
-  //
-  //     highlight.forEach((item) => {
-  //       const options = {
-  //         className: 'map-marker highlight-buffer',
-  //         pane: 'custom-pane-highlight-buffer',
-  //         radius: radius
-  //       }
-  //
-  //       const marker = L.circle(item._latlon, options)
-  //       highlightBufferGroup.addLayer(marker)
-  //     })
-  //   }
-  // }
+   updateHighlightBuffer() {
+     const { legend, highlightBufferSize } = this.props
+     const { highlightBufferGroup } = this.state.layers
+
+     highlightBufferGroup.clearLayers()
+      const bufferSize = highlightBufferSize * 1000
+     // include buffer zone
+     if (highlightBufferSize > 0) {
+       const { items } = this.props
+
+       const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
+
+       highlight.forEach((item) => {
+         const options = {
+           className: 'map-marker highlight-buffer',
+           pane: 'custom-pane-highlight-buffer',
+           radius:  radius + bufferSize
+         }
+
+         const marker = L.circle(item._latlon, options)
+         highlightBufferGroup.addLayer(marker)
+       })
+     }
+   }
 
   updateFullscreenMode() {
     const { fullscreen } = this.props

@@ -49,7 +49,7 @@ class TeamViewSet(viewsets.ViewSet):
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id)
 
-        return Response(queryset.values('name', 'id').order_by('name'))
+        return Response(queryset.values('name', 'id', 'capacity').order_by('-UM', 'name'))
 
     def retrieve(self, request, pk=None):
         team = get_object_or_404(Team, pk=pk)

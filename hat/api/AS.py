@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import AS
-
+from hat.users.models import Team
 
 class ASViewSet(viewsets.ViewSet):
     """
@@ -25,5 +25,21 @@ class ASViewSet(viewsets.ViewSet):
         return Response(queryset.values('name', 'id'))
 
     def retrieve(self, request, pk=None):
-        zs = get_object_or_404(AS, pk=pk)
-        return Response(zs.as_dict())
+        aire = get_object_or_404(AS, pk=pk)
+        return Response(aire.as_dict())
+
+    def update(self, request, pk=None):
+        team_id = request.data.get("team_id", None)
+        delete = request.data.get("delete", None)
+        team = get_object_or_404(Team, id=team_id)
+        aire = get_object_or_404(AS, id=pk)
+        if delete:
+            team.AS.remove(aire)
+        else:
+            team.AS.add(aire)
+        return Response(aire.as_dict())
+
+
+
+
+

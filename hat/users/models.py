@@ -52,7 +52,8 @@ class Team(models.Model):
         return {
             'name': self.name,
             'id': self.id,
-            'AS': map(lambda a: a.as_dict(), self.get_as())
+            'AS': map(lambda a: a.as_dict(), self.get_as()),
+            'capacity': self.capacity
         }
 
     def get_as(self):

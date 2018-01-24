@@ -51,7 +51,8 @@ class Team(models.Model):
     def as_dict(self):
         return {
             'name': self.name,
-            'id': self.id
+            'id': self.id,
+            'AS': map(lambda a: a.as_dict(), self.get_as())
         }
 
     def get_as(self):

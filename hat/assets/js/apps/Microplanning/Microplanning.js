@@ -208,6 +208,7 @@ export class Microplanning extends Component {
     const { selection } = this.props;
 
     let selectedVillages = [];
+    let selectedAndUnselectedVillages = [];
 
     // planning selection
     // if a planning is selected we need to preselect the villages from the planning
@@ -221,13 +222,10 @@ export class Microplanning extends Component {
         assignationsTempList = assignationsTempList.filter(x => x.team_id == this.props.params.team_id);
       }
 
-      let tempSelectedVillages = [];
-      assignationsTempList.map(assignation => {
-        if (assignation.village_id in villagesMap) {
-          tempSelectedVillages.push(villagesMap[assignation.village_id]);
-        }
-      });
-      selectedVillages = tempSelectedVillages;
+
+      selectedVillages = assignationsTempList.filter(assignation => (assignation.team_id != -1 && assignation.village_id in villagesMap)).map(assignation => villagesMap[assignation.village_id])
+      selectedAndUnselectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
+
 
     }
 
@@ -236,10 +234,7 @@ export class Microplanning extends Component {
       (selection.mode !== selectionModes.none)
         ? selection.bufferSize
         : 0)
-    const highlightBufferSize = (
-      (selection.mode === selectionModes.select)
-        ? selection.highlightBufferSize
-        : 0)
+    const highlightBufferSize = selection.highlightBufferSize
 
     // map
     const { baseLayer, overlays, legend, fullscreen } = this.props.map;
@@ -263,7 +258,7 @@ export class Microplanning extends Component {
         .query(algoParams)
         .then(result => {
           this.props.deselectItems()
-          this.props.selectItems(result.body)
+          this.props.selectItems(result.body.assignations)
         }).catch((err) => {
           console.error('Error when calling algo');
         });
@@ -426,7 +421,7 @@ export class Microplanning extends Component {
                   <div className='map__selection__middle'>
                     {/* Selected list */}
                     <MapSelectionList
-                      data={selectedVillages}
+                      data={selectedAndUnselectedVillages}
                       show={item => this.props.displayItem(item)}
                       deselect={list => this.deSelectVillage(list)}
                       assignationsMap={assignationsMap}

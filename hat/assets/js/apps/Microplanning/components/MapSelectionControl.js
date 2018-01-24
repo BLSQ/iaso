@@ -11,58 +11,59 @@
  * which ones. A zero value indicates that only the highlight villages are taken.
  */
 
-import React, {Component, PropTypes} from 'react'
-import {FormattedMessage, injectIntl} from 'react-intl'
-import {selectionModes} from '../redux/selection'
+import React, { Component, PropTypes } from 'react'
+import { FormattedMessage, injectIntl } from 'react-intl'
+import { selectionModes } from '../redux/selection'
 
 class MapSelectionControl extends Component {
   render () {
     const {mode, changeMode} = this.props
     const {bufferSize, changeBufferSize} = this.props
     const {highlightBufferSize, changeHighlightBufferSize, selectHighlightBuffer} = this.props
-    const selectionActive = (mode !== selectionModes.none)
-    const highlightBufferActive = (mode === selectionModes.select)
 
     return (
       <div className='map__selection__control__container'>
-        { this.props.coordinationId && !this.props.teamId &&
-          <div>
-                        <div className='map__selection__actions'>
+        {this.props.coordinationId && !this.props.teamId &&
+        <div>
+          <div className='map__selection__actions'>
               <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.buffer.highlight' defaultMessage='Highlight buffer' />
+                <FormattedMessage id='microplanning.selection.buffer.highlight' defaultMessage='Taille zone tampon'/>
               </span>
-              <input type='number' className='small' min='0' name='buffer-value' value={highlightBufferSize} onChange={changeHighlightBufferSize} />
-              <span className='map__text--select'>{'km'}</span>
-            </div>
-
-            <div
-              className='map__control__button--highlight'
-              onClick={() => selectHighlightBuffer()}>
-              <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select. villages' />
-                &nbsp;
-                <FormattedMessage id='microplanning.selection.buffer.highlight.label' defaultMessage='autour des cas confirmés' />
-              </span>
-            </div>
-
-
+            <input type='number' className='small' min='0' name='buffer-value' value={highlightBufferSize}
+                   onChange={changeHighlightBufferSize}/>
+            <span className='map__text--select'>{'km'}</span>
           </div>
+
+          <div
+            className='map__control__button--highlight'
+            onClick={() => selectHighlightBuffer()}>
+              <span className='map__text--select'>
+                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Assigner villages'/>
+                &nbsp;
+                <FormattedMessage id='microplanning.selection.buffer.highlight.label'
+                                  defaultMessage='autour des cas confirmés'/>
+              </span>
+          </div>
+
+
+        </div>
         }
 
-                { this.props.coordinationId &&
-          <div className='map__selection__actions tooltip--warning'>
+        {this.props.coordinationId &&
+        <div className='map__selection__actions tooltip--warning'>
             <span className='map__text--select'>
-              <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer' />
+              <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer'/>
             </span>
-            <input type='number' className='small' min='1' name='buffer-value' value={bufferSize} onChange={changeBufferSize} />
-            <span className='map__text--select'>{'km'}</span>
+          <input type='number' className='small' min='1' name='buffer-value' value={bufferSize}
+                 onChange={changeBufferSize}/>
+          <span className='map__text--select'>{'km'}</span>
 
-            <div className='tooltip__warning'>
-              <FormattedMessage
-                id='microplanning.selection.actions.buffer.explanation'
-                defaultMessage='You can adjust the size of selection buffer zone to include/remove more/fewer villages in your selection.' />
-            </div>
+          <div className='tooltip__warning'>
+            <FormattedMessage
+              id='microplanning.selection.actions.buffer.explanation'
+              defaultMessage='You can adjust the size of selection buffer zone to include/remove more/fewer villages in your selection.'/>
           </div>
+        </div>
         }
 
         {this.props.teamId && <div
@@ -84,7 +85,6 @@ class MapSelectionControl extends Component {
           </span>
         </div>
         }
-
 
 
       </div>

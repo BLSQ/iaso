@@ -31,7 +31,7 @@ class ASViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         team_id = request.data.get("team_id", None)
         delete = request.data.get("delete", None)
-        print("TEAM_ID", team_id)
+
         team = get_object_or_404(Team, id=team_id)
         aire = get_object_or_404(AS, id=pk)
         if delete:

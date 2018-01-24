@@ -28,11 +28,12 @@ class CoordinationViewSet(viewsets.ViewSet):
         Assignation.objects.filter(team__coordination=coordination, planning=planning).delete()
 
         for obj in request.data['assignations']:
-            Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
-            assignation = Assignation()
-            assignation.planning = planning
-            assignation.village_id = obj['village_id']
-            assignation.team_id = obj['team_id']
-            assignation.save()
+            if obj['team_id']!= -1:
+                Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
+                assignation = Assignation()
+                assignation.planning = planning
+                assignation.village_id = obj['village_id']
+                assignation.team_id = obj['team_id']
+                assignation.save()
 
         return Response(coordination.as_dict())

@@ -18,14 +18,16 @@ class AlgoViewSet(viewsets.ViewSet):
         village_ids = request.GET.get('village_id', None).split(',')
         coordination_id = request.GET.get('coordination_id', None)
         years = request.GET.get('years', None).split(',')
-        assignations, not_assigned = assign(village_ids, coordination_id, years)
-        res = []
-
-        for team_id in assignations.keys():
-            temp_assignation = assignations[team_id]
+        assigned, not_assigned = assign(village_ids, coordination_id, years)
+        assignations = []
+        unassigned = []
+        for team_id in assigned.keys():
+            temp_assignation = assigned[team_id]
             for village in temp_assignation.villages:
-                res.append({'team_id': team_id, 'village_id': village.id})
+                assignations.append({'team_id': team_id, 'village_id': village.id})
+        for village in not_assigned:
+            assignations.append({'village_id': village.id, 'team_id': -1})
 
-        return Response(res)
+        return Response({'assignations': assignations})
 
 

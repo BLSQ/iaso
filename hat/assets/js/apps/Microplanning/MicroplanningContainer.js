@@ -158,7 +158,7 @@ export class MicroplanningContainer extends Component {
       .get(`/api/assignations/`)
       .query(params)
       .then((result) => {
-        dispatch(selectionActions.selectItems(result.body));
+        dispatch(selectionActions.selectItems(result.body, false));
       })
       .catch((err) => {
         console.error(err);

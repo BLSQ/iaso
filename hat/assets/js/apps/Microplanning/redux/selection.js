@@ -14,6 +14,7 @@ export const DESELECT_ITEMS = 'hat/microplanning/selection/DESELECT_ITEMS'
 
 export const DISPLAY_ITEM = 'hat/microplanning/selection/DISPLAY_ITEM'
 
+
 export const selectionModes = {
   none: 0,
   select: 1,
@@ -44,7 +45,6 @@ const calculateAssignations = (mode, patchAssignations, existingAssignations) =>
     }
     break;
     case selectionModes.deselect: {
-
       // no suggested means remove ALL
       if (patchAssignations.length === 0) {
         return []
@@ -83,14 +83,16 @@ export const executeSelection = (items) => ({
   payload: items
 })
 
-export const selectItems = (items) => ({
+export const selectItems = (items, activateSaveButton = true) => ({
   type: SELECT_ITEMS,
-  payload: items
+  payload: items,
+  activateSaveButton
 })
 
-export const deselectItems = (items) => ({
+export const deselectItems = (items, activateSaveButton = true) => ({
   type: DESELECT_ITEMS,
-  payload: items
+  payload: items,
+  activateSaveButton
 })
 
 export const displayItem = (item) => ({
@@ -160,6 +162,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
     case SELECT_ITEMS: {
       return {
         ...state,
+        isSelectionModified: action.activateSaveButton,
         assignations: calculateAssignations(
           selectionModes.select,
           action.payload || [],
@@ -172,7 +175,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
 
       let newState = {
         ...state,
-        isSelectionModified: true,
+        isSelectionModified: action.activateSaveButton,
         assignations: calculateAssignations(
           selectionModes.deselect,
           action.payload || [],

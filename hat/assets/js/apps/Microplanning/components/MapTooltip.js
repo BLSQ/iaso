@@ -19,6 +19,7 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
+import { saveVillageTeam } from '../../../utils/saveData';
 
 const request = require('superagent');
 import { capitalize } from '../../../utils'
@@ -219,6 +220,19 @@ class MapTooltip extends Component {
       });
   }
 
+  onChangeTeam(selectedTeamId) {
+    this.setState({ selectedTeamId });
+    saveVillageTeam(
+      [{ village_id: this.props.item.id, team_id: selectedTeamId }],
+      this.props.planningId)
+      .then(isSaved => {
+        if (isSaved) {
+          this.props.updateTeamOnVillage(this.props.item.id, selectedTeamId)
+        }else {
+          console.error('Error While saving a team for a village');
+        }
+      })
+  }
 
   render() {
     const { formatMessage } = this.props.intl;
@@ -237,9 +251,7 @@ class MapTooltip extends Component {
               <select
                 value={this.state.selectedTeamId || ''}
                 className="styled-select"
-                onChange={event => {
-                  this.setState({ selectedTeamId: event.currentTarget.value })
-                }}>
+                onChange={event => this.onChangeTeam(event.currentTarget.value)}>
                 <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
                 {
 
@@ -303,7 +315,10 @@ MapTooltip.propTypes = {
   item: PropTypes.object.isRequired,
   teams: PropTypes.array.isRequired,
   planningId: PropTypes.string,
-  assign: PropTypes.function
+  updateTeamOnVillage: PropTypes.func.isRequired
+
 }
 
 export default injectIntl(MapTooltip)
+
+

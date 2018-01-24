@@ -327,7 +327,7 @@ class Map extends Component {
         const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker)
         const teamId = this.props.teamId;
         const assignations = inBuffer.map(function(village) { return {village_id: village.id, team_id:teamId}})
-        console.log("assignations in buffer", assignations)
+        // console.log("assignations in buffer", assignations)
         if (inBuffer.length) {
           this.props.selectionAction(assignations)
         }
@@ -594,7 +594,12 @@ class Map extends Component {
           &nbsp;
           <i className='fa fa-close' />
         </div>
-        <MapTooltip item={item} teams={this.props.teams} planningId={this.props.planningId} />
+        <MapTooltip
+          item={item}
+          teams={this.props.teams}
+          planningId={this.props.planningId}
+          updateTeamOnVillage={(village_id, team_id) => this.props.selectItems([{village_id, team_id}], false)}
+        />
       </div>
     )
     ReactDOM.render(this.injectI18n(tootltip), tooltipLarge)
@@ -686,6 +691,7 @@ Map.propTypes = {
   bufferSize: PropTypes.number,
   highlightBufferSize: PropTypes.number,
   selectionAction: PropTypes.func,
+  selectItems: PropTypes.func,
   chosenItem: PropTypes.object,
   showItem: PropTypes.func,
   leafletMap: PropTypes.func,

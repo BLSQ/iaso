@@ -13,6 +13,19 @@ export function saveFullPlanning(villagesList, planning_id) {
         })
 }
 
+export function saveVillageTeam(village, planning_id) {
+    return request
+        .patch(`/api/plannings/${planning_id}/`)
+        .set('Content-Type', 'application/json')
+        .send(village)
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}
+
 export function saveTeamPlanning(villagesList, planning_id, team_id) {
     return request
         .put(`/api/teams/${team_id}/`)

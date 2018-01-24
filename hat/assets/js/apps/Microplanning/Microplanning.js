@@ -98,8 +98,7 @@ export class Microplanning extends Component {
     );
   }
 
-  saveTeam() {
-
+  saveTeam () {
     if (this.props.params.team_id) {
       let tempVillages = this.props.selection.assignations.filter(v => v.team_id == this.props.params.team_id)
       this.setState({ isSavingTeam: true })
@@ -188,7 +187,6 @@ export class Microplanning extends Component {
       }
       villages = Object.keys(villagesMap).map(key => villagesMap[key])
     }
-
     const teams = ((data && data.teams) || []);
     const coordinations = ((data && data.coordinations) || []);
     let plannings = ((data && data.plannings) || []);
@@ -385,8 +383,9 @@ export class Microplanning extends Component {
                 assignations={assignations}
                 selectedItems={selectedVillages}
                 bufferSize={bufferSize}
-                highlightBufferSize={highlightBufferSize}
+                highlightBufferSize={highlightBufferSize}deselectItems
                 selectionAction={list => this.props.executeSelectionAction(list)}
+                selectItems={(list, activateSaveButton) => this.props.selectItems(list, activateSaveButton)}
                 chosenItem={selection.displayedItem}
                 showItem={item => this.props.displayItem(item)}
                 leafletMap={map => this.props.setLeafletMap(map)}
@@ -472,8 +471,8 @@ const MapDispatchToProps = dispatch => ({
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
 
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
-  deselectItems: list => dispatch(selectionActions.deselectItems(list)),
-  selectItems: list => dispatch(selectionActions.selectItems(list)),
+  deselectItems: (list, activateSaveButton) => dispatch(selectionActions.deselectItems(list, activateSaveButton)),
+  selectItems: (list, activateSaveButton) => dispatch(selectionActions.selectItems(list, activateSaveButton)),
   displayItem: item => dispatch(selectionActions.displayItem(item)),
   toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
   changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
@@ -482,7 +481,7 @@ const MapDispatchToProps = dispatch => ({
   activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
   deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
   changeMode: mode => dispatch(selectionActions.changeMode(mode)),
-  redirect: params => dispatch(push(createUrl(params)))
+  redirect: params => dispatch(push(createUrl(params))),
 });
 
 const MapStateToProps = state => ({

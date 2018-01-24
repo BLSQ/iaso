@@ -93,7 +93,7 @@ class MapSelectionControl extends Component {
 }
 
 MapSelectionControl.propTypes = {
-  teamId: PropTypes.number,
+  teamId: PropTypes.string,
   coordinationId:  PropTypes.string,
   mode: PropTypes.number,
   changeMode: PropTypes.func,

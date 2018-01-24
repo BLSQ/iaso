@@ -67,7 +67,7 @@ export class Microplanning extends Component {
     const locations = ((data && data.locations) || []);
     // TODO : make this work again
     this.setState({
-      isSelectionModified: true ,
+      isSelectionModified: true,
       locations
     })
   }
@@ -99,11 +99,11 @@ export class Microplanning extends Component {
     );
   }
 
-  saveTeam () {
+  saveTeam() {
 
     if (this.props.params.team_id) {
       let tempVillages = this.props.selection.assignations.filter(v => v.team_id == this.props.params.team_id)
-      this.setState({isSavingTeam: true})
+      this.setState({ isSavingTeam: true })
       saveTeamPlanning(tempVillages, parseInt(this.props.params.planning_id), this.props.params.team_id).then(isSaved => {
         this.setState({
           isSavingTeam: false,
@@ -113,17 +113,17 @@ export class Microplanning extends Component {
       })
     }
     else {
-      this.setState({isSavingTeam: true})
+      this.setState({ isSavingTeam: true })
       saveCoordinationPlanning(
         this.props.selection.assignations,
         parseInt(this.props.params.planning_id),
-        this.props.params.coordination_id).then(isSaved =>{
-              this.setState({
-          isSavingTeam: false,
-          isSelectionModified: !isSaved,
-          errorOnSave: !isSaved
+        this.props.params.coordination_id).then(isSaved => {
+          this.setState({
+            isSavingTeam: false,
+            isSelectionModified: !isSaved,
+            errorOnSave: !isSaved
+          })
         })
-      })
     }
 
   }
@@ -183,10 +183,8 @@ export class Microplanning extends Component {
     const areas = ((data && data.areas) || []);
     let villages = [];
     let villagesMap = {};
-    if (data && data.villagesMap)
-    {
-      for (const villageId of Object.keys(data.villagesMap))
-      {
+    if (data && data.villagesMap) {
+      for (const villageId of Object.keys(data.villagesMap)) {
         villagesMap[villageId] = geoUtils.extendVillageInfo(data.villagesMap[villageId])
       }
       villages = Object.keys(villagesMap).map(key => villagesMap[key])
@@ -197,17 +195,15 @@ export class Microplanning extends Component {
     let plannings = ((data && data.plannings) || []);
     const assignations = (this.props.selection.assignations) || [];
     let teamsMap = {};
-    for (var i=0; i< teams.length; i++)
-    {
+    for (var i = 0; i < teams.length; i++) {
       let team = teams[i];
       teamsMap[team.id] = team.name;
     }
 
     let assignationsMap = {};
-    for (var i=0; i< assignations.length; i++)
-    {
-       let assignation = assignations[i];
-       assignationsMap[assignation.village_id] = assignation.team_id;
+    for (var i = 0; i < assignations.length; i++) {
+      let assignation = assignations[i];
+      assignationsMap[assignation.village_id] = assignation.team_id;
     }
 
     const { selection } = this.props;
@@ -222,11 +218,17 @@ export class Microplanning extends Component {
 
       let assignationsTempList = assignations;
 
-      if (this.props.params.team_id ) {
-        assignationsTempList = assignationsTempList.filter( x =>  x.team_id == this.props.params.team_id)
+      if (this.props.params.team_id) {
+        assignationsTempList = assignationsTempList.filter(x => x.team_id == this.props.params.team_id);
       }
 
-      selectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
+      let tempSelectedVillages = [];
+      assignationsTempList.map(assignation => {
+        if (assignation.village_id in villagesMap) {
+          tempSelectedVillages.push(villagesMap[assignation.village_id]);
+        }
+      });
+      selectedVillages = tempSelectedVillages;
 
     }
 
@@ -258,15 +260,15 @@ export class Microplanning extends Component {
       }
 
       request
-      .get(`/api/algo/`)
-      .query(algoParams)
-      .then(result => {
-        this.props.deselectItems()
-        this.props.selectItems(result.body)
-      }).catch((err) => {
-        console.error('Error when calling algo');
-      });
-      
+        .get(`/api/algo/`)
+        .query(algoParams)
+        .then(result => {
+          this.props.deselectItems()
+          this.props.selectItems(result.body)
+        }).catch((err) => {
+          console.error('Error when calling algo');
+        });
+
     }
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>

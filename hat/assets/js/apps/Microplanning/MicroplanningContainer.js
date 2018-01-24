@@ -124,7 +124,9 @@ export class MicroplanningContainer extends Component {
   }
 
   componentWillReceiveProps(newProps) {
-    if (newProps.params.coordination_id && !newProps.params.zs_id) {
+    if (newProps.params.coordination_id &&
+        !newProps.params.zs_id &&
+        newProps.params.coordination_id !== this.props.params.coordination_id) {
       this.updateUrlForCoordination(newProps.params);
     } else {
       this.loadFullData(newProps.params);

@@ -24,7 +24,6 @@ export const selectionModes = {
 const validSelectionModes = Object.keys(selectionModes).map((key) => selectionModes[key])
 
 const calculateAssignations = (mode, patchAssignations, existingAssignations) => {
-
   switch (mode) {
     case selectionModes.select: {
       let result = patchAssignations;
@@ -150,6 +149,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
     case SELECTION_EXECUTE: {
       return {
         ...state,
+        isSelectionModified: true,
         assignations: calculateAssignations(
           state.mode,
           action.payload || [],
@@ -172,6 +172,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
 
       let newState = {
         ...state,
+        isSelectionModified: true,
         assignations: calculateAssignations(
           selectionModes.deselect,
           action.payload || [],

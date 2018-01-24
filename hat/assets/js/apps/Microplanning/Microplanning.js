@@ -65,9 +65,8 @@ export class Microplanning extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
-    // TODO : make this work again
     this.setState({
-      isSelectionModified: true,
+      isSelectionModified: nextProps.selection.isSelectionModified || false,
       locations
     })
   }

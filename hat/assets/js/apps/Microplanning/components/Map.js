@@ -130,7 +130,7 @@ class Map extends Component {
 
 
       // only call if legend or items changed
-      if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems')) {
+      if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems') || (prevProps.showGeoScope != this.props.showGeoScope)) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
@@ -418,7 +418,7 @@ class Map extends Component {
             .forEach((item) => {
               const team_id = assignationsMap["" + item.id]
               var className
-              if (this.props.geoScope) {
+              if (this.props.showGeoScope) {
                 className = 'map-marker'
                 if (this.props.geoScope['' + item.AS_id]) {
                   className += ' geoScope'
@@ -438,7 +438,7 @@ class Map extends Component {
                   }
                 }
               }
-              
+
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -480,7 +480,7 @@ class Map extends Component {
     const {selectedGroup} = this.state.layers
 
     selectedGroup.clearLayers()
-    if (!this.props.geoScope) {
+    if (!this.props.showGeoScope) {
       selectedItems.forEach((item) => {
         const options = {
           className: 'map-marker selected',
@@ -707,7 +707,8 @@ Map.propTypes = {
   assignationsMap: PropTypes.object,
   teamId: PropTypes.string,
   planningId: PropTypes.string,
-  geoScope: PropTypes.object
+  geoScope: PropTypes.object,
+  showGeoScope: PropTypes.bool
 }
 
 export default injectIntl(Map)

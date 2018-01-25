@@ -52,7 +52,6 @@ const MESSAGES = defineMessages({
 class MapLayers extends Component {
   render () {
     const {base, overlays, change} = this.props
-
     return (
       <div className='map__option'>
         <span className='map__option__header'>
@@ -71,7 +70,7 @@ class MapLayers extends Component {
         </ul>
 
         <span className='map__option__header'>
-          <FormattedMessage id='microplanning.label.overlays' defaultMessage='Map overlays' />
+          <FormattedMessage id='microplanning.label.overlays' defaultMessage='Options cartes' />
         </span>
         <ul key='overlays' className='map__option__list'>
           { Object.keys(overlays).map((key) => (
@@ -83,6 +82,12 @@ class MapLayers extends Component {
               <FormattedMessage {...MESSAGES[key]} />
             </li>
           )) }
+          <li
+              className={'interactive map__option__list__item' + (this.props.showGeoScope ? ' active' : '')}
+              onClick={() => this.props.toggleGeoScope(!this.props.showGeoScope)}>
+              <i className={'map__option__icon square' + (this.props.showGeoScope ? ' active' : '')} />
+              <span>Montrer la couverture géographique</span>
+            </li>
         </ul>
       </div>
     )
@@ -92,7 +97,10 @@ class MapLayers extends Component {
 MapLayers.propTypes = {
   base: PropTypes.string,
   overlays: PropTypes.object,
-  change: PropTypes.func
+  change: PropTypes.func,
+  toggleGeoScope: PropTypes.func,
+  showGeoScope: PropTypes.bool
+
 }
 
 export default injectIntl(MapLayers)

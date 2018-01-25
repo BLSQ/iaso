@@ -363,7 +363,9 @@ export class Microplanning extends Component {
               <MapLayers
                 base={baseLayer}
                 overlays={overlays}
+                toggleGeoScope={toggle => this.props.toggleGeoScope(toggle)}
                 change={(type, key) => this.props.changeLayer(type, key)}
+                showGeoScope = {this.props.selection.showGeoScope}
               />
             </div>
           </div>
@@ -376,7 +378,6 @@ export class Microplanning extends Component {
                 planningId={this.props.params.planning_id}
                 baseLayer={baseLayer}
                 overlays={overlays}
-                geoScope={this.props.selection.geoScope}
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}
@@ -389,6 +390,8 @@ export class Microplanning extends Component {
                 chosenItem={selection.displayedItem}
                 showItem={item => this.props.displayItem(item)}
                 leafletMap={map => this.props.setLeafletMap(map)}
+                geoScope={this.props.selection.geoScope}
+                showGeoScope={this.props.selection.showGeoScope}
               />
             </div>
 
@@ -469,7 +472,7 @@ const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
-
+  toggleGeoScope: toggle => dispatch(selectionActions.toggleGeoScope(toggle)),
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
   deselectItems: (list, activateSaveButton) => dispatch(selectionActions.deselectItems(list, activateSaveButton)),
   selectItems: (list, activateSaveButton) => dispatch(selectionActions.selectItems(list, activateSaveButton)),

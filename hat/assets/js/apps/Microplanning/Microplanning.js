@@ -376,6 +376,7 @@ export class Microplanning extends Component {
                 planningId={this.props.params.planning_id}
                 baseLayer={baseLayer}
                 overlays={overlays}
+                geoScope={this.props.selection.geoScope}
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}

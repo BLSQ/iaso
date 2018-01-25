@@ -152,7 +152,7 @@ export class MicroplanningContainer extends Component {
       });
   }
 
-  getAssignations(params) {
+  getAdditionalSelectData(params) {
     const { dispatch } = this.props;
     request
       .get(`/api/assignations/`)
@@ -164,6 +164,19 @@ export class MicroplanningContainer extends Component {
         console.error(err);
         console.error('Error when fetching assignations details');
       });
+      if (params.team_id)
+      {
+        request
+          .get(`/api/teams/${params.team_id}`)
+          .query(params)
+          .then((result) => {
+            dispatch(selectionActions.updateGeoScope(result.body.AS));
+          })
+          .catch((err) => {
+            console.error(err);
+            console.error('Error when fetching geo scope');
+          });
+      }
   }
 
   loadFullData(params) {
@@ -171,7 +184,7 @@ export class MicroplanningContainer extends Component {
     const oldParams = clone(this.currentParams);
     this.currentParams = clone(params);
     fetchUrls(urls, params, oldParams, dispatch).then(() => {
-      this.getAssignations(params);
+      this.getAdditionalSelectData(params);
     });
   }
 

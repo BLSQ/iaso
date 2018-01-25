@@ -431,6 +431,10 @@ class Map extends Component {
                 }
               }
 
+              if (this.props.geoScope[""+ item.AS_id])
+              {
+                className += " geoScope"
+              }
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -696,7 +700,8 @@ Map.propTypes = {
   teams: PropTypes.arrayOf(PropTypes.object),
   assignationsMap: PropTypes.object,
   teamId: PropTypes.string,
-  planningId: PropTypes.string
+  planningId: PropTypes.string,
+  geoScope: PropTypes.object
 }
 
 export default injectIntl(Map)

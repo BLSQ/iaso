@@ -38,7 +38,7 @@ class MapSelectionControl extends Component {
             className='map__control__button--highlight'
             onClick={() => selectHighlightBuffer()}>
               <span className='map__text--select'>
-                <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Assigner villages'/>
+                <FormattedMessage id='microplanning.selection.active.assign' defaultMessage='Assigner villages'/>
                 &nbsp;
                 <FormattedMessage id='microplanning.selection.buffer.highlight.label'
                                   defaultMessage='autour des cas confirmés'/>

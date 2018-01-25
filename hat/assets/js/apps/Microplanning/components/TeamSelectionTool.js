@@ -65,7 +65,7 @@ class TeamSelectionTool extends Component {
                 </div>
                 <div className="widget__content--tier">
                     <div>
-                        <FormattedMessage id='microplanning.label.team' defaultMessage='Coordination: ' />
+                        <FormattedMessage id='microplanning.label.coordination' defaultMessage='Coordination: ' />
                         <Select
                             simpleValue
                             name='coordination_id'

@@ -454,6 +454,11 @@ path.map-marker {
   &.geoScope {
     @include marker(orange);
   }
+
+  &.outOfScope {
+    @include marker(black);
+  }
+
   &.selected {
     @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
   }

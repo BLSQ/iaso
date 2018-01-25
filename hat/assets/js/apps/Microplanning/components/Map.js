@@ -417,24 +417,28 @@ class Map extends Component {
           items
             .forEach((item) => {
               const team_id = assignationsMap["" + item.id]
-
-              var className =  String.raw`map-marker ${item._class}`
-              if (team_id)
-              {
-                if (team_id == this.props.teamId )
-                {
-                  className += " assignedToCurrentTeam"
+              var className
+              if (this.props.geoScope) {
+                className = 'map-marker'
+                if (this.props.geoScope['' + item.AS_id]) {
+                  className += ' geoScope'
                 }
-                else
-                {
-                  className += " assignedToOtherTeam"
+                else {
+                  className += ' outOfScope'
                 }
               }
-
-              if (this.props.geoScope[""+ item.AS_id])
-              {
-                className += " geoScope"
+              else {
+                className = String.raw`map-marker ${item._class}`
+                if (team_id && !this.props.geoScope) {
+                  if (team_id == this.props.teamId) {
+                    className += ' assignedToCurrentTeam'
+                  }
+                  else {
+                    className += ' assignedToOtherTeam'
+                  }
+                }
               }
+              
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
@@ -471,22 +475,24 @@ class Map extends Component {
     })
   }
 
-  updateSelectedItems() {
-    const { selectedItems } = this.props
-    const { selectedGroup } = this.state.layers
+  updateSelectedItems () {
+    const {selectedItems} = this.props
+    const {selectedGroup} = this.state.layers
 
     selectedGroup.clearLayers()
-    selectedItems.forEach((item) => {
-      const options = {
-        className: 'map-marker selected',
-        pane: 'custom-pane-selected',
-        radius: radius
-      }
+    if (!this.props.geoScope) {
+      selectedItems.forEach((item) => {
+        const options = {
+          className: 'map-marker selected',
+          pane: 'custom-pane-selected',
+          radius: radius
+        }
 
-      const marker = L.circle(item._latlon, options)
-      this.addLayerEvents(marker, { ...item, selected: true })
-      selectedGroup.addLayer(marker)
-    })
+        const marker = L.circle(item._latlon, options)
+        this.addLayerEvents(marker, {...item, selected: true})
+        selectedGroup.addLayer(marker)
+      })
+    }
   }
 
   updateMouseBuffer() {

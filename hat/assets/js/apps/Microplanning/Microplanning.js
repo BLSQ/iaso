@@ -200,9 +200,9 @@ export class Microplanning extends Component {
     let assignationsMap = {};
     for (var i = 0; i < assignations.length; i++) {
       let assignation = assignations[i];
-      assignationsMap[assignation.village_id] = assignation.team_id;
+      if (assignation.team_id != -1)
+        assignationsMap[assignation.village_id] = assignation.team_id;
     }
-
     const { selection } = this.props;
 
     let selectedVillages = [];
@@ -219,7 +219,6 @@ export class Microplanning extends Component {
       if (this.props.params.team_id) {
         assignationsTempList = assignationsTempList.filter(x => x.team_id == this.props.params.team_id);
       }
-
 
       selectedVillages = assignationsTempList.filter(assignation => (assignation.team_id != -1 && assignation.village_id in villagesMap)).map(assignation => villagesMap[assignation.village_id])
       selectedAndUnselectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
@@ -380,7 +379,7 @@ export class Microplanning extends Component {
                 legend={legend}
                 fullscreen={fullscreen}
                 items={villages}
-                assignations={assignations}
+                assignationsMap={assignationsMap}
                 selectedItems={selectedVillages}
                 bufferSize={bufferSize}
                 highlightBufferSize={highlightBufferSize}deselectItems

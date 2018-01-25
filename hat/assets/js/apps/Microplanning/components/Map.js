@@ -130,7 +130,7 @@ class Map extends Component {
 
 
       // only call if legend or items changed
-     if (!containSameItems(prevProps, this.props, 'items')) {
+      if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems')) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
@@ -327,7 +327,7 @@ class Map extends Component {
         const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker)
         const teamId = this.props.teamId;
         const assignations = inBuffer.map(function(village) { return {village_id: village.id, team_id:teamId}})
-        // console.log("assignations in buffer", assignations)
+
         if (inBuffer.length) {
           this.props.selectionAction(assignations)
         }
@@ -396,11 +396,8 @@ class Map extends Component {
       const shadows = shadowsGroups[key]
       const labels = labelsGroups[key]
 
-      let assignationMap = {}
-      this.props.assignations.map(assignation =>
-      {
-        assignationMap[assignation.village_id] = assignation.team_id
-      });
+      let assignationsMap = this.props.assignationsMap;
+
 
       if (force) {
         markers.clearLayers()
@@ -418,9 +415,9 @@ class Map extends Component {
         // check if the layer has markers
         if (markers.getLayers().length === 0) {
           items
-            .filter((item) => item.village_official === key)
             .forEach((item) => {
-              const team_id = assignationMap[item.id]
+              const team_id = assignationsMap["" + item.id]
+
               var className =  String.raw`map-marker ${item._class}`
               if (team_id)
               {
@@ -697,7 +694,7 @@ Map.propTypes = {
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
   teams: PropTypes.arrayOf(PropTypes.object),
-  assignations: PropTypes.arrayOf(PropTypes.object),
+  assignationsMap: PropTypes.object,
   teamId: PropTypes.string,
   planningId: PropTypes.string
 }

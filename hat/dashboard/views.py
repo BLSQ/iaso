@@ -4,10 +4,11 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 from django.http.request import HttpRequest
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
-from hat.planning.models import Planning
+from hat.planning.models import Planning, Assignation
 from hat.users.models import Team, Coordination
-
+import csv
 import json
 
 from hat.cases.models import CaseView
@@ -81,6 +82,43 @@ def planning(request: HttpRequest, planning_id) -> HttpResponse:
 @require_http_methods(['GET'])
 def coordination(request: HttpRequest, coordination_id) -> HttpResponse:
     return render(request, 'dashboard/microplanning.html')
+
+
+@login_required()
+@require_http_methods(['GET'])
+def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="planning.csv"'
+
+    writer = csv.writer(response)
+    planning = get_object_or_404(Planning, pk=planning_id)
+
+    assignations = Assignation.objects.filter(planning=planning).order_by('team__name')
+    writer.writerow(['Equipe', 'Coordination', 'Capacité', 'UM', 'Village', 'Latitude',
+                     'Longitude', 'Population', 'AS', 'ZS', 'Province'])
+    for assignation in assignations:
+
+        team = assignation.team
+        village = assignation.village
+        if team.UM:
+            type = "UM"
+        else:
+            type = "MUM"
+        writer.writerow([team.name,
+                         team.coordination.name,
+                         team.capacity,
+                         type,
+                         village.name,
+                         village.latitude,
+                         village.longitude,
+                         village.population,
+                         village.AS.name,
+                         village.AS.ZS.name,
+                         village.AS.ZS.province.name
+                         ])
+
+    return response
 
 
 

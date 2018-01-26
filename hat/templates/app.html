@@ -111,7 +111,7 @@
                     </li>
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
-                            <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
+                            <a href="/dashboard/microplanning/charts/years/2017,2016,2015,2014,2013/planning_id/2">{% trans 'Microplanning' %}</a>
                         </li>
                     {% endif %}
                 </ul>

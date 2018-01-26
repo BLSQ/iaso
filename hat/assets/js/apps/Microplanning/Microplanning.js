@@ -458,7 +458,14 @@ export class Microplanning extends Component {
                         <FormattedMessage id='microplanning.label.print' defaultMessage='Print map' />
                       </button>
                     </div>
+                    <div>
+                      <button className='button--print' onClick={() => window.open('/dashboard/csvexport/'+this.props.params.planning_id+"/","_self")}>
+                        <i className='fa fa-file-excel-o' />
+                        <FormattedMessage id='microplanning.label.csv' defaultMessage='Télécharger en Excel' />
+                      </button>
+                    </div>
                   </div>
+
                 </div>
               </div>
             }

@@ -46,7 +46,7 @@ const MESSAGES = defineMessages({
     id: 'microplanning.labels.years.select'
   },
   'loading': {
-    defaultMessage: 'Loading villages',
+    defaultMessage: 'Chargement en cours',
     id: 'microplanning.labels.loading'
   }
 })
@@ -274,17 +274,7 @@ export class Microplanning extends Component {
         'coordination_id': this.props.params.coordination_id,
         'years': this.props.params.years
       }
-
-      request
-        .get(`/api/algo/`)
-        .query(algoParams)
-        .then(result => {
-          this.props.deselectItems()
-          this.props.selectItems(result.body.assignations)
-        }).catch((err) => {
-          console.error('Error when calling algo');
-        });
-
+      this.props.launchAlgo(algoParams);
     }
     return (
       <div onKeyDown={event => this.onKeyDownHandler(event)}>
@@ -496,7 +486,8 @@ Microplanning.propTypes = {
   activateFullscreen: PropTypes.func.isRequired,
   deactivateFullscreen: PropTypes.func.isRequired,
   changeMode: PropTypes.func.isRequired,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  launchAlgo: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);

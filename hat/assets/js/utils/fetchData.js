@@ -1,9 +1,12 @@
 import request from './request'
 import { deepEqual } from './index'
-import { LOAD, LOAD_SUCCESS, LOAD_ERROR } from '../redux/load'
+import { LOAD, LOAD_SUCCESS, LOAD_SUCCESS_NO_DATA, LOAD_ERROR } from '../redux/load'
 import { push } from 'react-router-redux'
 
-export function createUrl (params) {
+
+const req = require('superagent');
+
+export function createUrl(params) {
   // Create a url from an params object
   // e.g.: `{foo: 11, bar: 22} => '/foo/11/bar/22'`
   let url = '/charts'
@@ -16,11 +19,11 @@ export function createUrl (params) {
   return url
 }
 
-export function checkLocation (params, results, dispatch) {
+export function checkLocation(params, results, dispatch) {
   // Check if we have data for the selected location,
   // if not, redirect
   const selectedLocation = params.location &&
-        decodeURIComponent(params.location)
+    decodeURIComponent(params.location)
   const validLocation = results.locations.some((location) => {
     return location === selectedLocation
   })
@@ -32,7 +35,7 @@ export function checkLocation (params, results, dispatch) {
   return true
 }
 
-export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
+export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
   if (deepEqual(oldParams, params, true)) {
     return
   }
@@ -41,7 +44,7 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
   })
 
   const promises = urls.map((config) => {
-    const ps = {...config.defaultParams, ...params};
+    const ps = { ...config.defaultParams, ...params };
     let url = config.url;
     if (typeof config.id !== 'undefined' && ps[config.id]) {
       url = `${config.url}${ps[config.id]}`;
@@ -79,28 +82,22 @@ export function fetchUrls (urls, params, oldParams, dispatch, checkResults) {
 }
 
 
-export function fetchUrl (urls, params) {
-  const promises = urls.map((config) => {
-    const ps = {...config.defaultParams, ...params};
-    let url = config.url;
-    if (typeof config.id !== 'undefined' && ps[config.id]) {
-      url = `${config.url}${ps[config.id]}`;
-    }
-    return request([
-      ['get', url],
-      ['set', 'accept', 'application/json'],
-      ['query', ps]
-    ])
+export function launchAlgo(algoParams, dispatch) {
+  dispatch({
+    type: LOAD
   })
-  return Promise.all(promises)
-    .then((results) => {
-      const payloads = results.reduce((payload, result, i) => {
-        payload[urls[i].name] = result
-        return payload
-      }, {})
-      return payloads;
-    })
-    .catch((err) => {
-      return false
-    })
+  return req
+    .get(`/api/algo/`)
+    .query(algoParams)
+    .then(result => {
+      dispatch({
+        type: LOAD_SUCCESS_NO_DATA
+      })
+      return result.body;
+    }).catch((err) => {
+      dispatch({
+        type: LOAD_ERROR,
+        payload: err
+      })
+    });
 }

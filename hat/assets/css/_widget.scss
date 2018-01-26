@@ -122,6 +122,11 @@
     }
 }
 
+.menu-close {
+    .widget__spinner--text, .widget__spinner--icon {
+        margin-left: 0;
+    }
+}
 .data--sources {
     color: $text-color;
     font-size: $font-size-xs;

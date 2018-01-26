@@ -13,7 +13,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { clone } from '../../utils';
-import { fetchUrls, fetchUrl } from '../../utils/fetchData';
+import { fetchUrls, launchAlgo } from '../../utils/fetchData';
 import { push } from 'react-router-redux';
 import { createUrl } from '../../utils/fetchData';
 import Microplanning from './Microplanning';
@@ -189,9 +189,18 @@ export class MicroplanningContainer extends Component {
     });
   }
 
+  launchAlgo(algoParams) {
+    const { dispatch } = this.props;
+    launchAlgo(algoParams, dispatch)
+      .then(result => {
+        dispatch(selectionActions.deselectItems());
+        dispatch(selectionActions.selectItems(result.assignations));
+      })
+  }
+
   render() {
     return (
-      <Microplanning params={this.props.params} />
+      <Microplanning params={this.props.params} launchAlgo={algoParams => this.launchAlgo(algoParams)} />
     )
   }
 }

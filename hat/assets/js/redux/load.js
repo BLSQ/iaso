@@ -1,5 +1,6 @@
 export const LOAD = 'hat/data/LOAD'
 export const LOAD_SUCCESS = 'hat/data/LOAD_SUCCESS'
+export const LOAD_SUCCESS_NO_DATA = 'hat/data/LOAD_SUCCESS_NO_DATA'
 export const LOAD_ERROR = 'hat/data/LOAD_ERROR'
 
 export const loadReducer = function (state = {}, action = {}) {
@@ -15,6 +16,13 @@ export const loadReducer = function (state = {}, action = {}) {
         loading: false,
         data: action.payload
       }
+
+    case LOAD_SUCCESS_NO_DATA:
+      return {
+        ...state,
+        loading: false
+      }
+
     case LOAD_ERROR:
       return {
         ...state,

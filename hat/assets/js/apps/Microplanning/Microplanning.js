@@ -66,8 +66,13 @@ export class Microplanning extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
+    // Remove geoscope from map if we remove a team
     if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
       this.props.toggleGeoScope();
+    }
+    // if we add a team, reset highlight buffer size
+    if (nextProps.params.team_id && !this.props.params.team_id) {
+      this.props.changeHighlightBufferSize(0);
     }
     this.setState({
       isSelectionModified: nextProps.selection.isSelectionModified || false,
@@ -419,7 +424,7 @@ export class Microplanning extends Component {
                       bufferSize={selection.bufferSize}
                       changeBufferSize={event => this.props.changeBufferSize(event)}
                       highlightBufferSize={selection.highlightBufferSize}
-                      changeHighlightBufferSize={event => this.props.changeHighlightBufferSize(event)}
+                      changeHighlightBufferSize={event => this.props.changeHighlightBufferSize(event.target.value)}
                       selectHighlightBuffer={selectHighlightBuffer}
                     />
 
@@ -478,7 +483,7 @@ Microplanning.propTypes = {
 const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
-  changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
+  changeHighlightBufferSize: value => dispatch(selectionActions.changeHighlightBufferSize(value)),
   toggleGeoScope: toggle => dispatch(selectionActions.toggleGeoScope(toggle)),
   updateGeoScope: geoScope => dispatch(selectionActions.updateGeoScope(geoScope)),
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),

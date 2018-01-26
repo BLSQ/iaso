@@ -622,10 +622,17 @@ li.map__selection__list__item {
   font-size: $font-size-xs;
 }
 
-.button--save {
+.button--save, .button--edit {
   margin-bottom: 4px;
   width: ($map-sidebar-width - 50);
   font-size: $font-size-xs;
+  &.small {
+    width: auto;
+    display: inline-block;
+    margin-left: 10px;
+    padding-left: 10px;
+    padding-right: 4px;
+  }
   &:disabled{
     background-color: #007fff !important;
     cursor: default;

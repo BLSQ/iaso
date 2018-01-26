@@ -209,16 +209,13 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
     }
 
     case UPDATE_GEO_SCOPE: {
-      let AS = action.payload
-      let geoScope = {}
-      AS.map(aire => {geoScope[aire.id] = aire })
       let newState = {
         ...state,
-        geoScope: geoScope
+        geoScope: action.payload
       }
-      console.log(newState)
       return newState
     }
+
     case DISPLAY_ITEM: {
       return {...state, displayedItem: action.payload}
     }

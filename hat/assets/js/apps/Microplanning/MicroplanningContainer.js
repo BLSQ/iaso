@@ -125,8 +125,8 @@ export class MicroplanningContainer extends Component {
 
   componentWillReceiveProps(newProps) {
     if (newProps.params.coordination_id &&
-        !newProps.params.zs_id &&
-        newProps.params.coordination_id !== this.props.params.coordination_id) {
+      !newProps.params.zs_id &&
+      newProps.params.coordination_id !== this.props.params.coordination_id) {
       this.updateUrlForCoordination(newProps.params);
     } else {
       this.loadFullData(newProps.params);
@@ -164,19 +164,20 @@ export class MicroplanningContainer extends Component {
         console.error(err);
         console.error('Error when fetching assignations details');
       });
-      if (params.team_id)
-      {
-        request
-          .get(`/api/teams/${params.team_id}`)
-          .query(params)
-          .then((result) => {
-            dispatch(selectionActions.updateGeoScope(result.body.AS));
-          })
-          .catch((err) => {
-            console.error(err);
-            console.error('Error when fetching geo scope');
-          });
-      }
+    if (params.team_id) {
+      request
+        .get(`/api/teams/${params.team_id}`)
+        .query(params)
+        .then((result) => {
+          let geoScope = {}
+          result.body.AS.map(aire => { geoScope[aire.id] = aire })
+          dispatch(selectionActions.updateGeoScope(geoScope));
+        })
+        .catch((err) => {
+          console.error(err);
+          console.error('Error when fetching geo scope');
+        });
+    }
   }
 
   loadFullData(params) {

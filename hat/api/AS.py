@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import AS
 from hat.users.models import Team
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
 
 class ASViewSet(viewsets.ViewSet):
     """
@@ -17,6 +19,8 @@ class ASViewSet(viewsets.ViewSet):
 
 
     """
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         queryset = AS.objects.all()

@@ -16,6 +16,7 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
+import ReactModal from 'react-modal';
 
 const request = require('superagent');
 
@@ -165,6 +166,7 @@ export class Microplanning extends Component {
       }
     }
   }
+
 
   render() {
     const { formatMessage } = this.props.intl;
@@ -366,6 +368,7 @@ export class Microplanning extends Component {
                 toggleGeoScope={toggle => this.props.toggleGeoScope(toggle)}
                 change={(type, key) => this.props.changeLayer(type, key)}
                 showGeoScope = {this.props.selection.showGeoScope}
+                teamId={this.props.params.team_id}
               />
             </div>
           </div>
@@ -392,6 +395,7 @@ export class Microplanning extends Component {
                 leafletMap={map => this.props.setLeafletMap(map)}
                 geoScope={this.props.selection.geoScope}
                 showGeoScope={this.props.selection.showGeoScope}
+                updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
               />
             </div>
 
@@ -473,6 +477,7 @@ const MapDispatchToProps = dispatch => ({
   changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
   changeHighlightBufferSize: event => dispatch(selectionActions.changeHighlightBufferSize(event.target.value)),
   toggleGeoScope: toggle => dispatch(selectionActions.toggleGeoScope(toggle)),
+  updateGeoScope: geoScope => dispatch(selectionActions.updateGeoScope(geoScope)),
   executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
   deselectItems: (list, activateSaveButton) => dispatch(selectionActions.deselectItems(list, activateSaveButton)),
   selectItems: (list, activateSaveButton) => dispatch(selectionActions.selectItems(list, activateSaveButton)),

@@ -71,7 +71,7 @@ class MapSelectionControl extends Component {
           onClick={() => changeMode(selectionModes.select)}>
           <i className='map__icon--select'/>
           <span className='map__text--select'>
-            <FormattedMessage id='microplanning.selection.active.select' defaultMessage='Select. villages'/>
+            <FormattedMessage id='microplanning.selection.active.selection' defaultMessage='Select. villages'/>
           </span>
         </div>
         }

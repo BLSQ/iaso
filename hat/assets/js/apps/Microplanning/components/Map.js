@@ -130,7 +130,11 @@ class Map extends Component {
 
 
       // only call if legend or items changed
-      if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems') || (prevProps.showGeoScope != this.props.showGeoScope)) {
+      if (!containSameItems(prevProps, this.props, 'items') ||
+          !containSameItems(prevProps, this.props, 'selectedItems') ||
+          prevProps.showGeoScope != this.props.showGeoScope || 
+          prevProps.geoScope != this.props.geoScope
+        ) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
@@ -416,8 +420,8 @@ class Map extends Component {
         if (markers.getLayers().length === 0) {
           items
             .forEach((item) => {
-              const team_id = assignationsMap["" + item.id]
-              var className
+              const team_id = assignationsMap['' + item.id];
+              let className;
               if (this.props.showGeoScope) {
                 className = 'map-marker'
                 if (this.props.geoScope['' + item.AS_id]) {
@@ -429,7 +433,7 @@ class Map extends Component {
               }
               else {
                 className = String.raw`map-marker ${item._class}`
-                if (team_id && !this.props.geoScope) {
+                if (team_id) {
                   if (team_id == this.props.teamId) {
                     className += ' assignedToCurrentTeam'
                   }
@@ -603,9 +607,13 @@ class Map extends Component {
         </div>
         <MapTooltip
           item={item}
+          geoScope={this.props.geoScope}
+          teamId={this.props.teamId}
           teams={this.props.teams}
+          areas={this.props.areas}
           planningId={this.props.planningId}
           updateTeamOnVillage={(village_id, team_id) => this.props.selectItems([{village_id, team_id}], false)}
+          updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
         />
       </div>
     )
@@ -699,15 +707,15 @@ Map.propTypes = {
   highlightBufferSize: PropTypes.number,
   selectionAction: PropTypes.func,
   selectItems: PropTypes.func,
+  updateGeoScope: PropTypes.func,
   chosenItem: PropTypes.object,
   showItem: PropTypes.func,
   leafletMap: PropTypes.func,
   intl: intlShape.isRequired,
+  geoScope: PropTypes.object,
   teams: PropTypes.arrayOf(PropTypes.object),
   assignationsMap: PropTypes.object,
   teamId: PropTypes.string,
-  planningId: PropTypes.string,
-  geoScope: PropTypes.object,
   showGeoScope: PropTypes.bool
 }
 

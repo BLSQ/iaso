@@ -19,7 +19,8 @@ import {
   defineMessages,
   injectIntl
 } from 'react-intl'
-import { saveVillageTeam } from '../../../utils/saveData';
+import { saveVillageTeam, saveAreaInGeoloc } from '../../../utils/saveData';
+import { clone } from '../../../utils';
 
 const request = require('superagent');
 import { capitalize } from '../../../utils'
@@ -123,8 +124,16 @@ const MESSAGES = defineMessages({
     id: 'microplanning.label.team.all'
   },
   team_select: {
-    defaultMessage: 'Team',
-    id: 'microplanning.label.team.select'
+    defaultMessage: 'Unité',
+    id: 'microplanning.label.team'
+  },
+  add_as: {
+    defaultMessage: 'Ajouter l\'aire de santé à l\'équipe' ,
+    id: 'microplanning.label.add_as'
+  },
+  remove_as: {
+    defaultMessage: 'Supprimer l\'aire de santé de l\'équipe' ,
+    id: 'microplanning.label.remove_as'
   },
 
   // type values
@@ -148,8 +157,8 @@ const MESSAGES = defineMessages({
 
 const ROWS = [
   { key: 'name' },
-  { key: 'as' },
   { key: 'zs' },
+  { key: 'as' },
   { key: 'province' },
   { key: 'former_province' },
   { key: 'villagesOfficial', type: 'integer' },
@@ -169,14 +178,14 @@ const ROWS = [
 
 class MapTooltip extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       item: props.item,
       teams: props.teams,
+      areas: props.areas,
       isloading: true,
       isVillage: false
     }
-
   }
 
   componentDidMount() {
@@ -190,7 +199,7 @@ class MapTooltip extends Component {
 
   componentWillReceiveProps(newProps) {
     this.setState({
-      item: newProps.item
+      item: newProps.item,
     })
   }
 
@@ -212,8 +221,11 @@ class MapTooltip extends Component {
       .query({ planning_id: this.props.planningId })
       .then((result) => {
         this.updateItemField(result.body);
-        this.setState({ isloading: false })
-        this.setState({ selectedTeamId: result.body.team ? result.body.team.id : null })
+        this.setState({
+          isloading: false,
+          selectedTeamId: result.body.team ? result.body.team.id : null,
+          isAsInGeoScope: typeof this.props.geoScope[result.body.as_id] !== 'undefined'
+        })
       })
       .catch((err) => {
         console.error('Error when fetching villages details');
@@ -228,25 +240,51 @@ class MapTooltip extends Component {
       .then(isSaved => {
         if (isSaved) {
           this.props.updateTeamOnVillage(this.props.item.id, selectedTeamId)
-        }else {
+        } else {
           console.error('Error While saving a team for a village');
         }
       })
   }
+
+  toggleAsFromGeoScope(as_id, zs_id, as_name) {
+    let tempTeam = {team_id: this.props.teamId};
+    if (!this.state.isAsInGeoScope) {
+      tempTeam = {...tempTeam, delete:true};
+    }
+    saveAreaInGeoloc(
+      as_id,
+      tempTeam)
+      .then(isSaved => {
+        if (isSaved) {
+          let tempGeoScope = clone(this.props.geoScope);
+          if (!this.state.isAsInGeoScope) {
+            tempGeoScope[as_id] = {id: as_id, name: as_name, zs_id};
+          } else {
+            delete tempGeoScope[as_id];
+          }
+          this.props.updateGeoScope(tempGeoScope);
+          this.setState({
+            isAsInGeoScope : !this.state.isAsInGeoScope
+          })
+        } else {
+          console.error('Error While saving a team for a village');
+        }
+      })
+  }
+
 
   render() {
     const { formatMessage } = this.props.intl;
     if (!this.state.item || this.state.isloading) {
       return null;
     }
-
     return (
       <div key={this.state.item.id} className='map__tooltip'>
         {this.state.item.name && this.props.planningId ? (
           <div className="property">
             <FormattedMessage
-              id='microplanning.label.team.select'
-              defaultMessage='Team' />
+              id='microplanning.label.team'
+              defaultMessage='Unité' />
             <div>
               <select
                 value={this.state.selectedTeamId || ''}
@@ -254,7 +292,6 @@ class MapTooltip extends Component {
                 onChange={event => this.onChangeTeam(event.currentTarget.value)}>
                 <option value="none">{formatMessage(MESSAGES['team_all'])}</option>
                 {
-
                   this.state.teams.map((value) => {
                     return (<option key={value.id} value={value.id}>
                       {value.name}
@@ -270,7 +307,7 @@ class MapTooltip extends Component {
               return this.state.item[row.key] && this.state.item[row.key] !== '';
             })
             .map((row) => {
-              let value = this.state.item[row.key]
+              let value = this.state.item[row.key];
               switch (row.type) {
                 case 'date':
                   value = <FormattedDate value={value} year='numeric' month='long' day='numeric' />
@@ -299,7 +336,23 @@ class MapTooltip extends Component {
                     <FormattedMessage {...MESSAGES[row.key]} />
                   </div>
                   <div className='value'>
-                    {value}
+                    {value} 
+                    {
+                      row.key === 'as' && this.props.teamId ?
+                        <button
+                          title={!this.state.isAsInGeoScope ? formatMessage(MESSAGES['add_as']) : formatMessage(MESSAGES['remove_as'])}
+                          className='button--edit small'
+                          onClick={() => this.toggleAsFromGeoScope(
+                            this.state.item['as_id'],
+                            this.state.item['zs_id'],
+                            this.state.item['as']
+                          )}
+                        >
+                          {
+                            !this.state.isAsInGeoScope ?
+                              <i className='fa fa-plus' /> : <i className='fa fa-minus' />}{this.state.isAsInGeoScope}
+                        </button> : null
+                    }
                   </div>
                 </div>
               )
@@ -313,10 +366,12 @@ class MapTooltip extends Component {
 
 MapTooltip.propTypes = {
   item: PropTypes.object.isRequired,
-  teams: PropTypes.array.isRequired,
+  teamId: PropTypes.string,
+  teams: PropTypes.arrayOf(PropTypes.object),
   planningId: PropTypes.string,
-  updateTeamOnVillage: PropTypes.func.isRequired
-
+  updateTeamOnVillage: PropTypes.func.isRequired,
+  geoScope: PropTypes.object,
+  updateGeoScope:  PropTypes.func.isRequired
 }
 
 export default injectIntl(MapTooltip)

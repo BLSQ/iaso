@@ -1,0 +1,47 @@
+.ReactModal__Overlay {
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    background: rgba(0,0,0,0.5) !important;
+}
+.ReactModal__Content {
+    position: relative !important;
+    max-height: 80%;
+    min-width: 100px;
+    min-height: 100px;
+    max-width: 80%;
+    overflow: visible !important;
+}
+
+.button-close-modal {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0;
+    i {
+        display: block;
+        color: $blue;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        &:before {
+            position: absolute;
+            z-index: 0;
+            background-color: white;
+            border-radius: 100%;
+            width: 20px;
+            height: 20px;
+        }
+    }
+  }

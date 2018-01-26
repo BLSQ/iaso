@@ -57,3 +57,16 @@ export function saveCoordinationPlanning(assignations, planning_id, coordination
             return false
         })
 }
+
+export function saveAreaInGeoloc(as_id, team) {
+    return request
+        .put(`/api/as/${as_id}/`)
+        .set('Content-Type', 'application/json')
+        .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}

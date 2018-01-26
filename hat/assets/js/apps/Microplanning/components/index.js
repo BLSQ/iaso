@@ -12,6 +12,7 @@ import {default as MapSelectionSummary} from './MapSelectionSummary'
 import {default as MapSelectionList} from './MapSelectionList'
 import {default as MapTooltip} from './MapTooltip'
 import {default as TeamSelectionTool} from './TeamSelectionTool'
+import {default as AreaModal} from './AreaModal'
 
 export {
   Map,
@@ -21,5 +22,6 @@ export {
   MapSelectionList,
   MapSelectionSummary,
   MapTooltip,
-  TeamSelectionTool
+  TeamSelectionTool,
+  AreaModal
 }

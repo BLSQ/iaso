@@ -20,7 +20,6 @@ class MapSelectionControl extends Component {
     const {mode, changeMode} = this.props
     const {bufferSize, changeBufferSize} = this.props
     const {highlightBufferSize, changeHighlightBufferSize, selectHighlightBuffer} = this.props
-
     return (
       <div className='map__selection__control__container'>
         {this.props.coordinationId && !this.props.teamId &&
@@ -49,7 +48,7 @@ class MapSelectionControl extends Component {
         </div>
         }
 
-        {this.props.coordinationId &&
+        {this.props.coordinationId && !this.props.isGeoScopeEnabled &&
         <div className='map__selection__actions tooltip--warning'>
             <span className='map__text--select'>
               <FormattedMessage id='microplanning.selection.buffer' defaultMessage='Selection buffer'/>
@@ -66,7 +65,7 @@ class MapSelectionControl extends Component {
         </div>
         }
 
-        {this.props.teamId && <div
+        {this.props.teamId && !this.props.isGeoScopeEnabled && <div
           className={'map__control__button--selection--select' + (mode === selectionModes.select ? '--active' : '')}
           onClick={() => changeMode(selectionModes.select)}>
           <i className='map__icon--select'/>
@@ -76,7 +75,7 @@ class MapSelectionControl extends Component {
         </div>
         }
 
-        {this.props.coordinationId && <div
+        {this.props.coordinationId && !this.props.isGeoScopeEnabled && <div
           className={'map__control__button--selection--deselect' + (mode === selectionModes.deselect ? '--active' : '')}
           onClick={() => changeMode(selectionModes.deselect)}>
           <i className='map__icon--select'/>
@@ -101,7 +100,8 @@ MapSelectionControl.propTypes = {
   changeBufferSize: PropTypes.func,
   highlightBufferSize: PropTypes.number,
   changeHighlightBufferSize: PropTypes.func,
-  selectHighlightBuffer: PropTypes.func
+  selectHighlightBuffer: PropTypes.func,
+  isGeoScopeEnabled: PropTypes.bool.isRequired
 }
 
 export default injectIntl(MapSelectionControl)

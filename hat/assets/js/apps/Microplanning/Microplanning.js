@@ -388,7 +388,10 @@ export class Microplanning extends Component {
               <MapLayers
                 base={baseLayer}
                 overlays={overlays}
-                toggleGeoScope={toggle => this.props.toggleGeoScope(toggle)}
+                toggleGeoScope={toggle => {
+                  this.props.disableSelection();
+                  this.props.toggleGeoScope(toggle)}
+                }
                 change={(type, key) => this.props.changeLayer(type, key)}
                 showGeoScope = {this.props.selection.showGeoScope}
                 teamId={this.props.params.team_id}
@@ -441,6 +444,7 @@ export class Microplanning extends Component {
                       highlightBufferSize={selection.highlightBufferSize}
                       changeHighlightBufferSize={event => this.props.changeHighlightBufferSize(event.target.value)}
                       selectHighlightBuffer={selectHighlightBuffer}
+                      isGeoScopeEnabled={this.props.selection.showGeoScope}
                     />
 
                     {/* Selected summary */}

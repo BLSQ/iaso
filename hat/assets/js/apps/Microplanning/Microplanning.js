@@ -224,9 +224,6 @@ export class Microplanning extends Component {
       if (assignation.team_id != -1) {
         assignationsMap[assignation.village_id] = assignation.team_id;
       }
-      else {
-        console.log("village not assigned", assignation)
-      }
     }
     const { selection } = this.props;
 

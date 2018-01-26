@@ -2,6 +2,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from hat.planning.algo import assign
 
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
+
 
 class AlgoViewSet(viewsets.ViewSet):
     """
@@ -13,14 +16,18 @@ class AlgoViewSet(viewsets.ViewSet):
             coordination_id: the id of the coordination
             years: a comma separated list of years.
     """
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-        village_ids = request.GET.get('village_id', None).split(',')
-        coordination_id = request.GET.get('coordination_id', None)
-        years = request.GET.get('years', None).split(',')
+        return Response({"res":"There is an algo here"})
+
+
+    def update(self, request, pk=None):
+        village_ids = request.data.get('village_id', None).split(',')
+        coordination_id = request.data.get('coordination_id', None)
+        years = request.data.get('years', None).split(',')
         assigned, not_assigned = assign(village_ids, coordination_id, years)
         assignations = []
-        unassigned = []
         for team_id in assigned.keys():
             temp_assignation = assigned[team_id]
             for village in temp_assignation.villages:

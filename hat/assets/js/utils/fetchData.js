@@ -87,8 +87,9 @@ export function launchAlgo(algoParams, dispatch) {
     type: LOAD
   })
   return req
-    .get(`/api/algo/`)
-    .query(algoParams)
+    .put(`/api/algo/1/`)
+    .set('Content-Type', 'application/json')
+    .send(algoParams)
     .then(result => {
       dispatch({
         type: LOAD_SUCCESS_NO_DATA

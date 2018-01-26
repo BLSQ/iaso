@@ -248,7 +248,7 @@ class MapTooltip extends Component {
 
   toggleAsFromGeoScope(as_id, zs_id, as_name) {
     let tempTeam = {team_id: this.props.teamId};
-    if (!this.state.isAsInGeoScope) {
+    if (this.state.isAsInGeoScope) {
       tempTeam = {...tempTeam, delete:true};
     }
     saveAreaInGeoloc(

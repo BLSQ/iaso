@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import ZS
-
+from hat.users.models import Team, Coordination
 
 class ZSViewSet(viewsets.ViewSet):
     """
@@ -19,9 +19,16 @@ class ZSViewSet(viewsets.ViewSet):
     """
     def list(self, request):
         province_id = request.GET.get("province_id", None)
+        coordination_id = request.GET.get("coordination_id", None)
+
         queryset = ZS.objects.all()
         if province_id:
             queryset=queryset.filter(province_id=province_id)
+
+        # if coordination_id:
+        #     coordination = get_object_or_404(Coordination, id=coordination_id)
+        #     queryset = queryset.filter(id__in=coordination.ZS.all())
+
         return Response(queryset.values('name', 'id'))
 
     def retrieve(self, request, pk=None):

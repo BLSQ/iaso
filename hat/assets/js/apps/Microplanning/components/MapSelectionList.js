@@ -32,8 +32,9 @@ class MapSelectionList extends Component {
           {data.map((item) => {
             return (
               <li className='map__selection__list__item' key={item.id}>
-                <span> {this.props.teamsMap[this.props.assignationsMap[item.id]]} </span>
-
+                {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
+                <span> {this.props.teamsMap[this.props.assignationsMap[item.id]].name} </span>
+                }
                 {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
                 <span className='remove' onClick={() => this.props.deselect([{'village_id': item.id}])}>
                   <i className='fa fa-close'/>

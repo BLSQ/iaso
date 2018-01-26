@@ -18,6 +18,8 @@ class MapSelectionSummary extends Component {
     }
 
     // calculate total villages population
+    var assignationsMap = this.props.assignationsMap;
+    const assignedPopulation = data.filter(village => assignationsMap[village.id]).reduce((prev, curr) => (prev + (curr.population || 0)), 0)
     const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0)
 
     return (
@@ -25,7 +27,7 @@ class MapSelectionSummary extends Component {
         <h4 className='map__selection__summary__heading'>
           <FormattedMessage
             id='microplanning.selected.selection.title'
-            defaultMessage='Your selection includes:'
+            defaultMessage='Votre sélection:'
           />
         </h4>
         <div className='map__selection__summary__item'>
@@ -35,14 +37,26 @@ class MapSelectionSummary extends Component {
           />
           <span className='map__selection__summary__number'>{data.length}</span>
         </div>
-
+        <div className='map__selection__summary__item'>
+          <FormattedMessage
+            id='microplanning.selected.capacity'
+            defaultMessage='Capacité'
+          />
+          <span className='map__selection__summary__number'>{this.props.capacity}</span>
+        </div>
         <div className='map__selection__summary__item tooltip--warning'>
           <FormattedMessage
             id='microplanning.selected.population'
-            defaultMessage='Estimated population'
+            defaultMessage='Population estimée'
           />
           <span className='map__selection__summary__number'>{population}</span>
-
+        </div>
+        <div className='map__selection__summary__item tooltip--warning'>
+          <FormattedMessage
+            id='microplanning.selected.assignedPopulation'
+            defaultMessage='Population assignée'
+          />
+          <span className='map__selection__summary__number'>{assignedPopulation}</span>
           <div className='tooltip__warning'>
             <FormattedMessage
               id='microplanning.selected.population.warning.1'
@@ -66,7 +80,9 @@ class MapSelectionSummary extends Component {
 }
 
 MapSelectionSummary.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.object)
+  data: PropTypes.arrayOf(PropTypes.object),
+  assignationsMap: PropTypes.object,
+  capacity: PropTypes.number
 }
 
 export default injectIntl(MapSelectionSummary)

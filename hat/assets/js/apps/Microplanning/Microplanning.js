@@ -202,16 +202,31 @@ export class Microplanning extends Component {
     let plannings = ((data && data.plannings) || []);
     const assignations = (this.props.selection.assignations) || [];
     let teamsMap = {};
+    let capacity = 0 ;
     for (var i = 0; i < teams.length; i++) {
       let team = teams[i];
-      teamsMap[team.id] = team.name;
+      teamsMap[team.id] = team;
+      capacity += team.capacity
+    }
+
+    if (this.props.params.team_id)
+    {
+      let team = teamsMap[this.props.params.team_id]
+      if (team)
+      {
+        capacity = team.capacity
+      }
     }
 
     let assignationsMap = {};
     for (var i = 0; i < assignations.length; i++) {
       let assignation = assignations[i];
-      if (assignation.team_id != -1)
+      if (assignation.team_id != -1) {
         assignationsMap[assignation.village_id] = assignation.team_id;
+      }
+      else {
+        console.log("village not assigned", assignation)
+      }
     }
     const { selection } = this.props;
 
@@ -429,7 +444,7 @@ export class Microplanning extends Component {
                     />
 
                     {/* Selected summary */}
-                    <MapSelectionSummary data={selectedVillages} />
+                    <MapSelectionSummary data={selectedAndUnselectedVillages} assignationsMap={assignationsMap} capacity={capacity}/>
                   </div>
 
                   <div className='map__selection__middle'>

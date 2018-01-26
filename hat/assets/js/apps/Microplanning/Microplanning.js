@@ -66,6 +66,9 @@ export class Microplanning extends Component {
   componentWillReceiveProps(nextProps) {
     const { data, error, loading } = nextProps.load;
     const locations = ((data && data.locations) || []);
+    if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
+      this.props.toggleGeoScope();
+    }
     this.setState({
       isSelectionModified: nextProps.selection.isSelectionModified || false,
       locations

@@ -446,7 +446,7 @@ class Map extends Component {
               const options = {
                 className: className,
                 pane: String.raw`custom-pane-${item._pane}`,
-                radius: radius
+                radius
               }
 
               const marker = L.circle(item._latlon, options)

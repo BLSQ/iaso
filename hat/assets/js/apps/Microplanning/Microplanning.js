@@ -68,7 +68,7 @@ export class Microplanning extends Component {
     const locations = ((data && data.locations) || []);
     // Remove geoscope from map if we remove a team
     if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
-      this.props.toggleGeoScope();
+      this.props.toggleGeoScope(false);
     }
     // if we add a team, reset highlight buffer size
     if (nextProps.params.team_id && !this.props.params.team_id) {
@@ -302,7 +302,7 @@ export class Microplanning extends Component {
           <div className='widget__header'>
             {/* Map legend */}
             <div className='map__header--legend'>
-              <MapLegend
+              <MapLegend isGeoScopeEnabled={this.props.selection.showGeoScope}
               />
             </div>
 

@@ -275,7 +275,7 @@ class CaseAbstract(models.Model):
     test_followup_pl_gb = models.TextField("Suivi PL GB", null=True, blank=True)
     test_followup_decision = models.TextField("Suivi décision", null=True, blank=True)
 
-    confirmed_case = models.BooleanField("Cas confirmé", default=False)
+    confirmed_case = models.NullBooleanField("Cas confirmé", default=False)
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
 

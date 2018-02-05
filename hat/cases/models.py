@@ -207,6 +207,7 @@ class CaseAbstract(models.Model):
     corrected_village = models.TextField(null=True)
 
     normalized_village = models.ForeignKey(Village, null=True)
+    normalized_village_not_found = models.BooleanField(default=False)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
@@ -326,6 +327,7 @@ class Case(CaseAbstract):
         permissions = CASES_PERMISSIONS
 
     def as_dict(self):
+
         return {
             'id': self.id,
             'ZS': self.ZS,
@@ -334,12 +336,15 @@ class Case(CaseAbstract):
             'province': self.province,
             'name': self.name,
             'prename': self.prename,
-            'lastname': self.lastname
-
+            'lastname': self.lastname,
+            'normalized_village_id': self.normalized_village_id,
+            'normalized_village_not_found': self.normalized_village_not_found
         }
+
 
 def compute_confirmation(sender, instance: Case, **kwargs):
     instance.confirmed_case = instance.confirmed()
+
 
 models.signals.pre_save.connect(compute_confirmation, sender=Case)
 

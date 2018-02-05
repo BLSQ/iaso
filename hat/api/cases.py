@@ -19,13 +19,26 @@ class CasesViewSet(viewsets.ViewSet):
         unmatched = request.GET.get("located", None)
         queryset = Case.objects.all()
         if unmatched is not None:
-            queryset = queryset.filter(normalized_village=None)
-        result = map(lambda case: case.as_dict(), queryset[:10])
+            queryset = queryset.filter(normalized_village=None, normalized_village_not_found=False)[:1]
+        result = map(lambda case: case.as_dict(), queryset)
         return Response(result)
-
 
     def retrieve(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
         return Response(case.as_dict())
 
+    def partial_update(self, request, pk=None):
+        case = get_object_or_404(Case, pk=pk)
+        village_id = request.data.get('village_id', None)
+        not_found = request.data.get('not_found', None)
 
+        if village_id:
+            case.normalized_village_not_found = False
+            case.normalized_village_id = village_id
+            case.save()
+        elif not_found:
+            case.normalized_village_not_found = True
+            case.normalized_village_id = None
+            case.save()
+
+        return Response(case.as_dict())

@@ -45,7 +45,7 @@
                             {% endif %}
                         </li>
                     {% endif %}
-                    <li class="navigation__menu__item{% if 'dashboard' in ns %}--active{% endif %}">
+                    <li class="navigation__menu__item{% if view == 'dashboard:stats' %}--active{% endif %} expand-collapse">
                         <a href="{% url 'dashboard:stats' %}">{% trans 'Statistiques' %}</a>
                         {% if 'dashboard' in ns %}
                             <ul>

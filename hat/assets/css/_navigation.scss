@@ -102,6 +102,18 @@ $nav-border-style: 1px solid rgba(white, 0.15);
     }
 }
 
+.expand-collapse.navigation__menu__item {
+    max-height: 57px;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+}
+
+.expand-collapse.navigation__menu__item--active, .expand-collapse.navigation__menu__item:hover {
+    max-height: 500px;
+    overflow: hidden;
+}
+
+
 
 /* navigation footer */
 

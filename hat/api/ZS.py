@@ -29,7 +29,7 @@ class ZSViewSet(viewsets.ViewSet):
         #     coordination = get_object_or_404(Coordination, id=coordination_id)
         #     queryset = queryset.filter(id__in=coordination.ZS.all())
 
-        return Response(queryset.values('name', 'id'))
+        return Response(queryset.values('name', 'id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)

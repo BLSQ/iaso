@@ -743,3 +743,27 @@ li.map__selection__list__item {
         box-shadow: 0 0 1px 1px rgba($highlight, 0.45);
     }
 }
+
+/******************************************************************************
+ * Locator styles
+ ******************************************************************************/
+.locator-map
+{
+    height:600px;
+    width:1000px;
+}
+
+.locator-container
+{
+    display: flex
+}
+
+.locator-control-div
+{
+    padding: 0 5px 0 5px;
+}
+
+.locator-subtitle
+{
+    padding: 5px 0 5px 0;
+}

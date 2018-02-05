@@ -4,7 +4,6 @@
 
 import React, { Component, PropTypes } from 'react';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
-import { createUrl } from '../../../utils/fetchData';
 import Select from 'react-select';
 import { clone } from '../../../utils';
 

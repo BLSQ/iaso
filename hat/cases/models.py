@@ -325,6 +325,18 @@ class Case(CaseAbstract):
         ordering = ['-id']
         permissions = CASES_PERMISSIONS
 
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'ZS': self.ZS,
+            'AS': self.AS,
+            'village': self.village,
+            'province': self.province,
+            'name': self.name,
+            'prename': self.prename,
+            'lastname': self.lastname
+
+        }
 
 def compute_confirmation(sender, instance: Case, **kwargs):
     instance.confirmed_case = instance.confirmed()

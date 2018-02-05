@@ -33,7 +33,7 @@ class ASViewSet(viewsets.ViewSet):
         #     coordination = get_object_or_404(Coordination, id=coordination_id)
         #     queryset = queryset.filter(ZS_id__in=coordination.ZS.all())
 
-        return Response(queryset.values('name', 'id'))
+        return Response(queryset.values('name', 'id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)

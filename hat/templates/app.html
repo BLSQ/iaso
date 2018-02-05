@@ -114,6 +114,11 @@
                             <a href="/dashboard/microplanning/charts/years/2017,2016,2015,2014,2013/planning_id/2">{% trans 'Microplanning' %}</a>
                         </li>
                     {% endif %}
+
+                    <li class="navigation__menu__item{% if view == 'dashboard:locator' %}--active{% endif %}">
+                        <a href="{% url 'dashboard:locator' %}">{% trans 'Locator' %}</a>
+                    </li>
+
                 </ul>
             {% endwith %}
 

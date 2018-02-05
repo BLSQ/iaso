@@ -45,6 +45,8 @@ class VillageViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
         types = request.GET.get("types", "YES")
+        as_list = request.GET.get("as_list", False)
+
         queryset = Village.objects.all()
 
         if province_ids:
@@ -66,9 +68,12 @@ class VillageViewSet(viewsets.ViewSet):
 
         res = queryset.values(*values)
 
-        d = {v["id"]: v for v in res}
+        if as_list:
+            body = res.order_by('name')
+        else:
+            body = {v["id"]: v for v in res}
 
-        return Response(d)
+        return Response(body)
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)

@@ -744,26 +744,70 @@ li.map__selection__list__item {
     }
 }
 
+
 /******************************************************************************
  * Locator styles
  ******************************************************************************/
-.locator-map
-{
-    height:600px;
-    width:1000px;
+
+.locator-map {
+    height: 600px;
+    width: 60%;
 }
 
-.locator-container
-{
+.locator-container {
     display: flex
 }
 
-.locator-control-div
-{
-    padding: 0 5px 0 5px;
+.locator-control-div {
+    padding: $padding-unit;
+    width: 40%;
+    >div {
+        width: 100%;
+        display: flex;
+        >div {
+            width: 50%;
+            &:first-child {
+                margin-right: 5%;
+            }
+            &:nth-child(2) {
+                width: 45%;
+            }
+            table {
+                tbody {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+.locator-village-validation {
+    font-size: 12px;
+    text-align: right;
+    display: block !important;
+    margin-top: 8px;
+    p {
+        font-weight: bold;
+        margin-bottom: 10px;
+        span {
+            font-weight: normal;
+        }
+    }
 }
 
-.locator-subtitle
-{
-    padding: 5px 0 5px 0;
+.locator-title {
+    @include heading--medium;
+    margin-bottom: 1em;
+}
+
+.locator-subtitle {
+    padding: 0;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.locator-filter {
+    font-weight: bold;
+    color: $mid-gray;
+    font-size: 12px;
+    padding-bottom: 8px;
 }

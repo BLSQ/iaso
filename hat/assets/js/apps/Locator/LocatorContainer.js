@@ -15,7 +15,7 @@ import { connect } from 'react-redux'
 import { clone } from '../../utils'
 import { push } from 'react-router-redux'
 import { createUrl } from '../../utils/fetchData'
-import  Locator from './Locator'
+import Locator from './Locator'
 import { villageFiltersActions, villageFiltersInitialState } from './redux/villageFilters'
 import { caseActions } from './redux/case'
 const request = require('superagent')
@@ -28,27 +28,28 @@ export const urls = []
 
 class LocatorContainer extends Component {
 
-  componentDidMount () {
+  componentDidMount() {
     this.fetchProvinces()
     this.fetchCases()
   }
 
-  render () {
+  render() {
     let villageFilters = this.props.villageFilters;
-    if (! villageFilters)
+    if (!villageFilters)
       villageFilters = {}
     return (
       <Locator villageFilters={villageFilters} kase={this.props.kase}
-               selectProvince={ provinceId => this.selectProvince(provinceId)}
-               selectZone={ zoneId => this.selectZone(zoneId)}
-               selectArea={ areaId => this.selectArea(areaId)}
-               selectVillage={ villageId => this.selectVillage(villageId)}/>
+        selectProvince={provinceId => this.selectProvince(provinceId)}
+        selectZone={zoneId => this.selectZone(zoneId)}
+        selectArea={areaId => this.selectArea(areaId)}
+        selectVillage={villageId => this.selectVillage(villageId)}
+        saveVillage={(kase_id, villageObj) => this.saveVillage(kase_id, villageObj)} />
     )
   }
 
   /*###########requests###########*/
-  fetchProvinces () {
-    const {dispatch} = this.props
+  fetchProvinces() {
+    const { dispatch } = this.props
     return request
       .get(`/api/provinces/`)
       .then(result => {
@@ -61,55 +62,75 @@ class LocatorContainer extends Component {
 
 
 
-  selectProvince (provinceId) {
-    const {dispatch} = this.props
-    return request
-      .get(`/api/zs/?province_id=${provinceId}`)
-      .then(result => {
-        let payload = {zones: result.body, provinceId}
-        dispatch(villageFiltersActions.loadZones(payload))
-      })
-      .catch((err) => {
-        console.error('Error when fetching zones', err)
-      })
+  selectProvince(provinceId) {
+    const { dispatch } = this.props
+    if (provinceId) {
+      return request
+        .get(`/api/zs/?province_id=${provinceId}`)
+        .then(result => {
+          let payload = { zones: result.body, provinceId }
+          dispatch(villageFiltersActions.loadZones(payload))
+        })
+        .catch((err) => {
+          console.error('Error when fetching zones', err)
+        })
+    }
   }
 
-  selectZone (zoneId) {
-    const {dispatch} = this.props
-    return request
-      .get(`/api/as/?zs_id=${zoneId}`)
-      .then(result => {
-        let payload = {areas: result.body, zoneId}
-        dispatch(villageFiltersActions.loadAreas(payload))
-      })
-      .catch((err) => {
-        console.error('Error when fetching areas', err)
-      })
+  selectZone(zoneId) {
+    const { dispatch } = this.props
+    if (zoneId) {
+      return request
+        .get(`/api/as/?zs_id=${zoneId}`)
+        .then(result => {
+          let payload = { areas: result.body, zoneId }
+          dispatch(villageFiltersActions.loadAreas(payload))
+        })
+        .catch((err) => {
+          console.error('Error when fetching areas', err)
+        })
+    }
   }
 
-  selectArea (areaId) {
-    const {dispatch} = this.props
-    return request
-      .get(`/api/villages/?as_list=true&as_id=${areaId}`)
-      .then(result => {
-        let payload = {villages: result.body, areaId}
-        dispatch(villageFiltersActions.loadVillages(payload))
-      })
-      .catch((err) => {
-        console.error('Error when fetching areas', err)
-      })
+  selectArea(areaId) {
+    const { dispatch } = this.props
+    if (areaId) {
+      return request
+        .get(`/api/villages/?as_list=true&as_id=${areaId}`)
+        .then(result => {
+          let payload = { villages: result.body, areaId }
+          dispatch(villageFiltersActions.loadVillages(payload))
+        })
+        .catch((err) => {
+          console.error('Error when fetching areas', err)
+        })
+    }
   }
 
   selectVillage(villageId) {
-    const {dispatch} = this.props
+    const { dispatch } = this.props
     dispatch(villageFiltersActions.selectVillage(villageId))
-
   }
 
-  fetchCases () {
-    const {dispatch} = this.props
+  saveVillage(kase_id, villageObj) {
+    const { dispatch } = this.props
+    return request
+      .patch(`/api/cases/${kase_id}/`)
+      .set('Content-Type', 'application/json')
+      .send(villageObj)
+      .then(result => {
+        this.fetchCases()
+      })
+      .catch((err) => {
+        console.error('Error when saving village', err)
+      })
+  }
+
+  fetchCases() {
+    const { dispatch } = this.props
     return request
       .get(`/api/cases/`)
+      .query({located: false})
       .then(result => {
         dispatch(caseActions.setCase(result.body[0]))
       })

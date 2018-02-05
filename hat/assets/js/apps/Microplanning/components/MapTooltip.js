@@ -100,11 +100,11 @@ const MESSAGES = defineMessages({
   },
   population_source: {
     id: 'microplanning.tooltip.population.source',
-    defaultMessage: 'Population source'
+    defaultMessage: 'Source de la population'
   },
   population_year: {
     id: 'microplanning.tooltip.population.year',
-    defaultMessage: 'Population year'
+    defaultMessage: 'Année relevé population'
   },
 
   lastConfirmedCaseDate: {

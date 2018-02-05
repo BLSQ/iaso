@@ -42,7 +42,6 @@ const MESSAGES = defineMessages({
 class Map extends Component {
   constructor(props) {
     super(props)
-    console.log(constructor)
     this.state = {
       map: null, // this is the leaflet object that represents the map
       containers: {},
@@ -52,39 +51,16 @@ class Map extends Component {
         // where to plot the selected markers
         villages: new L.FeatureGroup(),
         chosenMarker: null, // marker used to bold the chosen item
-
-        // where to plot ALL villages
-        // split in different groups based on type and use
-        markersGroups: {
-          group: new L.FeatureGroup(),
-          YES: new L.FeatureGroup(),
-          NO: new L.FeatureGroup(),
-          OTHER: new L.FeatureGroup(),
-          NA: new L.FeatureGroup()
-        },
-
-        labelsGroups: {
-          group: new L.FeatureGroup(),
-          YES: new L.FeatureGroup(),
-          NO: new L.FeatureGroup()
-          // unknown: new L.FeatureGroup() // it's always `Inconnu`
-        }
       }
     }
   }
 
   componentDidMount() {
-
     this.createMap()
     this.includeControlsInMap()
     this.includeDefaultLayersInMap()
     this.updateBaseLayer()
-    //this.updateOverlays()
     this.fitToBounds()
-
-    // return map object to parent
-    // (it's needed to execute some leaflet operations)
-    //this.props.leafletMap(this.state.map)
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -207,7 +183,6 @@ class Map extends Component {
     this.villageGroup = new L.FeatureGroup()
     map.addLayer(this.villageGroup)
     // assign labels overlay using the existent labels group
-    overlays.labels = layers.labelsGroups.group
 
     //
     // plot the ALL boundaries
@@ -307,21 +282,24 @@ class Map extends Component {
 
   updateItems(force) {
     const villages = this.props.villages
-    console.log(villages)
 
     this.villageGroup.clearLayers()
     if (villages) {
       villages.map(village => {
-        var circle = L.circle([village.latitude, village.longitude], {
-          color: '#00f',
-          fillColor: '#30b',
+        const color = this.props.selectedVillageId && village.id === this.props.selectedVillageId ? '#FF3824' : '#00f';
+        const fillColor = this.props.selectedVillageId && village.id === this.props.selectedVillageId ? '#FF0C6C' : '#30b';
+        var villageCircle = L.circle([village.latitude, village.longitude], {
+          color,
+          fillColor,
           fillOpacity: 0.5,
-          radius: 500
-        }).addTo(this.villageGroup)
+          radius: 500,
+          pane: 'custom-pane-markers'
+        }).addTo(this.villageGroup).on('click', () => {
+          this.props.selectVillage(village.id)
+        });
       })
     }
   }
-
 
   updateTooltipSmall(item) {
     if (!this.props.chosenItem && item) {
@@ -362,11 +340,9 @@ class Map extends Component {
     layer.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        this.props.showItem(item)
       },
       contextmenu: (event) => {
         L.DomEvent.stop(event)
-        this.props.showItem(item)
       },
       mouseover: (event) => {
         L.DomEvent.stop(event)
@@ -397,8 +373,9 @@ Map.propTypes = {
   villages: PropTypes.arrayOf(PropTypes.object),
   selectionAction: PropTypes.func,
   chosenItem: PropTypes.object,
-  showItem: PropTypes.func,
   intl: intlShape.isRequired,
+  selectVillage: PropTypes.func,
+  selectedVillageId: PropTypes.number
 }
 
 export default injectIntl(Map)

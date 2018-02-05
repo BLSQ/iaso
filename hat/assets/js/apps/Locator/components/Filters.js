@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Select from 'react-select'
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 
 /*
 villageFiltersInitialState = {
@@ -15,67 +16,74 @@ villageFiltersInitialState = {
  */
 
 class Filters extends React.Component {
-  render () {
+  render() {
     let filters = this.props.filters
-    console.log('provinces', filters.provinces)
-    return <div>
-      <div className="locator-subtitle">Province</div>
+    return (
       <div>
-        <Select
-          simpleValue
-          name='provinceId'
-          value={filters.provinceId}
-          placeholder={'--'}
-          options={filters.provinces.map(province => ({label: province.name, value: province.id}))}
-          onChange={event => this.props.selectProvince(event)}
-        />
-      </div>
-      {filters.zones.length != 0 &&
-      <div>
-        <div className="locator-subtitle">Zone de santé</div>
-        <div>
+        <div className='locator-title'>
+          <FormattedMessage id='locator.label.search' defaultMessage='Recherche du village' />
+        </div>
+        <div className='locator-filter'>
+          <div className="locator-subtitle">Province</div>
           <Select
+            clearable={false}
             simpleValue
-            name='zoneId'
-            value={filters.zoneId}
-            placeholder={'--'}
-            options={filters.zones.map(zone => ({label: zone.name, value: zone.id}))}
-            onChange={event => this.props.selectZone(event)}
+            name='provinceId'
+            value={filters.provinceId}
+            placeholder='--'
+            options={filters.provinces.map(province => ({ label: province.name, value: province.id }))}
+            onChange={event => this.props.selectProvince(event)}
           />
         </div>
+        {filters.zones.length != 0 &&
+          <div className="locator-filter">
+            <div className="locator-subtitle">Zone de santé</div>
+            <div>
+              <Select
+                clearable={false}
+                simpleValue
+                name='zoneId'
+                value={filters.zoneId}
+                placeholder='--'
+                options={filters.zones.map(zone => ({ label: zone.name, value: zone.id }))}
+                onChange={event => this.props.selectZone(event)}
+              />
+            </div>
+          </div>
+        }
+        {filters.areas.length != 0 &&
+          <div className="locator-filter">
+            <div className="locator-subtitle">Aires de santé</div>
+            <div>
+              <Select
+                clearable={false}
+                simpleValue
+                name='areaId'
+                value={filters.areaId}
+                placeholder='--'
+                options={filters.areas.map(area => ({ label: area.name, value: area.id }))}
+                onChange={event => this.props.selectArea(event)}
+              />
+            </div>
+          </div>
+        }
+        {filters.villages.length != 0 &&
+          <div className="locator-filter">
+            <div className="locator-subtitle">Villages</div>
+            <div>
+              <Select
+                simpleValue
+                name='villageId'
+                value={filters.villageId}
+                placeholder='--'
+                options={filters.villages.map(village => ({ label: village.name, value: village.id }))}
+                onChange={event => this.props.selectVillage(event)}
+              />
+            </div>
+          </div>
+        }
       </div>
-      }
-      {filters.areas.length != 0 &&
-      <div>
-        <div className="locator-subtitle">Aires de santé</div>
-        <div>
-          <Select
-            simpleValue
-            name='areaId'
-            value={filters.areaId}
-            placeholder={'--'}
-            options={filters.areas.map(area => ({label: area.name, value: area.id}))}
-            onChange={event => this.props.selectArea(event)}
-          />
-        </div>
-      </div>
-      }
-      {filters.villages.length != 0 &&
-      <div>
-        <div className="locator-subtitle">Villages</div>
-        <div>
-          <Select
-            simpleValue
-            name='villageId'
-            value={filters.villageId}
-            placeholder={'--'}
-            options={filters.villages.map(village => ({label: village.name, value: village.id}))}
-            onChange={event => this.props.selectVillage(event)}
-          />
-        </div>
-      </div>
-      }
-    </div>
+    )
   }
 
 }

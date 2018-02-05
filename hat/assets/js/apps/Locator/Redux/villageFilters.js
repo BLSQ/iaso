@@ -49,6 +49,7 @@ export const villageFiltersInitialState = {
   areaId: null,
   villageId: null,
   key: null,
+  selectedVillage: null,
   provinces: [],
   zones: [],
   areas: [],
@@ -56,7 +57,6 @@ export const villageFiltersInitialState = {
 }
 
 export const villageFiltersReducer = (state = villageFiltersInitialState, action = {}) => {
-  console.log("ACTION", action)
   switch (action.type) {
     case LOAD_PROVINCES: {
       const provinces = action.payload
@@ -65,7 +65,6 @@ export const villageFiltersReducer = (state = villageFiltersInitialState, action
     case LOAD_ZONES: {
       const zones = action.payload.zones
       const provinceId = action.payload.provinceId
-      console.log("LOAD_ZONES", {...state, zones, provinceId, areas: [], villages:[]})
       return {...state, zones, provinceId, areas: [], villages:[]}
     }
     case LOAD_AREAS: {
@@ -82,6 +81,7 @@ export const villageFiltersReducer = (state = villageFiltersInitialState, action
       const villageId = action.payload
       return {...state, villageId}
     }
+
     default:
       return state
   }

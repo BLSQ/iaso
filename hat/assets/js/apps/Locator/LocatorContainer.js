@@ -18,6 +18,7 @@ import { createUrl } from '../../utils/fetchData'
 import Locator from './Locator'
 import { villageFiltersActions, villageFiltersInitialState } from './redux/villageFilters'
 import { caseActions } from './redux/case'
+import { loadActions } from '../../redux/load'
 const request = require('superagent')
 
 // This is where we configure the app data urls:
@@ -50,12 +51,15 @@ class LocatorContainer extends Component {
   /*###########requests###########*/
   fetchProvinces() {
     const { dispatch } = this.props
+    dispatch(loadActions.startLoading())
     return request
       .get(`/api/provinces/`)
       .then(result => {
+        dispatch(loadActions.successLoadingNoData())
         dispatch(villageFiltersActions.loadProvinces(result.body))
       })
       .catch((err) => {
+        dispatch(loadActions.errorLoading(err))
         console.error('Error when fetching provinces', err)
       })
   }
@@ -64,14 +68,17 @@ class LocatorContainer extends Component {
 
   selectProvince(provinceId) {
     const { dispatch } = this.props
+    dispatch(loadActions.startLoading())
     if (provinceId) {
       return request
         .get(`/api/zs/?province_id=${provinceId}`)
         .then(result => {
+          dispatch(loadActions.successLoadingNoData())
           let payload = { zones: result.body, provinceId }
           dispatch(villageFiltersActions.loadZones(payload))
         })
         .catch((err) => {
+          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching zones', err)
         })
     }
@@ -79,14 +86,17 @@ class LocatorContainer extends Component {
 
   selectZone(zoneId) {
     const { dispatch } = this.props
+    dispatch(loadActions.startLoading())
     if (zoneId) {
       return request
         .get(`/api/as/?zs_id=${zoneId}`)
         .then(result => {
           let payload = { areas: result.body, zoneId }
+          dispatch(loadActions.successLoadingNoData())
           dispatch(villageFiltersActions.loadAreas(payload))
         })
         .catch((err) => {
+          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching areas', err)
         })
     }
@@ -94,14 +104,17 @@ class LocatorContainer extends Component {
 
   selectArea(areaId) {
     const { dispatch } = this.props
+    dispatch(loadActions.startLoading())
     if (areaId) {
       return request
         .get(`/api/villages/?as_list=true&as_id=${areaId}`)
         .then(result => {
           let payload = { villages: result.body, areaId }
+          dispatch(loadActions.successLoadingNoData())
           dispatch(villageFiltersActions.loadVillages(payload))
         })
         .catch((err) => {
+          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching areas', err)
         })
     }
@@ -114,14 +127,18 @@ class LocatorContainer extends Component {
 
   saveVillage(kase_id, villageObj) {
     const { dispatch } = this.props
+    dispatch(loadActions.startLoading())
     return request
       .patch(`/api/cases/${kase_id}/`)
       .set('Content-Type', 'application/json')
       .send(villageObj)
       .then(result => {
+        dispatch(villageFiltersActions.resetFilters())
+        this.fetchProvinces()
         this.fetchCases()
       })
       .catch((err) => {
+        dispatch(loadActions.errorLoading(err))
         console.error('Error when saving village', err)
       })
   }
@@ -130,11 +147,13 @@ class LocatorContainer extends Component {
     const { dispatch } = this.props
     return request
       .get(`/api/cases/`)
-      .query({located: false})
+      .query({ located: false })
       .then(result => {
+        dispatch(loadActions.successLoadingNoData())
         dispatch(caseActions.setCase(result.body[0]))
       })
       .catch((err) => {
+        dispatch(loadActions.errorLoading(err))
         console.error('Error when fetching areas', err)
       })
   }

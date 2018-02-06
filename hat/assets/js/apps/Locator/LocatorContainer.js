@@ -119,6 +119,8 @@ class LocatorContainer extends Component {
       .set('Content-Type', 'application/json')
       .send(villageObj)
       .then(result => {
+        dispatch(villageFiltersActions.resetFilters())
+        this.fetchProvinces()
         this.fetchCases()
       })
       .catch((err) => {

@@ -9,6 +9,7 @@ export const LOAD_VILLAGES = 'hat/locator/villagefilters/LOAD_VILLAGES'
 export const SElECT_VILLAGE = 'hat/locator/villagefilters/SElECT_VILLAGE'
 export const KEY_TYPED = 'hat/locator/villagefilters/KEY_TYPED'
 export const KEY_DELETED = 'hat/locator/villagefilters/KEY_DELETED'
+export const RESET_FILTERS = 'hat/locator/villagefilters/RESET_FILTERS'
 
 export const loadProvinces = payload => ({
   type: LOAD_PROVINCES,
@@ -35,12 +36,17 @@ export const selectVillage = villageId => ({
   payload: villageId
 })
 
+export const resetFilters = () => ({
+  type: RESET_FILTERS
+})
+
 export const villageFiltersActions = {
   loadProvinces,
   loadAreas,
   loadZones,
   loadVillages,
-  selectVillage
+  selectVillage,
+  resetFilters
 }
 
 export const villageFiltersInitialState = {
@@ -80,6 +86,9 @@ export const villageFiltersReducer = (state = villageFiltersInitialState, action
     case SElECT_VILLAGE: {
       const villageId = action.payload
       return {...state, villageId}
+    }
+    case RESET_FILTERS: {
+      return {villageFiltersInitialState}
     }
 
     default:

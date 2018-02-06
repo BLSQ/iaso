@@ -13,12 +13,11 @@ import {caseReducer }from './redux/case'
 
 
 export default function locator (appConfig, element, baseUrl) {
-  const defaultPath = 'locator'
+  const defaultPath = '/'
   const routes = [
     <Route
       path={defaultPath}
-      component={LocatorContainer} />,
-    <Redirect path='*' to={defaultPath} />
+      component={LocatorContainer} />
   ]
 
   let history = useRouterHistory(createHistory)({

@@ -5,6 +5,7 @@ import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
 
 import createStore from '../../redux/createStore'
+import {loadReducer} from '../../redux/load'
 import App from '../App'
 
 import LocatorContainer from './LocatorContainer'
@@ -27,8 +28,10 @@ export default function locator (appConfig, element, baseUrl) {
 
   const store = createStore({
     kase: {},
+    load: {},
     villageFilters: villageFiltersInitialState
   }, {
+    load: loadReducer,
     kase : caseReducer,
     villageFilters: villageFiltersReducer
   }, [

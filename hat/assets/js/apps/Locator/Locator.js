@@ -58,7 +58,7 @@ export class Locator extends Component {
                 .then((response) => {
                     this.setState({
                         villageDetail: response.body,
-                        villageId: newProps.villageFilters.villageId,
+                        villageId: newProps.villageFilters.villageId
                     })
                 })
                 .catch((err) => {
@@ -66,7 +66,7 @@ export class Locator extends Component {
                 });
         } else if (!newProps.villageFilters.villageId && this.props.villageFilters.villageId) {
             this.setState({
-                villageDetail: null,
+                villageDetail: null
             })
         }
     }
@@ -76,8 +76,15 @@ export class Locator extends Component {
         let legend = { YES: true }
         let baseLayer = 'arcgis-topo'
         let overlays = { labels: false }
+        const { formatMessage } = this.props.intl;
         return (
             <div className="locator-container widget__container">
+                {
+                    this.props.load.loading && <LoadingSpinner message={formatMessage({
+                        defaultMessage: 'Chargement en cours',
+                        id: 'microplanning.labels.loading'
+                      })} />
+                }
                 <div className="locator-control-div">
                     {this.props.kase && <div>
                         <Case case={this.props.kase}></Case>
@@ -114,7 +121,7 @@ export class Locator extends Component {
                                         onClick={() => {
                                             this.setState({
                                                 villageDetail: null,
-                                                villageId:  null,
+                                                villageId: null,
                                             })
                                             this.props.saveVillage(this.props.kase.id, { village_id: this.state.villageId });
                                         }}
@@ -128,7 +135,7 @@ export class Locator extends Component {
                                     onClick={() => {
                                         this.setState({
                                             villageDetail: null,
-                                            villageId:  null,
+                                            villageId: null,
                                         })
                                         this.props.saveVillage(this.props.kase.id, { not_found: true });
                                     }}
@@ -182,6 +189,7 @@ const MapDispatchToProps = dispatch => ({
 
 const MapStateToProps = state => ({
     villageFilters: state.villageFilters,
+    load: state.load,
     kase: state.kase
 });
 

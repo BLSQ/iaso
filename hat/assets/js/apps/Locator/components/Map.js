@@ -297,6 +297,7 @@ class Map extends Component {
         }).addTo(this.villageGroup).on('click', () => {
           this.props.selectVillage(village.id)
         });
+        this.fitToBounds()
       })
     }
   }

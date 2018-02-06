@@ -31,7 +31,7 @@ class LocatorContainer extends Component {
 
   componentDidMount() {
     this.fetchProvinces()
-    this.fetchCases()
+    this.fetchCase()
   }
 
   render() {
@@ -63,8 +63,6 @@ class LocatorContainer extends Component {
         console.error('Error when fetching provinces', err)
       })
   }
-
-
 
   selectProvince(provinceId) {
     const { dispatch } = this.props
@@ -135,7 +133,7 @@ class LocatorContainer extends Component {
       .then(result => {
         dispatch(villageFiltersActions.resetFilters())
         this.fetchProvinces()
-        this.fetchCases()
+        this.fetchCase()
       })
       .catch((err) => {
         dispatch(loadActions.errorLoading(err))
@@ -143,14 +141,15 @@ class LocatorContainer extends Component {
       })
   }
 
-  fetchCases() {
+  fetchCase() {
     const { dispatch } = this.props
+    console.log("fetchCase")
     return request
       .get(`/api/cases/`)
-      .query({ located: false })
       .then(result => {
+        console.log("RESULT", result.body)
         dispatch(loadActions.successLoadingNoData())
-        dispatch(caseActions.setCase(result.body[0]))
+        dispatch(caseActions.setCase(result.body))
       })
       .catch((err) => {
         dispatch(loadActions.errorLoading(err))

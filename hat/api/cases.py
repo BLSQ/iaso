@@ -16,12 +16,18 @@ class CasesViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-        unmatched = request.GET.get("located", None)
-        queryset = Case.objects.all()
-        if unmatched is not None:
-            queryset = queryset.filter(normalized_village=None, normalized_village_not_found=False)[:1]
-        result = map(lambda case: case.as_dict(), queryset)
-        return Response(result)
+
+        queryset = Case.objects.filter(normalized_village=None, normalized_village_not_found=False)
+
+        remaining_count = queryset.count()
+        res = {'remaining_count': remaining_count}
+        if remaining_count > 0:
+            kase = queryset[0].as_dict()
+            res['case'] = kase
+        else:
+            res['case'] = None
+
+        return Response(res)
 
     def retrieve(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)

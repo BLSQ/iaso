@@ -338,7 +338,11 @@ class Case(CaseAbstract):
             'prename': self.prename,
             'lastname': self.lastname,
             'normalized_village_id': self.normalized_village_id,
-            'normalized_village_not_found': self.normalized_village_not_found
+            'normalized_village_not_found': self.normalized_village_not_found,
+            'form_number': self.form_number,
+            'form_year': self.form_year,
+            'mobile_unit': self.mobile_unit,
+            'source': self.source
         }
 
 

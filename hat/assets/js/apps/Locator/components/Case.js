@@ -4,10 +4,17 @@ import PropTypes from 'prop-types';
 class Case extends React.Component {
   render()
   {
-    let kase = this.props.case;
-    return <div><table>
+    let kase = this.props.case.case;
+    if (kase)
+    return <div>
+      <table>
       <thead><tr><th colSpan="2">Données rapportées</th></tr></thead>
       <tbody>
+      <tr><th>Source</th><td>{kase.source}</td></tr>
+      <tr><th>Année</th><td>{kase.form_year}</td></tr>
+      <tr><th>Numéro de formulaire</th><td>{kase.form_number}</td></tr>
+      <tr><th>Unité</th><td>{kase.mobile_unit}</td></tr>
+      <tr><th>Prénom</th><td>{kase.name}</td></tr>
       <tr><th>Prénom</th><td>{kase.name}</td></tr>
       <tr><th>Nom</th><td>{kase.lastname}</td></tr>
       <tr><th>Postnom</th><td>{kase.prename}</td></tr>
@@ -18,6 +25,8 @@ class Case extends React.Component {
       </tbody>
     </table>
     </div>
+    else
+      return <div></div>
   }
 
 }

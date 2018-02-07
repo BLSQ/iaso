@@ -42,9 +42,10 @@ class LocatorContainer extends Component {
       <Locator villageFilters={villageFilters} kase={this.props.kase}
         selectProvince={provinceId => this.selectProvince(provinceId)}
         selectZone={zoneId => this.selectZone(zoneId)}
-        selectArea={areaId => this.selectArea(areaId)}
+        selectArea={(areaId, currentType) => this.selectArea(areaId, currentType)}
         selectVillage={villageId => this.selectVillage(villageId)}
-        saveVillage={(kase_id, villageObj) => this.saveVillage(kase_id, villageObj)} />
+        saveVillage={(kase_id, villageObj) => this.saveVillage(kase_id, villageObj)}
+        selectType={(newType, areaId, currentTypes) => this.selectType(newType, areaId, currentTypes)} />
     )
   }
 
@@ -66,17 +67,14 @@ class LocatorContainer extends Component {
 
   selectProvince(provinceId) {
     const { dispatch } = this.props
-    dispatch(loadActions.startLoading())
     if (provinceId) {
       return request
         .get(`/api/zs/?province_id=${provinceId}`)
         .then(result => {
-          dispatch(loadActions.successLoadingNoData())
           let payload = { zones: result.body, provinceId }
           dispatch(villageFiltersActions.loadZones(payload))
         })
         .catch((err) => {
-          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching zones', err)
         })
     }
@@ -84,35 +82,29 @@ class LocatorContainer extends Component {
 
   selectZone(zoneId) {
     const { dispatch } = this.props
-    dispatch(loadActions.startLoading())
     if (zoneId) {
       return request
         .get(`/api/as/?zs_id=${zoneId}`)
         .then(result => {
           let payload = { areas: result.body, zoneId }
-          dispatch(loadActions.successLoadingNoData())
           dispatch(villageFiltersActions.loadAreas(payload))
         })
         .catch((err) => {
-          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching areas', err)
         })
     }
   }
 
-  selectArea(areaId) {
+  selectArea(areaId, currentTypes) {
     const { dispatch } = this.props
-    dispatch(loadActions.startLoading())
     if (areaId) {
       return request
-        .get(`/api/villages/?as_list=true&as_id=${areaId}`)
+        .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${currentTypes.toString()}`)
         .then(result => {
           let payload = { villages: result.body, areaId }
-          dispatch(loadActions.successLoadingNoData())
           dispatch(villageFiltersActions.loadVillages(payload))
         })
         .catch((err) => {
-          dispatch(loadActions.errorLoading(err))
           console.error('Error when fetching areas', err)
         })
     }
@@ -141,9 +133,20 @@ class LocatorContainer extends Component {
       })
   }
 
+  selectType(newType, areaId, currentTypes) {
+    const { dispatch } = this.props
+    if (currentTypes.indexOf(newType) > -1) {
+      currentTypes.splice(currentTypes.indexOf(newType), 1);
+    } else {
+      currentTypes.push(newType);
+    }
+    dispatch(villageFiltersActions.selectType(currentTypes))
+    this.selectArea(areaId, currentTypes)
+  }
+
   fetchCase() {
     const { dispatch } = this.props
-    console.log("fetchCase")
+    dispatch(loadActions.startLoading())
     return request
       .get(`/api/cases/`)
       .then(result => {

@@ -53,7 +53,7 @@ class Filters extends React.Component {
         }
         {filters.areas.length != 0 &&
           <div className="locator-filter">
-            <div className="locator-subtitle">Aires de santé</div>
+            <div className="locator-subtitle">Aire de santé</div>
             <div>
               <Select
                 clearable={false}
@@ -69,7 +69,7 @@ class Filters extends React.Component {
         }
         {filters.villages.length != 0 &&
           <div className="locator-filter">
-            <div className="locator-subtitle">Villages</div>
+            <div className="locator-subtitle">Village</div>
             <div>
               <Select
                 simpleValue
@@ -79,6 +79,13 @@ class Filters extends React.Component {
                 options={filters.villages.map(village => ({ label: village.name, value: village.id }))}
                 onChange={event => this.props.selectVillage(event)}
               />
+            </div>
+          </div>
+        }
+        {filters.villages.length === 0 && filters.areas.length != 0 && filters.areaId &&
+          <div className="locator-filter">
+            <div className="locator-subtitle no-result">
+              <FormattedMessage id='locator.label.noresult' defaultMessage='Aucun village trouvé' />
             </div>
           </div>
         }

@@ -10,6 +10,7 @@ import Select from 'react-select';
 import geoUtils from '../../Microplanning/utils/geo'
 import L from 'leaflet'
 import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar' // eslint-disable-line
+import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
 
 
 // map base layers
@@ -77,13 +78,9 @@ class Map extends Component {
       if (hasChanged(prevProps, this.props, 'overlays')) {
         this.updateOverlays()
       }
-      this.updateItems(true)
 
-
-
-      // show/hide tooltip
-      if (hasChanged(prevProps, this.props, 'chosenItem')) {
-        this.updateTooltipLarge()
+      if (hasChanged(prevProps, this.props, 'villages') || hasChanged(prevProps, this.props, 'selectedVillageId')) {
+        this.updateVillages()
       }
 
     })
@@ -127,8 +124,8 @@ class Map extends Component {
   includeControlsInMap() {
     // The order in which the controls are added matters
     const { formatMessage } = this.props.intl
-    const {  containers } = this.state
-    const { map} = this
+    const { containers } = this.state
+    const { map } = this
     //
     // In TOP-LEFT
     // .- zoom bar
@@ -279,32 +276,51 @@ class Map extends Component {
       }
     })
   }
-
-  updateItems(force) {
+  // 'YES': Villages from Z.S.
+  // 'NO': Villages not from Z.S.
+  // 'OTHER': Locations where people are found during campaigns
+  // 'NA': Villages from satellite (unknown)
+  updateVillages() {
     const villages = this.props.villages
-
     this.villageGroup.clearLayers()
     if (villages) {
       villages.map(village => {
-        const color = this.props.selectedVillageId && village.id === this.props.selectedVillageId ? '#FF3824' : '#00f';
-        const fillColor = this.props.selectedVillageId && village.id === this.props.selectedVillageId ? '#FF0C6C' : '#30b';
+        let color = 'blue';
+        if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
+          color = '#FF3824';
+        } else {
+          Object.entries(VillageTypesConstant).map(villageType => {
+            if (villageType[1].key === village.village_official) {
+             color = villageType[1].color
+            }
+          });
+        }
         var villageCircle = L.circle([village.latitude, village.longitude], {
           color,
-          fillColor,
+          fillColor: color,
           fillOpacity: 0.5,
           radius: 500,
           pane: 'custom-pane-markers'
-        }).addTo(this.villageGroup).on('click', () => {
+        })
+        .addTo(this.villageGroup)
+        .on('click', () => {
           this.props.selectVillage(village.id)
+        })
+        .on('mouseover', () => {
+          this.updateTooltipSmall(village)
+        })
+        .on('mouseout', () => {
+          this.updateTooltipSmall()
         });
+
         this.fitToBounds()
       })
     }
   }
 
   updateTooltipSmall(item) {
-    if (!this.props.chosenItem && item) {
-      this.state.containers.tooltipSmall.innerHTML = item.label
+    if (item) {
+      this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name
     } else {
       this.state.containers.tooltipSmall.innerHTML = ''
     }
@@ -317,7 +333,7 @@ class Map extends Component {
    ****************************************************************************/
 
   fitToBounds() {
-    const { map} = this
+    const { map } = this
 
     // maximum zoom allowed to fit to relevant markers
     const MAX_ZOOM = 13
@@ -373,7 +389,6 @@ Map.propTypes = {
   overlays: PropTypes.object,
   villages: PropTypes.arrayOf(PropTypes.object),
   selectionAction: PropTypes.func,
-  chosenItem: PropTypes.object,
   intl: intlShape.isRequired,
   selectVillage: PropTypes.func,
   selectedVillageId: PropTypes.number

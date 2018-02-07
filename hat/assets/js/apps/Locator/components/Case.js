@@ -10,18 +10,17 @@ class Case extends React.Component {
       <table>
       <thead><tr><th colSpan="2">Données rapportées</th></tr></thead>
       <tbody>
-      <tr><th>Source</th><td>{kase.source}</td></tr>
-      <tr><th>Année</th><td>{kase.form_year}</td></tr>
-      <tr><th>Numéro de formulaire</th><td>{kase.form_number}</td></tr>
-      <tr><th>Unité</th><td>{kase.mobile_unit}</td></tr>
-      <tr><th>Prénom</th><td>{kase.name}</td></tr>
-      <tr><th>Prénom</th><td>{kase.name}</td></tr>
-      <tr><th>Nom</th><td>{kase.lastname}</td></tr>
-      <tr><th>Postnom</th><td>{kase.prename}</td></tr>
-      <tr><th>Province</th><td>{kase.province}</td></tr>
-      <tr><th>ZS</th><td>{kase.ZS}</td></tr>
-      <tr><th>AS</th><td>{kase.AS}</td></tr>
-      <tr><th>Village</th><td>{kase.village}</td></tr>
+      <tr><th>Source</th><td>{kase.source ? kase.source : '--'}</td></tr>
+      <tr><th>Année</th><td>{kase.form_year ? kase.form_year : '--'}</td></tr>
+      <tr><th>N° de formulaire</th><td>{kase.form_number ? kase.form_number : '--'}</td></tr>
+      <tr><th>Unité</th><td>{kase.mobile_unit ? kase.mobile_unit : '--'}</td></tr>
+      <tr><th>Prénom</th><td>{kase.name ? kase.name : '--'}</td></tr>
+      <tr><th>Nom</th><td>{kase.lastname ? kase.lastname : '--'}</td></tr>
+      <tr><th>Postnom</th><td>{kase.prename ? kase.prename : '--'}</td></tr>
+      <tr><th>Province</th><td>{kase.province ? kase.province : '--'}</td></tr>
+      <tr><th>ZS</th><td>{kase.ZS ? kase.ZS : '--'}</td></tr>
+      <tr><th>AS</th><td>{kase.AS ? kase.AS : '--'}</td></tr>
+      <tr><th>Village</th><td>{kase.village ? kase.village : '--'}</td></tr>
       </tbody>
     </table>
     </div>

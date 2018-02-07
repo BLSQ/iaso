@@ -11,13 +11,17 @@ class typeFilters extends React.Component {
                 <ul>
                     {
                         Object.entries(VillageTypesConstant).map(villageType => {
+                            let messageProps = {
+                              id: villageType[1].translationKey,
+                              defaultMessage: villageType[1].defaultMessage
+                            }
                             return (
                                 <li key={villageType[0]}
                                     className={`${villageType[0]} ${this.props.currentTypes.indexOf(villageType[1].key) > -1 ? 'active' : ''}`}
                                     onClick={() => this.props.selectType(villageType[1].key)}>
+
                                     <FormattedMessage
-                                        id={villageType[1].translationKey}
-                                        defaultMessage={villageType[1].defaultMessage} />
+                                      {...messageProps} />
                                 </li>
                             )
                         })

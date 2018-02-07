@@ -54,25 +54,25 @@ def import_synced_devices() -> List[ImportResult]:
             docs = data['docs']
             stats = import_synced_docs(docs, device.device_id)
             result['stats'] = stats
+            results.append(result)
+            if stats.total:
+                device.last_synced_date = timezone.now()
+                device.last_synced_log_status = 'success'
+                device.last_synced_seq = data['last_seq']
+                device.last_synced_log_message = '{} - {} - {} - {}'.format(
+                    stats.total,
+                    stats.created,
+                    stats.updated,
+                    stats.deleted,
+                )
+                device.save()
         except Exception as ex:
             logger.exception(str(ex))
             result['error'] = get_import_error(ex)
             device.last_synced_log_status = str(ex)
+
         else:
             log_sync_import(stats, docs, device.device_id)
-
-        results.append(result)
-        if stats.total:
-            device.last_synced_date = timezone.now()
-            device.last_synced_log_status = 'success'
-            device.last_synced_seq = data['last_seq']
-            device.last_synced_log_message = '{} - {} - {} - {}'.format(
-                stats.total,
-                stats.created,
-                stats.updated,
-                stats.deleted,
-            )
-            device.save()
 
     return results
 

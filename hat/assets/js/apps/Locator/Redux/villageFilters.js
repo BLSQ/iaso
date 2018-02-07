@@ -88,7 +88,7 @@ export const villageFiltersReducer = (state = villageFiltersInitialState, action
       return {...state, villageId}
     }
     case RESET_FILTERS: {
-      return {villageFiltersInitialState}
+      return  {...state, villages: [], areas: [], zones: [], villageId: null, areaId: null, zoneId: null, provinceId: null }
     }
 
     default:

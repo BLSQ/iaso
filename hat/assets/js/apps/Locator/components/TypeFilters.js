@@ -11,7 +11,7 @@ class typeFilters extends React.Component {
                 <ul>
                     {
                         Object.entries(VillageTypesConstant).map(villageType => {
-                            let messageProps = {
+                            const messageProps = {
                               id: villageType[1].translationKey,
                               defaultMessage: villageType[1].defaultMessage
                             }

@@ -1,1 +1,11 @@
-var HAT=HAT||{};HAT.styles=webpackJsonpHAT__name_([5],{960:function(n,A){}},[960]);
+var HAT = HAT || {}; HAT["styles"] =
+webpackJsonpHAT__name_([5],{
+
+/***/ 960:
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ })
+
+},[960]);

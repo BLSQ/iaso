@@ -2668,7 +2668,7 @@ var TeamSelectionTool = function (_Component) {
                         _react2.default.createElement(_reactSelect2.default, {
                             simpleValue: true,
                             name: 'coordination_id',
-                            value: this.props.params.coordination_id,
+                            value: parseInt(this.props.params.coordination_id),
                             placeholder: formatMessage(MESSAGES['all']),
                             options: this.state.coordinations.map(function (coordination) {
                                 return { label: coordination.name, value: coordination.id };
@@ -2686,7 +2686,7 @@ var TeamSelectionTool = function (_Component) {
                             disabled: !this.props.params.coordination_id,
                             simpleValue: true,
                             name: 'team_id',
-                            value: this.props.params.team_id,
+                            value: parseInt(this.props.params.team_id),
                             placeholder: formatMessage(MESSAGES['all']) + ' - ' + totalCapacity,
                             options: this.state.teams.map(function (team) {
                                 return { label: team.name + ' - ' + team.capacity, value: team.id };

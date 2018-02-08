@@ -68,7 +68,7 @@ class TeamSelectionTool extends Component {
                         <Select
                             simpleValue
                             name='coordination_id'
-                            value={this.props.params.coordination_id}
+                            value={parseInt(this.props.params.coordination_id)}
                             placeholder={formatMessage(MESSAGES['all'])}
                             options={this.state.coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
                             onChange={event => this.onChangeCoordination(event)}
@@ -81,7 +81,7 @@ class TeamSelectionTool extends Component {
                             disabled={!this.props.params.coordination_id}
                             simpleValue
                             name='team_id'
-                            value={this.props.params.team_id}
+                            value={parseInt(this.props.params.team_id)}
                             placeholder={formatMessage(MESSAGES['all']) + ' - ' + totalCapacity}
                             options={this.state.teams.map(team => ({ label: team.name + ' - ' + team.capacity, value: team.id }))}
                             onChange={event => this.props.redirect({ ...this.props.params, team_id: event })}

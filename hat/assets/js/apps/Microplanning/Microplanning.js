@@ -221,7 +221,7 @@ export class Microplanning extends Component {
     let assignationsMap = {};
     for (var i = 0; i < assignations.length; i++) {
       let assignation = assignations[i];
-      if (assignation.team_id != -1) {
+      if ((assignation.team_id != -1) && (assignationsMap[assignation.village_id])) {
         assignationsMap[assignation.village_id] = assignation.team_id;
       }
     }
@@ -243,7 +243,11 @@ export class Microplanning extends Component {
       }
 
       selectedVillages = assignationsTempList.filter(assignation => (assignation.team_id != -1 && assignation.village_id in villagesMap)).map(assignation => villagesMap[assignation.village_id])
-      selectedAndUnselectedVillages = assignationsTempList.map(assignation => villagesMap[assignation.village_id]);
+      assignationsTempList.map(assignation => {
+        if (villagesMap[assignation.village_id]) {
+          selectedAndUnselectedVillages.push(villagesMap[assignation.village_id]);
+        }
+      });
 
 
     }
@@ -323,7 +327,7 @@ export class Microplanning extends Component {
                     autosize={false}
                     disabled={loading}
                     name='zs_id'
-                    value={zs_id || ''}
+                    value={zs_id ? zs_id.split(',').map(zs => parseInt(zs,10)) : ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
                     options={this.state.locations.map((zs) => ({ label: zs.name, value: zs.id }))}
                     onChange={zs_id => this.props.redirect({ ...this.props.params, zs_id })}
@@ -342,7 +346,7 @@ export class Microplanning extends Component {
                     autosize={false}
                     disabled={loading}
                     name='as_id'
-                    value={as_id || ''}
+                    value={as_id ? as_id.split(',').map(zs => parseInt(zs,10)) : ''}
                     placeholder={formatMessage(MESSAGES['location-all'])}
                     options={areas.map((as) => ({ label: as.name, value: as.id }))}
                     onChange={as_id => this.props.redirect({ ...this.props.params, as_id })}
@@ -435,7 +439,10 @@ export class Microplanning extends Component {
                     />
 
                     {/* Selected summary */}
-                    <MapSelectionSummary data={selectedAndUnselectedVillages} assignationsMap={assignationsMap} capacity={capacity}/>
+                    <MapSelectionSummary
+                      data={selectedAndUnselectedVillages}
+                      assignationsMap={assignationsMap}
+                      capacity={capacity}/>
                   </div>
 
                   <div className='map__selection__middle'>

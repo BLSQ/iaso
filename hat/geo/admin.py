@@ -8,6 +8,7 @@ admin.site.register(Province)
 class ZSAdmin(admin.ModelAdmin):
     list_filter = ('province', )
     search_fields = ('name',)
+    ordering = ('name',)
 
 admin.site.register(ZS, ZSAdmin)
 

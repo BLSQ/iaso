@@ -36,8 +36,7 @@ class Command(BaseCommand):
         for case in queryset_iterator(cases):
             attempted_villages = list(Village.objects.filter(name__iexact=case.village.strip(),
                                                         AS__name__iexact=case.AS.strip(),
-                                                        AS__ZS__name__iexact=case.ZS.strip(),
-                                                        AS__ZS__province__name__iexact=case.province.strip()))
+                                                        AS__ZS__name__iexact=case.ZS.strip()))
 
             if not attempted_villages:
                 pass

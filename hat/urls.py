@@ -17,7 +17,6 @@ urlpatterns = [
     url(r'^cases/', include('hat.cases.urls', 'cases')),
     url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
     url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
-    url(r'^explorer/', include('explorer.urls')),
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
     url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),

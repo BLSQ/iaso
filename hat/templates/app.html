@@ -119,6 +119,10 @@
                         <a href="{% url 'dashboard:locator' %}">{% trans 'Locator' %}</a>
                     </li>
 
+                    <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
+                        <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
+                    </li>
+
                 </ul>
             {% endwith %}
 

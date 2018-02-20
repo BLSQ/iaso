@@ -2,7 +2,8 @@
  * This component displays the coordinations list and teams list.
  */
 
-import React, { Component, PropTypes } from 'react';
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import { clone } from '../../../utils';

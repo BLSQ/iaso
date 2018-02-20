@@ -15,7 +15,8 @@
  * The MESSAGE entry keys and the layer/overlay keys MUST match.
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl'
 import {mapLayerTypes, mapBaseLayers} from '../redux/map'
 

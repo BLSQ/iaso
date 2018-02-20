@@ -4,7 +4,8 @@
  * or to identify the selected village in the the map (`show`).
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import {FormattedMessage, injectIntl} from 'react-intl'
 
 class MapSelectionList extends Component {

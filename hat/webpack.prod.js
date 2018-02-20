@@ -20,7 +20,8 @@ module.exports = {
     'monthly_report': './assets/js/apps/MonthlyReport/index',
     'stats': './assets/js/apps/Stats/index',
     'teams_devices': './assets/js/apps/TeamsDevices/index',
-    'locator': './assets/js/apps/Locator/index'
+    'locator': './assets/js/apps/Locator/index',
+    'quality_control': './assets/js/apps/QualityControl/index'
   },
 
   output: {

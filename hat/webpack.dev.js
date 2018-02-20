@@ -37,6 +37,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/apps/Locator/index'
     ],
+    'quality_control': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/QualityControl/index'
+    ],
     'stats': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',

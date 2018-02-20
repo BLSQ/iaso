@@ -11,7 +11,8 @@
  * which ones. A zero value indicates that only the highlight villages are taken.
  */
 
-import React, { Component, PropTypes } from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl'
 import { selectionModes } from '../redux/selection'
 

@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import {injectIntl, intlShape, defineMessages} from 'react-intl'
 import Vega from 'vega'
 import VegaLite from 'vega-lite'

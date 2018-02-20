@@ -2,7 +2,8 @@
  * This component displays the summary of the selected villages.
  */
 
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import {FormattedMessage, injectIntl} from 'react-intl'
 
 class MapSelectionSummary extends Component {

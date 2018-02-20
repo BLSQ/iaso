@@ -3,7 +3,8 @@
  * and options indicated in the rest of components.
  */
 
-import React, { Component, PropTypes } from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom'
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 import Select from 'react-select';

@@ -2,7 +2,8 @@
  * This component displays a modal ti assing As to team.
  */
 
-import React, { Component, PropTypes } from 'react';
+import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import { createUrl } from '../../../utils/fetchData';
 import Select from 'react-select';

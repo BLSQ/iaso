@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom'
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 import Select from 'react-select';
+import * as topojson from 'topojson'
 import geoUtils from '../../Microplanning/utils/geo'
 import L from 'leaflet'
 import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar' // eslint-disable-line
@@ -185,15 +186,31 @@ class Map extends Component {
     //
     // plot the ALL boundaries
     //
+
     const plotOrHideLayer = (minZoom, type) => {
-      const layer = shapes[type]
-      if (map.getZoom() > minZoom) {
-        if (!map.hasLayer(layer)) {
-          map.addLayer(layer)
+      if (shapes[type]) {
+        const layer = shapes[type]
+        if (map.getZoom() > minZoom) {
+          if (!map.hasLayer(layer)) {
+            map.addLayer(layer)
+          }
+        } else {
+          if (map.hasLayer(layer)) {
+            map.removeLayer(layer)
+          }
         }
       } else {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer)
+        if (map.getZoom() > minZoom) {
+          shapes[type] = new L.FeatureGroup();
+          this.props.getShape(type)
+            .then((response) => {
+              const shape = shapes[type]
+              const data = topojson.feature(response, response.objects[`${type}s`])
+              data.features.forEach(geoUtils.extendBasic)
+              const minZoom = zooms[type]
+              shape.addLayer(L.geoJson(data, shapeOptions(type)))
+              plotOrHideLayer(minZoom, type)
+            });
         }
       }
     }
@@ -207,9 +224,7 @@ class Map extends Component {
     })
 
     const shapes = {
-      province: new L.FeatureGroup(),
-      zone: new L.FeatureGroup(),
-      area: new L.FeatureGroup()
+      province: new L.FeatureGroup()
     }
 
     // at which zoom can be displayed in map
@@ -219,21 +234,20 @@ class Map extends Component {
       area: 9
     }
 
-    geoUtils.divisions.forEach((type) => {
-      const shape = shapes[type]
-      const data = geoUtils.data[type]
-      const minZoom = zooms[type]
+    const shape = shapes['province']
+    const data = geoUtils.data['province']
+    const minZoom = zooms['province']
 
-      shape.addLayer(L.geoJson(data, shapeOptions(type)))
-      if (minZoom < 0) {
-        // province divisions are always visible and are use as default bounds
-        map.addLayer(shape)
-        this.state.defaultBounds = shape.getBounds()
-      } else {
-        L.DomEvent.on(map, 'zoomend', (event) => {
-          plotOrHideLayer(minZoom, type)
-        })
-      }
+    shape.addLayer(L.geoJson(data, shapeOptions('province')))
+    if (minZoom < 0) {
+      // province divisions are always visible and are use as default bounds
+      map.addLayer(shape)
+      this.state.defaultBounds = shape.getBounds()
+    }
+
+    L.DomEvent.on(map, 'zoomend', (event) => {
+      plotOrHideLayer(zooms['zone'], 'zone')
+      plotOrHideLayer(zooms['area'], 'area')
     })
 
     // create marker for the chosen item
@@ -392,7 +406,8 @@ Map.propTypes = {
   selectionAction: PropTypes.func,
   intl: intlShape.isRequired,
   selectVillage: PropTypes.func,
-  selectedVillageId: PropTypes.number
+  selectedVillageId: PropTypes.number,
+  getShape: PropTypes.func
 }
 
 export default injectIntl(Map)

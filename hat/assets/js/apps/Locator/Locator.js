@@ -26,7 +26,7 @@ import TypeFilters from './components/TypeFilters'
 const request = require('superagent');
 
 import LoadingSpinner from '../../components/loading-spinner';
-import { createUrl } from '../../utils/fetchData';
+import { createUrl, getShape } from '../../utils/fetchData';
 
 
 import {
@@ -199,6 +199,7 @@ export class Locator extends Component {
                         villages={this.props.villageFilters.villages}
                         selectVillage={villageId => this.props.selectVillage(villageId)}
                         selectedVillageId={this.props.villageFilters.villageId}
+                        getShape={type => this.props.getShape(type)}
                     />
                 </div>
             </div>
@@ -229,6 +230,7 @@ Locator.propTypes = {
 
 const LocatorWithIntl = injectIntl(Locator);
 const MapDispatchToProps = dispatch => ({
+    getShape: type => getShape(type, dispatch)
 });
 
 const MapStateToProps = state => ({

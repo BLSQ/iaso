@@ -120,7 +120,8 @@ INSTALLED_APPS = [
     'hat.sync',
     'hat.tasks',
     'hat.geo',
-    'hat.planning'
+    'hat.planning',
+    'hat.patient'
 ]
 
 MIDDLEWARE_CLASSES = [

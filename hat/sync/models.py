@@ -129,7 +129,6 @@ class DeviceEvent(models.Model):
                                                                                self.comment
                                                                                ))
 
-
 class DeviceEventForm(ModelForm):
     class Meta:
         model = DeviceEvent

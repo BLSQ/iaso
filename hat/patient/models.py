@@ -21,7 +21,7 @@ class Patient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
 
@@ -43,6 +43,9 @@ class Test(models.Model):
     videos = models.ManyToManyField(VideoUpload)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s %s %s " % (self.type, self.date, self.created_at)
 
 
 

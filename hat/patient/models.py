@@ -39,8 +39,8 @@ class Test(models.Model):
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     village = models.ForeignKey(Village, null=True)
     form = models.ForeignKey(Case)
-    images = models.ManyToManyField(ImageUpload)
-    videos = models.ManyToManyField(VideoUpload)
+    images = models.ManyToManyField(ImageUpload, blank=True)
+    videos = models.ManyToManyField(VideoUpload, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Patient, Test
+from .models import Patient, Test, TestGroup
 
 
 class PatientAdmin(admin.ModelAdmin):
@@ -7,12 +7,11 @@ class PatientAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'post_name')
 
 
-admin.site.register(Patient, PatientAdmin)
-
-
 class TestAdmin(admin.ModelAdmin):
     search_fields = ('validator',)
     raw_id_fields = ('village', 'form')
 
 
+admin.site.register(Patient, PatientAdmin)
 admin.site.register(Test, TestAdmin)
+admin.site.register(TestGroup)

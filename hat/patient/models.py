@@ -48,4 +48,14 @@ class Test(models.Model):
         return "%s %s %s " % (self.type, self.date, self.created_at)
 
 
+class TestGroup(models.Model):
+    type = models.TextField()
+    tests = models.ManyToManyField(Test)
+    group_id = models.TextField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.type, self.group_id, self.created_at)
+
 

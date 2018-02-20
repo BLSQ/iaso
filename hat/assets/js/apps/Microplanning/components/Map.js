@@ -6,7 +6,8 @@
 import React, { Component, PropTypes } from 'react'
 import ReactDOM from 'react-dom'
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
-import Select from 'react-select';
+import Select from 'react-select'
+import * as topojson from 'topojson'
 
 import L from 'leaflet'
 import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
@@ -14,6 +15,7 @@ import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 import geoUtils from '../utils/geo'
 import MapTooltip from './MapTooltip'
 
+const request = require('superagent');
 // map base layers
 const tileOptions = { keepBuffer: 4 }
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg'
@@ -131,10 +133,10 @@ class Map extends Component {
 
       // only call if legend or items changed
       if (!containSameItems(prevProps, this.props, 'items') ||
-          !containSameItems(prevProps, this.props, 'selectedItems') ||
-          prevProps.showGeoScope != this.props.showGeoScope || 
-          prevProps.geoScope != this.props.geoScope
-        ) {
+        !containSameItems(prevProps, this.props, 'selectedItems') ||
+        prevProps.showGeoScope != this.props.showGeoScope ||
+        prevProps.geoScope != this.props.geoScope
+      ) {
         this.updateItems(true)
       } else if (hasChanged(prevProps, this.props, 'legend')) {
         this.updateItems()
@@ -264,17 +266,33 @@ class Map extends Component {
     // plot the ALL boundaries
     //
     const plotOrHideLayer = (minZoom, type) => {
-      const layer = shapes[type]
-      if (map.getZoom() > minZoom) {
-        if (!map.hasLayer(layer)) {
-          map.addLayer(layer)
+      if (shapes[type]) {
+        const layer = shapes[type]
+        if (map.getZoom() > minZoom) {
+          if (!map.hasLayer(layer)) {
+            map.addLayer(layer)
+          }
+        } else {
+          if (map.hasLayer(layer)) {
+            map.removeLayer(layer)
+          }
         }
       } else {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer)
+        if (map.getZoom() > minZoom) {
+          shapes[type] = new L.FeatureGroup();
+          this.props.getShape(type)
+            .then((response) => {
+              const shape = shapes[type]
+              const data = topojson.feature(response, response.objects[`${type}s`])
+              data.features.forEach(geoUtils.extendBasic)
+              const minZoom = zooms[type]
+              shape.addLayer(L.geoJson(data, shapeOptions(type)))
+              plotOrHideLayer(minZoom, type)
+            });
         }
       }
     }
+
 
     const shapeOptions = (type) => ({
       pane: 'custom-pane-shapes',
@@ -285,9 +303,7 @@ class Map extends Component {
     })
 
     const shapes = {
-      province: new L.FeatureGroup(),
-      zone: new L.FeatureGroup(),
-      area: new L.FeatureGroup()
+      province: new L.FeatureGroup()
     }
 
     // at which zoom can be displayed in map
@@ -297,23 +313,22 @@ class Map extends Component {
       area: 9
     }
 
-    geoUtils.divisions.forEach((type) => {
-      const shape = shapes[type]
-      const data = geoUtils.data[type]
-      const minZoom = zooms[type]
 
-      shape.addLayer(L.geoJson(data, shapeOptions(type)))
-      if (minZoom < 0) {
-        // province divisions are always visible and are use as default bounds
-        map.addLayer(shape)
-        this.state.defaultBounds = shape.getBounds()
-      } else {
-        L.DomEvent.on(map, 'zoomend', (event) => {
-          plotOrHideLayer(minZoom, type)
-        })
-      }
+    const shape = shapes['province']
+    const data = geoUtils.data['province']
+    const minZoom = zooms['province']
+
+    shape.addLayer(L.geoJson(data, shapeOptions('province')))
+    if (minZoom < 0) {
+      // province divisions are always visible and are use as default bounds
+      map.addLayer(shape)
+      this.state.defaultBounds = shape.getBounds()
+    }
+
+    L.DomEvent.on(map, 'zoomend', (event) => {
+      plotOrHideLayer(zooms['zone'], 'zone')
+      plotOrHideLayer(zooms['area'], 'area')
     })
-
     //
     // create buffer circle around the mouse pointer
     //
@@ -327,10 +342,10 @@ class Map extends Component {
     bufferMarker.on({
       click: (event) => {
         L.DomEvent.stop(event)
-        const {items } = this.props
+        const { items } = this.props
         const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker)
         const teamId = this.props.teamId;
-        const assignations = inBuffer.map(function(village) { return {village_id: village.id, team_id:teamId}})
+        const assignations = inBuffer.map(function (village) { return { village_id: village.id, team_id: teamId } })
 
         if (inBuffer.length) {
           this.props.selectionAction(assignations)
@@ -479,9 +494,9 @@ class Map extends Component {
     })
   }
 
-  updateSelectedItems () {
-    const {selectedItems} = this.props
-    const {selectedGroup} = this.state.layers
+  updateSelectedItems() {
+    const { selectedItems } = this.props
+    const { selectedGroup } = this.state.layers
 
     selectedGroup.clearLayers()
     if (!this.props.showGeoScope) {
@@ -493,7 +508,7 @@ class Map extends Component {
         }
 
         const marker = L.circle(item._latlon, options)
-        this.addLayerEvents(marker, {...item, selected: true})
+        this.addLayerEvents(marker, { ...item, selected: true })
         selectedGroup.addLayer(marker)
       })
     }
@@ -514,30 +529,30 @@ class Map extends Component {
     }
   }
 
-   updateHighlightBuffer() {
-     const { legend, highlightBufferSize } = this.props
-     const { highlightBufferGroup } = this.state.layers
+  updateHighlightBuffer() {
+    const { legend, highlightBufferSize } = this.props
+    const { highlightBufferGroup } = this.state.layers
 
-     highlightBufferGroup.clearLayers()
-      const bufferSize = highlightBufferSize * 1000
-     // include buffer zone
-     if (highlightBufferSize > 0) {
-       const { items } = this.props
+    highlightBufferGroup.clearLayers()
+    const bufferSize = highlightBufferSize * 1000
+    // include buffer zone
+    if (highlightBufferSize > 0) {
+      const { items } = this.props
 
-       const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
+      const highlight = items.filter((item) => legend[item.village_official] && item._isHighlight)
 
-       highlight.forEach((item) => {
-         const options = {
-           className: 'map-marker highlight-buffer',
-           pane: 'custom-pane-highlight-buffer',
-           radius:  radius + bufferSize
-         }
+      highlight.forEach((item) => {
+        const options = {
+          className: 'map-marker highlight-buffer',
+          pane: 'custom-pane-highlight-buffer',
+          radius: radius + bufferSize
+        }
 
-         const marker = L.circle(item._latlon, options)
-         highlightBufferGroup.addLayer(marker)
-       })
-     }
-   }
+        const marker = L.circle(item._latlon, options)
+        highlightBufferGroup.addLayer(marker)
+      })
+    }
+  }
 
   updateFullscreenMode() {
     const { fullscreen } = this.props
@@ -612,7 +627,7 @@ class Map extends Component {
           teams={this.props.teams}
           areas={this.props.areas}
           planningId={this.props.planningId}
-          updateTeamOnVillage={(village_id, team_id) => this.props.selectItems([{village_id, team_id}], false)}
+          updateTeamOnVillage={(village_id, team_id) => this.props.selectItems([{ village_id, team_id }], false)}
           updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
         />
       </div>
@@ -716,7 +731,8 @@ Map.propTypes = {
   teams: PropTypes.arrayOf(PropTypes.object),
   assignationsMap: PropTypes.object,
   teamId: PropTypes.string,
-  showGeoScope: PropTypes.bool
+  showGeoScope: PropTypes.bool,
+  getShape: PropTypes.func
 }
 
 export default injectIntl(Map)

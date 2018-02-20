@@ -102,3 +102,25 @@ export function launchAlgo(algoParams, dispatch) {
       })
     });
 }
+
+
+
+export function getShape(type, dispatch) {
+  dispatch({
+    type: LOAD
+  })
+  return req
+    .get(`/static/json/${type}s.json`)
+    .then((result) => {
+      dispatch({
+        type: LOAD_SUCCESS_NO_DATA
+      })
+      return result.body;
+    })
+    .catch((err) => {
+      dispatch({
+        type: LOAD_ERROR,
+        payload: err
+      })
+    });
+}

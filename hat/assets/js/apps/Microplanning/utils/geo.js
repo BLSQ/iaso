@@ -6,7 +6,8 @@
 import L from 'leaflet'
 import * as topojson from 'topojson'
 
-import shapes from './shapes.json'
+import provinces from './provinces.json'
+
 import {capitalize} from '../../../utils'
 
 const clean = (word) => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''))
@@ -36,14 +37,11 @@ const extendBasic = (division) => {
   }
 }
 
-const divisions = [ 'province', 'zone', 'area' ]
 const data = {}
-divisions.forEach((type) => {
-  // Leaflet doesn't support topoJSON format, transform them to geoJSON format.
-  data[type] = topojson.feature(shapes, shapes.objects[type + 's'])
-  // include basic properties in features
-  data[type].features.forEach(extendBasic)
-})
+// Leaflet doesn't support topoJSON format, transform them to geoJSON format.
+data['province'] = topojson.feature(provinces, provinces.objects['provinces'])
+// include basic properties in features
+data['province'].features.forEach(extendBasic)
 
 // circle size in metres depending on the village type
 const RADIUS = {
@@ -171,10 +169,10 @@ export default {
   areEqual,
   center: [ -4.4233379, 16.2113064 ],
   zoom: 7,
-  divisions,
   data,
   extendDivisionInfo,
   extendVillageInfo,
   villagesInBuffer,
-  villagesInHighlightBuffer
+  villagesInHighlightBuffer,
+  extendBasic
 }

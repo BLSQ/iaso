@@ -21,7 +21,7 @@ import ReactModal from 'react-modal';
 const request = require('superagent');
 
 import LoadingSpinner from '../../components/loading-spinner';
-import { createUrl } from '../../utils/fetchData';
+import { createUrl, getShape } from '../../utils/fetchData';
 import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
@@ -413,6 +413,7 @@ export class Microplanning extends Component {
                 geoScope={this.props.selection.geoScope}
                 showGeoScope={this.props.selection.showGeoScope}
                 updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
+                getShape={type => this.props.getShape(type)}
               />
             </div>
 
@@ -519,6 +520,7 @@ const MapDispatchToProps = dispatch => ({
   deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
   changeMode: mode => dispatch(selectionActions.changeMode(mode)),
   redirect: params => dispatch(push(createUrl(params))),
+  getShape: type => getShape(type, dispatch)
 });
 
 const MapStateToProps = state => ({

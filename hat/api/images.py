@@ -1,12 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from hat.geo.models import ZS
-from hat.users.models import Team, Coordination
-from hat.sync.models import ImageUpload
 from hat.quality.models import Check
 from hat.patient.models import Test
 from django.db.models import Count
+from django.db.models import F
+import sys
 
 
 class ImagesViewSet(viewsets.ViewSet):
@@ -15,8 +13,17 @@ class ImagesViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
+        tests_with_images = Test.objects.annotate(num_images=Count('images')).filter(num_images__gt=0)\
+            .annotate(num_checks=Count('check'))
 
-        tests_with_images_and_no_checks = Test.objects.annotate(num_images=Count('images')).annotate(num_checks=Count('check'))\
-            .filter(num_images__gt=0).exclude(num_checks__gt=0)
-        return Response("")
+        no_checks = tests_with_images.exclude(num_checks__gt=0)
+        checks = tests_with_images.filter(num_checks__gt=0)
+
+        mismatch = Check.objects.exclude(result=F('test__result'))
+
+        return Response({
+            'no_checks_count': no_checks.count(),
+            'checks_count': checks.count(),
+            'mismatch_count': mismatch.count()
+        })
 

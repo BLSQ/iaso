@@ -11,6 +11,7 @@ from .coordination import CoordinationViewSet
 from .team import TeamViewSet
 from .algo import AlgoViewSet
 from .cases import CasesViewSet
+from .images import ImagesViewSet
 
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')
@@ -24,6 +25,7 @@ router.register(r'teams', TeamViewSet, base_name='teams')
 router.register(r'villages', VillageViewSet, base_name='village')
 router.register(r'algo', AlgoViewSet, base_name='algo')
 router.register(r'cases', CasesViewSet, base_name='cases')
+router.register(r'images', ImagesViewSet, base_name='images')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

@@ -21,7 +21,7 @@ class Patient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
 
@@ -39,10 +39,23 @@ class Test(models.Model):
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     village = models.ForeignKey(Village, null=True)
     form = models.ForeignKey(Case)
-    images = models.ManyToManyField(ImageUpload)
-    videos = models.ManyToManyField(VideoUpload)
+    images = models.ManyToManyField(ImageUpload, blank=True)
+    videos = models.ManyToManyField(VideoUpload, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return "%s %s %s " % (self.type, self.date, self.created_at)
+
+
+class TestGroup(models.Model):
+    type = models.TextField()
+    tests = models.ManyToManyField(Test)
+    group_id = models.TextField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.type, self.group_id, self.created_at)
 
 

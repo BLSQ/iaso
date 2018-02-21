@@ -587,6 +587,12 @@ class Map extends Component {
     }
   }
 
+  closeTooltipLarge() {
+    const { tooltipLarge } = this.state.containers;
+    ReactDOM.unmountComponentAtNode(tooltipLarge);
+  }
+
+
   updateTooltipLarge() {
     const { map } = this.state
     const { tooltipSmall, tooltipLarge } = this.state.containers
@@ -594,7 +600,6 @@ class Map extends Component {
     const { chosenItem, showItem, legend, items } = this.props
     const { formatMessage } = this.props.intl;
     // clean previous
-    tooltipLarge.innerHTML = ''
     if (map.hasLayer(chosenMarker)) {
       chosenMarker.setRadius(0)
       map.removeLayer(chosenMarker)
@@ -616,7 +621,7 @@ class Map extends Component {
 
     const tootltip = (
       <div>
-        <div onClick={() => showItem()} className='map__tooltip--close'>
+        <div onClick={() => this.closeTooltipLarge()} className='map__tooltip--close'>
           <FormattedMessage id='microplanning.label.close' defaultMessage='close' />
           &nbsp;
           <i className='fa fa-close' />

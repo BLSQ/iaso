@@ -201,7 +201,10 @@ class MapTooltip extends Component {
   componentWillReceiveProps(newProps) {
     this.setState({
       item: newProps.item,
-    })
+    });
+    if (newProps.item.name) {
+      this.loadVillageDetail(newProps.item.id);
+    }
   }
 
   updateItemField(value) {

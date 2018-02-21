@@ -96,3 +96,7 @@ build_scripts/deploy.zip
 ### Built JS ###
 hat/assets/bundles/
 hat/assets/messages/**/*.json
+
+\.DS_Store
+
+\.vscode/

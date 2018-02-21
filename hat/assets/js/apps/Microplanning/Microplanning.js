@@ -221,7 +221,7 @@ export class Microplanning extends Component {
     let assignationsMap = {};
     for (var i = 0; i < assignations.length; i++) {
       let assignation = assignations[i];
-      if ((assignation.team_id != -1) && (assignationsMap[assignation.village_id])) {
+      if (assignation.team_id != -1) {
         assignationsMap[assignation.village_id] = assignation.team_id;
       }
     }

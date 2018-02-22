@@ -71,3 +71,7 @@ $directions: left right top bottom;
     width: #{$i}0%;
   }
 }
+
+.no-padding-top {
+  padding-top: 0 !important;
+}

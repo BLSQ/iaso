@@ -462,7 +462,8 @@ path.map-marker {
         }
     }
     &.buffer {
-        @include marker($buffer, $fill-opacity: 0.3, $stroke-width: 1) &:hover {
+        @include marker($buffer, $fill-opacity: 0.3, $stroke-width: 1);
+        &:hover {
             fill-opacity: 0.3;
             fill: $buffer;
         }
@@ -606,6 +607,10 @@ li.map__selection__list__item {
     width: ($map-sidebar-width - 50);
     font-size: $font-size-xs;
 }
+.button--small {
+    font-size: $font-size-xs;
+}
+
 
 .button--save,
 .button--edit {

@@ -103,14 +103,12 @@ export function launchAlgo(algoParams, dispatch) {
     });
 }
 
-
-
-export function getShape(type, dispatch) {
+export function getRequest(url, dispatch) {
   dispatch({
     type: LOAD
   })
   return req
-    .get(`/static/json/${type}s.json`)
+    .get(url)
     .then((result) => {
       dispatch({
         type: LOAD_SUCCESS_NO_DATA

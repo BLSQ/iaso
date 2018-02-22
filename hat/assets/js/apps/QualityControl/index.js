@@ -12,6 +12,7 @@ import App from '../App';
 import QualityVideos from './components/QualityVideos';
 import QualityImages from './components/QualityImages';
 import QualityDashboard from './components/QualityDashboard';
+import QualityStats from './components/QualityStats';
 
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
@@ -30,6 +31,10 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
         <Route
             path="/images"
             component={QualityImages}
+        />,
+        <Route
+            path="/stats"
+            component={QualityStats}
         />,
         <Redirect path="*" to={defaultPath} />,
     ];

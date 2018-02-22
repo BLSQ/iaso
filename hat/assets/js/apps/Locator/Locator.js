@@ -230,7 +230,7 @@ Locator.propTypes = {
 
 const LocatorWithIntl = injectIntl(Locator);
 const MapDispatchToProps = dispatch => ({
-    getShape: type => getShape(type, dispatch)
+    getShape: type => getRequest(`/static/json/${type}s.json`, dispatch)
 });
 
 const MapStateToProps = state => ({

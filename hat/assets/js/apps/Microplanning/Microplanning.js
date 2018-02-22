@@ -520,7 +520,7 @@ const MapDispatchToProps = dispatch => ({
   deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
   changeMode: mode => dispatch(selectionActions.changeMode(mode)),
   redirect: params => dispatch(push(createUrl(params))),
-  getShape: type => getShape(type, dispatch)
+  getShape: type => getRequest(`/static/json/${type}s.json`, dispatch)
 });
 
 const MapStateToProps = state => ({

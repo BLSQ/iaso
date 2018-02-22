@@ -40,6 +40,7 @@ $filter-container-height: 2rem;
     }
 }
 
+$select-width: 120px;
 .filter__container__select {
     $triangle-size: 4px;
     &:after {
@@ -48,6 +49,25 @@ $filter-container-height: 2rem;
         top: calc(#{$filter-container-height}/2 - #{$triangle-size}/2);
         pointer-events: none;
         @include triangle(bottom, $dark-blue, $triangle-size);
+    }
+    &.date-select {
+        display: inline-block;
+        margin: 0 20px;
+        .filter__container__select__label {
+            width: 55px;
+            text-align: center;
+        }
+        >div {
+            >div {
+                display: inline-block;
+                width: $select-width;
+            }
+            display: inline-block;
+            width: $select-width;
+            input {
+                width: $select-width;
+            }
+        }
     }
 }
 

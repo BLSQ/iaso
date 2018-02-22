@@ -26,12 +26,22 @@ class Patient(models.Model):
 
 
 class Test(models.Model):
+    CATT = 'CATT'
+    PG = 'PG'
+    CTCWOO = 'ctcwoo'
+    MAECT = 'maect'
+    RDT = 'RDT'
+
     TEST_TYPE_CHOICES = (
-        ('CATT', 'CATT'),
-        ('PG', 'PG'),
-        ('ctcwoo', 'ctcwoo'),
-        ('maect', 'maect')
+        (CATT, 'CATT'),
+        (PG, 'PG'),
+        (CTCWOO, 'ctcwoo'),
+        (MAECT, 'maect'),
+        (RDT, 'RDT')
     )
+
+    TYPES_WITH_IMAGES = set([CATT, RDT])
+    TYPES_WITH_VIDEOS = set([PG, CTCWOO, MAECT])
 
     type = models.TextField("Type", choices=TEST_TYPE_CHOICES)
     note = models.TextField("Note", null=True, blank=True)
@@ -39,13 +49,29 @@ class Test(models.Model):
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     village = models.ForeignKey(Village, null=True)
     form = models.ForeignKey(Case)
-    images = models.ManyToManyField(ImageUpload, blank=True)
-    videos = models.ManyToManyField(VideoUpload, blank=True)
+    image = models.ForeignKey(ImageUpload, blank=True, null=True)
+    video = models.ForeignKey(VideoUpload, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s %s %s " % (self.type, self.date, self.created_at)
+
+    def to_dict(self):
+        res = {
+            "id": self.id,
+            "type": self.type
+        }
+
+        if self.type in Test.TYPES_WITH_IMAGES:
+            if self.image:
+                res['image'] = self.image.image.url
+
+        if self.type in Test.TYPES_WITH_VIDEOS:
+            if self.video:
+                res['video'] = self.video.video.url
+
+        return res
 
 
 class TestGroup(models.Model):

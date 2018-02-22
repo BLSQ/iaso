@@ -8,12 +8,22 @@ from django.db.models import F
 
 class QCStatsViewSet(viewsets.ViewSet):
     """
+    list:
+    Show statistics on the amounts of checked and unchecked tests for images and for videos.
+    Parameters: from, to: range for test dates
     """
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         tests_with_images = Test.objects.annotate(num_checks=Count('check')).exclude(image=None)
         tests_with_videos = Test.objects.annotate(num_checks=Count('check')).exclude(video=None)
+
+        if from_date is not None:
+            tests_with_images = tests_with_images.filter(date__date__gte=from_date)
+            tests_with_videos = tests_with_videos.filter(date__date__gte=from_date)
+        if to_date is not None:
+            tests_with_images = tests_with_images.filter(date__date__lte=to_date)
+            tests_with_videos = tests_with_videos.filter(date__date__lte=to_date)
 
         images_no_checks = tests_with_images.exclude(num_checks__gt=0)
         images_checks = tests_with_images.filter(num_checks__gt=0)

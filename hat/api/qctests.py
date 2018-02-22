@@ -40,8 +40,6 @@ class QCTestsViewSet(viewsets.ViewSet):
 
         qs = qs[:limit]
 
-        print(qs.query)
-
         res = [test.to_dict() for test in qs]
         return Response(res)
 

@@ -1,7 +1,8 @@
+from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.response import Response
+
 from hat.patient.models import Test
-from django.db.models import Count
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -14,6 +15,7 @@ class QCTestsViewSet(viewsets.ViewSet):
            type: the type of test (Ex: 'CATT', 'RDT', 'PG', ....)
            checked: if true, get tests that have already been checked, if false: get tests without check yet (only tests with images or videos allowing a check)
     """
+
     def list(self, request):
         checked = request.GET.get("checked", None)
         limit = int(request.GET.get("limit", 1))
@@ -23,7 +25,6 @@ class QCTestsViewSet(viewsets.ViewSet):
 
         if checked is not None:
             qs = qs.annotate(num_checks=Count('check'))
-            print(checked, type(checked))
             if checked != 'true':
                 qs = qs.exclude(num_checks__gt=0)
             else:
@@ -38,8 +39,8 @@ class QCTestsViewSet(viewsets.ViewSet):
                 if ttype in Test.TYPES_WITH_VIDEOS:
                     qs = qs.exclude(video=None)
 
+        remaining = qs.count()
         qs = qs[:limit]
 
-        res = [test.to_dict() for test in qs]
+        res = {'results': [test.to_dict() for test in qs], 'remaining_count': remaining}
         return Response(res)
-

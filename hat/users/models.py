@@ -1,3 +1,4 @@
+
 from typing import Callable, Any
 from django.contrib.auth.models import User
 from django.db import models
@@ -42,7 +43,7 @@ class Coordination(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True)
-    AS = models.ManyToManyField(AS, null=True, blank=True)
+    AS = models.ManyToManyField(AS, blank=True)
     capacity = models.IntegerField()
     UM = models.BooleanField(default=True)
 

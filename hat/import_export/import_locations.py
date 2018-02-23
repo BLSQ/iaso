@@ -29,7 +29,7 @@ def import_locations_file(orgname: str, filename: str) -> ImportResult:
     '''
     This method receives the **COMPLETE** villages list.
 
-    It will trucate the "location" table and insert the new entries.
+    It will truncate the "location" table and insert the new entries.
 
     The returned dict will contain information about how many records were imported
     or any errors that happened.
@@ -63,10 +63,10 @@ def import_locations_file(orgname: str, filename: str) -> ImportResult:
             df_locs['village_type'] = df['VILLAGE_TY']
         elif 'TYPE' in df:
             df_locs['village_type'] = df['TYPE']
-        df_locs['village_official'] = df['LIST_OFF']
+        df_locs['village_official'] = df['LIST_ZS']
 
         df_locs['latitude'] = df['LAT']
-        df_locs['longitude'] = df['LON']
+        df_locs['longitude'] = df['LONG']
         df_locs['gps_source'] = df['GPS_SOURCE']
 
         df_locs['population'] = df.apply(population_value, axis=1)

@@ -1,5 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
+
+from hat.api.qcchecks import QCChecksViewSet
 from .dataset import DatasetViewSet
 from .planning import PlanningViewSet
 from .village import VillageViewSet
@@ -28,6 +30,7 @@ router.register(r'algo', AlgoViewSet, base_name='algo')
 router.register(r'cases', CasesViewSet, base_name='cases')
 router.register(r'qcstats', QCStatsViewSet, base_name='qcstats')
 router.register(r'qctests', QCTestsViewSet, base_name='qctests')
+router.register(r'checks', QCChecksViewSet, base_name='checks')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

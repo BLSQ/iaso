@@ -47,6 +47,7 @@ class Test(models.Model):
     note = models.TextField("Note", null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    index = models.IntegerField(null=True, blank=True)
     village = models.ForeignKey(Village, null=True)
     form = models.ForeignKey(Case)
     image = models.ForeignKey(ImageUpload, blank=True, null=True)
@@ -55,12 +56,13 @@ class Test(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s %s " % (self.type, self.date, self.created_at)
+        return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
 
     def to_dict(self):
         res = {
             "id": self.id,
-            "type": self.type
+            "type": self.type,
+            "index": self.index,
         }
 
         if self.type in Test.TYPES_WITH_IMAGES:

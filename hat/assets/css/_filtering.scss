@@ -130,6 +130,19 @@ $select-width: 120px;
     }
 }
 
+.type-filter {
+    margin-left: auto;
+    .filter__label {
+        display: inline-block;
+        position: relative;
+        top: -13px;
+    }
+    .Select {
+        display: inline-block;
+        width: 200px;
+    }
+}
+
 Select {
     border-left: 1px solid $light-gray;
     max-width: 300px;

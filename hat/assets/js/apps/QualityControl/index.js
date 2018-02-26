@@ -9,10 +9,12 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
-import QualityVideos from './components/QualityVideos';
-import QualityImages from './components/QualityImages';
-import QualityDashboard from './components/QualityDashboard';
-import QualityStats from './components/QualityStats';
+import QualityVideos from './pages/QualityVideos';
+import QualityImages from './pages/QualityImages';
+import QualityDashboard from './pages/QualityDashboard';
+import QualityStats from './pages/QualityStats';
+import { dashboardReducer } from './redux/dashboard';
+import { imageReducer } from './redux/image';
 
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
@@ -45,8 +47,12 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     });
 
     const store = createStore({
+        infos: null,
+        imageList: null,
         load: {},
     }, {
+        infos: dashboardReducer,
+        imageList: imageReducer,
         load: loadReducer,
     }, [
         routerMiddleware(history),

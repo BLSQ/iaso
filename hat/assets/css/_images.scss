@@ -1,0 +1,55 @@
+.image-component {
+    text-align: center;
+    overflow: hidden;
+    > section {
+        margin-top: 20px;
+    }
+    .rotate-container {
+        text-align: center;
+        button {
+            margin-right: 10px;
+            i {
+                margin-right: 0 !important;
+                font-size: 20px;
+            }
+        }
+    }
+    .fa-spinner {
+        display: block;
+        margin:  50px 0;
+        font-size: 35px;
+    }
+    $imageSize : 1000px;
+    img {
+        max-width: $imageSize;
+        max-height: $imageSize;
+        transform-origin: center;
+        -webkit-transform-origin: center;
+        -ms-transform-origin: center;
+        position: relative;
+        &.portrait {
+            min-height: $imageSize;
+        }
+        &.landscape {
+            min-width: $imageSize;
+        }
+        &.hidden {
+            display: none;
+        }
+        &.rotate-left-90, &.rotate-right-270  {
+            transform: rotate(90deg);
+            -webkit-transform: rotate(90deg);
+            -ms-transform: rotate(90deg);
+        }
+        &.rotate-left-180, &.rotate-right-180 {
+            transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            -ms-transform: rotate(180deg);
+        }
+        &.rotate-left-270, &.rotate-right-90 {
+            transform: rotate(270deg);
+            -webkit-transform: rotate(270deg);
+            -ms-transform: rotate(270deg);
+        }
+    }
+}

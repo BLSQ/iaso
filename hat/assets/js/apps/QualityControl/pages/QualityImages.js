@@ -1,0 +1,168 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+import PropTypes from 'prop-types';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import Select from 'react-select';
+
+import LoadingSpinner from '../../../components/loading-spinner';
+import ImageValidatorComponent from '../components/ImageValidatorComponent';
+import { getRequest } from '../../../utils/fetchData';
+import { saveImageTest } from '../../../utils/saveData';
+import { imageActions } from '../redux/image';
+
+const imageTypesList = [
+    {
+        label: 'CATT',
+        value: 'CATT',
+    },
+    {
+        label: 'RDT',
+        value: 'RDT',
+    },
+];
+
+class QualityImages extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentType: imageTypesList[0].value,
+        };
+    }
+
+    componentDidMount() {
+        this.updateImageList(this.state.currentType);
+    }
+
+
+    onChangetype(newtype) {
+        this.setState({
+            currentType: newtype,
+        });
+        this.updateImageList(newtype);
+    }
+
+    updateImageList(type) {
+        const url = `/api/qctests/?type=${type}&limit=1&checked=false`;
+        this.props.getImageList(url);
+    }
+
+    saveTest(test) {
+        saveImageTest(test).then(() => {
+            this.updateImageList(this.state.currentType);
+        }).catch((error) => {
+            console.error(`Failing while saving test: ${error}`);
+        });
+    }
+
+    render() {
+        if (!this.props.imageList) {
+            return null;
+        }
+        const { loading } = this.props.load;
+        const { formatMessage } = this.props.intl;
+        return (
+            <div className="widget__container image-quality-control">
+                {
+                    loading &&
+                    <LoadingSpinner message={formatMessage({
+                        defaultMessage: 'Chargement en cours',
+                        id: 'microplanning.labels.loading',
+                    })}
+                    />
+                }
+                <section>
+                    <div className="widget__header">
+                        <h2 className="widget__heading">
+                            <button
+                                className="button--small"
+                                onClick={() => this.props.goBack()}
+                            >
+                                <i className="fa fa-arrow-left" />
+                            </button>
+                            {
+                                !this.props.imageList.results[0] &&
+                                <section>
+                                    <FormattedMessage
+                                        id="quality.image.noimage"
+                                        defaultMessage="Aucune image trouvée"
+                                    />
+                                </section>
+                            }
+
+                            {
+                                this.props.imageList.results[0] &&
+                                <section>
+                                    <FormattedMessage
+                                        id="quality.label.rest"
+                                        defaultMessage="Reste"
+                                    />
+                                    <span>
+                                        {` ${this.props.imageList.remaining_count} `}
+                                    </span>
+                                    <FormattedMessage
+                                        id="quality.label.imagetockeck"
+                                        defaultMessage="image(s) à vérifier"
+                                    />
+                                </section>
+                            }
+                        </h2>
+                        <div className="type-filter">
+                            <div className="filter__label">
+                                <FormattedMessage
+                                    id="quality.image.typelabel"
+                                    defaultMessage="Type d'image"
+                                />:
+                            </div>
+                            <Select
+                                clearable={false}
+                                simpleValue
+                                name="currentType"
+                                value={this.state.currentType}
+                                placeholder="--"
+                                options={imageTypesList}
+                                onChange={event => this.onChangetype(event)}
+                            />
+                        </div>
+                    </div>
+
+                    {
+                        this.props.imageList.results[0] &&
+                        <ImageValidatorComponent
+                            imageItem={this.props.imageList.results[0]}
+                            type={this.state.currentType}
+                            saveTest={test => this.saveTest(test)}
+                        />
+                    }
+                </section>
+            </div>);
+    }
+}
+
+QualityImages.defaultProps = {
+    imageList: null,
+};
+
+QualityImages.propTypes = {
+    load: PropTypes.object.isRequired,
+    intl: PropTypes.object.isRequired,
+    imageList: PropTypes.object,
+    getImageList: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
+};
+
+const QualityDashboardIntl = injectIntl(QualityImages);
+
+const MapStateToProps = state => ({
+    load: state.load,
+    imageList: state.imageList,
+});
+
+const MapDispatchToProps = dispatch => ({
+    getImageList: url => getRequest(url, dispatch).then((response) => {
+        dispatch(imageActions.setImageList(response));
+    }),
+    goBack: () => dispatch(push('/')),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);

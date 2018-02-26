@@ -1,0 +1,129 @@
+.quality-control-element {
+    padding: 10px;
+    box-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    margin-right: $padding-unit;
+    border-radius: 5px;
+    flex-basis: 20%;
+    position: relative;
+    h3 {
+        margin: 0 -10px 10px -10px;
+        padding: 0 10px 10px 10px;
+        border-bottom: 1px solid $gray;
+        text-align: center;
+        text-transform: uppercase;
+    }
+    p {
+        span {
+            font-weight: normal;
+            display: inline-block;
+            margin-left: 5px;
+            color: $dark-blue;
+        }
+        &.with-problems {
+            color: $red;
+        }
+    }
+    .button--small {
+        &:before {
+            display: block;
+            content: '';
+            position: absolute;
+            height: 1px;
+            background-color: $gray;
+            width: 100%;
+            left: 0;
+            bottom: 50px;
+        }
+        display: block !important;
+        margin: 20px auto 0 auto;
+        i {
+            margin-right: 5px;
+        }
+    }
+}
+
+.image-quality-control {
+    .widget__header .widget__heading {
+        section {
+            display: inline-block;
+        }
+        .button--small {
+            margin-right: 10px;
+            i {
+                margin-right: 0;
+                font-size: 15px;
+            }
+        }
+        span {
+            position: relative;
+            top: 1px;
+        }
+    }
+    form {
+        margin: $padding-unit auto;
+        max-width: 1000px;
+        border-radius: 5px;
+        box-sizing: border-box;
+        border: 1px solid $gray;
+        font-size: 14px;
+        >div>section {
+            border-bottom: 1px solid $gray;
+            display: flex;
+            >div {
+                padding: 20px 0 18px 0;
+                &.quality-label {
+                    padding-left: 15px;
+                    padding-right: 10px;
+                    border-right: 1px solid $gray;
+                    width: 100px;
+                    &.inline {
+                        display: inline-block;
+                        margin-right: 15px;
+                    }
+                }
+            }
+        }
+        .submit-area {
+            padding: $padding-unit;
+            text-align: right;
+            button {
+                i {
+                    margin-right: 8px;
+                }
+            }
+        }
+    }
+    .quality-label {
+        font-size: $font-size-xs;
+        font-weight: bold;
+        color: $mid-gray;
+        text-transform: uppercase;
+        span {
+            font-weight: normal;
+            color: $dark-blue;
+            display: inline-block;
+            margin: 0 10px 0 3px;
+        }
+    }
+    .quality-radio {
+        display: inline-block;
+        position: relative;
+        margin-right: 20px;
+        input {
+            display: inline-block;
+            height: 20px;
+            position: absolute;
+            top: 15px;
+            width: 100%;
+            left: 3px;
+            cursor: pointer;
+        }
+        span {
+            display: inline-block;
+            padding-left: 30px;
+        }
+    }
+}

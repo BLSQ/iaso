@@ -1,9 +1,9 @@
-import QualityDashboard from './QualityDashboard';
-import QualityVideos from './QualityVideos';
-import QualityImages from './QualityImages';
+import ImageComponent from './ImageComponent';
+import ImageValidatorComponent from './ImageValidatorComponent';
+import ImageFormComponent from './ImageFormComponent';
 
 export {
-    QualityDashboard,
-    QualityVideos,
-    QualityImages,
+    ImageComponent,
+    ImageValidatorComponent,
+    ImageFormComponent,
 };

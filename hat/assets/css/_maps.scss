@@ -630,7 +630,13 @@ li.map__selection__list__item {
         opacity: 0.6;
     }
 }
-
+button {
+    &:disabled {
+        background-color: #007fff !important;
+        cursor: default;
+        opacity: 0.6;
+    }
+}
 
 /******************************************************************************
  * map selection controls

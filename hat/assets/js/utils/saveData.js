@@ -70,3 +70,17 @@ export function saveAreaInGeoloc(as_id, team) {
             return false
         })
 }
+
+
+export function saveImageTest(test) {
+    return request
+        .post('/api/checks/')
+        .set('Content-Type', 'application/json')
+        .send(test)
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}

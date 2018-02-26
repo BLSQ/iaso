@@ -23,6 +23,8 @@ $fa-font-path: "~font-awesome/fonts";
 @import "stats";
 @import "messages";
 @import "modal";
+@import "quality-control";
+@import "images";
 
 body {
   background-color: $background-gray;

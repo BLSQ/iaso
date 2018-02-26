@@ -7,25 +7,28 @@ class Command(BaseCommand):
     help = 'Import new villages from the case_location table into normalized tables'
 
     def handle(self, *args, **options):
-        all_locations = Location.objects.all()
+
+        print("-- NORMALIZING VILLAGES --")
+
+        all_locations = Location.objects.filter(already_put_in_normalized_form=False)
         problematic_location_count = 0
+        village_count = 0
         created_areas = []
         created_zones = []
         for location in all_locations:
             if location.ZS and location.AS and location.village:
 
                 try:
-                    health_zone, health_zone_created = ZS.objects.get_or_create(name=location.ZS )
+                    health_zone, health_zone_created = ZS.objects.get_or_create(name=location.ZS)
                     if health_zone_created:
                         created_zones.append(location.ZS)
-                        print("---- ZS %s created" % location.ZS)
 
                     health_area, health_area_created = AS.objects.get_or_create(name=location.AS, ZS=health_zone)
                     if health_area_created:
                         created_areas.append(location.AS)
-                        print("-------- AS %s created" % location.AS)
 
-                    village, village_created = Village.objects.get_or_create(name=location.village, AS=health_area,
+                    village, village_created = Village.objects.get_or_create(name=location.village,
+                                                                             AS=health_area,
                                                                              name_alt=location.village_alt,
                                                                              village_type=location.village_type,
                                                                              village_official=location.village_official,
@@ -36,11 +39,16 @@ class Command(BaseCommand):
                                                                              population_source=location.population_source,
                                                                              population_year=location.population_year,
                                                                              )
-                    if village_created:
-                        print("------------ Village %s created" % location.village)
+                    village_count += 1
+                    if village_count % 1000 == 0:
+                        print("Village Count", village_count)
+
+                    location.already_put_in_normalized_form = True
+                    location.save()
+
                 except Exception as e:
                     print("EXCEPTION", e)
-                    print(location.ZS, location.AS, location.village)
+                    print(location.province, location.ZS, location.AS, location.village)
             else:
                 print("***************************** Problematic location", location)
                 problematic_location_count = problematic_location_count  + 1

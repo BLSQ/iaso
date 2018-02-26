@@ -469,6 +469,7 @@ class Location(models.Model):
     population = models.PositiveIntegerField(null=True)
     population_source = models.TextField(null=True)
     population_year = models.PositiveIntegerField(null=True)
+    already_put_in_normalized_form = models.BooleanField(default=False)
 
     class Meta:
         permissions = (

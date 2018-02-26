@@ -26,7 +26,7 @@ import TypeFilters from './components/TypeFilters'
 const request = require('superagent');
 
 import LoadingSpinner from '../../components/loading-spinner';
-import { createUrl, getShape } from '../../utils/fetchData';
+import { createUrl, getRequest } from '../../utils/fetchData';
 
 
 import {

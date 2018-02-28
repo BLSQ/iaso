@@ -34,16 +34,16 @@ class Command(BaseCommand):
             print(zone)
             print(province)
 
-            #
-            # province, province_created = Province.objects.get_or_create(name=province)
-            # if province_created:
-            #     print("province %s created" % province)
-            #
-            # health_zone, health_zone_created = ZS.objects.get_or_create(name=zone, province=province)
-            # if health_zone_created:
-            #     print("---- ZS %s created" % zone)
-            #
-            # health_area, health_area_created = AS.objects.get_or_create(name=area, ZS=health_zone)
-            # if health_area_created:
-            #     print("-------- AS %s created" % area)
+
+            province, province_created = Province.objects.get_or_create(name=province)
+            if province_created:
+                print("province %s created" % province)
+
+            health_zone, health_zone_created = ZS.objects.get_or_create(name=zone, province=province)
+            if health_zone_created:
+                print("---- ZS %s created" % zone)
+
+            health_area, health_area_created = AS.objects.get_or_create(name=area, ZS=health_zone)
+            if health_area_created:
+                print("-------- AS %s created" % area)
 

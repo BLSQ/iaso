@@ -10,12 +10,15 @@ class ZSAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     ordering = ('name',)
 
+
 admin.site.register(ZS, ZSAdmin)
 
 
 class ASAdmin(admin.ModelAdmin):
     list_filter = ('ZS',)
     search_fields = ('name',)
+    ordering= ('name', )
+
 
 admin.site.register(AS, ASAdmin)
 

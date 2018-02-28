@@ -1,9 +1,16 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 
 class Province(models.Model):
     name = models.CharField(max_length=255)
     old_name = models.CharField(max_length=255)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True),
+        size=4,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.name
@@ -19,6 +26,12 @@ class Province(models.Model):
 class ZS(models.Model):
     name = models.CharField(max_length=255)
     province = models.ForeignKey(Province)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True),
+        size=4,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.name
@@ -37,12 +50,18 @@ class ZS(models.Model):
 class AS(models.Model):
     name = models.CharField(max_length=255)
     ZS = models.ForeignKey(ZS)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True),
+        size=4,
+        null=True,
+        blank=True,
+    )
 
     class Meta():
         verbose_name_plural = "AS"
 
     def __str__(self):
-        return self.name
+        return "%s - (Zone: %s)" % (self.name, self.ZS.name)
 
     def as_dict(self):
         return {
@@ -55,6 +74,12 @@ class AS(models.Model):
 class Village(models.Model):
     name = models.CharField(max_length=255)
     AS = models.ForeignKey(AS)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True),
+        size=4,
+        null=True,
+        blank=True,
+    )
 
     name_alt = models.TextField(null=True)
     village_type = models.TextField(null=True)
@@ -76,4 +101,3 @@ class Village(models.Model):
 
     def __str__(self):
         return self.name
-

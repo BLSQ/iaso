@@ -21,7 +21,7 @@ import ReactModal from 'react-modal';
 const request = require('superagent');
 
 import LoadingSpinner from '../../components/loading-spinner';
-import { createUrl, getShape } from '../../utils/fetchData';
+import { createUrl, getRequest } from '../../utils/fetchData';
 import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';

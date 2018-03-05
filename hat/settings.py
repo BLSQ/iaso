@@ -167,7 +167,7 @@ WSGI_APPLICATION = 'hat.wsgi.application'
 
 # Database
 
-DB_NAME = os.environ.get('RDS_DB_NAME', 'postgres')
+DB_NAME = os.environ.get('RDS_DB_NAME', 'trypelim')
 DB_USERNAME = os.environ.get('RDS_USERNAME', 'postgres')
 DB_PASSWORD = os.environ.get('RDS_PASSWORD', None)
 DB_HOST = os.environ.get('RDS_HOSTNAME', 'db')
@@ -199,6 +199,8 @@ DATABASES = {
         }
     }
 }
+
+print(DATABASES)
 
 def is_superuser(u):
     return u.is_superuser
@@ -320,16 +322,16 @@ DEBUG_TOOLBAR_CONFIG = {
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-#MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-MEDIA_URL = '/media/'
+MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+#MEDIA_URL = '/media/'
 
 PREPEND_WWW = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
 
 #############
 
-#DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',

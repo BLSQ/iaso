@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 '''
 
 import os
-
+STAGING = (os.environ.get('STAGING', '').lower() == 'true')
 TESTING = (os.environ.get('TESTING', '').lower() == 'true')
 
 SHOW_DEBUG_TOOLBAR = os.environ.get('SHOW_DEBUG_TOOLBAR', '').lower() == 'true'
@@ -322,16 +322,19 @@ DEBUG_TOOLBAR_CONFIG = {
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-#MEDIA_URL = '/media/'
+if DEBUG:
+    MEDIA_URL = '/media/'
+else:
+    MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 
-PREPEND_WWW = not DEBUG
+
+PREPEND_WWW = not DEBUG and not STAGING
 SECURE_SSL_REDIRECT = not DEBUG
 
 #############
-
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',

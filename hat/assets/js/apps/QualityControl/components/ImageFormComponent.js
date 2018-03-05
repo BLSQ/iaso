@@ -63,6 +63,12 @@ class ImageFormComponent extends React.Component {
                     </section>
                 </div>
                 <div className="submit-area">
+                    {
+                        this.props.error &&
+                        <div className="saving--error">
+                            <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
+                        </div>
+                    }
                     <button
                         className="button"
                         disabled={typeof this.state.result === 'undefined'}
@@ -77,9 +83,15 @@ class ImageFormComponent extends React.Component {
 }
 
 
-const ImageFormComponentIntl = injectIntl(ImageFormComponent);
+ImageFormComponent.defaultProps = {
+    error: null,
+};
+
 ImageFormComponent.propTypes = {
     submitForm: PropTypes.func.isRequired,
+    error: PropTypes.object,
 };
+
+const ImageFormComponentIntl = injectIntl(ImageFormComponent);
 
 export default ImageFormComponentIntl;

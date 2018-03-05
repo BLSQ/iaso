@@ -9,4 +9,8 @@
         margin:  50px 0;
         font-size: 35px;
     }
+    .video-js .vjs-big-play-button {
+        top: calc(50% - 0.75em);
+        left: calc(50% - 1.5em);
+    }
 }

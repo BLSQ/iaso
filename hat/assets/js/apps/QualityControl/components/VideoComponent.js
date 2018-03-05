@@ -12,6 +12,7 @@ class VideoComponent extends React.Component {
 
     componentDidMount() {
         if (!this.state.player) {
+            // eslint-disable-next-line react/no-did-mount-set-state
             this.setState({
                 player: videojs('quality-video'),
             });
@@ -24,24 +25,25 @@ class VideoComponent extends React.Component {
         }
     }
 
+    renderVideoHtml() {
+        return (`
+        <video
+            id="quality-video"
+            class="video-js vjs-default-skin"
+            controls
+            preload="auto"
+        >
+          <source src="${this.props.videoItem.video}" type="video/mp4" />
+        </video>
+        `);
+    }
+
     render() {
-        const videoHtml = `
-          <video id="quality-video" class="video-js vjs-default-skin" controls
-           preload="auto"
-          >
-            <source src="${this.props.videoItem.video}" type="video/mp4" />
-            <p class="vjs-no-js">
-              To view this video please enable JavaScript
-            </p>
-          </video>
-          `;
         return (
             <section className="video-component">
-                {/* {
-                    !this.state.videoLoaded && <i className="fa fa-spinner" />
-                } */}
                 <section>
-                    <div dangerouslySetInnerHTML={{ __html: videoHtml }} />
+                    {/* eslint-disable-next-line react/no-danger */}
+                    <div dangerouslySetInnerHTML={{ __html: this.renderVideoHtml() }} />
                 </section>
             </section>
         );

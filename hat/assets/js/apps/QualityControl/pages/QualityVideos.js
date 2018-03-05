@@ -24,14 +24,16 @@ class QualityVideos extends React.Component {
 
     updateVideoList() {
         const url = '/api/qctests/?type=PG&limit=1&checked=false';
-        this.props.getVideoList(url);
+        getRequest(url, this.props.dispatch).then((response) => {
+            this.props.dispatch(videoActions.setVideoList(response));
+        });
     }
 
-    saveTest(test) {
-        saveTest(test).then(() => {
-            this.updateVideoList();
-        }).catch((error) => {
-            console.error(`Failing while saving test: ${error}`);
+    saveTestItem(test) {
+        saveTest(test, this.props.dispatch).then((isSaved) => {
+            if (isSaved) {
+                this.updateVideoList();
+            }
         });
     }
 
@@ -39,9 +41,8 @@ class QualityVideos extends React.Component {
         if (!this.props.videoList) {
             return null;
         }
-        const { loading } = this.props.load;
+        const { loading, error } = this.props.load;
         const { formatMessage } = this.props.intl;
-        console.log(this.props.videoList.results[0]);
         return (
             <div className="widget__container quality-control">
                 {
@@ -94,7 +95,8 @@ class QualityVideos extends React.Component {
                         this.props.videoList.results[0] &&
                         <VideoValidatorComponent
                             videoItem={this.props.videoList.results[0]}
-                            saveTest={test => this.saveTest(test)}
+                            saveTest={test => this.saveTestItem(test)}
+                            error={error}
                         />
                     }
                 </section>
@@ -110,7 +112,7 @@ QualityVideos.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     videoList: PropTypes.object,
-    getVideoList: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
     goBack: PropTypes.func.isRequired,
 };
 
@@ -122,9 +124,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    getVideoList: url => getRequest(url, dispatch).then((response) => {
-        dispatch(videoActions.setVideoList(response));
-    }),
+    dispatch,
     goBack: () => dispatch(push('/')),
 });
 

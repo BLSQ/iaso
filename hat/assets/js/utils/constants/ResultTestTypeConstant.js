@@ -1,35 +1,43 @@
 const ResultTestTypeConstant = [
     {
         value: -3,
-        label: 'inutilisé',
+        defaultMessage: 'inutilisé',
+        id:`quality.result.unused`,
     },
     {
         value: -2,
-        label: 'illisible',
+        defaultMessage: 'illisible',
+        id:`quality.result.notreadeble`,
     },
     {
         value: -1,
-        label: 'invalide',
+        defaultMessage: 'invalide',
+        id:`quality.result.invalid`,
     },
     {
         value: 0,
-        label: '-',
+        defaultMessage: '-',
+        id:`quality.result.neg`,
     },,
     {
         value: 1,
-        label: '+ / -',
+        defaultMessage: '+ / -',
+        id:`quality.result.medium`,
     },,
     {
         value: 2,
-        label: '+',
+        defaultMessage: '+',
+        id:`quality.result.pos`,
     },,
     {
         value: 3,
-        label: '++',
+        defaultMessage: '++',
+        id:`quality.result.pospos`,
     },,
     {
         value: 4,
-        label: '+++',
+        defaultMessage: '+++',
+        id:`quality.result.pospospos`,
     },
 ];
 

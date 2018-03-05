@@ -41,21 +41,24 @@ class ImageFormComponent extends React.Component {
                             />:
                         </div>
                         {
-                            ResultTestTypeConstant.map(type => (
-                                <div className="quality-radio" key={type.value}>
-                                    <input
-                                        type="radio"
-                                        name="result"
-                                        checked={type.value === this.state.result ? 'checked' : ''}
-                                        value={type.value}
-                                        onChange={() => this.changeResult(type.value)}
-                                    />
-                                    <FormattedMessage
-                                        id={`quality.result.${type.value}`}
-                                        defaultMessage={type.label}
-                                    />
-                                </div>
-                            ))
+                            ResultTestTypeConstant.map((type) => {
+                                const messageProps = {
+                                    id: type.id,
+                                    defaultMessage: type.defaultMessage,
+                                };
+                                return (
+                                    <div className="quality-radio" key={type.value}>
+                                        <input
+                                            type="radio"
+                                            name="result"
+                                            checked={type.value === this.state.result ? 'checked' : ''}
+                                            value={type.value}
+                                            onChange={() => this.changeResult(type.value)}
+                                        />
+                                        <FormattedMessage {... messageProps} />
+                                    </div>
+                                );
+                            })
                         }
                     </section>
                 </div>

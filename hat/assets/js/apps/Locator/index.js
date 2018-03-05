@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Route, Redirect, useRouterHistory } from 'react-router'
+import { Route, useRouterHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createHistory } from 'history'
 

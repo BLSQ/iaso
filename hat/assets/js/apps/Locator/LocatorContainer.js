@@ -148,9 +148,8 @@ class LocatorContainer extends Component {
     const { dispatch } = this.props
     dispatch(loadActions.startLoading())
     return request
-      .get(`/api/cases/`)
+      .get(`/api/cases/?limit=1`)
       .then(result => {
-        console.log("RESULT", result.body)
         dispatch(loadActions.successLoadingNoData())
         dispatch(caseActions.setCase(result.body))
       })

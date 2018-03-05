@@ -2,11 +2,10 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from hat.planning.models import Planning, Assignation
-from hat.users.models import Coordination
 from hat.cases.models import Case
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from django.core.paginator import Paginator
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -16,20 +15,28 @@ class CasesViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
+        limit = int(request.GET.get("limit", 50))
+        page_offset = int(request.GET.get("page", 1))
 
+        order = request.GET.get("order", 'ZS')
         queryset = Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)\
-            .exclude(source='mobile_sync').exclude(source='mobile_backup').exclude(document_date__year__lte=2012)\
+            .exclude(source='mobile_sync').exclude(source='mobile_backup').exclude(document_date__year__lte=2013)\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
-            .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur')
+            .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur')\
+            .order_by(order)
 
+        paginator = Paginator(queryset, limit)
 
-        remaining_count = queryset.count()
-        res = {'remaining_count': remaining_count}
-        if remaining_count > 0:
-            kase = queryset[0].as_dict()
-            res['case'] = kase
-        else:
-            res['case'] = None
+        res = {'remaining_count': paginator.count}
+        if page_offset> paginator.num_pages:
+            page_offset = paginator.num_pages
+        page = paginator.page(page_offset)
+
+        res['cases'] = map(lambda x: x.as_dict(),  page.object_list)
+        res['has_next'] = page.has_next()
+        res['has_previous'] = page.has_previous()
+        res['page'] = page_offset
+        res['limit'] = 50
 
         return Response(res)
 

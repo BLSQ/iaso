@@ -88,6 +88,7 @@ export class Locator extends Component {
         let baseLayer = 'arcgis-topo'
         let overlays = { labels: false }
         const { formatMessage } = this.props.intl
+
         return (
             <div className="locator-container widget__container">
                 {
@@ -152,7 +153,7 @@ export class Locator extends Component {
                                                     villageDetail: null,
                                                     villageId: null,
                                                 })
-                                                this.props.saveVillage(this.props.kase.case.id, { village_id: this.state.villageId });
+                                                this.props.saveVillage(this.props.kase.cases[0].id, { village_id: this.state.villageId });
                                             }}
                                         >
                                             <i className='fa fa-save' />
@@ -166,7 +167,7 @@ export class Locator extends Component {
                                                 villageDetail: null,
                                                 villageId: null,
                                             })
-                                            this.props.saveVillage(this.props.kase.case.id, { not_found: true });
+                                            this.props.saveVillage(this.props.kase.cases[0].id, { not_found: true });
                                         }}
                                     >
                                         <i className='fa fa-arrow-right' />

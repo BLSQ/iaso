@@ -39,7 +39,8 @@ export const loadReducer = function (state = {}, action = {}) {
     case LOAD_SUCCESS_NO_DATA:
       return {
         ...state,
-        loading: false
+        loading: false,
+        error: null,
       }
 
     case LOAD_ERROR:

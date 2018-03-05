@@ -1,3 +1,5 @@
+import { LOAD_ERROR, LOAD_SUCCESS_NO_DATA, LOAD_SUCCESS } from '../redux/load';
+
 const request = require('superagent');
 
 export function saveFullPlanning(villagesList, planning_id) {
@@ -72,15 +74,23 @@ export function saveAreaInGeoloc(as_id, team) {
 }
 
 
-export function saveImageTest(test) {
+export function saveTest(test, dispatch) {
     return request
         .post('/api/checks/')
         .set('Content-Type', 'application/json')
         .send(test)
         .then(() => {
+            dispatch({
+                type: LOAD_SUCCESS_NO_DATA,
+            })
            return true;
         })
         .catch((err) => {
+            console.error(`Failing while saving test: ${err}`);
+            dispatch({
+              type: LOAD_ERROR,
+              payload: err
+            })
             return false
         })
 }

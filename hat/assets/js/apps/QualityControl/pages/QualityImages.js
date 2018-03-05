@@ -8,7 +8,7 @@ import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
 import { getRequest } from '../../../utils/fetchData';
-import { saveImageTest } from '../../../utils/saveData';
+import { saveTest } from '../../../utils/saveData';
 import { imageActions } from '../redux/image';
 
 const imageTypesList = [
@@ -44,14 +44,16 @@ class QualityImages extends React.Component {
 
     updateImageList(type) {
         const url = `/api/qctests/?type=${type}&limit=1&checked=false`;
-        this.props.getImageList(url);
+        getRequest(url, this.props.dispatch).then((response) => {
+            this.props.dispatch(imageActions.setImageList(response));
+        });
     }
 
-    saveTest(test) {
-        saveImageTest(test).then(() => {
-            this.updateImageList(this.state.currentType);
-        }).catch((error) => {
-            console.error(`Failing while saving test: ${error}`);
+    saveTestItem(test) {
+        saveTest(test, this.props.dispatch).then((isSaved) => {
+            if (isSaved) {
+                this.updateImageList(this.state.currentType);
+            }
         });
     }
 
@@ -59,10 +61,10 @@ class QualityImages extends React.Component {
         if (!this.props.imageList) {
             return null;
         }
-        const { loading } = this.props.load;
+        const { loading, error } = this.props.load;
         const { formatMessage } = this.props.intl;
         return (
-            <div className="widget__container image-quality-control">
+            <div className="widget__container quality-control">
                 {
                     loading &&
                     <LoadingSpinner message={formatMessage({
@@ -131,7 +133,8 @@ class QualityImages extends React.Component {
                         <ImageValidatorComponent
                             imageItem={this.props.imageList.results[0]}
                             type={this.state.currentType}
-                            saveTest={test => this.saveTest(test)}
+                            saveTest={test => this.saveTestItem(test)}
+                            error={error}
                         />
                     }
                 </section>
@@ -147,11 +150,11 @@ QualityImages.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     imageList: PropTypes.object,
-    getImageList: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
     goBack: PropTypes.func.isRequired,
 };
 
-const QualityDashboardIntl = injectIntl(QualityImages);
+const QualityImagesIntl = injectIntl(QualityImages);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -159,10 +162,8 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    getImageList: url => getRequest(url, dispatch).then((response) => {
-        dispatch(imageActions.setImageList(response));
-    }),
+    dispatch,
     goBack: () => dispatch(push('/')),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);

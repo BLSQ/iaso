@@ -146,6 +146,15 @@ module.exports = {
           mimetype: 'image/svg+xml'
         }
       },
+      // videos
+      {
+        test:  /\.mp4$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'video/mp4'
+        }
+      },
       // Leaftlet images
       {
         test: /\.png(\?v=\d+\.\d+\.\d+)?$/,

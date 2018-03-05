@@ -2,6 +2,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "~font-awesome/scss/font-awesome";
 @import "~leaflet/dist/leaflet.css";
 @import "~react-select/dist/react-select.css";
+@import "~video.js/dist/video-js.css";
 @import "reset";
 @import "settings";
 @import "fonts";
@@ -25,6 +26,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "modal";
 @import "quality-control";
 @import "images";
+@import "videos";
 
 body {
   background-color: $background-gray;

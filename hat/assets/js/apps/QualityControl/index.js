@@ -15,6 +15,7 @@ import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
 import { dashboardReducer } from './redux/dashboard';
 import { imageReducer } from './redux/image';
+import { videoReducer } from './redux/video';
 
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
@@ -49,10 +50,12 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     const store = createStore({
         infos: null,
         imageList: null,
+        videoList: null,
         load: {},
     }, {
         infos: dashboardReducer,
         imageList: imageReducer,
+        videoList: videoReducer,
         load: loadReducer,
     }, [
         routerMiddleware(history),

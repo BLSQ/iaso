@@ -8,7 +8,7 @@ import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
 import { getRequest } from '../../../utils/fetchData';
-import { saveImageTest } from '../../../utils/saveData';
+import { saveTest } from '../../../utils/saveData';
 import { imageActions } from '../redux/image';
 
 const imageTypesList = [
@@ -48,7 +48,7 @@ class QualityImages extends React.Component {
     }
 
     saveTest(test) {
-        saveImageTest(test).then(() => {
+        saveTest(test).then(() => {
             this.updateImageList(this.state.currentType);
         }).catch((error) => {
             console.error(`Failing while saving test: ${error}`);
@@ -62,7 +62,7 @@ class QualityImages extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         return (
-            <div className="widget__container image-quality-control">
+            <div className="widget__container quality-control">
                 {
                     loading &&
                     <LoadingSpinner message={formatMessage({
@@ -151,7 +151,7 @@ QualityImages.propTypes = {
     goBack: PropTypes.func.isRequired,
 };
 
-const QualityDashboardIntl = injectIntl(QualityImages);
+const QualityImagesIntl = injectIntl(QualityImages);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -165,4 +165,4 @@ const MapDispatchToProps = dispatch => ({
     goBack: () => dispatch(push('/')),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);

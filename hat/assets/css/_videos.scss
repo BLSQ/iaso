@@ -1,0 +1,12 @@
+.video-component {
+    text-align: center;
+    overflow: hidden;
+    > section {
+        margin-top: 20px;
+    }
+    .fa-spinner {
+        display: block;
+        margin:  50px 0;
+        font-size: 35px;
+    }
+}

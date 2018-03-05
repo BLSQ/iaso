@@ -72,7 +72,7 @@ export function saveAreaInGeoloc(as_id, team) {
 }
 
 
-export function saveImageTest(test) {
+export function saveTest(test) {
     return request
         .post('/api/checks/')
         .set('Content-Type', 'application/json')

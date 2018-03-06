@@ -53,7 +53,7 @@ module.exports = {
     library: ['HAT', '[name]'],
     libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/webpack/'),
-    filename: '[name]-[hash].js',
+    filename: '[name].js',
     publicPath: WEBPACK_URL + '/static/' // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
   },
 
@@ -93,7 +93,10 @@ module.exports = {
           {
             loader: 'babel-loader',
             options: {
-              presets: ['es2015', 'react', 'stage-2']
+              presets: ['es2015', 'react', 'stage-2'],
+              minified: false,
+              sourceMaps: true,
+              sourceType: 'module'
             }
           }
         ]

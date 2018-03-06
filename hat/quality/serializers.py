@@ -5,7 +5,7 @@ from hat.quality.models import Check
 
 
 class CheckSerializer(serializers.Serializer):
-    result = serializers.IntegerField(min_value=-1, max_value=2)
+    result = serializers.IntegerField(min_value=-3, max_value=4)
     validator = serializers.CharField(required=False)
     test_id = serializers.IntegerField()
 

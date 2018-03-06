@@ -167,7 +167,7 @@ WSGI_APPLICATION = 'hat.wsgi.application'
 
 # Database
 
-DB_NAME = os.environ.get('RDS_DB_NAME', 'trypelim')
+DB_NAME = os.environ.get('RDS_DB_NAME', 'postgres')
 DB_USERNAME = os.environ.get('RDS_USERNAME', 'postgres')
 DB_PASSWORD = os.environ.get('RDS_PASSWORD', None)
 DB_HOST = os.environ.get('RDS_HOSTNAME', 'db')

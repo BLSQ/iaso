@@ -21,10 +21,15 @@ YEAR_CHOICES = zip(years, years)
 MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 MONTH_CHOICES = [(i+1, MONTHS[i]) for i in range(0, 12)]
 
+RES_POSITIVE_POSITIVE_POSITIVE = 4
+RES_POSITIVE_POSITIVE = 3
 RES_POSITIVE = 2
 RES_NEGATIVE = 1
 RES_ABSENT = 0
 RES_MISSING = -1
+RES_UNREAD = -2
+RES_UNUSED = -3
+
 
 
 class CaseAbstract(models.Model):
@@ -223,10 +228,14 @@ class CaseAbstract(models.Model):
     treatment_result = models.TextField("Résultat", null=True, blank=True)
 
     GENERAL_TEST_RESULT_CHOICES = (
+        (RES_POSITIVE_POSITIVE_POSITIVE, 'Positif +++'),
+        (RES_POSITIVE_POSITIVE, 'Positif ++'),
         (RES_POSITIVE, 'Positif'),
         (RES_NEGATIVE, 'Négatif'),
         (RES_ABSENT, 'Absent'),
         (RES_MISSING, 'Manquant'),
+        (RES_UNREAD, 'Illisible'),
+        (RES_UNUSED, 'Inutilisé'),
     )
 
     test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)

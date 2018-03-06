@@ -92,23 +92,6 @@
                     <li class="navigation__menu__item{% if view == 'dashboard:teams-devices' %}--active{% endif %}">
                         <a href="{% url 'dashboard:teams-devices' %}">{% trans 'Equipes/Appareils' %}</a>
                     </li>
-                    <li class="navigation__menu__item{% if 'quality' in ns %}--active{% endif %}">
-                        <a href="{% url 'quality:quality-control' %}">{% trans 'Qualité' %}</a>
-                        {% if 'quality' in ns %}
-                            <ul>
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == 'quality:quality-control' %}--active{% endif %}">
-                                        <a href="{% url 'quality:quality-control' %}">{% trans 'Contrôles de qualité' %}</a>
-                                    </li>
-                                {% endif %}
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == 'quality:alerts' %}--active{% endif %}">
-                                        <a href="{% url 'quality:alerts' %}">{% trans 'Alertes' %}</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        {% endif %}
-                    </li>
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
                             <a href="/dashboard/microplanning/charts/years/2017,2016,2015,2014,2013/planning_id/2">{% trans 'Microplanning' %}</a>

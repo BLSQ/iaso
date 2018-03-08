@@ -3,7 +3,6 @@ from hat.geo.models import Village
 from hat.cases.models import Case
 from hat.sync.models import VideoUpload, ImageUpload
 
-
 class Patient(models.Model):
     post_name = models.TextField("Postnom", null=True)
     last_name = models.TextField("Nom de famille", null=True)
@@ -48,6 +47,7 @@ class Test(models.Model):
     date = models.DateTimeField(null=True, blank=True)
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     index = models.IntegerField(null=True, blank=True)
+    team = models.ForeignKey("users.Team", null=True, blank=True, on_delete=models.CASCADE)
     village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
     form = models.ForeignKey(Case, on_delete=models.CASCADE)
     image = models.ForeignKey(ImageUpload, blank=True, null=True, on_delete=models.CASCADE)

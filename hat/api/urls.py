@@ -15,6 +15,7 @@ from .algo import AlgoViewSet
 from .cases import CasesViewSet
 from .qcstats import QCStatsViewSet
 from .qctests import QCTestsViewSet
+from .qc_check_stats import QCCheckStatsViewSet
 
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')
@@ -31,6 +32,7 @@ router.register(r'cases', CasesViewSet, base_name='cases')
 router.register(r'qcstats', QCStatsViewSet, base_name='qcstats')
 router.register(r'qctests', QCTestsViewSet, base_name='qctests')
 router.register(r'checks', QCChecksViewSet, base_name='checks')
+router.register(r'qccheckstats', QCCheckStatsViewSet, base_name='qc_check_stats')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

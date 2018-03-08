@@ -3,7 +3,7 @@ from hat.geo.models import Village
 from django.db.models import Count
 from django.db.models import Q
 from functools import cmp_to_key
-
+import random
 
 def village_comparator(village_1, village_2):
     positive_1 = village_1.nr_positive_cases > 0
@@ -44,13 +44,20 @@ class TempAssignation:
 
 def assign(village_id_list, coordination_id, years=[]):
     village_list = sort_villages(village_id_list, years)
-    teams = Team.objects.filter(coordination_id=coordination_id).order_by('-UM', '-capacity')
+    teams = list(Team.objects.filter(coordination_id=coordination_id).order_by('-UM', '-capacity'))
     assignations = {team.id: TempAssignation() for team in teams}
     # team_id -> (population_reached, assignations
     not_assigned = []
+    UMS = list(filter(lambda t: t.UM, teams))
+    MUMS = list(filter(lambda t: not t.UM, teams))
+
     for village in village_list:
         village.assigned = False
-        for team in teams:
+        random.shuffle(UMS)
+        random.shuffle(MUMS)
+        current_team_list = UMS + MUMS
+
+        for team in current_team_list:
             temp_assignation = assignations[team.id]
             if temp_assignation.population_reached + village.population < team.capacity:
                 #test if village in ZS/AS of team

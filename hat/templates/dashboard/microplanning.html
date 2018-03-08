@@ -1,13 +1,21 @@
 {% extends 'app.html' %}
 {% load i18n %}
+{% load static %}
 {% load render_bundle from webpack_loader %}
 
+{% block extrajs %}
+    <script type="text/javascript">
+        var STATIC_URL = "{{ STATIC_URL }}";
+        var ZONES_PATH = STATIC_URL + 'json/zones.json';
+        var AREAS_PATH = STATIC_URL + 'json/areas.json';
+    </script>
+{% endblock %}
 {% block header %}
   <h1 class="header__title">{% trans 'Microplanning' %}</h1>
 {% endblock %}
 
 {% block content %}
-
+<!-- MEDIA_URL = {{MEDIA_URL}}  -->
   <div class="content">
     <div id="app"></div>
   </div>

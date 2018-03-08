@@ -13,16 +13,16 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='dashboard:home', permanent=False), name='index'),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('hat.api.urls', 'api')),
-    url(r'^cases/', include('hat.cases.urls', 'cases')),
-    url(r'^dashboard/', include('hat.dashboard.urls', 'dashboard')),
-    url(r'^datasets/', include('hat.import_export.urls', 'datasets')),
+    url(r'^api/', include('hat.api.urls')),
+    url(r'^cases/', include('hat.cases.urls')),
+    url(r'^dashboard/', include('hat.dashboard.urls')),
+    url(r'^datasets/', include('hat.import_export.urls')),
     url(r'^login', auth.views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout', auth.views.logout, {'next_page': 'login'}, name='logout'),
-    url(r'^maintenance/', include('hat.maintenance.urls', 'maintenance')),
-    url(r'^quality/', include('hat.quality.urls', 'quality')),
+    url(r'^maintenance/', include('hat.maintenance.urls')),
+    url(r'^quality/', include('hat.quality.urls')),
     url(r'^rq/', include('django_rq.urls')),
-    url(r'^sync/', include('hat.sync.urls', 'sync')),
+    url(r'^sync/', include('hat.sync.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

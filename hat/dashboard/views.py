@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from hat.planning.models import Planning, Assignation
 from hat.users.models import Team, Coordination
@@ -54,7 +55,8 @@ def stats(request: HttpRequest) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def microplanning(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/microplanning.html')
+
+    return render(request, 'dashboard/microplanning.html', {'STATIC_URL': settings.STATIC_URL})
 
 @login_required()
 @permission_required('cases.view')
@@ -94,9 +96,9 @@ def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
     writer = csv.writer(response)
     planning = get_object_or_404(Planning, pk=planning_id)
 
-    assignations = Assignation.objects.filter(planning=planning).order_by('team__name')
-    writer.writerow(['Equipe', 'Coordination', 'Capacité', 'UM', 'Village', 'Latitude',
-                     'Longitude', 'Population', 'AS', 'ZS', 'Province'])
+    assignations = Assignation.objects.filter(planning=planning).order_by('team__name', 'village__population')
+    writer.writerow(['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
+                     'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas'])
     for assignation in assignations:
 
         team = assignation.team
@@ -115,7 +117,8 @@ def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
                          village.population,
                          village.AS.name,
                          village.AS.ZS.name,
-                         village.AS.ZS.province.name
+                         village.AS.ZS.province.name,
+                         village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017], confirmed_case=True).count()
                          ])
 
     return response

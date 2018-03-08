@@ -9,7 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="keywords" content="">
+    {% block extrajs %}
 
+    {% endblock %}
     {% if DEV_SERVER %}
       <!-- this is for CSS Hot reloading in DEV -->
       {% render_bundle 'common' %}

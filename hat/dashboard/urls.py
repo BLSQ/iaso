@@ -1,6 +1,8 @@
 from django.conf.urls import url
 from . import views
 
+app_name = 'dashboard'
+
 urlpatterns = [
     # url(r'^$', views.index, name='index'),
     # this app takes gives the rest parameters to redux router

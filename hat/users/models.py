@@ -42,7 +42,7 @@ class Coordination(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=255)
-    coordination = models.ForeignKey(Coordination, null=True)
+    coordination = models.ForeignKey(Coordination, null=True, on_delete=models.CASCADE)
     AS = models.ManyToManyField(AS, blank=True)
     capacity = models.IntegerField()
     UM = models.BooleanField(default=True)
@@ -88,7 +88,7 @@ class Profile(models.Model):
         help_text=_('When including Yasa Bonga, please also add Yassa Bonga\
          or Yasa-Bonga to take into account spelling differences.')
     )
-    team = models.ForeignKey(Team, null=True, blank=True)
+    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
 
 
 @receiver(post_save, sender=User)

@@ -8,6 +8,7 @@ from django.http.request import HttpRequest
 from hat.tasks.views import task_state, task_done
 from . import views
 
+app_name = 'datasets'
 
 ################################################################################
 # Download/Upload helpers
@@ -66,7 +67,7 @@ def get_kwargs_done(namespace: str) -> Dict[str, Any]:
 # url patterns
 ################################################################################
 
-import_cases_urlpatterns = [
+import_cases_urlpatterns = ([
     url(r'^upload$', view=views.upload_cases, name='upload'),
     url(r'^state/(?P<task_id>[a-z0-9-]+)$', view=task_state, name='state',
         kwargs=get_kwargs_state('import_cases'),
@@ -74,9 +75,9 @@ import_cases_urlpatterns = [
     url(r'^done/(?P<task_id>[a-z0-9-]+)$', view=task_done, name='done',
         kwargs=get_kwargs_done('import_cases'),
         ),
-]
+], 'import_cases')
 
-import_locations_urlpatterns = [
+import_locations_urlpatterns = ([
     url(r'^upload$', view=views.upload_locations, name='upload'),
     url(r'^state/(?P<task_id>[a-z0-9-]+)$', view=task_state, name='state',
         kwargs=get_kwargs_state('import_locations'),
@@ -84,9 +85,9 @@ import_locations_urlpatterns = [
     url(r'^done/(?P<task_id>[a-z0-9-]+)$', view=task_done, name='done',
         kwargs=get_kwargs_done('import_locations'),
         ),
-]
+], 'import_locations')
 
-import_reconciled_urlpatterns = [
+import_reconciled_urlpatterns = ([
     url(r'^upload$', view=views.upload_reconciled, name='upload'),
     url(r'^state/(?P<task_id>[a-z0-9-]+)$', view=task_state, name='state',
         kwargs=get_kwargs_state('import_reconciled'),
@@ -94,12 +95,12 @@ import_reconciled_urlpatterns = [
     url(r'^done/(?P<task_id>[a-z0-9-]+)$', view=task_done, name='done',
         kwargs=get_kwargs_done('import_reconciled'),
         ),
-]
+], 'import_reconciled')
 
 
 urlpatterns = [
     url('^$', views.index, name='index'),
-    url('^import/', include(import_cases_urlpatterns, 'import_cases')),
-    url('^import_locations/', include(import_locations_urlpatterns, 'import_locations')),
-    url('^import_reconciled/', include(import_reconciled_urlpatterns, 'import_reconciled')),
+    url('^import/', include(import_cases_urlpatterns)),
+    url('^import_locations/', include(import_locations_urlpatterns)),
+    url('^import_reconciled/', include(import_reconciled_urlpatterns)),
 ]

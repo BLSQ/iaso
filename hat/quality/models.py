@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 
 
 class Check(models.Model):
-    test = models.ForeignKey(Test)
-    validator = models.ForeignKey(User)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    validator = models.ForeignKey(User, on_delete=models.CASCADE)
     result = models.IntegerField(choices=CaseAbstract.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -211,7 +211,7 @@ class CaseAbstract(models.Model):
     village = models.TextField(null=True)
     corrected_village = models.TextField(null=True)
 
-    normalized_village = models.ForeignKey(Village, null=True)
+    normalized_village = models.ForeignKey(Village, null=True, on_delete=models.SET_NULL)
     normalized_village_not_found = models.NullBooleanField(default=False)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)

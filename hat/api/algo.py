@@ -21,7 +21,6 @@ class AlgoViewSet(viewsets.ViewSet):
     def list(self, request):
         return Response({"res":"There is an algo here"})
 
-
     def update(self, request, pk=None):
         village_ids = request.data.get('village_id', None).split(',')
         coordination_id = request.data.get('coordination_id', None)

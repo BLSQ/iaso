@@ -1,6 +1,8 @@
 from django.conf.urls import url
 from . import views
 
+app_name = 'cases'
+
 urlpatterns = [
     url(r'^duplicates$', view=views.duplicatespair_list, name='duplicates_list'),
     url(r'^duplicates/(?P<pair_id>[0-9]+)',

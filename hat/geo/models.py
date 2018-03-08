@@ -25,7 +25,7 @@ class Province(models.Model):
 
 class ZS(models.Model):
     name = models.CharField(max_length=255)
-    province = models.ForeignKey(Province)
+    province = models.ForeignKey(Province, on_delete=models.CASCADE)
     aliases = ArrayField(
         models.CharField(max_length=255, blank=True),
         size=4,
@@ -49,7 +49,7 @@ class ZS(models.Model):
 
 class AS(models.Model):
     name = models.CharField(max_length=255)
-    ZS = models.ForeignKey(ZS)
+    ZS = models.ForeignKey(ZS, on_delete=models.CASCADE)
     aliases = ArrayField(
         models.CharField(max_length=255, blank=True),
         size=4,
@@ -73,7 +73,7 @@ class AS(models.Model):
 
 class Village(models.Model):
     name = models.CharField(max_length=255)
-    AS = models.ForeignKey(AS)
+    AS = models.ForeignKey(AS, on_delete=models.CASCADE)
     aliases = ArrayField(
         models.CharField(max_length=255, blank=True),
         size=4,

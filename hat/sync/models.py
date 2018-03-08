@@ -113,13 +113,13 @@ class DeviceEvent(models.Model):
         (COMMENT, 'Comment')
     )
 
-    device = models.ForeignKey(DeviceDB)
+    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
     date = models.DateTimeField(null=True, auto_now_add=True)
-    status = models.ForeignKey(DeviceStatus, null=True, blank=True)
-    action = models.ForeignKey(DeviceAction, null=True, blank=True)
+    status = models.ForeignKey(DeviceStatus, null=True, blank=True, on_delete=models.CASCADE)
+    action = models.ForeignKey(DeviceAction, null=True, blank=True, on_delete=models.CASCADE)
     comment = models.TextField(null=True, blank=True)
     event_type = models.IntegerField(choices=EVENT_TYPES, default=STATUS_CHANGE)
-    reporter = models.ForeignKey(User, null=True)
+    reporter = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return ("event %s - device %s - status %s - action %s - comment %s" % (self.event_type,
@@ -203,7 +203,7 @@ class VideoUploadForm(ModelForm):
 class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
-    device = models.ForeignKey(DeviceDB)
+    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
     doc = JSONField()
 
     def __str__(self):

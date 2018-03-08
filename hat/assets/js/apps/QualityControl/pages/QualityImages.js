@@ -7,7 +7,8 @@ import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
-import { getRequest } from '../../../utils/fetchData';
+import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
+import { getRequest, createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { imageActions } from '../redux/image';
 
@@ -34,6 +35,16 @@ class QualityImages extends React.Component {
         this.updateImageList(this.state.currentType);
     }
 
+    componentWillReceiveProps(nextProps) {
+        if ((nextProps.params.date_from !== this.props.params.date_from) ||
+            (nextProps.params.date_to !== this.props.params.date_to)) {
+            this.updateImageList(
+                this.state.currentType,
+                nextProps.params.date_from,
+                nextProps.params.date_to,
+            );
+        }
+    }
 
     onChangetype(newtype) {
         this.setState({
@@ -42,8 +53,8 @@ class QualityImages extends React.Component {
         this.updateImageList(newtype);
     }
 
-    updateImageList(type) {
-        const url = `/api/qctests/?type=${type}&limit=1&checked=false`;
+    updateImageList(type, from = this.props.params.date_from, to = this.props.params.date_to) {
+        const url = `/api/qctests/?type=${type}&limit=1&checked=false&from=${from}&to=${to}`;
         getRequest(url, this.props.dispatch).then((response) => {
             this.props.dispatch(imageActions.setImageList(response));
         });
@@ -78,7 +89,11 @@ class QualityImages extends React.Component {
                         <h2 className="widget__heading">
                             <button
                                 className="button--small"
-                                onClick={() => this.props.goBack()}
+                                onClick={() =>
+                                    this.props.redirectTo('', {
+                                        date_from: this.props.params.date_from,
+                                        date_to: this.props.params.date_to,
+                                    })}
                             >
                                 <i className="fa fa-arrow-left" />
                             </button>
@@ -108,6 +123,15 @@ class QualityImages extends React.Component {
                                     />
                                 </section>
                             }
+                            <PeriodSelectorComponent
+                                dateFrom={this.props.params.date_from}
+                                dateTo={this.props.params.date_to}
+                                onChangeDate={(dateFrom, dateTo) =>
+                                    this.props.redirectTo('images', {
+                                        date_from: dateFrom,
+                                        date_to: dateTo,
+                                    })}
+                            />
                         </h2>
                         <div className="type-filter">
                             <div className="filter__label">
@@ -147,11 +171,12 @@ QualityImages.defaultProps = {
 };
 
 QualityImages.propTypes = {
+    params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
     imageList: PropTypes.object,
     dispatch: PropTypes.func.isRequired,
-    goBack: PropTypes.func.isRequired,
 };
 
 const QualityImagesIntl = injectIntl(QualityImages);
@@ -163,7 +188,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    goBack: () => dispatch(push('/')),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params).replace('/charts', '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);

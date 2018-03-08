@@ -22,6 +22,7 @@ class ImageValidatorComponent extends React.Component {
                 </div>
                 <ImageComponent imageItem={this.props.imageItem} />
                 <ImageFormComponent
+                    imageItem={this.props.imageItem}
                     error={this.props.error}
                     submitForm={(test) => {
                         this.props.saveTest({ ...test, test_id: this.props.imageItem.id });

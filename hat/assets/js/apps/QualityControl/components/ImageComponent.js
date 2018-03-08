@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
-const maxValue = 1000;
+const maxValue = 800;
 
 const initiaState = {
     imgLoaded: false,

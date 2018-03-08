@@ -19,7 +19,7 @@ class VideoValidatorComponent extends React.Component {
                     ID:
                     <span>{this.props.videoItem.id}</span>
                     TYPE:
-                    <span>PG / VIDEO</span>
+                    <span>VIDEO</span>
                 </div>
                 <div className="quality-video-container">
                     <VideoComponent videoItem={this.props.videoItem} />

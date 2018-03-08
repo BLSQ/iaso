@@ -3,11 +3,12 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import VideoValidatorComponent from '../components/VideoValidatorComponent';
-import { getRequest } from '../../../utils/fetchData';
+
+import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
+import { getRequest, createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { videoActions } from '../redux/video';
 
@@ -21,9 +22,18 @@ class QualityVideos extends React.Component {
         this.updateVideoList();
     }
 
+    componentWillReceiveProps(nextProps) {
+        if ((nextProps.params.date_from !== this.props.params.date_from) ||
+            (nextProps.params.date_to !== this.props.params.date_to)) {
+            this.updateVideoList(
+                nextProps.params.date_from,
+                nextProps.params.date_to,
+            );
+        }
+    }
 
-    updateVideoList() {
-        const url = '/api/qctests/?type=PG&limit=1&checked=false';
+    updateVideoList(from = this.props.params.date_from, to = this.props.params.date_to) {
+        const url = `/api/qctests/?type=PG&limit=1&checked=false&from=${from}&to=${to}`;
         getRequest(url, this.props.dispatch).then((response) => {
             this.props.dispatch(videoActions.setVideoList(response));
         });
@@ -58,7 +68,11 @@ class QualityVideos extends React.Component {
                         <h2 className="widget__heading">
                             <button
                                 className="button--small"
-                                onClick={() => this.props.goBack()}
+                                onClick={() =>
+                                    this.props.redirectTo('', {
+                                        date_from: this.props.params.date_from,
+                                        date_to: this.props.params.date_to,
+                                    })}
                             >
                                 <i className="fa fa-arrow-left" />
                             </button>
@@ -88,6 +102,15 @@ class QualityVideos extends React.Component {
                                     />
                                 </section>
                             }
+                            <PeriodSelectorComponent
+                                dateFrom={this.props.params.date_from}
+                                dateTo={this.props.params.date_to}
+                                onChangeDate={(dateFrom, dateTo) =>
+                                    this.props.redirectTo('videos', {
+                                        date_from: dateFrom,
+                                        date_to: dateTo,
+                                    })}
+                            />
                         </h2>
                     </div>
 
@@ -109,11 +132,12 @@ QualityVideos.defaultProps = {
 };
 
 QualityVideos.propTypes = {
+    params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
     videoList: PropTypes.object,
     dispatch: PropTypes.func.isRequired,
-    goBack: PropTypes.func.isRequired,
 };
 
 const QualityVideosIntl = injectIntl(QualityVideos);
@@ -125,7 +149,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    goBack: () => dispatch(push('/')),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params).replace('/charts', '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityVideosIntl);

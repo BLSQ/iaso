@@ -4,6 +4,7 @@ import ImageValidatorComponent from './ImageValidatorComponent';
 import ImageFormComponent from './ImageFormComponent';
 import VideoFormComponent from './VideoFormComponent';
 import VideoValidatorComponent from './VideoValidatorComponent';
+import PeriodSelectorComponent from './PeriodSelectorComponent';
 
 export {
     ImageComponent,
@@ -12,4 +13,5 @@ export {
     ImageFormComponent,
     VideoFormComponent,
     VideoValidatorComponent,
+    PeriodSelectorComponent,
 };

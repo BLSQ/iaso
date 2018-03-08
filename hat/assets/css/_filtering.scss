@@ -41,6 +41,9 @@ $filter-container-height: 2rem;
 }
 
 $select-width: 120px;
+.date-select-container {
+    display: inline-block;
+}
 .filter__container__select {
     $triangle-size: 4px;
     &:after {

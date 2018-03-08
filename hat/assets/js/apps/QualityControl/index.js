@@ -28,11 +28,11 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             component={QualityDashboard}
         />,
         <Route
-            path="/videos"
+            path="/videos/date_from/:date_from/date_to/:date_to"
             component={QualityVideos}
         />,
         <Route
-            path="/images"
+            path="/images/date_from/:date_from/date_to/:date_to"
             component={QualityImages}
         />,
         <Route

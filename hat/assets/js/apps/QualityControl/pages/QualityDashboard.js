@@ -3,23 +3,16 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import DatePicker from 'react-datepicker';
-import moment from 'moment';
 
-import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
+import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
 import { dashboardActions } from '../redux/dashboard';
 
 class QualityDashboard extends React.Component {
     constructor(props) {
         super(props);
-        moment.locale('fr');
-        this.state = {
-            dateFrom: moment(props.params.date_from),
-            dateTo: moment(props.params.date_to),
-            dateFormat: 'YYYY-MM-DD',
-        };
+        this.state = {};
     }
 
     componentDidMount() {
@@ -27,25 +20,13 @@ class QualityDashboard extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            dateFrom: moment(nextProps.params.date_from),
-            dateTo: moment(nextProps.params.date_to),
-        });
         if ((nextProps.params.date_from !== this.props.params.date_from) ||
             (nextProps.params.date_to !== this.props.params.date_to)) {
-            this.updateDashboardInfos();
+            this.updateDashboardInfos(nextProps.params.date_from, nextProps.params.date_to);
         }
     }
-
-    onChangeDate(date, key) {
-        this.props.redirectTo('', {
-            ...this.props.params,
-            [key]: moment(date).format(this.state.dateFormat),
-        });
-    }
-
-    updateDashboardInfos() {
-        const url = `/api/qcstats?from=${this.props.params.date_from}&to=${this.props.params.date_to}`;
+    updateDashboardInfos(from = this.props.params.date_from, to = this.props.params.date_to) {
+        const url = `/api/qcstats?from=${from}&to=${to}`;
         this.props.getDashboardInfos(url);
     }
 
@@ -68,44 +49,15 @@ class QualityDashboard extends React.Component {
                         <div className="widget__header">
                             <h2 className="widget__heading">
                                 Dashboard:
-                                <div className="filter__container__select date-select">
-                                    <label
-                                        htmlFor="date-from"
-                                        className="filter__container__select__label"
-                                    >
-                                        <i className="fa fa-calendar" />
-                                        <FormattedMessage
-                                            id="statspage.label.datefrom"
-                                            defaultMessage="From"
-                                        />
-                                    </label>
-                                    <DatePicker
-                                        dateFormat={this.state.dateFormat}
-                                        dateFormatCalendar={this.state.dateFormat}
-                                        selected={this.state.dateFrom}
-                                        onChange={date => this.onChangeDate(date, 'date_from')}
-                                        maxDate={this.state.dateTo}
-                                    />
-                                </div>
-                                <div className="filter__container__select date-select">
-                                    <label
-                                        htmlFor="date-to"
-                                        className="filter__container__select__label"
-                                    >
-                                        <i className="fa fa-calendar" />
-                                        <FormattedMessage
-                                            id="statspage.label.dateto"
-                                            defaultMessage="To"
-                                        />
-                                    </label>
-                                    <DatePicker
-                                        dateFormat={this.state.dateFormat}
-                                        dateFormatCalendar={this.state.dateFormat}
-                                        selected={this.state.dateTo}
-                                        minDate={this.state.dateFrom}
-                                        onChange={date => this.onChangeDate(date, 'date_to')}
-                                    />
-                                </div>
+                                <PeriodSelectorComponent
+                                    dateFrom={this.props.params.date_from}
+                                    dateTo={this.props.params.date_to}
+                                    onChangeDate={(dateFrom, dateTo) =>
+                                        this.props.redirectTo('', {
+                                            date_from: dateFrom,
+                                            date_to: dateTo,
+                                        })}
+                                />
                             </h2>
                         </div>
                         <div className="widget__content--flex">
@@ -139,7 +91,7 @@ class QualityDashboard extends React.Component {
                                 </p>
                                 {
                                     this.props.infos.videos.no_checks_count > 0 &&
-                                    <button className="button--small" onClick={() => this.props.redirectTo('/videos', {})}>
+                                    <button className="button--small" onClick={() => this.props.redirectTo('/videos', this.props.params)}>
                                         <i className="fa fa-video-camera" />
                                         <FormattedMessage
                                             id="quality.label.checkvideo"
@@ -178,7 +130,7 @@ class QualityDashboard extends React.Component {
                                 </p>
                                 {
                                     this.props.infos.images.no_checks_count > 0 &&
-                                    <button className="button--small" onClick={() => this.props.redirectTo('/images', {})}>
+                                    <button className="button--small" onClick={() => this.props.redirectTo('/images', this.props.params)}>
                                         <i className="fa fa-picture-o" />
                                         <FormattedMessage
                                             id="quality.label.checkimages"

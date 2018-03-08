@@ -17,11 +17,18 @@ class QCTestsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+        from_date = request.GET.get("from", None)
+        to_date = request.GET.get("to", None)
         checked = request.GET.get("checked", None)
         limit = int(request.GET.get("limit", 1))
         ttype = request.GET.get("type", None)
 
         qs = Test.objects.all()
+
+        if from_date is not None:
+            qs = qs.filter(date__date__gte=from_date)
+        if to_date is not None:
+            qs = qs.filter(date__date__lte=to_date)
 
         if checked is not None:
             qs = qs.annotate(num_checks=Count('check'))
@@ -42,5 +49,6 @@ class QCTestsViewSet(viewsets.ViewSet):
         remaining = qs.count()
         qs = qs[:limit]
 
-        res = {'results': [test.to_dict() for test in qs], 'remaining_count': remaining}
+        res = {
+            'results': [test.to_dict() for test in qs], 'remaining_count': remaining}
         return Response(res)

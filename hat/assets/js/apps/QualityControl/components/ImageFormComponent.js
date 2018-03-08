@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import ResultTestTypeConstant from '../../../utils/constants/ResultTestTypeConstant';
+import { CattTypeConstant, RdtTypeConstant } from '../../../utils/constants/ImageTypeConstant';
 
 
 class ImageFormComponent extends React.Component {
@@ -30,9 +30,35 @@ class ImageFormComponent extends React.Component {
     }
 
     render() {
+        const typeConstant = this.props.imageItem.type === 'RDT' ?
+            RdtTypeConstant : CattTypeConstant;
+
         return (
             <form>
                 <div>
+                    {
+                        !this.props.imageItem.index && this.props.imageItem.type === 'CATT' &&
+                        <section>
+                            <div className="quality-label inline">
+                                <FormattedMessage
+                                    id="quality.image.noindex"
+                                    defaultMessage="aucun index fourni"
+                                />
+                            </div>
+                        </section>
+                    }
+                    {
+                        this.props.imageItem.index &&
+                        <section>
+                            <div className="quality-label inline">
+                                <FormattedMessage
+                                    id="quality.image.index"
+                                    defaultMessage="Test n°:"
+                                />:
+                            </div>
+                            <div>{this.props.imageItem.index}</div>
+                        </section>
+                    }
                     <section>
                         <div className="quality-label inline">
                             <FormattedMessage
@@ -41,7 +67,7 @@ class ImageFormComponent extends React.Component {
                             />:
                         </div>
                         {
-                            ResultTestTypeConstant.map((type) => {
+                            typeConstant.map((type) => {
                                 const messageProps = {
                                     id: type.id,
                                     defaultMessage: type.defaultMessage,
@@ -55,7 +81,7 @@ class ImageFormComponent extends React.Component {
                                             value={type.value}
                                             onChange={() => this.changeResult(type.value)}
                                         />
-                                        <FormattedMessage {... messageProps} />
+                                        <FormattedMessage {...messageProps} />
                                     </div>
                                 );
                             })
@@ -90,6 +116,7 @@ ImageFormComponent.defaultProps = {
 ImageFormComponent.propTypes = {
     submitForm: PropTypes.func.isRequired,
     error: PropTypes.object,
+    imageItem: PropTypes.object.isRequired,
 };
 
 const ImageFormComponentIntl = injectIntl(ImageFormComponent);

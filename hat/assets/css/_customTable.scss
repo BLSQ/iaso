@@ -1,0 +1,120 @@
+body {
+    .ReactTable {
+        .rt-th,
+        .rt-td {
+            padding: 10px;
+        }
+        .rt-thead .rt-th,
+        .rt-thead .rt-td {
+            border-right: 1px solid $gray;
+            outline: none;
+            box-shadow: none;
+        }
+        .rt-thead .rt-th {
+            height: 40px;
+            padding-top: 9px;
+            box-sizing: border-box;
+        }
+        .rt-thead .rt-th.-sort-asc,
+        .rt-thead .rt-td.-sort-asc,
+        .rt-thead .rt-th.-sort-desc,
+        .rt-thead .rt-td.-sort-desc {
+            box-shadow: none;
+            display: inline-block;
+            font-weight: bold;
+            border-left: 1px solid $gray;
+            &:before {
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: inherit;
+                text-rendering: auto;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                content: "\f063";
+                color: $blue;
+                position: absolute;
+                left: 10px;
+                top: 14px;
+            }
+        }
+        .rt-thead .rt-th.-sort-desc,
+        .rt-thead .rt-td.-sort-desc {
+            &:before {
+                content: "\f062";
+            }
+        }
+        .rt-resizer {
+            right: 0;
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            border-left: 1px solid $gray;
+            &:before {
+                color: $blue;
+                content: "\f07e";
+                position: relative;
+                top: 14px;
+            }
+        }
+        .rt-thead.-filters {
+            .rt-th {
+                height: 50px;
+                input {
+                    box-shadow: none;
+                    outline: none;
+                }
+            }
+        }
+        .-pagination .-previous,
+        .-pagination .-next {
+            .-btn {
+                display: inline-block;
+                font-size: 0;
+                width: auto;
+                padding-left: 15px;
+                padding-right: 15px;
+                float: right;
+                color: white;
+                background: $blue;
+                &:hover {
+                    background: darken($blue, 10%);
+                }
+                &:before {
+                    font: normal normal normal 14px/1 FontAwesome;
+                    font-size: inherit;
+                    text-rendering: auto;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    position: relative;
+                    font-size: 14px;
+                    display: block;
+                    content: "\f048";
+                }
+            }
+        }
+        .-pagination .-next {
+            .-btn {
+                float: left;
+                &:before {
+                    content: "\f051";
+                }
+            }
+        }
+        .rt-thead.-header {
+            .rt-th {
+                text-transform: CAPITALIZE;
+                font-size: 12px;
+                padding-top: 12px;
+                &.rt-resizable-header-content {
+                    margin-left: -28%;
+                }
+            }
+        }
+        .rt-tbody .rt-th,
+        .rt-tbody .rt-td {
+            text-align: center;
+        }
+    }
+}

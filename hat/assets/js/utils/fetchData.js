@@ -6,10 +6,9 @@ import { push } from 'react-router-redux'
 
 const req = require('superagent');
 
-export function createUrl(params) {
+export function createUrl(params, url = '/charts') {
   // Create a url from an params object
   // e.g.: `{foo: 11, bar: 22} => '/foo/11/bar/22'`
-  let url = '/charts'
   Object.keys(params).forEach((key) => {
     const value = params[key]
     if (value) {

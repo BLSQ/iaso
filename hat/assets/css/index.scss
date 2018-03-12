@@ -2,6 +2,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "~font-awesome/scss/font-awesome";
 @import "~leaflet/dist/leaflet.css";
 @import "~react-select/dist/react-select.css";
+@import '~react-table/react-table.css';
 @import "~video.js/dist/video-js.css";
 @import "reset";
 @import "settings";
@@ -27,6 +28,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "quality-control";
 @import "images";
 @import "videos";
+@import "customTable";
 
 body {
   background-color: $background-gray;

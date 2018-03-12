@@ -24,7 +24,7 @@
   }
 }
 
-[class^='button'] {
+[class^='button'], .-btn {
   @include button;
   .fa { /* give font awesome icons in buttons a margin */
     margin-right: 0.4em;

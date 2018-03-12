@@ -7,7 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import VideoValidatorComponent from '../components/VideoValidatorComponent';
 
-import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { videoActions } from '../redux/video';
@@ -149,7 +149,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params).replace('/charts', '')}`)),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityVideosIntl);

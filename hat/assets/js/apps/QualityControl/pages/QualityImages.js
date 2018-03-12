@@ -7,7 +7,7 @@ import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
-import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { imageActions } from '../redux/image';
@@ -188,7 +188,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params).replace('/charts', '')}`)),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);

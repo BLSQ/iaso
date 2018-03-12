@@ -44,7 +44,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
 
         temp_dict = {}
         for team in teams:
-            d = {'id': team.id, 'name': team.name}
+            d = {'id': team.id, 'name': team.name, 'UM': team.UM}
             for t in test_types:
                 d[t] = TypeCounts()
             temp_dict[team.id] = d
@@ -66,7 +66,8 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
             team_dict = temp_dict[team_id]
             json_dict = {
                 'id': team_dict['id'],
-                'name': team_dict['name']
+                'name': team_dict['name'],
+                'UM': team_dict['UM']
             }
 
             for the_type in test_types:

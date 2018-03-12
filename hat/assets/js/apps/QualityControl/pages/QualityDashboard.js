@@ -6,7 +6,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
-import PeriodSelectorComponent from '../components/PeriodSelectorComponent';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { dashboardActions } from '../redux/dashboard';
 
 class QualityDashboard extends React.Component {
@@ -141,7 +141,13 @@ class QualityDashboard extends React.Component {
                             </div>
                         </div>
                         <div className="widget__content no-padding-top">
-                            <button className="button--small" onClick={() => this.props.redirectTo('/stats', {})}>
+                            <button
+                                className="button--small"
+                                onClick={() => this.props.redirectTo('/stats', {
+                                    ...this.props.params,
+                                    order: 'id',
+                                })}
+                            >
                                 <i className="fa fa-calculator" />
                                 <FormattedMessage
                                     id="quality.label.stats"
@@ -177,7 +183,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params).replace('/charts', '')}`)),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     getDashboardInfos: url => getRequest(url, dispatch).then((response) => {
         dispatch(dashboardActions.setDashboardInfo(response));
     }),

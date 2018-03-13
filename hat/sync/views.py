@@ -283,7 +283,7 @@ def image_upload(request: HttpRequest) -> HttpResponse:
 @authentication_classes([])
 @permission_classes([])
 def video_upload(request: HttpRequest) -> HttpResponse:
-    video_form = ImageUploadForm(request.POST, request.FILES)
+    video_form = VideoUploadForm(request.POST, request.FILES)
     if video_form.is_valid():
         video_form.save()
         return JsonResponse({"Result": "Upload ok"})

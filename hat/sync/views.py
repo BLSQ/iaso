@@ -264,16 +264,17 @@ def signin(request: HttpRequest) -> HttpResponse:
 @authentication_classes([])
 @permission_classes([])
 def image_upload(request: HttpRequest) -> HttpResponse:
-    img = ImageUploadForm(request.POST, request.FILES)
-    if img.is_valid():
-        img.save()
+    img_form = ImageUploadForm(request.POST, request.FILES)
+    if img_form.is_valid():
+        img = img_form.save()
         if img.group_id:
-            test_group = TestGroup.objects.get_or_create(group_id=img.group_id)
-            test_group.type = img.type
-            test_group.save()
+            test_group, created = TestGroup.objects.get_or_create(group_id=img.group_id)
+            if created:
+                test_group.type = img.type
+                test_group.save()
         return JsonResponse({"Result": "Upload ok"})
     else:
-        return JsonResponse(img.errors, status=400)
+        return JsonResponse(img_form.errors, status=400)
 
 
 @csrf_exempt

@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
+from hat.constants import TEST_TYPE_CHOICES
+
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -156,7 +158,7 @@ class ImageUpload(models.Model):
     participant_uuid = models.TextField(null=True, blank=True, db_index=True)
     hat_id = models.TextField(null=True, blank=True)
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='catt')
+    type = models.TextField(default='catt', choices=TEST_TYPE_CHOICES)
     image = models.FileField(upload_to="images/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -174,7 +176,7 @@ class VideoUpload(models.Model):
     participant_uuid = models.TextField(db_index=True)
     hat_id = models.TextField()
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='pg')
+    type = models.TextField(default='pg', choices=TEST_TYPE_CHOICES)
     video = models.FileField(upload_to="videos/")
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -191,13 +193,13 @@ class VideoUpload(models.Model):
 class ImageUploadForm(ModelForm):
     class Meta:
         model = ImageUpload
-        fields = ('image', 'participant_uuid', 'hat_id', 'group_id')
+        fields = ('image', 'participant_uuid', 'hat_id', 'group_id', 'type')
 
 
 class VideoUploadForm(ModelForm):
     class Meta:
         model = VideoUpload
-        fields = ('video', 'participant_uuid', 'hat_id', 'group_id')
+        fields = ('video', 'participant_uuid', 'hat_id', 'group_id', 'type')
 
 
 class JSONDocument(models.Model):

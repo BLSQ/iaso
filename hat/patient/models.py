@@ -2,6 +2,8 @@ from django.db import models
 from hat.geo.models import Village
 from hat.cases.models import Case
 from hat.sync.models import VideoUpload, ImageUpload
+from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+
 
 class Patient(models.Model):
     post_name = models.TextField("Postnom", null=True)
@@ -25,23 +27,6 @@ class Patient(models.Model):
 
 
 class Test(models.Model):
-    CATT = 'CATT'
-    PG = 'PG'
-    CTCWOO = 'ctcwoo'
-    MAECT = 'maect'
-    RDT = 'RDT'
-
-    TEST_TYPE_CHOICES = (
-        (CATT, 'CATT'),
-        (PG, 'PG'),
-        (CTCWOO, 'ctcwoo'),
-        (MAECT, 'maect'),
-        (RDT, 'RDT')
-    )
-
-    TYPES_WITH_IMAGES = set([CATT, RDT])
-    TYPES_WITH_VIDEOS = set([PG, CTCWOO, MAECT])
-
     type = models.TextField("Type", choices=TEST_TYPE_CHOICES)
     note = models.TextField("Note", null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
@@ -65,11 +50,11 @@ class Test(models.Model):
             "index": self.index,
         }
 
-        if self.type in Test.TYPES_WITH_IMAGES:
+        if self.type in TYPES_WITH_IMAGES:
             if self.image:
                 res['image'] = self.image.image.url
 
-        if self.type in Test.TYPES_WITH_VIDEOS:
+        if self.type in TYPES_WITH_VIDEOS:
             if self.video:
                 res['video'] = self.video.video.url
 

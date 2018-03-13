@@ -7,7 +7,7 @@ class VideoFormComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            result: undefined,
+            result: -3,
             isClear: false,
             isGoodPlace: false,
             isConfirmedCase: false,
@@ -17,15 +17,13 @@ class VideoFormComponent extends React.Component {
 
     componentWillReceiveProps() {
         this.setState({
-            result: undefined,
+            result: -3,
         });
     }
 
     onSubmit(e) {
         e.preventDefault();
-        this.props.submitForm({
-            result: this.state,
-        });
+        this.props.submitForm(this.state);
     }
 
     changeOption(key) {

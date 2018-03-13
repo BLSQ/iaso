@@ -260,7 +260,7 @@ def signin(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @api_view(http_method_names=['POST'])
-@throttle_classes([AnonRateThrottle])
+#@throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def image_upload(request: HttpRequest) -> HttpResponse:
@@ -279,7 +279,7 @@ def image_upload(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @api_view(http_method_names=['POST'])
-@throttle_classes([AnonRateThrottle])
+#@throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def video_upload(request: HttpRequest) -> HttpResponse:

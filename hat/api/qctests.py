@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from hat.patient.models import Test
+from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -41,9 +42,9 @@ class QCTestsViewSet(viewsets.ViewSet):
             qs = qs.filter(type=ttype)
 
             if checked != 'true':
-                if ttype in Test.TYPES_WITH_IMAGES:
+                if ttype in TYPES_WITH_IMAGES:
                     qs = qs.exclude(image=None)
-                if ttype in Test.TYPES_WITH_VIDEOS:
+                if ttype in TYPES_WITH_VIDEOS:
                     qs = qs.exclude(video=None)
 
         remaining = qs.count()

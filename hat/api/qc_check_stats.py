@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from hat.quality.models import Check, Test
+from hat.quality.models import Test
+from hat.constants import CATT, RDT, PG
 from hat.users.models import Team
 
 
@@ -9,7 +10,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
     Api to get statistics for the quality control tool.
     """
     def list(self, request):
-        test_types = [Test.CATT, Test.RDT, Test.PG]
+        test_types = [CATT, RDT, PG]
 
         team_type = request.GET.get("type", None)
         coordination_id = request.GET.get("coordination", None)

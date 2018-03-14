@@ -117,19 +117,19 @@ def merge_case_models(older_case: Case, younger_case: Case) -> MergeResult:
     for field in older_case._meta.get_fields():
         # ids belong to the older case (merge into it)
         if field.name in ['id', 'document_id', 'hat_id', 'version_number', 'testgroup']:
-            if field.name != 'testgroup':
+            if field.name not in ['testgroup']:
                 steps.append(MergeStep(field.name, older_case, 1))
             continue
+        if field.name != 'test':
+            old_value = getattr(older_case, field.name)
+            new_value = getattr(younger_case, field.name)
 
-        old_value = getattr(older_case, field.name)
-        new_value = getattr(younger_case, field.name)
-
-        if new_value == old_value:
-            steps.append(MergeStep(field.name, older_case, 0))
-        elif new_value is not None:
-            steps.append(MergeStep(field.name, younger_case, 2))
-        elif old_value is not None:
-            steps.append(MergeStep(field.name, older_case, 1))
+            if new_value == old_value:
+                steps.append(MergeStep(field.name, older_case, 0))
+            elif new_value is not None:
+                steps.append(MergeStep(field.name, younger_case, 2))
+            elif old_value is not None:
+                steps.append(MergeStep(field.name, older_case, 1))
 
     merged_case = Case(**{name: getattr(case, name) for (name, case, _) in steps})
     return MergeResult(older_case, younger_case, merged_case, steps)

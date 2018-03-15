@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         print("-- NORMALIZING patient data --")
 
-        all_cases = Case.objects.filter(source='mobile_sync')
+        all_cases = Case.objects
         if not options['force']:
             all_cases = all_cases.filter(normalized_patient_id=None)
         patient_created_count = 0

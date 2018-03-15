@@ -28,7 +28,7 @@ class Identify:
             if case.age is not None:
                 patient.age = case.age
             else:
-                if case.year_of_birth is not None:
+                if case.year_of_birth is not None and case.year_of_birth <= case.entry_date.year:
                     patient.age = case.entry_date.year - int(case.year_of_birth)
             patient.save()
 

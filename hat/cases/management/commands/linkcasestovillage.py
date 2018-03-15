@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         cases = Case.objects.filter(normalized_village__isnull=True, village__isnull=False, AS__isnull=False,
-                                    ZS__isnull=False, province__isnull=False)
+                                    ZS__isnull=False)
         success_count = 0
         count = 0
         for case in queryset_iterator(cases):

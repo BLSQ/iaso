@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import Any
+
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+
 from hat.geo.models import Village
-from datetime import datetime
-import calendar
 
 CASES_PERMISSIONS = (
     ('import', 'Can import data'),
@@ -16,10 +17,11 @@ CASES_PERMISSIONS = (
 )
 
 CURRENT_YEAR = datetime.now().year
-years =  range(CURRENT_YEAR, CURRENT_YEAR - 20, -1)
+years = range(CURRENT_YEAR, CURRENT_YEAR - 20, -1)
 YEAR_CHOICES = zip(years, years)
-MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
-MONTH_CHOICES = [(i+1, MONTHS[i]) for i in range(0, 12)]
+MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre',
+          'Décembre']
+MONTH_CHOICES = [(i + 1, MONTHS[i]) for i in range(0, 12)]
 
 RES_POSITIVE_POSITIVE_POSITIVE = 4
 RES_POSITIVE_POSITIVE = 3
@@ -212,6 +214,10 @@ class CaseAbstract(models.Model):
     corrected_village = models.TextField(null=True)
 
     normalized_village = models.ForeignKey(Village, null=True, on_delete=models.SET_NULL)
+
+    # Don't use the class here because the import will create a cyclic dependency on Case
+    normalized_patient = models.ForeignKey('patient.Patient', null=True, on_delete=models.SET_NULL)
+
     normalized_village_not_found = models.NullBooleanField(default=False)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
@@ -240,20 +246,23 @@ class CaseAbstract(models.Model):
 
     test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_catt_dilution = models.TextField("Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
+                                                 blank=True)
     test_ctcwoo = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_dil = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_ge = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_ifat = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_lcr = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
+                                                   blank=True)
     test_maect = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_parasit = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_pg = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_pl = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_rdt = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_sf = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", choices=GENERAL_TEST_RESULT_CHOICES,
+                                                null=True, blank=True)
     test_other = models.IntegerField("Autre test", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
 
     # Some of these could be used for validating the correctness of the pl_result.
@@ -279,7 +288,7 @@ class CaseAbstract(models.Model):
     test_followup_ge = models.TextField("Suivi GE", null=True, blank=True)
     test_followup_woo = models.TextField("Suivi WOO", null=True, blank=True)
     test_followup_maect = models.TextField("Suivi MAECT", null=True, blank=True)
-    test_followup_woo_maect = models.TextField("Suivi WOO MAECT",null=True, blank=True)
+    test_followup_woo_maect = models.TextField("Suivi WOO MAECT", null=True, blank=True)
     test_followup_pl = models.TextField("Suivi PL", null=True, blank=True)
     test_followup_pl_trypanosome = models.TextField("Suivi PL trypanosome", null=True, blank=True)
     test_followup_pl_gb = models.TextField("Suivi PL GB", null=True, blank=True)
@@ -336,7 +345,6 @@ class Case(CaseAbstract):
         permissions = CASES_PERMISSIONS
 
     def as_dict(self):
-
         return {
             'id': self.id,
             'ZS': self.ZS,
@@ -346,6 +354,7 @@ class Case(CaseAbstract):
             'name': self.name,
             'prename': self.prename,
             'lastname': self.lastname,
+            'normalized_patient_id': self.normalized_patient_id,
             'normalized_village_id': self.normalized_village_id,
             'normalized_village_not_found': self.normalized_village_not_found,
             'form_number': self.form_number,
@@ -486,7 +495,7 @@ class Location(models.Model):
         )
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (self.village,  self.AS, self.ZS, self.village_type)
+        return "%s - %s - %s - %s" % (self.village, self.AS, self.ZS, self.village_type)
 
 
 class DuplicatesPair(models.Model):

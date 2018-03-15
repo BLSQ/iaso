@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('patient', '0005_qctest_index'),
-        ('cases', '0015_auto_20180307_1014'),
+        ('cases', '0016_constraing_result_types'),
     ]
 
     operations = [

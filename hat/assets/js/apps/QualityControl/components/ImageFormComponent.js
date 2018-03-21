@@ -76,12 +76,15 @@ class ImageFormComponent extends React.Component {
                                     <div className="quality-radio" key={type.value}>
                                         <input
                                             type="radio"
-                                            name="result"
+                                            id={`result-${type.value}`}
+                                            name={`result-${type.value}`}
                                             checked={type.value === this.state.result ? 'checked' : ''}
                                             value={type.value}
                                             onChange={() => this.changeResult(type.value)}
                                         />
-                                        <FormattedMessage {...messageProps} />
+                                        <label htmlFor={`result-${type.value}`}>
+                                            <FormattedMessage {...messageProps} />
+                                        </label>
                                     </div>
                                 );
                             })

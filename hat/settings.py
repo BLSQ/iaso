@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'django_rq',
     'storages',
     'corsheaders',
@@ -175,7 +176,7 @@ DB_PORT = os.environ.get('RDS_PORT', 5432)
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': DB_NAME,
         'USER': DB_USERNAME,
         'PASSWORD': DB_PASSWORD,

@@ -56,13 +56,15 @@ services:
     command: start_dev
 
   db:
-    image: postgres:9.5
+    image: mdillon/postgis:9.5
     logging: *hat_logging
     ports:
       - "5433:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
 
   couchdb:
-    image: couchdb:1.6
+    image: couchdb:1.7
     ports:
       - "5984:5984"
     volumes:

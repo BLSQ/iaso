@@ -101,7 +101,9 @@
                     <li class="navigation__menu__item{% if view == 'dashboard:locator' %}--active{% endif %}">
                         <a href="{% url 'dashboard:locator' %}">{% trans 'Locator' %}</a>
                     </li>
-
+                    <li class="navigation__menu__item{% if view == 'dashboard:vector' %}--active{% endif %}">
+                        <a href="{% url 'dashboard:vector' %}">{% trans 'Vector control' %}</a>
+                    </li>
                     <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
                         <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
                     </li>

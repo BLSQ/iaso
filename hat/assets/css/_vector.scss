@@ -1,0 +1,54 @@
+.trap-popup-container {
+    >div {
+        font-weight: bold;
+        >span {
+            font-weight: normal;
+        }
+    }
+}
+
+.vectors-container {
+    .map__filters {
+        width: 50%;
+    }
+    .custom-radio {
+        box-sizing: border-box;
+        padding-top: 19px;
+        height: 45px;
+        input {
+            opacity: 0;
+            top: 0;
+            height: 100%;
+        }
+        span {
+            padding-left: 40px;
+        }
+        i {
+            position: absolute;
+            top: 10px;
+            left: -3px;
+            cursor: pointer;
+        }
+        &.checked {
+            span {
+                font-weight: bold;
+            }
+            i {
+                width: 40px;
+                height: 40px;
+                top: 8px;
+                left: -6px;
+                display: inline-block;
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: inherit;
+                text-rendering: auto;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                &:after {
+                    content: "\f00c";
+                    padding-top: 5px;
+                }
+            }
+        }
+    }
+}

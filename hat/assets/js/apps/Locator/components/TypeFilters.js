@@ -1,41 +1,44 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
 
 class typeFilters extends React.Component {
     render() {
-        let filters = this.props.filters
+        // const { filters } = this.props;
         return (
-            <div className='type-filters-containers'>
+            <div className="type-filters-containers">
                 <ul>
                     {
-                        Object.entries(VillageTypesConstant).map(villageType => {
+                        Object.entries(VillageTypesConstant).map((villageType) => {
                             const messageProps = {
-                              id: villageType[1].translationKey,
-                              defaultMessage: villageType[1].defaultMessage
-                            }
+                                id: villageType[1].translationKey,
+                                defaultMessage: villageType[1].defaultMessage,
+                            };
                             return (
-                                <li key={villageType[0]}
+                                <li
+                                    onKeyDown={() => { }}
+                                    key={villageType[0]}
                                     className={`${villageType[0]} ${this.props.currentTypes.indexOf(villageType[1].key) > -1 ? 'active' : ''}`}
-                                    onClick={() => this.props.selectType(villageType[1].key)}>
+                                    onClick={() => this.props.selectType(villageType[1].key)}
+                                >
 
                                     <FormattedMessage
-                                      {...messageProps} />
+                                        {...messageProps}
+                                    />
                                 </li>
-                            )
+                            );
                         })
                     }
                 </ul>
             </div>
-        )
+        );
     }
-
 }
 
 typeFilters.propTypes = {
     currentTypes: PropTypes.array.isRequired,
-    selectType: PropTypes.func
-}
+    selectType: PropTypes.func.isRequired,
+};
 
-export default injectIntl(typeFilters)
+export default injectIntl(typeFilters);

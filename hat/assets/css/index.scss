@@ -29,6 +29,8 @@ $fa-font-path: "~font-awesome/fonts";
 @import "images";
 @import "videos";
 @import "customTable";
+@import "vector";
+@import "leafletCluster";
 
 body {
   background-color: $background-gray;

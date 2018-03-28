@@ -21,7 +21,8 @@ module.exports = {
     'stats': './assets/js/apps/Stats/index',
     'teams_devices': './assets/js/apps/TeamsDevices/index',
     'locator': './assets/js/apps/Locator/index',
-    'quality_control': './assets/js/apps/QualityControl/index'
+    'quality_control': './assets/js/apps/QualityControl/index',
+    'vector': './assets/js/apps/Vector/index'
   },
 
   output: {

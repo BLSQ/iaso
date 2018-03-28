@@ -1,68 +1,96 @@
-$input-inner-shadow: inset 0px 1px 3px 0px rgba(black,.2);
-
-input[type="text"], input[type="number"],
-input[type="email"], input[type="password"],
+$input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
 input[type="date"] {
-  width: 320px;
-  padding: 0.5em;
-  background: $background-gray;
-  border: 1px solid $gray;
-  box-shadow: $input-inner-shadow;
-  border-radius: 4px;
-  font-family: $body-font-family;
-  font-size: $font-size-standard;
-  color: $dark-blue;
-  line-height: 1;
-  &:focus {
-    outline: 0;
-    border: 1px solid $blue;
-    box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
-  }
+    width: 320px;
+    padding: 0.5em;
+    background: $background-gray;
+    border: 1px solid $gray;
+    box-shadow: $input-inner-shadow;
+    border-radius: 4px;
+    font-family: $body-font-family;
+    font-size: $font-size-standard;
+    color: $dark-blue;
+    line-height: 1;
+    &:focus {
+        outline: 0;
+        border: 1px solid $blue;
+        box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
+    }
 }
 
 input[type="date"] {
-  width: 200px;
+    width: 200px;
 }
 
 form {
-  margin: 0;
+    margin: 0;
 }
 
 fieldset {
-  border: none;
-  padding: 0;
+    border: none;
+    padding: 0;
 }
 
 label {
-  display: block;
-  font-size: $font-size-s;
-  font-weight: bold;
-  margin-bottom: $padding-unit/4;
-  &.inline {
-    display: inline-block;
-  }
+    display: block;
+    font-size: $font-size-s;
+    font-weight: bold;
+    margin-bottom: $padding-unit/4;
+    &.inline {
+        display: inline-block;
+    }
 }
 
 .form__wrapper {
-  margin-bottom: $padding-unit;
+    margin-bottom: $padding-unit;
 }
 
 form.inline {
-  label {
-    display: inline-block;
-    margin-right: $padding-unit/4;
-  }
+    label {
+        display: inline-block;
+        margin-right: $padding-unit/4;
+    }
 }
 
 input.small {
-  font-size: $font-size-xs;
-  height: 15px;
-  width: 50px;
-  margin: 0 $padding-unit/5;
-}
-.Select {
-  &.is-open{
-    z-index: 1001;
-  }
+    font-size: $font-size-xs;
+    height: 15px;
+    width: 50px;
+    margin: 0 $padding-unit/5;
 }
 
+.Select {
+    &.is-open {
+        z-index: 1001;
+    }
+}
+
+.custom-radio {
+    display: block;
+    position: relative;
+    input {
+        display: inline-block;
+        height: 20px;
+        position: absolute;
+        top: 15px;
+        width: 20px;
+        left: 3px;
+        cursor: pointer;
+    }
+    span {
+        display: inline-block;
+        padding-left: 30px;
+        font-weight: normal;
+        cursor: pointer;
+    }
+    &.with-icon {
+        i {
+            position: relative;
+            top: -2px;
+            margin-left: 10px;
+        }
+    }
+}

@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^microplanning/.*$', views.microplanning, name='microplanning'),
     url(r'^teams-devices/.*$', views.teams_devices, name='teams-devices'),
     url(r'^locator/.*$', views.locator, name='locator'),
+    url(r'^vector/.*$', views.vector, name='vector'),
     url(r'^quality-control/.*$', views.quality_control, name='quality-control'),
     url(r'^csvexport/(?P<planning_id>\d+)/$', views.csv_export, name='csv_export')
 ]

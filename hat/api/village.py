@@ -46,6 +46,9 @@ class VillageViewSet(viewsets.ViewSet):
         years = request.GET.get("years", None)
         types = request.GET.get("types", "YES")
         as_list = request.GET.get("as_list", False)
+        results = request.GET.get("results", "ALL")
+        from_date = request.GET.get("from", None)
+        to_date = request.GET.get("to", None)
 
         queryset = Village.objects.all()
 
@@ -64,10 +67,24 @@ class VillageViewSet(viewsets.ViewSet):
                                       )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ('nr_positive_cases', )
+        else:
+            if from_date is not None and to_date is not None:
+                nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True,
+                                                        case__document_date__range=(from_date, to_date))
+
+                                        )
+                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+                values = values + ('nr_positive_cases', )
 
         if types:
             types_array = types.split(",")
             queryset = queryset.filter(village_official__in=types_array)
+
+        if results == 'positive':
+            queryset = queryset.filter(nr_positive_cases__gte=1)
+
+        if results == 'negative':
+            queryset = queryset.filter(nr_positive_cases=0)
 
         res = queryset.values(*values)
 
@@ -82,6 +99,7 @@ class VillageViewSet(viewsets.ViewSet):
         village = get_object_or_404(Village, pk=pk)
 
         res = {
+            'name': village.name,
             'province': village.AS.ZS.province.name,
             'former_province': village.AS.ZS.province.old_name,
             'zs': village.AS.ZS.name,

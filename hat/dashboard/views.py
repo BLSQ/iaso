@@ -154,6 +154,11 @@ def teams_devices(request: HttpRequest) -> HttpResponse:
 def locator(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/locator.html', {})
 
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def vector(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/vector.html', {})
 
 @login_required()
 @permission_required('cases.view')

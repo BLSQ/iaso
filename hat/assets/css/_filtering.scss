@@ -232,6 +232,11 @@ input.input--minimised {
     @include filter-select-style;
 }
 
+.react-datepicker-popper {
+    z-index: 100;
+    width: auto !important;
+}
+
 .react-datepicker__input-container {
     @include filter-select-positioning;
     input[type="text"] {

@@ -11,11 +11,14 @@ from .coordination import CoordinationViewSet
 from .dataset import DatasetViewSet
 from .planning import PlanningViewSet
 from .province import ProvinceViewSet
-from .qc_check_stats import QCCheckStatsViewSet
 from .qcstats import QCStatsViewSet
 from .qctests import QCTestsViewSet
 from .team import TeamViewSet
 from .village import VillageViewSet
+from .qc_check_stats import QCCheckStatsViewSet
+from .traps import TrapsViewSet
+from .targets import TargetsViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')
@@ -33,6 +36,8 @@ router.register(r'qcstats', QCStatsViewSet, base_name='qcstats')
 router.register(r'qctests', QCTestsViewSet, base_name='qctests')
 router.register(r'checks', QCChecksViewSet, base_name='checks')
 router.register(r'qccheckstats', QCCheckStatsViewSet, base_name='qc_check_stats')
+router.register(r'traps', TrapsViewSet, base_name='traps')
+router.register(r'targets', TargetsViewSet, base_name='targets')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

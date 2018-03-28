@@ -158,7 +158,7 @@ class ImageUpload(models.Model):
     participant_uuid = models.TextField(null=True, blank=True, db_index=True)
     hat_id = models.TextField(null=True, blank=True)
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='catt', choices=TEST_TYPE_CHOICES)
+    type = models.TextField(default='CATT', choices=TEST_TYPE_CHOICES)
     image = models.FileField(upload_to="images/")
     upload_date = models.DateTimeField(auto_now_add=True)
 

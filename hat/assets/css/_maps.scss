@@ -843,7 +843,9 @@ button {
 }
 
 .locator-container {
-    display: flex
+    > div {
+        display: flex;
+    }
 }
 
 .locator-control-div {

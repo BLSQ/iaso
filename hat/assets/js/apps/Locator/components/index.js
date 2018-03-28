@@ -1,7 +1,8 @@
 
-import {default as Map} from './Map'
-
+import Map from './Map';
+import CaseList from './CaseList';
 
 export {
-  Map
-}
+    Map,
+    CaseList,
+};

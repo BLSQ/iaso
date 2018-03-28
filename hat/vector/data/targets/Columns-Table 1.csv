@@ -1,0 +1,12 @@
+Column;Type;Description;;
+ID;Text;Unique ID for each record;;
+NAME;Text;Unique ID given to each target location;;
+Deployment;Text;Numeric order of each deployment, first, second, third etc;;
+FullName;Text;This combines the NAME and Deployment;;
+GPS;Text;This is the team performing the deployment, a deployment includes multiple teams and this is the ID of each team;;
+Lat;Numeric;Latitude;;
+Long;Numeric;Longitude;;
+Altitude;Numeric;Altitude from GPS;;
+DateTimeS;Text;Date and time stamp from the GPS;;
+Date;Date;Date extracted;;
+River;Text;The name of the river that was deployed on;;

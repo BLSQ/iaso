@@ -121,7 +121,8 @@ INSTALLED_APPS = [
     'hat.tasks',
     'hat.geo',
     'hat.planning',
-    'hat.patient'
+    'hat.patient',
+    'hat.vector'
 ]
 
 MIDDLEWARE = [

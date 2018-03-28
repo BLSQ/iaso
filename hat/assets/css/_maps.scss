@@ -296,6 +296,71 @@ $color in $types {
         border-color: $outsideGeoloc;
         background: $outsideGeoloc;
     }
+    &--villages,
+    &--villages-with-case,
+    &--traps,
+    &--targets {
+        border: none;
+        background: transparent;
+        width: 35px;
+        height: 35px;
+        position: relative;
+        &:before {
+            content: '';
+            position: absolute;
+            width: calc(100% - 5px);
+            height: calc(100% - 5px);
+            top: 0;
+            left: -5px;
+            border-radius: 35px;
+        }
+        &:after {
+            content: '';
+            position: absolute;
+            width: calc(100% - 15px);
+            height: calc(100% - 15px);
+            display: block;
+            top: 5px;
+            left: 0px;
+            border-radius: 15px;
+            box-sizing: border-box;
+            padding-top: 3px;
+            text-align: center;
+        }
+    }
+    &--villages {
+        &:before {
+            background: rgba($green, 0.5);
+        }
+        &:after {
+            background: $green;
+        }
+    }
+    &--villages-with-case {
+        &:before {
+            background: rgba(red, 0.5);
+        }
+        &:after {
+            background: red;
+        }
+    }
+    &--traps {
+        &:before {
+            background: rgba(orange, 0.5);
+        }
+        &:after {
+            background: yellow;
+        }
+    }
+    &--targets {
+        &:before {
+            background: rgba(blue, 0.5);
+        }
+        &:after {
+            background: blue;
+            color: white;
+        }
+    }
     &.square {
         border-radius: 5px;
     }
@@ -607,10 +672,10 @@ li.map__selection__list__item {
     width: ($map-sidebar-width - 50);
     font-size: $font-size-xs;
 }
+
 .button--small {
     font-size: $font-size-xs;
 }
-
 
 .button--save,
 .button--edit {
@@ -630,6 +695,7 @@ li.map__selection__list__item {
         opacity: 0.6;
     }
 }
+
 button {
     &:disabled {
         background-color: #007fff !important;
@@ -637,6 +703,7 @@ button {
         opacity: 0.6;
     }
 }
+
 
 /******************************************************************************
  * map selection controls
@@ -753,6 +820,16 @@ button {
         border: 2px solid rgba($highlight, 0.85);
         box-shadow: 0 0 1px 1px rgba($highlight, 0.45);
     }
+}
+
+
+/******************************************************************************
+ * Vector control styles
+ ******************************************************************************/
+
+.vector-map {
+    height: 800px;
+    width: 100%;
 }
 
 
@@ -908,4 +985,14 @@ button {
     text-align: center;
     display: block;
     margin-bottom: 10px;
+}
+
+.vector-map .leaflet-pane>svg path {
+    stroke-width: 1px !important;
+}
+
+.leaflet-pane {
+    &.leaflet-custom-pane-shapes-pane {
+        z-index: 200;
+    }
 }

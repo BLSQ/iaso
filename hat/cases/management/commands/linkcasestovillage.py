@@ -1,8 +1,9 @@
+import gc
+
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
 from hat.geo.models import Village, ZS, AS
-import gc
 
 
 def queryset_iterator(queryset, chunksize=1000):
@@ -43,6 +44,7 @@ class Command(BaseCommand):
             area_name = case.AS.strip()
             village_name = case.village.strip()
 
+            # TODO: refactor to use geo_finder.get_single_zone()
             zones = ZS.objects.filter(name__iexact=zone_name)
             zone = None
             if zones.count() == 1:
@@ -53,6 +55,7 @@ class Command(BaseCommand):
                 if a_zones.count() == 1:
                     zone = a_zones[0]
 
+            # TODO: refactor to use geo_finder.get_single_area()
             area = None
             areas = AS.objects.filter(name__iexact=area_name, ZS=zone)
             if areas.count() == 1:
@@ -63,6 +66,7 @@ class Command(BaseCommand):
                 if a_areas.count() == 1:
                     area = a_areas[0]
 
+            # TODO: refactor to use geo_finder.get_single_village()
             villages = Village.objects.filter(name__iexact=village_name, AS=area)
             village_count = villages.count()
             if village_count == 1:

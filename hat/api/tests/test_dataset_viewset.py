@@ -1,7 +1,8 @@
-from django.core.urlresolvers import reverse
+from datetime import datetime
+
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from datetime import datetime
 
 
 class DatasetTests(APITestCase):
@@ -11,19 +12,19 @@ class DatasetTests(APITestCase):
         self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))
 
     def test_list_datasets(self):
-        url = reverse('api:datasets-list')
+        url = reverse('datasets-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 11)
+        self.assertEqual(len(response.data), 16)  # Used to be 11, not the best way to test
 
     def test_count_total(self):
-        url = reverse('api:datasets-detail', args=['count_total'])
+        url = reverse('datasets-detail', args=['count_total'])
         response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'registered': 6, 'tested': 5})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_count_screened(self):
-        url = reverse('api:datasets-detail', args=['count_screened'])
+        url = reverse('datasets-detail', args=['count_screened'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -31,19 +32,19 @@ class DatasetTests(APITestCase):
             {'negative': 1, 'positive': 2, 'total': 3, 'missing_confirmation': 1})
 
     def test_count_confirmed(self):
-        url = reverse('api:datasets-detail', args=['count_confirmed'])
+        url = reverse('datasets-detail', args=['count_confirmed'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'negative': 1, 'positive': 2, 'total': 3})
 
     def test_count_staging(self):
-        url = reverse('api:datasets-detail', args=['count_staging'])
+        url = reverse('datasets-detail', args=['count_staging'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'stage1': 1, 'stage2': 0, 'total': 1})
 
     def test_campaign_meta(self):
-        url = reverse('api:datasets-detail', args=['campaign_meta'])
+        url = reverse('datasets-detail', args=['campaign_meta'])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['as_visited'], 2)
@@ -59,7 +60,7 @@ class DatasetTests(APITestCase):
 
     def test_tested_per_day(self):
         url = '{}?date_month=2016-01'.format(
-            reverse('api:datasets-detail', args=['tested_per_day']))
+            reverse('datasets-detail', args=['tested_per_day']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 31)
@@ -67,7 +68,7 @@ class DatasetTests(APITestCase):
 
     def test_population_coverage(self):
         url = '{}?date_from=2016-01-01&date_to=2016-12-01'.format(
-            reverse('api:datasets-detail', args=['population_coverage']))
+            reverse('datasets-detail', args=['population_coverage']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -79,7 +80,7 @@ class DatasetTests(APITestCase):
 
     def test_cases_over_time(self):
         url = '{}?date_from=2016-01-01&date_to=2016-01-31'.format(
-            reverse('api:datasets-detail', args=['cases_over_time']))
+            reverse('datasets-detail', args=['cases_over_time']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -100,7 +101,7 @@ class DatasetTests(APITestCase):
 
     def test_data_by_location(self):
         url = '{}?caseyears=2016'.format(
-            reverse('api:datasets-detail', args=['data_by_location']))
+            reverse('datasets-detail', args=['data_by_location']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -119,7 +120,7 @@ class DatasetTests(APITestCase):
 
     def test_data_by_location_without_caseyears(self):
         url = '{}?'.format(
-            reverse('api:datasets-detail', args=['data_by_location']))
+            reverse('datasets-detail', args=['data_by_location']))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)

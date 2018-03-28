@@ -647,7 +647,7 @@ class DatasetViewSet(viewsets.ViewSet):
         for k, v in datasets.items():
             items.append({
                 'name': k,
-                'url': reverse('api:datasets-detail', args=[k], request=request),
+                'url': reverse('datasets-detail', args=[k], request=request),
                 'params_schema': v['params_schema']
             })
         return Response(items)

@@ -1,0 +1,34 @@
+[
+  {
+    "model": "geo.province",
+    "pk": 1,
+    "fields": {
+      "name": "Kwilu",
+      "old_name": "Bandundu"
+    }
+  },
+  {
+    "model": "geo.province",
+    "pk": 2,
+    "fields": {
+      "name": "Kwango",
+      "old_name": "Bandundu"
+    }
+  },
+  {
+    "model": "geo.province",
+    "pk": 3,
+    "fields": {
+      "name": "Mai Ndombe",
+      "old_name": "Bandundu",
+      "aliases": ["MaiNdombe"]
+    }
+  },
+  {
+    "model": "geo.province",
+    "pk": 4,
+    "fields": {
+      "name": "Equateur"
+    }
+  }
+]

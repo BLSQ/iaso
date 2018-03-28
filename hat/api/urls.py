@@ -2,20 +2,20 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from hat.api.qcchecks import QCChecksViewSet
+from .AS import ASViewSet
+from .ZS import ZSViewSet
+from .algo import AlgoViewSet
+from .assignation import AssignationViewSet
+from .cases import CasesViewSet
+from .coordination import CoordinationViewSet
 from .dataset import DatasetViewSet
 from .planning import PlanningViewSet
-from .village import VillageViewSet
 from .province import ProvinceViewSet
-from .ZS import ZSViewSet
-from .AS import ASViewSet
-from .assignation import AssignationViewSet
-from .coordination import CoordinationViewSet
-from .team import TeamViewSet
-from .algo import AlgoViewSet
-from .cases import CasesViewSet
+from .qc_check_stats import QCCheckStatsViewSet
 from .qcstats import QCStatsViewSet
 from .qctests import QCTestsViewSet
-from .qc_check_stats import QCCheckStatsViewSet
+from .team import TeamViewSet
+from .village import VillageViewSet
 
 router = routers.DefaultRouter()
 router.register(r'datasets', DatasetViewSet, base_name='datasets')

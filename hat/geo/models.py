@@ -1,12 +1,12 @@
+from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 
 
 class Province(models.Model):
     name = models.CharField(max_length=255)
     old_name = models.CharField(max_length=255)
     aliases = ArrayField(
-        models.CharField(max_length=255, blank=True),
+        CITextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -27,7 +27,7 @@ class ZS(models.Model):
     name = models.CharField(max_length=255)
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
     aliases = ArrayField(
-        models.CharField(max_length=255, blank=True),
+        CITextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -51,7 +51,7 @@ class AS(models.Model):
     name = models.CharField(max_length=255)
     ZS = models.ForeignKey(ZS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        models.CharField(max_length=255, blank=True),
+        CITextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -75,7 +75,7 @@ class Village(models.Model):
     name = models.CharField(max_length=255)
     AS = models.ForeignKey(AS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        models.CharField(max_length=255, blank=True),
+        CITextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,

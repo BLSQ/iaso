@@ -3,11 +3,11 @@ import gc
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
-from hat.geo.models import Village, ZS, AS
+from hat.fixtures.geo_finder import get_single_zone, MultipleMatchesFoundException, get_single_area, get_single_village
 
 
 def queryset_iterator(queryset, chunksize=1000):
-    '''''
+    """''
     Iterate over a Django Queryset ordered by the primary key
 
     This method loads a maximum of chunksize (default: 1000) rows in it's
@@ -16,7 +16,7 @@ def queryset_iterator(queryset, chunksize=1000):
     classes.
 
     Note that the implementation of the iterator does not support ordered query sets.
-    '''
+    """
     pk = 0
     last_pk = queryset.order_by('-pk')[0].pk
     queryset = queryset.order_by('pk')
@@ -29,6 +29,14 @@ def queryset_iterator(queryset, chunksize=1000):
 
 class Command(BaseCommand):
     help = 'Try to link a case to a previously known village'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            dest='verbose',
+            help='Be verbose about what it is doing',
+        )
 
     def handle(self, *args, **options):
         cases = Case.objects.filter(normalized_village__isnull=True, village__isnull=False, AS__isnull=False,
@@ -44,41 +52,41 @@ class Command(BaseCommand):
             area_name = case.AS.strip()
             village_name = case.village.strip()
 
-            # TODO: refactor to use geo_finder.get_single_zone()
-            zones = ZS.objects.filter(name__iexact=zone_name)
-            zone = None
-            if zones.count() == 1:
-                zone = zones[0]
+            if options['verbose']:
+                print("finding zone_name", zone_name)
+            try:
+                zone = get_single_zone(zone_name)
+            except MultipleMatchesFoundException:
+                print("Multiple matching zones found for zone_name", zone_name)
+                continue
 
-            if not zone:
-                a_zones = ZS.objects.filter(aliases__contains=[zone_name])
-                if a_zones.count() == 1:
-                    zone = a_zones[0]
+            if options['verbose']:
+                print("finding area_name", area_name, "in this zone")
+            try:
+                area = get_single_area(area_name, zone)
+            except MultipleMatchesFoundException:
+                if zone is None:
+                    print("Multiple matching areas", area_name, "found without zone specified")
+                else:
+                    print("Multiple matching areas", area_name, "found for zone", zone.name)
+                continue
 
-            # TODO: refactor to use geo_finder.get_single_area()
-            area = None
-            areas = AS.objects.filter(name__iexact=area_name, ZS=zone)
-            if areas.count() == 1:
-                area = areas[0]
+            if area is None:
+                if options['verbose']:
+                    print("Area", area_name, "not found, skipping")
+                continue
 
-            if zone and not area:
-                a_areas = AS.objects.filter(aliases__contains=[area_name], ZS=zone)
-                if a_areas.count() == 1:
-                    area = a_areas[0]
+            try:
+                village = get_single_village(village_name, area)
+            except MultipleMatchesFoundException:
+                print("??????? Multiple villages found for:", zone_name, area_name, village_name)
+                continue
 
-            # TODO: refactor to use geo_finder.get_single_village()
-            villages = Village.objects.filter(name__iexact=village_name, AS=area)
-            village_count = villages.count()
-            if village_count == 1:
-                case.normalized_village = villages[0]
+            if village is not None:
+                case.normalized_village = village
                 case.save()
                 success_count += 1
                 print("+++++++ Village found for:", zone_name, area_name, village_name)
-            elif village_count == 0:
-                pass
-                # print("xxxxxxx Village NOT found for:", zone_name, area_name, village_name)
-            else:
-                print("??????? Multiple villages found for:", zone_name, area_name, village_name)
 
         print("----------------------------------------")
         print("Cases matched with known villages:", success_count)

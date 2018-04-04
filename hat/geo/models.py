@@ -1,4 +1,4 @@
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -6,7 +6,7 @@ class Province(models.Model):
     name = models.CharField(max_length=255)
     old_name = models.CharField(max_length=255)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
+        models.TextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -27,7 +27,7 @@ class ZS(models.Model):
     name = models.CharField(max_length=255)
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
+        models.TextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -51,7 +51,7 @@ class AS(models.Model):
     name = models.CharField(max_length=255)
     ZS = models.ForeignKey(ZS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
+        models.TextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -75,7 +75,7 @@ class Village(models.Model):
     name = models.CharField(max_length=255)
     AS = models.ForeignKey(AS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
+        models.TextField(max_length=255, blank=True),
         size=4,
         null=True,
         blank=True,
@@ -90,6 +90,7 @@ class Village(models.Model):
         ('NA', 'Villages from satellite (unknown)'),
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
+    village_source = models.TextField(max_length=255, null=True, blank=True)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)

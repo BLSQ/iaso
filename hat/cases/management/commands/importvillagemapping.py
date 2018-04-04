@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
                 if options['verbose']:
                     print("looking for village", row[8])
-                village = get_single_village(row[8], area)
+                village = get_single_village(row[8], [area])  # TODO: support multiple areas at this point
                 if not village:
                     print("Couldn't find village", row[8])
                     continue

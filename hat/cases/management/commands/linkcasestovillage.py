@@ -3,7 +3,8 @@ import gc
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
-from hat.fixtures.geo_finder import get_single_zone, MultipleMatchesFoundException, get_single_area, get_single_village
+from hat.fixtures.geo_finder import MultipleMatchesFoundException, get_single_village, \
+    get_zones_by_name_or_alias, get_areas_by_name_or_alias
 
 
 def queryset_iterator(queryset, chunksize=1000):
@@ -38,6 +39,13 @@ class Command(BaseCommand):
             help='Be verbose about what it is doing',
         )
 
+        parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            dest='dry-run',
+            help='Go through the process but don\'t actually save the normalized village',
+        )
+
     def handle(self, *args, **options):
         cases = Case.objects.filter(normalized_village__isnull=True, village__isnull=False, AS__isnull=False,
                                     ZS__isnull=False)
@@ -54,37 +62,29 @@ class Command(BaseCommand):
 
             if options['verbose']:
                 print("finding zone_name", zone_name)
-            try:
-                zone = get_single_zone(zone_name)
-            except MultipleMatchesFoundException:
-                print("Multiple matching zones found for zone_name", zone_name)
-                continue
+            zones = get_zones_by_name_or_alias(zone_name)
 
             if options['verbose']:
                 print("finding area_name", area_name, "in this zone")
-            try:
-                area = get_single_area(area_name, zone)
-            except MultipleMatchesFoundException:
-                if zone is None:
-                    print("Multiple matching areas", area_name, "found without zone specified")
-                else:
-                    print("Multiple matching areas", area_name, "found for zone", zone.name)
-                continue
+            areas = get_areas_by_name_or_alias(area_name, zones)
 
-            if area is None:
+            if areas.count() == 0:
                 if options['verbose']:
                     print("Area", area_name, "not found, skipping")
                 continue
 
             try:
-                village = get_single_village(village_name, area)
+                village = get_single_village(village_name, areas)
             except MultipleMatchesFoundException:
                 print("??????? Multiple villages found for:", zone_name, area_name, village_name)
                 continue
 
             if village is not None:
-                case.normalized_village = village
-                case.save()
+                if options['dry-run']:
+                    print("Dry-run: would have updated case id", case.id, "to village", village.id)
+                else:
+                    case.normalized_village = village
+                    case.save()
                 success_count += 1
                 print("+++++++ Village found for:", zone_name, area_name, village_name)
 

@@ -24,6 +24,15 @@ def get_single_zone(name):
     return zone
 
 
+def get_zones_by_name_or_alias(name):
+    zones = ZS.objects.filter(name__iexact=name)
+
+    if zones.count() == 0:
+        zones = ZS.objects.filter(aliases__contains=[name])
+
+    return zones
+
+
 def get_single_area(name, zone=None):
     areas = AS.objects.filter(name__iexact=name)
     if zone is not None:
@@ -44,14 +53,26 @@ def get_single_area(name, zone=None):
     return area
 
 
+def get_areas_by_name_or_alias(name, zones=None):
+    areas = AS.objects.filter(name__iexact=name)
+    if zones is not None:
+        areas = areas.filter(ZS__in=zones)
+
+    if areas.count() == 0:
+        areas = AS.objects.filter(aliases__contains=[name])
+
+    return areas
+
+
 def get_single_village(name, area):
     try:
-        villages = Village.objects.filter(name__iexact=name, AS=area)
+        villages = Village.objects.filter(name__iexact=name, AS__in=area)
     except ValueError as ve:
         print("value error", ve)
         print("value error2", type(area), "--", area)
         print("value error3", name)
         exit(1)
+
     village = None
     if villages.count() == 1:
         village = villages[0]
@@ -59,7 +80,7 @@ def get_single_village(name, area):
         raise MultipleMatchesFoundException()
 
     if not village:
-        a_villages = Village.objects.filter(aliases__contains=[name])
+        a_villages = Village.objects.filter(aliases__contains=[name], AS__in=area)
         if a_villages.count() == 1:
             village = a_villages[0]
         elif a_villages.count() > 1:

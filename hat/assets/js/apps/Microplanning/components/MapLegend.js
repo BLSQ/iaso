@@ -32,8 +32,8 @@ const MESSAGES = defineMessages({
     defaultMessage: 'Villages NON endémiques'
   },
   OTHER: {
-    id: 'microplanning.legend.other',
-    defaultMessage: "VIllages sélectionnés pour une autre équipe que l'équipe courante"
+    id: 'microplanning.legend.selectedByOther',
+    defaultMessage: "Villages sélectionnés pour une autre équipe que l'équipe courante"
   },
 
   selected: {

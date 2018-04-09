@@ -66,7 +66,7 @@ class CustomTableComponent extends React.Component {
     componentWillReceiveProps(newProps) {
         if (newProps.endPointUrl !== this.props.endPointUrl) {
             this.onFetchData({
-                sorted: getOrderObject(newProps.params.order),
+                sorted: newProps.params.order ? getOrderObject(newProps.params.order) : this.props.defaultSorted,
             }, newProps.endPointUrl);
         }
     }

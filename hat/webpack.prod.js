@@ -19,7 +19,7 @@ module.exports = {
     'microplanning': './assets/js/apps/Microplanning/index',
     'monthly_report': './assets/js/apps/MonthlyReport/index',
     'stats': './assets/js/apps/Stats/index',
-    'teams_devices': './assets/js/apps/TeamsDevices/index',
+    'management': './assets/js/apps/TeamsDevices/index',
     'locator': './assets/js/apps/Locator/index',
     'quality_control': './assets/js/apps/QualityControl/index',
     'vector': './assets/js/apps/Vector/index'

@@ -43,7 +43,8 @@ class PlanningViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-        return Response(Planning.objects.all().values('name', 'id', 'year').order_by('-created_at'))
+        order = request.GET.get('order', '-created_at')
+        return Response(Planning.objects.all().values('name', 'id', 'year', 'updated_at').order_by(order))
 
 
     def retrieve(self, request, pk=None):
@@ -52,15 +53,28 @@ class PlanningViewSet(viewsets.ViewSet):
         return Response(planning.as_dict())
 
     def update(self, request, pk=None):
-        planning = get_object_or_404(Planning, pk=pk)
+        if pk == "0":
+            planning = Planning()
+        else:
+            planning = get_object_or_404(Planning, pk=pk)
         Assignation.objects.filter(planning=planning).delete()
-
-        for obj in request.data:
-            assignation = Assignation()
-            assignation.planning = planning
-            assignation.village_id = obj['village_id']
-            assignation.team_id = obj['team_id']
-            assignation.save()
+        village_id = request.data.get('village_id', -1)
+        team_id = request.data.get('team_id', -1)
+        if village_id != -1 and team_id != -1:
+            for obj in request.data:
+                assignation = Assignation()
+                assignation.planning = planning
+                assignation.village_id = obj['village_id']
+                assignation.team_id = obj['team_id']
+                assignation.save()
+        newYear = request.data.get('year', '')
+        if newYear != '':
+            planning.year = newYear #Bonne année !
+            planning.save()
+        newName = request.data.get('name', '')
+        if newName != '':
+            planning.name = newName
+            planning.save()
 
         return Response(planning.as_dict())
 
@@ -73,3 +87,8 @@ class PlanningViewSet(viewsets.ViewSet):
                                                             village_id=obj['village_id'],
                                                             team_id = obj['team_id'] )
         return Response(planning.as_dict())
+
+    def delete(self, request, pk=None):
+        planning = get_object_or_404(Planning, pk=pk)
+        planning.delete()
+        return Response(True)

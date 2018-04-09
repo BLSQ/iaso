@@ -44,12 +44,22 @@ class TeamViewSet(viewsets.ViewSet):
 
     def list(self, request):
         coordination_id = request.GET.get("coordination_id", None)
+        team_type = request.GET.get("type", None)
+        order = request.GET.get("order", None)
 
         queryset = Team.objects.all()
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id)
+        if team_type:
+            queryset = queryset.filter(UM=(team_type == 'UM'))
 
-        return Response(queryset.values('name', 'id', 'capacity').order_by('-UM', 'name'))
+        if order is None:
+            res = queryset.values('name', 'id', 'capacity').order_by('-UM', 'name')
+        else:
+            res = queryset.values('name', 'id', 'capacity', 'UM',
+                                  'coordination_id').order_by(order)
+
+        return Response(res)
 
     def retrieve(self, request, pk=None):
         team = get_object_or_404(Team, pk=pk)
@@ -57,18 +67,35 @@ class TeamViewSet(viewsets.ViewSet):
         return Response(team.as_dict())
 
     def update(self, request, pk=None):
-        team = get_object_or_404(Team, pk=pk)
-        planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
+        if pk == "0":
+            team = Team()
+        else:
+            team = get_object_or_404(Team, pk=pk)
 
-        Assignation.objects.filter(team=team, planning=planning).delete()
+        assignations = request.data.get('assignations', -1)
+        if assignations != -1:
+            planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
 
-        for obj in request.data['assignations']:
-            Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
-            assignation = Assignation()
-            assignation.planning = planning
-            assignation.village_id = obj['village_id']
-            assignation.team = team
-            assignation.save()
+            Assignation.objects.filter(team=team, planning=planning).delete()
+
+            for obj in request.data['assignations']:
+                Assignation.objects.filter(
+                    planning=planning, village_id=obj['village_id']).delete()
+                assignation = Assignation()
+                assignation.planning = planning
+                assignation.village_id = obj['village_id']
+                assignation.team = team
+                assignation.save()
+        else:
+            team.name = request.data.get('name', '')
+            team.capacity = request.data.get('capacity', 0)
+            team.UM = request.data.get('UM', False)
+            team.coordination_id = request.data.get('coordination_id', -1)
+            team.save()
 
         return Response(team.as_dict())
 
+    def delete(self, request, pk=None):
+        team = get_object_or_404(Team, pk=pk)
+        team.delete()
+        return Response(True)

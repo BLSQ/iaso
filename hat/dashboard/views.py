@@ -128,7 +128,7 @@ def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def teams_devices(request: HttpRequest) -> HttpResponse:
+def device_management(request: HttpRequest) -> HttpResponse:
     # Use the start of tomorrow as the maxium date to omit records with wrong future dates
     today = datetime.today()
     max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
@@ -145,7 +145,13 @@ def teams_devices(request: HttpRequest) -> HttpResponse:
         'dates': [d.strftime('%Y-%m') for d in dates]
     })
 
-    return render(request, 'dashboard/teams_devices.html', {'json_data': json_data})
+    return render(request, 'dashboard/management.html', {'json_data': json_data})
+
+@login_required()
+@permission_required('cases.view')
+@require_http_methods(['GET'])
+def managementAll(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/management.html', {'json_data': []})
 
 
 @login_required()

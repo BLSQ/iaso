@@ -1,0 +1,16 @@
+.management-control {
+    .button--edit {
+        margin-bottom: 0;
+        width: auto;
+        font-size: 1rem;
+        margin-right: 10px;
+    }
+    .ReactTable .rt-tbody .rt-td {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+.button--delete {
+    background-color: $red ! important;
+}

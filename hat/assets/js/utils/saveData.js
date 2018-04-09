@@ -44,6 +44,31 @@ export function saveTeamPlanning(villagesList, planning_id, team_id) {
         })
 }
 
+export function saveFull(team, url) {
+    return request
+        .put(url)
+        .set('Content-Type', 'application/json')
+        .send(team)
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}
+
+export function deleteFull(url) {
+    return request
+        .delete(url)
+        .set('Content-Type', 'application/json')
+        .then(() => {
+           return true;
+        })
+        .catch((err) => {
+            return false
+        })
+}
+
 export function saveCoordinationPlanning(assignations, planning_id, coordination_id) {
     return request
         .put(`/api/coordinations/${coordination_id}/`)

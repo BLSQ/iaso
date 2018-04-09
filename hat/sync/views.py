@@ -302,7 +302,7 @@ def device_event_form(request: HttpRequest, device_id) -> HttpResponse:
             device_event.reporter = request.user
             device_event.device_id = device_id
             device_event.save()
-            return redirect("/dashboard/teams-devices")
+            return redirect("/dashboard/management")
         else:
             return JsonResponse(form.errors, status=400)
     else:

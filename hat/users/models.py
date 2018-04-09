@@ -33,7 +33,8 @@ class Coordination(models.Model):
             'name': self.name,
             'teams': map(lambda x:x.as_dict(),  self.team_set.order_by("name")),
             'zs': map(lambda x:x.as_dict(),  self.ZS.order_by("name")),
-            'id': self.id
+            'id': self.id,
+            'created_at': self.created_at
         }
 
     def __str__(self):

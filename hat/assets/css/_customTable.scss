@@ -1,5 +1,9 @@
 body {
     .ReactTable {
+        min-height: 130px;
+        .rt-noData {
+            top: 80px;
+        }
         .rt-th,
         .rt-td {
             padding: 10px;

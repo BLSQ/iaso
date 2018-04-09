@@ -89,8 +89,27 @@
                             </li>
                         {% endif %}
                         {% endif %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:teams-devices' %}--active{% endif %}">
-                        <a href="{% url 'dashboard:teams-devices' %}">{% trans 'Equipes/Appareils' %}</a>
+                    <li class="navigation__menu__item{% if view == 'dashboard:management' or view == 'dashboard:management_planning' %}--active{% endif %} expand-collapse">
+                        <a href="{% url 'dashboard:management' %}">{% trans 'Gestion' %}</a>
+                        {% if 'dashboard' in ns %}
+                            <ul>
+                                {% if perms.cases.view %}
+                                <!-- TODO => remove this patch to match the active classes -->
+                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:management' and request.path != '/dashboard/management/plannings' and request.path != '/dashboard/management/coordinations' and request.path != '/dashboard/management/teams' %}--active{% endif %}">
+                                        <a href="{% url 'dashboard:management' %}">{% trans 'Appareils' %}</a>
+                                    </li>
+                                {% endif %}
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/plannings' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:management_planning' %}">{% trans 'Plannings' %}</a>
+                                </li>
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/coordinations' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:management_coord' %}">{% trans 'Coordinations' %}</a>
+                                </li>
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/teams' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:management_team' %}">{% trans 'Equipes' %}</a>
+                                </li>
+                            </ul>
+                        {% endif %}
                     </li>
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">

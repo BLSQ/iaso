@@ -46,11 +46,20 @@ class Command(BaseCommand):
             help='Go through the process but don\'t actually save the normalized village',
         )
 
+        parser.add_argument(
+            '--unofficial',
+            action='store_true',
+            dest='unofficial',
+            help='Also match unofficial villages. This will create some multiple matching, one with the official '
+                 'village, one with the unofficial',
+        )
+
     def handle(self, *args, **options):
         cases = Case.objects.filter(normalized_village__isnull=True, village__isnull=False, AS__isnull=False,
                                     ZS__isnull=False)
         success_count = 0
         count = 0
+        official = None if options['unofficial'] else True
         for case in queryset_iterator(cases):
             count += 1
             if count % 1000 == 0:
@@ -74,7 +83,7 @@ class Command(BaseCommand):
                 continue
 
             try:
-                village = get_single_village(village_name, areas)
+                village = get_single_village(village_name, areas, official=official)
             except MultipleMatchesFoundException:
                 print("??????? Multiple villages found for:", zone_name, area_name, village_name)
                 continue

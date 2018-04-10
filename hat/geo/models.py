@@ -102,3 +102,24 @@ class Village(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ZSASMappingImport(models.Model):
+    file_name = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ZSASMappingItem(models.Model):
+    line = models.IntegerField()
+    case_province = models.TextField(null=True, blank=True)
+    case_zs = models.TextField(null=True, blank=True)
+    case_as = models.TextField(null=True, blank=True)
+    # The excel sheet has a count here but it's not useful to store it
+    match_province = models.TextField(null=True, blank=True)
+    match_zs = models.TextField(null=True, blank=True)
+    match_as = models.TextField(null=True, blank=True)
+    match_yesno = models.CharField(max_length=20, null=True, blank=True)
+    match_comment = models.TextField(null=True, blank=True)
+    zsas_import = models.ForeignKey(ZSASMappingImport, on_delete=models.CASCADE)
+    added_zone_alias = models.BooleanField(default=False)
+    added_area_alias = models.BooleanField(default=False)

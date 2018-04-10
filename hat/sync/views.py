@@ -107,9 +107,12 @@ def user_signin(request: HttpRequest) -> HttpResponse:
     # Get/Create the device db record and couchdb db
     try:
         device_db = DeviceDB.objects.get(device_id=device_id)
+        if device_db.last_user != user:
+            device_db.last_user = user
+            device_db.save()
     except DeviceDB.DoesNotExist:
         logger.info('Creating db for device {}'.format(device_id))
-        device_db = DeviceDB(device_id=device_id)
+        device_db = DeviceDB(device_id=device_id, creator=user, last_user=user)
         device_db.save()
 
     payload = {
@@ -246,7 +249,7 @@ def signin(request: HttpRequest) -> HttpResponse:
         device_db = DeviceDB.objects.get(device_id=device_id)
     except DeviceDB.DoesNotExist:
         logger.info('Creating db for device {}'.format(device_id))
-        device_db = DeviceDB(device_id=device_id)
+        device_db = DeviceDB(device_id=device_id, creator=request.user, last_user=request.user)
         device_db.save()
 
     payload = {

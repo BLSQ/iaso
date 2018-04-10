@@ -1,14 +1,14 @@
 import logging
+
+from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
+from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.db import models
 from django.forms import ModelForm
-from django.contrib.auth.models import User
 from django.utils import timezone
-from django.contrib.postgres.fields import JSONField
 
 from hat.constants import TEST_TYPE_CHOICES
-
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,10 @@ class DeviceDB(models.Model):
 
     '''
     device_id = models.TextField(unique=True)
+    creator = models.ForeignKey(User, related_name='devicedb_creator', on_delete=models.DO_NOTHING, null=True,
+                                blank=True)
+    last_user = models.ForeignKey(User, related_name='devicedb_last_user', on_delete=models.DO_NOTHING, null=True,
+                                  blank=True)
 
     # used to log the sync execution
     last_synced_date = models.DateTimeField(null=True)
@@ -130,6 +134,7 @@ class DeviceEvent(models.Model):
                                                                                self.action,
                                                                                self.comment
                                                                                ))
+
 
 class DeviceEventForm(ModelForm):
     class Meta:

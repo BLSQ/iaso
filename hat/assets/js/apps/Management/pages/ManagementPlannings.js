@@ -187,7 +187,7 @@ class ManagementPlannings extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.coord.title"
+                                id="management.planning.title"
                                 defaultMessage="Plannings"
                             />
                         </h2>

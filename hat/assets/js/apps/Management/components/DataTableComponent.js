@@ -65,7 +65,6 @@ class DataTable extends React.Component {
                                     daysClass = 'warning';
                                 }
 
-                                const randomTeam = `Equipe ${Math.ceil(Math.random() * 10)}`;
                                 return (
                                     <tr key={`index-${status.id}`}>
                                         <td>{status.device_id}</td>
@@ -76,7 +75,7 @@ class DataTable extends React.Component {
                                         </td>
                                         <td className={daysClass}>{daysString}</td>
                                         <td>{status.last_synced_log_message}</td>
-                                        <td>{randomTeam}</td>
+                                        <td>{status.last_user}</td>
                                         <td>
                                             <a
                                                 tabIndex={0}

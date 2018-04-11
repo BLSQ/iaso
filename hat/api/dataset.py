@@ -305,9 +305,7 @@ def campaign_meta(request: Request, params: Dict[str, str]) -> JsonType:
 
 @dataset(params_schema=params_schema)
 def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
-    print(params)
     devices = DeviceDB.objects.order_by("-last_synced_date").order_by('last_synced_date')
-
 
     res = []
     for device in devices:
@@ -321,6 +319,7 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
                    'device_id': device.device_id,
                    'days_since_sync': device.days_since_sync(),
                    'last_status': status_label,
+                   'last_user': device.last_user.username if device.last_user else '',
                    'id': device.id
 
         }

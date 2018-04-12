@@ -27,9 +27,8 @@ class DataTable extends React.Component {
                     <table>
                         <thead>
                             <tr>
-                                <th>
-                                    <FormattedMessage id="teamsdevices.device_id" defaultMessage="Identifiant" />
-                                </th>
+                                <th>Utilisateur</th>
+                                <th>Equipe</th>
                                 <th>
                                     <FormattedMessage id="teamsdevices.last_sync" defaultMessage="Dernière Sync" />
                                 </th>
@@ -39,7 +38,10 @@ class DataTable extends React.Component {
                                 <th>
                                     <FormattedMessage id="teamsdevices.sync_summary" defaultMessage="Total-Créé-Màj-Effacé" />
                                 </th>
-                                <th>Equipe</th>
+
+                                <th>
+                                    <FormattedMessage id="teamsdevices.device_id" defaultMessage="Identifiant" />
+                                </th>
                                 <th>
                                     <FormattedMessage id="teamsdevices.status_audit" defaultMessage="Statut Audit" />
                                 </th>
@@ -67,7 +69,8 @@ class DataTable extends React.Component {
 
                                 return (
                                     <tr key={`index-${status.id}`}>
-                                        <td>{status.device_id}</td>
+                                        <td>{status.last_user}</td>
+                                        <td>{status.last_team}</td>
                                         <td>
                                             <FormattedDate
                                                 value={new Date(status.last_synced_date)}
@@ -75,7 +78,7 @@ class DataTable extends React.Component {
                                         </td>
                                         <td className={daysClass}>{daysString}</td>
                                         <td>{status.last_synced_log_message}</td>
-                                        <td>{status.last_user}</td>
+                                        <td>{status.device_id}</td>
                                         <td>
                                             <a
                                                 tabIndex={0}

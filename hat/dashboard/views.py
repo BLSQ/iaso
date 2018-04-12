@@ -129,7 +129,7 @@ def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def device_management(request: HttpRequest) -> HttpResponse:
-    # Use the start of tomorrow as the maxium date to omit records with wrong future dates
+    # Use the start of tomorrow as the maximum date to omit records with wrong future dates
     today = datetime.today()
     max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
     dates = CaseView.objects \

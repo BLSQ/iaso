@@ -313,6 +313,9 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
         status_label = None,
         if event:
             status_label = event.status.label
+        last_team = ''
+        if device.last_user and device.last_user.profile.team:
+            last_team = device.last_user.profile.team.name
         device_dict = {
                    'last_synced_date': device.last_synced_date,
                    'last_synced_log_message': device.last_synced_log_message,
@@ -320,6 +323,7 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
                    'days_since_sync': device.days_since_sync(),
                    'last_status': status_label,
                    'last_user': device.last_user.username if device.last_user else '',
+                   'last_team': last_team,
                    'id': device.id
 
         }

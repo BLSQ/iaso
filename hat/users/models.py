@@ -8,6 +8,7 @@ from functools import wraps
 from django.utils.translation import ugettext as _
 from hat.geo.models import AS, ZS
 
+
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
     # Disable signalhandler when model is created by `manage loaddata`.
     # When loading fixtures, all models are already defined in the
@@ -31,8 +32,8 @@ class Coordination(models.Model):
     def as_dict(self):
         return {
             'name': self.name,
-            'teams': map(lambda x:x.as_dict(),  self.team_set.order_by("name")),
-            'zs': map(lambda x:x.as_dict(),  self.ZS.order_by("name")),
+            'teams': map(lambda x: x.as_dict(),  self.team_set.order_by("name")),
+            'zs': map(lambda x: x.as_dict(),  self.ZS.order_by("name")),
             'id': self.id,
             'created_at': self.created_at
         }

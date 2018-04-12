@@ -92,6 +92,19 @@ class Profile(models.Model):
     )
     team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
 
+    def full_name(self):
+        name = ""
+        if self.user:
+            if self.user.first_name:
+                name = self.user.first_name
+
+            if self.user.last_name:
+                name = "%s %s" % (name, self.user.last_name)
+
+            name = "%s (%s)" % (name, self.user.username)
+
+        return name.strip()
+
 
 @receiver(post_save, sender=User)
 @disable_for_loaddata

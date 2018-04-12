@@ -25,15 +25,15 @@ def home(request: HttpRequest) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def monthly_report(request: HttpRequest) -> HttpResponse:
-    # Use the start of tomorrow as the maxium date to omit records with wrong future dates
+    # Use the start of tomorrow as the maximum date to omit records with wrong future dates
     today = datetime.today()
     max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
     dates = CaseView.objects \
                     .filter(source__icontains='mobile') \
-                    .filter(document_date__isnull=False) \
-                    .filter(document_date__lt=max_date) \
-                    .order_by('document_date_month') \
-                    .values_list('document_date_month', flat=True) \
+                    .filter(normalized_date__isnull=False) \
+                    .filter(normalized_date__lt=max_date) \
+                    .order_by('normalized_date_month') \
+                    .values_list('normalized_date_month', flat=True) \
                     .distinct()
 
     json_data = json.dumps({

@@ -72,6 +72,17 @@
          , CAST(EXTRACT(MONTH FROM document_date) AS INT) AS document_month
          , CAST(EXTRACT(YEAR  FROM document_date) AS INT) AS document_year
 
+         , COALESCE(document_date, make_timestamp(form_year, coalesce(form_month, 1), 1, 1, 1, 1)) as normalized_date
+         , COALESCE(extract(year from document_date), form_year) as normalized_year
+         , COALESCE(extract(month from document_date), form_month) as normalized_month
+
+         , DATE_TRUNC('day',   COALESCE(document_date, make_timestamp(form_year, coalesce(form_month, 1), 1, 1, 1, 1)))
+              AS normalized_date_day
+         , DATE_TRUNC('month', COALESCE(document_date, make_timestamp(form_year, coalesce(form_month, 1), 1, 1, 1, 1)))
+              AS normalized_date_month
+         , DATE_TRUNC('year',  COALESCE(document_date, make_timestamp(form_year, coalesce(form_month, 1), 1, 1, 1, 1)))
+              AS normalized_date_year
+
          , COALESCE(province, '***') || ' - ' ||
            COALESCE("ZS", '***') || ' - ' ||
            COALESCE("AS", '***') || ' - ' ||

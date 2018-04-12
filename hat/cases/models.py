@@ -412,6 +412,13 @@ class CaseView(CaseAbstract):
     document_month = models.PositiveSmallIntegerField(null=True)
     document_year = models.PositiveSmallIntegerField(null=True)
 
+    normalized_date = models.DateTimeField(null=True)
+    normalized_year = models.PositiveSmallIntegerField(null=True)
+    normalized_month = models.PositiveSmallIntegerField(null=True)
+    normalized_date_day = models.DateTimeField(null=True)
+    normalized_date_month = models.DateTimeField(null=True)
+    normalized_date_year = models.DateTimeField(null=True)
+
     full_name = models.TextField(null=True)
     full_location = models.TextField(null=True)
 

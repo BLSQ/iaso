@@ -1,13 +1,11 @@
-from rest_framework import viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
-from django.shortcuts import get_object_or_404
-from hat.planning.models import Planning, Assignation
-from hat.geo.models import Village
-from django.db.models import Q
 from django.db.models import Count
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from rest_framework.response import Response
+
+from hat.geo.models import Village
+from hat.planning.models import Assignation
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -49,6 +47,7 @@ class VillageViewSet(viewsets.ViewSet):
         results = request.GET.get("results", "ALL")
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
+        include_unlocated = request.GET.get("include_unlocated", None)
 
         queryset = Village.objects.all()
 
@@ -61,20 +60,20 @@ class VillageViewSet(viewsets.ViewSet):
 
         if years:
             years_array = years.split(",")
-            nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True,
-                                                       case__form_year__in=years_array)
+            nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
+                                                           caseview__normalized_year__in=years_array)
 
                                       )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-            values = values + ('nr_positive_cases', )
+            values = values + ('nr_positive_cases',)
         else:
             if from_date is not None and to_date is not None:
-                nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True,
-                                                        case__document_date__range=(from_date, to_date))
+                nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
+                                                               caseview__normalized_date__range=(from_date, to_date))
 
-                                        )
+                                          )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-                values = values + ('nr_positive_cases', )
+                values = values + ('nr_positive_cases',)
 
         if types:
             types_array = types.split(",")
@@ -85,6 +84,9 @@ class VillageViewSet(viewsets.ViewSet):
 
         if results == 'negative':
             queryset = queryset.filter(nr_positive_cases=0)
+
+        if not include_unlocated:
+            queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
 
         res = queryset.values(*values)
 

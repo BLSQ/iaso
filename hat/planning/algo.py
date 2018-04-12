@@ -26,7 +26,7 @@ def sort_villages(id_list=[], years=[]):
 
     queryset = Village.objects.filter(id__in=id_list)
 
-    nr_positive_cases = Count('case', filter=Q(case__confirmed_case=True, case__document_date__year__in=years))
+    nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)
 
     return sorted(villages, key=cmp_to_key(village_comparator), reverse=True)

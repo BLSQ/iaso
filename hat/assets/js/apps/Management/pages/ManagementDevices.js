@@ -120,28 +120,6 @@ export class ManagementDevices extends Component {
                 <Modal show={this.state.isOpen} onClose={() => this.toggleModal(this, false)}>
                     {modalContent}
                 </Modal>
-                <div className="filter__container">
-                    <h2 className="filter__label"><FormattedMessage id="teamsdevices.label.select" defaultMessage="Select:" /></h2>
-                    <div className="filter__container__select">
-                        <label htmlFor="dateMonth" className="filter__container__select__label"><i className="fa fa-calendar" /><FormattedMessage id="teamsdevices.label.month" defaultMessage="Month" /></label>
-                        <select disabled={loading} name="dateMonth" value={dateMonth} onChange={this.dateHandler} className="select--minimised">
-                            {dates.map(date => <option key={date} value={date}>{date}</option>)}
-                        </select>
-                    </div>
-                    {
-                        locations.length > 0 &&
-                        <div className="filter__container__select">
-                            <label htmlFor="location" className="filter__container__select__label"><i className="fa fa-globe" /><FormattedMessage id="teamsdevices.label.location" defaultMessage="Location" /></label>
-                            <select disabled={loading} name="location" value={location || ''} onChange={this.locationHandler} className="select--minimised">
-                                <option key="all" value="">
-                                    {formatMessage(MESSAGES['location-all'])}
-                                </option>
-                                {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                            </select>
-                        </div>
-                    }
-                </div>
-
                 {
                     error &&
                     <div className="widget__container">

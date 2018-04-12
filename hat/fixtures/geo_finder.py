@@ -7,6 +7,10 @@ class MultipleMatchesFoundException(Exception):
     pass
 
 
+def name_or_alias(name):
+    return Q(name__iexact=name) | Q(aliases__contains=[name])
+
+
 def get_single_zone(name):
     zones = get_zones_by_name_or_alias(name)
     zone = None
@@ -20,7 +24,7 @@ def get_single_zone(name):
 
 
 def get_zones_by_name_or_alias(name):
-    return ZS.objects.filter(Q(name__iexact=name) | Q(aliases__contains=[name]))
+    return ZS.objects.filter(name_or_alias(name))
 
 
 def get_single_area(name, zone=None):
@@ -35,7 +39,7 @@ def get_single_area(name, zone=None):
 
 
 def get_areas_by_name_or_alias(name, zones=None):
-    areas = AS.objects.filter(Q(name__iexact=name) | Q(aliases__contains=[name]))
+    areas = AS.objects.filter(name_or_alias(name))
     if zones is not None:
         areas = areas.filter(ZS__in=zones)
 
@@ -44,7 +48,7 @@ def get_areas_by_name_or_alias(name, zones=None):
 
 def get_single_village(name, areas, official=None):
     try:
-        villages = Village.objects.filter(Q(name__iexact=name) | Q(aliases__contains=[name]), AS__in=areas)
+        villages = Village.objects.filter(name_or_alias(name), AS__in=areas)
         if official is not None:
             villages = villages.filter(village_official=official)
     except ValueError as ve:

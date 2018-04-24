@@ -30,6 +30,8 @@ class Assignation(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
     village = models.ForeignKey(Village, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    month = models.IntegerField(null=True, blank=True)
+    index = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -45,6 +47,9 @@ class Assignation(models.Model):
            # 'longitude': self.village.longitude,
            # 'latitude': self.village.latitude,
             'team_id': self.team_id,
+            'id': self.id,
+            'month': self.month,
+            'index': self.index,
            # 'AS_name': self.village.AS.name,
            # 'population': self.village.population
         }

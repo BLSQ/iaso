@@ -2,33 +2,24 @@
  * This component displays a modal ti assing As to team.
  */
 
-import React, {Component} from 'react'
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
-import { createUrl } from '../../../utils/fetchData';
-import Select from 'react-select';
 import ReactModal from 'react-modal';
+import { injectIntl } from 'react-intl';
 
 ReactModal.setAppElement('.container--main');
-
-const MESSAGES = defineMessages({
-    'all': {
-        defaultMessage: 'Toutes',
-        id: 'microplanning.all'
-    }
-})
 
 class AreaModal extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            showAreaModal: props.showAreaModal
+            showAreaModal: props.showAreaModal,
         };
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            showAreaModal: nextProps.showAreaModal
+            showAreaModal: nextProps.showAreaModal,
         });
     }
 
@@ -37,7 +28,7 @@ class AreaModal extends Component {
             <ReactModal
                 isOpen={this.state.showAreaModal}
                 contentLabel="Area assignation modal"
-                shouldCloseOnOverlayClick={true}
+                shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
             >
                 Modale content
@@ -45,17 +36,17 @@ class AreaModal extends Component {
                     className="button-close-modal"
                     onClick={() => this.props.toggleModal()}
                 >
-                    <i className='fa fa-times-circle' />
+                    <i className="fa fa-times-circle" />
                 </button>
             </ReactModal>
-        )
+        );
     }
 }
 AreaModal.defaultProps = {
 };
 AreaModal.propTypes = {
     showAreaModal: PropTypes.bool.isRequired,
-    toggleModal: PropTypes.func.isRequired
-}
+    toggleModal: PropTypes.func.isRequired,
+};
 
 export default injectIntl(AreaModal);

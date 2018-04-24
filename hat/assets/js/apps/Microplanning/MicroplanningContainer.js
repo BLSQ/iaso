@@ -11,12 +11,12 @@
  */
 
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { clone } from '../../utils';
-import { fetchUrls, launchAlgo } from '../../utils/fetchData';
 import { push } from 'react-router-redux';
-import { createUrl } from '../../utils/fetchData';
-import Microplanning from './Microplanning';
+import { deepEqual, clone } from '../../utils/index';
+import { fetchUrls, launchAlgo, createUrl } from '../../utils/fetchData';
+import MicroplanningComponent from './Microplanning';
 import { selectionActions } from './redux/selection';
 
 const request = require('superagent');
@@ -26,183 +26,203 @@ const request = require('superagent');
 // the value for each key is some url, name and mock data.
 // The name is used as the key in the results payload.
 export const urls = [
-  {
-    name: 'villagesMap',
-    url: ' /api/villages/',
-    mock: [{
-      'AS': 'Muwanda-koso',
-      'confirmedCases': 1,
-      'lastConfirmedCase': '2016-06-27T13:29:03.141000Z',
-      'village': 'Polongo',
-      'ZS': 'Mosango'
-    }, {
-      'AS': 'Fula',
-      'confirmedCases': 2,
-      'lastConfirmedCase': '2016-08-21T12:27:17.420000Z',
-      'village': 'Kikonzi-mf',
-      'ZS': 'Yasa Bonga'
-    }]
-  },
-  {
-    name: 'locations',
-    url: '/api/zs/',
-    mock: [
-      [
-        1,
-        "Mosango"
-      ],
-      [
-        2,
-        "Yasa-bonga"
-      ]
-    ]
-  },
-  {
-    name: 'coordinations',
-    url: '/api/coordinations/',
-    mock: [
-      [
-        1,
-        "Mosango"
-      ],
-      [
-        2,
-        "Yasa-bonga"
-      ]
-    ]
-  },
-  {
-    name: 'areas',
-    url: '/api/as/',
-    mock: [
-      1,
-      "Kinzamba Ii"
-    ]
-  },
-  {
-    name: 'plannings',
-    url: '/api/plannings/',
-    mock: [
-      {
-        "name": "planning 2",
-        "id": 2
-      },
-      {
-        "name": "Test",
-        "id": 1
-      }
-    ]
-  },
-  {
-    name: 'teams',
-    url: '/api/teams/',
-    mock: [
-      [
-        2,
-        "qsdf"
-      ],
-      [
-        1,
-        "team 1"
-      ]
-    ]
-  }
-]
+    {
+        name: 'villagesMap',
+        url: ' /api/villages/',
+        mock: [{
+            AS: 'Muwanda-koso',
+            confirmedCases: 1,
+            lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
+            village: 'Polongo',
+            ZS: 'Mosango',
+        }, {
+            AS: 'Fula',
+            confirmedCases: 2,
+            lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
+            village: 'Kikonzi-mf',
+            ZS: 'Yasa Bonga',
+        }],
+    },
+    {
+        name: 'locations',
+        url: '/api/zs/',
+        mock: [
+            [
+                1,
+                'Mosango',
+            ],
+            [
+                2,
+                'Yasa-bonga',
+            ],
+        ],
+    },
+    {
+        name: 'coordinations',
+        url: '/api/coordinations/',
+        mock: [
+            [
+                1,
+                'Mosango',
+            ],
+            [
+                2,
+                'Yasa-bonga',
+            ],
+        ],
+    },
+    {
+        name: 'areas',
+        url: '/api/as/',
+        mock: [
+            1,
+            'Kinzamba Ii',
+        ],
+    },
+    {
+        name: 'plannings',
+        url: '/api/plannings/',
+        mock: [
+            {
+                name: 'planning 2',
+                id: 2,
+            },
+            {
+                name: 'Test',
+                id: 1,
+            },
+        ],
+    },
+    {
+        name: 'teams',
+        url: '/api/teams/',
+        mock: [
+            [
+                2,
+                'qsdf',
+            ],
+            [
+                1,
+                'team 1',
+            ],
+        ],
+    },
+];
 
 export class MicroplanningContainer extends Component {
-  constructor(props) {
-    super(props)
-    this.currentParams = ''
-  }
-
-  componentDidMount() {
-    if (this.props.params.coordination_id && !this.props.params.zs_id) {
-      this.updateUrlForCoordination(this.props.params);
-    } else {
-      this.loadFullData(this.props.params);
+    constructor(props) {
+        super(props);
+        this.currentParams = '';
     }
-  }
 
-  componentWillReceiveProps(newProps) {
-    if (newProps.params.coordination_id &&
-      !newProps.params.zs_id &&
-      newProps.params.coordination_id !== this.props.params.coordination_id) {
-      this.updateUrlForCoordination(newProps.params);
-    } else {
-      this.loadFullData(newProps.params);
-    }
-  }
-
-  updateUrlForCoordination(params) {
-    request
-      .get(`/api/coordinations/`)
-      .query(params)
-      .then(result => {
-        let coordination = result.body.filter(coordination => coordination.id == params.coordination_id)[0]
-        if (coordination.zs.length > 0) {
-          let tempParams = clone(params);
-          tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
-          this.props.dispatch(push(createUrl(tempParams)));
+    componentDidMount() {
+        if (this.props.params.coordination_id && !this.props.params.zs_id) {
+            this.updateUrlForCoordination(this.props.params);
         } else {
-          loadFullData(params);
+            this.loadFullData(this.props.params);
         }
-      })
-      .catch((err) => {
-        console.error('Error when fetching coordinations details');
-      });
-  }
-
-  getAdditionalSelectData(params) {
-    const { dispatch } = this.props;
-    request
-      .get(`/api/assignations/`)
-      .query(params)
-      .then((result) => {
-        dispatch(selectionActions.selectItems(result.body, false));
-      })
-      .catch((err) => {
-        console.error(err);
-        console.error('Error when fetching assignations details');
-      });
-    if (params.team_id) {
-      request
-        .get(`/api/teams/${params.team_id}`)
-        .query(params)
-        .then((result) => {
-          let geoScope = {}
-          result.body.AS.map(aire => { geoScope[aire.id] = aire })
-          dispatch(selectionActions.updateGeoScope(geoScope));
-        })
-        .catch((err) => {
-          console.error(err);
-          console.error('Error when fetching geo scope');
-        });
     }
-  }
 
-  loadFullData(params) {
-    const { dispatch } = this.props;
-    const oldParams = clone(this.currentParams);
-    this.currentParams = clone(params);
-    fetchUrls(urls, params, oldParams, dispatch).then(() => {
-      this.getAdditionalSelectData(params);
-    });
-  }
+    componentWillReceiveProps(newProps) {
+        if (newProps.params.coordination_id && !newProps.params.zs_id &&
+            (newProps.params.coordination_id !== this.props.params.coordination_id)) {
+            this.updateUrlForCoordination(newProps.params);
+        } else {
+            this.loadFullData(newProps.params);
+        }
+    }
 
-  launchAlgo(algoParams) {
-    const { dispatch } = this.props;
-    launchAlgo(algoParams, dispatch)
-      .then(result => {
-        dispatch(selectionActions.deselectItems());
-        dispatch(selectionActions.selectItems(result.assignations));
-      })
-  }
+    getAdditionalSelectData(params) {
+        const { dispatch } = this.props;
+        request
+            .get('/api/assignations/')
+            .query(params)
+            .then((result) => {
+                dispatch(selectionActions.selectItems(result.body, false));
+            })
+            .catch((err) => {
+                console.error(err);
+                console.error('Error when fetching assignations details');
+            });
+        if (params.team_id) {
+            request
+                .get(`/api/teams/${params.team_id}`)
+                .query(params)
+                .then((result) => {
+                    const geoScope = {};
+                    result.body.AS.map((aire) => {
+                        geoScope[aire.id] = aire;
+                        return true;
+                    });
+                    dispatch(selectionActions.updateGeoScope(geoScope));
+                })
+                .catch((err) => {
+                    console.error(err);
+                    console.error('Error when fetching geo scope');
+                });
+        }
+    }
 
-  render() {
-    return (
-      <Microplanning params={this.props.params} launchAlgo={algoParams => this.launchAlgo(algoParams)} />
-    )
-  }
+    updateUrlForCoordination(params) {
+        request
+            .get('/api/coordinations/')
+            .query(params)
+            .then((result) => {
+                const coordination = result.body.filter(c => c.id === params.coordination_id)[0];
+                if (coordination.zs.length > 0) {
+                    const tempParams = clone(params);
+                    tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
+                    this.props.dispatch(push(createUrl(tempParams)));
+                } else {
+                    this.loadFullData(params);
+                }
+            })
+            .catch((err) => {
+                console.error('Error when fetching coordinations details');
+            });
+    }
+
+    loadFullData(params) {
+        const { dispatch } = this.props;
+        const oldParams = clone(this.currentParams);
+        this.currentParams = clone(params);
+        if (!deepEqual(oldParams, params, true)) {
+            fetchUrls(urls, params, oldParams, dispatch).then(() => {
+                this.getAdditionalSelectData(params);
+            });
+        }
+    }
+
+    launchAlgo(algoParams) {
+        const { dispatch } = this.props;
+        launchAlgo(algoParams, dispatch)
+            .then((result) => {
+                dispatch(selectionActions.deselectItems());
+                dispatch(selectionActions.selectItems(result.assignations));
+            });
+    }
+
+    render() {
+        return (
+            <MicroplanningComponent
+                params={this.props.params}
+                launchAlgo={algoParams => this.launchAlgo(algoParams)}
+            />
+        );
+    }
 }
 
-export default connect()(MicroplanningContainer)
+MicroplanningContainer.propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
+};
+
+const MapStateToProps = state => ({
+    load: state.load,
+});
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningContainer);

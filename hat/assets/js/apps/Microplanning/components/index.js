@@ -4,24 +4,24 @@
 // https://github.com/gaearon/react-hot-loader/issues/158
 //
 
-import {default as Map} from './Map'
-import {default as MapLayers} from './MapLayers'
-import {default as MapLegend} from './MapLegend'
-import {default as MapSelectionControl} from './MapSelectionControl'
-import {default as MapSelectionSummary} from './MapSelectionSummary'
-import {default as MapSelectionList} from './MapSelectionList'
-import {default as MapTooltip} from './MapTooltip'
-import {default as TeamSelectionTool} from './TeamSelectionTool'
-import {default as AreaModal} from './AreaModal'
+import Map from './Map';
+import MapLayers from './MapLayers';
+import MapLegend from './MapLegend';
+import MapSelectionControl from './MapSelectionControl';
+import MapSelectionSummary from './MapSelectionSummary';
+import MapSelectionList from './MapSelectionList';
+import MapTooltip from './MapTooltip';
+import TeamSelectionTool from './TeamSelectionTool';
+import AreaModal from './AreaModal';
 
 export {
-  Map,
-  MapLayers,
-  MapLegend,
-  MapSelectionControl,
-  MapSelectionList,
-  MapSelectionSummary,
-  MapTooltip,
-  TeamSelectionTool,
-  AreaModal
-}
+    Map,
+    MapLayers,
+    MapLegend,
+    MapSelectionControl,
+    MapSelectionList,
+    MapSelectionSummary,
+    MapTooltip,
+    TeamSelectionTool,
+    AreaModal,
+};

@@ -35,9 +35,6 @@ export function checkLocation(params, results, dispatch) {
 }
 
 export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
-  if (deepEqual(oldParams, params, true)) {
-    return
-  }
   dispatch({
     type: LOAD
   })

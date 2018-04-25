@@ -7,6 +7,8 @@ from hat.geo.models import ZS
 from hat.users.models import Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from collections import defaultdict
+from math import ceil
 
 class CoordinationViewSet(viewsets.ViewSet):
     """
@@ -42,11 +44,25 @@ class CoordinationViewSet(viewsets.ViewSet):
             planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
             Assignation.objects.filter(team__coordination=coordination, planning=planning).delete()
 
-            for obj in request.data['assignations']:
-                if obj['team_id']!= -1:
+            assignations = request.data['assignations']
+
+            teams_dict = defaultdict(list)
+            for a in assignations:
+                teams_dict[a['team_id']].append(a)
+
+            if -1 in teams_dict:
+                del teams_dict[-1]
+
+            for team_id in teams_dict:
+                assignation_list = teams_dict[team_id]
+                size = len(assignation_list)
+                for index, obj in enumerate(assignation_list):
+
                     Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
                     assignation = Assignation()
                     assignation.planning = planning
+                    assignation.index = index
+                    assignation.month = max(1, int(ceil((index * 12.0)/size)))
                     assignation.village_id = obj['village_id']
                     assignation.team_id = obj['team_id']
                     assignation.save()
@@ -61,7 +77,6 @@ class CoordinationViewSet(viewsets.ViewSet):
                     newLocation = get_object_or_404(ZS, pk=location['id'])
                     coordination.ZS.add(newLocation)
             coordination.save()
-
 
         return Response(coordination.as_dict())
 

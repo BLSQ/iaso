@@ -37,6 +37,11 @@
         "no-nested-ternary" : "warn",
         "camelcase": "warn",
         "no-restricted-syntax": "warn",
-        "no-case-declarations": "warn"
+        "no-case-declarations": "warn",
+        "no-bitwise": "warn",
+        "no-continue": "warn",
+        "no-prototype-builtins": "warn",
+        "jsx-a11y/label-has-for": "warn",
+        "react/no-array-index-key": "warn"
     }
 }

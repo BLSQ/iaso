@@ -4,7 +4,7 @@ import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 import * as topojson from 'topojson';
 import L from 'leaflet';
 import moment from 'moment';
-import 'leaflet.markercluster';
+import 'leaflet.markercluster'; // eslint-disable-line
 import geoUtils from '../../Microplanning/utils/geo';
 import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar' // eslint-disable-line
 

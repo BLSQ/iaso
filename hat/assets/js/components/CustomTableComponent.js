@@ -2,21 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getRequest, createUrl } from '../utils/fetchData';
 
-const getOrderValue = obj => {
-    return !obj.desc ? obj.id : `-${obj.id}`;
-};
+const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 
 
-const getOrderObject = stringValue => {
-    return [{
-        id : stringValue.replace('-', ''),
-        desc : stringValue.indexOf('-') !== -1
-    }];
-};
+const getOrderObject = stringValue => [{
+    id: stringValue.replace('-', ''),
+    desc: stringValue.indexOf('-') !== -1,
+}];
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
@@ -26,7 +22,7 @@ class CustomTableComponent extends React.Component {
             pages: null,
             loading: true,
             showPagination: false,
-            columns: null,
+            // columns: null,
             order: props.params.order ? getOrderObject(props.params.order) : props.defaultSorted,
         };
 
@@ -66,7 +62,8 @@ class CustomTableComponent extends React.Component {
     componentWillReceiveProps(newProps) {
         if (newProps.endPointUrl !== this.props.endPointUrl) {
             this.onFetchData({
-                sorted: newProps.params.order ? getOrderObject(newProps.params.order) : this.props.defaultSorted,
+                sorted: newProps.params.order ?
+                    getOrderObject(newProps.params.order) : this.props.defaultSorted,
             }, newProps.endPointUrl);
         }
     }
@@ -76,8 +73,8 @@ class CustomTableComponent extends React.Component {
         if (orderTemp !== this.props.params.order) {
             this.props.redirectTo(this.props.defaultPath, {
                 ...this.props.params,
-                order: orderTemp
-            })
+                order: orderTemp,
+            });
         }
     }
 
@@ -87,16 +84,17 @@ class CustomTableComponent extends React.Component {
             loading: true,
         });
         getRequest(`${url}&order=${orderTemp}`, this.props.dispatch).then((data) => {
-            data.pages = 1;
+            const tempdata = data;
+            tempdata.pages = 1;
             setTimeout(() => {
                 this.setState({
-                    data,
+                    data: tempdata,
                     pages: data.pages,
                     loading: false,
                     showPagination: (data.pages > 1) && this.props.showPagination,
                 });
-            }, 100)
-        })
+            }, 100);
+        });
     }
 
     onRowClicked(state, rowInfo) {
@@ -104,7 +102,7 @@ class CustomTableComponent extends React.Component {
             onClick: (e) => {
                 e.preventDefault();
                 this.props.onRowClicked(rowInfo.original, state);
-            }
+            },
         };
     }
 
@@ -123,8 +121,8 @@ class CustomTableComponent extends React.Component {
                 sortable={this.props.isSortable}
                 defaultPageSize={
                     this.state.data.length > this.props.pageSize ?
-                    this.props.pageSize :
-                    this.state.data.length
+                        this.props.pageSize :
+                        this.state.data.length
                 }
                 className="-striped -highlight"
                 getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
@@ -156,6 +154,8 @@ CustomTableComponent.propTypes = {
     showPagination: PropTypes.bool,
     defaultSorted: PropTypes.arrayOf(PropTypes.object),
     defaultPath: PropTypes.string,
+    redirectTo: PropTypes.func.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -11,7 +11,7 @@ import L from 'leaflet';
 import Select from 'react-select';
 import * as topojson from 'topojson';
 import geoUtils from '../../Microplanning/utils/geo';
-import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar' // eslint-disable-line
+import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar';
 import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
 
 

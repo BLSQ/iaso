@@ -342,7 +342,9 @@ export class Microplanning extends Component {
                                         options={this.state.locations.map(zs =>
                                             ({ label: zs.name, value: zs.id }))}
                                         onChange={zsId =>
-                                            this.props.redirect({ ...this.props.params, zsId })}
+                                            this.props.redirect({
+                                                ...this.props.params, zs_id: zsId,
+                                            })}
                                     />
                                 </div>
 
@@ -364,7 +366,9 @@ export class Microplanning extends Component {
                                         options={areas.map(as =>
                                             ({ label: as.name, value: as.id }))}
                                         onChange={asId =>
-                                            this.props.redirect({ ...this.props.params, asId })}
+                                            this.props.redirect({
+                                                ...this.props.params, as_id: asId,
+                                            })}
                                     />
                                 </div>
 

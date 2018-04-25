@@ -25,7 +25,7 @@ class TeamSelectionTool extends Component {
     componentWillReceiveProps(nextProps) {
         let currentPlanning = null;
         nextProps.plannings.map((p) => {
-            if (p.id === nextProps.params.planning_id) {
+            if (p.id === parseInt(nextProps.params.planning_id, 10)) {
                 currentPlanning = p;
             }
             return true;

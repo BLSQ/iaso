@@ -168,8 +168,9 @@ export class MicroplanningContainer extends Component {
             .get('/api/coordinations/')
             .query(params)
             .then((result) => {
-                const coordination = result.body.filter(c => c.id === params.coordination_id)[0];
-                if (coordination.zs.length > 0) {
+                const coordination = result.body.filter(c =>
+                    c.id === parseInt(params.coordination_id, 10))[0];
+                if (coordination && coordination.zs.length > 0) {
                     const tempParams = clone(params);
                     tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
                     this.props.dispatch(push(createUrl(tempParams)));

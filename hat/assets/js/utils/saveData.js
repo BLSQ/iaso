@@ -7,12 +7,8 @@ export function saveFullPlanning(villagesList, planning_id) {
         .put(`/api/plannings/${planning_id}/`)
         .set('Content-Type', 'application/json')
         .send(villagesList)
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function saveVillageTeam(village, planning_id) {
@@ -20,12 +16,8 @@ export function saveVillageTeam(village, planning_id) {
         .patch(`/api/plannings/${planning_id}/`)
         .set('Content-Type', 'application/json')
         .send(village)
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function saveTeamPlanning(villagesList, planning_id, team_id) {
@@ -33,15 +25,11 @@ export function saveTeamPlanning(villagesList, planning_id, team_id) {
         .put(`/api/teams/${team_id}/`)
         .set('Content-Type', 'application/json')
         .send({
-          planning_id:planning_id,
-          assignations: villagesList
+            planning_id,
+            assignations: villagesList,
         })
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function saveFull(team, url) {
@@ -49,24 +37,16 @@ export function saveFull(team, url) {
         .put(url)
         .set('Content-Type', 'application/json')
         .send(team)
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function deleteFull(url) {
     return request
         .delete(url)
         .set('Content-Type', 'application/json')
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function saveCoordinationPlanning(assignations, planning_id, coordination_id) {
@@ -74,15 +54,11 @@ export function saveCoordinationPlanning(assignations, planning_id, coordination
         .put(`/api/coordinations/${coordination_id}/`)
         .set('Content-Type', 'application/json')
         .send({
-          planning_id:planning_id,
-          assignations: assignations
+            planning_id,
+            assignations,
         })
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 export function saveAreaInGeoloc(as_id, team) {
@@ -90,12 +66,8 @@ export function saveAreaInGeoloc(as_id, team) {
         .put(`/api/as/${as_id}/`)
         .set('Content-Type', 'application/json')
         .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
-        .then(() => {
-           return true;
-        })
-        .catch((err) => {
-            return false
-        })
+        .then(() => true)
+        .catch(err => false);
 }
 
 
@@ -107,15 +79,15 @@ export function saveTest(test, dispatch) {
         .then(() => {
             dispatch({
                 type: LOAD_SUCCESS_NO_DATA,
-            })
-           return true;
+            });
+            return true;
         })
         .catch((err) => {
             console.error(`Failing while saving test: ${err}`);
             dispatch({
-              type: LOAD_ERROR,
-              payload: err
-            })
-            return false
-        })
+                type: LOAD_ERROR,
+                payload: err,
+            });
+            return false;
+        });
 }

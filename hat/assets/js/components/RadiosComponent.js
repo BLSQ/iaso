@@ -4,12 +4,8 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 
 class RadiosComponent extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     changeOption(index) {
-        let tempItems = this.props.items.slice();
+        const tempItems = this.props.items.slice();
         tempItems[index].isActive = !tempItems[index].isActive;
         this.props.showItems(tempItems);
     }

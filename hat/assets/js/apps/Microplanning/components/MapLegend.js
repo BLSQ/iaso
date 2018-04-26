@@ -24,90 +24,94 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { defineMessages, FormattedMessage, injectIntl } from 'react-intl'
+import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 
 const MESSAGES = defineMessages({
-  YES: {
-    id: 'microplanning.legend.official',
-    defaultMessage: 'Villages NON endémiques'
-  },
-  OTHER: {
-    id: 'microplanning.legend.selectedByOther',
-    defaultMessage: "Villages sélectionnés pour une autre équipe que l'équipe courante"
-  },
+    YES: {
+        id: 'microplanning.legend.official',
+        defaultMessage: 'Villages NON endémiques',
+    },
+    OTHER: {
+        id: 'microplanning.legend.selectedByOther',
+        defaultMessage: "Villages sélectionnés pour une autre équipe que l'équipe courante",
+    },
 
-  selected: {
-    id: 'microplanning.legend.selected',
-    defaultMessage: 'Villages sélectionnés'
-  },
-  highlight: {
-    id: 'microplanning.legend.highlight',
-    defaultMessage: 'Villages endémiques'
-  },
-  insideGeoloc: {
-    id: 'microplanning.legend.insideGeoloc',
-    defaultMessage: 'Villages dans une AS couverte par l’équipe courante'
-  },
-  outsideGeoloc: {
-    id: 'microplanning.legend.outsideGeoloc',
-    defaultMessage: 'Villages dans une AS NON couverte par l’équipe courante'
-  }
-})
+    selected: {
+        id: 'microplanning.legend.selected',
+        defaultMessage: 'Villages sélectionnés',
+    },
+    highlight: {
+        id: 'microplanning.legend.highlight',
+        defaultMessage: 'Villages endémiques',
+    },
+    insideGeoloc: {
+        id: 'microplanning.legend.insideGeoloc',
+        defaultMessage: 'Villages dans une AS couverte par l’équipe courante',
+    },
+    outsideGeoloc: {
+        id: 'microplanning.legend.outsideGeoloc',
+        defaultMessage: 'Villages dans une AS NON couverte par l’équipe courante',
+    },
+});
 
 class MapLegend extends Component {
-  render() {
-    const fixedItems = [
-      {
-        key: 'highlight',
-        isInGeoScope: false
-      },
-      {
-        key: 'YES',
-        isInGeoScope: false
-      },
-      {
-        key: 'selected',
-        isInGeoScope: true,
-        iAlwaysDisplayed: true
-      },
-      {
-        key: 'OTHER',
-        isInGeoScope: false
-      },
-      {
-        key: 'insideGeoloc',
-        isInGeoScope: true
-      },
-      {
-        key: 'outsideGeoloc',
-        isInGeoScope: true
-      }
-    ]
-    return (
-      <div className='map__option'>
-        <span className='map__option__header'>
-          <FormattedMessage id='microplanning.legend.key' defaultMessage='Légende' />
-        </span>
-        <form>
-          {this.props.isGeoScopeEnabled}
-          <ul className='map__option__list'>
-            {fixedItems.map(item => (
-              (item.isInGeoScope === this.props.isGeoScopeEnabled) || item.iAlwaysDisplayed ?
-                <li key={item.key} className='map__option__list__item'>
-                  <i className={'map__option__icon--' + item.key} />
-                  <FormattedMessage {...MESSAGES[item.key]} />
-                </li>
-                : null
-            ))}
-          </ul>
-        </form>
-      </div>
-    )
-  }
+    render() {
+        const fixedItems = [
+            {
+                key: 'highlight',
+                isInGeoScope: false,
+            },
+            {
+                key: 'YES',
+                isInGeoScope: false,
+            },
+            {
+                key: 'selected',
+                isInGeoScope: true,
+                iAlwaysDisplayed: true,
+            },
+            {
+                key: 'OTHER',
+                isInGeoScope: false,
+            },
+            {
+                key: 'insideGeoloc',
+                isInGeoScope: true,
+            },
+            {
+                key: 'outsideGeoloc',
+                isInGeoScope: true,
+            },
+        ];
+        return (
+            <div className="map__option">
+                <span className="map__option__header">
+                    <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                </span>
+                <form>
+                    {this.props.isGeoScopeEnabled}
+                    <ul className="map__option__list">
+                        {fixedItems.map((item) => {
+                            if ((item.isInGeoScope === this.props.isGeoScopeEnabled)
+|| item.iAlwaysDisplayed) {
+                                return (
+                                    <li key={item.key} className="map__option__list__item">
+                                        <i className={`map__option__icon--${item.key}`} />
+                                        <FormattedMessage {...MESSAGES[item.key]} />
+                                    </li>
+                                );
+                            }
+                            return true;
+                        })}
+                    </ul>
+                </form>
+            </div>
+        );
+    }
 }
 
 MapLegend.propTypes = {
-  isGeoScopeEnabled: PropTypes.bool.isRequired
-}
+    isGeoScopeEnabled: PropTypes.bool.isRequired,
+};
 
-export default injectIntl(MapLegend)
+export default injectIntl(MapLegend);

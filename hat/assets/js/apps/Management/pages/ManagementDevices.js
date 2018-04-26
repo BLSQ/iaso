@@ -63,10 +63,6 @@ export class ManagementDevices extends Component {
         this.loadData(this.props.params);
     }
 
-    componentWillReceiveProps(newProps) {
-        this.loadData(newProps.params);
-    }
-
     loadData(params) {
         const { dispatch } = this.props;
         const oldParams = clone(this.currentParams);

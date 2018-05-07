@@ -28,7 +28,7 @@ class AssignationViewSet(viewsets.ViewSet):
     you will be able to edit the index in the sequence of assignations or the month of the assignation.
     (The two parameters are optional)
     That request will return the list of assignations for the team of the original assignation in the planning
-    of the original assignation (so you just have to load that into your fronted to update)
+    of the original assignation (so you just have to load that into your frontend to update)
     """
 
     def list(self, request):

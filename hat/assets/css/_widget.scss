@@ -9,6 +9,9 @@
 
 .widget__container:last-of-type {
     margin-bottom: 0;
+    &.full {
+        margin-bottom: $padding-unit;
+    }
 }
 
 .widget__header {
@@ -85,7 +88,23 @@
 .widget__content--tier {
     display: flex;
     &>div {
-        flex-basis: 30%;
+        flex-basis: 33%;
+        box-sizing: border-box;
+        padding: $padding-unit;
+        >span {
+            font-weight: bold;
+            color: #868486;
+            margin-bottom: 6px;
+            font-size: 12px;
+            display: block;
+        }
+    }
+}
+.widget__content--double {
+    display: flex;
+    &>div {
+        flex-basis: 50%;
+        box-sizing: border-box;
         padding: $padding-unit;
         >span {
             font-weight: bold;

@@ -11,8 +11,9 @@ import PeriodSelectorComponent from '../../components/PeriodSelectorComponent';
 import { mapActions } from './redux/mapReducer';
 
 
-import { VectorMapComponent, VectorMapLayersComponent } from './components';
+import VectorMapComponent from './components/VectorMapComponent';
 import RadiosComponent from '../../components/RadiosComponent';
+import LayersComponent from '../../components/LayersComponent';
 
 const MESSAGES = defineMessages({
     'location-all': {
@@ -152,7 +153,7 @@ export class Vector extends Component {
                             items={this.state.itemsToShow}
                         />
                         <div>
-                            <VectorMapLayersComponent
+                            <LayersComponent
                                 base={baseLayer}
                                 change={(type, key) => this.props.changeLayer(type, key)}
                             />

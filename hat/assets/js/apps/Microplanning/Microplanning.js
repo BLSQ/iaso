@@ -96,7 +96,7 @@ export class Microplanning extends Component {
     saveTeam() {
         if (this.props.params.team_id) {
             const tempVillages = this.props.selection.assignations
-                .filter(v => v.team_id === this.props.params.team_id);
+                .filter(v => v.team_id === parseInt(this.props.params.team_id, 10));
             this.setState({ isSavingTeam: true });
             saveTeamPlanning(
                 tempVillages,
@@ -243,7 +243,7 @@ export class Microplanning extends Component {
 
             if (this.props.params.team_id) {
                 assignationsTempList = assignationsTempList.filter(x =>
-                    x.team_id === this.props.params.team_id);
+                    x.team_id === parseInt(this.props.params.team_id, 10));
             }
 
             selectedVillages = assignationsTempList.filter(assignation =>
@@ -568,7 +568,7 @@ const MapDispatchToProps = dispatch => ({
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
     changeMode: mode => dispatch(selectionActions.changeMode(mode)),
-    redirect: params => dispatch(push(createUrl(params))),
+    redirect: params => dispatch(push(createUrl(params, ''))),
     getShape: type => getRequest(getShapePath(type), dispatch),
 });
 

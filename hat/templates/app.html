@@ -63,7 +63,7 @@
                         {% endif %}
                     </li>
                     <li class="navigation__menu__item{% if 'cases' in ns %}--active{% endif %}">
-                        <a href="{% url 'cases:cases_list' %}">{% trans 'Données Cas' %}</a>
+                        <a href="{% url 'cases:cases_list' %}">{% trans 'Records' %}</a>
                         <ul>
                             {% if 'cases' in ns %}
                                 {% if perms.cases.view %}
@@ -113,7 +113,12 @@
                     </li>
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
-                            <a href="/dashboard/microplanning/charts/years/2017,2016,2015,2014,2013/planning_id/2">{% trans 'Microplanning' %}</a>
+                            <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
+                            <ul>
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/microplanning/routes' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:microplanning_routes' %}">{% trans 'Itinéraires' %}</a>
+                                </li>
+                            </ul>
                         </li>
                     {% endif %}
 

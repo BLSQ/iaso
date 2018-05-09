@@ -5,14 +5,12 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactDOM from 'react-dom';
-import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
-import Select from 'react-select';
 import * as topojson from 'topojson';
 import geoUtils from '../../Microplanning/utils/geo';
 import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar';
-import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
+import { getMonthName } from '../utils/routeUtils';
 
 
 // map base layers
@@ -42,17 +40,13 @@ const MESSAGES = defineMessages({
     },
 });
 
-class Map extends Component {
+class RouteMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
             containers: {},
-            overlays: {},
-
             layers: {
-                // where to plot the selected markers
                 villages: new L.FeatureGroup(),
-                chosenMarker: null, // marker used to bold the chosen item
             },
         };
     }
@@ -75,12 +69,7 @@ class Map extends Component {
                 this.updateBaseLayer();
             }
 
-            // only call if one of the overlays changed
-            if (hasChanged(prevProps, this.props, 'overlays')) {
-                this.updateOverlays();
-            }
-
-            if (hasChanged(prevProps, this.props, 'villages') || hasChanged(prevProps, this.props, 'selectedVillageId')) {
+            if (hasChanged(prevProps, this.props, 'villages')) {
                 this.updateVillages();
             }
         });
@@ -108,13 +97,7 @@ class Map extends Component {
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
-        map.createPane('custom-pane-highlight-buffer');
-        map.createPane('custom-pane-shadows');
         map.createPane('custom-pane-markers');
-        map.createPane('custom-pane-highlight');
-        map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-labels');
-        map.createPane('custom-pane-buffer');
         this.map = map;
     }
 
@@ -123,20 +106,6 @@ class Map extends Component {
         const { formatMessage } = this.props.intl;
         const { containers } = this.state;
         const { map } = this;
-        //
-        // In TOP-LEFT
-        // .- zoom bar
-        //
-        // In TOP-RIGHT
-        // .- fullscreen warning
-        //
-        // In BOTTOM-RIGHT
-        // .- metric scale
-        //
-        // In BOTTOM-LEFT
-        // .- tooltip-small
-        // .- tooltip-large
-        //
 
         // zoom bar control
         L.control.zoombar({
@@ -161,11 +130,6 @@ class Map extends Component {
         tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
         tooltipSmallControl.addTo(map);
         containers.tooltipSmall = tooltipSmallControl.getContainer();
-
-        const tooltipLargeControl = L.control({ position: 'bottomleft' });
-        tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipLargeControl.addTo(map);
-        containers.tooltipLarge = tooltipLargeControl.getContainer();
     }
 
     includeDefaultLayersInMap() {
@@ -176,6 +140,8 @@ class Map extends Component {
         const { layers } = this.state;
         this.villageGroup = new L.FeatureGroup();
         map.addLayer(this.villageGroup);
+        this.unselectedVillageGroup = new L.FeatureGroup();
+        map.addLayer(this.unselectedVillageGroup);
         // assign labels overlay using the existent labels group
 
         //
@@ -241,14 +207,6 @@ class Map extends Component {
             plotOrHideLayer(zooms.zone, 'zone');
             plotOrHideLayer(zooms.area, 'area');
         });
-
-        // create marker for the chosen item
-        const chosenMarker = L.circle(map.getCenter(), {
-            className: 'map-marker chosen',
-            pane: 'custom-pane-selected',
-            radius: 0,
-        });
-        layers.chosenMarker = chosenMarker;
     }
 
     /*
@@ -271,67 +229,56 @@ class Map extends Component {
         });
     }
 
-    updateOverlays() {
-        const { map } = this;
-
-        Object.keys(this.props.overlays).forEach((key) => {
-            const active = this.props.overlays[key];
-            const layer = this.state.overlays[key];
-            if (active && !map.hasLayer(layer)) {
-                layer.addTo(map);
-            } else if (!active && map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-    // 'YES': Villages from Z.S.
-    // 'NO': Villages not from Z.S.
-    // 'OTHER': Locations where people are found during campaigns
-    // 'NA': Villages from satellite (unknown)
     updateVillages() {
-        const { villages } = this.props;
+        const { villages, notSelectedVillages } = this.props;
         this.villageGroup.clearLayers();
+        this.unselectedVillageGroup.clearLayers();
         if (villages) {
-            villages.map((village) => {
-                let color = 'blue';
-                if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
-                    color = '#FF3824';
-                } else {
-                    Object.entries(VillageTypesConstant).map((villageType) => {
-                        if (villageType[1].key === village.village_official) {
-                            const { colorTemp } = villageType[1];
-                            color = colorTemp;
-                        }
-                        return true;
-                    });
-                }
+            let previousVillage = null;
+            villages.map((village, index) => {
                 const villageCircle = L.circle([village.latitude, village.longitude], {
-                    color,
-                    fillColor: color,
-                    fillOpacity: 0.5,
                     radius: 500,
                     pane: 'custom-pane-markers',
+                    className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                 })
-                    .addTo(this.villageGroup)
-                    .on('click', () => {
-                        this.props.selectVillage(village.id);
-                    })
-                    .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
-                    })
-                    .on('mouseout', () => {
-                        this.updateTooltipSmall();
-                    });
+                    .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
+                villageCircle.addTo(this.villageGroup);
 
+                if (previousVillage) {
+                    const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
+                    const villageB = new L.LatLng(village.latitude, village.longitude);
+                    const pointList = [villageA, villageB];
+                    const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
+                    const polyLine = new L.Polyline(pointList, {
+                        smoothFactor: 10,
+                        className: 'routeLine',
+                    })
+                        .bindTooltip(distance);
+                    polyLine
+                        .addTo(this.villageGroup);
+                }
+                previousVillage = village;
                 return true;
             });
             this.fitToBounds();
+        }
+        if (notSelectedVillages) {
+            notSelectedVillages.map((village) => {
+                const villageCircle = L.circle([village.latitude, village.longitude], {
+                    radius: 500,
+                    pane: 'custom-pane-markers',
+                    className: `routeCircle not-selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
+                })
+                    .bindTooltip(`${village.village_name} - ${getMonthName(village.month)}`);
+                villageCircle.addTo(this.unselectedVillageGroup);
+                return true;
+            });
         }
     }
 
     updateTooltipSmall(item) {
         if (item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
+            this.state.containers.tooltipSmall.innerHTML = item.label;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -353,7 +300,7 @@ class Map extends Component {
         setTimeout(() => {
             const bounds = this.villageGroup.getBounds();
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: MAX_ZOOM });
+                map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [75, 75] });
             }
             map.invalidateSize();
         }, 1);
@@ -399,19 +346,17 @@ class Map extends Component {
         return <div ref={(node) => { this.mapNode = node; }} className="map-container" />;
     }
 }
-Map.defaultProps = {
-    selectedVillageId: null,
-    villages: {},
+RouteMap.defaultProps = {
+    villages: [],
+    notSelectedVillages: [],
 };
 
-Map.propTypes = {
+RouteMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    overlays: PropTypes.object.isRequired,
     villages: PropTypes.array,
+    notSelectedVillages: PropTypes.array,
     intl: intlShape.isRequired,
-    selectVillage: PropTypes.func.isRequired,
-    selectedVillageId: PropTypes.number,
     getShape: PropTypes.func.isRequired,
 };
 
-export default injectIntl(Map);
+export default injectIntl(RouteMap);

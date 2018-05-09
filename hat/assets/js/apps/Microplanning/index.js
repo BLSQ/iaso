@@ -8,18 +8,27 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
-import MicroplanningContainerComponent from './MicroplanningContainer';
+import MicroplanningContainerPage from './MicroplanningContainer';
+import RoutesPage from './pages/Route';
+import { planningReducer } from './redux/planning';
+import { teamReducer } from './redux/team';
+import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
+
 
 export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
     const years = [1, 2, 3, 4, 5].map(i => currentYear - i);
-    const defaultPath = `charts/years/${years.join(',')}`;
+    const defaultPath = `years/${years.join(',')}`;
     const routes = [
         <Route
-            path="charts(/years/:years)(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/team_id/:team_id)(/zs_id/:zs_id)(/as_id/:as_id)"
-            component={MicroplanningContainerComponent}
+            path="years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/team_id/:team_id)(/zs_id/:zs_id)(/as_id/:as_id)"
+            component={MicroplanningContainerPage}
+        />,
+        <Route
+            path="routes(/planning_id/:planning_id)(/team_id/:team_id)(/month_id/:month_id)"
+            component={RoutesPage}
         />,
         <Redirect path="*" to={defaultPath} />,
     ];
@@ -28,21 +37,25 @@ export default function microplanningApp(element, baseUrl) {
     // baseUrl is the django route to the page
         basename: baseUrl,
     });
-
     const store = createStore({
         config: {},
         load: {},
         selection: selectionInitialState,
         map: mapInitialState,
+        plannings: [],
+        teams: [],
+        assignations: [],
     }, {
         config: (state = {}) => state,
         load: loadReducer,
         selection: selectionReducer,
         map: mapReducer,
+        plannings: planningReducer,
+        teams: teamReducer,
+        assignations: assignationReducer,
     }, [
         routerMiddleware(history),
     ]);
-
     history = syncHistoryWithStore(
         history,
         store,

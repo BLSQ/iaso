@@ -1,14 +1,16 @@
 from rest_framework import viewsets
-from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
-from hat.planning.models import Planning, Assignation
-from hat.users.models import Team, Coordination
+from django.utils import timezone
+from django.db.models import Count
+from django.db.models import Q
+from hat.planning.models import Assignation
+from hat.users.models import Team
 from hat.geo.models import Village
-from rest_framework import generics
-from rest_framework import serializers
+
+
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
 
 
 class AssignationViewSet(viewsets.ViewSet):
@@ -29,12 +31,17 @@ class AssignationViewSet(viewsets.ViewSet):
     (The two parameters are optional)
     That request will return the list of assignations for the team of the original assignation in the planning
     of the original assignation (so you just have to load that into your frontend to update)
+
+    If you want to have the case_count per village, just add show_case_count=true to the URL params. 
     """
+
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
         planning_id = request.GET.get('planning_id', None)
         coordination_id = request.GET.get('coordination_id', None)
         team_id = request.GET.get('team_id', None)
+        show_case_count = request.GET.get('show_case_count', False)
 
         assignations = Assignation.objects
         if coordination_id:
@@ -46,9 +53,24 @@ class AssignationViewSet(viewsets.ViewSet):
 
         assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('index')
 
+        if show_case_count:
+            village_ids = map(lambda ass: ass.village_id, assignations)
+            villages = Village.objects.filter(id__in=village_ids)
+            year = timezone.now().year
+            years_array = range(year-5, year)
+            nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
+                                                           caseview__normalized_year__in=years_array)
+
+                                      )
+            villages = villages.annotate(nr_positive_cases=nr_positive_cases)
+            endemic_dict = {village.id:village.nr_positive_cases for village in villages}
+
         res = []
         for assignation in assignations:
-            res.append(assignation.as_dict())
+            assignation_dict = assignation.as_dict()
+            if show_case_count:
+                assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
+            res.append(assignation_dict)
 
         return Response(res)
 
@@ -57,7 +79,7 @@ class AssignationViewSet(viewsets.ViewSet):
         assignation = get_object_or_404(Assignation, pk=pk)
 
         index = request.data.get('index', assignation.index)
-        month = request.data.get('month', assignation.month)
+        month = request.data.get('month', None)
 
         assignation.month = month
 

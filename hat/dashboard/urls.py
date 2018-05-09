@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^microplanning/planning/©', views.planning, name='planning'),
     url(r'^microplanning/coordination/(?P<coordination_id>\d+)$', views.coordination, name='coordination'),
     url(r'^microplanning/.*$', views.microplanning, name='microplanning'),
+    url(r'^microplanning/routes.*$', views.microplanning, name='microplanning_routes'),
     url(r'^management/.*$', views.device_management, name='management'),
     url(r'^management/devices.*$', views.device_management, name='management_devices'),
     url(r'^management/teams.*$', views.managementAll, name='management_team'),

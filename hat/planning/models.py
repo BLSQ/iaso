@@ -43,13 +43,13 @@ class Assignation(models.Model):
     def as_dict(self):
         return {
             'village_id': self.village_id,
-           # 'village_name': self.village.name,
-           # 'longitude': self.village.longitude,
-           # 'latitude': self.village.latitude,
+            'village_name': self.village.name,
+            'village_population': self.village.population,
+            'longitude': self.village.longitude,
+            'latitude': self.village.latitude,
             'team_id': self.team_id,
             'id': self.id,
             'month': self.month,
             'index': self.index,
-           # 'AS_name': self.village.AS.name,
-           # 'population': self.village.population
+           # 'AS_name': self.village.AS.name
         }

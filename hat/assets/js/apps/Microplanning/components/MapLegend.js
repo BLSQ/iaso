@@ -89,11 +89,10 @@ class MapLegend extends Component {
                     <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
                 </span>
                 <form>
-                    {this.props.isGeoScopeEnabled}
                     <ul className="map__option__list">
                         {fixedItems.map((item) => {
                             if ((item.isInGeoScope === this.props.isGeoScopeEnabled)
-|| item.iAlwaysDisplayed) {
+                                || item.iAlwaysDisplayed) {
                                 return (
                                     <li key={item.key} className="map__option__list__item">
                                         <i className={`map__option__icon--${item.key}`} />

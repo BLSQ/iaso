@@ -76,7 +76,7 @@ $color in $types {
 }
 
 .map__header--filters {
-    flex-basis: 50%;
+    flex-basis: 33%;
     position: relative;
     z-index: 1000;
 }
@@ -361,6 +361,19 @@ $color in $types {
             color: white;
         }
     }
+
+    &--route-with-positive-cases {
+        background: white;
+        border-color: red;
+    }
+    &--route-assigned {
+        background: rgba(blue, 0.5);
+        border-color: blue;
+    }
+    &--route-not-assigned {
+        background: rgba(yellow, 0.5);
+        border-color: orange;
+    }
     &.square {
         border-radius: 5px;
     }
@@ -369,7 +382,6 @@ $color in $types {
         background: lighten($active, 35%);
     }
 }
-
 
 /******************************************************************************
  * tooltips (warning, map: small and large)
@@ -991,6 +1003,14 @@ button {
 
 .vector-map .leaflet-pane>svg path {
     stroke-width: 1px !important;
+}
+
+.route-map .leaflet-pane>svg path.routeCircle {
+    stroke-width: 1px !important;
+}
+
+.route-map .leaflet-pane>svg path.routeLine {
+    stroke-width: 5px !important;
 }
 
 .leaflet-pane {

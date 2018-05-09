@@ -81,11 +81,14 @@ export class Locator extends Component {
         return (
             <div className="locator-container widget__container">
                 {
-                    this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
-                    })}
-                    />
+                    this.props.load.loading &&
+                    <div className="widget__content">
+                        <LoadingSpinner message={formatMessage({
+                            defaultMessage: 'Chargement en cours',
+                            id: 'microplanning.labels.loading',
+                        })}
+                        />
+                    </div>
                 }
                 {this.props.kase.list &&
                     <CaseList list={this.props.kase.list} />
@@ -145,23 +148,23 @@ export class Locator extends Component {
                                                         }
                                                         {
                                                             this.state.villageDetail.population_source &&
-                                                                <p>
-                                                                    <FormattedMessage
-                                                                        id="microplanning.tooltip.population.source"
-                                                                        defaultMessage="Source de la population"
-                                                                    />
-                                                                    {': '}{this.state.villageDetail.population_source}
-                                                                </p>
+                                                            <p>
+                                                                <FormattedMessage
+                                                                    id="microplanning.tooltip.population.source"
+                                                                    defaultMessage="Source de la population"
+                                                                />
+                                                                {': '}{this.state.villageDetail.population_source}
+                                                            </p>
                                                         }
                                                         {
                                                             this.state.villageDetail.population_year &&
-                                                                <p>
-                                                                    <FormattedMessage
-                                                                        id="microplanning.tooltip.population.year"
-                                                                        defaultMessage="Année relevé population"
-                                                                    />
-                                                                    {': '}{this.state.villageDetail.population_year}
-                                                                </p>
+                                                            <p>
+                                                                <FormattedMessage
+                                                                    id="microplanning.tooltip.population.year"
+                                                                    defaultMessage="Année relevé population"
+                                                                />
+                                                                {': '}{this.state.villageDetail.population_year}
+                                                            </p>
                                                         }
 
                                                         <button

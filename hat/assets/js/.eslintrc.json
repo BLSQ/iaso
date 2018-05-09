@@ -42,6 +42,7 @@
         "no-continue": "warn",
         "no-prototype-builtins": "warn",
         "jsx-a11y/label-has-for": "warn",
-        "react/no-array-index-key": "warn"
+        "react/no-array-index-key": "warn",
+        "max-len": ["warn", { "code": 200 }]
     }
 }

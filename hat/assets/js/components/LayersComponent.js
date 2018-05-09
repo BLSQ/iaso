@@ -1,7 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
-import { mapLayerTypes, mapBaseLayers } from '../redux/mapReducer';
+
+const mapLayerTypes = {
+    legend: 1,
+    baseLayer: 2,
+    overlay: 3,
+};
+
+const mapBaseLayers = [
+    'blank',
+    'osm',
+    'arcgis-street',
+    'arcgis-satellite',
+    'arcgis-topo',
+];
 
 const MESSAGES = defineMessages({
     // base layers
@@ -33,7 +46,7 @@ const MESSAGES = defineMessages({
     },
 });
 
-class VectorMapLayersComponent extends Component {
+class LayersComponent extends Component {
     render() {
         const { base, change } = this.props;
         return (
@@ -58,9 +71,9 @@ class VectorMapLayersComponent extends Component {
     }
 }
 
-VectorMapLayersComponent.propTypes = {
+LayersComponent.propTypes = {
     base: PropTypes.string.isRequired,
     change: PropTypes.func.isRequired,
 };
 
-export default injectIntl(VectorMapLayersComponent);
+export default injectIntl(LayersComponent);

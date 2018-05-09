@@ -97,7 +97,7 @@ export function launchAlgo(algoParams, dispatch) {
         });
 }
 
-export function getRequest(url, dispatch) {
+export function getRequest(url, dispatch, key = null) {
     dispatch({
         type: LOAD,
     });
@@ -107,7 +107,13 @@ export function getRequest(url, dispatch) {
             dispatch({
                 type: LOAD_SUCCESS_NO_DATA,
             });
-            return result.body;
+            let tempResult = {};
+            if (key !== null) {
+                tempResult[key] = result.body;
+            } else {
+                tempResult = result.body;
+            }
+            return tempResult;
         })
         .catch((err) => {
             dispatch({

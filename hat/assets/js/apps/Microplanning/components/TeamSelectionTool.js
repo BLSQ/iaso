@@ -14,12 +14,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Toutes',
         id: 'microplanning.all',
     },
+    allMale: {
+        defaultMessage: 'Tous',
+        id: 'microplanning.allMale',
+    },
 });
 
 class TeamSelectionTool extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            plannings: props.plannings,
+        };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -33,69 +39,108 @@ class TeamSelectionTool extends Component {
         this.setState({
             currentPlanning,
             coordinations: nextProps.coordinations,
+            plannings: nextProps.plannings,
             teams: nextProps.teams,
         });
     }
 
-    onChangeCoordination(coordination_id) {
+    onChangeCoordination(coordinationId) {
         const tempParams = clone(this.props.params);
         delete tempParams.team_id;
         delete tempParams.zs_id;
         this.props.deselectAll();
         this.props.redirect({
             ...tempParams,
-            coordination_id,
+            coordination_id: coordinationId,
+        });
+    }
+
+    onChangePlanning(planningId) {
+        const tempParams = clone(this.props.params);
+        delete tempParams.coordination_id;
+        delete tempParams.team_id;
+        delete tempParams.zs_id;
+        this.props.deselectAll();
+        this.props.redirect({
+            ...tempParams,
+            planning_id: planningId,
         });
     }
 
     render() {
         const { formatMessage } = this.props.intl;
-        if (!this.props.params.planning_id || !this.state.currentPlanning) {
-            return null;
-        }
         let totalCapacity = 0;
-        this.state.teams.map((team) => {
-            totalCapacity += team.capacity;
-            return true;
-        });
+        if (this.state.teams && this.state.teams.length > 0) {
+            this.state.teams.map((team) => {
+                totalCapacity += team.capacity;
+                return true;
+            });
+        }
         return (
-            <div className="widget__container">
-                <div className="widget__header">
-                    <h2 className="widget__heading">
-                        <FormattedMessage id="microplanning.label.plannings" defaultMessage="Planning: " />
-                        {this.state.currentPlanning.name}
-                        {` (${this.state.currentPlanning.year})`}
-                    </h2>
-                </div>
-                <div className="widget__content--tier">
-                    <div>
-                        <FormattedMessage id="microplanning.label.coordination" defaultMessage="Coordination: " />
-                        <Select
-                            simpleValue
-                            name="coordination_id"
-                            value={parseInt(this.props.params.coordination_id, 10)}
-                            placeholder={formatMessage(MESSAGES.all)}
-                            options={this.state.coordinations.map(coordination =>
-                                ({ label: coordination.name, value: coordination.id }))}
-                            onChange={event => this.onChangeCoordination(event)}
-                        />
-                    </div>
-                    <div>
-                        <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+            <section>
+                <div className="widget__container full">
+                    <div className="widget__content--tier">
+                        <div>
+                            <FormattedMessage id="microplanning.label.planning" defaultMessage="Planning: " />
+                            {
+                                this.state.plannings.length > 0 &&
+                                <Select
+                                    simpleValue
+                                    name="planning_id"
+                                    value={parseInt(this.props.params.planning_id, 10)}
+                                    placeholder={formatMessage(MESSAGES.allMale)}
+                                    options={this.state.plannings.map(planning =>
+                                        ({ label: planning.name, value: planning.id }))}
+                                    onChange={event => this.onChangePlanning(event)}
+                                />
 
-                        <Select
-                            disabled={!this.props.params.coordination_id}
-                            simpleValue
-                            name="team_id"
-                            value={parseInt(this.props.params.team_id, 10)}
-                            placeholder={`${formatMessage(MESSAGES.all)} - ${totalCapacity}`}
-                            options={this.state.teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
-                            onChange={event =>
-                                this.props.redirect({ ...this.props.params, team_id: event })}
-                        />
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+                {
+                    this.props.params.planning_id && this.state.currentPlanning &&
+                    <div className="widget__container full">
+                        <div className="widget__header">
+                            <h2 className="widget__heading">
+                                <FormattedMessage id="microplanning.label.plannings" defaultMessage="Planning: " />
+                                {this.state.currentPlanning.name}
+                                {` (${this.state.currentPlanning.year})`}
+                            </h2>
+                        </div>
+                        <div className="widget__content--tier">
+                            <div>
+                                <FormattedMessage id="microplanning.label.coordination" defaultMessage="Coordination: " />
+                                <Select
+                                    simpleValue
+                                    name="coordination_id"
+                                    value={parseInt(this.props.params.coordination_id, 10)}
+                                    placeholder={formatMessage(MESSAGES.all)}
+                                    options={this.state.coordinations.map(coordination =>
+                                        ({ label: coordination.name, value: coordination.id }))}
+                                    onChange={event => this.onChangeCoordination(event)}
+                                />
+                            </div>
+                            <div>
+                                <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+
+                                <Select
+                                    disabled={!this.props.params.coordination_id}
+                                    simpleValue
+                                    name="team_id"
+                                    value={parseInt(this.props.params.team_id, 10)}
+                                    placeholder={`${formatMessage(MESSAGES.all)} - ${totalCapacity}`}
+                                    options={this.state.teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
+                                    onChange={event =>
+                                        this.props.redirect({
+                                            ...this.props.params, team_id: event,
+                                        })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </section>
         );
     }
 }

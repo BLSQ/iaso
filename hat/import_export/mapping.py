@@ -575,6 +575,15 @@ MAPPING: List[JsonType] = [
         "export_levels": [Export.full, Export.suspects_full]
     },
     {
+        "field": "json_document_id",
+        "export_levels": [Export.full, Export.suspects_full],
+        "sources": {
+            "mobile": {
+                "field": ("main", "json_document_id")
+            }
+        }
+    },
+    {
         "field": "name",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
@@ -848,6 +857,26 @@ MAPPING: List[JsonType] = [
         "test_type": SCREENING_TEST
     },
     {
+        "field": "test_rdt_picture_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.image")
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
+        "field": "test_rdt_session_type",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.sessionType")
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
         "field": "test_catt",
         "export_levels": [Export.full, Export.anon],
         "sources": {
@@ -871,6 +900,36 @@ MAPPING: List[JsonType] = [
             "mobile": {
                 "field": ("main", "participant.screenings.catt.result"),
                 "apply_to_column": mobile_get_result
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
+        "field": "test_catt_index",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.screeningIndex")
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
+        "field": "test_catt_picture_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.image")
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
+        "field": "test_catt_session_type",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.sessionType")
             },
         },
         "test_type": SCREENING_TEST

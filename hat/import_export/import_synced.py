@@ -1,4 +1,4 @@
-'''
+"""
 Import synced cases
 -------------------
 
@@ -7,7 +7,7 @@ The data are transfered to a CouchDB database on the server.
 Each device will get its own database in CouchDB and will use PouchDB to
 CouchDB replication to transmit data to the server.
 A more detailed description can be found in the ``hat.sync`` module.
-'''
+"""
 
 import logging
 import json
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def import_synced_devices() -> List[ImportResult]:
-    '''
+    """
     Import cases data from devices sync databases.
 
     The devices with the HAT mobile app installed will sync cases data to CouchDB.
@@ -40,7 +40,7 @@ def import_synced_devices() -> List[ImportResult]:
 
     The returned dict list will contain information about how many records were imported
     or any errors that happened.
-    '''
+    """
 
     results = []
     for device in DeviceDB.objects.all():
@@ -79,7 +79,7 @@ def import_synced_devices() -> List[ImportResult]:
 
 def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
     device = DeviceDB.objects.get(device_id=device_id)
-    patient_docs = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
+    patient_docs: List[dict] = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
     for doc in patient_docs:
         logger.error(json.dumps(doc))
         couch_document = JSONDocument()
@@ -95,10 +95,9 @@ def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
         
         if doc_id is not None and revision is not None:
             couch_document.save()
+            doc['json_document_id'] = couch_document.id
         else:
             logger.error("Impossible to store document in postgres: " + json.dumps(doc))
-
-
 
     extracted = prepare_mobile_data(docs)
     transformed = transform_source('sync', extracted)

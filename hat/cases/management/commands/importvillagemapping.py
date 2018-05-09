@@ -4,7 +4,7 @@ import sys
 
 from django.core.management import BaseCommand
 
-from hat.fixtures.geo_finder import get_single_zone, get_single_area, get_single_village
+from hat.geo.geo_finder import get_single_zone, get_single_area, get_single_village
 
 
 class Command(BaseCommand):

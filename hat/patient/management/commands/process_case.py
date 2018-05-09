@@ -1,14 +1,11 @@
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
-from hat.patient.identify import Identify
-from hat.patient.models import Patient, Test
+from hat.patient.identify import get_or_create_patient, create_test_data
 
 
 class Command(BaseCommand):
     help = 'Process cases_case to dispatch into patient_patient and patient_test'
-
-    identifier = Identify()
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -40,7 +37,7 @@ class Command(BaseCommand):
 
             try:
                 # Normalize the patient data
-                patient, patient_created = self.identifier.get_or_create_patient(case)
+                patient, patient_created = get_or_create_patient(case)
                 if patient_created:
                     patient_created_count += 1
                     if options['verbose'] or patient_created_count % 100 == 0:
@@ -49,7 +46,7 @@ class Command(BaseCommand):
                 case.normalized_patient = patient
 
                 # Normalize the test data
-                tests, tests_created = self.identifier.create_test_data(case)
+                tests, tests_created = create_test_data(case)
                 if options['verbose']:
                     print("Created", tests_created, "tests")
                     print("Tests:", list(map(lambda x: x.type, tests)))

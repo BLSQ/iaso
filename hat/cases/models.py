@@ -32,6 +32,8 @@ RES_MISSING = -1
 RES_UNREAD = -2
 RES_UNUSED = -3
 
+SCR_TYPE_DOOR_TO_DOOR = "doorToDoor"
+SCR_TYPE_ON_SITE = "onSite"
 
 
 class CaseAbstract(models.Model):
@@ -123,10 +125,15 @@ class CaseAbstract(models.Model):
     :ivar integer test_parasit:              “Confirmation Parasitologique”.
     :ivar integer test_pg:                   “Ponction ganglionnaire”.
     :ivar integer test_rdt:                  “Rapid Diagnostic Test”.
+    :ivar integer test_rdt_picture_filename: “Rapid Diagnostic Test, filename of the picture”.
+    :ivar integer test_rdt_session_type:     “Rapid Diagnostic Test, doorToDoor or onSite”.
     :ivar integer test_sf:                   “Sang Frais”.
     :ivar integer test_sternal_puncture:     “Ponction sternale”.
 
     :ivar integer test_catt:                 “Card Agglutination Test for Trypanosomiasis”.
+    :ivar integer test_catt_index:           “Card Agglutination Test for Trypanosomiasis, index of test on the card”.
+    :ivar integer test_catt_picture_filename:“Card Agglutination Test for Trypanosomiasis, filename of the picture”.
+    :ivar integer test_catt_session_type:    “Card Agglutination Test for Trypanosomiasis, doorToDoor or onSite”.
     :ivar text    test_catt_dilution:        “Card Agglutination Test for Trypanosomiasis”.
         Dilution positive at:
 
@@ -244,8 +251,17 @@ class CaseAbstract(models.Model):
         (RES_UNUSED, 'Inutilisé'),
     )
 
+    SESSION_TYPE_CHOICES = (
+        (SCR_TYPE_DOOR_TO_DOOR, "Door to door"),
+        (SCR_TYPE_ON_SITE, "On site"),
+    )
+
     test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_catt_index = models.IntegerField("CATT Card Index", null=True, blank=True)
     test_catt_dilution = models.TextField("Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_catt_picture_filename = models.TextField("CATT picture filename", null=True, blank=True)
+    test_catt_session_type = models.TextField("CATT session type door to door or on site",
+                                              choices=SESSION_TYPE_CHOICES, null=True, blank=True)
     test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
                                                  blank=True)
     test_ctcwoo = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
@@ -260,6 +276,9 @@ class CaseAbstract(models.Model):
     test_pg = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_pl = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_rdt = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_rdt_session_type = models.TextField("RDT session type door to door or on site",
+                                             choices=SESSION_TYPE_CHOICES, null=True, blank=True)
+    test_rdt_picture_filename = models.TextField("RDT picture filename", null=True, blank=True)
     test_sf = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_sternal_puncture = models.IntegerField("Test Ponction Sternale", choices=GENERAL_TEST_RESULT_CHOICES,
                                                 null=True, blank=True)

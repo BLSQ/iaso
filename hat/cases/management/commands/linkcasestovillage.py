@@ -3,7 +3,7 @@ import gc
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
-from hat.fixtures.geo_finder import MultipleMatchesFoundException, get_single_village, \
+from hat.geo.geo_finder import MultipleMatchesFoundException, get_single_village, \
     get_zones_by_name_or_alias, get_areas_by_name_or_alias
 
 

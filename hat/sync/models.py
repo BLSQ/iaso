@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.forms import ModelForm
 from django.utils import timezone
 
+from hat.cases.models import Case
 from hat.constants import TEST_TYPE_CHOICES
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
@@ -160,11 +161,12 @@ def mobile_user_post_delete(sender, instance, *args, **kwargs):  # type: ignore
 
 
 class ImageUpload(models.Model):
+    UPLOADED_TO = 'images/'
     participant_uuid = models.TextField(null=True, blank=True, db_index=True)
     hat_id = models.TextField(null=True, blank=True)
     group_id = models.TextField(null=True, blank=True, db_index=True)
     type = models.TextField(default='CATT', choices=TEST_TYPE_CHOICES)
-    image = models.FileField(upload_to="images/")
+    image = models.FileField(upload_to=UPLOADED_TO)
     upload_date = models.DateTimeField(auto_now_add=True)
 
     def semantic_id(self):
@@ -211,6 +213,7 @@ class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
+    case = models.ForeignKey(to=Case, on_delete=models.SET_NULL, null=True, blank=True)
     doc = JSONField()
 
     def __str__(self):

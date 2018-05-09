@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import  User
 from django.shortcuts import render, get_object_or_404 ,redirect
 
+from hat.patient.identify import find_tests_by_image
 from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
 from ..cases.models import TestGroup
 
@@ -269,13 +270,22 @@ def signin(request: HttpRequest) -> HttpResponse:
 def image_upload(request: HttpRequest) -> HttpResponse:
     img_form = ImageUploadForm(request.POST, request.FILES)
     if img_form.is_valid():
-        img = img_form.save()
-        if img.group_id:
-            test_group, created = TestGroup.objects.get_or_create(group_id=img.group_id)
-            if created:
-                test_group.type = img.type
-                test_group.save()
-        return JsonResponse({"Result": "Upload ok"})
+        try:
+            img = img_form.save()
+            if img.group_id:
+                test_group, created = TestGroup.objects.get_or_create(group_id=img.group_id)
+                if created:
+                    test_group.type = img.type
+                    test_group.save()
+            # Try to associate the image with a test
+            tests = find_tests_by_image(request.FILES['image'].name, img.type, False)
+            for test in tests:
+                test.image = img
+                test.save()
+            return JsonResponse({"Result": "Upload ok"})
+        except:
+            logger.error("Error saving picture %s", request.FILES['image'].name, exc_info=1)
+            return JsonResponse({}, status=500)
     else:
         return JsonResponse(img_form.errors, status=400)
 

@@ -176,4 +176,6 @@ export default {
     villagesInBuffer,
     villagesInHighlightBuffer,
     extendBasic,
+    zoomDelta: 0.50,
+    zoomSnap: 0.50,
 };

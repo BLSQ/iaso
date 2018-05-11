@@ -104,6 +104,8 @@ class Map extends Component {
             scrollWheelZoom: false, // disable scroll zoom
             center: geoUtils.center,
             zoom: geoUtils.zoom,
+            zoomDelta: geoUtils.zoomDelta,
+            zoomSnap: geoUtils.zoomSnap,
         });
 
         // create panes to preserve z-index order

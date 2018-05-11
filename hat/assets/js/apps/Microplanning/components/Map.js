@@ -177,6 +177,8 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             scrollWheelZoom: false, // disable scroll zoom
             center: geoUtils.center,
             zoom: geoUtils.zoom,
+            zoomDelta: geoUtils.zoomDelta,
+            zoomSnap: geoUtils.zoomSnap,
         });
 
         // create panes to preserve z-index order

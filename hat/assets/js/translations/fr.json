@@ -77,7 +77,7 @@
     "microplanning.label.selection": "Sélection de village",
     "microplanning.label.save": "Sauver la selection",
     "microplanning.label.save.error": "Erreur lors de la sauvegarde",
-    "microplanning.label.save.success": "Sauvergarde effectuée",
+    "microplanning.label.save.success": "Sauvegarde effectuée",
     "microplanning.label.print": "Imprimer la carte",
     "microplanning.label.fitToBounds": "Centrer sur les villages appropriés",
     "microplanning.label.zoom.box": "Dessiner un carré sur la carte pour zoomer dans une zone",

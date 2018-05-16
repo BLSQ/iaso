@@ -183,7 +183,7 @@ class VideoUpload(models.Model):
     participant_uuid = models.TextField(db_index=True)
     hat_id = models.TextField()
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='pg', choices=TEST_TYPE_CHOICES)
+    type = models.TextField(default='PG', choices=TEST_TYPE_CHOICES)
     video = models.FileField(upload_to="videos/")
     upload_date = models.DateTimeField(auto_now_add=True)
 

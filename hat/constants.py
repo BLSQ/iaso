@@ -1,14 +1,14 @@
 CATT = 'CATT'
 PG = 'PG'
-CTCWOO = 'ctcwoo'
-MAECT = 'maect'
+CTCWOO = 'CTCWOO'
+MAECT = 'MAECT'
 RDT = 'RDT'
 
 TEST_TYPE_CHOICES = (
     (CATT, 'CATT'),
     (PG, 'PG'),
-    (CTCWOO, 'ctcwoo'),
-    (MAECT, 'maect'),
+    (CTCWOO, 'CTCWOO'),
+    (MAECT, 'MAECT'),
     (RDT, 'RDT')
 )
 

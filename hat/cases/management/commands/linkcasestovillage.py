@@ -59,7 +59,7 @@ class Command(BaseCommand):
                                     ZS__isnull=False)
         success_count = 0
         count = 0
-        official = None if options['unofficial'] else True
+        official = None if options['unofficial'] else 'YES'
         for case in queryset_iterator(cases):
             count += 1
             if count % 1000 == 0:

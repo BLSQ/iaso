@@ -51,7 +51,7 @@ class Team(models.Model):
     UM = models.BooleanField(default=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True),
-        size=4,
+        size=20,
         null=True,
         blank=True,
     )

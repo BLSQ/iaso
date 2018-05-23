@@ -7,7 +7,7 @@ class Province(models.Model):
     old_name = models.CharField(max_length=255)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True),
-        size=4,
+        size=10,
         null=True,
         blank=True,
     )
@@ -28,7 +28,7 @@ class ZS(models.Model):
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True),
-        size=4,
+        size=10,
         null=True,
         blank=True,
     )
@@ -52,7 +52,7 @@ class AS(models.Model):
     ZS = models.ForeignKey(ZS, on_delete=models.CASCADE)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True),
-        size=4,
+        size=10,
         null=True,
         blank=True,
     )
@@ -76,7 +76,7 @@ class Village(models.Model):
     AS = models.ForeignKey(AS, on_delete=models.CASCADE)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True),
-        size=4,
+        size=10,
         null=True,
         blank=True,
     )

@@ -6,6 +6,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 from hat.geo.models import Village
+from hat.geo.models import AS as ASModel
 
 CASES_PERMISSIONS = (
     ('import', 'Can import data'),
@@ -222,6 +223,7 @@ class CaseAbstract(models.Model):
 
     normalized_village = models.ForeignKey(Village, null=True, on_delete=models.SET_NULL)
 
+    normalized_AS = models.ForeignKey(ASModel, null=True, on_delete=models.SET_NULL)
     # Don't use the class here because the import will create a cyclic dependency on Case
     normalized_patient = models.ForeignKey('patient.Patient', null=True, on_delete=models.SET_NULL)
 

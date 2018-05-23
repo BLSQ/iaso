@@ -93,9 +93,14 @@ class Command(BaseCommand):
                     print("Dry-run: would have updated case id", case.id, "to village", village.id)
                 else:
                     case.normalized_village = village
+                    case.normalized_AS = village.AS
                     case.save()
                 success_count += 1
                 print("+++++++ Village found for:", zone_name, area_name, village_name)
+            elif areas.count() == 1:
+                case.normalized_AS = areas[0]
+                case.save()
+                print("+++++++ Village not found but Area found for:", zone_name, area_name, village_name)
 
         print("----------------------------------------")
         print("Cases matched with known villages:", success_count)

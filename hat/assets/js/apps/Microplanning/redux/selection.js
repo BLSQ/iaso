@@ -41,10 +41,8 @@ const calculateAssignations = (mode, patchAssignations, existingAssignations) =>
                     result.push(existingAssignation);
                 }
             }
-
             return result;
         }
-            break;
         case selectionModes.deselect: {
             // no suggested means remove ALL
             if (patchAssignations.length === 0) {

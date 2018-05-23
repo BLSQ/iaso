@@ -1,6 +1,12 @@
 import monthList from '../constants/monthList';
 
-const getMonthName = monthId => (monthList.filter(month => (month.id === monthId))[0].fullLabel);
+const getMonthName = (monthId) => {
+    let monthName = '';
+    if (monthId) {
+        monthName = monthList.filter(month => (month.id === monthId))[0].fullLabel;
+    }
+    return monthName;
+};
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);

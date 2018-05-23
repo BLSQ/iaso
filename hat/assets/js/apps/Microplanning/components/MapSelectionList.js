@@ -33,41 +33,62 @@ class MapSelectionList extends Component {
                         <FormattedMessage id="microplanning.selected.reset" defaultMessage="Deselect all" />
                     </a>
                 </div>
+                <table className="map__selection__list">
+                    <thead>
+                        <tr>
+                            <th colSpan="2" />
+                            <th>
+                                <FormattedMessage id="main.name" defaultMessage="Nom" />
+                            </th>
+                            <th>As</th>
+                            <th>
+                                <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+                            </th>
+                        </tr>
+                    </thead>
 
-                <ul className="map__selection__list">
-                    {data.map(item => (
-                        <li className="map__selection__list__item" key={item.id}>
-                            {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
-                            <span>
-                                {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
-                            </span>
-                            }
-                            {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
-                            <span
-                                tabIndex={0}
-                                role="button"
-                                className="remove"
-                                onClick={() => this.props.deselect([{ village_id: item.id }])}
-                            >
-                                <i className="fa fa-close" />
-                            </span>
-                            }
-                            <span
-                                tabIndex={0}
-                                role="button"
-                                className={`view text--${item._isHighlight ? 'highlight' : item.type}`}
-                                onClick={() => show(item)}
-                            >
-                                <i className="fa fa-map-marker" />
-                            </span>
-                            <span>
-                                {item.AS__name}
-                                {' - '}
-                                {item.name}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
+                    <tbody>
+                        {data.map(item => (
+                            <tr className="map__selection__list__item" key={item.id}>
+                                <td className="tools">
+                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
+                                        <span
+                                            tabIndex={0}
+                                            role="button"
+                                            className="remove"
+                                            onClick={() => this.props.deselect([{ village_id: item.id }])}
+                                        >
+                                            <i className="fa fa-close" />
+                                        </span>
+                                    }
+                                </td>
+                                <td className="tools">
+                                    <span
+                                        tabIndex={0}
+                                        role="button"
+                                        className={`view text--${item._isHighlight ? 'highlight' : item.type}`}
+                                        onClick={() => show(item)}
+                                    >
+                                        <i className="fa fa-map-marker" />
+                                    </span>
+                                </td>
+                                <td>
+                                    {item.name}
+                                </td>
+                                <td className="limited-width">
+                                    {item.AS__name}
+                                </td>
+                                <td className="limited-width">
+                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
+                                        <span>
+                                            {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         );
     }
@@ -76,8 +97,8 @@ MapSelectionList.defaultProps = {
     data: [],
     assignationsMap: undefined,
     teamsMap: undefined,
-    show: () => {},
-    deselect: () => {},
+    show: () => { },
+    deselect: () => { },
 };
 
 MapSelectionList.propTypes = {

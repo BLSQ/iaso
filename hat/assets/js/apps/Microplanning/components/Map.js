@@ -337,7 +337,7 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker);
                 const { teamId } = this.props;
                 const assignations = inBuffer.map(village =>
-                    ({ village_id: village.id, team_id: teamId }));
+                    ({ village_id: village.id, team_id: parseInt(teamId, 10) }));
 
                 if (inBuffer.length) {
                     this.props.selectionAction(assignations);
@@ -409,7 +409,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
 
             const { assignationsMap } = this.props;
 
-
             if (force) {
                 markers.clearLayers();
                 shadows.clearLayers();
@@ -423,6 +422,7 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                     if (labels) labelsGroups.group.addLayer(labels);
                 }
 
+                // this.fitToBounds();
                 // check if the layer has markers
                 if (markers.getLayers().length === 0) {
                     items
@@ -728,19 +728,13 @@ Map.defaultProps = {
     selectedItems: [],
     bufferSize: 0,
     highlightBufferSize: PropTypes.number0,
-    selectionAction: () => {},
-    selectItems: () => {},
-    updateGeoScope: () => {},
     chosenItem: undefined,
-    showItem: () => {},
-    leafletMap: () => {},
     geoScope: undefined,
     areas: undefined,
     teams: [],
     assignationsMap: undefined,
     teamId: '',
     showGeoScope: false,
-    getShape: () => {},
 };
 
 Map.propTypes = {
@@ -752,19 +746,19 @@ Map.propTypes = {
     selectedItems: PropTypes.arrayOf(PropTypes.object),
     bufferSize: PropTypes.number,
     highlightBufferSize: PropTypes.number,
-    selectionAction: PropTypes.func,
-    selectItems: PropTypes.func,
-    updateGeoScope: PropTypes.func,
+    selectionAction: PropTypes.func.isRequired,
+    selectItems: PropTypes.func.isRequired,
+    updateGeoScope: PropTypes.func.isRequired,
     chosenItem: PropTypes.object,
-    showItem: PropTypes.func,
-    leafletMap: PropTypes.func,
+    showItem: PropTypes.func.isRequired,
+    leafletMap: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
     geoScope: PropTypes.object,
     teams: PropTypes.arrayOf(PropTypes.object),
     assignationsMap: PropTypes.object,
     teamId: PropTypes.string,
     showGeoScope: PropTypes.bool,
-    getShape: PropTypes.func,
+    getShape: PropTypes.func.isRequired,
     areas: PropTypes.object,
     planningId: PropTypes.string,
 };

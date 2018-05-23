@@ -5,7 +5,6 @@ $buffer: $yellow;
 $highlight-buffer: $bright-blue;
 $highlight: $bright-pink;
 $selected: $bright-yellow;
-
 /* village types */
 
 $official: $green;
@@ -14,7 +13,6 @@ $other: $bright-blue;
 $unknown: $dark-gray;
 $insideGeoloc: $orange;
 $outsideGeoloc: $light-blue;
-
 /* map size */
 
 $map-height: 720px;
@@ -30,10 +28,13 @@ $color in $types {
     }
 }
 
-
 /******************************************************************************
  * map containers
  ******************************************************************************/
+
+ .map__panel__container {
+    display: flex;
+}
 
 .map__panel {
     display: inline-block;
@@ -51,9 +52,8 @@ $color in $types {
         z-index: 1001;
     }
     &--left {
-        display: inline-block;
         height: $map-height;
-        width: calc(100% - #{$map-sidebar-width});
+        width: 370px;
     }
     &--right {
         border-left: 1px solid $gray;
@@ -62,7 +62,7 @@ $color in $types {
         height: $map-height;
         overflow: hidden;
         vertical-align: top;
-        width: $map-sidebar-width;
+        width: calc(100% - 370px);
     }
 }
 
@@ -119,7 +119,6 @@ $color in $types {
 .interactive {
     cursor: pointer;
 }
-
 
 /******************************************************************************
  * map controls
@@ -195,7 +194,6 @@ $color in $types {
     }
 }
 
-
 /*
  * BOXZOOM
  * https://github.com/gregallensworth/L.Control.BoxZoom
@@ -207,7 +205,6 @@ $color in $types {
         cursor: crosshair !important;
     }
 }
-
 
 /******************************************************************************
  * map options: legend / layers / overlays
@@ -361,7 +358,6 @@ $color in $types {
             color: white;
         }
     }
-
     &--route-with-positive-cases {
         background: white;
         border-color: red;
@@ -453,7 +449,6 @@ $color in $types {
     vertical-align: middle;
     padding: 0.5em 1em;
 }
-
 
 /******************************************************************************
  * map markers and boundaries
@@ -573,7 +568,6 @@ path.map-marker {
     }
 }
 
-
 /******************************************************************************
  * map selection list
  ******************************************************************************/
@@ -599,6 +593,17 @@ path.map-marker {
     border-top: 1px solid $gray;
     padding: $padding-unit/6;
     text-align: center;
+    button{
+        max-width: 170px;
+        &.middle {
+            margin-right: 10px;
+        }
+    }
+    >div {
+        text-align: right;
+        margin-bottom: 15px;
+        padding-right:5px;
+    }
 }
 
 .map__selection__title {
@@ -654,14 +659,41 @@ path.map-marker {
     }
 }
 
-ul.map__selection__list {
-    @include reset-list-style;
+.map__selection__list {
+    font-size: 12px;
+    .tools {
+        width: 30px;
+        box-sizing: border-box;
+        padding: 15px;
+        margin: 0;
+        height: 100%;
+        position: relative;
+        >span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            padding: 10px 0;
+            text-align: center;
+            display: block;
+            height: 100%;
+        }
+    }
+    td {
+        padding: 8px;
+        max-width: 70px;
+        &.limited-width {
+            max-width: 50px;
+        }
+    }
 }
 
-li.map__selection__list__item {
+.map__selection__list__item {
     @include text--small;
     line-height: 1.3;
     white-space: nowrap;
+    font-size: 12px;
     span.remove {
         @include text--error;
         cursor: pointer;
@@ -715,7 +747,6 @@ button {
         opacity: 0.6;
     }
 }
-
 
 /******************************************************************************
  * map selection controls
@@ -795,7 +826,6 @@ button {
     }
 }
 
-
 /* the select/deselect icon */
 
 .map__icon--select {
@@ -834,7 +864,6 @@ button {
     }
 }
 
-
 /******************************************************************************
  * Vector control styles
  ******************************************************************************/
@@ -843,7 +872,6 @@ button {
     height: 800px;
     width: 100%;
 }
-
 
 /******************************************************************************
  * Locator styles
@@ -855,7 +883,7 @@ button {
 }
 
 .locator-container {
-    > div {
+    >div {
         display: flex;
     }
 }

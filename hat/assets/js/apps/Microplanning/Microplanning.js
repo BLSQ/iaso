@@ -220,7 +220,7 @@ export class Microplanning extends Component {
         if (this.props.params.team_id) {
             const team = teamsMap[this.props.params.team_id];
             if (team) {
-				capacity = team.capacity; // eslint-disable-line
+                capacity = team.capacity; // eslint-disable-line
             }
         }
 
@@ -268,7 +268,7 @@ export class Microplanning extends Component {
         const {
             baseLayer, overlays, legend, fullscreen,
         } = this.props.map;
-        const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--left'}`;
+        const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`;
         const selectHighlightBuffer = () => {
             const inBuffer = geoUtils.villagesInHighlightBuffer(
                 this.props.map.leafletMap,
@@ -392,7 +392,7 @@ export class Microplanning extends Component {
                                         onChange={yearsList =>
                                             this.props.redirect({
                                                 ...this.props.params,
-                                                yearsList,
+                                                years: yearsList,
                                             })}
                                     />
                                 </div>
@@ -415,7 +415,67 @@ export class Microplanning extends Component {
                             />
                         </div>
                     </div>
-                    <div className="">
+                    <div className="map__panel__container">
+                        {!fullscreen &&
+                            <div className="map__panel--left">
+                                <div className="map__selection">
+                                    <div className="map__selection__top">
+                                        <div className="map__selection__title">
+                                            <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                                        </div>
+
+                                        {/* Selection actions */}
+                                        <MapSelectionControl
+                                            mode={selection.mode}
+                                            teamId={this.props.params.team_id}
+                                            coordinationId={this.props.params.coordination_id}
+                                            changeMode={mode => this.changeSelectionModeHandler(mode)}
+                                            bufferSize={selection.bufferSize}
+                                            changeBufferSize={event =>
+                                                this.props.changeBufferSize(event)}
+                                            highlightBufferSize={selection.highlightBufferSize}
+                                            changeHighlightBufferSize={event =>
+                                                this.props
+                                                    .changeHighlightBufferSize(event.target.value)}
+                                            selectHighlightBuffer={selectHighlightBuffer}
+                                            isGeoScopeEnabled={this.props.selection.showGeoScope}
+                                        />
+
+                                        {/* Selected summary */}
+                                        <MapSelectionSummary
+                                            data={selectedAndUnselectedVillages}
+                                            assignationsMap={assignationsMap}
+                                            capacity={capacity}
+                                        />
+                                    </div>
+
+                                    <div className="map__selection__middle">
+                                        {/* Selected list */}
+                                        <MapSelectionList
+                                            data={selectedAndUnselectedVillages}
+                                            show={item => this.props.displayItem(item)}
+                                            deselect={list => this.deSelectVillage(list)}
+                                            assignationsMap={assignationsMap}
+                                            teamsMap={teamsMap}
+                                        />
+                                    </div>
+
+                                    <div className="map__selection__bottom">
+                                        {/* actions */}
+                                        {this.renderSaveTeamButton()}
+                                        <button className="button--print middle" onClick={() => this.activateFullscreenHandler()}>
+                                            <i className="fa fa-print" />
+                                            <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
+                                        </button>
+                                        <button className="button--print" onClick={() => window.open(`/dashboard/csvexport/${this.props.params.planning_id}/`, '_self')}>
+                                            <i className="fa fa-file-excel-o" />
+                                            <FormattedMessage id="microplanning.label.csv" defaultMessage="Télécharger en Excel" />
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
                         {/* Map */}
                         <div className={mapClass} id="planning-map">
                             <Map
@@ -444,71 +504,6 @@ export class Microplanning extends Component {
                                 getShape={type => this.props.getShape(type)}
                             />
                         </div>
-
-                        {!fullscreen &&
-                        <div className="map__panel--right">
-                            <div className="map__selection">
-                                <div className="map__selection__top">
-                                    <div className="map__selection__title">
-                                        <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
-                                    </div>
-
-                                    {/* Selection actions */}
-                                    <MapSelectionControl
-                                        mode={selection.mode}
-                                        teamId={this.props.params.team_id}
-                                        coordinationId={this.props.params.coordination_id}
-                                        changeMode={mode => this.changeSelectionModeHandler(mode)}
-                                        bufferSize={selection.bufferSize}
-                                        changeBufferSize={event =>
-                                            this.props.changeBufferSize(event)}
-                                        highlightBufferSize={selection.highlightBufferSize}
-                                        changeHighlightBufferSize={event =>
-                                            this.props
-                                                .changeHighlightBufferSize(event.target.value)}
-                                        selectHighlightBuffer={selectHighlightBuffer}
-                                        isGeoScopeEnabled={this.props.selection.showGeoScope}
-                                    />
-
-                                    {/* Selected summary */}
-                                    <MapSelectionSummary
-                                        data={selectedAndUnselectedVillages}
-                                        assignationsMap={assignationsMap}
-                                        capacity={capacity}
-                                    />
-                                </div>
-
-                                <div className="map__selection__middle">
-                                    {/* Selected list */}
-                                    <MapSelectionList
-                                        data={selectedAndUnselectedVillages}
-                                        show={item => this.props.displayItem(item)}
-                                        deselect={list => this.deSelectVillage(list)}
-                                        assignationsMap={assignationsMap}
-                                        teamsMap={teamsMap}
-                                    />
-                                </div>
-
-                                <div className="map__selection__bottom">
-                                    {/* actions */}
-                                    {this.renderSaveTeamButton()}
-                                    <div>
-                                        <button className="button--print" onClick={() => this.activateFullscreenHandler()}>
-                                            <i className="fa fa-print" />
-                                            <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <button className="button--print" onClick={() => window.open(`/dashboard/csvexport/${this.props.params.planning_id}/`, '_self')}>
-                                            <i className="fa fa-file-excel-o" />
-                                            <FormattedMessage id="microplanning.label.csv" defaultMessage="Télécharger en Excel" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                        }
                     </div>
                 </div>
             </div>

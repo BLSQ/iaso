@@ -21,6 +21,7 @@ server {
   proxy_set_header X-Forwarded-Proto $scheme;
 
   location / {
+    # proxy_pass http://docker.for.mac.localhost:8000;
     proxy_pass http://hat:8080;
   }
 

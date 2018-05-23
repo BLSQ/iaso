@@ -1,6 +1,7 @@
 
 from typing import Callable, Any
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import CITextField, ArrayField
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -48,6 +49,12 @@ class Team(models.Model):
     AS = models.ManyToManyField(AS, blank=True)
     capacity = models.IntegerField()
     UM = models.BooleanField(default=True)
+    aliases = ArrayField(
+        CITextField(max_length=255, blank=True),
+        size=4,
+        null=True,
+        blank=True,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

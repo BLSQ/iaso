@@ -100,3 +100,5 @@ hat/assets/messages/**/*.json
 \.DS_Store
 
 \.vscode/
+
+/pgdata/

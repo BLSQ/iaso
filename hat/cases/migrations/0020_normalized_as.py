@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0011_auto_20180523_1300'),
+        ('geo', '0010_citext_again'),
         ('cases', '0019_link_cases_to_jsondocuments'),
     ]
 

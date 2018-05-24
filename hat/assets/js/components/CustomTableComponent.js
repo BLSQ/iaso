@@ -5,71 +5,61 @@ import { push } from 'react-router-redux';
 import { injectIntl } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getRequest, createUrl } from '../utils/fetchData';
+import customTableTranslations from '../utils/constants/customTableTranslations';
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 
-
-const getOrderObject = stringValue => [{
+const getOrderArray = orders => (orders.split(',').map(stringValue => ({
     id: stringValue.replace('-', ''),
     desc: stringValue.indexOf('-') !== -1,
-}];
+})));
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
         super(props);
+        const orderArray = props.params.order ? getOrderArray(props.params.order) : props.defaultSorted;
+        const { formatMessage } = this.props.intl;
         this.state = {
             data: [],
             pages: null,
             loading: true,
             showPagination: false,
-            // columns: null,
-            order: props.params.order ? getOrderObject(props.params.order) : props.defaultSorted,
+            page: props.params.page ? parseInt(props.params.page, 10) : props.page,
+            pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
+            order: orderArray,
         };
+        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+    }
 
-        const { formatMessage } = this.props.intl;
-        Object.assign(ReactTableDefaults, {
-            previousText: formatMessage({
-                defaultMessage: 'Précédent',
-                id: 'table.previous',
-            }),
-            nextText: formatMessage({
-                defaultMessage: 'Suivant',
-                id: 'table.next',
-            }),
-            loadingText: formatMessage({
-                defaultMessage: 'Chargement...',
-                id: 'table.loading',
-            }),
-            noDataText: formatMessage({
-                defaultMessage: 'Aucun résultat',
-                id: 'table.noResult',
-            }),
-            pageText: formatMessage({
-                defaultMessage: 'Page',
-                id: 'table.page',
-            }),
-            ofText: formatMessage({
-                defaultMessage: 'de',
-                id: 'table.of',
-            }),
-            rowsText: formatMessage({
-                defaultMessage: 'résultats',
-                id: 'table.results',
-            }),
-        });
+    componentDidMount() {
+        this.onFetchData({
+            sorted: this.state.order,
+            page: this.state.page,
+            pageSize: this.state.pageSize,
+        }, this.props.endPointUrl);
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.endPointUrl !== this.props.endPointUrl) {
+        if ((newProps.endPointUrl !== this.props.endPointUrl) ||
+            (newProps.params.pageSize !== this.props.params.pageSize) ||
+            (newProps.params.page !== this.props.params.page) ||
+            (newProps.params.order !== this.props.params.order)) {
+            const orderArray = newProps.params.order ?
+                getOrderArray(newProps.params.order) : this.props.defaultSorted;
             this.onFetchData({
-                sorted: newProps.params.order ?
-                    getOrderObject(newProps.params.order) : this.props.defaultSorted,
+                sorted: orderArray,
+                page: newProps.params.page ? parseInt(newProps.params.page, 10) : this.props.page,
+                pageSize: newProps.params.pageSize ? parseInt(newProps.params.pageSize, 10) : this.props.pageSize,
             }, newProps.endPointUrl);
         }
     }
 
-    onChangeSort(sort) {
-        const orderTemp = getOrderValue(sort[0]);
+    onChangeSort(sortList) {
+        let orderTemp = '';
+        sortList.map((sort, index) => {
+            orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
+            return true;
+        });
         if (orderTemp !== this.props.params.order) {
             this.props.redirectTo(this.props.defaultPath, {
                 ...this.props.params,
@@ -78,22 +68,42 @@ class CustomTableComponent extends React.Component {
         }
     }
 
+    onPageSizeChange(pageSize) {
+        this.props.redirectTo(this.props.defaultPath, {
+            ...this.props.params,
+            pageSize,
+        });
+    }
+
+    onPageChange(page) {
+        this.props.redirectTo(this.props.defaultPath, {
+            ...this.props.params,
+            page: page + 1,
+        });
+    }
+
     onFetchData(settings, url = this.props.endPointUrl) {
-        const orderTemp = getOrderValue(settings.sorted[0]);
+        let orderTemp = '';
+        settings.sorted.map((sort, index) => {
+            orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
+            return true;
+        });
         this.setState({
             loading: true,
         });
-        getRequest(`${url}&order=${orderTemp}`, this.props.dispatch).then((data) => {
-            const tempdata = data;
+        getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
+            const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
             tempdata.pages = 1;
             setTimeout(() => {
                 this.setState({
+                    page: settings.page,
+                    pageSize: settings.pageSize,
                     data: tempdata,
                     pages: data.pages,
                     loading: false,
-                    showPagination: (data.pages > 1) && this.props.showPagination,
+                    showPagination: this.props.showPagination,
                 });
-            }, 100);
+            }, 200);
         });
     }
 
@@ -110,24 +120,23 @@ class CustomTableComponent extends React.Component {
         return (
             <ReactTable
                 manual
-                multiSort={false}
+                multiSort={this.props.multiSort}
                 columns={this.props.columns}
                 data={this.state.data}
                 pages={this.state.pages}
                 loading={this.state.loading}
+                onPageChange={page => this.onPageChange(page)}
+                onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
                 onSortedChange={sort => this.onChangeSort(sort)}
-                onFetchData={settings => this.onFetchData(settings)}
                 filterable={this.props.isFilterable}
                 sortable={this.props.isSortable}
-                defaultPageSize={
-                    this.state.data.length > this.props.pageSize ?
-                        this.props.pageSize :
-                        this.state.data.length
-                }
+                defaultPageSize={this.state.pageSize}
+                page={this.state.page - 1}
                 className="-striped -highlight"
                 getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
                 showPagination={this.state.showPagination}
                 defaultSorted={this.state.order}
+                pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
             />
         );
     }
@@ -135,17 +144,21 @@ class CustomTableComponent extends React.Component {
 CustomTableComponent.defaultProps = {
     isFilterable: false,
     isSortable: false,
-    pageSize: 10,
+    pageSize: 1,
+    page: 1,
     onRowClicked: () => { },
     showPagination: false,
     defaultSorted: [],
     defaultPath: '',
+    dataKey: null,
+    multiSort: false,
 };
 
 CustomTableComponent.propTypes = {
     isFilterable: PropTypes.bool,
     isSortable: PropTypes.bool,
     pageSize: PropTypes.number,
+    page: PropTypes.number,
     endPointUrl: PropTypes.string.isRequired,
     columns: PropTypes.arrayOf(PropTypes.object).isRequired,
     params: PropTypes.object.isRequired,
@@ -156,6 +169,8 @@ CustomTableComponent.propTypes = {
     defaultPath: PropTypes.string,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
+    dataKey: PropTypes.string,
+    multiSort: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

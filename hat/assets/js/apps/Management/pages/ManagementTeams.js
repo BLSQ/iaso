@@ -290,6 +290,7 @@ class ManagementTeams extends React.Component {
                             {
                                 !this.state.isUpdating &&
                                 <CustomTableComponent
+                                    multiSort
                                     isSortable
                                     showPagination
                                     endPointUrl={this.state.tableUrl}

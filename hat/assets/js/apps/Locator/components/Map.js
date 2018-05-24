@@ -301,7 +301,7 @@ class Map extends Component {
                 } else {
                     Object.entries(VillageTypesConstant).map((villageType) => {
                         if (villageType[1].key === village.village_official) {
-                            const { colorTemp } = villageType[1];
+                            const colorTemp = villageType[1].color;
                             color = colorTemp;
                         }
                         return true;

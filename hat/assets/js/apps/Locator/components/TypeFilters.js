@@ -5,7 +5,6 @@ import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant'
 
 class typeFilters extends React.Component {
     render() {
-        // const { filters } = this.props;
         return (
             <div className="type-filters-containers">
                 <ul>

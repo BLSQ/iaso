@@ -18,13 +18,14 @@ class CasesViewSet(viewsets.ViewSet):
         limit = int(request.GET.get("limit", 50))
         page_offset = int(request.GET.get("page", 1))
 
-        order = request.GET.get("order", 'ZS')
+        orders = request.GET.get("order", 'ZS').split(',')
         queryset = Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)\
             .exclude(source='mobile_sync').exclude(source='mobile_backup').exclude(document_date__year__lte=2013)\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
             .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur') \
             .filter(Q(ZS='Yasa Bonga')|Q(ZS='Bonga Yasa')|Q(ZS='Mosango')|Q(ZS=None))\
-            .order_by(order)
+            .order_by(*orders)
+
 
         paginator = Paginator(queryset, limit)
 
@@ -37,7 +38,8 @@ class CasesViewSet(viewsets.ViewSet):
         res['has_next'] = page.has_next()
         res['has_previous'] = page.has_previous()
         res['page'] = page_offset
-        res['limit'] = 50
+        res['pages'] = paginator.num_pages
+        res['limit'] = limit
 
         return Response(res)
 

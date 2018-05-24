@@ -3,31 +3,26 @@ import PropTypes from 'prop-types';
 
 class Case extends React.Component {
     render() {
-        const { cases } = this.props.case;
-        if (cases && cases.length === 1) {
-            const kase = cases[0];
-            return (
-                <div>
-                    <table>
-                        <thead><tr><th colSpan="2">Données rapportées</th></tr></thead>
-                        <tbody>
-                            <tr><th>Source</th><td>{kase.source ? kase.source : '--'}</td></tr>
-                            <tr><th>Année</th><td>{kase.form_year ? kase.form_year : '--'}</td></tr>
-                            <tr><th>N° de formulaire</th><td>{kase.form_number ? kase.form_number : '--'}</td></tr>
-                            <tr><th>Unité</th><td>{kase.mobile_unit ? kase.mobile_unit : '--'}</td></tr>
-                            <tr><th>Prénom</th><td>{kase.name ? kase.name : '--'}</td></tr>
-                            <tr><th>Nom</th><td>{kase.lastname ? kase.lastname : '--'}</td></tr>
-                            <tr><th>Postnom</th><td>{kase.prename ? kase.prename : '--'}</td></tr>
-                            <tr><th>Province</th><td>{kase.province ? kase.province : '--'}</td></tr>
-                            <tr><th>ZS</th><td>{kase.ZS ? kase.ZS : '--'}</td></tr>
-                            <tr><th>AS</th><td>{kase.AS ? kase.AS : '--'}</td></tr>
-                            <tr><th>Village</th><td>{kase.village ? kase.village : '--'}</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            );
-        }
-        return <div />;
+        return (
+            <div>
+                <table>
+                    <thead><tr><th colSpan="2">Données rapportées</th></tr></thead>
+                    <tbody>
+                        <tr><th>Source</th><td>{this.props.case.source ? this.props.case.source : '--'}</td></tr>
+                        <tr><th>Année</th><td>{this.props.case.form_year ? this.props.case.form_year : '--'}</td></tr>
+                        <tr><th>N° de formulaire</th><td>{this.props.case.form_number ? this.props.case.form_number : '--'}</td></tr>
+                        <tr><th>Unité</th><td>{this.props.case.mobile_unit ? this.props.case.mobile_unit : '--'}</td></tr>
+                        <tr><th>Prénom</th><td>{this.props.case.name ? this.props.case.name : '--'}</td></tr>
+                        <tr><th>Nom</th><td>{this.props.case.lastname ? this.props.case.lastname : '--'}</td></tr>
+                        <tr><th>Postnom</th><td>{this.props.case.prename ? this.props.case.prename : '--'}</td></tr>
+                        <tr><th>Province</th><td>{this.props.case.province ? this.props.case.province : '--'}</td></tr>
+                        <tr><th>ZS</th><td>{this.props.case.ZS ? this.props.case.ZS : '--'}</td></tr>
+                        <tr><th>AS</th><td>{this.props.case.AS ? this.props.case.AS : '--'}</td></tr>
+                        <tr><th>Village</th><td>{this.props.case.village ? this.props.case.village : '--'}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 }
 

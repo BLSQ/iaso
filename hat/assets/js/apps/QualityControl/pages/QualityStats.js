@@ -285,9 +285,6 @@ class QualityStats extends React.Component {
                                 isSortable
                                 showPagination
                                 endPointUrl={this.state.tableUrl}
-                                onRowClicked={(item) => {
-                                    console.log(item);
-                                }}
                                 columns={this.state.tableColumns}
                                 defaultSorted={[{ id: 'id', desc: false }]}
                                 params={this.props.params}

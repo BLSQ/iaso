@@ -1,11 +1,11 @@
-/*
- * Includes the actions and state necessary for the villageFilters process
- */
+import { loadActions } from '../../../redux/load';
+
+const req = require('superagent');
 
 export const SET_CASE = 'hat/locator/cases/SET_CASE';
 export const SET_LIST = 'hat/locator/cases/SET_LIST';
+export const FETCH_ACTION = 'hat/locator/assignation/FETCH_ACTION';
 
-// Note: `TypeError: Object.values is not a function` in tests :'(
 
 export const setList = list => ({
     type: SET_LIST,
@@ -17,9 +17,45 @@ export const setCase = kase => ({
     payload: kase,
 });
 
+
+export const fetchList = (dispatch) => {
+    req
+        .get('/api/cases/')
+        .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
+            dispatch(setList(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while fetching cases: ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+
+export const fetchCase = (dispatch, caseId) => {
+    const url = `/api/cases/${caseId}`;
+    req
+        .get(url)
+        .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
+            dispatch(setCase(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while fetching case: ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const caseActions = {
     setCase,
     setList,
+    fetchCase,
 };
 
 export const caseReducer = (state = {}, action = {}) => {
@@ -31,6 +67,9 @@ export const caseReducer = (state = {}, action = {}) => {
         case SET_LIST: {
             const list = action.payload;
             return { ...state, list };
+        }
+        case FETCH_ACTION: {
+            return state;
         }
         default:
             return state;

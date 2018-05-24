@@ -38,15 +38,15 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDevicesPage}
         />,
         <Route
-            path="/teams(/coordination_id/:coordination_id)(/type/:type)(/order/:order)"
+            path="/teams(/coordination_id/:coordination_id)(/type/:type)(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementTeamsPage}
         />,
         <Route
-            path="/coordinations(/order/:order)"
+            path="/coordinations(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementCoordinationsPage}
         />,
         <Route
-            path="/plannings(/order/:order)"
+            path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
         <Redirect path="*" to={defaultRoute(appConfig)} />,

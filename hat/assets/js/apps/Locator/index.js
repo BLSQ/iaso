@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Route, useRouterHistory } from 'react-router';
+import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { createHistory } from 'history';
 
@@ -8,18 +8,24 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
-import LocatorContainer from './LocatorContainer';
-import { villageFiltersReducer, villageFiltersInitialState } from './redux/villageFilters';
+import LocatorComponent from './pages/Locator';
+import ListLocatorComponent from './pages/ListLocator';
+import { locatorReducer, locatorInitialState } from './redux/locator';
 import { caseReducer } from './redux/case';
 
 
 export default function locator(appConfig, element, baseUrl) {
-    const defaultPath = '/';
+    const defaultPath = 'list/order/form_number/pageSize/50/page/1';
     const routes = [
         <Route
-            path={defaultPath}
-            component={LocatorContainer}
+            path="list/order/:order/pageSize/:pageSize/page/:page"
+            component={ListLocatorComponent}
         />,
+        <Route
+            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            component={LocatorComponent}
+        />,
+        <Redirect path="*" to={defaultPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -29,11 +35,11 @@ export default function locator(appConfig, element, baseUrl) {
     const store = createStore({
         kase: {},
         load: {},
-        villageFilters: villageFiltersInitialState,
+        locator: locatorInitialState,
     }, {
         load: loadReducer,
         kase: caseReducer,
-        villageFilters: villageFiltersReducer,
+        locator: locatorReducer,
     }, [
         routerMiddleware(history),
     ]);

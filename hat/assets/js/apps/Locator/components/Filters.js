@@ -1,19 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
-
-/*
-villageFiltersInitialState = {
-  province: null,
-  zone: null,
-  area: null,
-  key: null,
-  provinces: [],
-  zones: [],
-  areas: []
-}
- */
+import { FormattedMessage } from 'react-intl';
 
 class Filters extends React.Component {
     render() {

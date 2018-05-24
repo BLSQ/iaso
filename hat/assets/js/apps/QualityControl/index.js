@@ -36,7 +36,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             component={QualityImages}
         />,
         <Route
-            path="/stats/date_from/:date_from/date_to/:date_to/order/:order(/coordination_id/:coordination_id)(/type/:type)"
+            path="/stats/date_from/:date_from/date_to/:date_to/order/:order(/coordination_id/:coordination_id)(/type/:type)(/pageSize/:pageSize)(/page/:page)"
             component={QualityStats}
         />,
         <Redirect path="*" to={defaultPath} />,

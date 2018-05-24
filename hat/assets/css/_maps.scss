@@ -886,6 +886,11 @@ button {
     >div {
         display: flex;
     }
+    .ReactTable {
+        .rt-tr {
+            cursor: pointer;
+        }
+    }
 }
 
 .locator-control-div {

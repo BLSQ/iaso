@@ -1,8 +1,8 @@
 
 import Map from './Map';
-import CaseList from './CaseList';
+import Filters from './Filters';
 
 export {
     Map,
-    CaseList,
+    Filters,
 };

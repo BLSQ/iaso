@@ -43,8 +43,8 @@ class PlanningViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-        order = request.GET.get('order', '-created_at')
-        return Response(Planning.objects.all().values('name', 'id', 'year', 'updated_at').order_by(order))
+        orders = request.GET.get('order', '-created_at').split(',')
+        return Response(Planning.objects.all().values('name', 'id', 'year', 'updated_at').order_by(*orders))
 
 
     def retrieve(self, request, pk=None):

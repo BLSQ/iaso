@@ -1,46 +1,42 @@
-/*
- * The Microplanning component is responsible of the micro-planning process
- *
- * It has a few behaviors:
- * - load and filter data
- * - display the map
- * - execute the selection actions
- * - export to Excel the selected list
- * - print/export map view
- *
-  */
-
-/* eslint "max-len": [1, 200], */
-
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Case from './components/Case';
-import Filters from './components/Filters';
-import TypeFilters from './components/TypeFilters';
+import Case from '../components/Case';
+import Filters from '../components/Filters';
+import TypeFilters from '../components/TypeFilters';
+
+import { locatorActions } from '../redux/locator';
+import { provinceActions } from '../redux/province';
+import { villageActions } from '../redux/village';
+import { caseActions } from '../redux/case';
+import { loadActions } from '../../../redux/load';
 
 
-import LoadingSpinner from '../../components/loading-spinner';
-import { getRequest } from '../../utils/fetchData';
+import LoadingSpinner from '../../../components/loading-spinner';
+import { getRequest, createUrl } from '../../../utils/fetchData';
 
 
-import {
-    Map,
-    CaseList,
-} from './components';
+import { Map } from '../components';
 
 const request = require('superagent');
 
 export class Locator extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             villageDetail: null,
             villageId: null,
             isVillageDetailLoading: false,
         };
+    }
+
+    componentDidMount() {
+        const { dispatch } = this.props;
+        dispatch(loadActions.startLoading());
+        this.props.fetchProvinces();
+        this.props.fetchCase(this.props.params.case_id);
     }
 
     componentWillReceiveProps(newProps) {
@@ -90,15 +86,24 @@ export class Locator extends Component {
                         />
                     </div>
                 }
-                {this.props.kase.list &&
-                    <CaseList list={this.props.kase.list} />
-                }
-                {this.props.kase.case &&
+                {this.props.kase &&
                     <div>
                         <div className="locator-control-div">
-                            {this.props.kase.case &&
+                            {this.props.kase &&
                                 <div>
                                     <section>
+                                        <button
+                                            className="button--back"
+                                            onClick={() => {
+                                                const tempParams = this.props.params;
+                                                delete tempParams.case_id;
+                                                this.props.redirectTo('list', {
+                                                    ...tempParams,
+                                                });
+                                            }}
+                                        >
+                                            <i className="fa fa-arrow-left" />
+                                        </button>
                                         <TypeFilters
                                             currentTypes={this.props.villageFilters.currentTypes}
                                             selectType={newType =>
@@ -110,7 +115,7 @@ export class Locator extends Component {
                                     </section>
                                     <section>
                                         <div>
-                                            <Case case={this.props.kase.case} />
+                                            <Case case={this.props.kase} />
                                         </div>
                                         <div>
                                             <Filters
@@ -170,13 +175,10 @@ export class Locator extends Component {
                                                         <button
                                                             className="button--save"
                                                             onClick={() => {
-                                                                this.setState({
-                                                                    villageDetail: null,
-                                                                    villageId: null,
-                                                                });
                                                                 this.props.saveVillage(
-                                                                    this.props.kase.case.cases[0].id,
+                                                                    this.props.kase.id,
                                                                     { village_id: this.state.villageId },
+                                                                    this.props.params,
                                                                 );
                                                             }}
                                                         >
@@ -187,15 +189,11 @@ export class Locator extends Component {
                                                 <button
                                                     className="button--save"
                                                     onClick={() => {
-                                                        this.setState({
-                                                            villageDetail: null,
-                                                            villageId: null,
-                                                        });
-                                                        this.props.saveVillage(this.props.kase.case.cases[0].id, { not_found: true });
+                                                        this.props.saveVillage(this.props.kase.id, { not_found: true }, this.props.params);
                                                     }}
                                                 >
                                                     <i className="fa fa-arrow-right" />
-                                                    <FormattedMessage id="locator.label.next" defaultMessage="Passer au suivant" />
+                                                    <FormattedMessage id="locator.label.not_found" defaultMessage="Non trouvé" />
                                                 </button>
                                             </div>
                                         </div>
@@ -237,15 +235,14 @@ export class Locator extends Component {
 }
 
 Locator.defaultProps = {
-    list: null,
+    kase: null,
 };
 
 Locator.propTypes = {
     intl: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     villageFilters: PropTypes.object.isRequired,
-    kase: PropTypes.object.isRequired,
-    list: PropTypes.object,
+    kase: PropTypes.object,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
@@ -253,14 +250,32 @@ Locator.propTypes = {
     getShape: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectType: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    fetchProvinces: PropTypes.func.isRequired,
+    fetchCase: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(Locator);
 const MapDispatchToProps = dispatch => ({
+    dispatch,
     getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
+    fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
+    fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
+    selectProvince: provinceId => dispatch(provinceActions.selectProvince(provinceId, dispatch)),
+    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, dispatch)),
+    selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch)),
+    selectVillage: villageId => dispatch(villageActions.selectVillage(villageId)),
+    saveVillage: (kaseId, villageObj, params) => dispatch(villageActions.saveVillage(kaseId, villageObj, params, dispatch)),
+    selectType: (newType, areaId, currentTypes) => dispatch(locatorActions.selectType(newType, areaId, currentTypes, dispatch)),
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 const MapStateToProps = state => ({
+    load: state.load,
+    villageFilters: state.locator,
+    kase: state.kase.case,
 });
 
 

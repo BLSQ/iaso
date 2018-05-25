@@ -18,6 +18,7 @@ from .village import VillageViewSet
 from .qc_check_stats import QCCheckStatsViewSet
 from .traps import TrapsViewSet
 from .targets import TargetsViewSet
+from .metrics import MetricsViewSet
 
 
 router = routers.DefaultRouter()
@@ -38,6 +39,7 @@ router.register(r'checks', QCChecksViewSet, base_name='checks')
 router.register(r'qccheckstats', QCCheckStatsViewSet, base_name='qc_check_stats')
 router.register(r'traps', TrapsViewSet, base_name='traps')
 router.register(r'targets', TargetsViewSet, base_name='targets')
+router.register(r'metrics', MetricsViewSet, base_name='metrics')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

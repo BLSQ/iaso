@@ -2,6 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import MG from 'metrics-graphics';
 
+
+const customConvertDates = (list) => {
+    const tempList = [];
+    list.map((el) => {
+        const tempEl = {
+            ...el,
+            date: new Date(el.timestamp),
+        };
+        tempList.push(tempEl);
+        return true;
+    });
+    return tempList;
+};
+
 class Visualization extends Component {
     componentDidMount() {
         this.updateChart();
@@ -10,12 +24,16 @@ class Visualization extends Component {
         this.updateChart();
     }
     updateChart() {
-        const data = this.props.data || [];
+        let data = this.props.data || [];
         const spec = this.props.spec || {};
-        const chartData = MG.convert.date(JSON.parse(JSON.stringify(data)), 'date');
+        if (this.props.convert === 'custom') {
+            data = customConvertDates(data);
+        } else {
+            data = MG.convert.date(JSON.parse(JSON.stringify(data)), 'date');
+        }
         MG.data_graphic({
             area: false,
-            data: chartData,
+            data,
             full_width: true,
             height: 200,
             target: this.container,
@@ -28,10 +46,14 @@ class Visualization extends Component {
         return <div ref={(node) => { this.container = node; }} />;
     }
 }
+Visualization.defaultProps = {
+    convert: '',
+};
 
 Visualization.propTypes = {
     data: PropTypes.array.isRequired,
     spec: PropTypes.object.isRequired,
+    convert: PropTypes.string,
 };
 
 export default Visualization;

@@ -997,6 +997,16 @@ MAPPING: List[JsonType] = [
         "test_type": CONFIRMATION_TEST
     },
     {
+        "field": "test_pg_video_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.video")
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
         "field": "test_ctcwoo",
         "export_levels": [Export.full, Export.anon],
         "sources": {
@@ -1016,6 +1026,16 @@ MAPPING: List[JsonType] = [
         "test_type": CONFIRMATION_TEST
     },
     {
+        "field": "test_ctcwoo_video_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.video")
+            },
+        },
+        "test_type": CONFIRMATION_TEST
+    },
+    {
         "field": "test_pl",
         "export_levels": [Export.full, Export.anon],
         "sources": {
@@ -1023,6 +1043,26 @@ MAPPING: List[JsonType] = [
                 "field": ("main", "participant.screenings.pl.result"),
                 "apply_to_column": mobile_get_result
             }
+        },
+        "test_type": STAGING_TEST
+    },
+    {
+        "field": "test_pl_white_count",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.whiteCount")
+            }
+        },
+        "test_type": STAGING_TEST
+    },
+    {
+        "field": "test_pl_video_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.video")
+            },
         },
         "test_type": STAGING_TEST
     },

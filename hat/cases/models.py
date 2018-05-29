@@ -117,14 +117,17 @@ class CaseAbstract(models.Model):
 
     :ivar integer test_clinical_sickness:    “Malade clinique”.
     :ivar integer test_ctcwoo:               “Woo (haematocrit centrifuge technique)”.
+    :ivar integer test_ctcwoo_video_filename:“Woo (haematocrit centrifuge technique), filename of the video file”.
     :ivar integer test_dil:                  “Dil = ou > + à 1/16 en zone hyperendémique”.
     :ivar integer test_ge:                   “Goutte Épaisse”.
     :ivar integer test_ifat:                 “ImmunoFluorescence Antibody Test”.
     :ivar integer test_lcr:                  “LCR (liquide céphalo-rachidien)”.
     :ivar integer test_lymph_node_puncture:  “Ponction ganglionnaire”.
     :ivar integer test_maect:                “mini Anion Exchange Centrifugation Technique”.
+    :ivar integer test_maect_video_filename: “mini Anion Exchange Centrifugation Technique”: filename of the video.
     :ivar integer test_parasit:              “Confirmation Parasitologique”.
     :ivar integer test_pg:                   “Ponction ganglionnaire”.
+    :ivar integer test_pg_video_filename:    “Ponction ganglionnaire, filename of the video”.
     :ivar integer test_rdt:                  “Rapid Diagnostic Test”.
     :ivar integer test_rdt_picture_filename: “Rapid Diagnostic Test, filename of the picture”.
     :ivar integer test_rdt_session_type:     “Rapid Diagnostic Test, doorToDoor or onSite”.
@@ -146,6 +149,8 @@ class CaseAbstract(models.Model):
             - > 1 / 32
 
     :ivar integer test_pl:                   “Ponction lombaire”.
+    :ivar integer test_pl_white_count:       “Ponction lombaire”: white cells count.
+    :ivar integer test_pl_video_filename:    “Ponction lombaire”: filename of the video file.
     :ivar text    test_pl_albumine:          “Ponction lombaire”: Albumine (centrigr. ‰)
     :ivar text    test_pl_comments:          “Ponction lombaire”: Comments.
     :ivar text    test_pl_gb_mm3:            “Ponction lombaire”: Gb/mm³.
@@ -263,6 +268,7 @@ class CaseAbstract(models.Model):
     test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
                                                  blank=True)
     test_ctcwoo = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_ctcwoo_video_filename = models.TextField("filename of CTCWOO test video", null=True, blank=True)
     test_dil = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_ge = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_ifat = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
@@ -270,8 +276,10 @@ class CaseAbstract(models.Model):
     test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
                                                    blank=True)
     test_maect = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_maect_video_filename = models.TextField("filename of mAECT test video", null=True, blank=True)
     test_parasit = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_pg = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_pg_video_filename = models.TextField("filename of PG test video", null=True, blank=True)
     test_pl = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_rdt = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_rdt_session_type = models.TextField("RDT session type door to door or on site",
@@ -284,12 +292,14 @@ class CaseAbstract(models.Model):
 
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.
+    test_pl_white_count = models.PositiveIntegerField(null=True, blank=True)
     test_pl_liquid = models.TextField(null=True, blank=True)
     test_pl_trypanosome = models.TextField(null=True, blank=True)
     test_pl_gb_mm3 = models.TextField(null=True, blank=True)
     test_pl_albumine = models.TextField(null=True, blank=True)
     test_pl_lcr = models.TextField(null=True, blank=True)
     test_pl_comments = models.TextField("Commentaire Ponction Lombaire", null=True, blank=True)
+    test_pl_video_filename = models.TextField("filename of PL test video", null=True, blank=True)
     PL_TEST_RESULT_CHOICES = (
         ('stage1', 'Stage1'),
         ('stage2', 'Stage2'),

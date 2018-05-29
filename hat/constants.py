@@ -1,5 +1,6 @@
 CATT = 'CATT'
 PG = 'PG'
+PL = 'PL'
 CTCWOO = 'CTCWOO'
 MAECT = 'MAECT'
 RDT = 'RDT'
@@ -7,10 +8,11 @@ RDT = 'RDT'
 TEST_TYPE_CHOICES = (
     (CATT, 'CATT'),
     (PG, 'PG'),
+    (PL, 'PL'),
     (CTCWOO, 'CTCWOO'),
     (MAECT, 'MAECT'),
     (RDT, 'RDT')
 )
 
 TYPES_WITH_IMAGES = set([CATT, RDT])
-TYPES_WITH_VIDEOS = set([PG, CTCWOO, MAECT])
+TYPES_WITH_VIDEOS = set([PG, CTCWOO, MAECT, PL])

@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import  User
 from django.shortcuts import render, get_object_or_404 ,redirect
 
-from hat.patient.identify import find_tests_by_image
+from hat.patient.identify import find_tests_by_image, find_tests_by_video
 from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
 from ..cases.models import TestGroup
 
@@ -298,7 +298,12 @@ def image_upload(request: HttpRequest) -> HttpResponse:
 def video_upload(request: HttpRequest) -> HttpResponse:
     video_form = VideoUploadForm(request.POST, request.FILES)
     if video_form.is_valid():
-        video_form.save()
+        video = video_form.save()
+        # Try to associate the image with a test
+        tests = find_tests_by_video(request.FILES['video'].name, video.type, False)
+        for test in tests:
+            test.video = video
+            test.save()
         return JsonResponse({"Result": "Upload ok"})
     else:
         return JsonResponse(video_form.errors, status=400)

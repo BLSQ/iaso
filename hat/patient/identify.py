@@ -3,9 +3,9 @@ import ntpath
 from django.db.models import Q
 
 from hat.cases.models import Case
-from hat.constants import CATT, RDT, CTCWOO, MAECT, PG
+from hat.constants import CATT, RDT, CTCWOO, MAECT, PG, PL
 from hat.patient.models import Test, Patient
-from hat.sync.models import ImageUpload
+from hat.sync.models import ImageUpload, VideoUpload
 
 """
 This file provides the tools to identify patients and tests from Case data
@@ -60,21 +60,28 @@ def create_test_data(case: Case):
 
     if case.test_pg is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=PG, result=case.test_pg)
+            case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename)
+        if test_created:
+            tests_created += 1
+        tests.append(test)
+
+    if case.test_pl is not None:
+        test, test_created = get_or_create_test(
+            case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_ctcwoo is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=CTCWOO, result=case.test_ctcwoo)
+            case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_maect is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=MAECT, result=case.test_maect)
+            case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename)
         if test_created:
             tests_created += 1
         tests.append(test)
@@ -95,8 +102,10 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
             if db_image:
                 test.image = db_image
 
-        # TODO support video uploads
-        test.video = video
+        if video:
+            db_video = find_video_by_test(filepath=video, test_type=test_type)
+            if db_video:
+                test.video = db_video
 
         test.save()
 
@@ -112,6 +121,19 @@ def find_image_by_test(filepath, test_type):
         return None
     elif images.count() == 1:
         return images[0]
+    else:
+        return None
+
+
+def find_video_by_test(filepath, test_type):
+    filename = _path_leaf(filepath)
+    videos = VideoUpload.objects.filter(video=VideoUpload.UPLOADED_TO + filename) \
+        .filter(type=test_type)
+
+    if videos.count() == 0:
+        return None
+    elif videos.count() == 1:
+        return videos[0]
     else:
         return None
 
@@ -134,6 +156,38 @@ def find_tests_by_image(filepath, test_type, include_already_linked=False):
 
     if not include_already_linked:
         tests = tests.filter(image__isnull=True)
+
+    return tests
+
+
+def find_tests_by_video(filepath, test_type, include_already_linked=False):
+    filename = _path_leaf(filepath)
+
+    if test_type == PG:
+        tests = Test.objects.filter(
+            Q(form__test_pg_video_filename=filename) |
+            Q(form__test_pg_video_filename__endswith=filename)
+        )
+    elif test_type == PL:
+        tests = Test.objects.filter(
+            Q(form__test_pl_video_filename=filename) |
+            Q(form__test_pl_video_filename__endswith=filename)
+        )
+    elif test_type == CTCWOO:
+        tests = Test.objects.filter(
+            Q(form__test_ctcwoo_video_filename=filename) |
+            Q(form__test_ctcwoo_video_filename__endswith=filename)
+        )
+    elif test_type == MAECT:
+        tests = Test.objects.filter(
+            Q(form__test_maect_video_filename=filename) |
+            Q(form__test_maect_video_filename__endswith=filename)
+        )
+    else:
+        return None
+
+    if not include_already_linked:
+        tests = tests.filter(video__isnull=True)
 
     return tests
 

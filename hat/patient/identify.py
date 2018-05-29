@@ -145,12 +145,12 @@ def find_tests_by_image(filepath, test_type, include_already_linked=False):
         tests = Test.objects.filter(
             Q(form__test_rdt_picture_filename=filename) |
             Q(form__test_rdt_picture_filename__endswith=filename)
-        )
+        ).filter(type=RDT)
     elif test_type == CATT:
         tests = Test.objects.filter(
             Q(form__test_catt_picture_filename=filename) |
             Q(form__test_catt_picture_filename__endswith=filename)
-        )
+        ).filter(type=CATT)
     else:
         return None
 
@@ -167,22 +167,22 @@ def find_tests_by_video(filepath, test_type, include_already_linked=False):
         tests = Test.objects.filter(
             Q(form__test_pg_video_filename=filename) |
             Q(form__test_pg_video_filename__endswith=filename)
-        )
+        ).filter(type=PG)
     elif test_type == PL:
         tests = Test.objects.filter(
             Q(form__test_pl_video_filename=filename) |
             Q(form__test_pl_video_filename__endswith=filename)
-        )
+        ).filter(type=PL)
     elif test_type == CTCWOO:
         tests = Test.objects.filter(
             Q(form__test_ctcwoo_video_filename=filename) |
             Q(form__test_ctcwoo_video_filename__endswith=filename)
-        )
+        ).filter(type=CTCWOO)
     elif test_type == MAECT:
         tests = Test.objects.filter(
             Q(form__test_maect_video_filename=filename) |
             Q(form__test_maect_video_filename__endswith=filename)
-        )
+        ).filter(type=MAECT)
     else:
         return None
 

@@ -967,6 +967,16 @@ MAPPING: List[JsonType] = [
         "test_type": CONFIRMATION_TEST
     },
     {
+        "field": "test_maect_video_filename",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.video")
+            },
+        },
+        "test_type": CONFIRMATION_TEST
+    },
+    {
         "field": "test_ge",
         "export_levels": [Export.full, Export.anon],
         "sources": {

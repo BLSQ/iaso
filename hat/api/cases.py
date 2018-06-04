@@ -23,7 +23,6 @@ class CasesViewSet(viewsets.ViewSet):
             .exclude(source='mobile_sync').exclude(source='mobile_backup').exclude(document_date__year__lte=2013)\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
             .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur') \
-            .filter(Q(ZS='Yasa Bonga')|Q(ZS='Bonga Yasa')|Q(ZS='Mosango')|Q(ZS=None))\
             .order_by(*orders)
 
 

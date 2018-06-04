@@ -20,7 +20,7 @@ class CasesViewSet(viewsets.ViewSet):
 
         orders = request.GET.get("order", 'ZS').split(',')
         queryset = Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)\
-            .exclude(source='mobile_sync').exclude(source='mobile_backup').exclude(document_date__year__lte=2013)\
+            .exclude(source='mobile_sync').exclude(source='mobile_backup')\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
             .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur') \
             .order_by(*orders)

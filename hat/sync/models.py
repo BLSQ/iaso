@@ -180,7 +180,7 @@ class ImageUpload(models.Model):
 
 
 class VideoUpload(models.Model):
-    UPLOADED_TO = 'images/'
+    UPLOADED_TO = 'videos/'
     participant_uuid = models.TextField(db_index=True)
     hat_id = models.TextField()
     group_id = models.TextField(null=True, blank=True, db_index=True)

@@ -44,12 +44,16 @@ const listLocatorColumns = formatMessage => (
             accessor: 'province',
         },
         {
+            Header: 'ZS',
+            accessor: 'ZS',
+        },
+        {
             Header: 'AS',
             accessor: 'AS',
         },
         {
-            Header: 'ZS',
-            accessor: 'ZS',
+            Header: 'AS match',
+            accessor: 'normalized_as_name',
         },
         {
             Header: formatMessage({

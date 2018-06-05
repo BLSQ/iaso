@@ -372,7 +372,11 @@ class Case(CaseAbstract):
         permissions = CASES_PERMISSIONS
 
     def as_dict(self):
-        return {
+        normalized_as_name = None
+        if self.normalized_AS:
+            normalized_as_name = self.normalized_AS.name
+
+        d = {
             'id': self.id,
             'ZS': self.ZS,
             'AS': self.AS,
@@ -381,6 +385,8 @@ class Case(CaseAbstract):
             'name': self.name,
             'prename': self.prename,
             'lastname': self.lastname,
+            'normalized_AS_name': normalized_as_name,
+            'normalized_AS_id': self.normalized_AS_id,
             'normalized_patient_id': self.normalized_patient_id,
             'normalized_village_id': self.normalized_village_id,
             'normalized_village_not_found': self.normalized_village_not_found,
@@ -389,6 +395,8 @@ class Case(CaseAbstract):
             'mobile_unit': self.mobile_unit,
             'source': self.source
         }
+
+        return d
 
 
 def compute_confirmation(sender, instance: Case, **kwargs):

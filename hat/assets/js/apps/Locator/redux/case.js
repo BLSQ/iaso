@@ -1,5 +1,5 @@
 import { loadActions } from '../../../redux/load';
-import { selectZone, selectArea } from './locator';
+import { selectZone, selectArea, emptyAreas, emptyZones, emptyVillages, resetFilters } from './locator';
 import { selectProvince } from './province';
 
 const req = require('superagent');
@@ -34,6 +34,9 @@ export const fetchCase = (dispatch, caseId) => {
                     dispatch(selectProvince(normalized_AS_dict.province_id, dispatch));
                     dispatch(selectZone(normalized_AS_dict.zs_id, dispatch));
                     dispatch(selectArea(normalized_AS_dict.as_id, undefined, dispatch));
+                    dispatch(emptyVillages());
+                } else {
+                    dispatch(resetFilters());
                 }
             }
         })

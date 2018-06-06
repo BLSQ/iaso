@@ -8,6 +8,7 @@ from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
 from django.db.models import Q
 
+
 class CasesViewSet(viewsets.ViewSet):
     """
     Api to list all cases,  retrieve information about just one.
@@ -23,6 +24,7 @@ class CasesViewSet(viewsets.ViewSet):
             .exclude(source='mobile_sync').exclude(source='mobile_backup')\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
             .exclude(province__icontains='maniema').exclude(province__icontains='k.').exclude(province__icontains='equateur') \
+            .exclude(Q(form_year=None) & Q(mobile_unit=None) & Q(form_number=None)) \
             .order_by(*orders)
 
 

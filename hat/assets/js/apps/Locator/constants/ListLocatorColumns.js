@@ -3,13 +3,6 @@ const listLocatorColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'N° de formulaire',
-                id: 'locator.label.form_number',
-            }),
-            accessor: 'form_number',
-        },
-        {
-            Header: formatMessage({
                 defaultMessage: 'Année du formulaire',
                 id: 'locator.label.form_year',
             }),
@@ -17,24 +10,17 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Prénom',
-                id: 'main.label.prename',
+                defaultMessage: 'Unité',
+                id: 'microplanning.label.team',
             }),
-            accessor: 'prename',
+            accessor: 'mobile_unit',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Postnom',
-                id: 'main.label.postname',
+                defaultMessage: 'N° de formulaire',
+                id: 'locator.label.form_number',
             }),
-            accessor: 'name',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'main.label.name',
-            }),
-            accessor: 'lastname',
+            accessor: 'form_number',
         },
         {
             Header: formatMessage({
@@ -55,13 +41,6 @@ const listLocatorColumns = formatMessage => (
             Header: 'AS match',
             accessor: 'normalized_AS_name',
             sortable: false,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Unité',
-                id: 'microplanning.label.team',
-            }),
-            accessor: 'mobile_unit',
         },
         {
             Header: formatMessage({

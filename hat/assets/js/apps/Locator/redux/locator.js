@@ -8,13 +8,14 @@ import { LOAD_VILLAGES, SELECT_VILLAGE, villageActions } from '../redux/village'
 export const FETCH_ACTION = 'hat/locator/locator/FETCH_ACTION';
 export const LOAD_AREAS = 'hat/locator/locator/LOAD_AREAS';
 export const LOAD_ZONES = 'hat/locator/locator/LOAD_ZONES';
-export const KEY_TYPED = 'hat/locator/locator/KEY_TYPED';
-export const KEY_DELETED = 'hat/locator/locator/KEY_DELETED';
 export const RESET_FILTERS = 'hat/locator/locator/RESET_FILTERS';
 export const SELECT_TYPE = 'hat/locator/locator/SELECT_TYPE';
+export const EMPTY_VILLAGES = 'hat/locator/locator/EMPTY_VILLAGES';
+export const EMPTY_ZONES = 'hat/locator/locator/EMPTY_ZONES';
+export const EMPTY_AREAS = 'hat/locator/locator/EMPTY_AREAS';
+
 
 const req = require('superagent');
-
 
 export const loadAreas = payload => ({
     type: LOAD_AREAS,
@@ -29,6 +30,31 @@ export const loadZones = payload => ({
 export const resetFilters = () => ({
     type: RESET_FILTERS,
 });
+
+export const emptyVillages = () => ({
+    type: EMPTY_VILLAGES,
+});
+
+export const emptyAreas = () => ({
+    type: EMPTY_AREAS,
+});
+
+export const emptyZones = () => ({
+    type: EMPTY_ZONES,
+});
+
+export const locatorInitialState = {
+    provinceId: null,
+    zoneId: null,
+    areaId: null,
+    villageId: null,
+    key: null,
+    currentTypes: ['YES'],
+    provinces: [],
+    zones: [],
+    areas: [],
+    villages: [],
+};
 
 export const selectZone = (zoneId, dispatch) => {
     req
@@ -48,8 +74,12 @@ export const selectZone = (zoneId, dispatch) => {
 };
 
 export const selectArea = (areaId, currentTypes, dispatch) => {
+    let theTypes = currentTypes;
+    if (!theTypes) {
+        theTypes = locatorInitialState.currentTypes;
+    }
     req
-        .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${currentTypes.toString()}`)
+        .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${theTypes.toString()}`)
         .then((result) => {
             dispatch(loadActions.successLoadingNoData());
             const payload = { villages: result.body, areaId };
@@ -85,20 +115,9 @@ export const locatorActions = {
     resetFilters,
     selectZone,
     selectArea,
-};
-
-export const locatorInitialState = {
-    provinceId: null,
-    zoneId: null,
-    areaId: null,
-    villageId: null,
-    key: null,
-    currentTypes: ['YES'],
-    selectedVillage: null,
-    provinces: [],
-    zones: [],
-    areas: [],
-    villages: [],
+    emptyVillages,
+    emptyAreas,
+    emptyZones,
 };
 
 export const locatorReducer = (state = locatorInitialState, action = {}) => {
@@ -108,12 +127,6 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return {
                 ...state,
                 provinces,
-                zones: [],
-                areas: [],
-                villages: [],
-                areaId: null,
-                villageId: null,
-                zoneId: null,
             };
         }
         case FETCH_ACTION: {
@@ -125,11 +138,6 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
                 ...state,
                 zones,
                 provinceId,
-                areas: [],
-                villages: [],
-                areaId: null,
-                villageId: null,
-                zoneId: null,
             };
         }
         case LOAD_AREAS: {
@@ -138,18 +146,38 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
                 ...state,
                 areas,
                 zoneId,
-                villages: [],
-                selectedVillage: null,
-                areaId: null,
-                villageId: null,
             };
         }
         case LOAD_VILLAGES: {
             const { villages, areaId } = action.payload;
             return {
-                ...state, villages, areaId, selectedVillage: null, villageId: null,
+                ...state,
+                villages,
+                areaId,
+                villageId: null,
             };
         }
+        case EMPTY_ZONES: {
+            return {
+                ...state,
+                zones: [],
+            };
+        }
+
+        case EMPTY_AREAS: {
+            return {
+                ...state,
+                areas: [],
+            };
+        }
+
+        case EMPTY_VILLAGES: {
+            return {
+                ...state,
+                villages: [],
+            };
+        }
+
         case SELECT_VILLAGE: {
             const villageId = action.payload;
             return { ...state, villageId };

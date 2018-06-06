@@ -25,6 +25,7 @@ const request = require('superagent');
 export class Locator extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             villageDetail: null,
             villageId: null,
@@ -40,17 +41,17 @@ export class Locator extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.villageFilters.villageId && (newProps.villageFilters.villageId !==
-            this.props.villageFilters.villageId)) {
+        if (newProps.locatorState.villageId && (newProps.locatorState.villageId !==
+            this.props.locatorState.villageId)) {
             this.setState({
                 isVillageDetailLoading: true,
             });
             request
-                .get(`/api/villages/${newProps.villageFilters.villageId}`)
+                .get(`/api/villages/${newProps.locatorState.villageId}`)
                 .then((response) => {
                     this.setState({
                         villageDetail: response.body,
-                        villageId: newProps.villageFilters.villageId,
+                        villageId: newProps.locatorState.villageId,
                         isVillageDetailLoading: false,
                     });
                 })
@@ -62,7 +63,7 @@ export class Locator extends Component {
                     });
                     console.error('Error when fetching villages details');
                 });
-        } else if (!newProps.villageFilters.villageId && this.props.villageFilters.villageId) {
+        } else if (!newProps.locatorState.villageId && this.props.locatorState.villageId) {
             this.setState({
                 villageDetail: null,
                 villageId: null,
@@ -89,7 +90,7 @@ export class Locator extends Component {
                 {this.props.kase &&
                     <div>
                         <div className="locator-control-div">
-                            {this.props.kase &&
+                            {
                                 <div>
                                     <section>
                                         <button
@@ -105,11 +106,11 @@ export class Locator extends Component {
                                             <i className="fa fa-arrow-left" />
                                         </button>
                                         <TypeFilters
-                                            currentTypes={this.props.villageFilters.currentTypes}
+                                            currentTypes={this.props.locatorState.currentTypes}
                                             selectType={newType =>
                                                 this.props.selectType(
-                                                    newType, this.props.villageFilters.areaId,
-                                                    this.props.villageFilters.currentTypes,
+                                                    newType, this.props.locatorState.areaId,
+                                                    this.props.locatorState.currentTypes,
                                                 )}
                                         />
                                     </section>
@@ -119,13 +120,13 @@ export class Locator extends Component {
                                         </div>
                                         <div>
                                             <Filters
-                                                filters={this.props.villageFilters}
+                                                filters={this.props.locatorState}
                                                 selectProvince={this.props.selectProvince}
                                                 selectZone={this.props.selectZone}
                                                 selectArea={areaId =>
                                                     this.props.selectArea(
                                                         areaId,
-                                                        this.props.villageFilters.currentTypes,
+                                                        this.props.locatorState.currentTypes,
                                                     )}
                                                 selectVillage={villageId =>
                                                     this.props.selectVillage(villageId)}
@@ -221,9 +222,9 @@ export class Locator extends Component {
                             <Map
                                 baseLayer={baseLayer}
                                 overlays={overlays}
-                                villages={this.props.villageFilters.villages}
+                                villages={this.props.locatorState.villages}
                                 selectVillage={villageId => this.props.selectVillage(villageId)}
-                                selectedVillageId={this.props.villageFilters.villageId}
+                                selectedVillageId={this.props.locatorState.villageId}
                                 getShape={type => this.props.getShape(type)}
                             />
                         </div>
@@ -241,7 +242,7 @@ Locator.defaultProps = {
 Locator.propTypes = {
     intl: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
-    villageFilters: PropTypes.object.isRequired,
+    locatorState: PropTypes.object.isRequired,
     kase: PropTypes.object,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -263,8 +264,15 @@ const MapDispatchToProps = dispatch => ({
     getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
     fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
-    selectProvince: provinceId => dispatch(provinceActions.selectProvince(provinceId, dispatch)),
-    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, dispatch)),
+    selectProvince: (provinceId) => {
+        dispatch(provinceActions.selectProvince(provinceId, dispatch));
+        dispatch(locatorActions.emptyAreas());
+        dispatch(locatorActions.emptyVillages());
+    },
+    selectZone: (zoneId) => {
+        dispatch(locatorActions.selectZone(zoneId, dispatch));
+        dispatch(locatorActions.emptyVillages());
+    },
     selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch)),
     selectVillage: villageId => dispatch(villageActions.selectVillage(villageId)),
     saveVillage: (kaseId, villageObj, params) => dispatch(villageActions.saveVillage(kaseId, villageObj, params, dispatch)),
@@ -274,7 +282,7 @@ const MapDispatchToProps = dispatch => ({
 
 const MapStateToProps = state => ({
     load: state.load,
-    villageFilters: state.locator,
+    locatorState: state.locator,
     kase: state.kase.case,
 });
 

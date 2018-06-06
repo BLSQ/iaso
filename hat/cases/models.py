@@ -373,9 +373,14 @@ class Case(CaseAbstract):
 
     def as_dict(self):
         normalized_as_name = None
+        normalized_as_dict = {}
         if self.normalized_AS:
             normalized_as_name = self.normalized_AS.name
-
+            normalized_as_dict = {
+                "as_id": self.normalized_AS_id,
+                "zs_id": self.normalized_AS.ZS_id,
+                "province_id": self.normalized_AS.ZS.province_id
+            }
         d = {
             'id': self.id,
             'ZS': self.ZS,
@@ -386,7 +391,7 @@ class Case(CaseAbstract):
             'prename': self.prename,
             'lastname': self.lastname,
             'normalized_AS_name': normalized_as_name,
-            'normalized_AS_id': self.normalized_AS_id,
+            'normalized_AS_dict':  normalized_as_dict,
             'normalized_patient_id': self.normalized_patient_id,
             'normalized_village_id': self.normalized_village_id,
             'normalized_village_not_found': self.normalized_village_not_found,

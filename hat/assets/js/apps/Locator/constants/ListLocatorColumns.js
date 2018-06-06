@@ -53,7 +53,8 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: 'AS match',
-            accessor: 'normalized_as_name',
+            accessor: 'normalized_AS_name',
+            sortable: false,
         },
         {
             Header: formatMessage({

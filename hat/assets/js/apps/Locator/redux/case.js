@@ -1,4 +1,6 @@
 import { loadActions } from '../../../redux/load';
+import { selectZone, selectArea } from './locator';
+import { selectProvince } from './province';
 
 const req = require('superagent');
 
@@ -17,31 +19,23 @@ export const setCase = kase => ({
     payload: kase,
 });
 
-
-export const fetchList = (dispatch) => {
-    req
-        .get('/api/cases/')
-        .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
-            dispatch(setList(result.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error(`Error while fetching cases: ${err}`);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
-
 export const fetchCase = (dispatch, caseId) => {
     const url = `/api/cases/${caseId}`;
     req
         .get(url)
         .then((result) => {
             dispatch(loadActions.successLoadingNoData());
-            dispatch(setCase(result.body));
+            const kase = result.body;
+            dispatch(setCase(kase));
+
+            if (kase) {
+                const { normalized_AS_dict } = kase;
+                if (normalized_AS_dict.as_id) {
+                    dispatch(selectProvince(normalized_AS_dict.province_id, dispatch));
+                    dispatch(selectZone(normalized_AS_dict.zs_id, dispatch));
+                    dispatch(selectArea(normalized_AS_dict.as_id, undefined, dispatch));
+                }
+            }
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));

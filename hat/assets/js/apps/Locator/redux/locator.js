@@ -188,12 +188,12 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
         }
         case RESET_FILTERS: {
             const { provinces } = state;
-            const newSate = locatorInitialState;
+            const newState = locatorInitialState;
             if (provinces.length > 0) {
-                newSate.provinces = provinces;
+                newState.provinces = provinces;
             }
-            newSate.currentTypes = state.currentTypes;
-            return newSate;
+            newState.currentTypes = state.currentTypes;
+            return newState;
         }
 
         default:

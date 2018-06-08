@@ -19,7 +19,8 @@ from pandas import DataFrame, concat as pandasconcat
 from hat.cases.event_log import EventStats
 from hat.cases.models import Case, Location
 from hat.patient.identify import get_or_create_patient, create_test_data
-from hat.sync.models import JSONDocument
+from hat.sync.models import JSONDocument, DeviceDB
+from hat.users.models import Team
 from .errors import handle_import_stage, ImportStage
 
 
@@ -174,6 +175,34 @@ def convert_to_db_type(table, column, value):
     return db_type_mapping.get(db_type, lambda x: x)(value)
 
 
+def get_case_team(case):
+    # if we have a mobile device, we should have a direct mapping to a team, otherwise ignore
+    if case.device_id:
+        try:
+            device = DeviceDB.objects.get(device_id=case.device_id)
+            return device.get_team()
+        except DeviceDB.DoesNotExist: # Unique so won't have multiple results
+            return None
+
+    # try to guess the mobile unit, with exact match and then aliases
+    if case.mobile_unit:
+        try:
+            return Team.objects.get(name__iexact=case.mobile_unit)
+        except Team.MultipleObjectsReturned:
+            print("Found multiple teams for mobile_unit", case.mobile_unit)
+            return None
+        except Team.DoesNotExist:
+            try:
+                return Team.objects.get(aliases__contains=case.mobile_unit)
+            except Team.DoesNotExist:
+                return None
+            except Team.MultipleObjectsReturned:
+                print("Found multiple teams for mobile_unit", case.mobile_unit)
+                return None
+
+    return None
+
+
 def create_cases(df: DataFrame) -> None:
     for _, row in df.iterrows():
         case = Case()
@@ -189,6 +218,7 @@ def create_cases(df: DataFrame) -> None:
 
         patient, _ = get_or_create_patient(case)
         case.normalized_patient = patient
+        case.normalized_team = get_case_team(case)
 
         case.save()
 

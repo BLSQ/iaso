@@ -7,6 +7,7 @@ from django.dispatch import receiver
 
 from hat.geo.models import Village
 from hat.geo.models import AS as ASModel
+from hat.users.models import Team
 
 CASES_PERMISSIONS = (
     ('import', 'Can import data'),
@@ -233,6 +234,7 @@ class CaseAbstract(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
+    normalized_team = models.ForeignKey(Team, null=True, on_delete=models.SET_NULL)
     mobile_unit = models.TextField(null=True)
     device_id = models.TextField(null=True)
 
@@ -398,6 +400,7 @@ class Case(CaseAbstract):
             'form_number': self.form_number,
             'form_year': self.form_year,
             'mobile_unit': self.mobile_unit,
+            'normalized_team': self.normalized_team,
             'source': self.source
         }
 

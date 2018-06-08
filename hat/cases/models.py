@@ -400,7 +400,7 @@ class Case(CaseAbstract):
             'form_number': self.form_number,
             'form_year': self.form_year,
             'mobile_unit': self.mobile_unit,
-            'normalized_team': self.normalized_team,
+            'normalized_team': self.normalized_team_id,
             'source': self.source
         }
 

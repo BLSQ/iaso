@@ -147,7 +147,7 @@ Configuration for the extraction of data from different sources
 
 
 '''
-
+import re
 from typing import List, Optional, cast
 from hat.common.typing import JsonType
 from functools import reduce
@@ -271,11 +271,17 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
+mobile_year_re = re.compile(r'^(\d{4})[,.]?\d*')
+
+
 def mobile_get_year(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
-    x = x.rstrip('. -\t')
-    return cast(int, x)
+    match = mobile_year_re.match(x)
+    if match:
+        return cast(int, match.group(1))
+    else:
+        return None
 
 
 def mobile_get_safe_int(x: Optional[str]) -> Optional[int]:

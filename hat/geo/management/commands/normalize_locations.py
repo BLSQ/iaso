@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
                     health_zone = None
                     try:
-                        health_zone = ZS.objects.get(name=location.ZS)
+                        health_zone = ZS.objects.get(name__iexact=location.ZS)
                     except ZS.DoesNotExist:
                         health_zones = ZS.objects.filter(aliases__contains=[location.ZS])
                         if len(health_zones) > 1:
@@ -33,7 +33,7 @@ class Command(BaseCommand):
                     if health_zone:
                         health_area = None
                         try:
-                            health_area = AS.objects.get(name=location.AS, ZS=health_zone)
+                            health_area = AS.objects.get(name__iexact=location.AS, ZS=health_zone)
                         except AS.DoesNotExist:
                             health_areas = AS.objects.filter(aliases__contains=[location.AS], ZS=health_zone)
                             if len(health_areas) > 1:

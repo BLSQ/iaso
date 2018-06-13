@@ -271,6 +271,23 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
+def mobile_get_year(x: Optional[str]) -> Optional[int]:
+    if pandas.isnull(x):
+        return None
+    x = x.rstrip('. -\t')
+    return cast(int, x)
+
+
+def mobile_get_safe_int(x: Optional[str]) -> Optional[int]:
+    if pandas.isnull(x):
+        return None
+    try:
+        xint = int(x)
+    except ValueError:
+        return None
+    return xint
+
+
 def mobile_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
@@ -657,7 +674,8 @@ MAPPING: List[JsonType] = [
                 "field": ("T_CARDS", "IM_BIRTHYEAR")
             },
             "mobile": {
-                "field": ("main", "person.birthYear")
+                "field": ("main", "person.birthYear"),
+                "apply_to_column": mobile_get_year,
             }
         }
     },
@@ -909,7 +927,8 @@ MAPPING: List[JsonType] = [
         "export_levels": [Export.full, Export.anon],
         "sources": {
             "mobile": {
-                "field": ("main", "participant.screenings.catt.screeningIndex")
+                "field": ("main", "participant.screenings.catt.screeningIndex"),
+                "apply_to_column": mobile_get_safe_int,
             },
         },
         "test_type": SCREENING_TEST

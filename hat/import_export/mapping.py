@@ -275,6 +275,9 @@ mobile_year_re = re.compile(r'^(\d{4})[,.]?\d*')
 
 
 def mobile_get_year(x: Optional[str]) -> Optional[int]:
+    """
+    return the year from x supporting legacy input like "1950." or even "1966.0"
+    """
     if pandas.isnull(x):
         return None
     match = mobile_year_re.match(x)
@@ -285,6 +288,9 @@ def mobile_get_year(x: Optional[str]) -> Optional[int]:
 
 
 def mobile_get_safe_int(x: Optional[str]) -> Optional[int]:
+    """
+    Gets integer value of x or None if the string contains things like 'no-index'
+    """
     if pandas.isnull(x):
         return None
     try:

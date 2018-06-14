@@ -277,9 +277,18 @@ Locator.propTypes = {
 };
 
 const LocatorWithIntl = injectIntl(Locator);
+
+function getShapePath(type) {
+    console.log('getShapePath', type, AREAS_PATH, ZONES_PATH);
+    if (type === 'area') { return AREAS_PATH; }
+    if (type === 'zone') { return ZONES_PATH; }
+
+    return null;
+}
+
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
+    getShape: type => getRequest(getShapePath(type), dispatch),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
     fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
     selectProvince: (provinceId) => {

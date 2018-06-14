@@ -1,7 +1,13 @@
 {% extends 'app.html' %}
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
-
+{% block extrajs %}
+    <script type="text/javascript">
+        var STATIC_URL = "{{ STATIC_URL }}";
+        var ZONES_PATH = STATIC_URL + 'json/zones.json';
+        var AREAS_PATH = STATIC_URL + 'json/areas.json';
+    </script>
+{% endblock %}
 {% block header %}
   <h1 class="header__title">Localisateur de cas/villages</h1>
 {% endblock %}

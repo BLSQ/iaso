@@ -158,7 +158,7 @@ def managementAll(request: HttpRequest) -> HttpResponse:
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def locator(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/locator.html', {})
+    return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL})
 
 @login_required()
 @permission_required('cases.view')

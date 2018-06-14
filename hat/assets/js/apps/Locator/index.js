@@ -12,6 +12,7 @@ import LocatorComponent from './pages/Locator';
 import ListLocatorComponent from './pages/ListLocator';
 import { locatorReducer, locatorInitialState } from './redux/locator';
 import { caseReducer } from './redux/case';
+import { mapReducer, mapInitialState } from './redux/mapReducer';
 
 
 export default function locator(appConfig, element, baseUrl) {
@@ -36,10 +37,12 @@ export default function locator(appConfig, element, baseUrl) {
         kase: {},
         load: {},
         locator: locatorInitialState,
+        map: mapInitialState,
     }, {
         load: loadReducer,
         kase: caseReducer,
         locator: locatorReducer,
+        map: mapReducer,
     }, [
         routerMiddleware(history),
     ]);

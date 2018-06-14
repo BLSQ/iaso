@@ -1,39 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import {
     FormattedMessage,
     injectIntl,
+    FormattedDate,
     defineMessages,
 } from 'react-intl';
 
-import DeviceEventsList from '../components/DeviceEventsListComponent';
-import DeviceEventForm from '../components/DeviceEventFormComponent';
-import DataTable from '../components/DataTableComponent';
+import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../../../components/loading-spinner';
-import Modal from '../../../components/modal';
-import { clone } from '../../../utils';
-import { createUrl, fetchUrls, checkLocation } from '../../../utils/fetchData';
 
-export const urls = [
-    {
-        name: 'locations',
-        url: '/api/datasets/list_locations/',
-        mock: ['Mosango', 'Yasa Bonga'],
-    },
-    {
-        name: 'meta',
-        url: '/api/datasets/campaign_meta/',
-        mock: {
-            enddate: '2016-08-29T10:58:42.807000Z', startdate: '2016-08-11T08:18:43.559000Z', as_visited: 1, villages_visited: 4,
-        },
-    },
-    {
-        name: 'device_status',
-        url: '/api/datasets/device_status/',
-    },
-];
 
 const MESSAGES = defineMessages({
     'location-all': {
@@ -47,75 +24,92 @@ const MESSAGES = defineMessages({
 });
 
 export class ManagementDevices extends Component {
-    constructor() {
-        super();
-        this.currentParams = '';
-        this.dateHandler = this.dateHandler.bind(this);
-        this.locationHandler = this.locationHandler.bind(this);
+    constructor(props) {
+        super(props);
+        const { formatMessage } = props.intl;
         this.state = {
-            isOpen: false,
-            currentDeviceId: false,
-            edit: false,
+            tableColumns:
+                [
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Utilisateur',
+                            id: 'teamsdevices.label.user',
+                        }),
+                        accessor: 'last_user',
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Equipe',
+                            id: 'teamsdevices.label.team',
+                        }),
+                        accessor: 'last_team',
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Dernière Sync',
+                            id: 'teamsdevices.last_sync',
+                        }),
+                        accessor: 'last_synced_date',
+                        Cell: (settings) => {
+                            let res;
+                            if (settings.original.last_synced_date) {
+                                res = <FormattedDate value={new Date(settings.original.last_synced_date)} />;
+                            } else {
+                                res = '';
+                            }
+                            return res;
+                        },
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Jours passés',
+                            id: 'teamsdevices.days_ago',
+                        }),
+                        accessor: 'days_since_sync',
+                        className: 'full-div',
+                        Cell: (settings) => {
+                            let daysClass = 'ok';
+                            let daysString = settings.original.days_since_sync;
+                            if (settings.original.days_since_sync < 0) {
+                                daysString = 'Jamais Synchronisé';
+                            }
+
+                            if (settings.original.days_since_sync > 40) {
+                                daysClass = 'error';
+                            }
+                            if (settings.original.days_since_sync > 20) {
+                                daysClass = 'warning';
+                            }
+                            return (
+                                <span className={daysClass}>
+                                    {daysString}
+                                </span>
+                            );
+                        },
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Total-Créé-Màj-Effacé',
+                            id: 'teamsdevices.sync_summary',
+                        }),
+                        accessor: 'last_synced_log_message',
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Identifiant',
+                            id: 'teamsdevices.device_id',
+                        }),
+                        accessor: 'device_id',
+                    },
+                ],
         };
     }
 
-    componentDidMount() {
-        this.loadData(this.props.params);
-    }
-
-    loadData(params) {
-        const { dispatch } = this.props;
-        const oldParams = clone(this.currentParams);
-        this.currentParams = clone(params);
-        // force the source to `mobile`
-        // (includes `mobile_backup` and `mobile_sync`)
-        // (it makes no sense with `historical` or `pv` data)
-        const source = 'mobile';
-
-        // to avoid fetching again because params changed include it in both sides, new and old.
-        fetchUrls(urls, { ...params, source }, { ...oldParams, source }, dispatch, checkLocation);
-    }
-
-    dateHandler(event) {
-        const url = createUrl({ ...this.props.params, date_month: event.target.value });
-        this.props.dispatch(push(url));
-    }
-
-    locationHandler(event) {
-        const url = createUrl({ ...this.props.params, location: event.target.value });
-        this.props.dispatch(push(url));
-    }
-
-    toggleModal(edit, event, deviceId) {
-        if (event) {
-            event.stopPropagation();
-            event.nativeEvent.stopImmediatePropagation();
-        }
-        this.setState({
-            isOpen: !this.state.isOpen,
-            currentDeviceId: deviceId,
-            edit,
-        });
-    }
     render() {
         const { formatMessage } = this.props.intl;
-        const { location } = this.props.params;
-        const { dates } = this.props.config;
-        const { loading, data, error } = this.props.load;
-        const locations = (data && data.locations) || [];
-        const dateMonth = this.props.params.date_month || '';
-        let modalContent;
-        if (this.state.edit) {
-            modalContent = <DeviceEventForm deviceId={this.state.currentDeviceId} />;
-        } else {
-            modalContent = <DeviceEventsList deviceId={this.state.currentDeviceId} />;
-        }
-
+        const { loading, error } = this.props.load;
         return (
             <div>
-                <Modal show={this.state.isOpen} onClose={() => this.toggleModal(this, false)}>
-                    {modalContent}
-                </Modal>
                 {
                     error &&
                     <div className="widget__container">
@@ -130,14 +124,25 @@ export class ManagementDevices extends Component {
                 {
                     loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }
-                {
-                    data &&
-                        <DataTable
-                            data={data}
-                            auditClickHandler={() => this.toggleModal(this, true)}
-                            moreClickHandler={() => this.toggleModal(this, false)}
-                        />
-                }
+
+                <div className="widget__container" data-qa="monthly-report-data-loaded">
+                    <div className="widget__header">
+                        <h2 className="widget__heading">
+                            <FormattedMessage id="teamsdevices.header.results" defaultMessage="Synchronisation des Appareils" />
+                        </h2>
+                    </div>
+                    <CustomTableComponent
+                        isSortable
+                        showPagination={false}
+                        endPointUrl="/api/datasets/device_status/?"
+                        columns={this.state.tableColumns}
+                        defaultSorted={[{ id: 'last_synced_date', desc: false }]}
+                        params={this.props.params}
+                        defaultPath="devices"
+                        onRowClicked={caseItem => this.selectCase(caseItem)}
+                        multiSort
+                    />
+                </div>
             </div>
         );
     }
@@ -152,9 +157,7 @@ ManagementDevices.defaultProps = {
 ManagementDevices.propTypes = {
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    config: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
 };
 const MapStateToProps = state => ({
     config: state.config,

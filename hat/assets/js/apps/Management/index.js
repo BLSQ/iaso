@@ -24,17 +24,10 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
     dates: ['2016-04', '2016-05', '2016-06']
   }
   */
-    const defaultRoute = (config) => {
-        if (config.dates.length) {
-            const latestMonth = config.dates.slice(-1).pop();
-            return `/devices/date_month/${latestMonth}`;
-        }
-        return '/devices';
-    };
 
     const routes = [
         <Route
-            path="/devices(/location/:location)(/date_month/:date_month)"
+            path="/devices(/order/:order)"
             component={ManagementDevicesPage}
         />,
         <Route
@@ -49,7 +42,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
-        <Redirect path="*" to={defaultRoute(appConfig)} />,
+        <Redirect path="*" to="/devices" />,
     ];
 
     let history = useRouterHistory(createHistory)({

@@ -14,3 +14,14 @@
 .button--delete {
     background-color: $red ! important;
 }
+
+.full-div {
+    padding: 0 !important;
+    margin: 0;
+    span {
+        display: block;
+        height: 100%;
+        width: 100%;
+        padding-top: 10px;
+    }
+}

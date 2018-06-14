@@ -30,17 +30,17 @@ td {
 
 }
 
-td.error {
+td.error, span.error {
   background: $red;
   color: white;
 }
 
-td.warning {
+td.warning, span.warning {
   background: $orange;
   color: white;
 }
 
-td.ok {
+td.ok, span.ok {
   background: $green;
   color: white;
 }

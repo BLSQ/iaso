@@ -62,8 +62,34 @@ class DeviceDB(models.Model):
 
 @receiver(post_save, sender=DeviceDB)
 def device_db_post_save(sender, instance, *args, **kwargs):  # type: ignore
-    # Create the accompaning couchdb db for the device db record
+    # Create the accompanying couchdb db for the device db record
     create_db(instance.device_id)
+
+
+class DeviceImportEvent(models.Model):
+    """
+    Keeps the details about the various imports from devices
+    """
+
+    FETCH_COUCHDB = 0
+    IMPORTED = 1
+    ERROR = 2
+
+    IMPORT_EVENT_TYPES = (
+        (FETCH_COUCHDB, 'Data fetched from CouchDB'),
+        (IMPORTED, 'Data actually imported into the DB'),
+        (ERROR, 'Any error')
+    )
+    event_type = models.IntegerField(choices=IMPORT_EVENT_TYPES, default=FETCH_COUCHDB)
+    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
+    date = models.DateTimeField(null=True, auto_now_add=True)
+    total_records = models.IntegerField(null=True)
+    created_records = models.IntegerField(null=True)
+    updated_records = models.IntegerField(null=True)
+    deleted_records = models.IntegerField(null=True)
+    errors = models.IntegerField(null=True)
+    last_synced_seq = models.IntegerField(null=True)
+    details = models.TextField(null=True)
 
 
 class DeviceDBView(models.Model):
@@ -225,6 +251,14 @@ class JSONDocument(models.Model):
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
     case = models.ForeignKey(to=Case, on_delete=models.SET_NULL, null=True, blank=True)
     doc = JSONField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    processed = models.NullBooleanField(default=False)
+
+    # To be activated when duplicates have been removed
+    # class Meta:
+    #     unique_together = ('doc_id', 'doc_revision')
 
     def __str__(self):
         return "id %s - revision %s - device %s" % (self.doc_id, self.doc_revision, self.device)

@@ -225,6 +225,7 @@ def create_cases(df: DataFrame) -> None:
         if json_document_id:
             doc = JSONDocument.objects.get(id=json_document_id)
             doc.case = case
+            doc.processed = True
             doc.save()
 
         create_test_data(case)
@@ -252,6 +253,7 @@ def update_cases(df: DataFrame) -> int:
             if json_document_id:
                 doc = JSONDocument.objects.get(id=json_document_id)
                 doc.case = case
+                doc.processed = True
                 doc.save()
 
     return num_updated

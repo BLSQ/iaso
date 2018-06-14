@@ -9,22 +9,23 @@ CouchDB replication to transmit data to the server.
 A more detailed description can be found in the ``hat.sync`` module.
 """
 
-import logging
 import json
+import logging
 from typing import List
-from django.utils import timezone
+
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from hat.couchdb.utils import fetch_db_docs
-from hat.sync.models import DeviceDB, JSONDocument
-from .errors import get_import_error
-from .load import load_cases_into_db
 from hat.cases.event_log import log_sync_import, EventStats
+from hat.common.typing import JsonType
+from hat.couchdb.utils import fetch_db_docs
+from hat.sync.models import DeviceDB, JSONDocument, DeviceImportEvent
+from .errors import get_import_error
 from .extract import prepare_mobile_data
+from .load import load_cases_into_db
 from .transform import transform_source
 from .typing import ImportResult
-from hat.common.typing import JsonType
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,12 @@ def import_synced_devices() -> List[ImportResult]:
         }
         try:
             data = fetch_db_docs(device.db_name, device.last_synced_seq)
+            DeviceImportEvent(
+                device=device,
+                event_type=DeviceImportEvent.FETCH_COUCHDB,
+                total_records=len(data),
+                last_synced_seq=device.last_synced_seq,
+            ).save()
             docs = data['docs']
             stats = import_synced_docs(docs, device.device_id)
             result['stats'] = stats
@@ -66,11 +73,28 @@ def import_synced_devices() -> List[ImportResult]:
                     stats.deleted,
                 )
                 device.save()
+                DeviceImportEvent(
+                    device=device,
+                    event_type=DeviceImportEvent.IMPORTED,
+                    total_records=stats.total,
+                    created_records=stats.created,
+                    updated_records=stats.updated,
+                    deleted_records=stats.deleted,
+                    last_synced_seq=device.last_synced_seq,
+                ).save()
         except Exception as ex:
-            logger.exception(str(ex))
-            result['error'] = get_import_error(ex)
-            device.last_synced_log_status = str(ex)
-
+            if hasattr(ex,'response') and ex.response.status_code == 404:
+                logger.error("Could not find CouchDB for device " + device.device_id)
+            else:
+                logger.exception(str(ex))
+                result['error'] = get_import_error(ex)
+                device.last_synced_log_status = str(ex)
+                DeviceImportEvent(
+                    device=device,
+                    event_type=DeviceImportEvent.ERROR,
+                    details=device.last_synced_log_status,
+                    last_synced_seq=device.last_synced_seq,
+                ).save()
         else:
             log_sync_import(stats, docs, device.device_id)
 
@@ -82,24 +106,22 @@ def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
     patient_docs: List[dict] = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
     for doc in patient_docs:
         logger.error(json.dumps(doc))
-        couch_document = JSONDocument()
-
-        couch_document.device = device
 
         revision = doc.get('_rev', None)
-        couch_document.doc_revision = revision
-
         doc_id = doc.get('_id', None)
-        couch_document.doc_id = doc_id
-        couch_document.doc = doc
-        
-        if doc_id is not None and revision is not None:
-            couch_document.save()
-            doc['json_document_id'] = couch_document.id
-        else:
-            logger.error("Impossible to store document in postgres: " + json.dumps(doc))
 
-    extracted = prepare_mobile_data(docs)
+        couch_document, document_created = JSONDocument.objects.get_or_create(
+            doc_id=doc_id, doc_revision=revision,
+            defaults={'doc': doc, 'device': device}
+        )
+
+        if couch_document.processed:
+            patient_docs.remove(doc)
+            continue
+
+        doc['json_document_id'] = couch_document.id
+
+    extracted = prepare_mobile_data(patient_docs)
     transformed = transform_source('sync', extracted)
     stats = load_cases_into_db(transformed)
     return stats

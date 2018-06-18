@@ -257,8 +257,8 @@ class JSONDocument(models.Model):
     processed = models.NullBooleanField(default=False)
 
     # To be activated when duplicates have been removed
-    # class Meta:
-    #     unique_together = ('doc_id', 'doc_revision')
+    class Meta:
+        unique_together = ('doc_id', 'doc_revision')
 
     def __str__(self):
         return "id %s - revision %s - device %s" % (self.doc_id, self.doc_revision, self.device)

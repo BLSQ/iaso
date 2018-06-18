@@ -10,6 +10,7 @@ faster and less CPU/memory consuming than the same Django ORM methods.
 If the locations load processes experiment low performance in the future they
 should also be switched to the same SQL sentences.
 """
+import logging
 
 import dateutil
 import pandas
@@ -18,10 +19,15 @@ from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.event_log import EventStats
 from hat.cases.models import Case, Location
+from hat.common.utils import is_int
+from hat.geo.geo_finder import get_single_as_and_village
+from hat.geo.models import Village, AS
 from hat.patient.identify import get_or_create_patient, create_test_data
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
 from .errors import handle_import_stage, ImportStage
+
+logger = logging.getLogger(__name__)
 
 
 @handle_import_stage(ImportStage.load)
@@ -203,6 +209,33 @@ def get_case_team(case):
     return None
 
 
+def normalize_location(case):
+    # If the ZS/AS are numeric, they probably are
+    if is_int(case.ZS) and is_int(case.AS):
+        if is_int(case.village):
+            try:
+                db_village = Village.objects.get(id=int(case.village))
+                case.normalized_village = db_village
+                case.normalized_AS = db_village.AS
+            except Village.DoesNotExist:
+                # We have a numeric village but it doesn't exist, strange but leave as is.
+                logger.error("Received a numeric village id {} but could not find it in the db".format(case.village))
+        else:
+            # TODO Consider creating the village (need ability to trace the creator)
+            try:
+                db_as = AS.objects.get(id=int(case.AS), ZS_id=int(case.ZS))
+                case.normalized_AS = db_as
+            except AS.DoesNotExist:
+                # We have a numeric AS/ZS but it doesn't exist, strange but leave as is.
+                logger.error("Received a numeric ZS {} AS {} but could not find it in the db".format(case.ZS, case.AS))
+    else:
+        norm_as, norm_village = get_single_as_and_village(case.ZS, case.AS, case.village)
+        if norm_as:
+            case.normalized_AS = norm_as
+        if norm_village:
+            case.normalized_village = norm_village
+
+
 def create_cases(df: DataFrame) -> None:
     for _, row in df.iterrows():
         case = Case()
@@ -219,6 +252,7 @@ def create_cases(df: DataFrame) -> None:
         patient, _ = get_or_create_patient(case)
         case.normalized_patient = patient
         case.normalized_team = get_case_team(case)
+        normalize_location(case)
 
         case.save()
 

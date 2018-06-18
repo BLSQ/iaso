@@ -23,3 +23,12 @@ def run_cmd(cmd: List[str], **kwargs: Any) -> str:
 def create_shared_filename(suffix: str) -> str:
     '''Create a unique filename in the shared directory with given suffix.'''
     return '{}/{}{}'.format(settings.SHARED_DIR, str(uuid4()), suffix)
+
+
+# https://stackoverflow.com/questions/1265665/how-can-i-check-if-a-string-represents-an-int-without-using-try-except
+def is_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False

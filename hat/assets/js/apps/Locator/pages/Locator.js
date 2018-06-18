@@ -215,14 +215,14 @@ export class Locator extends Component {
                                         </section>
                                     </div>}
                                 {
-                                    this.props.kase.remaining_count &&
+                                    this.props.kase.count &&
                                     <section className="locator-cases-left">
                                         <FormattedMessage
                                             id="locator.label.count"
                                             defaultMessage="Reste"
                                         />
                                         {': '}
-                                        {this.props.kase.remaining_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                                        {this.props.kase.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
                                         {' '}
                                         <FormattedMessage
                                             id="locator.label.casesLeft"
@@ -246,7 +246,6 @@ export class Locator extends Component {
                     }
                 </div>
             </section>
-
         );
     }
 }

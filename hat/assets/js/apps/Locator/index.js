@@ -8,22 +8,26 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
+
 import LocatorComponent from './pages/Locator';
 import ListLocatorComponent from './pages/ListLocator';
 import { locatorReducer, locatorInitialState } from './redux/locator';
+import { listLocatorReducer, listLocatorInitialState } from './redux/listLocator';
 import { caseReducer } from './redux/case';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 
 
 export default function locator(appConfig, element, baseUrl) {
-    const defaultPath = 'list/order/form_number/pageSize/50/page/1';
+    const currentYear = new Date().getFullYear();
+    const years = [1, 2, 3, 4, 5].map(i => currentYear - i);
+    const defaultPath = `list/order/form_year/pageSize/50/page/1/years/${years.join(',')}`;
     const routes = [
         <Route
-            path="list/order/:order/pageSize/:pageSize/page/:page"
+            path="list/order/:order/pageSize/:pageSize/page/:page(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)"
             component={ListLocatorComponent}
         />,
         <Route
-            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)"
             component={LocatorComponent}
         />,
         <Redirect path="*" to={defaultPath} />,
@@ -38,11 +42,13 @@ export default function locator(appConfig, element, baseUrl) {
         load: {},
         locator: locatorInitialState,
         map: mapInitialState,
+        listLocator: listLocatorInitialState,
     }, {
         load: loadReducer,
         kase: caseReducer,
         locator: locatorReducer,
         map: mapReducer,
+        listLocator: listLocatorReducer,
     }, [
         routerMiddleware(history),
     ]);

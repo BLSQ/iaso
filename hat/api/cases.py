@@ -20,6 +20,13 @@ class CasesViewSet(viewsets.ViewSet):
         page_offset = int(request.GET.get("page", 1))
 
         orders = request.GET.get("order", 'ZS').split(',')
+
+        province_ids = request.GET.get("province_id", None)
+        zs_ids = request.GET.get("zs_id", None)
+        as_ids = request.GET.get("as_id", None)
+        years = request.GET.get("years", None)
+        teams = request.GET.get("teams", None)
+
         queryset = Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)\
             .exclude(source='mobile_sync').exclude(source='mobile_backup')\
             .exclude(province__icontains='kas').exclude(province__icontains='kinsh').exclude(province__icontains='bas')\
@@ -28,9 +35,20 @@ class CasesViewSet(viewsets.ViewSet):
             .order_by(*orders)
 
 
+        if province_ids:
+            queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(','))
+        if zs_ids:
+            queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(','))
+        if as_ids:
+            queryset = queryset.filter(normalized_AS_id__in=as_ids.split(','))
+        if years:
+            queryset = queryset.filter(form_year__in=years.split(','))
+        if teams:
+            queryset = queryset.filter(normalized_team_id__in=teams.split(','))
+
         paginator = Paginator(queryset, limit)
 
-        res = {'remaining_count': paginator.count}
+        res = {'count': paginator.count}
         if page_offset> paginator.num_pages:
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)

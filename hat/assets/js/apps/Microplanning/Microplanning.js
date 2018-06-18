@@ -21,6 +21,7 @@ import ReactModal from 'react-modal';
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl, getRequest } from '../../utils/fetchData';
 import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
+import { getPossibleYears } from '../../utils';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
 import { mapActions } from './redux/map';
@@ -190,12 +191,7 @@ export class Microplanning extends Component {
         } = this.props.params;
         const { data, error, loading } = this.props.load;
         // possible years from 2000 to current year
-        const firstYear = 2000;
-        const currentYear = new Date().getFullYear();
-        const possibleYears = [];
-        for (let y = currentYear; y >= firstYear; y -= 1) {
-            possibleYears.push(`${y}`); // parse to string (Select component needs it)
-        }
+        const possibleYears = getPossibleYears();
         const areas = ((data && data.areas) || []);
         let villages = [];
         const villagesMap = {};

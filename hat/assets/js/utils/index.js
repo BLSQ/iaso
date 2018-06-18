@@ -85,3 +85,13 @@ export const arrayToObject = (arrayElement) => {
     });
     return tempResult;
 };
+
+export const getPossibleYears = () => {
+    const firstYear = 2000;
+    const currentYear = new Date().getFullYear();
+    const possibleYears = [];
+    for (let y = currentYear; y >= firstYear; y -= 1) {
+        possibleYears.push(`${y}`);
+    }
+    return possibleYears;
+};

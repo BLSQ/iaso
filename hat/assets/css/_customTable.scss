@@ -125,4 +125,15 @@ body {
             text-align: center;
         }
     }
+    .custom-table-container {
+        position: relative;
+        &.no-pagination {
+            padding-bottom: 40px;
+        }
+        .count-container{
+            position: absolute;
+            right: 20px;
+            bottom: 14px;
+        }
+    }
 }

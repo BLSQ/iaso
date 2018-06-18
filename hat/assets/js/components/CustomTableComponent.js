@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getRequest, createUrl } from '../utils/fetchData';
 import customTableTranslations from '../utils/constants/customTableTranslations';
+import { formatThousand } from '../utils';
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 
@@ -27,6 +28,7 @@ class CustomTableComponent extends React.Component {
             page: props.params.page ? parseInt(props.params.page, 10) : props.page,
             pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
             order: orderArray,
+            count: undefined,
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
@@ -72,6 +74,7 @@ class CustomTableComponent extends React.Component {
         this.props.redirectTo(this.props.defaultPath, {
             ...this.props.params,
             pageSize,
+            page: 1,
         });
     }
 
@@ -93,7 +96,13 @@ class CustomTableComponent extends React.Component {
         });
         getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
             const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
-            tempdata.pages = 1;
+            let { showPagination } = this.props;
+            if (data.count) {
+                showPagination = this.props.showPagination && (data.count > settings.pageSize);
+            }
+            if (!data.pages) {
+                showPagination = false;
+            }
             setTimeout(() => {
                 this.setState({
                     page: settings.page,
@@ -101,7 +110,8 @@ class CustomTableComponent extends React.Component {
                     data: tempdata,
                     pages: data.pages,
                     loading: false,
-                    showPagination: this.props.showPagination,
+                    showPagination,
+                    count: parseInt(data.count, 10),
                 });
             }, 200);
         });
@@ -117,30 +127,45 @@ class CustomTableComponent extends React.Component {
     }
 
     render() {
+        const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
         return (
-            <ReactTable
-                manual
-                multiSort={this.props.multiSort}
-                columns={this.props.columns}
-                data={this.state.data}
-                pages={this.state.pages}
-                loading={this.state.loading}
-                onPageChange={page => this.onPageChange(page)}
-                onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
-                onSortedChange={sort => this.onChangeSort(sort)}
-                filterable={this.props.isFilterable}
-                sortable={this.props.isSortable}
-                defaultPageSize={this.state.pageSize}
-                page={this.state.page - 1}
-                className="-striped -highlight"
-                getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
-                showPagination={this.state.showPagination}
-                defaultSorted={this.state.order}
-                pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
-            />
+            <section className={`custom-table-container ${!this.state.showPagination && this.state.count ? 'no-pagination' : ''}`}>
+                <ReactTable
+                    manual
+                    multiSort={this.props.multiSort}
+                    columns={this.props.columns}
+                    data={this.state.data}
+                    pages={this.state.pages}
+                    loading={this.state.loading}
+                    onPageChange={page => this.onPageChange(page)}
+                    onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
+                    onSortedChange={sort => this.onChangeSort(sort)}
+                    filterable={this.props.isFilterable}
+                    sortable={this.props.isSortable}
+                    pageSize={currentPageSize}
+                    page={this.state.page - 1}
+                    className="-striped -highlight"
+                    getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
+                    showPagination={this.state.showPagination}
+                    defaultSorted={this.state.order}
+                    pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
+                />
+                <div className="count-container">
+                    {this.state.count !== undefined && this.state.count > 0 &&
+                        <div>
+                            {`${formatThousand(this.state.count)} `}
+                            <FormattedMessage
+                                id="locator.list.result"
+                                defaultMessage="résultat(s)"
+                            />
+                        </div>
+                    }
+                </div>
+            </section>
         );
     }
 }
+
 CustomTableComponent.defaultProps = {
     isFilterable: false,
     isSortable: false,

@@ -231,9 +231,9 @@ def normalize_location(case):
     else:
         norm_as, norm_village = get_single_as_and_village(case.ZS, case.AS, case.village)
         if norm_as:
-            case.normalized_AS = norm_as
+            case.normalized_AS_id = norm_as
         if norm_village:
-            case.normalized_village = norm_village
+            case.normalized_village_id = norm_village
 
 
 def create_cases(df: DataFrame) -> None:

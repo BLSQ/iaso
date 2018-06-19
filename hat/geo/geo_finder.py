@@ -81,9 +81,9 @@ def get_single_as_and_village(zs_name, as_name, village_name) -> (int, int):
 
     try:
         village = get_single_village(village_name, areas)
-        return village.AS_id, village.id
-    except MultipleMatchesFoundException:
-        if areas.count() == 1:
-            return areas[0].id, None
+        if village:
+            return village.AS_id, village.id
         else:
-            return None, None
+            return areas[0].id if areas.count() != 1 else None, None
+    except MultipleMatchesFoundException:
+        return None, None

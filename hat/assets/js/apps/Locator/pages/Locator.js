@@ -133,6 +133,9 @@ export class Locator extends Component {
                                                 <Case case={this.props.kase} />
                                             </div>
                                             <div>
+                                                <div className="locator-title">
+                                                    <FormattedMessage id="locator.label.search" defaultMessage="Recherche du village" />
+                                                </div>
                                                 <Filters
                                                     filters={this.props.locatorState}
                                                     selectProvince={this.props.selectProvince}
@@ -292,12 +295,14 @@ const MapDispatchToProps = dispatch => ({
     fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
     selectProvince: (provinceId) => {
         dispatch(provinceActions.selectProvince(provinceId, dispatch));
+        dispatch(locatorActions.emptyZones());
         dispatch(locatorActions.emptyAreas());
         dispatch(locatorActions.emptyVillages());
     },
     selectZone: (zoneId) => {
         dispatch(locatorActions.selectZone(zoneId, dispatch));
         dispatch(locatorActions.emptyVillages());
+        dispatch(locatorActions.emptyAreas());
     },
     selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch)),
     selectVillage: villageId => dispatch(villageActions.selectVillage(villageId)),

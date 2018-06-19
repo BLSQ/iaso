@@ -13,6 +13,7 @@ export const SELECT_TYPE = 'hat/locator/locator/SELECT_TYPE';
 export const EMPTY_VILLAGES = 'hat/locator/locator/EMPTY_VILLAGES';
 export const EMPTY_ZONES = 'hat/locator/locator/EMPTY_ZONES';
 export const EMPTY_AREAS = 'hat/locator/locator/EMPTY_AREAS';
+export const SHOW_TEAMS = 'hat/locator/list/SHOW_TEAMS';
 
 
 const req = require('superagent');
@@ -54,6 +55,7 @@ export const locatorInitialState = {
     zones: [],
     areas: [],
     villages: [],
+    teams: [],
 };
 
 export const selectZone = (zoneId, dispatch) => {
@@ -73,22 +75,27 @@ export const selectZone = (zoneId, dispatch) => {
     });
 };
 
-export const selectArea = (areaId, currentTypes, dispatch) => {
+export const selectArea = (areaId, currentTypes, dispatch, displayVillage = true) => {
     let theTypes = currentTypes;
     if (!theTypes) {
         theTypes = locatorInitialState.currentTypes;
     }
-    req
-        .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${theTypes.toString()}`)
-        .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
-            const payload = { villages: result.body, areaId };
-            dispatch(villageActions.loadVillages(payload));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error(`Error while fetching Villages: ${err}`);
-        });
+    if (displayVillage) {
+        req
+            .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${theTypes.toString()}`)
+            .then((result) => {
+                dispatch(loadActions.successLoadingNoData());
+                const payload = { villages: result.body, areaId };
+                dispatch(villageActions.loadVillages(payload));
+            })
+            .catch((err) => {
+                dispatch(loadActions.errorLoading(err));
+                console.error(`Error while fetching Villages: ${err}`);
+            });
+    } else {
+        dispatch(loadActions.successLoadingNoData());
+        dispatch(villageActions.loadVillages({ areaId }));
+    }
     return ({
         type: FETCH_ACTION,
     });
@@ -108,6 +115,24 @@ export const selectType = (newType, areaId, currentTypes, dispatch) => {
     });
 };
 
+
+export const showTeams = teams => ({
+    type: SHOW_TEAMS,
+    payload: teams,
+});
+
+export const fetchTeams = (dispatch) => {
+    req
+        .get('/api/teams/')
+        .then((result) => {
+            dispatch(showTeams(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching teams ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const locatorActions = {
     loadAreas,
     loadZones,
@@ -118,6 +143,7 @@ export const locatorActions = {
     emptyVillages,
     emptyAreas,
     emptyZones,
+    fetchTeams,
 };
 
 export const locatorReducer = (state = locatorInitialState, action = {}) => {
@@ -161,6 +187,7 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return {
                 ...state,
                 zones: [],
+                zoneId: null,
             };
         }
 
@@ -168,6 +195,7 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return {
                 ...state,
                 areas: [],
+                areaId: null,
             };
         }
 
@@ -175,6 +203,7 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return {
                 ...state,
                 villages: [],
+                villageId: null,
             };
         }
 
@@ -194,6 +223,10 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             }
             newState.currentTypes = state.currentTypes;
             return newState;
+        }
+        case SHOW_TEAMS: {
+            const teams = action.payload;
+            return { ...state, teams };
         }
 
         default:

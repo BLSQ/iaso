@@ -1,0 +1,18 @@
+.list-locator-filters {
+    padding: 0;
+    &>div {
+        display: flex;
+        .locator-filter{
+            flex-basis: 33%;
+            box-sizing: border-box;
+            padding: 0 $padding-unit $padding-unit $padding-unit;
+            >span {
+                font-weight: bold;
+                color: #868486;
+                margin-bottom: 6px;
+                font-size: 12px;
+                display: block;
+            }
+        }
+    }
+}

@@ -34,6 +34,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "management";
 @import "dragAndDrop";
 @import "route";
+@import "locator";
 
 body {
   background-color: $background-gray;

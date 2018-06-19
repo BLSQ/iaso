@@ -11,13 +11,11 @@ class Filters extends React.Component {
         }
         return (
             <div>
-                <div className="locator-title">
-                    <FormattedMessage id="locator.label.search" defaultMessage="Recherche du village" />
-                </div>
                 <div className="locator-filter">
                     <div className="locator-subtitle">Province</div>
                     <Select
-                        clearable={false}
+                        multi={this.props.isMultiSelect}
+                        clearable={this.props.isClearable}
                         simpleValue
                         name="provinceId"
                         value={filters.provinceId}
@@ -32,7 +30,8 @@ class Filters extends React.Component {
                         <div className="locator-subtitle">Zone de santé</div>
                         <div>
                             <Select
-                                clearable={false}
+                                multi={this.props.isMultiSelect}
+                                clearable={this.props.isClearable}
                                 simpleValue
                                 name="zoneId"
                                 value={filters.zoneId}
@@ -49,7 +48,8 @@ class Filters extends React.Component {
                         <div className="locator-subtitle">Aire de santé</div>
                         <div>
                             <Select
-                                clearable={false}
+                                multi={this.props.isMultiSelect}
+                                clearable={this.props.isClearable}
                                 simpleValue
                                 name="areaId"
                                 value={filters.areaId}
@@ -61,11 +61,13 @@ class Filters extends React.Component {
                         </div>
                     </div>
                 }
-                {filters.villages && filters.villages.length !== 0 &&
+                {filters.villages && filters.villages.length !== 0 && this.props.showVillages &&
                     <div className="locator-filter">
                         <div className="locator-subtitle">Village</div>
                         <div>
                             <Select
+                                multi={this.props.isMultiSelect}
+                                clearable={this.props.isClearable}
                                 simpleValue
                                 name="villageId"
                                 value={filters.villageId}
@@ -77,7 +79,7 @@ class Filters extends React.Component {
                         </div>
                     </div>
                 }
-                {filters.villages &&
+                {filters.villages && this.props.showVillages &&
                     filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId &&
                     <div className="locator-filter">
                         <div className="locator-subtitle no-result">
@@ -90,12 +92,21 @@ class Filters extends React.Component {
     }
 }
 
+Filters.defaultProps = {
+    isMultiSelect: false,
+    showVillages: true,
+    isClearable: false,
+};
+
 Filters.propTypes = {
     filters: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
+    isMultiSelect: PropTypes.bool,
+    showVillages: PropTypes.bool,
+    isClearable: PropTypes.bool,
 };
 
 export default Filters;

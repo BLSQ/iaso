@@ -5,11 +5,14 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
 import ListFilters from '../components/ListFilters';
+import Filters from '../components/Filters';
 import { createUrl } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import listLocatorColumns from '../constants/ListLocatorColumns';
-import { listLocatorActions } from '../redux/listLocator';
+
+import { locatorActions } from '../redux/locator';
+import { provinceActions } from '../redux/province';
 
 export class ListLocator extends Component {
     constructor(props) {
@@ -22,12 +25,30 @@ export class ListLocator extends Component {
     componentWillMount() {
         Promise.all([
             this.props.fetchProvinces(),
-            this.props.fetchZones(),
-            this.props.fetchAreas(),
-            this.props.fetchTeams(),
-        ]);
+        ]).then(() => {
+            if (this.props.params.province_id) {
+                this.props.selectProvince(this.props.params.province_id);
+            }
+            if (this.props.params.zs_id) {
+                this.props.selectZone(this.props.params.zs_id);
+            }
+            if (this.props.params.as_id) {
+                this.props.selectArea(this.props.params.as_id);
+            }
+        });
     }
 
+    componentWillReceiveProps(newProps) {
+        if (newProps.params.province_id !== this.props.params.province_id) {
+            this.props.selectProvince(newProps.params.province_id);
+        }
+        if (newProps.params.zs_id !== this.props.params.zs_id) {
+            this.props.selectZone(newProps.params.zs_id);
+        }
+        if (newProps.params.as_id !== this.props.params.as_id) {
+            this.props.selectArea(newProps.params.as_id);
+        }
+    }
 
     getEnpointUrl() {
         let url = '/api/cases/?';
@@ -55,6 +76,42 @@ export class ListLocator extends Component {
         });
     }
 
+    selectProvince(provinceId) {
+        const tempParams = {
+            ...this.props.params,
+            province_id: provinceId,
+        };
+        delete tempParams.zs_id;
+        delete tempParams.as_id;
+        if (!provinceId) {
+            delete tempParams.province_id;
+        }
+        this.props.redirectTo('list', tempParams);
+    }
+
+    selectZone(zoneId) {
+        const tempParams = {
+            ...this.props.params,
+            zs_id: zoneId,
+        };
+        delete tempParams.as_id;
+        if (!zoneId) {
+            delete tempParams.zs_id;
+        }
+        this.props.redirectTo('list', tempParams);
+    }
+
+    selectArea(areaId) {
+        const tempParams = {
+            ...this.props.params,
+            as_id: areaId,
+        };
+        if (!areaId) {
+            delete tempParams.as_id;
+        }
+        this.props.redirectTo('list', tempParams);
+    }
+
 
     render() {
         const { formatMessage } = this.props.intl;
@@ -70,6 +127,18 @@ export class ListLocator extends Component {
                             return (this.props.redirectTo('list', tempParam));
                         }}
                     />
+                    <div className="widget__content list-locator-filters">
+                        <Filters
+                            isMultiSelect={false} // need to update api to work with multiple ids
+                            showVillages={false}
+                            isClearable
+                            filters={this.props.listFilters}
+                            selectProvince={provindeId => this.selectProvince(provindeId)}
+                            selectZone={zsId => this.selectZone(zsId)}
+                            selectArea={asId => this.selectArea(asId)}
+                            selectVillage={() => { }}
+                        />
+                    </div>
                 </div>
                 <div className="locator-container widget__container">
                     {
@@ -106,26 +175,42 @@ ListLocator.propTypes = {
     intl: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    fetchZones: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
-    fetchAreas: PropTypes.func.isRequired,
-    fetchTeams: PropTypes.func.isRequired,
     listFilters: PropTypes.object.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    selectArea: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(ListLocator);
 
 const MapDispatchToProps = dispatch => ({
-    fetchZones: () => dispatch(listLocatorActions.fetchZones(dispatch)),
-    fetchProvinces: () => dispatch(listLocatorActions.fetchProvinces(dispatch)),
-    fetchAreas: () => dispatch(listLocatorActions.fetchAreas(dispatch)),
-    fetchTeams: () => dispatch(listLocatorActions.fetchTeams(dispatch)),
+    fetchTeams: () => dispatch(locatorActions.fetchTeams(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
+    selectProvince: (provinceId) => {
+        if (provinceId) {
+            dispatch(provinceActions.selectProvince(provinceId, dispatch));
+            dispatch(locatorActions.emptyZones());
+            dispatch(locatorActions.emptyAreas());
+        } else {
+            dispatch(locatorActions.resetFilters());
+        }
+    },
+    selectZone: (zoneId) => {
+        if (zoneId) {
+            dispatch(locatorActions.selectZone(zoneId, dispatch));
+            dispatch(locatorActions.emptyAreas());
+        } else {
+            dispatch(locatorActions.emptyZones());
+        }
+    },
+    selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch, false)),
 });
 
 const MapStateToProps = state => ({
     load: state.load,
-    listFilters: state.listLocator,
+    listFilters: state.locator,
     kase: state.kase,
 });
 

@@ -2,7 +2,6 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', view=views.index, name='index'),
     url(r'^status/(?P<task_id>[a-z0-9-]+)$', view=views.status, name='status'),
     url(r'^done/(?P<task_id>[a-z0-9-]+)$', view=views.done, name='done'),
     url(r'^get_file/(?P<task_id>[a-z0-9-]+)/(?P<filename>[\w(\.)+]+)$',

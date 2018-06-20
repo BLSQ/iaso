@@ -87,20 +87,9 @@ import_locations_urlpatterns = ([
         ),
 ], 'import_locations')
 
-import_reconciled_urlpatterns = ([
-    url(r'^upload$', view=views.upload_reconciled, name='upload'),
-    url(r'^state/(?P<task_id>[a-z0-9-]+)$', view=task_state, name='state',
-        kwargs=get_kwargs_state('import_reconciled'),
-        ),
-    url(r'^done/(?P<task_id>[a-z0-9-]+)$', view=task_done, name='done',
-        kwargs=get_kwargs_done('import_reconciled'),
-        ),
-], 'import_reconciled')
-
 
 urlpatterns = [
     url('^$', views.index, name='index'),
     url('^import/', include(import_cases_urlpatterns)),
     url('^import_locations/', include(import_locations_urlpatterns)),
-    url('^import_reconciled/', include(import_reconciled_urlpatterns)),
 ]

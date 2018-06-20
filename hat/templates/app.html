@@ -22,9 +22,9 @@
                         <a href="{% url 'dashboard:home' %}">{% trans 'Home' %}</a>
                     </li>
                     {% if perms.cases.import or perms.cases.export %}
-                        <li class="navigation__menu__item{% if 'datasets' in ns %}--active{% endif %}">
+                        <li class="navigation__menu__item{% if 'datasets' in ns %}--active open{% endif %} expand-collapse">
+                            <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                             <a href="{% url 'datasets:index' %}">{% trans 'Jeux de données' %}</a>
-                            {% if 'datasets' in ns %}
                                 <ul>
                                     {% if perms.cases.import %}
                                         <li class="navigation__menu__item--secondary{% if 'datasets:import_cases' in view %}--active{% endif %}">
@@ -36,36 +36,29 @@
                                             <a href="{% url 'datasets:import_locations:upload' %}">{% trans 'Upload coordonnées villages' %}</a>
                                         </li>
                                     {% endif %}
-                                    {% if perms.cases.import_reconciled %}
-                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_reconciled' in view %}--active{% endif %}">
-                                            <a href="{% url 'datasets:import_reconciled:upload' %}">{% trans 'Upload données réconciliées' %}</a>
-                                        </li>
-                                    {% endif %}
                                 </ul>
-                            {% endif %}
                         </li>
                     {% endif %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:stats' %}--active{% endif %} expand-collapse">
+                    <li class="navigation__menu__item{% if view == 'dashboard:stats' or view == 'dashboard:monthly_report' %}--active open{% endif %} expand-collapse">
+                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'dashboard:stats' %}">{% trans 'Statistiques' %}</a>
-                        {% if 'dashboard' in ns %}
-                            <ul>
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:stats' %}--active{% endif %}">
-                                        <a href="{% url 'dashboard:stats' %}">{% trans 'Graphes' %}</a>
-                                    </li>
-                                {% endif %}
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
-                                        <a href="{% url 'dashboard:monthly_report' %}">{% trans 'Rapports' %}</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        {% endif %}
+                        <ul>
+                            {% if perms.cases.view %}
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:stats' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:stats' %}">{% trans 'Graphes' %}</a>
+                                </li>
+                            {% endif %}
+                            {% if perms.cases.view %}
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:monthly_report' %}">{% trans 'Rapports' %}</a>
+                                </li>
+                            {% endif %}
+                        </ul>
                     </li>
-                    <li class="navigation__menu__item{% if 'cases' in ns %}--active{% endif %}">
+                    <li class="navigation__menu__item{% if view == 'cases:cases_list' or view == 'cases:analysis' or view == 'cases:duplicates_list' %}--active open{% endif %} expand-collapse">
+                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'cases:cases_list' %}">{% trans 'Records' %}</a>
                         <ul>
-                            {% if 'cases' in ns %}
                                 {% if perms.cases.view %}
                                     <li class="navigation__menu__item--secondary{% if view == "cases:cases_list" %}--active{% endif %}">
                                         <a href="{% url 'cases:cases_list' %}">{% trans 'Cas' %}</a>
@@ -81,17 +74,10 @@
                                         <a href="{% url 'cases:duplicates_list' %}">{% trans 'Réconciliation' %}</a>
                                     </li>
                                 {% endif %}
-                            {% endif %}
                         </ul>
-                        {% if False %}{% if user.is_superuser %}
-                            <li class="navigation__menu__item{% if ns == 'maintenance' %}--active{% endif %}">
-                                <a href="{% url 'maintenance:index' %}">{% trans 'Maintenance' %}</a>
-                            </li>
-                        {% endif %}
-                        {% endif %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:management' or view == 'dashboard:management_planning' %}--active{% endif %} expand-collapse">
+                    <li class="navigation__menu__item{% if view == 'dashboard:management' or view == 'dashboard:management_planning' %}--active open{% endif %} expand-collapse">
+                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'dashboard:management' %}">{% trans 'Gestion' %}</a>
-                        {% if 'dashboard' in ns %}
                             <ul>
                                 {% if perms.cases.view %}
                                 <!-- TODO => remove this patch to match the active classes -->
@@ -109,12 +95,15 @@
                                     <a href="{% url 'dashboard:management_team' %}">{% trans 'Equipes' %}</a>
                                 </li>
                             </ul>
-                        {% endif %}
                     </li>
                     {% if perms.cases.view %}
-                        <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active{% endif %}">
+                        <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active open{% endif %} expand-collapse">
+                            <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                             <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
                             <ul>
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:microplanning' and request.path != '/dashboard/microplanning/routes' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:microplanning' %}">{% trans 'Planning' %}</a>
+                                </li>
                                 <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/microplanning/routes' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:microplanning_routes' %}">{% trans 'Itinéraires' %}</a>
                                 </li>
@@ -122,8 +111,8 @@
                         </li>
                     {% endif %}
 
-                    <li class="navigation__menu__item{% if view == 'dashboard:locator' %}--active{% endif %}">
-                        <a href="{% url 'dashboard:locator' %}">{% trans 'Locator' %}</a>
+                    <li class="navigation__menu__item{% if view == 'dashboard:locator_list' %}--active{% endif %}">
+                        <a href="{% url 'dashboard:locator_list' %}">{% trans 'Locator' %}</a>
                     </li>
                     <li class="navigation__menu__item{% if view == 'dashboard:vector' %}--active{% endif %}">
                         <a href="{% url 'dashboard:vector' %}">{% trans 'Vector control' %}</a>
@@ -185,4 +174,6 @@
 
 
     </div>
+    <script>
+    </script>
 {% endblock %}

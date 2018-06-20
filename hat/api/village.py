@@ -27,6 +27,7 @@ class VillageViewSet(viewsets.ViewSet):
         'OTHER': Locations where people are found during campaigns
         'NA': Villages from satellite (unknown)
     Default values are all empty, except for types, where the default values is "YES"
+    You can also perform a search on the name of a village using the search parameter.
 
     examples:
     /api/villages/?zs_id=3
@@ -34,10 +35,11 @@ class VillageViewSet(viewsets.ViewSet):
     /api/villages/?province_id=3
     /api/villages/?years=2017,2015,2016
     /api/villages/?types=YES,NA
+    /api/villages/?search=bo&include_unlocated=true&as_list=true&limit=300
     """
 
     def list(self, request):
-        values = ('name', 'id', 'longitude', 'latitude', 'population', 'AS_id', 'AS__name', 'village_official')
+        values = ("name", "id", "longitude", "latitude", "population", "AS_id", "AS__name", "village_official")
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
@@ -47,42 +49,47 @@ class VillageViewSet(viewsets.ViewSet):
         results = request.GET.get("results", "ALL")
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
+        search = request.GET.get("search", None)
+        limit = request.GET.get("limit", None)
         include_unlocated = request.GET.get("include_unlocated", None)
 
         queryset = Village.objects.all()
 
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            values = values + ("AS__ZS__name", "AS__ZS__id", "AS__ZS__province__name", "AS__ZS__province__id")
+
         if province_ids:
-            queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(','))
+            queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
         if zs_ids:
-            queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(','))
+            queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
         if as_ids:
-            queryset = queryset.filter(AS_id__in=as_ids.split(','))
+            queryset = queryset.filter(AS_id__in=as_ids.split(","))
 
         if years:
             years_array = years.split(",")
-            nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
-                                                           caseview__normalized_year__in=years_array)
-
-                                      )
+            nr_positive_cases = Count(
+                "caseview", filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)
+            )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-            values = values + ('nr_positive_cases',)
+            values = values + ("nr_positive_cases",)
         else:
             if from_date is not None and to_date is not None:
-                nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
-                                                               caseview__normalized_date__range=(from_date, to_date))
-
-                                          )
+                nr_positive_cases = Count(
+                    "caseview",
+                    filter=Q(caseview__confirmed_case=True, caseview__normalized_date__range=(from_date, to_date)),
+                )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-                values = values + ('nr_positive_cases',)
+                values = values + ("nr_positive_cases",)
 
         if types:
             types_array = types.split(",")
             queryset = queryset.filter(village_official__in=types_array)
 
-        if results == 'positive':
+        if results == "positive":
             queryset = queryset.filter(nr_positive_cases__gte=1)
 
-        if results == 'negative':
+        if results == "negative":
             queryset = queryset.filter(nr_positive_cases=0)
 
         if not include_unlocated:
@@ -91,8 +98,12 @@ class VillageViewSet(viewsets.ViewSet):
         res = queryset.values(*values)
 
         if as_list:
-            body = res.order_by('name')
+            body = res.order_by("name")
+            if limit:
+                body = body[: int(limit)]
         else:
+            if limit:
+                res = res[: int(limit)]
             body = {v["id"]: v for v in res}
 
         return Response(body)
@@ -101,20 +112,20 @@ class VillageViewSet(viewsets.ViewSet):
         village = get_object_or_404(Village, pk=pk)
 
         res = {
-            'name': village.name,
-            'province': village.AS.ZS.province.name,
-            'former_province': village.AS.ZS.province.old_name,
-            'zs': village.AS.ZS.name,
-            'zs_id': village.AS.ZS.id,
-            'as': village.AS.name,
-            'as_id': village.AS.id,
-            'type': village.village_official,
-            'latitude': village.latitude,
-            'longitude': village.longitude,
-            'gps_source': village.gps_source,
-            'population': village.population,
-            'population_year': village.population_year,
-            'population_source': village.population_source,
+            "name": village.name,
+            "province": village.AS.ZS.province.name,
+            "former_province": village.AS.ZS.province.old_name,
+            "zs": village.AS.ZS.name,
+            "zs_id": village.AS.ZS.id,
+            "as": village.AS.name,
+            "as_id": village.AS.id,
+            "type": village.village_official,
+            "latitude": village.latitude,
+            "longitude": village.longitude,
+            "gps_source": village.gps_source,
+            "population": village.population,
+            "population_year": village.population_year,
+            "population_source": village.population_source,
         }
         planning_id = request.GET.get("planning_id", None)
         if planning_id:
@@ -124,10 +135,7 @@ class VillageViewSet(viewsets.ViewSet):
                 res["team"] = {
                     "id": team.id,
                     "name": team.name,
-                    "coordination": {
-                        "id": team.coordination_id,
-                        "name": team.coordination.name
-                    }
+                    "coordination": {"id": team.coordination_id, "name": team.coordination.name},
                 }
             else:
                 res["team"] = None

@@ -41,6 +41,7 @@ FIXTURE_DIRS = (
 )
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+CLOUDFRONT_DOMAIN = os.environ.get('CLOUDFRONT_DOMAIN', '')
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 
@@ -310,7 +311,7 @@ if DEBUG:
 else:
     MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
     STATIC_URL = 'https://s3.eu-central-1.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
-
+AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
 PREPEND_WWW = not DEBUG and not STAGING
 SECURE_SSL_REDIRECT = not DEBUG
 

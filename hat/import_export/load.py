@@ -163,6 +163,20 @@ def load_locations_areas_into_db(df: DataFrame) -> EventStats:
 # Helper functions
 ################################################################################
 
+def parse_date(d):
+    try:
+        if hasattr(d, 'to_pydatetime'): #for when d is of the timestamp type of pandas
+            return d.to_pydatetime()
+        else:
+            return dateutil.parser.parse(d)
+    except Exception as e:
+        import sys
+        print("Exception while parsing ", d, type(d), file=sys.stderr)
+
+        print("The exception", e, file=sys.stderr)
+        raise
+
+
 
 db_type_mapping = {
     'IntegerField': int,
@@ -171,7 +185,7 @@ db_type_mapping = {
     'DecimalField': int,
     'BooleanField': bool,
     'NullBooleanField': bool,
-    'DateTimeField': lambda x: dateutil.parser.parse(x),
+    'DateTimeField': parse_date,
     'ForeignKey': int,
 }
 

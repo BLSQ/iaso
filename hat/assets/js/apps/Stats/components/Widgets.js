@@ -1,6 +1,10 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import {
+    injectIntl,
+    defineMessages,
+} from 'react-intl';
 import ParticipationWidget from './widgets/ParticipationWidget';
 import RegisteredWidget from './widgets/RegisteredWidget';
 import ScreeningWidget from './widgets/ScreeningWidget';
@@ -9,13 +13,25 @@ import StageWidget from './widgets/StageWidget';
 import EvolutionWidgets from './widgets/EvolutionWidgets';
 
 
+const MESSAGES = defineMessages({
+    caseCount: {
+        defaultMessage: 'Nombre de fiches',
+        id: 'statspage.casecount.header.results',
+    },
+    unMatch: {
+        defaultMessage: 'Nombre de cas positifs non localisés',
+        id: 'statspage.unmatch.header.results',
+    },
+});
+
 class Widgets extends Component {
     render() {
+        const { formatMessage } = this.props.intl;
         const data = this.props.data || [];
         return (
             <div data-qa="stats-data-loaded">
-                <EvolutionWidgets data={data.casecount} titleObject={{ id: 'statspage.casecount.header.results', defaultMessage: 'Nombre de fiches' }} />
-                <EvolutionWidgets data={data.unmatch} titleObject={{ id: 'statspage.unmatch.header.results', defaultMessage: 'Nombre de cas positifs non localisés' }} />
+                <EvolutionWidgets data={data.casecount} title={formatMessage(MESSAGES.caseCount)} />
+                <EvolutionWidgets data={data.unmatch} title={formatMessage(MESSAGES.unMatch)} />
                 <ParticipationWidget coverage={data.coverage} />
                 <RegisteredWidget timeseries={data.timeseries} total={data.total} />
                 <ScreeningWidget timeseries={data.timeseries} total={data.screening} />
@@ -26,9 +42,11 @@ class Widgets extends Component {
     }
 }
 
+const WidgetsWithIntl = injectIntl(Widgets);
 
 Widgets.propTypes = {
+    intl: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
 };
 
-export default Widgets;
+export default WidgetsWithIntl;

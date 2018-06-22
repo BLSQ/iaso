@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { curveLinear } from 'd3';
-import { FormattedMessage, injectIntl } from 'react-intl';
 import Visualization from '../Visualization';
 
 class UnmatchCasesWidgets extends Component {
@@ -19,7 +18,7 @@ class UnmatchCasesWidgets extends Component {
             <div className="widget__container">
                 <div className="widget__header">
                     <h2 className="widget__heading">
-                        <FormattedMessage id={this.props.titleObject.id} defaultMessage={this.props.titleObject.defaultMessage} />
+                        {this.props.title}
                     </h2>
                 </div>
                 <div className="widget__content">
@@ -35,9 +34,7 @@ class UnmatchCasesWidgets extends Component {
 
 UnmatchCasesWidgets.propTypes = {
     data: PropTypes.array.isRequired,
-    titleObject: PropTypes.object.isRequired,
+    title: PropTypes.string.isRequired,
 };
 
-const UnmatchCasesWidgetsIntl = injectIntl(UnmatchCasesWidgets);
-
-export default UnmatchCasesWidgetsIntl;
+export default UnmatchCasesWidgets;

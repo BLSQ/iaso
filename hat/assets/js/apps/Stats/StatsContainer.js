@@ -50,6 +50,11 @@ export const urls = [
         url: '/api/metrics/unmatch/',
         mock: [],
     },
+    {
+        name: 'casecount',
+        url: '/api/metrics/casecount/',
+        mock: [],
+    },
 ];
 
 export class StatsContainer extends Component {

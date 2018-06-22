@@ -6,7 +6,7 @@ import RegisteredWidget from './widgets/RegisteredWidget';
 import ScreeningWidget from './widgets/ScreeningWidget';
 import ConfirmationWidget from './widgets/ConfirmationWidget';
 import StageWidget from './widgets/StageWidget';
-import UnmatchCasesWidgets from './widgets/UnmatchCasesWidgets';
+import EvolutionWidgets from './widgets/EvolutionWidgets';
 
 
 class Widgets extends Component {
@@ -14,7 +14,8 @@ class Widgets extends Component {
         const data = this.props.data || [];
         return (
             <div data-qa="stats-data-loaded">
-                <UnmatchCasesWidgets data={data.unmatch} />
+                <EvolutionWidgets data={data.casecount} titleObject={{ id: 'statspage.casecount.header.results', defaultMessage: 'Nombre de fiches' }} />
+                <EvolutionWidgets data={data.unmatch} titleObject={{ id: 'statspage.unmatch.header.results', defaultMessage: 'Nombre de cas positifs non localisés' }} />
                 <ParticipationWidget coverage={data.coverage} />
                 <RegisteredWidget timeseries={data.timeseries} total={data.total} />
                 <ScreeningWidget timeseries={data.timeseries} total={data.screening} />

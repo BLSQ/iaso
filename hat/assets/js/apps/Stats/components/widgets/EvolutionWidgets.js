@@ -19,7 +19,7 @@ class UnmatchCasesWidgets extends Component {
             <div className="widget__container">
                 <div className="widget__header">
                     <h2 className="widget__heading">
-                        <FormattedMessage id="statspage.unmatch.header.results" defaultMessage="Nombre de cas non localisés" />
+                        <FormattedMessage id={this.props.titleObject.id} defaultMessage={this.props.titleObject.defaultMessage} />
                     </h2>
                 </div>
                 <div className="widget__content">
@@ -35,6 +35,7 @@ class UnmatchCasesWidgets extends Component {
 
 UnmatchCasesWidgets.propTypes = {
     data: PropTypes.array.isRequired,
+    titleObject: PropTypes.object.isRequired,
 };
 
 const UnmatchCasesWidgetsIntl = injectIntl(UnmatchCasesWidgets);

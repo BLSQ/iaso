@@ -213,7 +213,7 @@ def get_case_team(case):
             return None
         except Team.DoesNotExist:
             try:
-                return Team.objects.get(aliases__contains=case.mobile_unit)
+                return Team.objects.get(aliases__contains=[case.mobile_unit])
             except Team.DoesNotExist:
                 return None
             except Team.MultipleObjectsReturned:

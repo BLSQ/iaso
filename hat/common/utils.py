@@ -27,6 +27,8 @@ def create_shared_filename(suffix: str) -> str:
 
 # https://stackoverflow.com/questions/1265665/how-can-i-check-if-a-string-represents-an-int-without-using-try-except
 def is_int(s):
+    if s is None:
+        return False
     try:
         int(s)
         return True

@@ -44,5 +44,9 @@
         "jsx-a11y/label-has-for": "warn",
         "react/no-array-index-key": "warn",
         "max-len": ["warn", { "code": 200 }]
+    },
+    "globals": {
+        "AREAS_PATH": true,
+        "ZONES_PATH": true
     }
 }

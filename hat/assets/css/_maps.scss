@@ -32,7 +32,7 @@ $color in $types {
  * map containers
  ******************************************************************************/
 
- .map__panel__container {
+.map__panel__container {
     display: flex;
 }
 
@@ -593,7 +593,7 @@ path.map-marker {
     border-top: 1px solid $gray;
     padding: $padding-unit/6;
     text-align: center;
-    button{
+    button {
         max-width: 170px;
         &.middle {
             margin-right: 10px;
@@ -602,7 +602,7 @@ path.map-marker {
     >div {
         text-align: right;
         margin-bottom: 15px;
-        padding-right:5px;
+        padding-right: 5px;
     }
 }
 
@@ -873,159 +873,6 @@ button {
     width: 100%;
 }
 
-/******************************************************************************
- * Locator styles
- ******************************************************************************/
-
-.locator-map {
-    height: 600px;
-    width: 60%;
-}
-
-.locator-container {
-    >div {
-        display: flex;
-    }
-    .ReactTable {
-        .rt-tr {
-            cursor: pointer;
-        }
-    }
-}
-
-.type-filters-containers {
-    font-size: 11px;
-    margin-bottom: 10px;
-    ul {
-        display: flex;
-        border-radius: 3px;
-        overflow: hidden;
-        li {
-            list-style: none;
-            cursor: pointer;
-            box-sizing: border-box;
-            display: block;
-            padding: 15px 10px 13px 30px;
-            position: relative;
-            &.active {
-                font-weight: bold;
-                background-color: $light-gray;
-            }
-            &:before {
-                content: '';
-                border: 1px solid $gray;
-                background: rgba($gray, 0.5);
-                width: 10px;
-                height: 10px;
-                border-radius: 15px;
-                display: inline-block;
-                position: absolute;
-                left: 10px;
-                top: 18px;
-            }
-            &.official {
-                &:before {
-                    background-color: rgba($dark-green, 0.5);
-                    border-color: $dark-green;
-                }
-            }
-            &.not_official {
-                &:before {
-                    background-color: rgba($blue, 0.5);
-                    border-color: $blue;
-                }
-            }
-            &.from_campaign {
-                &:before {
-                    background-color: rgba($dark-blue, 0.5);
-                    border-color: $dark-blue;
-                }
-            }
-            &.satellite {
-                &:before {
-                    background-color: rgba($purple, 0.5);
-                    border-color: $purple;
-                }
-            }
-        }
-    }
-}
-.locator-control-div {
-    padding: $padding-unit;
-    width: 40%;
-    >div {
-        width: 100%;
-        >section{
-            display: flex;
-            >div {
-                width: 50%;
-                &:first-child {
-                    margin-right: 5%;
-                }
-                &:nth-child(2) {
-                    width: 45%;
-                }
-                table {
-                    border-radius: 3px;
-                    overflow: hidden;
-                    tbody {
-                        font-size: 12px;
-                        th {
-                            max-width: 60px;
-                        }
-                        td {
-                            text-align: center;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-.locator-village-validation {
-    font-size: 12px;
-    text-align: right;
-    display: block !important;
-    margin-top: 8px;
-    p {
-        font-weight: bold;
-        margin-bottom: 10px;
-        span {
-            font-weight: normal;
-        }
-    }
-    button {
-        width: 100%;
-    }
-}
-
-.locator-title {
-    @include heading--medium;
-    margin-bottom: 1em;
-    font-weight: normal;
-}
-
-.locator-subtitle {
-    padding: 0;
-    display: block;
-    margin-bottom: 6px;
-    &.no-result {
-        color: red;
-        text-align: right;
-    }
-}
-
-.locator-filter {
-    font-weight: bold;
-    color: $mid-gray;
-    font-size: 12px;
-    padding-bottom: 8px;
-}
-
-.locator-cases-left {
-    margin-top: 10px;
-}
 
 .loading-small {
     font-size: 18px;

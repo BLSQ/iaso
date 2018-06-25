@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 class Case extends React.Component {
     render() {
         return (
-            <div>
+            <div className="locator-case-container">
                 <table>
                     <thead><tr><th colSpan="2">Données rapportées</th></tr></thead>
                     <tbody>

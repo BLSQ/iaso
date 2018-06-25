@@ -188,23 +188,8 @@ const MapDispatchToProps = dispatch => ({
     fetchTeams: () => dispatch(locatorActions.fetchTeams(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
-    selectProvince: (provinceId) => {
-        if (provinceId) {
-            dispatch(provinceActions.selectProvince(provinceId, dispatch));
-            dispatch(locatorActions.emptyZones());
-            dispatch(locatorActions.emptyAreas());
-        } else {
-            dispatch(locatorActions.resetFilters());
-        }
-    },
-    selectZone: (zoneId) => {
-        if (zoneId) {
-            dispatch(locatorActions.selectZone(zoneId, dispatch));
-            dispatch(locatorActions.emptyAreas());
-        } else {
-            dispatch(locatorActions.emptyZones());
-        }
-    },
+    selectProvince: provinceId => dispatch(provinceActions.selectProvince(provinceId, dispatch)),
+    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, dispatch)),
     selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch, false)),
 });
 

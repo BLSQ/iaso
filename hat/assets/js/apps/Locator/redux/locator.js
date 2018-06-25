@@ -8,13 +8,35 @@ import { LOAD_VILLAGES, SELECT_VILLAGE, villageActions } from '../redux/village'
 export const FETCH_ACTION = 'hat/locator/locator/FETCH_ACTION';
 export const LOAD_AREAS = 'hat/locator/locator/LOAD_AREAS';
 export const LOAD_ZONES = 'hat/locator/locator/LOAD_ZONES';
+export const LOAD_SEARCH_RESULTS = 'hat/locator/locator/LOAD_SEARCH_RESULTS';
 export const RESET_FILTERS = 'hat/locator/locator/RESET_FILTERS';
 export const SELECT_TYPE = 'hat/locator/locator/SELECT_TYPE';
 export const EMPTY_VILLAGES = 'hat/locator/locator/EMPTY_VILLAGES';
 export const EMPTY_ZONES = 'hat/locator/locator/EMPTY_ZONES';
 export const EMPTY_AREAS = 'hat/locator/locator/EMPTY_AREAS';
 export const SHOW_TEAMS = 'hat/locator/list/SHOW_TEAMS';
+export const EMPTY_ZONE_ID = 'hat/locator/list/EMPTY_ZONE_ID';
+export const EMPTY_AREA_ID = 'hat/locator/list/EMPTY_AREA_ID';
+export const EMPTY_VILLAGE_ID = 'hat/locator/list/EMPTY_VILLAGE_ID';
+export const EMPTY_PROVINCE_ID = 'hat/locator/list/EMPTY_PROVINCE_ID';
+export const START_SEARCH = 'hat/locator/START_SEARCH';
+export const EMPTY_SEARCH = 'hat/locator/EMPTY_SEARCH';
 
+export const locatorInitialState = {
+    provinceId: null,
+    zoneId: null,
+    areaId: null,
+    villageId: null,
+    key: null,
+    currentTypes: ['YES'],
+    provinces: [],
+    zones: [],
+    areas: [],
+    villages: [],
+    teams: [],
+    searchResults: [],
+    searchLoading: false,
+};
 
 const req = require('superagent');
 
@@ -28,8 +50,9 @@ export const loadZones = payload => ({
     payload,
 });
 
-export const resetFilters = () => ({
+export const resetFilters = payload => ({
     type: RESET_FILTERS,
+    payload,
 });
 
 export const emptyVillages = () => ({
@@ -44,57 +67,125 @@ export const emptyZones = () => ({
     type: EMPTY_ZONES,
 });
 
-export const locatorInitialState = {
-    provinceId: null,
-    zoneId: null,
-    areaId: null,
-    villageId: null,
-    key: null,
-    currentTypes: ['YES'],
-    provinces: [],
-    zones: [],
-    areas: [],
-    villages: [],
-    teams: [],
-};
+export const deleteZone = () => ({
+    type: EMPTY_ZONE_ID,
+});
 
-export const selectZone = (zoneId, dispatch) => {
+export const deleteArea = () => ({
+    type: EMPTY_AREA_ID,
+});
+
+export const deleteVillage = () => ({
+    type: EMPTY_VILLAGE_ID,
+});
+
+export const deleteProvince = () => ({
+    type: EMPTY_PROVINCE_ID,
+});
+
+export const loadSearchResults = payload => ({
+    type: LOAD_SEARCH_RESULTS,
+    payload,
+});
+
+export const startSearch = () => ({
+    type: START_SEARCH,
+});
+
+export const resetSearch = () => ({
+    type: EMPTY_SEARCH,
+});
+
+
+const getVillages = (
+    currentTypes,
+    dispatch,
+    areaId = null,
+    zoneId = null,
+    villageId = null,
+) => {
+    let theTypes = currentTypes;
+    if (!theTypes) {
+        theTypes = locatorInitialState.currentTypes;
+    }
+    let url = `/api/villages/?as_list=true&types=${theTypes.toString()}`;
+    if (zoneId) {
+        url += `&zs_id=${zoneId}`;
+    }
+    if (areaId) {
+        url += `&as_id=${areaId}`;
+    }
     req
-        .get(`/api/as/?zs_id=${zoneId}`)
+        .get(url)
         .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
-            const payload = { areas: result.body, zoneId };
-            dispatch(loadAreas(payload));
+            const payload = { villages: result.body, areaId };
+            dispatch(villageActions.loadVillages(payload));
+            if (villageId) {
+                dispatch(villageActions.selectVillage(villageId));
+            } else {
+                dispatch(loadActions.successLoadingNoData());
+            }
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
-            console.error(`Error while fetching Areas: ${err}`);
+            console.error(`Error while fetching Villages: ${err}`);
+        });
+};
+
+export const searchVillage = (
+    search,
+    dispatch,
+    provinceId = null,
+    zoneId = null,
+    areaId = null,
+) => {
+    dispatch(startSearch());
+    let url = '/api/villages/?as_list=true&limit=500&include_unlocated=true';
+    if (provinceId) {
+        url += `&province_id=${provinceId}`;
+    }
+    if (zoneId) {
+        url += `&zs_id=${zoneId}`;
+    }
+    if (areaId) {
+        url += `&as_id=${areaId}`;
+    }
+    if (search) {
+        url += `&search=${search}`;
+    }
+    req
+        .get(url)
+        .then((result) => {
+            dispatch(loadSearchResults(result.body));
+        })
+        .catch((err) => {
+            console.error(`Error while fetching Villages: ${err}`);
         });
     return ({
         type: FETCH_ACTION,
     });
 };
 
-export const selectArea = (areaId, currentTypes, dispatch, displayVillage = true) => {
-    let theTypes = currentTypes;
-    if (!theTypes) {
-        theTypes = locatorInitialState.currentTypes;
-    }
-    if (displayVillage) {
-        req
-            .get(`/api/villages/?as_list=true&as_id=${areaId}&types=${theTypes.toString()}`)
-            .then((result) => {
-                dispatch(loadActions.successLoadingNoData());
-                const payload = { villages: result.body, areaId };
-                dispatch(villageActions.loadVillages(payload));
-            })
-            .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
-                console.error(`Error while fetching Villages: ${err}`);
-            });
-    } else {
+
+export const selectArea = (
+    areaId,
+    currentTypes,
+    dispatch,
+    displayVillage = true,
+    zoneId = null,
+    villageId = null,
+) => {
+    dispatch(emptyVillages());
+    if (areaId) {
         dispatch(loadActions.successLoadingNoData());
-        dispatch(villageActions.loadVillages({ areaId }));
+        if (displayVillage) {
+            getVillages(currentTypes, dispatch, areaId, zoneId, villageId);
+        }
+    } else {
+        dispatch(deleteArea());
+        if (zoneId) {
+            getVillages(currentTypes, dispatch, null, zoneId);
+        }
     }
     return ({
         type: FETCH_ACTION,
@@ -102,13 +193,55 @@ export const selectArea = (areaId, currentTypes, dispatch, displayVillage = true
 };
 
 
-export const selectType = (newType, areaId, currentTypes, dispatch) => {
+export const selectZone = (
+    zoneId,
+    currentTypes,
+    dispatch,
+    displayVillage = true,
+    areaId = null,
+    villageId = null,
+) => {
+    dispatch(emptyVillages());
+    dispatch(emptyAreas());
+    if (zoneId) {
+        req
+            .get(`/api/as/?zs_id=${zoneId}`)
+            .then((result) => {
+                const payload = { areas: result.body, zoneId };
+                dispatch(loadAreas(payload));
+                if (displayVillage) {
+                    if (areaId) {
+                        dispatch(selectArea(areaId, undefined, dispatch, true, zoneId, villageId));
+                    } else {
+                        getVillages(currentTypes, dispatch, null, zoneId);
+                    }
+                } else {
+                    dispatch(loadActions.successLoadingNoData());
+                }
+            })
+            .catch((err) => {
+                dispatch(loadActions.errorLoading(err));
+                console.error(`Error while fetching Areas: ${err}`);
+            });
+    } else {
+        dispatch(deleteZone());
+    }
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+export const selectType = (newType, zoneId, areaId, currentTypes, dispatch) => {
     if (currentTypes.indexOf(newType) > -1) {
         currentTypes.splice(currentTypes.indexOf(newType), 1);
     } else {
         currentTypes.push(newType);
     }
-    dispatch(selectArea(areaId, currentTypes, dispatch));
+    if (areaId) {
+        dispatch(selectArea(areaId, currentTypes, dispatch));
+    } else if (zoneId) {
+        getVillages(currentTypes, dispatch, null, zoneId);
+    }
     return ({
         type: SELECT_TYPE,
         payload: currentTypes,
@@ -133,6 +266,7 @@ export const fetchTeams = (dispatch) => {
     });
 };
 
+
 export const locatorActions = {
     loadAreas,
     loadZones,
@@ -144,6 +278,13 @@ export const locatorActions = {
     emptyAreas,
     emptyZones,
     fetchTeams,
+    deleteZone,
+    deleteArea,
+    deleteVillage,
+    deleteProvince,
+    searchVillage,
+    startSearch,
+    resetSearch,
 };
 
 export const locatorReducer = (state = locatorInitialState, action = {}) => {
@@ -180,7 +321,6 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
                 ...state,
                 villages,
                 areaId,
-                villageId: null,
             };
         }
         case EMPTY_ZONES: {
@@ -207,6 +347,47 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             };
         }
 
+        case EMPTY_ZONE_ID: {
+            return {
+                ...state,
+                zoneId: null,
+                areaId: null,
+            };
+        }
+
+        case EMPTY_AREA_ID: {
+            return {
+                ...state,
+                areaId: null,
+                villageId: null,
+            };
+        }
+
+        case EMPTY_VILLAGE_ID: {
+            return {
+                ...state,
+                villageId: null,
+            };
+        }
+
+        case EMPTY_PROVINCE_ID: {
+            return {
+                ...state,
+                provinceId: null,
+                areaId: null,
+                zoneId: null,
+            };
+        }
+
+        case LOAD_SEARCH_RESULTS: {
+            const searchResults = action.payload;
+            return {
+                ...state,
+                searchResults,
+                searchLoading: false,
+            };
+        }
+
         case SELECT_VILLAGE: {
             const villageId = action.payload;
             return { ...state, villageId };
@@ -216,10 +397,14 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return { ...state, currentTypes };
         }
         case RESET_FILTERS: {
-            const { provinces } = state;
+            const { provinces, searchResults } = state;
+            const keepSearchResult = action.payload;
             const newState = locatorInitialState;
             if (provinces.length > 0) {
                 newState.provinces = provinces;
+            }
+            if (searchResults.length > 0 && keepSearchResult) {
+                newState.searchResults = searchResults.slice();
             }
             newState.currentTypes = state.currentTypes;
             return newState;
@@ -227,6 +412,20 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
         case SHOW_TEAMS: {
             const teams = action.payload;
             return { ...state, teams };
+        }
+
+        case START_SEARCH: {
+            return {
+                ...state,
+                searchLoading: true,
+            };
+        }
+
+        case EMPTY_SEARCH: {
+            return {
+                ...state,
+                searchResults: [],
+            };
         }
 
         default:

@@ -23,18 +23,26 @@ export const fetchProvinces = (dispatch) => {
     });
 };
 
-export const selectProvince = (provinceId, dispatch) => {
-    req
-        .get(`/api/zs/?province_id=${provinceId}`)
-        .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
-            const payload = { zones: result.body, provinceId };
-            dispatch(locatorActions.loadZones(payload));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error(`Error while fetching zones: ${err}`);
-        });
+export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null) => {
+    dispatch(locatorActions.resetFilters(true));
+    dispatch(locatorActions.emptyVillages());
+    if (provinceId) {
+        req
+            .get(`/api/zs/?province_id=${provinceId}`)
+            .then((result) => {
+                const payload = { zones: result.body, provinceId };
+                dispatch(locatorActions.loadZones(payload));
+                if (zoneId) {
+                    dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, true, areaId, villageId));
+                } else {
+                    dispatch(loadActions.successLoadingNoData());
+                }
+            })
+            .catch((err) => {
+                dispatch(loadActions.errorLoading(err));
+                console.error(`Error while fetching zones: ${err}`);
+            });
+    }
     return ({
         type: FETCH_ACTION,
     });

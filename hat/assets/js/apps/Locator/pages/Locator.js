@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import Case from '../components/Case';
 import Filters from '../components/Filters';
 import TypeFilters from '../components/TypeFilters';
@@ -20,8 +20,49 @@ import LayersComponent from '../../../components/LayersComponent';
 
 
 import { Map } from '../components';
+import Search from '../components/Search';
 
 const request = require('superagent');
+
+
+const MESSAGES = defineMessages({
+    searchPlaceholder: {
+        defaultMessage: 'Taper ici pour chercher dans la liste de tous les villages',
+        id: 'search.placeholder.all',
+    },
+    searchNoResult: {
+        defaultMessage: 'Aucun village trouvé',
+        id: 'search.result.none',
+    },
+    searchResult: {
+        defaultMessage: 'resultat(s)',
+        id: 'search.result',
+    },
+    searchMinChar: {
+        defaultMessage: 'Taper au moins 2 charactères',
+        id: 'search.result.minChar',
+    },
+    villageNameLabel: {
+        defaultMessage: 'Nom',
+        id: 'search.result.villageName',
+    },
+    populationLabel: {
+        defaultMessage: 'Pop.',
+        id: 'search.result.populationLabel',
+    },
+    provinceLabel: {
+        defaultMessage: 'Prov.',
+        id: 'search.result.provinceLabel',
+    },
+    zsLabel: {
+        defaultMessage: 'Zs',
+        id: 'search.result.zsLabel',
+    },
+    asLabel: {
+        defaultMessage: 'As',
+        id: 'search.result.asLabel',
+    },
+});
 
 export class Locator extends Component {
     constructor(props) {
@@ -37,6 +78,7 @@ export class Locator extends Component {
     componentDidMount() {
         const { dispatch } = this.props;
         dispatch(loadActions.startLoading());
+        dispatch(locatorActions.resetFilters(false));
         this.props.fetchProvinces();
         this.props.fetchCase(this.props.params.case_id);
     }
@@ -62,7 +104,7 @@ export class Locator extends Component {
                         villageId: null,
                         isVillageDetailLoading: false,
                     });
-                    console.error('Error when fetching villages details');
+                    console.error(`Error when fetching villages details: ${err}`);
                 });
         } else if (!newProps.locatorState.villageId && this.props.locatorState.villageId) {
             this.setState({
@@ -76,42 +118,143 @@ export class Locator extends Component {
         const { baseLayer } = this.props.map;
         const overlays = { labels: false };
         const { formatMessage } = this.props.intl;
+        const { dispatch } = this.props;
+        const searchResultsKeys = [
+            { value: 'name', translation: formatMessage(MESSAGES.villageNameLabel) },
+            { value: 'population', translation: formatMessage(MESSAGES.populationLabel) },
+            { value: 'AS__ZS__province__name', translation: formatMessage(MESSAGES.provinceLabel) },
+            { value: 'AS__ZS__name', translation: formatMessage(MESSAGES.zsLabel) },
+            { value: 'AS__name', translation: formatMessage(MESSAGES.asLabel) },
+        ];
         return (
             <section>
-                <div className="widget__container">
-                    <div className="widget__content--tier">
-                        <div>
-                            <section>
+                {this.props.kase &&
+                    <div className="widget__container">
+                        <div className="widget__content--tier locator-control-div">
+                            <div>
                                 <button
                                     className="button--back"
                                     onClick={() => {
                                         const tempParams = this.props.params;
                                         delete tempParams.case_id;
+                                        dispatch(locatorActions.resetFilters(false));
                                         this.props.redirectTo('list', {
                                             ...tempParams,
                                         });
                                     }}
                                 >
-                                    <i className="fa fa-arrow-left" />
+                                    <i className="fa fa-arrow-left" />{' '}
                                 </button>
-                                <TypeFilters
-                                    currentTypes={this.props.locatorState.currentTypes}
-                                    selectType={newType =>
-                                        this.props.selectType(
-                                            newType, this.props.locatorState.areaId,
+                                <Case case={this.props.kase} />
+                            </div>
+                            <div>
+                                <div className="locator-title">
+                                    <FormattedMessage id="locator.label.search" defaultMessage="Recherche du village" />
+                                </div>
+                                <Filters
+                                    isClearable
+                                    filters={this.props.locatorState}
+                                    selectProvince={provinceId => this.props.selectProvince(provinceId)}
+                                    selectZone={zoneId => this.props.selectZone(
+                                        zoneId,
+                                        this.props.locatorState.currentTypes,
+                                    )}
+                                    selectArea={areaId =>
+                                        this.props.selectArea(
+                                            areaId,
                                             this.props.locatorState.currentTypes,
+                                            this.props.locatorState.zoneId,
                                         )}
+                                    selectVillage={villageId =>
+                                        this.props.selectVillage(villageId)}
                                 />
-                            </section>
-                        </div>
-                        <div>
-                            <LayersComponent
-                                base={baseLayer}
-                                change={(type, key) => this.props.changeLayer(type, key)}
-                            />
+                                <div className="locator-village-validation">
+                                    {
+                                        this.state.isVillageDetailLoading &&
+                                        <div className="loading-small">
+                                            <i className="fa fa-spinner" />
+                                        </div>
+                                    }
+                                    {
+                                        this.state.villageDetail &&
+                                        !this.state.isVillageDetailLoading &&
+                                        <div>
+                                            {
+                                                this.state.villageDetail.population &&
+                                                <p>
+                                                    <FormattedMessage
+                                                        id="microplanning.selected.population"
+                                                        defaultMessage="Population estimée"
+                                                    />
+                                                    {': '}{this.state.villageDetail.population}
+                                                </p>
+                                            }
+                                            {
+                                                this.state.villageDetail.population_source &&
+                                                <p>
+                                                    <FormattedMessage
+                                                        id="microplanning.tooltip.population.source"
+                                                        defaultMessage="Source de la population"
+                                                    />
+                                                    {': '}{this.state.villageDetail.population_source}
+                                                </p>
+                                            }
+                                            {
+                                                this.state.villageDetail.population_year &&
+                                                <p>
+                                                    <FormattedMessage
+                                                        id="microplanning.tooltip.population.year"
+                                                        defaultMessage="Année relevé population"
+                                                    />
+                                                    {': '}{this.state.villageDetail.population_year}
+                                                </p>
+                                            }
+                                            <button
+                                                className="button--save"
+                                                onClick={() => {
+                                                    this.props.saveVillage(
+                                                        this.props.kase.id,
+                                                        { village_id: this.state.villageId },
+                                                        this.props.params,
+                                                    );
+                                                }}
+                                            >
+                                                <i className="fa fa-save" />
+                                                <FormattedMessage id="locator.label.save" defaultMessage="Associer le village au cas" />
+                                            </button>
+                                        </div>}
+                                    <button
+                                        className="button--save"
+                                        onClick={() => {
+                                            this.props.saveVillage(this.props.kase.id, { not_found: true }, this.props.params);
+                                        }}
+                                    >
+                                        <i className="fa fa-arrow-right" />
+                                        <FormattedMessage id="locator.label.not_found" defaultMessage="Non trouvé" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="locator-title">
+                                    <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Recherche textuelle (par village)" />
+                                </div>
+                                <Search
+                                    placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
+                                    resultText={formatMessage(MESSAGES.searchResult)}
+                                    noResultText={formatMessage(MESSAGES.searchNoResult)}
+                                    noEnoughText={formatMessage(MESSAGES.searchMinChar)}
+                                    minCharCount={1}
+                                    onSearch={value => this.props.searchVillage(value)}
+                                    resetSearch={() => this.props.resetSearch()}
+                                    results={this.props.locatorState.searchResults}
+                                    isLoading={this.props.locatorState.searchLoading}
+                                    keys={searchResultsKeys}
+                                    onSelect={village => this.props.selectProvince(village.AS__ZS__province__id, village.AS__ZS__id, village.AS_id, village.id)}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
                 <div className="locator-container widget__container">
                     {
                         this.props.load.loading &&
@@ -125,125 +268,32 @@ export class Locator extends Component {
                     }
                     {this.props.kase &&
                         <div>
-                            <div className="locator-control-div">
-                                {
-                                    <div>
-                                        <section>
-                                            <div>
-                                                <Case case={this.props.kase} />
-                                            </div>
-                                            <div>
-                                                <div className="locator-title">
-                                                    <FormattedMessage id="locator.label.search" defaultMessage="Recherche du village" />
-                                                </div>
-                                                <Filters
-                                                    filters={this.props.locatorState}
-                                                    selectProvince={this.props.selectProvince}
-                                                    selectZone={this.props.selectZone}
-                                                    selectArea={areaId =>
-                                                        this.props.selectArea(
-                                                            areaId,
-                                                            this.props.locatorState.currentTypes,
-                                                        )}
-                                                    selectVillage={villageId =>
-                                                        this.props.selectVillage(villageId)}
-                                                />
-                                                <div className="locator-village-validation">
-                                                    {
-                                                        this.state.isVillageDetailLoading &&
-                                                        <div className="loading-small">
-                                                            <i className="fa fa-spinner" />
-                                                        </div>
-                                                    }
-                                                    {
-                                                        this.state.villageDetail &&
-                                                        !this.state.isVillageDetailLoading &&
-                                                        <div>
-                                                            {
-                                                                this.state.villageDetail.population &&
-                                                                <p>
-                                                                    <FormattedMessage
-                                                                        id="microplanning.selected.population"
-                                                                        defaultMessage="Population estimée"
-                                                                    />
-                                                                    {': '}{this.state.villageDetail.population}
-                                                                </p>
-                                                            }
-                                                            {
-                                                                this.state.villageDetail.population_source &&
-                                                                <p>
-                                                                    <FormattedMessage
-                                                                        id="microplanning.tooltip.population.source"
-                                                                        defaultMessage="Source de la population"
-                                                                    />
-                                                                    {': '}{this.state.villageDetail.population_source}
-                                                                </p>
-                                                            }
-                                                            {
-                                                                this.state.villageDetail.population_year &&
-                                                                <p>
-                                                                    <FormattedMessage
-                                                                        id="microplanning.tooltip.population.year"
-                                                                        defaultMessage="Année relevé population"
-                                                                    />
-                                                                    {': '}{this.state.villageDetail.population_year}
-                                                                </p>
-                                                            }
-
-                                                            <button
-                                                                className="button--save"
-                                                                onClick={() => {
-                                                                    this.props.saveVillage(
-                                                                        this.props.kase.id,
-                                                                        { village_id: this.state.villageId },
-                                                                        this.props.params,
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <i className="fa fa-save" />
-                                                                <FormattedMessage id="locator.label.save" defaultMessage="Associer le village au cas" />
-                                                            </button>
-                                                        </div>}
-                                                    <button
-                                                        className="button--save"
-                                                        onClick={() => {
-                                                            this.props.saveVillage(this.props.kase.id, { not_found: true }, this.props.params);
-                                                        }}
-                                                    >
-                                                        <i className="fa fa-arrow-right" />
-                                                        <FormattedMessage id="locator.label.not_found" defaultMessage="Non trouvé" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>}
-                                {
-                                    this.props.kase.count &&
-                                    <section className="locator-cases-left">
-                                        <FormattedMessage
-                                            id="locator.label.count"
-                                            defaultMessage="Reste"
-                                        />
-                                        {': '}
-                                        {this.props.kase.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-                                        {' '}
-                                        <FormattedMessage
-                                            id="locator.label.casesLeft"
-                                            defaultMessage="cas non associés"
-                                        />
-                                    </section>
-                                }
-                                {!this.props.kase && <div>Plus de cas à traiter!!!!!</div>}
+                            <div className="locator-layer-selector-container">
+                                <LayersComponent
+                                    base={baseLayer}
+                                    change={(type, key) => this.props.changeLayer(type, key)}
+                                />
+                                <TypeFilters
+                                    currentTypes={this.props.locatorState.currentTypes}
+                                    selectType={newType =>
+                                        this.props.selectType(
+                                            newType, this.props.locatorState.zoneId, this.props.locatorState.areaId,
+                                            this.props.locatorState.currentTypes,
+                                        )}
+                                />
                             </div>
                             <div className="locator-map">
-                                <Map
-                                    baseLayer={baseLayer}
-                                    overlays={overlays}
-                                    villages={this.props.locatorState.villages}
-                                    selectVillage={villageId => this.props.selectVillage(villageId)}
-                                    selectedVillageId={this.props.locatorState.villageId}
-                                    getShape={type => this.props.getShape(type)}
-                                />
+                                {
+                                    this.props.locatorState.villages &&
+                                        <Map
+                                            baseLayer={baseLayer}
+                                            overlays={overlays}
+                                            villages={this.props.locatorState.villages}
+                                            selectVillage={villageId => this.props.selectVillage(villageId)}
+                                            selectedVillageId={this.props.locatorState.villageId}
+                                            getShape={type => this.props.getShape(type)}
+                                        />
+                                }
                             </div>
                         </div>
                     }
@@ -265,6 +315,7 @@ Locator.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    searchVillage: PropTypes.func.isRequired,
     saveVillage: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
@@ -276,12 +327,12 @@ Locator.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
+    resetSearch: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(Locator);
 
 function getShapePath(type) {
-    console.log('getShapePath', type, AREAS_PATH, ZONES_PATH);
     if (type === 'area') { return AREAS_PATH; }
     if (type === 'zone') { return ZONES_PATH; }
 
@@ -293,21 +344,14 @@ const MapDispatchToProps = dispatch => ({
     getShape: type => getRequest(getShapePath(type), dispatch),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
     fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
-    selectProvince: (provinceId) => {
-        dispatch(provinceActions.selectProvince(provinceId, dispatch));
-        dispatch(locatorActions.emptyZones());
-        dispatch(locatorActions.emptyAreas());
-        dispatch(locatorActions.emptyVillages());
-    },
-    selectZone: (zoneId) => {
-        dispatch(locatorActions.selectZone(zoneId, dispatch));
-        dispatch(locatorActions.emptyVillages());
-        dispatch(locatorActions.emptyAreas());
-    },
-    selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch)),
+    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(provinceActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
+    selectZone: (zoneId, currentTypes) => dispatch(locatorActions.selectZone(zoneId, currentTypes, dispatch, true)),
+    selectArea: (areaId, currentTypes, zoneId) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch, true, zoneId)),
+    searchVillage: (search, provinceId, zoneId, areaId) => dispatch(locatorActions.searchVillage(search, dispatch, provinceId, zoneId, areaId)),
     selectVillage: villageId => dispatch(villageActions.selectVillage(villageId)),
+    resetSearch: () => dispatch(locatorActions.resetSearch()),
     saveVillage: (kaseId, villageObj, params) => dispatch(villageActions.saveVillage(kaseId, villageObj, params, dispatch)),
-    selectType: (newType, areaId, currentTypes) => dispatch(locatorActions.selectType(newType, areaId, currentTypes, dispatch)),
+    selectType: (newType, zoneId, areaId, currentTypes) => dispatch(locatorActions.selectType(newType, zoneId, areaId, currentTypes, dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });

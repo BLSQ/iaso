@@ -1,5 +1,5 @@
 import { loadActions } from '../../../redux/load';
-import { selectZone, selectArea, emptyAreas, emptyZones, emptyVillages, resetFilters } from './locator';
+import { selectZone, selectArea, emptyVillages, resetFilters } from './locator';
 import { selectProvince } from './province';
 
 const req = require('superagent');
@@ -32,11 +32,11 @@ export const fetchCase = (dispatch, caseId) => {
                 const { normalized_AS_dict } = kase;
                 if (normalized_AS_dict.as_id) {
                     dispatch(selectProvince(normalized_AS_dict.province_id, dispatch));
-                    dispatch(selectZone(normalized_AS_dict.zs_id, dispatch));
+                    dispatch(selectZone(normalized_AS_dict.zs_id, undefined, dispatch));
                     dispatch(selectArea(normalized_AS_dict.as_id, undefined, dispatch));
                     dispatch(emptyVillages());
                 } else {
-                    dispatch(resetFilters());
+                    dispatch(resetFilters(true));
                 }
             }
         })

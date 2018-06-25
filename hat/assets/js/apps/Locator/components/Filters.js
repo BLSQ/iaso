@@ -13,7 +13,7 @@ class Filters extends React.Component {
             <div>
                 <div className="locator-filter">
                     <div className="locator-subtitle">
-                        <FormattedMessage id="locator.label.zones" defaultMessage="Provinces" />
+                        <FormattedMessage id="locator.label.provinces" defaultMessage="Provinces" />
                     </div>
                     {
                         filters.provinces &&

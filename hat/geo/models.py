@@ -1,4 +1,5 @@
 from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.db import models
 
 
@@ -36,7 +37,7 @@ class ZS(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta():
+    class Meta:
         verbose_name_plural = "ZS"
 
     def as_dict(self):
@@ -56,8 +57,9 @@ class AS(models.Model):
         null=True,
         blank=True,
     )
+    geom = MultiPolygonField(srid=4326, null=True)
 
-    class Meta():
+    class Meta:
         verbose_name_plural = "AS"
 
     def __str__(self):
@@ -95,6 +97,7 @@ class Village(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
     gps_source = models.TextField(null=True)
+    location = PointField(srid=4326, null=True)
 
     population = models.PositiveIntegerField(null=True)
     population_source = models.TextField(null=True)

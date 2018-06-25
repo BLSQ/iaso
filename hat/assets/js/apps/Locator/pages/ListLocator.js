@@ -14,6 +14,7 @@ import listLocatorColumns from '../constants/ListLocatorColumns';
 import { locatorActions } from '../redux/locator';
 import { provinceActions } from '../redux/province';
 
+
 export class ListLocator extends Component {
     constructor(props) {
         super(props);
@@ -58,6 +59,7 @@ export class ListLocator extends Component {
             zs_id: this.props.params.zs_id,
             years: this.props.params.years,
             teams: this.props.params.teams,
+            geo_search: this.props.params.search,
         };
 
         Object.keys(urlParams).forEach((key) => {
@@ -126,6 +128,7 @@ export class ListLocator extends Component {
                             tempParam.page = 1;
                             return (this.props.redirectTo('list', tempParam));
                         }}
+                        resetSearch={() => this.props.resetSearch()}
                     />
                     <div className="widget__content list-locator-filters">
                         <Filters
@@ -136,7 +139,6 @@ export class ListLocator extends Component {
                             selectProvince={provindeId => this.selectProvince(provindeId)}
                             selectZone={zsId => this.selectZone(zsId)}
                             selectArea={asId => this.selectArea(asId)}
-                            selectVillage={() => { }}
                         />
                     </div>
                 </div>
@@ -180,6 +182,7 @@ ListLocator.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    resetSearch: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(ListLocator);
@@ -189,8 +192,9 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
     selectProvince: provinceId => dispatch(provinceActions.selectProvince(provinceId, dispatch)),
-    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, dispatch)),
-    selectArea: (areaId, currentTypes) => dispatch(locatorActions.selectArea(areaId, currentTypes, dispatch, false)),
+    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, undefined, dispatch)),
+    selectArea: areaId => dispatch(locatorActions.selectArea(areaId, undefined, dispatch, true)),
+    resetSearch: () => dispatch(locatorActions.resetSearch()),
 });
 
 const MapStateToProps = state => ({

@@ -78,7 +78,7 @@ export class Locator extends Component {
     componentDidMount() {
         const { dispatch } = this.props;
         dispatch(loadActions.startLoading());
-        dispatch(locatorActions.resetFilters(false));
+        dispatch(locatorActions.resetFilters());
         this.props.fetchProvinces();
         this.props.fetchCase(this.props.params.case_id);
     }
@@ -137,7 +137,7 @@ export class Locator extends Component {
                                     onClick={() => {
                                         const tempParams = this.props.params;
                                         delete tempParams.case_id;
-                                        dispatch(locatorActions.resetFilters(false));
+                                        dispatch(locatorActions.resetFilters());
                                         this.props.redirectTo('list', {
                                             ...tempParams,
                                         });

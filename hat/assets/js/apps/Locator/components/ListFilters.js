@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { getPossibleYears } from '../../../utils';
+import Search from './Search';
 
 
 const MESSAGES = defineMessages({
@@ -18,6 +19,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Chargement en cours',
         id: 'microplanning.labels.loading',
     },
+    searchPlaceholder: {
+        defaultMessage: 'Recherche',
+        id: 'listlocator.search.placeholder',
+    },
 });
 
 
@@ -28,6 +33,25 @@ class ListFilters extends React.Component {
         const possibleYears = getPossibleYears();
         return (
             <div className="widget__content--tier">
+                <div>
+                    <span className="map__text--select">
+                        <FormattedMessage
+                            id="locator.list.textualsearch.label"
+                            defaultMessage="Recherche textuelle"
+                        />
+                    </span>
+                    <Search
+                        placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
+                        allowEmptySearch
+                        onSearch={value =>
+                            this.props.redirect({
+                                ...this.props.params, search: value,
+                            })}
+                        resetSearch={() => this.props.resetSearch()}
+                        displayResults={false}
+                        searchString={this.props.params.search}
+                    />
+                </div>
                 <div>
                     <span className="map__text--select">
                         <FormattedMessage
@@ -89,6 +113,7 @@ ListFilters.propTypes = {
     filters: PropTypes.object.isRequired,
     redirect: PropTypes.func.isRequired,
     params: PropTypes.object,
+    resetSearch: PropTypes.func.isRequired,
 };
 
 const ListFiltersWithIntl = injectIntl(ListFilters);

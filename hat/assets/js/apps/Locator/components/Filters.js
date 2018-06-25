@@ -111,6 +111,7 @@ Filters.defaultProps = {
     isMultiSelect: false,
     showVillages: true,
     isClearable: false,
+    selectVillage: () => {},
 };
 
 Filters.propTypes = {
@@ -118,7 +119,7 @@ Filters.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
-    selectVillage: PropTypes.func.isRequired,
+    selectVillage: PropTypes.func,
     isMultiSelect: PropTypes.bool,
     showVillages: PropTypes.bool,
     isClearable: PropTypes.bool,

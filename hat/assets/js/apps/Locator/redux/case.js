@@ -1,12 +1,11 @@
 import { loadActions } from '../../../redux/load';
-import { selectZone, selectArea, emptyVillages, resetFilters } from './locator';
+import { selectZone, selectArea, emptyVillages, resetFilters, locatorActions, FETCH_ACTION } from './locator';
 import { selectProvince } from './province';
 
 const req = require('superagent');
 
 export const SET_CASE = 'hat/locator/cases/SET_CASE';
 export const SET_LIST = 'hat/locator/cases/SET_LIST';
-export const FETCH_ACTION = 'hat/locator/assignation/FETCH_ACTION';
 
 
 export const setList = list => ({
@@ -31,12 +30,10 @@ export const fetchCase = (dispatch, caseId) => {
             if (kase) {
                 const { normalized_AS_dict } = kase;
                 if (normalized_AS_dict.as_id) {
-                    dispatch(selectProvince(normalized_AS_dict.province_id, dispatch));
-                    dispatch(selectZone(normalized_AS_dict.zs_id, undefined, dispatch));
-                    dispatch(selectArea(normalized_AS_dict.as_id, undefined, dispatch));
+                    dispatch(selectProvince(normalized_AS_dict.province_id, dispatch, normalized_AS_dict.zs_id, normalized_AS_dict.as_id));
                     dispatch(emptyVillages());
                 } else {
-                    dispatch(resetFilters(true));
+                    dispatch(resetFilters());
                 }
             }
         })

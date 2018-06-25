@@ -1,7 +1,25 @@
 .search-container {
     font-size: 12px;
 }
-
+.limit-container {
+    text-align: right;
+    margin-top: 10px;
+    padding-top: 10px;
+    input[type="number"] {
+        background-color: transparent;
+        box-shadow: none;
+        text-align: center;
+        float: right;
+        margin-right: 0px;
+        position: relative;
+        top: -8px;
+    }
+    &:after{
+        clear:both;
+        display: block;
+        content: "";
+    }
+}
 .search-field {
     position: relative;
     input[type="text"] {

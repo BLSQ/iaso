@@ -24,7 +24,7 @@ export const fetchProvinces = (dispatch) => {
 };
 
 export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null) => {
-    dispatch(locatorActions.resetFilters(true));
+    dispatch(locatorActions.resetFilters());
     dispatch(locatorActions.emptyVillages());
     if (provinceId) {
         req

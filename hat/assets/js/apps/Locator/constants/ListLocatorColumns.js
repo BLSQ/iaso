@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 const listLocatorColumns = formatMessage => (
     [
         {
@@ -41,13 +43,9 @@ const listLocatorColumns = formatMessage => (
             Header: 'AS match',
             accessor: 'normalized_AS_name',
             sortable: false,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Source',
-                id: 'main.label.name',
-            }),
-            accessor: 'source',
+            Cell: settings => (
+                <span className={!settings.original.normalized_AS_name ? 'bullet' : ''} > {settings.original.normalized_AS_name} </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -55,6 +53,13 @@ const listLocatorColumns = formatMessage => (
                 id: 'microplanning.tooltip.village',
             }),
             accessor: 'village',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Source',
+                id: 'main.label.name',
+            }),
+            accessor: 'source',
         },
     ]
 );

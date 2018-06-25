@@ -50,9 +50,8 @@ export const loadZones = payload => ({
     payload,
 });
 
-export const resetFilters = payload => ({
+export const resetFilters = () => ({
     type: RESET_FILTERS,
-    payload,
 });
 
 export const emptyVillages = () => ({
@@ -285,6 +284,7 @@ export const locatorActions = {
     searchVillage,
     startSearch,
     resetSearch,
+    loadSearchResults,
 };
 
 export const locatorReducer = (state = locatorInitialState, action = {}) => {
@@ -397,16 +397,19 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return { ...state, currentTypes };
         }
         case RESET_FILTERS: {
-            const { provinces, searchResults } = state;
-            const keepSearchResult = action.payload;
-            const newState = locatorInitialState;
-            if (provinces.length > 0) {
-                newState.provinces = provinces;
-            }
-            if (searchResults.length > 0 && keepSearchResult) {
-                newState.searchResults = searchResults.slice();
-            }
-            newState.currentTypes = state.currentTypes;
+            const newState = {
+                ...state,
+                provinceId: null,
+                zoneId: null,
+                areaId: null,
+                villageId: null,
+                key: null,
+                currentTypes: state.currentTypes,
+                provinces: state.provinces.length > 0 ? state.provinces : [],
+                zones: [],
+                areas: [],
+                villages: [],
+            };
             return newState;
         }
         case SHOW_TEAMS: {

@@ -1,6 +1,16 @@
 body {
     .ReactTable {
         min-height: 130px;
+        .bullet {
+            background-color: red;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            display: inline-block;
+            &.normalized {
+                background-color: green;
+            }
+        }
         .rt-noData {
             top: 80px;
         }

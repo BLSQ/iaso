@@ -83,11 +83,17 @@ class CaseAbstract(models.Model):
     :ivar double   longitude:       GPS coordinates: longitude.
     :ivar double   latitude:        GPS coordinates: latitude.
 
+    :ivar text     circumstances_da:     Dépistage Actif
+    :ivar text     circumstances_dp:     Dépistage Passif
+    :ivar text     circumstances_da_um:  Dépistage Actif UM
+    :ivar text     circumstances_dp_um:  Dépistage Passif UM
+    :ivar text     circumstances_dp_cs:  Dépistage Passif Centre de Santé
+    :ivar text     circumstances_dp_hgr: Dépistage Passif Hôpital Général de Référence
+
     :ivar text     mobile_unit:     Mobile unit responsible of the tests.
     :ivar text     device_id:       Id of the device used during screening.
 
     :ivar integer  version_number:  Indicates how many times has been updated
-
 
     - **Treatment**
 
@@ -233,6 +239,13 @@ class CaseAbstract(models.Model):
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
+
+    circumstances_da = models.NullBooleanField(null=True)
+    circumstances_dp = models.NullBooleanField(null=True)
+    circumstances_da_um = models.TextField(null=True, blank=True)
+    circumstances_dp_um = models.TextField(null=True, blank=True)
+    circumstances_dp_cs = models.TextField(null=True, blank=True)
+    circumstances_dp_hgr = models.TextField(null=True, blank=True)
 
     normalized_team = models.ForeignKey(Team, null=True, on_delete=models.SET_NULL)
     mobile_unit = models.TextField(null=True)

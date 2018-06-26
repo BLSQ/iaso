@@ -148,14 +148,16 @@ Configuration for the extraction of data from different sources
 
 '''
 import re
-from typing import List, Optional, cast
-from hat.common.typing import JsonType
-from functools import reduce
 from enum import Enum
-from .utils import capitalize
-from hat.cases.filters import ResultValues
-from pandas import DataFrame, Series
+from functools import reduce
+from typing import List, Optional, cast
+
 import pandas
+from pandas import DataFrame, Series
+
+from hat.cases.filters import ResultValues
+from hat.common.typing import JsonType
+from .utils import capitalize
 
 
 def series_to_str(s: Series) -> str:
@@ -258,6 +260,13 @@ def historic_get_followup_test_result(main_table: DataFrame,
                                       field: str) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(series_to_str)
+
+
+def historic_get_null_boolean(x) -> Optional[bool]:
+    try:
+        return x.lower() in ("yes", "true", "t", "1")
+    except AttributeError:
+        return None
 
 
 ################################################################################
@@ -547,6 +556,66 @@ MAPPING: List[JsonType] = [
     {
         "field": "entry_name",
         "export_levels": [Export.full, Export.anon],
+    },
+    {
+        "field": "circumstances_da",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DA"),
+                "apply_to_column": historic_get_null_boolean
+            },
+        }
+    },
+    {
+        "field": "circumstances_dp",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DP"),
+                "apply_to_column": historic_get_null_boolean
+            },
+        }
+    },
+    {
+        "field": "circumstances_da_um",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DA_UM"),
+                "apply_to_column": capitalize
+            },
+        }
+    },
+    {
+        "field": "circumstances_dp_um",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_UM"),
+                "apply_to_column": capitalize
+            },
+        }
+    },
+    {
+        "field": "circumstances_dp_cs",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_CS"),
+                "apply_to_column": capitalize
+            },
+        }
+    },
+    {
+        "field": "circumstances_dp_hgr",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_HGR"),
+                "apply_to_column": capitalize
+            },
+        }
     },
     {
         "field": "mobile_unit",

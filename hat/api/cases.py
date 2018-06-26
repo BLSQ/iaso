@@ -32,6 +32,7 @@ class CasesViewSet(viewsets.ViewSet):
         years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
         geo_search = request.GET.get("geo_search", None)
+        normalized = request.GET.get("normalized", None)
 
         queryset = (
             Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
@@ -57,6 +58,13 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(form_year__in=years.split(","))
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
+
+
+        if normalized is not None:
+            if normalized != 'true':
+                queryset = queryset.filter(normalized_AS__isnull=True)
+            else:
+                queryset = queryset.exclude(normalized_AS__isnull=True)
 
         if geo_search:
             queryset = queryset.filter(

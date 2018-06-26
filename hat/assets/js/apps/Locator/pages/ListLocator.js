@@ -60,6 +60,7 @@ export class ListLocator extends Component {
             years: this.props.params.years,
             teams: this.props.params.teams,
             geo_search: this.props.params.search,
+            normalized: this.props.params.normalized,
         };
 
         Object.keys(urlParams).forEach((key) => {

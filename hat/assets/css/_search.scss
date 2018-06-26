@@ -1,5 +1,6 @@
 .search-container {
     font-size: 12px;
+    margin-bottom: 15px;
 }
 .limit-container {
     text-align: right;
@@ -47,6 +48,9 @@
         width: 30px;
         text-align: center;
         cursor: pointer;
+        &:hover {
+            font-size: 14px;
+        }
     }
 }
 

@@ -27,6 +27,22 @@ const MESSAGES = defineMessages({
 
 
 class ListFilters extends React.Component {
+    toggleNormalized(value) {
+        let { normalized } = this.props.params;
+        if (normalized && normalized.length > 0) {
+            normalized = null;
+        } else if (value) {
+            normalized = 'false';
+        } else {
+            normalized = 'true';
+        }
+        return (
+            this.props.redirect({
+                ...this.props.params,
+                normalized,
+            }));
+    }
+
     render() {
         const { formatMessage } = this.props.intl;
         const { years, teams } = this.props.params;
@@ -51,6 +67,32 @@ class ListFilters extends React.Component {
                         displayResults={false}
                         searchString={this.props.params.search}
                     />
+                    <span className="map__text--select align-right">
+                        <FormattedMessage
+                            id="locator.list.normalized"
+                            defaultMessage="AS déjà trouvée"
+                        />
+                        <input
+                            type="checkbox"
+                            name="with normalized as"
+                            className="list--normalized-as-checkbox"
+                            checked={this.props.params.normalized === 'true' || !this.props.params.normalized ? 'checked' : ''}
+                            onChange={() => this.toggleNormalized(true)}
+                        />
+                    </span>
+                    <span className="map__text--select align-right">
+                        <FormattedMessage
+                            id="locator.list.notnormalized"
+                            defaultMessage="AS pas encore trouvée"
+                        />
+                        <input
+                            type="checkbox"
+                            name="without normalized as"
+                            className="list--normalized-as-checkbox"
+                            checked={this.props.params.normalized === 'false' || !this.props.params.normalized ? 'checked' : ''}
+                            onChange={() => this.toggleNormalized(false)}
+                        />
+                    </span>
                 </div>
                 <div>
                     <span className="map__text--select">

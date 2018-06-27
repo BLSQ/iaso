@@ -26,7 +26,7 @@ export default function locator(appConfig, element, baseUrl) {
             component={ListLocatorComponent}
         />,
         <Route
-            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/normalized/:normalized)"
+            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)"
             component={LocatorComponent}
         />,
         <Redirect path="*" to={defaultPath} />,

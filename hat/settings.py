@@ -219,6 +219,7 @@ LANGUAGE_CODE = 'fr'
 
 LOCALE_PATHS = [
     '/opt/app/hat/locale/',
+    'hat/locale/',
 ]
 
 TIME_ZONE = 'UTC'

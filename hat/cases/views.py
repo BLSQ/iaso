@@ -183,9 +183,9 @@ def duplicatespair_detail(request: HttpRequest, pair_id: str) -> HttpResponse:
 def duplicatespair_merge(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
 
-    commit_merge(pair_id)
-
-    messages.add_message(request, messages.SUCCESS, _('Merge done.'))
+    #commit_merge(pair_id)
+    #messages.add_message(request, messages.SUCCESS, _('Merge done.'))
+    
     return redirect(back_link)
 
 

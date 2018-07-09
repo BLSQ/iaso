@@ -116,8 +116,8 @@ def merge_case_models(older_case: Case, younger_case: Case) -> MergeResult:
     # Merge the cases while prefering more recent values
     for field in older_case._meta.get_fields():
         # ids belong to the older case (merge into it)
-        if field.name in ['id', 'document_id', 'hat_id', 'version_number', 'testgroup']:
-            if field.name not in ['testgroup']:
+        if field.name in ['id', 'document_id', 'hat_id', 'version_number', 'testgroup', 'jsondocument']:
+            if field.name not in ['testgroup', 'jsondocument']:
                 steps.append(MergeStep(field.name, older_case, 1))
             continue
         if field.name != 'test':

@@ -26,6 +26,7 @@ export class ListLocator extends Component {
     componentWillMount() {
         Promise.all([
             this.props.fetchProvinces(),
+            this.props.fetchTeams(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id);
@@ -184,6 +185,7 @@ ListLocator.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     resetSearch: PropTypes.func.isRequired,
+    fetchTeams: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(ListLocator);

@@ -144,10 +144,10 @@ export class ListLocator extends Component {
                         />
                     </div>
                 </div>
-                <div className="locator-container widget__container">
+                <div className="locator-container widget__container no-border">
                     {
                         this.props.load.loading &&
-                        <div className="widget__content">
+                        <div>
                             <LoadingSpinner message={formatMessage({
                                 defaultMessage: 'Chargement en cours',
                                 id: 'microplanning.labels.loading',

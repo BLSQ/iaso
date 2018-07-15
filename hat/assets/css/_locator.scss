@@ -3,10 +3,6 @@
  * Locator styles
  ******************************************************************************/
 
- .locator-map {
-    height: 600px;
-    width: 80%;
-}
 
 .locator-container {
     >div {
@@ -167,10 +163,7 @@
         }
     }
 }
-.locator-layer-selector-container {
-    padding: $padding-unit;
-    width: 20%;
-}
+
 .locator-case-container {
     width: calc(100% - 40px);
     display: inline-block;

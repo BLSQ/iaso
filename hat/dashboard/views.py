@@ -145,13 +145,13 @@ def device_management(request: HttpRequest) -> HttpResponse:
         'dates': [d.strftime('%Y-%m') for d in dates]
     })
 
-    return render(request, 'dashboard/management.html', {'json_data': json_data})
+    return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL})
 
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def managementAll(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': []})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL})
 
 
 @login_required()

@@ -268,7 +268,7 @@ export class Locator extends Component {
                     }
                     {this.props.kase &&
                         <div>
-                            <div className="locator-layer-selector-container">
+                            <div className="split-selector-container ">
                                 <LayersComponent
                                     base={baseLayer}
                                     change={(type, key) => this.props.changeLayer(type, key)}
@@ -282,7 +282,7 @@ export class Locator extends Component {
                                         )}
                                 />
                             </div>
-                            <div className="locator-map">
+                            <div className="split-map ">
                                 {
                                     this.props.locatorState.villages &&
                                         <Map
@@ -332,12 +332,12 @@ Locator.propTypes = {
 
 const LocatorWithIntl = injectIntl(Locator);
 
-function getShapePath(type) {
+const getShapePath = (type) => {
     if (type === 'area') { return AREAS_PATH; }
     if (type === 'zone') { return ZONES_PATH; }
 
     return null;
-}
+};
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

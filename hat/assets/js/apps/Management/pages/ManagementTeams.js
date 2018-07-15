@@ -72,11 +72,14 @@ class ManagementTeams extends React.Component {
                     }),
                     accessor: 'coordination_id',
                     Cell: (settings) => {
-                        const coordName = this.state.coordinations.filter(c =>
-                            c.id === parseInt(settings.original.coordination_id, 10))[0].name;
-                        return (
-                            <span>{coordName}</span>
-                        );
+                        if (this.state.coordinations.length > 0) {
+                            const coordName = this.state.coordinations.filter(c =>
+                                c.id === parseInt(settings.original.coordination_id, 10))[0].name;
+                            return (
+                                <span>{coordName}</span>
+                            );
+                        }
+                        return null;
                     },
                 },
                 {
@@ -286,22 +289,21 @@ class ManagementTeams extends React.Component {
                         />
                     }
                     <section>
-                        <div className="widget__content">
-                            {
-                                !this.state.isUpdating &&
-                                <CustomTableComponent
-                                    multiSort
-                                    isSortable
-                                    showPagination
-                                    endPointUrl={this.state.tableUrl}
-                                    columns={this.state.tableColumns}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    params={this.props.params}
-                                    defaultPath="teams"
-                                />
-                            }
-                        </div>
-                        <div className="widget__content align-right">
+                        {
+                            !this.state.isUpdating &&
+                            <CustomTableComponent
+                                withBorder={false}
+                                multiSort
+                                isSortable
+                                showPagination
+                                endPointUrl={this.state.tableUrl}
+                                columns={this.state.tableColumns}
+                                defaultSorted={[{ id: 'id', desc: false }]}
+                                params={this.props.params}
+                                defaultPath="teams"
+                            />
+                        }
+                        <div className="widget__content align-right border-top">
                             <button
                                 className="button--add"
                                 onClick={() => this.editTeam()}

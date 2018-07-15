@@ -11,6 +11,7 @@ django-storages==1.6.5
 boto3==1.4.8
 geopy==1.11.0
 tsp-solver2==0.2
+django-pg-utils==0.1.5
 
 # web server and auth
 oauth2client==4.0.0

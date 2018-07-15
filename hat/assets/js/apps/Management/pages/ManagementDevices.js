@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+import moment from 'moment';
 import {
     FormattedMessage,
     injectIntl,
@@ -10,6 +12,8 @@ import {
 
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../../../components/loading-spinner';
+import { createUrl } from '../../../utils/fetchData';
+import { devicesActions } from '../redux/devices';
 
 
 const MESSAGES = defineMessages({
@@ -105,6 +109,23 @@ export class ManagementDevices extends Component {
         };
     }
 
+    selectDevice(deviceItem) {
+        const { dispatch } = this.props;
+        const from = moment().startOf('year').format('YYYY-MM-DD');
+        const to = moment().format('YYYY-MM-DD');
+        dispatch(devicesActions.loadCurrentDevice(deviceItem));
+        const { order } = this.props.params;
+        const tempParams = this.props.params;
+        delete tempParams.order;
+        this.props.redirectTo('devices', {
+            ...tempParams,
+            deviceOrder: order,
+            id: deviceItem.id,
+            from,
+            to,
+        });
+    }
+
     render() {
         const { formatMessage } = this.props.intl;
         const { loading, error } = this.props.load;
@@ -132,6 +153,7 @@ export class ManagementDevices extends Component {
                         </h2>
                     </div>
                     <CustomTableComponent
+                        selectable
                         isSortable
                         showPagination={false}
                         endPointUrl="/api/datasets/device_status/?"
@@ -139,7 +161,7 @@ export class ManagementDevices extends Component {
                         defaultSorted={[{ id: 'last_synced_date', desc: false }]}
                         params={this.props.params}
                         defaultPath="devices"
-                        onRowClicked={caseItem => this.selectCase(caseItem)}
+                        onRowClicked={deviceItem => this.selectDevice(deviceItem)}
                         multiSort
                     />
                 </div>
@@ -158,6 +180,8 @@ ManagementDevices.propTypes = {
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 const MapStateToProps = state => ({
     config: state.config,
@@ -166,6 +190,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 

@@ -48,7 +48,6 @@ class QualityDashboard extends React.Component {
                     <section>
                         <div className="widget__header">
                             <h2 className="widget__heading">
-                                Dashboard:
                                 <PeriodSelectorComponent
                                     dateFrom={this.props.params.date_from}
                                     dateTo={this.props.params.date_to}

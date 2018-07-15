@@ -224,6 +224,7 @@ class QualityStats extends React.Component {
                                 id="quality.stats.title"
                                 defaultMessage="Statistiques"
                             />
+                            {' '}
                             <PeriodSelectorComponent
                                 dateFrom={this.props.params.date_from}
                                 dateTo={this.props.params.date_to}
@@ -279,18 +280,16 @@ class QualityStats extends React.Component {
                         />
                     }
                     <section>
-                        <div className="widget__content">
-                            <CustomTableComponent
-                                // isFilterable
-                                isSortable
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'id', desc: false }]}
-                                params={this.props.params}
-                                defaultPath="stats"
-                            />
-                        </div>
+                        <CustomTableComponent
+                            withBorder={false}
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'id', desc: false }]}
+                            params={this.props.params}
+                            defaultPath="stats"
+                        />
                     </section>
                 </div>
             </section>);

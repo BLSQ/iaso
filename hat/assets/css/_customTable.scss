@@ -1,6 +1,10 @@
 body {
     .ReactTable {
         min-height: 130px;
+        border: 1px solid $gray;
+        &.no-border{
+            border: none;
+        }
         .bullet {
             background-color: red;
             width: 20px;
@@ -140,10 +144,21 @@ body {
         &.no-pagination {
             padding-bottom: 40px;
         }
-        .count-container{
+        .count-container {
             position: absolute;
             right: 20px;
             bottom: 14px;
         }
+        .rt-tr-group {
+            cursor: pointer;
+        }
     }
+}
+.count-container-alone {
+    display: block;
+    width:100%;
+    text-align: right;
+    padding: $padding-unit / 2;
+    border: 1px solid $gray;
+    border-top: none;
 }

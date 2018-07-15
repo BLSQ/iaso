@@ -5,6 +5,9 @@
     border: 1px solid $gray;
     border-radius: 4px;
     overflow: initial;
+    &.no-border {
+        border: none;
+    }
 }
 
 .widget__container:last-of-type {
@@ -19,6 +22,10 @@
     align-items: space-between;
     border-bottom: 1px solid $gray;
     padding: 1.2rem;
+    h2 {
+        display: block;
+        width: 100%;
+    }
 }
 
 .widget__footer {

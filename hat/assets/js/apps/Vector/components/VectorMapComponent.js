@@ -19,12 +19,6 @@ const BASE_LAYERS = {
     'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
     'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
 };
-const mosquitoIcon =
-    new L.Icon({
-        iconUrl: '/static/images/favicon.png',
-        iconSize: [20, 20],
-    });
-
 const MESSAGES = defineMessages({
     'fit-to-bounds': {
         defaultMessage: 'Center to relevant villages',
@@ -39,8 +33,6 @@ const MESSAGES = defineMessages({
         id: 'locator.label.zoom.info',
     },
 });
-
-const radius = 400;
 
 
 class VectorMapComponent extends Component {
@@ -445,7 +437,7 @@ class VectorMapComponent extends Component {
     }
     renderTrapsPopup(trap) {
         const { formatMessage } = this.props.intl;
-        return `<section class="trap-popup-container">
+        return `<section class="custom-popup-container">
                     <h6>
                         ${formatMessage({ defaultMessage: 'Trap', id: 'vector.labels.trap' })}:
                     </h6>
@@ -484,7 +476,7 @@ class VectorMapComponent extends Component {
     }
     renderTargetsPopup(target) {
         const { formatMessage } = this.props.intl;
-        return `<section class="trap-popup-container">
+        return `<section class="custom-popup-container">
                     <h6>
                         ${formatMessage({ defaultMessage: 'Target', id: 'vector.labels.target' })}:
                     </h6>
@@ -519,7 +511,7 @@ class VectorMapComponent extends Component {
     }
     renderVillagesPopup(village) {
         const { formatMessage } = this.props.intl;
-        return `<section class="trap-popup-container">
+        return `<section class="custom-popup-container">
                     <h6>
                         ${formatMessage({ defaultMessage: 'Village', id: 'vector.labels.village' })}:
                     </h6>

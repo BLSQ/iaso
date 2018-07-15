@@ -135,6 +135,7 @@ export class Vector extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage id="vector.title" defaultMessage="Vector control: " />
+                            {' '}
                             <PeriodSelectorComponent
                                 dateFrom={this.props.params.date_from}
                                 dateTo={this.props.params.date_to}

@@ -103,6 +103,7 @@ class CustomTableComponent extends React.Component {
             if (!data.pages) {
                 showPagination = false;
             }
+            this.props.onDataLoaded(tempdata);
             setTimeout(() => {
                 this.setState({
                     page: settings.page,
@@ -129,7 +130,7 @@ class CustomTableComponent extends React.Component {
     render() {
         const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
         return (
-            <section className={`custom-table-container ${!this.state.showPagination && this.state.count ? 'no-pagination' : ''}`}>
+            <section className={`custom-table-container ${this.props.selectable ? 'selectable' : ''} ${!this.state.showPagination && this.state.count ? 'no-pagination' : ''}`}>
                 <ReactTable
                     manual
                     multiSort={this.props.multiSort}
@@ -144,7 +145,7 @@ class CustomTableComponent extends React.Component {
                     sortable={this.props.isSortable}
                     pageSize={currentPageSize}
                     page={this.state.page - 1}
-                    className="-striped -highlight"
+                    className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''}`}
                     getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
                     showPagination={this.state.showPagination}
                     defaultSorted={this.state.order}
@@ -177,6 +178,9 @@ CustomTableComponent.defaultProps = {
     defaultPath: '',
     dataKey: null,
     multiSort: false,
+    selectable: false,
+    withBorder: true,
+    onDataLoaded: () => { },
 };
 
 CustomTableComponent.propTypes = {
@@ -196,6 +200,9 @@ CustomTableComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     dataKey: PropTypes.string,
     multiSort: PropTypes.bool,
+    selectable: PropTypes.bool,
+    onDataLoaded: PropTypes.func,
+    withBorder: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -36,6 +36,8 @@ $fa-font-path: "~font-awesome/fonts";
 @import "route";
 @import "locator";
 @import "search";
+@import "tabs";
+@import "barChart";
 
 body {
   background-color: $background-gray;

@@ -1,9 +1,12 @@
-.trap-popup-container {
+.custom-popup-container {
     >div {
         font-weight: bold;
         >span {
             font-weight: normal;
         }
+    }
+    table {
+        margin-top: 20px;
     }
 }
 

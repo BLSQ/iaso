@@ -78,3 +78,40 @@ $directions: left right top bottom;
 .align-right {
   text-align: right;
 }
+.align-center {
+  text-align: center;
+}
+
+.large-text {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+.border-top {
+  border-top: 1px solid $gray;
+}
+
+.flex-container {
+  display: flex;
+}
+.split-map {
+    height: 600px;
+    width: 80%;
+}
+.split-selector-container {
+    padding: $padding-unit;
+    width: 20%;
+}
+.padding {
+  padding: $padding-unit/2;
+}
+.padding-bottom {
+  padding-bottom: $padding-unit/2;
+}

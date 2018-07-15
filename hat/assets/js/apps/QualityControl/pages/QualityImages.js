@@ -123,6 +123,8 @@ class QualityImages extends React.Component {
                                     />
                                 </section>
                             }
+
+                            {' '}
                             <PeriodSelectorComponent
                                 dateFrom={this.props.params.date_from}
                                 dateTo={this.props.params.date_to}

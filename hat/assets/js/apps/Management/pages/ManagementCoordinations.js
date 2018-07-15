@@ -232,21 +232,20 @@ class ManagementCoordinations extends React.Component {
                         />
                     }
                     <section>
-                        <div className="widget__content">
-                            {
-                                !this.state.isUpdating &&
-                                <CustomTableComponent
-                                    isSortable
-                                    showPagination
-                                    endPointUrl={this.state.tableUrl}
-                                    columns={this.state.tableColumns}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    params={this.props.params}
-                                    defaultPath="coordinations"
-                                />
-                            }
-                        </div>
-                        <div className="widget__content align-right">
+                        {
+                            !this.state.isUpdating &&
+                            <CustomTableComponent
+                                withBorder={false}
+                                isSortable
+                                showPagination
+                                endPointUrl={this.state.tableUrl}
+                                columns={this.state.tableColumns}
+                                defaultSorted={[{ id: 'id', desc: false }]}
+                                params={this.props.params}
+                                defaultPath="coordinations"
+                            />
+                        }
+                        <div className="widget__content align-right border-top">
                             <button
                                 className="button--add"
                                 onClick={() => this.editCoordination()}

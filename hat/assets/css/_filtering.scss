@@ -55,7 +55,7 @@ $select-width: 120px;
     }
     &.date-select {
         display: inline-block;
-        margin: 0 20px;
+        margin: 0 20px 0 0px;
         .filter__container__select__label {
             width: 55px;
             text-align: center;
@@ -230,7 +230,7 @@ input.input--minimised {
 }
 
 .react-datepicker-popper {
-    z-index: 100;
+    z-index: 1001 ! important;
     width: auto !important;
 }
 

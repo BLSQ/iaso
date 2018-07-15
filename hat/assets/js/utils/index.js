@@ -95,3 +95,60 @@ export const getPossibleYears = () => {
     }
     return possibleYears;
 };
+
+export const NormalizeBarChartDatas = (settings, d) => {
+    const newDatas = [];
+    settings.map((setting, index) => {
+        if (!setting.datas) {
+            newDatas.push({
+                key: setting.key,
+                value: d[setting.key] ? d[setting.key] : 0,
+                label: setting.label,
+                color: setting.color,
+                index,
+                original: d,
+            });
+        } else {
+            let previousValue = 0;
+            setting.datas.map((subSetting) => {
+                const value = d[subSetting.key] ? d[subSetting.key] : 0;
+                newDatas.push({
+                    key: subSetting.key,
+                    value,
+                    label: subSetting.label,
+                    color: subSetting.color,
+                    previousValue,
+                    index,
+                    original: d,
+                });
+                previousValue += value;
+                return null;
+            });
+        }
+        return null;
+    });
+    return newDatas;
+};
+
+export const getBarChartMax = (settings, d) => {
+    let higherValue = 0;
+    settings.map((setting) => {
+        if (setting.datas) {
+            let subTotal = 0;
+            setting.datas.map((subSetting) => {
+                subTotal += d[subSetting.key];
+                return null;
+            });
+            if (subTotal > higherValue) {
+                higherValue = subTotal;
+            }
+        } else if (d[setting.key] > higherValue) {
+            higherValue = d[setting.key];
+        }
+        return null;
+    });
+    return higherValue;
+};
+
+export const getPercentage = (totalCount, count) => (totalCount !== 0 ? (count * (100 / totalCount)).toFixed(2) : 0);
+

@@ -2,6 +2,13 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.db import models
 
+GEO_SOURCE_CHOICES = (
+    ('snis', 'SNIS'),
+    ('ucla', 'UCLA'),
+    ('pnltha', 'PNL THA'),
+    ('derivated', 'Derivated from actual data'),
+)
+
 
 class Province(models.Model):
     name = models.CharField(max_length=255)
@@ -12,6 +19,12 @@ class Province(models.Model):
         null=True,
         blank=True,
     )
+
+    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    source_ref = models.TextField(null=True)
+    geom = MultiPolygonField(srid=4326, null=True)
+    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    geom_ref = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name
@@ -33,6 +46,12 @@ class ZS(models.Model):
         null=True,
         blank=True,
     )
+
+    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, default='snis')
+    source_ref = models.TextField(null=True)
+    geom = MultiPolygonField(srid=4326, null=True)
+    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    geom_ref = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name
@@ -57,7 +76,12 @@ class AS(models.Model):
         null=True,
         blank=True,
     )
+
+    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    source_ref = models.TextField(null=True)
     geom = MultiPolygonField(srid=4326, null=True)
+    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    geom_ref = models.IntegerField(null=True)
 
     class Meta:
         verbose_name_plural = "AS"
@@ -96,7 +120,7 @@ class Village(models.Model):
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
-    gps_source = models.TextField(null=True)
+    gps_source = models.TextField(null=True)  # much more diverse than above GEO_SOURCE_CHOICES
     location = PointField(srid=4326, null=True)
 
     population = models.PositiveIntegerField(null=True)

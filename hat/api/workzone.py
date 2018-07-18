@@ -75,6 +75,12 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
         return Response(work_zone.as_dict())
 
+    
+    def delete(self, request, pk):
+        work_zone = get_object_or_404(WorkZone, id=pk)
+        work_zone.delete()
+        return Response("ok")
+
     def partial_update(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
         action = request.data.get("action", None)

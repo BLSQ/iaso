@@ -123,6 +123,7 @@ class TestStatsViewSet(viewsets.ViewSet):
 
         grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
 
+
         # To compute the positive confirmation tests, one first needs to group by form/patient and then annotate tests
         case_queryset = queryset \
             .values('form__id') \

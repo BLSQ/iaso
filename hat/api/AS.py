@@ -6,6 +6,7 @@ from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
+
 class ASViewSet(viewsets.ViewSet):
     """
     list:

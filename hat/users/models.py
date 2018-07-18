@@ -66,6 +66,13 @@ class Team(models.Model):
             'capacity': self.capacity
         }
 
+    def as_dict_without_as(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'capacity': self.capacity
+        }
+
     def get_as(self):
         if not self.AS.all():
             return AS.objects.filter(ZS__in=self.coordination.ZS.all())

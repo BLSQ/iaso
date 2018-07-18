@@ -20,6 +20,7 @@ from .traps import TrapsViewSet
 from .targets import TargetsViewSet
 from .metrics import MetricsViewSet
 from .teststats import TestStatsViewSet
+from .workzone import WorkZoneViewSet
 
 router = routers.DefaultRouter()
 router.register(r"datasets", DatasetViewSet, base_name="datasets")
@@ -41,5 +42,6 @@ router.register(r"traps", TrapsViewSet, base_name="traps")
 router.register(r"targets", TargetsViewSet, base_name="targets")
 router.register(r"metrics", MetricsViewSet, base_name="metrics")
 router.register(r"teststats", TestStatsViewSet, base_name="teststats")
+router.register(r"workzones", WorkZoneViewSet, base_name="workzones")
 
 urlpatterns = [url(r"^", include(router.urls))]

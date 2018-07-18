@@ -25,5 +25,12 @@ admin.site.unregister(User)
 # register new user admin
 admin.site.register(User, UserAdmin)
 
-admin.site.register(Team)
+
+class TeamAdmin(admin.ModelAdmin):
+    raw_id_fields = ('AS',)
+
+
+admin.site.register(Team, TeamAdmin)
 admin.site.register(Coordination)
+
+

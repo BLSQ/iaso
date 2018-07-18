@@ -1,15 +1,16 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.core.serializers import serialize
 from tsp_solver.greedy import solve_tsp
 from geopy.distance import vincenty
 from hat.planning.models import Planning, Assignation
-from hat.geo.models import ZS, Village
+from hat.geo.models import AS, ZS, Village
 from hat.users.models import Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
-
+import json
 
 def optimize_path(assignation_list):
     matrix = [[] for _ in assignation_list]
@@ -69,8 +70,20 @@ class CoordinationViewSet(viewsets.ViewSet):
         return Response(res)
 
     def retrieve(self, request, pk=None):
+        as_geo_json = request.GET.get("geojson", None)
         coordination = get_object_or_404(Coordination, pk=pk)
-        return Response(coordination.as_dict())
+
+        if as_geo_json:
+            all_zs = coordination.ZS.all()
+            all_as = AS.objects.filter(ZS__in=all_zs)
+            serialized_zs = serialize('geojson', all_zs, geometry_field='geom', fields=('name', 'pk',))
+            serialized_as = serialize('geojson', all_as, geometry_field='geom', fields=('name', 'pk',))
+            return Response({
+                'areas': json.loads(serialized_as),
+                'zones': json.loads(serialized_zs)
+            })
+        else:
+            return Response(coordination.as_dict())
 
     def update(self, request, pk=None):
         if pk == "0":

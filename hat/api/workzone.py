@@ -68,7 +68,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if teams_ids:
 
             for team_id in teams_ids:
-                other_work_zones = WorkZone.objects.filter(team__id=team_id, planning_id=work_zone.planning_id)
+                other_work_zones = WorkZone.objects.filter(teams__id=team_id, planning_id=work_zone.planning_id)
                 for wz in other_work_zones:
                     wz.teams.remove(team_id)  # this should never loop more than once
                 work_zone.teams.add(team_id)
@@ -107,7 +107,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if teams:
             for team_id in teams:
                 if action == "add":
-                    other_work_zones = WorkZone.objects.filter(team__id=team_id, planning_id=work_zone.planning_id)
+                    other_work_zones = WorkZone.objects.filter(teams__id=team_id, planning_id=work_zone.planning_id)
                     for wz in other_work_zones:
                         wz.teams.remove(team_id)  # this should never loop more than once
                     work_zone.teams.add(team_id)

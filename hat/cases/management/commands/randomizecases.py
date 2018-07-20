@@ -29,7 +29,20 @@ def copy_case_date_fields(target, source):
 class Command(BaseCommand):
     help = 'Randomize and anonymize the content of the DB'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--execute',
+            action='store_true',
+            dest='execute',
+            help='You have to add this parameter to really execute this destructive command',
+        )
+
     def handle(self, *args, **options):
+
+        if not options['execute']:
+            print("Not executing until you add the --execute flag. WARNING: this is destructive")
+            return
+
         all_cases = list(Case.objects.filter(confirmed_case=True))
         all_villages = list(Village.objects.filter(village_official="YES"))
         for i in range(10000):

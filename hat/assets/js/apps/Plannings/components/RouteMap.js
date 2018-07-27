@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
 import * as topojson from 'topojson';
-import geoUtils from '../../Microplanning/utils/geo';
-import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar';
+import geoUtils from '../../Plannings/utils/geo';
+import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
 import { getMonthName } from '../utils/routeUtils';
 
 

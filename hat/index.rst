@@ -109,7 +109,7 @@ Dashboard
 .. toctree::
    :maxdepth: 2
 
-   Microplanning tool <assets/js/apps/Microplanning/README>
+   Planning tool <assets/js/apps/Plannings/README>
    Stats  <assets/js/apps/Stats/README>
    Monthly report <assets/js/apps/MonthlyReport/README>
    HAT Cases <cases/index>

@@ -559,7 +559,7 @@ const MapDispatchToProps = dispatch => ({
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
     changeMode: mode => dispatch(selectionActions.changeMode(mode)),
-    redirect: params => dispatch(push(createUrl(params, ''))),
+    redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: type => getRequest(getShapePath(type), dispatch),
 });
 

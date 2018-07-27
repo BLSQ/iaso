@@ -26,7 +26,6 @@
         "react/jsx-indent-props": ["error", 4],
         "react/no-unused-prop-types": "warn",
         "jsx-a11y/href-no-hash": "off",
-        "jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }],
         "no-underscore-dangle": "off",
         "import/no-extraneous-dependencies": "off",
         "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
@@ -44,6 +43,7 @@
         "no-prototype-builtins": "warn",
         "jsx-a11y/label-has-for": "warn",
         "react/no-array-index-key": "warn",
+        "jsx-a11y/anchor-is-valid": "off",
         "max-len": ["warn", { "code": 200 }]
     },
     "globals": {

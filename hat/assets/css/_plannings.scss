@@ -1,6 +1,6 @@
 $container-height: 720;
 $padding: 32;
-.route-container {
+.route-container, {
     .map__option__list {
         padding-top: 10px;
         &.legend {
@@ -51,5 +51,14 @@ $padding: 32;
     }
     .widget__content--double>div {
         padding-right: 0;
+    }
+}
+.macro-container {
+    .map-container {
+        height: $container-height+px;
+    }
+    .widget__content--tier>div.map {
+        flex-basis: 75%;
+        padding: 0;
     }
 }

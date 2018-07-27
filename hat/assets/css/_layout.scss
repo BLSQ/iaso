@@ -75,6 +75,9 @@ $directions: left right top bottom;
 .no-padding-top {
   padding-top: 0 !important;
 }
+.no-padding-right {
+  padding-right: 0 !important;
+}
 .align-right {
   text-align: right;
 }
@@ -114,4 +117,10 @@ $directions: left right top bottom;
 }
 .padding-bottom {
   padding-bottom: $padding-unit/2;
+}
+.padding-top {
+  padding-top: $padding-unit/2;
+}
+.margin-right {
+  margin-right: $padding-unit/2;
 }

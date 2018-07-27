@@ -40,12 +40,14 @@ class PlanningTeamSelection extends Component {
             currentPlanning,
             plannings: nextProps.plannings,
             teams: nextProps.teams,
+            coordinations: nextProps.coordinations,
         });
     }
 
     onChangePlanning(planningId) {
         const tempParams = clone(this.props.params);
         delete tempParams.team_id;
+        delete tempParams.coordination_id;
         this.props.redirect({
             ...tempParams,
             planning_id: planningId,
@@ -53,7 +55,14 @@ class PlanningTeamSelection extends Component {
     }
 
     render() {
-        const { formatMessage } = this.props.intl;
+        const {
+            intl: {
+                formatMessage,
+            },
+            params: {
+                planning_id,
+            },
+        } = this.props;
         return (
             <section>
                 <div className="widget__content--tier">
@@ -74,7 +83,9 @@ class PlanningTeamSelection extends Component {
                         }
                     </div>
                     {
-                        this.props.params.planning_id && this.state.currentPlanning &&
+                        planning_id &&
+                        this.state.currentPlanning &&
+                        this.state.teams.length > 0 &&
                         <div>
                             <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
                             <Select
@@ -91,6 +102,26 @@ class PlanningTeamSelection extends Component {
                             />
                         </div>
                     }
+                    {
+                        planning_id &&
+                        this.state.currentPlanning &&
+                        this.state.coordinations.length > 0 &&
+                        <div>
+                            <FormattedMessage id="microplanning.label.coordinations" defaultMessage="Coordination" />
+                            <Select
+                                simpleValue
+                                name="coordination_id"
+                                value={parseInt(this.props.params.coordination_id, 10)}
+                                placeholder={formatMessage(MESSAGES.all)}
+                                options={this.state.coordinations.map(c =>
+                                    ({ label: c.name, value: c.id }))}
+                                onChange={event =>
+                                    this.props.redirect({
+                                        ...this.props.params, coordination_id: event,
+                                    })}
+                            />
+                        </div>
+                    }
                 </div>
             </section>
         );
@@ -100,12 +131,14 @@ PlanningTeamSelection.defaultProps = {
     params: null,
     plannings: [],
     teams: [],
+    coordinations: [],
 };
 PlanningTeamSelection.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object,
     plannings: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
+    coordinations: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
 };
 

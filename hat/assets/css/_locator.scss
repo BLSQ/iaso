@@ -71,6 +71,31 @@
                     border-color: $purple;
                 }
             }
+
+            &.not-assigned {
+                &:before {
+                    background-color: rgba($mid-mid-gray, 0.5);
+                    border-color: $mid-mid-gray;
+                }
+            }
+            &.notFull {
+                &:before {
+                    background-color: rgba(red, 0.5);
+                    border-color: red;
+                }
+            }
+            &.full {
+                &:before {
+                    background-color: rgba(green, 0.5);
+                    border-color: green;
+                }
+            }
+            &.hover {
+                &:before {
+                    background-color: rgba($blue, 0.5);
+                    border-color: $blue;
+                }
+            }
         }
     }
 }
@@ -119,7 +144,7 @@
     }
 }
 
-.locator-title {
+.locator-title, .sub-title {
     @include heading--medium;
     margin-bottom: 1em;
     font-weight: normal;

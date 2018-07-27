@@ -12,11 +12,13 @@ import ManagementDevicesPage from './pages/ManagementDevices';
 import ManagementDevicesDetailsPage from './pages/ManagementDevicesDetails';
 import ManagementTeamsPage from './pages/ManagementTeams';
 import ManagementCoordinationsPage from './pages/ManagementCoordinations';
+import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementPlanningsPage from './pages/ManagementPlannings';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { devicesReducer, devicesInitialState } from './redux/devices';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
+import { planningsReducer, planningsInitialState } from './redux/plannings';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -46,6 +48,10 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementCoordinationsPage}
         />,
         <Route
+            path="/workzones(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            component={ManagementWorkZones}
+        />,
+        <Route
             path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
@@ -63,6 +69,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         coordinations: coordinationsInitialState,
         devices: devicesInitialState,
         teams: teamsInitialState,
+        plannings: planningsInitialState,
         map: mapInitialState,
     }, {
         config: (state = {}) => state,
@@ -70,6 +77,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         coordinations: coordinationsReducer,
         devices: devicesReducer,
         teams: teamsReducer,
+        plannings: planningsReducer,
         map: mapReducer,
     }, [
         routerMiddleware(history),

@@ -16,7 +16,7 @@ module.exports = {
   entry: {
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': './assets/css/index.scss',
-    'microplanning': './assets/js/apps/Microplanning/index',
+    'plannings': './assets/js/apps/Plannings/index',
     'monthly_report': './assets/js/apps/MonthlyReport/index',
     'stats': './assets/js/apps/Stats/index',
     'management': './assets/js/apps/management/index',

@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = 'Import ZS, AS and Provinces from the shapes.json file'
 
     def handle(self, *args, **options):
-        f = open('hat/assets/js/apps/Microplanning/utils/shapes.json')
+        f = open('hat/assets/js/apps/Plannings/utils/shapes.json')
         shapes = json.loads(f.read())
 
         for health_areas in shapes['objects']['areas']['geometries']:

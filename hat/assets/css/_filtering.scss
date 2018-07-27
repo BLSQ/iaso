@@ -44,6 +44,7 @@ $select-width: 120px;
 .date-select-container {
     display: inline-block;
 }
+
 .filter__container__select {
     $triangle-size: 4px;
     &:after {
@@ -163,6 +164,12 @@ Select {
 .Select-input {
     height: $filter-container-height;
     display: inline-block;
+}
+
+.Select-infos {
+    font-size: 10px;
+    display: inline-block;
+    margin-left: 10px;
 }
 
 .styled-select {

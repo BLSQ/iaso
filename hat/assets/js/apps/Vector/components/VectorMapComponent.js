@@ -5,8 +5,8 @@ import * as topojson from 'topojson';
 import L from 'leaflet';
 import moment from 'moment';
 import 'leaflet.markercluster'; // eslint-disable-line
-import geoUtils from '../../Microplanning/utils/geo';
-import * as zoomBar from '../../Microplanning/components/leaflet/zoom-bar' // eslint-disable-line
+import geoUtils from '../../Plannings/utils/geo';
+import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
 
 
 // map base layers

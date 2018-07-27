@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
-from hat.planning.models import WorkZone
+from hat.planning.models import WorkZone, Planning
 from hat.geo.models import AS
+from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
@@ -19,7 +20,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
       "coordination": 1
     }
 
+    GET /api/workzones/
     GET /api/workzones/2/
+    GET /api/workzones/?coordination_id=1
+    GET /api/workzones/?planning_id=1
     GET /api/workzones/?planning_id=1&coordination_id=1
 
     PATCH /api/workzones/2/ with the following body
@@ -42,12 +46,26 @@ class WorkZoneViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
-
+        order = request.GET.get("order", 'name')
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
 
-        queryset = WorkZone.objects.filter(planning_id=planning_id, coordination_id=coordination_id)
+        if order == 'coordination_name':
+            order = 'coordination_id'
+        if order == '-coordination_name':
+            order = '-coordination_id'
+        if order == 'planning_name':
+            order = 'planning_id'
+        if order == '-planning_name':
+            order = '-planning_id'
 
+
+        queryset = WorkZone.objects.all()
+        if planning_id:
+            queryset = queryset.filter(planning_id=planning_id,)
+        if coordination_id:
+            queryset = queryset.filter(coordination_id=coordination_id,)
+        queryset = queryset.order_by(order)
         return Response([zone.as_dict() for zone in queryset])
 
     def retrieve(self, request, pk):
@@ -118,5 +136,33 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if name:
             work_zone.name = name
             work_zone.save()
+
+        return Response(work_zone.as_dict())
+
+    def update(self, request, pk=None):
+        if pk == "0":
+            work_zone = WorkZone()
+        else:
+            work_zone = get_object_or_404(WorkZone, id=pk)
+        teams = request.data.get('teams', None)
+
+        work_zone.name = request.data.get('name', '')
+        planning_id = request.data.get('planning_id', '')
+        coordination_id = request.data.get('coordination_id', '')
+
+        new_planning = get_object_or_404(Planning, pk=planning_id)
+        work_zone.planning = new_planning
+
+        new_coordination = get_object_or_404(Coordination, pk=coordination_id)
+        work_zone.coordination = new_coordination
+
+        if teams:
+            if pk == "0":
+                work_zone.save()
+            work_zone.teams.clear()
+            for team in teams:
+                new_team = get_object_or_404(Team, pk=team['id'])
+                work_zone.teams.add(new_team)
+        work_zone.save()
 
         return Response(work_zone.as_dict())

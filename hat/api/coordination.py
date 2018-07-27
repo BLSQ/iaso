@@ -77,7 +77,7 @@ class CoordinationViewSet(viewsets.ViewSet):
             all_zs = coordination.ZS.all()
             all_as = AS.objects.filter(ZS__in=all_zs)
             serialized_zs = serialize('geojson', all_zs, geometry_field='geom', fields=('name', 'pk',))
-            serialized_as = serialize('geojson', all_as, geometry_field='geom', fields=('name', 'pk',))
+            serialized_as = serialize('geojson', all_as, geometry_field='geom', fields=('name', 'pk', 'ZS',))
             return Response({
                 'areas': json.loads(serialized_as),
                 'zones': json.loads(serialized_zs)

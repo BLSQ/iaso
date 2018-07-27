@@ -5,14 +5,13 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactDOM from 'react-dom';
-import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import * as d3 from 'd3';
+import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
-import Select from 'react-select';
 import * as topojson from 'topojson';
 import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
-import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
+import { getMonthName } from '../utils/routeUtils';
 
 
 // map base layers
@@ -42,17 +41,43 @@ const MESSAGES = defineMessages({
     },
 });
 
-class Map extends Component {
+const MapDatas = (coordination) => {
+    const tempCoordinations = coordination;
+    const tempAreas = [];
+    coordination.current.areas.features.map((area) => {
+        const tempArea = area;
+        coordination.workzones.map((workzone) => {
+            workzone.as_list.map((workingArea) => {
+                if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
+                    tempArea.properties.workzoneId = workzone.id;
+                    tempArea.properties.workzone = workzone.name;
+                    tempArea.properties.workZoneIsNotFull = workzone.total_capacity < workzone.total_population;
+                }
+                return null;
+            });
+            return null;
+        });
+        tempAreas.push(tempArea);
+        return null;
+    });
+    tempCoordinations.current.areas = tempAreas;
+    return tempCoordinations;
+};
+
+const polygonsColor = {
+    notFull: 'red',
+    full: 'green',
+    workzone: '#007fff',
+    notAssigned: '#898789',
+};
+
+class MacroMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
             containers: {},
-            overlays: {},
-
             layers: {
-                // where to plot the selected markers
                 villages: new L.FeatureGroup(),
-                chosenMarker: null, // marker used to bold the chosen item
             },
         };
     }
@@ -68,20 +93,18 @@ class Map extends Component {
     componentDidUpdate(prevProps) {
         const { map } = this;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
-
         map.whenReady(() => {
             // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 this.updateBaseLayer();
             }
 
-            // only call if one of the overlays changed
-            if (hasChanged(prevProps, this.props, 'overlays')) {
-                this.updateOverlays();
+            if (hasChanged(prevProps, this.props, 'coordination')) {
+                this.updateCoordination(MapDatas(this.props.coordination));
             }
 
-            if (hasChanged(prevProps, this.props, 'villages') || hasChanged(prevProps, this.props, 'selectedVillageId')) {
-                this.updateVillages();
+            if (hasChanged(prevProps, this.props, 'currentArea')) {
+                this.updateCoordination(this.props.coordination);
             }
         });
     }
@@ -91,6 +114,46 @@ class Map extends Component {
             this.map.remove();
         }
     }
+
+
+    onEachAsFeature(feature, layer) {
+        layer.bindTooltip(`${feature.properties.name} ${feature.properties.workzone ? `- ${feature.properties.workzone}` : ''}`);
+        layer.setStyle({
+            strokeWidth: 2,
+        });
+        layer.on('click', () => {
+            this.props.selectAs(feature.properties);
+        });
+        layer.on('mouseover', () => {
+            if (feature.properties.workzoneId) {
+                d3.selectAll(`.workzone-${feature.properties.workzoneId}`)
+                    .attr('fill', polygonsColor.workzone);
+            }
+            layer.setStyle({
+                fillOpacity: 0.5,
+            });
+        });
+        layer.on('mouseout', () => {
+            let fillColor = polygonsColor.notAssigned;
+            if (layer.feature.properties.workZoneIsNotFull === true) {
+                fillColor = polygonsColor.notFull;
+            }
+            if (layer.feature.properties.workZoneIsNotFull === false) {
+                fillColor = polygonsColor.full;
+            }
+            d3.selectAll(`.workzone-${feature.properties.workzoneId}`)
+                .attr('fill', fillColor);
+            layer.setStyle({
+                fillOpacity: this.props.currentArea && layer.feature.properties.pk === this.props.currentArea.pk ? 0.5 : 0.2,
+            });
+        });
+        if (this.props.currentArea && (layer.feature.properties.pk === this.props.currentArea.pk)) {
+            layer.setStyle({
+                fillOpacity: 0.5,
+            });
+        }
+    }
+
 
     /*
 ***************************************************************************
@@ -110,13 +173,7 @@ class Map extends Component {
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
-        map.createPane('custom-pane-highlight-buffer');
-        map.createPane('custom-pane-shadows');
         map.createPane('custom-pane-markers');
-        map.createPane('custom-pane-highlight');
-        map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-labels');
-        map.createPane('custom-pane-buffer');
         this.map = map;
     }
 
@@ -125,20 +182,6 @@ class Map extends Component {
         const { formatMessage } = this.props.intl;
         const { containers } = this.state;
         const { map } = this;
-        //
-        // In TOP-LEFT
-        // .- zoom bar
-        //
-        // In TOP-RIGHT
-        // .- fullscreen warning
-        //
-        // In BOTTOM-RIGHT
-        // .- metric scale
-        //
-        // In BOTTOM-LEFT
-        // .- tooltip-small
-        // .- tooltip-large
-        //
 
         // zoom bar control
         L.control.zoombar({
@@ -163,11 +206,6 @@ class Map extends Component {
         tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
         tooltipSmallControl.addTo(map);
         containers.tooltipSmall = tooltipSmallControl.getContainer();
-
-        const tooltipLargeControl = L.control({ position: 'bottomleft' });
-        tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipLargeControl.addTo(map);
-        containers.tooltipLarge = tooltipLargeControl.getContainer();
     }
 
     includeDefaultLayersInMap() {
@@ -176,8 +214,8 @@ class Map extends Component {
         //
         const { map } = this;
         const { layers } = this.state;
-        this.villageGroup = new L.FeatureGroup();
-        map.addLayer(this.villageGroup);
+        this.coordinationGroup = new L.FeatureGroup();
+        map.addLayer(this.coordinationGroup);
         // assign labels overlay using the existent labels group
 
         //
@@ -240,17 +278,9 @@ class Map extends Component {
         }
 
         L.DomEvent.on(map, 'zoomend', () => {
-            plotOrHideLayer(zooms.zone, 'zone');
-            plotOrHideLayer(zooms.area, 'area');
+            // plotOrHideLayer(zooms.zone, 'zone');
+            // plotOrHideLayer(zooms.area, 'area');
         });
-
-        // create marker for the chosen item
-        const chosenMarker = L.circle(map.getCenter(), {
-            className: 'map-marker chosen',
-            pane: 'custom-pane-selected',
-            radius: 0,
-        });
-        layers.chosenMarker = chosenMarker;
     }
 
     /*
@@ -264,7 +294,6 @@ class Map extends Component {
 
         Object.keys(BASE_LAYERS).forEach((key) => {
             const layer = BASE_LAYERS[key];
-
             if (key === baseLayer) {
                 layer.addTo(map);
             } else if (map.hasLayer(layer)) {
@@ -273,67 +302,32 @@ class Map extends Component {
         });
     }
 
-    updateOverlays() {
-        const { map } = this;
 
-        Object.keys(this.props.overlays).forEach((key) => {
-            const active = this.props.overlays[key];
-            const layer = this.state.overlays[key];
-            if (active && !map.hasLayer(layer)) {
-                layer.addTo(map);
-            } else if (!active && map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-    // 'YES': Villages from Z.S.
-    // 'NO': Villages not from Z.S.
-    // 'OTHER': Locations where people are found during campaigns
-    // 'NA': Villages from satellite (unknown)
-    updateVillages() {
-        const { villages } = this.props;
-        this.villageGroup.clearLayers();
-        if (villages) {
-            villages.map((village) => {
-                let color = 'blue';
-                if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
-                    color = '#FF3824';
-                } else {
-                    Object.entries(VillageTypesConstant).map((villageType) => {
-                        if (villageType[1].key === village.village_official) {
-                            const colorTemp = villageType[1].color;
-                            color = colorTemp;
-                        }
-                        return true;
-                    });
+    updateCoordination(coordination) {
+        this.coordinationGroup.clearLayers();
+        const areas = L.geoJSON(coordination.current.areas, {
+            style(feature) {
+                const tempStyle = {
+                    color: polygonsColor.notAssigned,
+                    opacity: 0.5,
+                    className: `workzone-${feature.properties.workzoneId}`,
+                };
+                if (feature.properties.workzoneId) {
+                    tempStyle.color = feature.properties.workZoneIsNotFull ? polygonsColor.notFull : polygonsColor.full;
                 }
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    color,
-                    fillColor: color,
-                    fillOpacity: 0.5,
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                })
-                    .addTo(this.villageGroup)
-                    .on('click', () => {
-                        this.props.selectVillage(village.id);
-                    })
-                    .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
-                    })
-                    .on('mouseout', () => {
-                        this.updateTooltipSmall();
-                    });
-
-                return true;
-            });
-            this.fitToBounds();
-        }
+                return tempStyle;
+            },
+            onEachFeature: (feature, layer) => {
+                this.onEachAsFeature(feature, layer);
+            },
+        });
+        areas.addTo(this.coordinationGroup);
+        this.fitToBounds();
     }
 
     updateTooltipSmall(item) {
         if (item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
+            this.state.containers.tooltipSmall.innerHTML = item.label;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -353,9 +347,9 @@ class Map extends Component {
 
 
         setTimeout(() => {
-            const bounds = this.villageGroup.getBounds();
+            const bounds = this.coordinationGroup.getBounds();
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: MAX_ZOOM });
+                map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [25, 25] });
             }
             map.invalidateSize();
         }, 1);
@@ -401,19 +395,18 @@ class Map extends Component {
         return <div ref={(node) => { this.mapNode = node; }} className="map-container" />;
     }
 }
-Map.defaultProps = {
-    selectedVillageId: null,
-    villages: {},
+MacroMap.defaultProps = {
+    coordination: {},
+    currentArea: null,
 };
 
-Map.propTypes = {
+MacroMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    overlays: PropTypes.object.isRequired,
-    villages: PropTypes.array,
+    coordination: PropTypes.object,
+    currentArea: PropTypes.object,
     intl: intlShape.isRequired,
-    selectVillage: PropTypes.func.isRequired,
-    selectedVillageId: PropTypes.number,
     getShape: PropTypes.func.isRequired,
+    selectAs: PropTypes.func.isRequired,
 };
 
-export default injectIntl(Map);
+export default injectIntl(MacroMap);

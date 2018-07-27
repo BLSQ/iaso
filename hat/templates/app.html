@@ -91,21 +91,27 @@
                                 <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/coordinations' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:management_coord' %}">{% trans 'Coordinations' %}</a>
                                 </li>
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/workzones' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:management_workzone' %}">{% trans 'Champs d\'actions' %}</a>
+                                </li>
                                 <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/teams' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:management_team' %}">{% trans 'Equipes' %}</a>
                                 </li>
                             </ul>
                     </li>
                     {% if perms.cases.view %}
-                        <li class="navigation__menu__item{% if view == 'dashboard:microplanning' %}--active open{% endif %} expand-collapse">
+                        <li class="navigation__menu__item{% if view == 'dashboard:micro' or view == 'dashboard:routes' or view == 'dashboard:macro'%}--active open{% endif %} expand-collapse">
                             <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                            <a href="{% url 'dashboard:microplanning' %}">{% trans 'Microplanning' %}</a>
+                            <a href="{% url 'dashboard:plannings' %}">{% trans 'Plannings' %}</a>
                             <ul>
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:microplanning' and request.path != '/dashboard/microplanning/routes' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:microplanning' %}">{% trans 'Planning' %}</a>
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:macro' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:macro' %}">{% trans 'Macroplanning' %}</a>
                                 </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/microplanning/routes' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:microplanning_routes' %}">{% trans 'Itinéraires' %}</a>
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:micro' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:micro' %}">{% trans 'Microplanning' %}</a>
+                                </li>
+                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:routes' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:routes' %}">{% trans 'Itinéraires' %}</a>
                                 </li>
                             </ul>
                         </li>

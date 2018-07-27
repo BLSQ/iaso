@@ -54,36 +54,22 @@ def stats(request: HttpRequest) -> HttpResponse:
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
-def microplanning(request: HttpRequest) -> HttpResponse:
-
-    return render(request, 'dashboard/microplanning.html', {'STATIC_URL': settings.STATIC_URL})
-
-@login_required()
-@permission_required('cases.view')
-@require_http_methods(['GET'])
 def plannings(request: HttpRequest) -> HttpResponse:
-    plannings = Planning.objects.order_by('-updated_at').filter(deleted=False)
-    coordinations = Coordination.objects.order_by('name')
-    teams = Team.objects.order_by('name')
 
-    return render(request, 'dashboard/plannings.html',
-    {
-        "plannings": plannings,
-        "coordinations": coordinations,
-        "teams": teams
-    })
+    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL})
 
-@login_required()
-@permission_required('cases.view')
-@require_http_methods(['GET'])
-def planning(request: HttpRequest, planning_id) -> HttpResponse:
-    return render(request, 'dashboard/microplanning.html')
+
+# @login_required()
+# @permission_required('cases.view')
+# @require_http_methods(['GET'])
+# def planning(request: HttpRequest, planning_id) -> HttpResponse:
+#     return render(request, 'dashboard/plannings.html')
 
 @login_required()
 @permission_required('cases.view')
 @require_http_methods(['GET'])
 def coordination(request: HttpRequest, coordination_id) -> HttpResponse:
-    return render(request, 'dashboard/microplanning.html')
+    return render(request, 'dashboard/plannings.html')
 
 
 @login_required()

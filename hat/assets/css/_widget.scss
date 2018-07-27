@@ -26,6 +26,16 @@
         display: block;
         width: 100%;
     }
+    &.with-link {
+        position: relative;
+        h2 {
+            width: 80%;
+        }
+        a {
+            position: absolute;
+            right: $padding-unit;
+        }
+    }
 }
 
 .widget__footer {
@@ -92,12 +102,37 @@
     padding: $padding-unit 0;
 }
 
+.widget__content--quarter {
+    display: flex;
+    &>div {
+        flex-basis: 25%;
+        box-sizing: border-box;
+        padding: $padding-unit;
+        >span {
+            font-weight: bold;
+            color: #868486;
+            margin-bottom: 6px;
+            font-size: 12px;
+            display: block;
+        }
+    }
+}
+
 .widget__content--tier {
     display: flex;
     &>div {
         flex-basis: 33%;
         box-sizing: border-box;
         padding: $padding-unit;
+        >span {
+            font-weight: bold;
+            color: #868486;
+            margin-bottom: 6px;
+            font-size: 12px;
+            display: block;
+        }
+    }
+    &>div>section {
         >span {
             font-weight: bold;
             color: #868486;

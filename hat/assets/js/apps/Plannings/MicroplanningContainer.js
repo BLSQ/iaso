@@ -173,7 +173,7 @@ export class MicroplanningContainer extends Component {
                 if (coordination && coordination.zs.length > 0) {
                     const tempParams = clone(params);
                     tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
-                    this.props.dispatch(push(createUrl(tempParams, '')));
+                    this.props.dispatch(push(createUrl(tempParams, 'micro')));
                 } else {
                     this.loadFullData(params);
                 }

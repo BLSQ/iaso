@@ -80,8 +80,11 @@ class WorkZone(models.Model):
             'teams': teams_list,
             'as_list': as_list,
             'total_capacity': total_capacity,
-            'total_population': total_population
-
+            'total_population': total_population,
+            'planning_id': self.planning_id,
+            'coordination_id': self.coordination_id,
+            'planning_name': self.planning.name,
+            'coordination_name': self.coordination.name
         }
 
     def __str__(self):

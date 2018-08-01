@@ -1,10 +1,12 @@
 import gc
 
 from django.core.management.base import BaseCommand
+from django.db.models import F
 
 from hat.cases.models import Case
 from hat.geo.geo_finder import MultipleMatchesFoundException, get_single_village, \
     get_zones_by_name_or_alias, get_areas_by_name_or_alias
+from hat.patient.models import Test
 
 
 def queryset_iterator(queryset, chunksize=1000):
@@ -95,6 +97,9 @@ class Command(BaseCommand):
                     case.normalized_village = village
                     case.normalized_AS = village.AS
                     case.save()
+
+                    # Now update the Test from that case
+                    Test.objects.filter(form=case).update(village=village)
                 success_count += 1
                 print("+++++++ Village found for:", zone_name, area_name, village_name)
             elif areas.count() == 1:

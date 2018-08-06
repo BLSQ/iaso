@@ -6,10 +6,10 @@ from django.http.request import HttpRequest
 from django.http import HttpResponse
 
 @login_required()
-@permission_required('cases.view')
+#@permission_required('quality.change_check')
 @require_http_methods(['GET'])
 def quality_control(request: HttpRequest) -> HttpResponse:
-    return render(request, 'quality/quality_control.html', {'test_count': range(1,7)})
+    return render(request, 'quality/quality_control.html', {'test_count': range(1, 7)})
 
 @login_required()
 @permission_required('cases.view')

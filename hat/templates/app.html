@@ -39,6 +39,7 @@
                                 </ul>
                         </li>
                     {% endif %}
+                {% if perms.cases %}
                     <li class="navigation__menu__item{% if view == 'dashboard:stats' or view == 'dashboard:monthly_report' %}--active open{% endif %} expand-collapse">
                         <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'dashboard:stats' %}">{% trans 'Statistiques' %}</a>
@@ -55,6 +56,8 @@
                             {% endif %}
                         </ul>
                     </li>
+                {% endif %}
+                    {% if perms.cases %}
                     <li class="navigation__menu__item{% if view == 'cases:cases_list' or view == 'cases:analysis' or view == 'cases:duplicates_list' %}--active open{% endif %} expand-collapse">
                         <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'cases:cases_list' %}">{% trans 'Records' %}</a>
@@ -75,6 +78,7 @@
                                     </li>
                                 {% endif %}
                         </ul>
+
                     <li class="navigation__menu__item{% if view == 'dashboard:management' or view == 'dashboard:management_planning' %}--active open{% endif %} expand-collapse">
                         <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                         <a href="{% url 'dashboard:management' %}">{% trans 'Gestion' %}</a>
@@ -99,6 +103,7 @@
                                 </li>
                             </ul>
                     </li>
+                  {% endif %}
                     {% if perms.cases.view %}
                         <li class="navigation__menu__item{% if view == 'dashboard:micro' or view == 'dashboard:routes' or view == 'dashboard:macro'%}--active open{% endif %} expand-collapse">
                             <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
@@ -116,16 +121,21 @@
                             </ul>
                         </li>
                     {% endif %}
-
+                  {% if perms.cases.view %}
                     <li class="navigation__menu__item{% if view == 'dashboard:locator_list' %}--active{% endif %}">
                         <a href="{% url 'dashboard:locator_list' %}">{% trans 'Locator' %}</a>
                     </li>
+                    {% endif %}
+                   {% if perms.cases.view %}
                     <li class="navigation__menu__item{% if view == 'dashboard:vector' %}--active{% endif %}">
                         <a href="{% url 'dashboard:vector' %}">{% trans 'Vector control' %}</a>
                     </li>
+                    {%  endif %}
+                {%  if perms.quality %}
                     <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
                         <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
                     </li>
+                {% endif %}
 
                 </ul>
             {% endwith %}

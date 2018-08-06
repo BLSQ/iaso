@@ -1,70 +1,70 @@
 
 import { loadActions } from '../../../redux/load';
 
-export const LOAD_CURRENT_DEVICE = 'hat/locator/devices/LOAD_CURRENT_DEVICE';
-export const LOAD_DEVICES = 'hat/locator/devices/LOAD_DEVICES';
-export const LOAD_DEVICES_VILLAGES = 'hat/locator/devices/LOAD_DEVICES_VILLAGES';
-export const LOAD_DEVICES_VILLAGES_YEAR = 'hat/locator/devices/LOAD_DEVICES_VILLAGES_YEAR';
-export const LOAD_DEVICES_VILLAGES_MONTH = 'hat/locator/devices/LOAD_DEVICES_VILLAGES_MONTH';
-export const FETCH_ACTION = 'hat/locator/devices/FETCH_ACTION';
-export const RESET_DEVICES = 'hat/locator/devices/RESET_DEVICES';
+export const LOAD_CURRENT_DETAIL = 'hat/locator/detail/LOAD_CURRENT_DETAIL';
+export const LOAD_DETAIL = 'hat/locator/detail/LOAD_DETAIL';
+export const LOAD_DETAIL_VILLAGES = 'hat/locator/detail/LOAD_DETAIL_VILLAGES';
+export const LOAD_DETAIL_VILLAGES_YEAR = 'hat/locator/detail/LOAD_DETAIL_VILLAGES_YEAR';
+export const LOAD_DETAIL_VILLAGES_MONTH = 'hat/locator/detail/LOAD_DETAIL_VILLAGES_MONTH';
+export const FETCH_ACTION = 'hat/locator/detail/FETCH_ACTION';
+export const RESET_DETAIL = 'hat/locator/detail/RESET_DETAIL';
 
 
 const req = require('superagent');
 
-export const resetDevices = () => ({
-    type: RESET_DEVICES,
+export const resetDetails = () => ({
+    type: RESET_DETAIL,
 });
 
-export const loadCurrentDevice = payload => ({
-    type: LOAD_CURRENT_DEVICE,
+export const loadCurrentDetail = payload => ({
+    type: LOAD_CURRENT_DETAIL,
     payload,
 });
 
-export const loadDevices = (payload, deviceId = null, dispatch = () => { }) => {
+export const loadDetails = (payload, deviceId = null, dispatch = () => { }) => {
     if (deviceId) {
         const currentDevice = payload.filter(device => device.id === deviceId)[0];
-        dispatch(loadCurrentDevice(currentDevice));
+        dispatch(loadCurrentDetail(currentDevice));
     }
     return ({
-        type: LOAD_DEVICES,
+        type: LOAD_DETAIL,
         payload,
     });
 };
 
-export const loadDevicesVillages = payload => ({
-    type: LOAD_DEVICES_VILLAGES,
+export const loadDetailsVillages = payload => ({
+    type: LOAD_DETAIL_VILLAGES,
     payload,
 });
 
 
-export const loadDevicesVillagesYear = payload => ({
-    type: LOAD_DEVICES_VILLAGES_YEAR,
+export const loadDetailsVillagesYear = payload => ({
+    type: LOAD_DETAIL_VILLAGES_YEAR,
     payload,
 });
 
 
-export const loadDevicesVillagesMonth = payload => ({
-    type: LOAD_DEVICES_VILLAGES_MONTH,
+export const loadDetailsVillagesMonth = payload => ({
+    type: LOAD_DETAIL_VILLAGES_MONTH,
     payload,
 });
 
 
-export const fetchDevices = (dispatch, deviceId) => {
+export const fetchDetails = (dispatch, deviceId) => {
     req
         .get('/api/datasets/device_status')
         .then((result) => {
-            const allDevices = result.body;
-            dispatch(loadDevices(allDevices, deviceId, dispatch));
+            const allDetails = result.body;
+            dispatch(loadDetails(allDetails, deviceId, dispatch));
         })
-        .catch(err => (console.error(`Error while fetching devices ${err}`)));
+        .catch(err => (console.error(`Error while fetching detail ${err}`)));
     return ({
         type: FETCH_ACTION,
     });
 };
 
 
-export const fetchDevicesVillages = (
+export const fetchDetailsVillages = (
     dispatch,
     deviceId,
     from = null,
@@ -92,15 +92,15 @@ export const fetchDevicesVillages = (
                 dispatch(loadActions.successLoadingNoData());
             }
             if (grouping === 'villageyear') {
-                dispatch(loadDevicesVillagesYear({ list, deviceId }));
+                dispatch(loadDetailsVillagesYear({ list, deviceId }));
             }
             if (grouping === 'month') {
-                dispatch(loadDevicesVillagesMonth({ list, deviceId }));
+                dispatch(loadDetailsVillagesMonth({ list, deviceId }));
             }
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
-            console.error(`Error while fetching devices ${err}`);
+            console.error(`Error while fetching detail ${err}`);
         });
     return ({
         type: FETCH_ACTION,
@@ -108,15 +108,15 @@ export const fetchDevicesVillages = (
 };
 
 
-export const devicesActions = {
-    loadCurrentDevice,
-    fetchDevices,
-    fetchDevicesVillages,
-    resetDevices,
-    loadDevicesVillages,
+export const detailsActions = {
+    loadCurrentDetail,
+    fetchDetails,
+    fetchDetailsVillages,
+    resetDetails,
+    loadDetailsVillages,
 };
 
-export const devicesInitialState = {
+export const detailsInitialState = {
     current: undefined,
     list: [],
     villages: [],
@@ -131,14 +131,14 @@ export const devicesInitialState = {
     total: null,
 };
 
-export const devicesReducer = (state = devicesInitialState, action = {}) => {
+export const detailsReducer = (state = detailsInitialState, action = {}) => {
     switch (action.type) {
-        case LOAD_CURRENT_DEVICE: {
+        case LOAD_CURRENT_DETAIL: {
             const current = action.payload;
             return { ...state, current };
         }
 
-        case LOAD_DEVICES_VILLAGES: {
+        case LOAD_DETAIL_VILLAGES: {
             const villages = action.payload;
             return {
                 ...state,
@@ -146,7 +146,7 @@ export const devicesReducer = (state = devicesInitialState, action = {}) => {
             };
         }
 
-        case LOAD_DEVICES_VILLAGES_YEAR: {
+        case LOAD_DETAIL_VILLAGES_YEAR: {
             const list = action.payload.list.result;
             const deviceId = action.payload;
             return {
@@ -158,7 +158,7 @@ export const devicesReducer = (state = devicesInitialState, action = {}) => {
             };
         }
 
-        case LOAD_DEVICES_VILLAGES_MONTH: {
+        case LOAD_DETAIL_VILLAGES_MONTH: {
             const list = action.payload.list.result;
             const deviceId = action.payload;
             const { total } = action.payload.list;
@@ -176,8 +176,8 @@ export const devicesReducer = (state = devicesInitialState, action = {}) => {
             return state;
         }
 
-        case RESET_DEVICES: {
-            return devicesInitialState;
+        case RESET_DETAIL: {
+            return detailsInitialState;
         }
 
         default:

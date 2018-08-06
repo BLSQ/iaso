@@ -9,7 +9,7 @@ import {
     defineMessages,
 } from 'react-intl';
 
-import { devicesActions } from '../redux/devices';
+import { detailsActions } from '../redux/details';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { getRequest, createUrl } from '../../../utils/fetchData';
@@ -116,24 +116,37 @@ const renderConfirmationPourcentage = (total) => {
 };
 
 
-export class ManagementDevicesDetails extends Component {
+export class ManagementDetails extends Component {
     constructor(props) {
         super(props);
         const {
             dispatch,
             currentDevice,
+            currentTeam,
             params: {
-                id,
+                deviceId,
                 from,
                 to,
                 teamId,
             },
         } = props;
-        if (!currentDevice) {
-            dispatch(devicesActions.fetchDevices(dispatch, parseInt(id, 10)));
-        } else {
-            dispatch(devicesActions.fetchDevicesVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear'));
-            dispatch(devicesActions.fetchDevicesVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month'));
+        if (deviceId) {
+            if (!currentDevice) {
+                dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10)));
+            } else {
+                dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear'));
+                dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month'));
+            }
+        }
+        if (teamId) {
+            if (!currentTeam) {
+                console.log('get current team');
+                // dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10)));
+            } else {
+                console.log('get data');
+                // dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear'));
+                // dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month'));
+            }
         }
         const { formatMessage } = this.props.intl;
 
@@ -215,17 +228,17 @@ export class ManagementDevicesDetails extends Component {
             teamId !== this.props.params.teamId) && !loading);
 
         if (fetchVillagesYear) {
-            dispatch(devicesActions.fetchDevicesVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear', !fetchVillagesMonth));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear', !fetchVillagesMonth));
         }
 
         if (fetchVillagesMonth) {
-            dispatch(devicesActions.fetchDevicesVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month', true));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month', true));
         }
     }
 
     componentWillUnmount() {
         const { dispatch } = this.props;
-        dispatch(devicesActions.resetDevices());
+        dispatch(detailsActions.resetDetails());
     }
 
     getVillageTableUrl() {
@@ -254,6 +267,7 @@ export class ManagementDevicesDetails extends Component {
         const { baseLayer } = this.props.map;
         const {
             currentDevice,
+            currentTeam,
             villages,
             villagesYear,
             villagesMonth,
@@ -263,6 +277,7 @@ export class ManagementDevicesDetails extends Component {
             },
         } = this.props;
         const { formatMessage } = this.props.intl;
+        console.log(currentTeam);
         return (
             <section>
                 {
@@ -281,7 +296,7 @@ export class ManagementDevicesDetails extends Component {
                             <button
                                 className="button--back"
                                 onClick={() => (this.props.redirectTo('devices', {
-                                    order: params.deviceOrder,
+                                    order: params.detailOrder,
                                 }))}
                             >
                                 <i className="fa fa-arrow-left" />{' '}
@@ -451,17 +466,19 @@ export class ManagementDevicesDetails extends Component {
     }
 }
 
-const ManagementDevicesDetailsWithIntl = injectIntl(ManagementDevicesDetails);
+const ManagementDetailsWithIntl = injectIntl(ManagementDetails);
 
 
-ManagementDevicesDetails.defaultProps = {
+ManagementDetails.defaultProps = {
     currentDevice: undefined,
+    currentTeam: undefined,
 };
 
-ManagementDevicesDetails.propTypes = {
+ManagementDetails.propTypes = {
     params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     currentDevice: PropTypes.object,
+    currentTeam: PropTypes.object,
     intl: PropTypes.object.isRequired,
     villages: PropTypes.array.isRequired,
     villagesYear: PropTypes.object.isRequired,
@@ -475,11 +492,12 @@ ManagementDevicesDetails.propTypes = {
 };
 const MapStateToProps = state => ({
     config: state.config,
-    currentDevice: state.devices.current,
-    allDevices: state.devices.currentDevice,
-    villages: state.devices.villages,
-    villagesYear: state.devices.villagesYear,
-    villagesMonth: state.devices.villagesMonth,
+    currentDevice: state.details.current,
+    currentTeam: state.teams.current,
+    allDevices: state.details.currentDevice,
+    villages: state.details.villages,
+    villagesYear: state.details.villagesYear,
+    villagesMonth: state.details.villagesMonth,
     map: state.map,
     load: state.load,
 });
@@ -494,10 +512,10 @@ const getShapePath = (type) => {
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setVillages: villageList => dispatch(devicesActions.loadDevicesVillages(villageList)),
+    setVillages: villageList => dispatch(detailsActions.loadDetailsVillages(villageList)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     getShape: type => getRequest(getShapePath(type), dispatch),
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(ManagementDevicesDetailsWithIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(ManagementDetailsWithIntl);

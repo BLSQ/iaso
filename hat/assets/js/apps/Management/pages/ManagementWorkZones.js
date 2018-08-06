@@ -96,6 +96,7 @@ class ManagementWorkZones extends React.Component {
                         defaultMessage: 'Actions',
                         id: 'main.actions',
                     }),
+                    width: 250,
                     sortable: false,
                     resizable: false,
                     Cell: settings => (

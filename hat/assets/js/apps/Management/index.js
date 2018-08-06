@@ -36,7 +36,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDevicesPage}
         />,
         <Route
-            path="/devices(/detailOrder/:detailOrder)(/deviceId/:deviceId)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
+            path="/detail(/coordination_id/:coordination_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/deviceId/:deviceId)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
             component={ManagementDetailsPage}
         />,
         <Route
@@ -55,7 +55,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
-        <Redirect path="*" to="/devices" />,
+        // <Redirect path="*" to="/devices" />,
     ];
 
     let history = useRouterHistory(createHistory)({

@@ -27,23 +27,23 @@ import LoadingSpinner from '../../../components/loading-spinner';
 const MESSAGES = defineMessages({
     table: {
         defaultMessage: 'Liste',
-        id: 'teamsdevices.label.list',
+        id: 'details.label.list',
     },
     map: {
         defaultMessage: 'Carte',
-        id: 'teamsdevices.label.map',
+        id: 'details.label.map',
     },
     stats: {
         defaultMessage: 'Statistiques',
-        id: 'teamsdevices.label.stats',
+        id: 'details.label.stats',
     },
     testStatsTitle: {
         defaultMessage: 'Nombre de tests',
-        id: 'teamsdevices.title.testStatsTitle',
+        id: 'details.title.testStatsTitle',
     },
     confirmationStatsTitle: {
         defaultMessage: 'Nombre de confirmations',
-        id: 'teamsdevices.title.confirmationStatsTitle',
+        id: 'details.title.confirmationStatsTitle',
     },
 });
 
@@ -68,29 +68,35 @@ const renderTestPourcentage = (total) => {
     const cattPercentage = getPercentage(total.total_catt, total.total_catt_positive);
     const rdtPercentage = getPercentage(total.total_rdt, total.total_rdt_positive);
     return (
-        <div className="align-center bold large-text">
+        <div className="align-right bold large-text">
+            <div className="padding-bottom">
+                {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="test(s) CATT effectué(s)" />
+            </div>
             {
                 total.total_catt === 0 &&
                 <div className="padding-bottom">
-                    <FormattedMessage id="teamsdevices.label.noCATT" defaultMessage="Aucun test CATT" />
+                    <FormattedMessage id="details.label.noCATT" defaultMessage="Aucun test CATT" />
                 </div>
             }
             {
                 total.total_catt !== 0 &&
                 <div className="padding-bottom">
-                    {cattPercentage}% CATT <FormattedMessage id="teamsdevices.label.positive" defaultMessage="Positif" />
+                    {cattPercentage}% CATT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
                 </div>
             }
+            <div className="padding-bottom">
+                {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="test(s) RDT effectué(s)" />
+            </div>
             {
                 total.total_rdt === 0 &&
                 <div>
-                    <FormattedMessage id="teamsdevices.label.noRDT" defaultMessage="Aucun test RDT" />
+                    <FormattedMessage id="details.label.noRDT" defaultMessage="Aucun test RDT" />
                 </div>
             }
             {
                 total.total_rdt !== 0 &&
                 <div>
-                    {rdtPercentage}% RDT <FormattedMessage id="teamsdevices.label.positive" defaultMessage="Positif" />
+                    {rdtPercentage}% RDT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
                 </div>
             }
         </div>);
@@ -99,17 +105,23 @@ const renderTestPourcentage = (total) => {
 const renderConfirmationPourcentage = (total) => {
     const confirmationPercentage = getPercentage(total.total_confirmation_tests, total.total_confirmation_tests_positive);
     return (
-        <div className="align-center bold large-text">
+        <div className="align-right bold large-text">
+            <div className="padding-bottom">
+                {formatThousand(total.total_catt_positive + total.total_rdt_positive)} <FormattedMessage id="details.label.suspect" defaultMessage="test(s) suspects" />
+            </div>
+            <div className="padding-bottom">
+                {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="test(s) de confirmation" />
+            </div>
             {
                 total.total_confirmation_tests === 0 &&
                 <div>
-                    <FormattedMessage id="teamsdevices.label.noConfirmation" defaultMessage="Aucun test de confirmation" />
+                    <FormattedMessage id="details.label.noConfirmation" defaultMessage="Aucun test de confirmation" />
                 </div>
             }
             {
                 total.total_confirmation_tests !== 0 &&
                 <div>
-                    {confirmationPercentage}% <FormattedMessage id="teamsdevices.label.positiveConfirmation" defaultMessage="de tests de confirmation positifs" />
+                    {confirmationPercentage}% <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="de tests de confirmation positif" />
                 </div>
             }
         </div>);
@@ -121,8 +133,7 @@ export class ManagementDetails extends Component {
         super(props);
         const {
             dispatch,
-            currentDevice,
-            currentTeam,
+            currentDetail,
             params: {
                 deviceId,
                 from,
@@ -130,24 +141,19 @@ export class ManagementDetails extends Component {
                 teamId,
             },
         } = props;
-        if (deviceId) {
-            if (!currentDevice) {
-                dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10)));
-            } else {
-                dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear'));
-                dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month'));
+
+        if (!currentDetail) {
+            if (deviceId) {
+                dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10), '/api/datasets/device_status'));
             }
-        }
-        if (teamId) {
-            if (!currentTeam) {
-                console.log('get current team');
-                // dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10)));
-            } else {
-                console.log('get data');
-                // dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear'));
-                // dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month'));
+            if (teamId) {
+                dispatch(detailsActions.fetchDetails(dispatch, parseInt(teamId, 10), '/api/teams'));
             }
+        } else {
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'villageyear'));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'month'));
         }
+
         const { formatMessage } = this.props.intl;
 
         this.state = {
@@ -157,14 +163,14 @@ export class ManagementDetails extends Component {
                     {
                         Header: formatMessage({
                             defaultMessage: 'Village',
-                            id: 'teamsdevices.label.village',
+                            id: 'details.label.village',
                         }),
                         accessor: 'village__name',
                     },
                     {
                         Header: formatMessage({
                             defaultMessage: 'Jour',
-                            id: 'teamsdevices.label.day',
+                            id: 'details.label.day',
                         }),
                         accessor: 'date',
                         Cell: settings => (<FormattedDate value={new Date(settings.original.date)} />),
@@ -206,33 +212,29 @@ export class ManagementDetails extends Component {
             dispatch,
             villagesYear,
             villagesMonth,
-            currentDevice,
+            currentDetail,
             params: {
                 from,
                 to,
-                teamId,
             },
             load: {
                 loading,
             },
         } = newProps;
 
-        const fetchVillagesYear = ((!villagesYear.deviceId ||
+        const fetchVillagesYear = ((!villagesYear.detailId ||
             from !== this.props.params.from ||
-            to !== this.props.params.to ||
-            teamId !== this.props.params.teamId) && !loading);
+            to !== this.props.params.to) && !loading);
 
-        const fetchVillagesMonth = ((!villagesMonth.deviceId ||
+        const fetchVillagesMonth = ((!villagesMonth.detailId ||
             from !== this.props.params.from ||
-            to !== this.props.params.to ||
-            teamId !== this.props.params.teamId) && !loading);
-
+            to !== this.props.params.to) && !loading);
         if (fetchVillagesYear) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'villageyear', !fetchVillagesMonth));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'villageyear', !fetchVillagesMonth));
         }
 
         if (fetchVillagesMonth) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDevice.device_id, from, to, teamId, 'month', true));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'month', true));
         }
     }
 
@@ -243,22 +245,18 @@ export class ManagementDetails extends Component {
 
     getVillageTableUrl() {
         const {
-            currentDevice,
+            currentDetail,
             params: {
                 from,
                 to,
-                teamId,
             },
         } = this.props;
-        let url = `/api/teststats/?device_id=${currentDevice.device_id}&grouping=villageday`;
+        let url = currentDetail.device_id ? `/api/teststats/?device_id=${currentDetail.device_id}&grouping=villageday` : `/api/teststats/?team_id=${currentDetail.id}&grouping=villageday`;
         if (from) {
             url += `&from=${from}`;
         }
         if (to) {
             url += `&to=${to}`;
-        }
-        if (teamId) {
-            url += `&team_id=${teamId}`;
         }
         return url;
     }
@@ -266,8 +264,7 @@ export class ManagementDetails extends Component {
     render() {
         const { baseLayer } = this.props.map;
         const {
-            currentDevice,
-            currentTeam,
+            currentDetail,
             villages,
             villagesYear,
             villagesMonth,
@@ -277,7 +274,6 @@ export class ManagementDetails extends Component {
             },
         } = this.props;
         const { formatMessage } = this.props.intl;
-        console.log(currentTeam);
         return (
             <section>
                 {
@@ -291,27 +287,56 @@ export class ManagementDetails extends Component {
                     </div>
                 }
                 <div className="widget__container">
-                    <div className="widget__header">
-                        <h2>
-                            <button
-                                className="button--back"
-                                onClick={() => (this.props.redirectTo('devices', {
-                                    order: params.detailOrder,
-                                }))}
-                            >
-                                <i className="fa fa-arrow-left" />{' '}
-                            </button>
+                    {
+                        currentDetail &&
+                        currentDetail.device_id &&
+                        <div className="widget__header">
+                            <h2>
+                                <button
+                                    className="button--back"
+                                    onClick={() => (this.props.redirectTo('devices', {
+                                        order: params.deviceOrder,
+                                    }))}
+                                >
+                                    <i className="fa fa-arrow-left" />{' '}
+                                </button>
 
-                            {
-                                currentDevice &&
-                                <div>
-                                    <FormattedMessage id="teamsdevices.label.user" defaultMessage="Utilisateur" />:{` ${currentDevice.last_user}`}
-                                    {' - '}
-                                    <FormattedMessage id="teamsdevices.label.team" defaultMessage="Equipe" />:{` ${currentDevice.last_team}`}
-                                </div>
-                            }
-                        </h2>
-                    </div>
+                                {
+                                    currentDetail &&
+                                    <div>
+                                        <FormattedMessage id="details.label.user" defaultMessage="Utilisateur" />:{` ${currentDetail.last_user}`}
+                                        {' - '}
+                                        <FormattedMessage id="details.label.team" defaultMessage="Equipe" />:{` ${currentDetail.last_team}`}
+                                    </div>
+                                }
+                            </h2>
+                        </div>
+                    }
+                    {
+                        currentDetail &&
+                        currentDetail.name &&
+                        <div className="widget__header">
+                            <h2>
+                                <button
+                                    className="button--back"
+                                    onClick={() => (this.props.redirectTo('teams', {
+                                        coordination_id: params.coordination_id,
+                                        type: params.type,
+                                        order: params.teamOrder,
+                                    }))}
+                                >
+                                    <i className="fa fa-arrow-left" />{' '}
+                                </button>
+
+                                {
+                                    currentDetail &&
+                                    <div>
+                                        <FormattedMessage id="details.label.team" defaultMessage="Equipe" />:{` ${currentDetail.name}`}
+                                    </div>
+                                }
+                            </h2>
+                        </div>
+                    }
                 </div>
 
                 <div className="widget__container">
@@ -321,7 +346,7 @@ export class ManagementDetails extends Component {
                                 dateFrom={params.from}
                                 dateTo={params.to}
                                 onChangeDate={(from, to) =>
-                                    this.props.redirectTo('devices', {
+                                    this.props.redirectTo('detail', {
                                         ...params,
                                         from,
                                         to,
@@ -331,7 +356,7 @@ export class ManagementDetails extends Component {
                     </div>
                 </div>
                 <TabsComponent
-                    defaultPath="devices"
+                    defaultPath="detail"
                     params={params}
                     selectTab={key => (this.setState({ currentTab: key }))}
                     tabs={[
@@ -343,7 +368,7 @@ export class ManagementDetails extends Component {
                 />
                 <div className={`widget__container no-border ${this.state.currentTab !== 'table' ? 'hidden' : ''}`}>
                     {
-                        currentDevice &&
+                        currentDetail &&
                         villages &&
                         <CustomTableComponent
                             selectable
@@ -354,7 +379,7 @@ export class ManagementDetails extends Component {
                             columns={this.state.tableColumns}
                             defaultSorted={[{ id: 'date', desc: false }]}
                             params={this.props.params}
-                            defaultPath="devices"
+                            defaultPath="detail"
                             onRowClicked={() => { }}
                             multiSort
                             onDataLoaded={villagesList => this.props.setVillages(villagesList)}
@@ -373,18 +398,18 @@ export class ManagementDetails extends Component {
                 <div className={`widget__container ${this.state.currentTab !== 'map' ? 'hidden' : ''}`}>
                     {
                         (loading ||
-                            !currentDevice) &&
+                            !currentDetail) &&
                             <div className="widget__content">
                                 {' '}
                             </div>
                     }
                     {
                         !loading &&
-                        currentDevice &&
+                        currentDetail &&
                         villages.length === 0 &&
                         <div className="widget__content">
                             <FormattedMessage
-                                id="teamsdevices.label.noresult"
+                                id="details.label.noresult"
                                 defaultMessage="Aucun résultat"
                             />
                         </div>
@@ -416,7 +441,7 @@ export class ManagementDetails extends Component {
                 <section className={`${this.state.currentTab !== 'stats' ? 'hidden' : ''}`}>
                     {
                         (loading ||
-                            !currentDevice) &&
+                            !currentDetail) &&
                             <div className="widget__container">
                                 <div className="widget__content">
                                     {' '}
@@ -426,12 +451,12 @@ export class ManagementDetails extends Component {
 
                     {
                         !loading &&
-                        currentDevice &&
+                        currentDetail &&
                         villagesMonth.list.length === 0 &&
                         <div className="widget__container">
                             <div className="widget__content">
                                 <FormattedMessage
-                                    id="teamsdevices.label.noresult"
+                                    id="details.label.noresult"
                                     defaultMessage="Aucun résultat"
                                 />
                             </div>
@@ -470,15 +495,14 @@ const ManagementDetailsWithIntl = injectIntl(ManagementDetails);
 
 
 ManagementDetails.defaultProps = {
-    currentDevice: undefined,
+    currentDetail: undefined,
     currentTeam: undefined,
 };
 
 ManagementDetails.propTypes = {
     params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    currentDevice: PropTypes.object,
-    currentTeam: PropTypes.object,
+    currentDetail: PropTypes.object,
     intl: PropTypes.object.isRequired,
     villages: PropTypes.array.isRequired,
     villagesYear: PropTypes.object.isRequired,
@@ -492,9 +516,7 @@ ManagementDetails.propTypes = {
 };
 const MapStateToProps = state => ({
     config: state.config,
-    currentDevice: state.details.current,
-    currentTeam: state.teams.current,
-    allDevices: state.details.currentDevice,
+    currentDetail: state.details.current,
     villages: state.details.villages,
     villagesYear: state.details.villagesYear,
     villagesMonth: state.details.villagesMonth,

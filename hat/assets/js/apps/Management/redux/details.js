@@ -21,9 +21,9 @@ export const loadCurrentDetail = payload => ({
     payload,
 });
 
-export const loadDetails = (payload, deviceId = null, dispatch = () => { }) => {
-    if (deviceId) {
-        const currentDevice = payload.filter(device => device.id === deviceId)[0];
+export const loadDetails = (payload, detailId = null, dispatch = () => { }) => {
+    if (detailId) {
+        const currentDevice = payload.filter(device => device.id === detailId)[0];
         dispatch(loadCurrentDetail(currentDevice));
     }
     return ({
@@ -50,12 +50,12 @@ export const loadDetailsVillagesMonth = payload => ({
 });
 
 
-export const fetchDetails = (dispatch, deviceId) => {
+export const fetchDetails = (dispatch, detailId, url) => {
     req
-        .get('/api/datasets/device_status')
+        .get(url)
         .then((result) => {
             const allDetails = result.body;
-            dispatch(loadDetails(allDetails, deviceId, dispatch));
+            dispatch(loadDetails(allDetails, detailId, dispatch));
         })
         .catch(err => (console.error(`Error while fetching detail ${err}`)));
     return ({
@@ -66,22 +66,19 @@ export const fetchDetails = (dispatch, deviceId) => {
 
 export const fetchDetailsVillages = (
     dispatch,
-    deviceId,
+    detailKey,
+    detailId,
     from = null,
     to = null,
-    teamId = null,
     grouping,
     stopLoading = false,
 ) => {
-    let url = `/api/teststats/?device_id=${deviceId}&grouping=${grouping}`;
+    let url = `/api/teststats/?${detailKey}=${detailId}&grouping=${grouping}`;
     if (from) {
         url += `&from=${from}`;
     }
     if (to) {
         url += `&to=${to}`;
-    }
-    if (teamId) {
-        url += `&team_id=${teamId}`;
     }
     dispatch(loadActions.startLoading());
     req
@@ -92,10 +89,10 @@ export const fetchDetailsVillages = (
                 dispatch(loadActions.successLoadingNoData());
             }
             if (grouping === 'villageyear') {
-                dispatch(loadDetailsVillagesYear({ list, deviceId }));
+                dispatch(loadDetailsVillagesYear({ list, detailId }));
             }
             if (grouping === 'month') {
-                dispatch(loadDetailsVillagesMonth({ list, deviceId }));
+                dispatch(loadDetailsVillagesMonth({ list, detailId }));
             }
         })
         .catch((err) => {
@@ -122,11 +119,11 @@ export const detailsInitialState = {
     villages: [],
     villagesYear: {
         list: [],
-        deviceId: null,
+        detailId: null,
     },
     villagesMonth: {
         list: [],
-        deviceId: null,
+        detailId: null,
     },
     total: null,
 };
@@ -148,25 +145,25 @@ export const detailsReducer = (state = detailsInitialState, action = {}) => {
 
         case LOAD_DETAIL_VILLAGES_YEAR: {
             const list = action.payload.list.result;
-            const deviceId = action.payload;
+            const detailId = action.payload;
             return {
                 ...state,
                 villagesYear: {
                     list,
-                    deviceId,
+                    detailId,
                 },
             };
         }
 
         case LOAD_DETAIL_VILLAGES_MONTH: {
             const list = action.payload.list.result;
-            const deviceId = action.payload;
+            const detailId = action.payload;
             const { total } = action.payload.list;
             return {
                 ...state,
                 villagesMonth: {
                     list,
-                    deviceId,
+                    detailId,
                     total,
                 },
             };

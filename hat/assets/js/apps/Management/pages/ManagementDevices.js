@@ -117,9 +117,9 @@ export class ManagementDevices extends Component {
         const { order } = this.props.params;
         const tempParams = this.props.params;
         delete tempParams.order;
-        this.props.redirectTo('devices', {
+        this.props.redirectTo('detail', {
             ...tempParams,
-            detailOrder: order,
+            deviceOrder: order,
             deviceId: deviceItem.id,
             from,
             to,

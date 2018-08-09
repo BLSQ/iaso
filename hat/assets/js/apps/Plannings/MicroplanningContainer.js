@@ -27,23 +27,6 @@ const request = require('superagent');
 // The name is used as the key in the results payload.
 export const urls = [
     {
-        name: 'villagesMap',
-        url: ' /api/villages/',
-        mock: [{
-            AS: 'Muwanda-koso',
-            confirmedCases: 1,
-            lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
-            village: 'Polongo',
-            ZS: 'Mosango',
-        }, {
-            AS: 'Fula',
-            confirmedCases: 2,
-            lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
-            village: 'Kikonzi-mf',
-            ZS: 'Yasa Bonga',
-        }],
-    },
-    {
         name: 'locations',
         url: '/api/zs/',
         mock: [
@@ -134,32 +117,34 @@ export class MicroplanningContainer extends Component {
 
     getAdditionalSelectData(params) {
         const { dispatch } = this.props;
-        request
-            .get('/api/assignations/')
-            .query(params)
-            .then((result) => {
-                dispatch(selectionActions.selectItems(result.body, false));
-            })
-            .catch((err) => {
-                console.error(err);
-                console.error('Error when fetching assignations details');
-            });
-        if (params.team_id) {
+        if (!this.props.isTest) {
             request
-                .get(`/api/teams/${params.team_id}`)
+                .get('/api/assignations/')
                 .query(params)
                 .then((result) => {
-                    const geoScope = {};
-                    result.body.AS.map((aire) => {
-                        geoScope[aire.id] = aire;
-                        return true;
-                    });
-                    dispatch(selectionActions.updateGeoScope(geoScope));
+                    dispatch(selectionActions.selectItems(result.body, false));
                 })
                 .catch((err) => {
                     console.error(err);
-                    console.error('Error when fetching geo scope');
+                    console.error('Error when fetching assignations details');
                 });
+            if (params.team_id) {
+                request
+                    .get(`/api/teams/${params.team_id}`)
+                    .query(params)
+                    .then((result) => {
+                        const geoScope = {};
+                        result.body.AS.map((aire) => {
+                            geoScope[aire.id] = aire;
+                            return true;
+                        });
+                        dispatch(selectionActions.updateGeoScope(geoScope));
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        console.error('Error when fetching geo scope');
+                    });
+            }
         }
     }
 
@@ -206,16 +191,21 @@ export class MicroplanningContainer extends Component {
     render() {
         return (
             <MicroplanningComponent
+                isTest={this.props.isTest}
                 params={this.props.params}
                 launchAlgo={algoParams => this.launchAlgo(algoParams)}
             />
         );
     }
 }
+MicroplanningContainer.defaultProps = {
+    isTest: false,
+};
 
 MicroplanningContainer.propTypes = {
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
+    isTest: PropTypes.bool,
 };
 
 const MapStateToProps = state => ({

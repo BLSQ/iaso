@@ -50,7 +50,7 @@ const checkSuccess = calls => checkAction(calls, LOAD_SUCCESS);
  * - redirect the page to 'all' if data are not available for a location
  *
  */
-describe.only('MonthlyReportContainer Loading Data', () => {
+describe('MonthlyReportContainer Loading Data', () => {
     let reduxStore;
     let defaultProps;
     let nockScope;

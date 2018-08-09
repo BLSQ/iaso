@@ -1,6 +1,6 @@
 import React from 'react';
-import { ReactDOM, TestUtils } from 'react-dom';
-// import TestUtils from 'react-addons-test-utils';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 

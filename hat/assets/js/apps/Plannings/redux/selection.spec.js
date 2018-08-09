@@ -2,7 +2,7 @@
 import assert from 'assert';
 import * as selection from './selection';
 
-describe('Microplanning selection redux', () => {
+xdescribe('Microplanning selection redux', () => {
     describe('actions', () => {
         it('should create the disable selection action', () => {
             assert.deepEqual(

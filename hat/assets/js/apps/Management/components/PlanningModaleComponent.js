@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 
-ReactModal.setAppElement('.container--main');
-
 class PlanningModale extends Component {
     constructor(props) {
         super(props);
@@ -13,6 +11,10 @@ class PlanningModale extends Component {
             planning: props.planning,
             isChanged: false,
         };
+    }
+
+    componentWillMount() {
+        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {

@@ -1,12 +1,15 @@
 const jsdom = require('jsdom');
 const babelRegister = require('babel-register');
 
+const { JSDOM } = jsdom;
+
 babelRegister({
     presets: ['es2015', 'react', 'stage-2'],
     extensions: ['', '.js'],
 });
 
-global.document = jsdom.jsdom('<!doctype html><html><body></body></html>');
+const { document } = (new JSDOM('<!doctype html><html><body></body></html>')).window;
+global.document = document;
 global.window = document.defaultView;
 global.window.device = { uuid: 'string' };
 

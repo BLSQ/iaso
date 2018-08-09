@@ -7,14 +7,16 @@ import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 import { injectIntl } from 'react-intl';
 
-ReactModal.setAppElement('.container--main');
-
 class AreaModal extends Component {
     constructor(props) {
         super(props);
         this.state = {
             showAreaModal: props.showAreaModal,
         };
+    }
+
+    componentWillMount() {
+        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {

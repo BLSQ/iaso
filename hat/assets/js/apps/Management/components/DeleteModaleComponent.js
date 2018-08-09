@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 
-ReactModal.setAppElement('.container--main');
-
 
 class DeleteModale extends Component {
     constructor(props) {
@@ -13,6 +11,10 @@ class DeleteModale extends Component {
         this.state = {
             showModale: props.showModale,
         };
+    }
+
+    componentWillMount() {
+        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {

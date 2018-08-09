@@ -4,8 +4,6 @@ import Select from 'react-select';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 
-ReactModal.setAppElement('.container--main');
-
 
 class TeamModale extends Component {
     constructor(props) {
@@ -15,6 +13,10 @@ class TeamModale extends Component {
             team: props.team,
             isChanged: false,
         };
+    }
+
+    componentWillMount() {
+        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {

@@ -25,7 +25,7 @@ const createNockScopeCases = () => {
     return ns;
 };
 
-describe.only('ListLocator Loading Data', () => {
+describe('ListLocator Loading Data', () => {
     window.HTMLCanvasElement.prototype.getContext = () => ({});
     let reduxStore;
     let defaultProps;

@@ -123,8 +123,22 @@ class Profile(models.Model):
         return name.strip()
 
     def as_dict(self):
+        institution = None
+        if self.institution:
+            institution = {
+                self.institution.name,
+                self.institution.id
+            }
         return {
-        self.user
+            "id": self.id,
+            "firstName": self.user.first_name,
+            "lastName": self.user.last_name,
+            "email": self.user.email,
+            "permissions": list(self.user.user_permissions.values_list('codename', flat=True)),
+            "institution": institution,
+            "AS": list(self.AS_scope.all().values_list('id')),
+            "ZS": list(self.ZS_scope.all().values_list('id')),
+            "province": list(self.province_scope.all().values_list('id'))
     }
 
 @receiver(post_save, sender=User)

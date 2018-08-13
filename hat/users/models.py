@@ -91,19 +91,11 @@ class Profile(models.Model):
     User profile.
 
     :ivar User user:           User reference.
-    :ivar text restrict_to_zs: If present give access only to the data
-        belonging to the indicated “zone de santé”.
     :ivar Team team:           User team.
 
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    restrict_to_zs = models.TextField(
-        null=True,
-        blank=True,
-        help_text=_('When including Yasa Bonga, please also add Yassa Bonga\
-         or Yasa-Bonga to take into account spelling differences.')
-    )
     team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
 
     def full_name(self):

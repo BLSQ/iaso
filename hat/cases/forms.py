@@ -9,7 +9,6 @@ from django.http.request import HttpRequest
 from django.utils.translation import ugettext as _
 
 from .models import Case
-from .utils import create_list_from_restrict_to_zs
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -160,14 +159,9 @@ def filter_and_create_form(
     locations_choices = [locations_list.order_by('ZS').values_list('ZS', flat=True).distinct()]
 
     restricted = []  # type: List[str]
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted = create_list_from_restrict_to_zs(restrict_to_zs)
 
     ZS = request.GET.get('ZS', None)
 
-    AS = None
-    village = None
     if ZS:
         queryset = locations_filters['ZS'](queryset, ZS)
         ASs = locations_list \

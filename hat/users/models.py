@@ -6,8 +6,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
-from django.utils.translation import ugettext as _
-from hat.geo.models import AS, ZS
+from hat.geo.models import AS, ZS, Province
 
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
@@ -86,17 +85,29 @@ class Team(models.Model):
         return "%s - %s - %s - %s" % (self.name, self.capacity, type, self.coordination.name)
 
 
+class Institution(models.Model):
+    name = models.CharField(max_length=255)
+
+
 class Profile(models.Model):
     '''
     User profile.
 
     :ivar User user:           User reference.
     :ivar Team team:           User team.
-
+    :ivar Institution institution:           User insitution.
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
+    # permissions will be handled by Django standard mechanisms based on the user permissions
+    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL)
+    institution = models.ForeignKey(Institution, null=True, blank=True, on_delete=models.SET_NULL)
+
+    province_scope = models.ManyToManyField(Province)
+    ZS_scope = models.ManyToManyField(ZS)
+    AS_scope = models.ManyToManyField(AS)
+
+    phone = models.TextField(null=True, blank=True)
 
     def full_name(self):
         name = ""
@@ -111,6 +122,10 @@ class Profile(models.Model):
 
         return name.strip()
 
+    def as_dict(self):
+        return {
+        self.user
+    }
 
 @receiver(post_save, sender=User)
 @disable_for_loaddata

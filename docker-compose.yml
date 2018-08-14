@@ -105,12 +105,12 @@ services:
     command: start_webpack
 
   # the worker container of the task runner
-  rq:
-    depends_on:
-      - hat
-    image: sense-hat
-    volumes: *hat_volumes
-    links: *hat_links
-    environment: *hat_environment
-    logging: *hat_logging
-    command: start_dev_rq
+  # rq:
+  #   depends_on:
+  #     - hat
+  #   image: sense-hat
+  #   volumes: *hat_volumes
+  #   links: *hat_links
+  #   environment: *hat_environment
+  #   logging: *hat_logging
+  #   command: start_dev_rq

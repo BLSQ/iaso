@@ -27,6 +27,23 @@ const request = require('superagent');
 // The name is used as the key in the results payload.
 export const urls = [
     {
+        name: 'villagesMap',
+        url: '/api/villages/',
+        mock: [{
+            AS: 'Muwanda-koso',
+            confirmedCases: 1,
+            lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
+            village: 'Polongo',
+            ZS: 'Mosango',
+        }, {
+            AS: 'Fula',
+            confirmedCases: 2,
+            lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
+            village: 'Kikonzi-mf',
+            ZS: 'Yasa Bonga',
+        }],
+    },
+    {
         name: 'locations',
         url: '/api/zs/',
         mock: [

@@ -74,6 +74,14 @@
 
 .edit-modal {
     width: 445px;
+    &.large {
+        width: 550px;
+        >div {
+            label {
+                width: 180px;
+            }
+        }
+    }
     .filter__container__select__label {
         background-color: transparent;
         border: none;

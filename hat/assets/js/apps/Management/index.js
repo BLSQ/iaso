@@ -14,6 +14,7 @@ import ManagementTeamsPage from './pages/ManagementTeams';
 import ManagementCoordinationsPage from './pages/ManagementCoordinations';
 import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementPlanningsPage from './pages/ManagementPlannings';
+import ManagementUsersPage from './pages/ManagementUsers';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
@@ -55,7 +56,11 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
-        // <Redirect path="*" to="/devices" />,
+        <Route
+            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            component={ManagementUsersPage}
+        />,
+        <Redirect path="*" to="/devices" />,
     ];
 
     let history = useRouterHistory(createHistory)({

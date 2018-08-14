@@ -89,6 +89,9 @@
                                         <a href="{% url 'dashboard:management_devices' %}">{% trans 'Appareils' %}</a>
                                     </li>
                                 {% endif %}
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/users' %}--active{% endif %}">
+                                    <a href="{% url 'dashboard:management_user' %}">{% trans 'Utilisateurs' %}</a>
+                                </li>
                                 <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/plannings' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:management_planning' %}">{% trans 'Plannings' %}</a>
                                 </li>

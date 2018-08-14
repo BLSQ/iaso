@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^management/coordinations.*$', views.managementAll, name='management_coord'),
     url(r'^management/workzones.*$', views.managementAll, name='management_workzone'),
     url(r'^management/plannings.*$', views.managementAll, name='management_planning'),
+    url(r'^management/users.*$', views.managementAll, name='management_user'),
     url(r'^locator/list.*$', views.locator, name='locator_list'),
     url(r'^locator/case.*$', views.locator, name='locator'),
     url(r'^vector/.*$', views.vector, name='vector'),

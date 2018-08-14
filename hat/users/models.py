@@ -132,6 +132,7 @@ class Profile(models.Model):
         return {
             "id": self.id,
             "firstName": self.user.first_name,
+            "userName": self.user.username,
             "lastName": self.user.last_name,
             "email": self.user.email,
             "permissions": list(self.user.user_permissions.values_list('codename', flat=True)),

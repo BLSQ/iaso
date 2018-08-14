@@ -32,7 +32,7 @@ class DeleteModale extends Component {
             >
                 <div>
                     <FormattedMessage id="main.management.eraseMsg" defaultMessage="Confirmer la suppression de" />
-                    {` ${this.props.element.name}`}
+                    {` ${this.props.message !== '' ? this.props.message : this.props.element.name}`}
                 </div>
                 <div className="delete-modal-buttons">
                     <button
@@ -55,11 +55,16 @@ class DeleteModale extends Component {
     }
 }
 
+DeleteModale.defaultProps = {
+    message: '',
+};
+
 DeleteModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     deleteElement: PropTypes.func.isRequired,
     element: PropTypes.object.isRequired,
+    message: PropTypes.string,
 };
 
 export default injectIntl(DeleteModale);

@@ -32,11 +32,11 @@ export function saveTeamPlanning(villagesList, planning_id, team_id) {
         .catch(err => false);
 }
 
-export function saveFull(team, url) {
+export function saveFull(data, url) {
     return request
         .put(url)
         .set('Content-Type', 'application/json')
-        .send(team)
+        .send(data)
         .then(() => true)
         .catch(err => false);
 }

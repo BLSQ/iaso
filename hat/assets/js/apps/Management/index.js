@@ -20,6 +20,7 @@ import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { planningsReducer, planningsInitialState } from './redux/plannings';
 import { detailsReducer, detailsInitialState } from './redux/details';
+import { userReducer, usersInitialState } from './redux/users';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -76,6 +77,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         plannings: planningsInitialState,
         map: mapInitialState,
         details: detailsInitialState,
+        users: usersInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -84,6 +86,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         plannings: planningsReducer,
         map: mapReducer,
         details: detailsReducer,
+        users: userReducer,
     }, [
         routerMiddleware(history),
     ]);

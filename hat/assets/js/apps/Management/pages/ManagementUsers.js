@@ -9,7 +9,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
 import UserModaleComponent from '../components/UserModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
-import { saveFull, deleteFull } from '../../../utils/saveData';
+import { userActions } from '../redux/users';
 
 const baseApiUrl = '/api/profiles/?';
 
@@ -18,6 +18,9 @@ class ManagementUsers extends React.Component {
     constructor(props) {
         super(props);
         const { formatMessage } = props.intl;
+
+        const { dispatch } = props;
+        dispatch(userActions.fetchInstitutions(dispatch));
         this.state = {
             tableColumns: [
                 {
@@ -47,6 +50,13 @@ class ManagementUsers extends React.Component {
                 },
                 {
                     Header: formatMessage({
+                        defaultMessage: 'Téléphone',
+                        id: 'main.label.phone',
+                    }),
+                    accessor: 'phone',
+                },
+                {
+                    Header: formatMessage({
                         defaultMessage: 'Email',
                         id: 'main.label.email',
                     }),
@@ -58,6 +68,9 @@ class ManagementUsers extends React.Component {
                         id: 'main.label.institution',
                     }),
                     accessor: 'institution',
+                    Cell: settings => (
+                        <span>{settings.original.institution ? settings.original.institution[1] : ''}</span>
+                    ),
                 },
                 {
                     Header: formatMessage({
@@ -92,7 +105,6 @@ class ManagementUsers extends React.Component {
             showDeleteModale: false,
             dataEdited: undefined,
             dataDeleted: undefined,
-            isUpdating: false,
         };
     }
 
@@ -140,38 +152,25 @@ class ManagementUsers extends React.Component {
     }
 
     saveData(newData) {
+        const { dispatch } = this.props;
         this.setState({
-            isUpdating: true,
             showEditModale: false,
+            dataEdited: undefined,
         });
-        saveFull(newData, `/api/profiles/${newData.id}/`).then((isSaved) => {
-            if (isSaved) {
-                this.setState({
-                    isUpdating: false,
-                    showEditModale: false,
-                    dataEdited: undefined,
-                });
-            } else {
-                console.error(`One error occured when trying to save user: ${newData.name}`);
-            }
-        });
+        if (newData.id === 0) {
+            dispatch(userActions.createUser(dispatch, newData));
+        } else {
+            dispatch(userActions.updateUser(dispatch, newData));
+        }
     }
 
     deleteData(element) {
+        const { dispatch } = this.props;
         this.setState({
-            isUpdating: true,
+            showDeleteModale: false,
+            dataDeleted: undefined,
         });
-        deleteFull(`/api/profiles/${element.id}/`).then((isSaved) => {
-            if (isSaved) {
-                this.setState({
-                    isUpdating: false,
-                    showDeleteModale: false,
-                    dataDeleted: undefined,
-                });
-            } else {
-                console.error(`One error occured when trying to delete user: ${element.name}`);
-            }
-        });
+        dispatch(userActions.deleteUser(dispatch, element));
     }
 
     render() {
@@ -179,12 +178,12 @@ class ManagementUsers extends React.Component {
         const { formatMessage } = this.props.intl;
         return (
             <section>
-
                 <UserModaleComponent
                     showModale={this.state.showEditModale}
                     toggleModal={() => this.toggleEditModale()}
                     user={this.state.dataEdited}
                     saveData={newData => this.saveData(newData)}
+                    institutions={this.props.institutions}
                 />
                 {
                     this.state.showDeleteModale &&
@@ -193,7 +192,7 @@ class ManagementUsers extends React.Component {
                         toggleModal={() => this.toggleDeleteModale()}
                         element={this.state.dataDeleted}
                         deleteElement={element => this.deleteData(element)}
-                        message={`${this.state.dataDeleted.firstName} ${this.state.dataDeleted.lastName}`}
+                        message={this.state.dataDeleted.userName}
                     />
                 }
                 <div className="widget__container management-control">
@@ -217,21 +216,21 @@ class ManagementUsers extends React.Component {
                         />
                     }
                     <section>
-                        {
-                            !this.state.isUpdating &&
-                            <CustomTableComponent
-                                pageSize={50}
-                                withBorder={false}
-                                isSortable
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'id', desc: false }]}
-                                params={this.props.params}
-                                defaultPath="users"
-                                dataKey="users"
-                            />
-                        }
+                        <CustomTableComponent
+                            pageSize={50}
+                            withBorder={false}
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'id', desc: false }]}
+                            params={this.props.params}
+                            defaultPath="users"
+                            dataKey="users"
+                            onDataLoaded={users => (this.props.setUsers(users))}
+                            onDataUpdated={() => (this.props.userUpdated())}
+                            isUpdated={this.props.isUpdated}
+                        />
                         <div className="widget__content align-right border-top">
                             <button
                                 className="button--add"
@@ -248,6 +247,8 @@ class ManagementUsers extends React.Component {
 }
 
 ManagementUsers.defaultProps = {
+    users: [],
+    institutions: [],
 };
 
 ManagementUsers.propTypes = {
@@ -255,18 +256,28 @@ ManagementUsers.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    setUsers: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    userUpdated: PropTypes.func.isRequired,
+    isUpdated: PropTypes.bool.isRequired,
+    users: PropTypes.array,
+    institutions: PropTypes.array,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);
 
 const MapStateToProps = state => ({
     load: state.load,
+    users: state.users.list,
+    institutions: state.users.institutions,
+    isUpdated: state.users.isUpdated,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setUsers: users => dispatch(userActions.setUsers(users)),
+    userUpdated: () => dispatch(userActions.userUpdated()),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementUsersIntl);

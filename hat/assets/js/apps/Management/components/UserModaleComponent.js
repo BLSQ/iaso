@@ -1,8 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import Select from 'react-select';
 import ReactModal from 'react-modal';
 
+
+const MESSAGES = defineMessages({
+    none: {
+        defaultMessage: 'Aucune',
+        id: 'management.none',
+    },
+});
 
 class UserModale extends Component {
     constructor(props) {
@@ -22,7 +30,16 @@ class UserModale extends Component {
     componentWillReceiveProps(nextProps) {
         this.setState({
             showModale: nextProps.showModale,
-            user: nextProps.user,
+            user: {
+                id: nextProps.user.id,
+                firstName: nextProps.user.firstName ? nextProps.user.firstName : '',
+                userName: nextProps.user.userName ? nextProps.user.userName : '',
+                lastName: nextProps.user.lastName ? nextProps.user.lastName : '',
+                phone: nextProps.user.phone ? nextProps.user.phone : '',
+                email: nextProps.user.email ? nextProps.user.email : '',
+                institution: nextProps.user.institution ? nextProps.user.institution : null,
+                institutionId: nextProps.user.institution ? nextProps.user.institution[0] : null,
+            },
             password: '',
             isChanged: false,
         });
@@ -30,6 +47,9 @@ class UserModale extends Component {
 
     updateUserField(key, value) {
         const newUser = Object.assign({}, this.state.user, { [key]: value });
+        if (key === 'institution') {
+            newUser.institutionId = value.id;
+        }
         this.setState({
             user: newUser,
             isChanged: true,
@@ -48,6 +68,7 @@ class UserModale extends Component {
     }
 
     render() {
+        const { formatMessage } = this.props.intl;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -111,6 +132,24 @@ class UserModale extends Component {
                     </div>
                     <div>
                         <label
+                            htmlFor="phone"
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.phone"
+                                defaultMessage="Téléphone"
+                            />:
+                        </label>
+                        <input
+                            type="text"
+                            name="phone"
+                            id="phone"
+                            value={this.state.user.phone}
+                            onChange={event => this.updateUserField('phone', event.currentTarget.value)}
+                        />
+                    </div>
+                    <div>
+                        <label
                             htmlFor="email"
                             className="filter__container__select__label"
                         >
@@ -144,6 +183,26 @@ class UserModale extends Component {
                             id="password"
                             value={this.state.password}
                             onChange={event => this.updatePassword(event.currentTarget.value)}
+                        />
+                    </div>
+                    <div>
+                        <label
+                            htmlFor="institution"
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.institution"
+                                defaultMessage="Institution"
+                            />:
+                        </label>
+                        <Select
+                            simpleValue
+                            name="coordination_id"
+                            value={this.state.user.institutionId}
+                            placeholder={formatMessage(MESSAGES.none)}
+                            options={this.props.institutions.map(institution =>
+                                ({ label: institution.name, value: institution.id }))}
+                            onChange={institutionId => this.updateUserField('institution', { id: institutionId })}
                         />
                     </div>
                     <div className="align-right">
@@ -180,10 +239,12 @@ UserModale.defaultProps = {
     },
 };
 UserModale.propTypes = {
+    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     user: PropTypes.object,
     saveData: PropTypes.func.isRequired,
+    institutions: PropTypes.array.isRequired,
 };
 
 export default injectIntl(UserModale);

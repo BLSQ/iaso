@@ -81,6 +81,10 @@
                 width: 180px;
             }
         }
+        .Select {
+            width: calc(100% - 211px);
+            margin-right: 26px;
+        }
     }
     .filter__container__select__label {
         background-color: transparent;

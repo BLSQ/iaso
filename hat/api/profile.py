@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from hat.users.models import Profile
+from hat.users.models import Profile, Institution
 from django.contrib.auth.models import User
 
 from .authentication import CsrfExemptSessionAuthentication
@@ -57,12 +57,8 @@ class ProfilesViewSet(viewsets.ViewSet):
 
 
     def update(self, request, pk=None):
-        user = User()
-        if pk == "0":
-            profile = Profile()
-        else:
-            profile = get_object_or_404(Profile, id=pk)
-            user = profile.user
+        profile = get_object_or_404(Profile, id=pk)
+        user = profile.user
         user.first_name = request.data.get('firstName', '')
         user.last_name = request.data.get('lastName', '')
         user.username = request.data.get('userName', '')
@@ -72,8 +68,34 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
         user.save()
         profile.user = user
+        institutionId = request.data.get('institutionId', None)
+
+        if institutionId:
+            institution = get_object_or_404(Institution, id=institutionId)
+            profile.institution = institution
+
+        profile.phone = request.data.get('phone', '')
         profile.save()
         return Response(profile.as_dict())
+
+    def create(self, request):
+        user = User()
+        user.first_name = request.data.get('firstName', '')
+        user.last_name = request.data.get('lastName', '')
+        user.username = request.data.get('userName', '')
+        user.email = request.data.get('email', '')
+        password = request.data.get('password', None)
+        if password:
+            user.set_password(password)
+        user.save()
+        #ici, faire les modifications au profile
+        institutionId = request.data.get('institutionId', None)
+        if institutionId:
+            institution = get_object_or_404(Institution, id=institutionId)
+            user.profile.institution = institution
+        user.profile.phone = request.data.get('phone', '')
+        user.profile.save()
+        return Response(user.profile.as_dict())
 
     def delete(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)

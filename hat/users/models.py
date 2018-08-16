@@ -135,6 +135,7 @@ class Profile(models.Model):
             "userName": self.user.username,
             "lastName": self.user.last_name,
             "email": self.user.email,
+            "phone": self.phone,
             "permissions": list(self.user.user_permissions.values_list('codename', flat=True)),
             "institution": institution,
             "AS": list(self.AS_scope.all().values_list('id')),

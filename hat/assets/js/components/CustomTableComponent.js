@@ -45,7 +45,8 @@ class CustomTableComponent extends React.Component {
         if ((newProps.endPointUrl !== this.props.endPointUrl) ||
             (newProps.params.pageSize !== this.props.params.pageSize) ||
             (newProps.params.page !== this.props.params.page) ||
-            (newProps.params.order !== this.props.params.order)) {
+            (newProps.params.order !== this.props.params.order) ||
+            newProps.isUpdated) {
             const orderArray = newProps.params.order ?
                 getOrderArray(newProps.params.order) : this.props.defaultSorted;
             this.onFetchData({
@@ -86,6 +87,7 @@ class CustomTableComponent extends React.Component {
     }
 
     onFetchData(settings, url = this.props.endPointUrl) {
+        this.props.onDataUpdated();
         let orderTemp = '';
         settings.sorted.map((sort, index) => {
             orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
@@ -94,28 +96,30 @@ class CustomTableComponent extends React.Component {
         this.setState({
             loading: true,
         });
-        getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
-            const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
-            let { showPagination } = this.props;
-            if (data.count) {
-                showPagination = this.props.showPagination && (data.count > settings.pageSize);
-            }
-            if (!data.pages) {
-                showPagination = false;
-            }
-            this.props.onDataLoaded(tempdata);
-            setTimeout(() => {
-                this.setState({
-                    page: settings.page,
-                    pageSize: settings.pageSize,
-                    data: tempdata,
-                    pages: data.pages,
-                    loading: false,
-                    showPagination,
-                    count: parseInt(data.count, 10),
-                });
-            }, 200);
-        });
+        setTimeout(() => { // !!!!!! to FIX !
+            getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
+                const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
+                this.props.onDataLoaded(tempdata);
+                let { showPagination } = this.props;
+                if (data.count) {
+                    showPagination = this.props.showPagination && (data.count > settings.pageSize);
+                }
+                if (!data.pages) {
+                    showPagination = false;
+                }
+                setTimeout(() => {
+                    this.setState({
+                        page: settings.page,
+                        pageSize: settings.pageSize,
+                        data: tempdata,
+                        pages: data.pages,
+                        loading: false,
+                        showPagination,
+                        count: parseInt(data.count, 10),
+                    });
+                }, 200);
+            });
+        }, 0);
     }
 
     onRowClicked(state, rowInfo) {
@@ -181,6 +185,8 @@ CustomTableComponent.defaultProps = {
     selectable: false,
     withBorder: true,
     onDataLoaded: () => { },
+    onDataUpdated: () => { },
+    isUpdated: false,
 };
 
 CustomTableComponent.propTypes = {
@@ -202,7 +208,9 @@ CustomTableComponent.propTypes = {
     multiSort: PropTypes.bool,
     selectable: PropTypes.bool,
     onDataLoaded: PropTypes.func,
+    onDataUpdated: PropTypes.func,
     withBorder: PropTypes.bool,
+    isUpdated: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -21,6 +21,7 @@ class ManagementUsers extends React.Component {
 
         const { dispatch } = props;
         dispatch(userActions.fetchInstitutions(dispatch));
+        dispatch(userActions.fetchProvinces(dispatch));
         this.state = {
             tableColumns: [
                 {
@@ -68,9 +69,17 @@ class ManagementUsers extends React.Component {
                         id: 'main.label.institution',
                     }),
                     accessor: 'institution',
-                    Cell: settings => (
-                        <span>{settings.original.institution ? settings.original.institution[1] : ''}</span>
-                    ),
+                    Cell: (settings) => {
+                        let newInstitutionName = '';
+                        if (settings.original.institution) {
+                            if (parseInt(settings.original.institution[0], 10)) {
+                                [, newInstitutionName] = settings.original.institution;
+                            } else {
+                                [newInstitutionName] = settings.original.institution;
+                            }
+                        }
+                        return (<span>{newInstitutionName}</span>);
+                    },
                 },
                 {
                     Header: formatMessage({
@@ -176,15 +185,26 @@ class ManagementUsers extends React.Component {
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
+        const {
+            institutions, provinces, zones, areas, selectProvince, selectZone,
+        } = this.props;
         return (
             <section>
-                <UserModaleComponent
-                    showModale={this.state.showEditModale}
-                    toggleModal={() => this.toggleEditModale()}
-                    user={this.state.dataEdited}
-                    saveData={newData => this.saveData(newData)}
-                    institutions={this.props.institutions}
-                />
+                {
+                    this.state.showEditModale &&
+                    <UserModaleComponent
+                        showModale={this.state.showEditModale}
+                        toggleModal={() => this.toggleEditModale()}
+                        user={this.state.dataEdited}
+                        saveData={newData => this.saveData(newData)}
+                        institutions={institutions}
+                        provinces={provinces}
+                        zones={zones}
+                        areas={areas}
+                        selectProvince={provinceId => selectProvince(provinceId)}
+                        selectZone={zoneId => selectZone(zoneId)}
+                    />
+                }
                 {
                     this.state.showDeleteModale &&
                     <DeleteModaleComponent
@@ -246,11 +266,6 @@ class ManagementUsers extends React.Component {
     }
 }
 
-ManagementUsers.defaultProps = {
-    users: [],
-    institutions: [],
-};
-
 ManagementUsers.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
@@ -260,8 +275,13 @@ ManagementUsers.propTypes = {
     dispatch: PropTypes.func.isRequired,
     userUpdated: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
-    users: PropTypes.array,
-    institutions: PropTypes.array,
+    users: PropTypes.array.isRequired,
+    institutions: PropTypes.array.isRequired,
+    provinces: PropTypes.array.isRequired,
+    zones: PropTypes.array.isRequired,
+    areas: PropTypes.array.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);
@@ -270,6 +290,9 @@ const MapStateToProps = state => ({
     load: state.load,
     users: state.users.list,
     institutions: state.users.institutions,
+    provinces: state.users.provinces,
+    zones: state.users.zones,
+    areas: state.users.areas,
     isUpdated: state.users.isUpdated,
 });
 
@@ -278,6 +301,8 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setUsers: users => dispatch(userActions.setUsers(users)),
     userUpdated: () => dispatch(userActions.userUpdated()),
+    selectProvince: provinceId => dispatch(userActions.selectProvince(provinceId, dispatch)),
+    selectZone: zoneId => dispatch(userActions.selectZone(zoneId, dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementUsersIntl);

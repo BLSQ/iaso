@@ -138,9 +138,9 @@ class Profile(models.Model):
             "phone": self.phone,
             "permissions": list(self.user.user_permissions.values_list('codename', flat=True)),
             "institution": institution,
-            "AS": list(self.AS_scope.all().values_list('id')),
-            "ZS": list(self.ZS_scope.all().values_list('id')),
-            "province": list(self.province_scope.all().values_list('id'))
+            "AS": self.AS_scope.all().values_list('id', flat=True),
+            "ZS": self.ZS_scope.all().values_list('id', flat=True),
+            "province": self.province_scope.all().values_list('id', flat=True)
     }
 
 @receiver(post_save, sender=User)

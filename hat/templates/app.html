@@ -85,7 +85,7 @@
                             <ul>
                                 {% if perms.cases.view %}
                                 <!-- TODO => remove this patch to match the active classes -->
-                                    <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/devices' %}--active{% endif %}">
+                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:management' and request.path != '/dashboard/management/users' and request.path != '/dashboard/management/plannings' and request.path != '/dashboard/management/coordinations' and request.path != '/dashboard/management/teams' %}--active{% endif %}">
                                         <a href="{% url 'dashboard:management_devices' %}">{% trans 'Appareils' %}</a>
                                     </li>
                                 {% endif %}

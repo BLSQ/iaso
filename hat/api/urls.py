@@ -23,6 +23,7 @@ from .teststats import TestStatsViewSet
 from .workzone import WorkZoneViewSet
 from .profile import ProfilesViewSet
 from .institutions import InstitutionsViewSet
+from .permissions import PermissionsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"datasets", DatasetViewSet, base_name="datasets")
@@ -47,4 +48,5 @@ router.register(r"teststats", TestStatsViewSet, base_name="teststats")
 router.register(r"workzones", WorkZoneViewSet, base_name="workzones")
 router.register(r"profiles", ProfilesViewSet, base_name="profiles")
 router.register(r"institutions", InstitutionsViewSet, base_name="institutions")
+router.register(r"permissions", PermissionsViewSet, base_name="permissions")
 urlpatterns = [url(r"^", include(router.urls))]

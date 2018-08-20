@@ -66,8 +66,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.email = request.data.get('email', '')
         password = request.data.get('password', None)
         provinces = request.data.get('province', None)
-        zones = request.data.get('zone', None)
-        areas = request.data.get('area', None)
+        zones = request.data.get('ZS', [])
+        areas = request.data.get('AS', [])
         if password:
             user.set_password(password)
         user.save()
@@ -81,19 +81,19 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.phone = request.data.get('phone', '')
         if provinces:
             profile.province_scope.clear()
-            for province in provinces.split(','):
+            for province in provinces:
                 new_province = get_object_or_404(Province, id=province)
                 profile.province_scope.add(new_province)
 
+        profile.ZS_scope.clear()
         if zones:
-            profile.ZS_scope.clear()
-            for zone in zones.split(','):
+            for zone in zones:
                 new_zone = get_object_or_404(ZS, id=zone)
                 profile.ZS_scope.add(new_zone)
 
+        profile.AS_scope.clear()
         if areas:
-            profile.AS_scope.clear()
-            for area in areas.split(','):
+            for area in areas:
                 new_area = get_object_or_404(AS, id=area)
                 profile.AS_scope.add(new_area)
         profile.save()

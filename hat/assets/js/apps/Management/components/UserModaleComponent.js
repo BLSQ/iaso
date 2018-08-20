@@ -4,6 +4,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import Select from 'react-select';
 import ReactModal from 'react-modal';
 import TabsComponent from '../../../components/TabsComponent';
+import { deepEqual } from '../../../utils';
 
 
 const MESSAGES = defineMessages({
@@ -28,6 +29,12 @@ const MESSAGES = defineMessages({
 class UserModale extends Component {
     constructor(props) {
         super(props);
+        if (props.user.province) {
+            props.selectProvince(props.user.province);
+        }
+        if (props.user.ZS) {
+            props.selectZone(props.user.ZS);
+        }
         this.state = {
             showModale: props.showModale,
             user: props.user,
@@ -37,79 +44,34 @@ class UserModale extends Component {
         };
     }
 
-    componentWillMount() {
-        let newInstitutionId = null;
-        if (this.props.user.institution) {
-            if (parseInt(this.props.user.institution[0], 10)) {
-                [newInstitutionId] = this.props.user.institution;
-            } else {
-                [, newInstitutionId] = this.props.user.institution;
-            }
-        }
-        if (this.props.user.province) {
-            this.props.selectProvince(this.props.user.province);
-        }
-        if (this.props.user.zone) {
-            this.props.selectZone(this.props.user.zone);
-        }
-        this.setState({
-            showModale: this.props.showModale,
-            user: {
-                id: this.props.user.id,
-                firstName: this.props.user.firstName ? this.props.user.firstName : '',
-                userName: this.props.user.userName ? this.props.user.userName : '',
-                lastName: this.props.user.lastName ? this.props.user.lastName : '',
-                phone: this.props.user.phone ? this.props.user.phone : '',
-                email: this.props.user.email ? this.props.user.email : '',
-                institution: this.props.user.institution ? this.props.user.institution : null,
-                province: this.props.user.province ? this.props.user.province : null,
-                zone: this.props.user.zone ? this.props.user.zone : null,
-                area: this.props.user.area ? this.props.user.area : null,
-                institutionId: newInstitutionId,
-            },
-            password: '',
-        });
-    }
-
     componentDidMount() {
         ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.user.zone && nextProps.user.zone.length > 0 && nextProps.zones.length > 0) {
-            console.log('ici');
-            const newUser = Object.assign({}, this.state.user, { zone: nextProps.user.zone });
+        if (!deepEqual(nextProps.user, this.props.user, true)) {
+            let newInstitutionId = null;
+            if (nextProps.user.institution) {
+                if (parseInt(nextProps.user.institution[0], 10)) {
+                    [newInstitutionId] = nextProps.user.institution;
+                } else {
+                    [, newInstitutionId] = nextProps.user.institution;
+                }
+            }
             this.setState({
-                user: newUser,
-            });
-        }
-        if (nextProps.user.area && nextProps.user.area.length > 0 && nextProps.areas.length > 0) {
-            const newUser = Object.assign({}, this.state.user, { zone: nextProps.user.area });
-            this.setState({
-                user: newUser,
+                user: {
+                    ...nextProps.user,
+                    institutionId: newInstitutionId,
+                },
             });
         }
     }
 
-    componentWillUnmount() {
-        this.props.selectProvince([]);
+    onSave() {
         this.setState({
-            showModale: false,
-            user: {
-                id: 0,
-                firstName: '',
-                userName: '',
-                lastName: '',
-                phone: '',
-                email: '',
-                institution: null,
-                province: null,
-                zone: null,
-                area: null,
-                institutionId: null,
-            },
-            password: '',
+            isChanged: false,
         });
+        this.props.saveData(this.state.user);
     }
 
     updateUserField(key, value) {
@@ -120,9 +82,10 @@ class UserModale extends Component {
         if (key === 'province') {
             this.props.selectProvince(value);
         }
-        if (key === 'zone') {
+        if (key === 'ZS') {
             this.props.selectZone(value);
         }
+        // this.props.updateCurrentUser(newUser);
         this.setState({
             user: newUser,
             isChanged: true,
@@ -146,7 +109,7 @@ class UserModale extends Component {
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
-                onRequestClose={() => this.props.toggleModal()}
+                onRequestClose={() => this.props.closeModal()}
                 className="with-tabs"
             >
                 <section className="edit-modal large">
@@ -311,11 +274,11 @@ class UserModale extends Component {
                                 placeholder={formatMessage(MESSAGES.none)}
                                 options={this.props.provinces.map(province =>
                                     ({ label: province.name, value: province.id }))}
-                                onChange={provincesId => this.updateUserField('province', provincesId)}
+                                onChange={provincesId => this.updateUserField('province', provincesId.length > 0 ? provincesId.split(',') : [])}
                             />
                         </div>
                         {
-                            this.props.zones.length > 0 &&
+                            this.state.user.province.length > 0 &&
                             <div>
                                 <label
                                     htmlFor="zones"
@@ -330,16 +293,16 @@ class UserModale extends Component {
                                     multi
                                     simpleValue
                                     name="zoneIds"
-                                    value={this.state.user.zone ? this.state.user.zone : null}
+                                    value={this.state.user.ZS}
                                     placeholder={formatMessage(MESSAGES.none)}
                                     options={this.props.zones.map(zone =>
                                         ({ label: zone.name, value: zone.id }))}
-                                    onChange={zoneIds => this.updateUserField('zone', zoneIds)}
+                                    onChange={zoneIds => this.updateUserField('ZS', zoneIds.length > 0 ? zoneIds.split(',') : [])}
                                 />
                             </div>
                         }
                         {
-                            this.props.areas.length > 0 &&
+                            this.state.user.ZS.length > 0 && this.state.user.province.length > 0 &&
                             <div>
                                 <label
                                     htmlFor="areas"
@@ -354,11 +317,11 @@ class UserModale extends Component {
                                     multi
                                     simpleValue
                                     name="areaIds"
-                                    value={this.state.user.area ? this.state.user.area : null}
+                                    value={this.state.user.AS ? this.state.user.AS : null}
                                     placeholder={formatMessage(MESSAGES.none)}
                                     options={this.props.areas.map(area =>
                                         ({ label: area.name, value: area.id }))}
-                                    onChange={areaIds => this.updateUserField('area', areaIds)}
+                                    onChange={areaIds => this.updateUserField('AS', areaIds.length ? areaIds.split(',') : [])}
                                 />
                             </div>
                         }
@@ -369,10 +332,9 @@ class UserModale extends Component {
                     <div className="align-right">
                         <button
                             className="button"
-                            onClick={() => this.props.toggleModal()}
+                            onClick={() => this.props.closeModal()}
                         >
-                            <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
                         </button>
                         <button
                             disabled={
@@ -382,7 +344,7 @@ class UserModale extends Component {
                                         (this.state.user.email === '' || this.state.user.userName === '' || this.state.password === '')))
                             }
                             className="button--save"
-                            onClick={() => this.props.saveData(this.state.user)}
+                            onClick={() => this.onSave()}
                         >
                             <i className="fa fa-save" />
                             <FormattedMessage id="mangement.label.saveUser" defaultMessage="Sauvegarder l'utilisateur" />
@@ -396,13 +358,12 @@ class UserModale extends Component {
 UserModale.defaultProps = {
     user: {
         id: 0,
-        firstName: '',
     },
 };
 UserModale.propTypes = {
     intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
-    toggleModal: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
     user: PropTypes.object,
     saveData: PropTypes.func.isRequired,
     institutions: PropTypes.array.isRequired,
@@ -411,6 +372,7 @@ UserModale.propTypes = {
     areas: PropTypes.array.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
+    updateCurrentUser: PropTypes.func.isRequired,
 };
 
 export default injectIntl(UserModale);

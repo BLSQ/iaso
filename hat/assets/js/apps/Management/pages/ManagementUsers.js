@@ -93,7 +93,7 @@ class ManagementUsers extends React.Component {
                         <section>
                             <button
                                 className="button--edit"
-                                onClick={() => this.editData(settings.original)}
+                                onClick={() => this.props.selectUser(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
                                 <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
@@ -112,14 +112,14 @@ class ManagementUsers extends React.Component {
             tableUrl: baseApiUrl,
             showEditModale: false,
             showDeleteModale: false,
-            dataEdited: undefined,
             dataDeleted: undefined,
         };
     }
 
-    componentWillReceiveProps() {
+    componentWillReceiveProps(nextProps) {
         this.setState({
             tableUrl: baseApiUrl,
+            showEditModale: nextProps.selectedUser !== null,
         });
     }
 
@@ -130,25 +130,10 @@ class ManagementUsers extends React.Component {
         });
     }
 
-    editData(data) {
-        this.setState({
-            showEditModale: true,
-            dataEdited: data,
-        });
-    }
-
     showDelete(data) {
         this.setState({
             showDeleteModale: true,
             dataDeleted: data,
-        });
-    }
-
-    toggleEditModale() {
-        this.setState({
-            showEditModale: !this.state.showEditModale,
-            dataEdited:
-                !this.state.showEditModale ? this.state.dataEdited : undefined,
         });
     }
 
@@ -162,10 +147,6 @@ class ManagementUsers extends React.Component {
 
     saveData(newData) {
         const { dispatch } = this.props;
-        this.setState({
-            showEditModale: false,
-            dataEdited: undefined,
-        });
         if (newData.id === 0) {
             dispatch(userActions.createUser(dispatch, newData));
         } else {
@@ -186,7 +167,14 @@ class ManagementUsers extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
-            institutions, provinces, zones, areas, selectProvince, selectZone,
+            institutions,
+            provinces,
+            zones,
+            areas,
+            selectProvince,
+            selectZone,
+            updateCurrentUser,
+            selectedUser,
         } = this.props;
         return (
             <section>
@@ -194,8 +182,8 @@ class ManagementUsers extends React.Component {
                     this.state.showEditModale &&
                     <UserModaleComponent
                         showModale={this.state.showEditModale}
-                        toggleModal={() => this.toggleEditModale()}
-                        user={this.state.dataEdited}
+                        closeModal={() => this.props.selectUser(null)}
+                        user={selectedUser}
                         saveData={newData => this.saveData(newData)}
                         institutions={institutions}
                         provinces={provinces}
@@ -203,6 +191,8 @@ class ManagementUsers extends React.Component {
                         areas={areas}
                         selectProvince={provinceId => selectProvince(provinceId)}
                         selectZone={zoneId => selectZone(zoneId)}
+                        updateCurrentUser={user => updateCurrentUser(user)}
+                        deleteUserZones
                     />
                 }
                 {
@@ -265,6 +255,9 @@ class ManagementUsers extends React.Component {
             </section>);
     }
 }
+ManagementUsers.defaultProps = {
+    selectedUser: null,
+};
 
 ManagementUsers.propTypes = {
     params: PropTypes.object.isRequired,
@@ -282,6 +275,9 @@ ManagementUsers.propTypes = {
     areas: PropTypes.array.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
+    selectUser: PropTypes.func.isRequired,
+    selectedUser: PropTypes.object,
+    updateCurrentUser: PropTypes.func.isRequired,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);
@@ -294,6 +290,7 @@ const MapStateToProps = state => ({
     zones: state.users.zones,
     areas: state.users.areas,
     isUpdated: state.users.isUpdated,
+    selectedUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -303,6 +300,8 @@ const MapDispatchToProps = dispatch => ({
     userUpdated: () => dispatch(userActions.userUpdated()),
     selectProvince: provinceId => dispatch(userActions.selectProvince(provinceId, dispatch)),
     selectZone: zoneId => dispatch(userActions.selectZone(zoneId, dispatch)),
+    updateCurrentUser: areaId => dispatch(userActions.updateCurrentUser(areaId)),
+    selectUser: user => dispatch(userActions.selectUser(user)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementUsersIntl);

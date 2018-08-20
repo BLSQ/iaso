@@ -1,7 +1,4 @@
-
-import { push } from 'react-router-redux';
 import { loadActions } from '../../../redux/load';
-import { createUrl } from '../../../utils/fetchData';
 
 export const FETCH_ACTION = 'hat/management/users/FETCH_ACTION';
 export const FETCH_ACTION_NO_UPDATE = 'hat/management/users/FETCH_ACTION_NO_UPDATE';
@@ -13,6 +10,10 @@ export const SET_ZONES = 'hat/management/users/SET_ZONES';
 export const SET_AREAS = 'hat/management/users/SET_AREAS';
 export const EMPTY_AREAS = 'hat/management/users/EMPTY_AREAS';
 export const EMPTY_ZONES = 'hat/management/users/EMPTY_ZONES';
+export const SELECT_USER = 'hat/management/users/SELECT_USER';
+export const UPDATE_CURRENT_USER = 'hat/management/users/UPDATE_CURRENT_USER';
+export const EMPTY_USER_ZONES = 'hat/management/users/EMPTY_USER_ZONES';
+export const EMPTY_USER_AERAS = 'hat/management/users/EMPTY_USER_AERAS';
 
 const req = require('superagent');
 
@@ -53,6 +54,23 @@ export const emptyAreas = () => ({
     type: EMPTY_AREAS,
 });
 
+export const emptyUserZones = () => ({
+    type: EMPTY_USER_ZONES,
+});
+
+export const emptyUserAeras = () => ({
+    type: EMPTY_USER_AERAS,
+});
+
+export const selectUser = payload => ({
+    type: SELECT_USER,
+    payload,
+});
+
+export const updateCurrentUser = payload => ({
+    type: UPDATE_CURRENT_USER,
+    payload,
+});
 
 export const fetchProvinces = (dispatch) => {
     req
@@ -69,7 +87,6 @@ export const fetchProvinces = (dispatch) => {
 
 export const selectProvince = (provinceIds, dispatch) => {
     dispatch(emptyZones());
-    dispatch(emptyAreas());
     if (provinceIds[0]) {
         req
             .get(`/api/zs/?province_id=${provinceIds.toString()}`)
@@ -81,6 +98,8 @@ export const selectProvince = (provinceIds, dispatch) => {
                 dispatch(loadActions.errorLoading(err));
                 console.error(`Error while fetching zones: ${err}`);
             });
+    } else {
+        // dispatch(emptyUserZones());
     }
     return ({
         type: FETCH_ACTION_NO_UPDATE,
@@ -104,6 +123,8 @@ export const selectZone = (
                 dispatch(loadActions.errorLoading(err));
                 console.error(`Error while fetching Areas: ${err}`);
             });
+    } else {
+        dispatch(emptyUserAeras());
     }
     return ({
         type: FETCH_ACTION_NO_UPDATE,
@@ -186,6 +207,7 @@ export const usersInitialState = {
     provinces: [],
     zones: [],
     areas: [],
+    current: null,
 };
 
 export const userActions = {
@@ -194,10 +216,12 @@ export const userActions = {
     userUpdated,
     deleteUser,
     createUser,
+    selectUser,
     fetchInstitutions,
     fetchProvinces,
     selectProvince,
     selectZone,
+    updateCurrentUser,
 };
 
 
@@ -208,6 +232,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 list,
+            };
+        }
+
+        case SELECT_USER: {
+            const current = action.payload;
+            return {
+                ...state,
+                current,
             };
         }
 
@@ -250,17 +282,64 @@ export const userReducer = (state = usersInitialState, action = {}) => {
 
         case SET_ZONES: {
             const { zones } = action.payload;
+            const ZS = [];
+            const AS = [];
+            state.current.ZS.map((userZone) => {
+                zones.map((zone) => {
+                    if (zone.id === parseInt(userZone, 10)) {
+                        ZS.push(userZone);
+                    }
+                    return null;
+                });
+                return null;
+            });
+            state.current.AS.map((userArea) => {
+                state.areas.map((area) => {
+                    if (area.id === parseInt(userArea, 10)) {
+                        AS.push(userArea);
+                    }
+                    return null;
+                });
+                return null;
+            });
             return {
                 ...state,
                 zones,
+                current: {
+                    ...state.current,
+                    ZS,
+                    AS,
+                },
             };
         }
 
         case SET_AREAS: {
             const { areas } = action.payload;
+            const AS = [];
+            state.current.AS.map((userArea) => {
+                areas.map((area) => {
+                    if (area.id === parseInt(userArea, 10)) {
+                        AS.push(userArea);
+                    }
+                    return null;
+                });
+                return null;
+            });
             return {
                 ...state,
                 areas,
+                current: {
+                    ...state.current,
+                    AS,
+                },
+            };
+        }
+
+        case UPDATE_CURRENT_USER: {
+            const current = action.payload;
+            return {
+                ...state,
+                current,
             };
         }
 
@@ -275,6 +354,26 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 areas: [],
+            };
+        }
+
+        case EMPTY_USER_ZONES: {
+            return {
+                ...state,
+                current: {
+                    ...state.current,
+                    ZS: [],
+                },
+            };
+        }
+
+        case EMPTY_USER_AERAS: {
+            return {
+                ...state,
+                current: {
+                    ...state.current,
+                    AS: [],
+                },
             };
         }
 

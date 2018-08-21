@@ -46,10 +46,12 @@ export const setProvinces = payload => ({
     payload,
 });
 
+
 export const userUpdated = payload => ({
     type: USER_UPDATED,
     payload,
 });
+
 
 export const emptyZones = () => ({
     type: EMPTY_ZONES,
@@ -59,15 +61,11 @@ export const emptyAreas = () => ({
     type: EMPTY_AREAS,
 });
 
-export const selectUser = payload => ({
-    type: SELECT_USER,
-    payload,
-});
-
 export const updateCurrentUser = payload => ({
     type: UPDATE_CURRENT_USER,
     payload,
 });
+
 
 export const fetchProvinces = (dispatch) => {
     req
@@ -80,6 +78,27 @@ export const fetchProvinces = (dispatch) => {
         type: FETCH_ACTION_NO_UPDATE,
     });
 };
+
+export const fetchPermissions = (dispatch) => {
+    req
+        .get('/api/permissions/')
+        .then((result) => {
+            dispatch(setPermissions(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching permissions', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
+
+export const selectUser = payload => ({
+    type: SELECT_USER,
+    payload,
+});
 
 export const selectZone = (
     zoneIds,
@@ -102,7 +121,6 @@ export const selectZone = (
         type: FETCH_ACTION_NO_UPDATE,
     });
 };
-
 
 export const selectProvince = (provinceIds, dispatch, zoneIds = null) => {
     dispatch(emptyZones());
@@ -141,20 +159,6 @@ export const fetchInstitutions = (dispatch) => {
     });
 };
 
-export const fetchPermissions = (dispatch) => {
-    req
-        .get('/api/permissions/')
-        .then((result) => {
-            dispatch(setPermissions(result.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when fetching permissions', err);
-        });
-    return ({
-        type: FETCH_ACTION_NO_UPDATE,
-    });
-};
 
 export const updateUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
@@ -194,7 +198,6 @@ export const createUser = (dispatch, user) => {
     });
 };
 
-
 export const deleteUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
     req
@@ -212,6 +215,7 @@ export const deleteUser = (dispatch, user) => {
         type: FETCH_ACTION,
     });
 };
+
 
 export const usersInitialState = {
     isUpdated: false,

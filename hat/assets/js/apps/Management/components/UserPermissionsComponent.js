@@ -6,7 +6,7 @@ import { injectIntl } from 'react-intl';
 import Switch from 'react-switch';
 
 
-class PermissionsComponent extends Component {
+class UserPermissionsComponent extends Component {
     constructor(props) {
         super(props);
         const { permissions, userPermissions } = props;
@@ -15,6 +15,7 @@ class PermissionsComponent extends Component {
             userPermissions,
         };
     }
+
     componentWillReceiveProps(nextProps) {
         const { permissions, userPermissions } = nextProps;
         this.setState({
@@ -62,10 +63,11 @@ class PermissionsComponent extends Component {
         );
     }
 }
-PermissionsComponent.propTypes = {
+
+UserPermissionsComponent.propTypes = {
     permissions: PropTypes.array.isRequired,
     userPermissions: PropTypes.array.isRequired,
     updatePermissions: PropTypes.func.isRequired,
 };
 
-export default injectIntl(PermissionsComponent);
+export default injectIntl(UserPermissionsComponent);

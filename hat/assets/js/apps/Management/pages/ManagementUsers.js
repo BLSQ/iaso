@@ -267,7 +267,6 @@ ManagementUsers.propTypes = {
     dispatch: PropTypes.func.isRequired,
     userUpdated: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
-    users: PropTypes.array.isRequired,
     institutions: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
@@ -284,7 +283,6 @@ const ManagementUsersIntl = injectIntl(ManagementUsers);
 
 const MapStateToProps = state => ({
     load: state.load,
-    users: state.users.list,
     institutions: state.users.institutions,
     permissions: state.users.permissions,
     provinces: state.users.provinces,

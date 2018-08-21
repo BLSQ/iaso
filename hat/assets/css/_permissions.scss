@@ -1,0 +1,21 @@
+.permission-container {
+    overflow: auto;
+    max-height: 500px;
+}
+.permission-item {
+    display: flex;
+    width: 100%;
+    padding: 8px 0;
+    border-bottom: 1px solid $mid-gray;
+    &:last-child {
+        border-bottom: none;
+    }
+}
+.permission-label {
+    padding-top: 6px;
+    flex-basis: 80%;
+}
+.permission-button {
+    flex-basis: 20%;
+    text-align: right;
+}

@@ -9,36 +9,63 @@ import Switch from 'react-switch';
 class PermissionsComponent extends Component {
     constructor(props) {
         super(props);
+        const { permissions, userPermissions } = props;
         this.state = {
-            checked: false,
+            permissions,
+            userPermissions,
         };
     }
+    componentWillReceiveProps(nextProps) {
+        const { permissions, userPermissions } = nextProps;
+        this.setState({
+            permissions,
+            userPermissions,
+        });
+    }
 
-    handleChange(checked) {
-        this.setState({ checked });
+    onChange(permissionId) {
+        const permissionIndex = this.state.userPermissions.indexOf(permissionId);
+        const newUserPermissions = this.state.userPermissions;
+        if (permissionIndex === -1) {
+            newUserPermissions.push(permissionId);
+        } else {
+            newUserPermissions.splice(permissionIndex, 1);
+        }
+        this.props.updatePermissions(newUserPermissions);
     }
 
     render() {
-        console.log(this.props.permissions);
+        const { permissions, userPermissions } = this.state;
         return (
-            <section>
-                <Switch
-                    onChange={checked => this.handleChange(checked)}
-                    checked={this.state.checked}
-                    onColor="#86d3ff"
-                    onHandleColor="#2693e6"
-                    handleDiameter={30}
-                    uncheckedIcon={false}
-                    checkedIcon={false}
-                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-                />
+            <section className="permission-container">
+                {
+                    permissions.map(permission => (
+                        <div key={permission.id} className="permission-item">
+                            <div className="permission-label">{permission.name}</div>
+                            <div className="permission-button">
+                                <Switch
+                                    onChange={() => this.onChange(permission.id)}
+                                    checked={userPermissions.indexOf(permission.id) !== -1}
+                                    onColor="#86d3ff"
+                                    onHandleColor="#2693e6"
+                                    handleDiameter={30}
+                                    uncheckedIcon={false}
+                                    checkedIcon={false}
+                                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                                />
+                            </div>
+                        </div>
+                    ))
+                }
             </section>
         );
     }
 }
 PermissionsComponent.propTypes = {
     permissions: PropTypes.array.isRequired,
+    userPermissions: PropTypes.array.isRequired,
+    updatePermissions: PropTypes.func.isRequired,
 };
 
 export default injectIntl(PermissionsComponent);

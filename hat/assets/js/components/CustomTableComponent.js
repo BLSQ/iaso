@@ -119,7 +119,7 @@ class CustomTableComponent extends React.Component {
                     });
                 }, 200);
             });
-        }, 0);
+        }, 200);
     }
 
     onRowClicked(state, rowInfo) {

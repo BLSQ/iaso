@@ -30,9 +30,19 @@ const MESSAGES = defineMessages({
 class UserModale extends Component {
     constructor(props) {
         super(props);
+        const { user } = props;
+        let newInstitutionId = null;
+        if (user.institution && user.institution.length > 0) {
+            if (parseInt(user.institution[0], 10)) {
+                [newInstitutionId] = user.institution;
+            } else {
+                [, newInstitutionId] = user.institution;
+            }
+        }
+        user.institutionId = newInstitutionId;
         this.state = {
             showModale: props.showModale,
-            user: props.user,
+            user,
             password: '',
             isChanged: false,
             currentTab: 'infos',
@@ -50,20 +60,19 @@ class UserModale extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (!deepEqual(nextProps.user, this.props.user, true)) {
-            let newInstitutionId = null;
-            if (nextProps.user.institution) {
+            const newUser = nextProps.user;
+            if (nextProps.user.institution && nextProps.user.institution.length > 0) {
                 if (parseInt(nextProps.user.institution[0], 10)) {
-                    [newInstitutionId] = nextProps.user.institution;
+                    [newUser.institutionId] = nextProps.user.institution;
                 } else {
-                    [, newInstitutionId] = nextProps.user.institution;
+                    [, newUser.institutionId] = nextProps.user.institution;
                 }
+                this.props.updateCurrentUser(newUser);
+            } else {
+                this.setState({
+                    user: nextProps.user,
+                });
             }
-            this.setState({
-                user: {
-                    ...nextProps.user,
-                    institutionId: newInstitutionId,
-                },
-            });
         }
     }
 
@@ -110,6 +119,7 @@ class UserModale extends Component {
     }
     render() {
         const { formatMessage } = this.props.intl;
+        console.log(this.props.user.institutionId);
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -332,7 +342,11 @@ class UserModale extends Component {
                         }
                     </section>
                     <section className={this.state.currentTab === 'permissions' ? '' : 'hidden'}>
-                        <PermissionsComponent permissions={this.props.permissions} />
+                        <PermissionsComponent
+                            permissions={this.props.permissions}
+                            userPermissions={this.state.user.permissions}
+                            updatePermissions={permissions => this.updateUserField('permissions', permissions)}
+                        />
                     </section>
                     <div className="align-right">
                         <button

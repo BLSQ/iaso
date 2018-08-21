@@ -247,7 +247,19 @@ class ManagementUsers extends React.Component {
                         <div className="widget__content align-right border-top">
                             <button
                                 className="button--add"
-                                onClick={() => this.editData()}
+                                onClick={() => this.props.selectUser({
+                                    firstName: '',
+                                    lastName: '',
+                                    userName: '',
+                                    phone: '',
+                                    email: '',
+                                    institution: null,
+                                    id: 0,
+                                    province: [],
+                                    AS: [],
+                                    ZS: [],
+                                    permissions: [],
+                                })}
                             >
                                 <i className="fa fa-plus" />
                                 <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />

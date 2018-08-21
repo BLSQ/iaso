@@ -97,8 +97,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             for area in areas:
                 new_area = get_object_or_404(AS, id=area)
                 profile.AS_scope.add(new_area)
+        user.user_permissions.clear()
         if permissions:
-            user.user_permissions.clear()
             for permission_id in permissions:
                 permission = get_object_or_404(Permission, pk=permission_id)
                 user.user_permissions.add(permission)
@@ -113,6 +113,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = request.data.get('userName', '')
         user.email = request.data.get('email', '')
         password = request.data.get('password', None)
+        provinces = request.data.get('province', None)
+        zones = request.data.get('ZS', [])
+        areas = request.data.get('AS', [])
+        permissions = request.data.get('permissions', [])
         if password:
             user.set_password(password)
         user.save()
@@ -122,6 +126,26 @@ class ProfilesViewSet(viewsets.ViewSet):
             institution = get_object_or_404(Institution, id=institutionId)
             user.profile.institution = institution
         user.profile.phone = request.data.get('phone', '')
+
+        if provinces:
+            for province in provinces:
+                new_province = get_object_or_404(Province, id=province)
+                user.profile.province_scope = new_province
+
+        if zones:
+            for zone in zones:
+                new_zone = get_object_or_404(ZS, id=zone)
+                user.profile.ZS_scope = new_zone
+
+        if areas:
+            for area in areas:
+                new_area = get_object_or_404(AS, id=area)
+                user.profile.AS_scope = new_area
+
+        if permissions:
+            for permission_id in permissions:
+                permission = get_object_or_404(Permission, pk=permission_id)
+                user.profile.user_permissions = permission
         user.profile.save()
         return Response(user.profile.as_dict())
 

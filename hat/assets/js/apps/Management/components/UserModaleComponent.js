@@ -29,12 +29,6 @@ const MESSAGES = defineMessages({
 class UserModale extends Component {
     constructor(props) {
         super(props);
-        if (props.user.province) {
-            props.selectProvince(props.user.province);
-        }
-        if (props.user.ZS) {
-            props.selectZone(props.user.ZS);
-        }
         this.state = {
             showModale: props.showModale,
             user: props.user,
@@ -42,6 +36,11 @@ class UserModale extends Component {
             isChanged: false,
             currentTab: 'infos',
         };
+    }
+    componentWillMount() {
+        if (this.props.user.province) {
+            this.props.selectProvince(this.props.user.province, this.props.user.ZS);
+        }
     }
 
     componentDidMount() {
@@ -81,13 +80,19 @@ class UserModale extends Component {
         }
         if (key === 'province') {
             this.props.selectProvince(value);
+            if (value.length === 0) {
+                newUser.ZS = [];
+                newUser.AS = [];
+            }
         }
         if (key === 'ZS') {
             this.props.selectZone(value);
+            if (value.length === 0) {
+                newUser.AS = [];
+            }
         }
-        // this.props.updateCurrentUser(newUser);
+        this.props.updateCurrentUser(newUser);
         this.setState({
-            user: newUser,
             isChanged: true,
         });
     }
@@ -270,7 +275,7 @@ class UserModale extends Component {
                                 multi
                                 simpleValue
                                 name="provinceId"
-                                value={this.state.user.province ? this.state.user.province : null}
+                                value={this.state.user.province}
                                 placeholder={formatMessage(MESSAGES.none)}
                                 options={this.props.provinces.map(province =>
                                     ({ label: province.name, value: province.id }))}
@@ -317,7 +322,7 @@ class UserModale extends Component {
                                     multi
                                     simpleValue
                                     name="areaIds"
-                                    value={this.state.user.AS ? this.state.user.AS : null}
+                                    value={this.state.user.AS}
                                     placeholder={formatMessage(MESSAGES.none)}
                                     options={this.props.areas.map(area =>
                                         ({ label: area.name, value: area.id }))}

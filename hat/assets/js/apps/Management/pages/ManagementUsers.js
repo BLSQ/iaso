@@ -189,7 +189,7 @@ class ManagementUsers extends React.Component {
                         provinces={provinces}
                         zones={zones}
                         areas={areas}
-                        selectProvince={provinceId => selectProvince(provinceId)}
+                        selectProvince={(provinceId, zoneId) => selectProvince(provinceId, zoneId)}
                         selectZone={zoneId => selectZone(zoneId)}
                         updateCurrentUser={user => updateCurrentUser(user)}
                         deleteUserZones
@@ -298,7 +298,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setUsers: users => dispatch(userActions.setUsers(users)),
     userUpdated: () => dispatch(userActions.userUpdated()),
-    selectProvince: provinceId => dispatch(userActions.selectProvince(provinceId, dispatch)),
+    selectProvince: (provinceId, zoneId) => dispatch(userActions.selectProvince(provinceId, dispatch, zoneId)),
     selectZone: zoneId => dispatch(userActions.selectZone(zoneId, dispatch)),
     updateCurrentUser: areaId => dispatch(userActions.updateCurrentUser(areaId)),
     selectUser: user => dispatch(userActions.selectUser(user)),

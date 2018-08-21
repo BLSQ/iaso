@@ -57,7 +57,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(profile.as_dict())
 
 
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         profile = get_object_or_404(Profile, id=pk)
         user = profile.user
         user.first_name = request.data.get('firstName', '')
@@ -79,8 +79,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.institution = institution
 
         profile.phone = request.data.get('phone', '')
+        profile.province_scope.clear()
         if provinces:
-            profile.province_scope.clear()
             for province in provinces:
                 new_province = get_object_or_404(Province, id=province)
                 profile.province_scope.add(new_province)

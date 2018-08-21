@@ -22,6 +22,7 @@ class ManagementUsers extends React.Component {
         const { dispatch } = props;
         dispatch(userActions.fetchInstitutions(dispatch));
         dispatch(userActions.fetchProvinces(dispatch));
+        dispatch(userActions.fetchPermissions(dispatch));
         this.state = {
             tableColumns: [
                 {
@@ -168,6 +169,7 @@ class ManagementUsers extends React.Component {
         const { formatMessage } = this.props.intl;
         const {
             institutions,
+            permissions,
             provinces,
             zones,
             areas,
@@ -186,6 +188,7 @@ class ManagementUsers extends React.Component {
                         user={selectedUser}
                         saveData={newData => this.saveData(newData)}
                         institutions={institutions}
+                        permissions={permissions}
                         provinces={provinces}
                         zones={zones}
                         areas={areas}
@@ -270,6 +273,7 @@ ManagementUsers.propTypes = {
     isUpdated: PropTypes.bool.isRequired,
     users: PropTypes.array.isRequired,
     institutions: PropTypes.array.isRequired,
+    permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
     areas: PropTypes.array.isRequired,
@@ -286,6 +290,7 @@ const MapStateToProps = state => ({
     load: state.load,
     users: state.users.list,
     institutions: state.users.institutions,
+    permissions: state.users.permissions,
     provinces: state.users.provinces,
     zones: state.users.zones,
     areas: state.users.areas,

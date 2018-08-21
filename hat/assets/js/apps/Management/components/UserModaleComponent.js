@@ -5,6 +5,7 @@ import Select from 'react-select';
 import ReactModal from 'react-modal';
 import TabsComponent from '../../../components/TabsComponent';
 import { deepEqual } from '../../../utils';
+import PermissionsComponent from '../components/PermissionsComponent';
 
 
 const MESSAGES = defineMessages({
@@ -107,7 +108,6 @@ class UserModale extends Component {
             isChanged: true,
         });
     }
-
     render() {
         const { formatMessage } = this.props.intl;
         return (
@@ -332,7 +332,7 @@ class UserModale extends Component {
                         }
                     </section>
                     <section className={this.state.currentTab === 'permissions' ? '' : 'hidden'}>
-                        permissions
+                        <PermissionsComponent permissions={this.props.permissions} />
                     </section>
                     <div className="align-right">
                         <button
@@ -372,6 +372,7 @@ UserModale.propTypes = {
     user: PropTypes.object,
     saveData: PropTypes.func.isRequired,
     institutions: PropTypes.array.isRequired,
+    permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
     areas: PropTypes.array.isRequired,

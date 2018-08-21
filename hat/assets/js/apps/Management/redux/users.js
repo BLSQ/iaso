@@ -5,6 +5,7 @@ export const FETCH_ACTION_NO_UPDATE = 'hat/management/users/FETCH_ACTION_NO_UPDA
 export const SET_USERS = 'hat/management/users/SET_USERS';
 export const USER_UPDATED = 'hat/management/users/USER_UPDATED';
 export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
+export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
 export const SET_ZONES = 'hat/management/users/SET_ZONES';
 export const SET_AREAS = 'hat/management/users/SET_AREAS';
@@ -22,6 +23,11 @@ export const setUsers = payload => ({
 
 export const setInstitutions = payload => ({
     type: SET_INSTITUTIONS,
+    payload,
+});
+
+export const setPermissions = payload => ({
+    type: SET_PERMISSIONS,
     payload,
 });
 
@@ -135,6 +141,21 @@ export const fetchInstitutions = (dispatch) => {
     });
 };
 
+export const fetchPermissions = (dispatch) => {
+    req
+        .get('/api/permissions/')
+        .then((result) => {
+            dispatch(setPermissions(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching permissions', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
 export const updateUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
     req
@@ -193,6 +214,7 @@ export const usersInitialState = {
     isUpdated: false,
     list: [],
     institutions: [],
+    permissions: [],
     provinces: [],
     zones: [],
     areas: [],
@@ -207,6 +229,7 @@ export const userActions = {
     createUser,
     selectUser,
     fetchInstitutions,
+    fetchPermissions,
     fetchProvinces,
     selectProvince,
     selectZone,
@@ -258,6 +281,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 institutions,
+            };
+        }
+
+        case SET_PERMISSIONS: {
+            const permissions = action.payload;
+            return {
+                ...state,
+                permissions,
             };
         }
 

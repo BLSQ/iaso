@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from hat.users.models import Profile, Institution
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission
 
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -56,7 +57,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile = get_object_or_404(Profile, id=pk)
         return Response(profile.as_dict())
 
-
     def partial_update(self, request, pk=None):
         profile = get_object_or_404(Profile, id=pk)
         user = profile.user
@@ -68,6 +68,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         provinces = request.data.get('province', None)
         zones = request.data.get('ZS', [])
         areas = request.data.get('AS', [])
+        permissions = request.data.get('permissions', [])
         if password:
             user.set_password(password)
         user.save()
@@ -96,6 +97,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             for area in areas:
                 new_area = get_object_or_404(AS, id=area)
                 profile.AS_scope.add(new_area)
+        if permissions:
+            user.user_permissions.clear()
+            for permission_id in permissions:
+                permission = get_object_or_404(Permission, pk=permission_id)
+                user.user_permissions.add(permission)
+
         profile.save()
         return Response(profile.as_dict())
 

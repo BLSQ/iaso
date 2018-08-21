@@ -17,11 +17,14 @@ class PermissionsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-        perms = Permission.objects.filter(content_type=content_type).filter(codename__startswith="x_")
+        perms = Permission.objects.filter(content_type=content_type).filter(codename__startswith="x_").order_by('id')
 
         result = []
         for permission in perms:
-            result.append({"name": _(permission.name), "codename": permission.codename})
+            result.append({
+                "id": permission.id,
+                "name": _(permission.name)
+            })
 
         return Response(result)
 

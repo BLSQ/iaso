@@ -126,8 +126,8 @@ class Profile(models.Model):
         institution = None
         if self.institution:
             institution = {
-                self.institution.name,
-                self.institution.id
+                'name': self.institution.name,
+                'id': self.institution.id
             }
         return {
             "id": self.id,

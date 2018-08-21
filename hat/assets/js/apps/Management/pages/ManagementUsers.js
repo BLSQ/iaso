@@ -70,17 +70,7 @@ class ManagementUsers extends React.Component {
                         id: 'main.label.institution',
                     }),
                     accessor: 'institution',
-                    Cell: (settings) => {
-                        let newInstitutionName = '';
-                        if (settings.original.institution) {
-                            if (parseInt(settings.original.institution[0], 10)) {
-                                [, newInstitutionName] = settings.original.institution;
-                            } else {
-                                [newInstitutionName] = settings.original.institution;
-                            }
-                        }
-                        return (<span>{newInstitutionName}</span>);
-                    },
+                    Cell: settings => (<span>{settings.original.institution ? settings.original.institution.name : ''}</span>),
                 },
                 {
                     Header: formatMessage({
@@ -241,19 +231,13 @@ class ManagementUsers extends React.Component {
                             defaultPath="users"
                             dataKey="users"
                             onDataLoaded={users => (this.props.setUsers(users))}
-                            onDataUpdated={() => (this.props.userUpdated())}
+                            onDataUpdated={isUpdated => (this.props.userUpdated(isUpdated))}
                             isUpdated={this.props.isUpdated}
                         />
                         <div className="widget__content align-right border-top">
                             <button
                                 className="button--add"
                                 onClick={() => this.props.selectUser({
-                                    firstName: '',
-                                    lastName: '',
-                                    userName: '',
-                                    phone: '',
-                                    email: '',
-                                    institution: null,
                                     id: 0,
                                     province: [],
                                     AS: [],
@@ -314,7 +298,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setUsers: users => dispatch(userActions.setUsers(users)),
-    userUpdated: () => dispatch(userActions.userUpdated()),
+    userUpdated: isUpdated => dispatch(userActions.userUpdated(isUpdated)),
     selectProvince: (provinceId, zoneId) => dispatch(userActions.selectProvince(provinceId, dispatch, zoneId)),
     selectZone: zoneId => dispatch(userActions.selectZone(zoneId, dispatch)),
     updateCurrentUser: areaId => dispatch(userActions.updateCurrentUser(areaId)),

@@ -87,7 +87,6 @@ class CustomTableComponent extends React.Component {
     }
 
     onFetchData(settings, url = this.props.endPointUrl) {
-        this.props.onDataUpdated();
         let orderTemp = '';
         settings.sorted.map((sort, index) => {
             orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
@@ -96,30 +95,30 @@ class CustomTableComponent extends React.Component {
         this.setState({
             loading: true,
         });
-        setTimeout(() => { // !!!!!! to FIX !
-            getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
-                const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
-                this.props.onDataLoaded(tempdata);
-                let { showPagination } = this.props;
-                if (data.count) {
-                    showPagination = this.props.showPagination && (data.count > settings.pageSize);
-                }
-                if (!data.pages) {
-                    showPagination = false;
-                }
-                setTimeout(() => {
-                    this.setState({
-                        page: settings.page,
-                        pageSize: settings.pageSize,
-                        data: tempdata,
-                        pages: data.pages,
-                        loading: false,
-                        showPagination,
-                        count: parseInt(data.count, 10),
-                    });
-                }, 200);
-            });
-        }, 200);
+        getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
+            const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
+            this.props.onDataLoaded(tempdata);
+            let { showPagination } = this.props;
+            if (data.count) {
+                showPagination = this.props.showPagination && (data.count > settings.pageSize);
+            }
+            if (!data.pages) {
+                showPagination = false;
+            }
+
+            setTimeout(() => {
+                this.setState({
+                    page: settings.page,
+                    pageSize: settings.pageSize,
+                    data: tempdata,
+                    pages: data.pages,
+                    loading: false,
+                    showPagination,
+                    count: parseInt(data.count, 10),
+                });
+            }, 200);
+        });
+        this.props.onDataUpdated(false);
     }
 
     onRowClicked(state, rowInfo) {

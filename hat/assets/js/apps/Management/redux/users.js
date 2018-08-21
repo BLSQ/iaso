@@ -46,8 +46,9 @@ export const setProvinces = payload => ({
     payload,
 });
 
-export const userUpdated = () => ({
+export const userUpdated = payload => ({
     type: USER_UPDATED,
+    payload,
 });
 
 export const emptyZones = () => ({
@@ -125,7 +126,6 @@ export const selectProvince = (provinceIds, dispatch, zoneIds = null) => {
     });
 };
 
-
 export const fetchInstitutions = (dispatch) => {
     req
         .get('/api/institutions/')
@@ -163,6 +163,7 @@ export const updateUser = (dispatch, user) => {
         .set('Content-Type', 'application/json')
         .send(user)
         .then(() => {
+            dispatch(userUpdated(true));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -181,6 +182,7 @@ export const createUser = (dispatch, user) => {
         .set('Content-Type', 'application/json')
         .send(user)
         .then(() => {
+            dispatch(userUpdated(true));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -199,6 +201,7 @@ export const deleteUser = (dispatch, user) => {
         .delete(`/api/profiles/${user.id}/`)
         .set('Content-Type', 'application/json')
         .then(() => {
+            dispatch(userUpdated(true));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -256,23 +259,22 @@ export const userReducer = (state = usersInitialState, action = {}) => {
         }
 
         case USER_UPDATED: {
+            const isUpdated = action.payload;
             return {
                 ...state,
-                isUpdated: false,
+                isUpdated,
             };
         }
 
         case FETCH_ACTION: {
             return {
                 ...state,
-                isUpdated: true,
             };
         }
 
         case FETCH_ACTION_NO_UPDATE: {
             return {
                 ...state,
-                isUpdated: false,
             };
         }
 

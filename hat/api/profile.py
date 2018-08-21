@@ -73,10 +73,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
         user.save()
         profile.user = user
-        institutionId = request.data.get('institutionId', None)
+        institution = request.data.get('institution', None)
 
-        if institutionId:
-            institution = get_object_or_404(Institution, id=institutionId)
+        if institution:
+            institution = get_object_or_404(Institution, id=institution.get('id'))
             profile.institution = institution
 
         profile.phone = request.data.get('phone', '')
@@ -120,32 +120,31 @@ class ProfilesViewSet(viewsets.ViewSet):
         if password:
             user.set_password(password)
         user.save()
-        #ici, faire les modifications au profile
-        institutionId = request.data.get('institutionId', None)
-        if institutionId:
-            institution = get_object_or_404(Institution, id=institutionId)
+        institution = request.data.get('institution', None)
+        if institution:
+            institution = get_object_or_404(Institution, id=institution.get('id'))
             user.profile.institution = institution
         user.profile.phone = request.data.get('phone', '')
 
         if provinces:
             for province in provinces:
                 new_province = get_object_or_404(Province, id=province)
-                user.profile.province_scope = new_province
+                user.profile.province_scope.add(new_province)
 
         if zones:
             for zone in zones:
                 new_zone = get_object_or_404(ZS, id=zone)
-                user.profile.ZS_scope = new_zone
+                user.profile.ZS_scope.add(new_zone)
 
         if areas:
             for area in areas:
                 new_area = get_object_or_404(AS, id=area)
-                user.profile.AS_scope = new_area
+                user.profile.AS_scope.add(new_area)
 
         if permissions:
             for permission_id in permissions:
                 permission = get_object_or_404(Permission, pk=permission_id)
-                user.profile.user_permissions = permission
+                user.user_permissions.add(permission)
         user.profile.save()
         return Response(user.profile.as_dict())
 

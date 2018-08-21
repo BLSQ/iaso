@@ -30,19 +30,9 @@ const MESSAGES = defineMessages({
 class UserModale extends Component {
     constructor(props) {
         super(props);
-        const { user } = props;
-        let newInstitutionId = null;
-        if (user.institution && user.institution.length > 0) {
-            if (parseInt(user.institution[0], 10)) {
-                [newInstitutionId] = user.institution;
-            } else {
-                [, newInstitutionId] = user.institution;
-            }
-        }
-        user.institutionId = newInstitutionId;
         this.state = {
             showModale: props.showModale,
-            user,
+            user: props.user,
             password: '',
             isChanged: false,
             currentTab: 'infos',
@@ -60,19 +50,9 @@ class UserModale extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (!deepEqual(nextProps.user, this.props.user, true)) {
-            const newUser = nextProps.user;
-            if (nextProps.user.institution && nextProps.user.institution.length > 0) {
-                if (parseInt(nextProps.user.institution[0], 10)) {
-                    [newUser.institutionId] = nextProps.user.institution;
-                } else {
-                    [, newUser.institutionId] = nextProps.user.institution;
-                }
-                this.props.updateCurrentUser(newUser);
-            } else {
-                this.setState({
-                    user: nextProps.user,
-                });
-            }
+            this.setState({
+                user: nextProps.user,
+            });
         }
     }
 
@@ -85,9 +65,6 @@ class UserModale extends Component {
 
     updateUserField(key, value) {
         const newUser = Object.assign({}, this.state.user, { [key]: value });
-        if (key === 'institution') {
-            newUser.institutionId = value.id;
-        }
         if (key === 'province') {
             this.props.selectProvince(value);
             if (value.length === 0) {
@@ -119,7 +96,6 @@ class UserModale extends Component {
     }
     render() {
         const { formatMessage } = this.props.intl;
-        console.log(this.props.user.institutionId);
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -154,7 +130,7 @@ class UserModale extends Component {
                                 type="text"
                                 name="userName"
                                 id="userName"
-                                value={this.state.user.userName}
+                                value={this.state.user.userName ? this.state.user.userName : ''}
                                 onChange={event => this.updateUserField('userName', event.currentTarget.value)}
                             />
                         </div>
@@ -172,7 +148,7 @@ class UserModale extends Component {
                                 type="text"
                                 name="firstName"
                                 id="firstName"
-                                value={this.state.user.firstName}
+                                value={this.state.user.firstName ? this.state.user.firstName : ''}
                                 onChange={event => this.updateUserField('firstName', event.currentTarget.value)}
                             />
                         </div>
@@ -190,7 +166,7 @@ class UserModale extends Component {
                                 type="text"
                                 name="lastName"
                                 id="lastName"
-                                value={this.state.user.lastName}
+                                value={this.state.user.lastName ? this.state.user.lastName : ''}
                                 onChange={event => this.updateUserField('lastName', event.currentTarget.value)}
                             />
                         </div>
@@ -208,7 +184,7 @@ class UserModale extends Component {
                                 type="text"
                                 name="phone"
                                 id="phone"
-                                value={this.state.user.phone}
+                                value={this.state.user.phone ? this.state.user.phone : ''}
                                 onChange={event => this.updateUserField('phone', event.currentTarget.value)}
                             />
                         </div>
@@ -226,7 +202,7 @@ class UserModale extends Component {
                                 type="text"
                                 name="email"
                                 id="email"
-                                value={this.state.user.email}
+                                value={this.state.user.email ? this.state.user.email : ''}
                                 onChange={event => this.updateUserField('email', event.currentTarget.value)}
                             />
                         </div>
@@ -261,8 +237,8 @@ class UserModale extends Component {
                             </label>
                             <Select
                                 simpleValue
-                                name="coordination_id"
-                                value={this.state.user.institutionId}
+                                name="institution_id"
+                                value={this.state.user.institution ? this.state.user.institution.id : null}
                                 placeholder={formatMessage(MESSAGES.none)}
                                 options={this.props.institutions.map(institution =>
                                     ({ label: institution.name, value: institution.id }))}

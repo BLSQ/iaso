@@ -23,7 +23,8 @@ class PermissionsViewSet(viewsets.ViewSet):
         for permission in perms:
             result.append({
                 "id": permission.id,
-                "name": _(permission.name)
+                "name": _(permission.name),
+                "codename": permission.codename
             })
 
         return Response(result)

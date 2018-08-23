@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-20 16:06+0200\n"
-"PO-Revision-Date: 2018-08-20 16:17+0200\n"
+"PO-Revision-Date: 2018-08-22 17:25+0200\n"
 "Last-Translator: Obdulia Losantos <obdulia.losantos@ehealthnigeria.org>, "
 "2016\n"
 "Language-Team: French (https://www.transifex.com/ehealth-africa-1/"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.1.1\n"
 
 #: assets/bundles/docs/_sources/assets/README.rst.txt:119
 #: dashboard/static/docs/_sources/assets/README.rst.txt:119
@@ -1234,7 +1234,7 @@ msgid ""
 msgstr ""
 "\n"
 "Votre compte n'a pas accès à cette page. Pour continuer, s'il vous plaît "
-"connectez-vous avec un compte qui a accès. "
+"connectez-vous avec un compte qui y a accès. "
 
 #: templates/login.html:22
 msgid "Please login to see this page."

@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-
+from django.http import HttpResponse
 from hat.cases.models import Case
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
 from django.db.models import Q
-
+import csv
 
 class CasesViewSet(viewsets.ViewSet):
     """
@@ -33,6 +33,7 @@ class CasesViewSet(viewsets.ViewSet):
         teams = request.GET.get("teams", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
+        csvformat = request.GET.get("csv", None) #default will be json
 
         queryset = (
             Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
@@ -71,21 +72,46 @@ class CasesViewSet(viewsets.ViewSet):
                 Q(village__icontains=geo_search) | Q(ZS__icontains=geo_search) | Q(AS__icontains=geo_search)
             )
 
-        paginator = Paginator(queryset, limit)
+        if csvformat is None:
 
-        res = {"count": paginator.count}
-        if page_offset > paginator.num_pages:
-            page_offset = paginator.num_pages
-        page = paginator.page(page_offset)
+            paginator = Paginator(queryset, limit)
 
-        res["cases"] = map(lambda x: x.as_dict(), page.object_list)
-        res["has_next"] = page.has_next()
-        res["has_previous"] = page.has_previous()
-        res["page"] = page_offset
-        res["pages"] = paginator.num_pages
-        res["limit"] = limit
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
 
-        return Response(res)
+            res["cases"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+
+            return Response(res)
+        else:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
+
+            writer = csv.writer(response)
+            writer.writerow(['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
+            for case in queryset:
+                cdict = case.as_dict()
+                writer.writerow([
+                    cdict["id"],
+                    cdict["mobile_unit"],
+                    cdict["form_year"],
+                    cdict["source"],
+                    cdict["province"],
+                    cdict["ZS"],
+                    cdict["AS"],
+                    cdict["village"],
+                    cdict["name"],
+                    cdict["prename"],
+                    cdict["lastname"],
+                    cdict["normalized_AS_name"]
+                ])
+            return response
 
     def retrieve(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)

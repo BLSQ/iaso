@@ -21,7 +21,12 @@ class ASViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    
+    permission_required = [
+        'menupermissions.x_management_users',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_locator'
+    ]
+
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         coordination_id = request.GET.get("coordination_id", None)

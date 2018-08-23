@@ -24,6 +24,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = ['menupermissions.x_management_users']
 
     def list(self, request):
         order = request.GET.get("order", 'id')

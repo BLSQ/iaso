@@ -19,6 +19,10 @@ class TrapsViewSet(viewsets.ViewSet):
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
+    permission_required = [
+        'menupermissions.x_vectorcontrol'
+    ]
+
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)

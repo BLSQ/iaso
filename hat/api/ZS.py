@@ -17,6 +17,14 @@ class ZSViewSet(viewsets.ViewSet):
 
 
     """
+
+    permission_required = [
+        'menupermissions.x_management_coordinations',
+        'menupermissions.x_management_users',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_locator',
+        'menupermissions.x_vectorcontrol'
+    ]
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         coordination_id = request.GET.get("coordination_id", None)

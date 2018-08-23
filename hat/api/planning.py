@@ -41,6 +41,13 @@ class PlanningViewSet(viewsets.ViewSet):
     associated with team 2, this assignation to team 2 will be deleted.
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_management_plannings',
+        'menupermissions.x_management_workzones',
+        'menupermissions.x_plannings_macroplanning',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_plannings_routes'
+    ]
 
     def list(self, request):
         orders = request.GET.get('order', '-created_at').split(',')

@@ -10,4 +10,14 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 class UserAccessPermission(permissions.BasePermission):
     def has_permission(self, request, view):  # type: ignore
         user = request.user
-        return user and user.is_authenticated
+        access_granted = False
+        if hasattr(view, 'permission_required'):
+            for permission in view.permission_required:
+                if user.has_perm(permission):
+                    access_granted = True
+        else:
+            access_granted = True
+        if access_granted:
+            return user and user.is_authenticated
+        else:
+            return False

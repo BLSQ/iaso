@@ -1,6 +1,8 @@
 .permission-container {
     overflow: auto;
     max-height: 500px;
+    padding-right: 20px;
+    margin-right: -20px;
 }
 .permission-item {
     display: flex;

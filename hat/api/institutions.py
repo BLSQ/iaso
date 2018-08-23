@@ -12,6 +12,7 @@ class InstitutionsViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = ['menupermissions.x_management_users']
 
     def list(self, request):
         queryset = Institution.objects.all()

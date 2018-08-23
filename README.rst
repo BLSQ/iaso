@@ -149,6 +149,8 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Run JS tests                        | ``docker-compose run hat test_js``                       |
 +-------------------------------------+----------------------------------------------------------+
+| Run JS tests without Lint           | ``docker-compose run hat mocha``                         |
++-------------------------------------+----------------------------------------------------------+
 | Run integration tests               | ``docker-compose run hat test_integration``              |
 +-------------------------------------+----------------------------------------------------------+
 | Create a shell inside the container | ``docker-compose run hat bash``                          |

@@ -27,22 +27,22 @@ describe('Microplanning selection redux', () => {
 
         it('should create the select items action', () => {
             assert.deepEqual(
-                selection.selectItems([1, 2, 3]),
-                { type: selection.SELECT_ITEMS, payload: [1, 2, 3] },
+                selection.selectItems([1, 2, 3], false),
+                { type: selection.SELECT_ITEMS, payload: [1, 2, 3], activateSaveButton: false },
             );
         });
 
         it('should create the deselect items action', () => {
             assert.deepEqual(
-                selection.deselectItems([1, 2, 3]),
-                { type: selection.DESELECT_ITEMS, payload: [1, 2, 3] },
+                selection.deselectItems([1, 2, 3], false),
+                { type: selection.DESELECT_ITEMS, payload: [1, 2, 3], activateSaveButton: false },
             );
         });
 
         it('should create the reset selection action', () => {
             assert.deepEqual(
                 selection.deselectItems(),
-                { type: selection.DESELECT_ITEMS, payload: undefined },
+                { type: selection.DESELECT_ITEMS, payload: undefined, activateSaveButton: true },
             );
         });
 
@@ -80,9 +80,12 @@ describe('Microplanning selection redux', () => {
             assert.deepEqual(
                 reducer(undefined, {
                     type: selection.SELECTION_EXECUTE,
-                    payload: [{ id: 1 }],
+                    payload: [{ village_id: 1 }],
                 }),
-                initialState,
+                {
+                    ...initialState,
+                    isSelectionModified: true,
+                },
             );
         });
 
@@ -93,12 +96,13 @@ describe('Microplanning selection redux', () => {
                     mode: selection.selectionModes.select,
                 }, {
                     type: selection.SELECTION_EXECUTE,
-                    payload: [{ id: 1 }],
+                    payload: [{ village_id: 1 }],
                 }),
                 {
                     ...initialState,
+                    isSelectionModified: true,
                     mode: selection.selectionModes.select,
-                    selectedItems: [{ id: 1 }],
+                    assignations: [{ village_id: 1 }],
                 },
             );
         });
@@ -108,15 +112,16 @@ describe('Microplanning selection redux', () => {
                 reducer({
                     ...initialState,
                     mode: selection.selectionModes.deselect,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.SELECTION_EXECUTE,
-                    payload: [{ id: 1 }],
+                    payload: [{ village_id: 1 }],
                 }),
                 {
                     ...initialState,
+                    isSelectionModified: true,
                     mode: selection.selectionModes.deselect,
-                    selectedItems: [{ id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 },
             );
         });
@@ -125,9 +130,12 @@ describe('Microplanning selection redux', () => {
             assert.deepEqual(
                 reducer(undefined, {
                     type: selection.SELECT_ITEMS,
-                    payload: [{ id: 1 }],
+                    payload: [{ village_id: 1 }],
                 }),
-                { ...initialState, selectedItems: [{ id: 1 }] },
+                {
+                    ...initialState,
+                    assignations: [{ village_id: 1 }],
+                },
             );
         });
 
@@ -135,56 +143,15 @@ describe('Microplanning selection redux', () => {
             assert.deepEqual(
                 reducer({
                     ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.SELECT_ITEMS,
-                    payload: [{ id: 9 }],
+                    payload: [{ village_id: 9 }],
                 }),
                 {
                     ...initialState,
-                    selectedItems: [
-                        { id: 9 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
-                },
-            );
-        });
-
-        it('should not include item in selected list if it is already there', () => {
-            assert.deepEqual(
-                reducer({
-                    ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
-                }, {
-                    type: selection.SELECT_ITEMS,
-                    payload: [{ id: 3 }],
-                }),
-                { ...initialState, selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] },
-            );
-        });
-
-        it('should include items in empty selected list in reverse order', () => {
-            assert.deepEqual(
-                reducer(undefined, {
-                    type: selection.SELECT_ITEMS,
-                    payload: [{ id: 1 }, { id: 2 }, { id: 2 }, { id: 4 }],
-                }),
-                { ...initialState, selectedItems: [{ id: 4 }, { id: 2 }, { id: 1 }] },
-            );
-        });
-
-        it('should include non repeated items in selected list in reverse order', () => {
-            assert.deepEqual(
-                reducer({
-                    ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
-                }, {
-                    type: selection.SELECT_ITEMS,
-                    payload: [{ id: 5 }, { id: 2 }, { id: 8 }, { id: 5 }],
-                }),
-                {
-                    ...initialState,
-                    selectedItems: [
-                        { id: 8 }, { id: 5 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 },
-                    ],
+                    assignations: [
+                        { village_id: 9 }, { village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 },
             );
         });
@@ -193,34 +160,34 @@ describe('Microplanning selection redux', () => {
             assert.deepEqual(
                 reducer({
                     ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.DESELECT_ITEMS,
-                    payload: [{ id: 1 }],
+                    payload: [{ village_id: 1 }],
                 }),
-                { ...initialState, selectedItems: [{ id: 2 }, { id: 3 }, { id: 4 }] },
+                { ...initialState, assignations: [{ village_id: 2 }, { village_id: 3 }, { village_id: 4 }] },
             );
 
             assert.deepEqual(
                 reducer({
                     ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.DESELECT_ITEMS,
-                    payload: [{ id: 3 }],
+                    payload: [{ village_id: 3 }],
                 }),
-                { ...initialState, selectedItems: [{ id: 1 }, { id: 2 }, { id: 4 }] },
+                { ...initialState, assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 4 }] },
             );
 
             assert.deepEqual(
                 reducer({
                     ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.DESELECT_ITEMS,
-                    payload: [{ id: 9 }],
+                    payload: [{ village_id: 9 }],
                 }),
-                { ...initialState, selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] },
+                { ...initialState, assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }] },
             );
         });
 
@@ -228,30 +195,30 @@ describe('Microplanning selection redux', () => {
             assert.deepEqual(
                 reducer({
                     ...initialState,
-                    selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+                    assignations: [{ village_id: 1 }, { village_id: 2 }, { village_id: 3 }, { village_id: 4 }],
                 }, {
                     type: selection.DESELECT_ITEMS,
-                    payload: [{ id: 1 }, { id: 2 }, { id: 2 }, { id: 6 }, { id: 8 }],
+                    payload: [{ village_id: 1 }, { village_id: 2 }, { village_id: 2 }, { village_id: 6 }, { village_id: 8 }],
                 }),
-                { ...initialState, selectedItems: [{ id: 3 }, { id: 4 }] },
+                { ...initialState, assignations: [{ village_id: 3 }, { village_id: 4 }] },
             );
         });
 
         it('should delete all selected items if payload is empty', () => {
             assert.deepEqual(
                 reducer(undefined, { type: selection.DESELECT_ITEMS }),
-                { ...initialState, selectedItems: [] },
+                { ...initialState, assignations: [] },
             );
 
             assert.deepEqual(
                 reducer(
                     {
                         ...initialState,
-                        selectedItems: [1, 2, 3],
+                        assignations: [1, 2, 3],
                     },
                     { type: selection.DESELECT_ITEMS },
                 ),
-                { ...initialState, selectedItems: [] },
+                { ...initialState, assignations: [] },
             );
         });
 

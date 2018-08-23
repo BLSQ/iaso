@@ -132,6 +132,7 @@ export const selectionInitialState = {
     displayedItem: null,
     geoScope: {},
     showGeoScope: false,
+    isSelectionModified: undefined,
 };
 
 export const selectionReducer = (state = selectionInitialState, action = {}) => {

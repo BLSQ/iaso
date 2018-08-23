@@ -85,7 +85,7 @@ describe('Microplanning map redux', () => {
                     type: map.LEGEND_TOGGLE,
                     payload: 'official',
                 }),
-                { ...initialState, legend: { ...initialState.legend, official: false } },
+                { ...initialState, legend: { ...initialState.legend } },
             );
         });
 

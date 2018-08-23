@@ -77,7 +77,9 @@ export class MonthlyReportContainer extends Component {
         const source = 'mobile';
 
         // to avoid fetching again because params changed include it in both sides, new and old.
-        fetchUrls(urls, { ...params, source }, { ...oldParams, source }, dispatch, checkLocation);
+        if (params.date_month !== oldParams.date_month || params.location !== oldParams.location) {
+            fetchUrls(urls, { ...params, source }, { ...oldParams, source }, dispatch, checkLocation);
+        }
     }
 
 

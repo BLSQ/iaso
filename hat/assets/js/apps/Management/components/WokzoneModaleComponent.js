@@ -4,7 +4,6 @@ import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
 
-ReactModal.setAppElement('.container--main');
 
 const MESSAGES = defineMessages({
     'location-all': {
@@ -23,6 +22,10 @@ class WokzoneModale extends Component {
             plannings: props.plannings,
             isChanged: false,
         };
+    }
+
+    componentWillMount() {
+        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {

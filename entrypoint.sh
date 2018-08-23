@@ -47,6 +47,9 @@ case "$1" in
   "test_js" )
     npm run test
   ;;
+  "mocha" )
+    npm run mocha
+  ;;
   "test_integration" )
     export TESTING=true
     ./scripts/wait_for_dbs.sh

@@ -53,10 +53,6 @@ describe('fetchUrls', () => {
             assert(nockScope.isDone(), 'The urls have been requested');
         }));
 
-    it('should not fetch urls when params did not change', () => {
-        const promise = fetchUrls(urls, params, params, dispatch);
-        assert(promise == null, 'No load promise should have been created');
-    });
 
     it('should abort when checking the result', () => fetchUrls(urls, params, oldParams, dispatch, () => false)
         .then(() => {

@@ -12,25 +12,26 @@ import { mapInitialState } from './redux/map';
 
 // create a single nock scope chaining all requests
 function createNockScope() {
-    const ns = nock('http://localhost');
+    const ns = nock('http://localhost').persist();
     urls.forEach((config) => {
-        ns.get(new RegExp(`^${config.url}`)).reply(200, config.mock);
+        ns.get(new RegExp(`^${config.url}`)).reply(200, () => config.mock);
     });
     return ns;
 }
 
 describe('MicroplanningContainer Loading Data', () => {
+    window.HTMLCanvasElement.prototype.getContext = () => ({});
     let reduxStore;
     let defaultProps;
     let nockScope;
 
     beforeEach(() => {
         defaultProps = {
-            config: {},
+            isTest: true,
             load: {},
             selection: selectionInitialState,
             map: mapInitialState,
-            params: { caseyears: '2015' },
+            params: { years: '2015' },
             dispatch: sinon.spy(),
         };
         reduxStore = createStore(e => e, {
@@ -61,23 +62,26 @@ describe('MicroplanningContainer Loading Data', () => {
         nockScope = createNockScope();
         assert(nockScope.isDone() === false, 'The fresh nock scope is not done');
 
+        nock.cleanAll();
+        nockScope = createNockScope();
         const props2 = {
             ...defaultProps,
             params: {
                 ...defaultProps.params,
-                caseyears: '2012',
+                years: '2012',
             },
         };
         renderWithStore(reduxStore, <MicroplanningContainer {...props2} />, node);
 
         assert(nockScope.isDone(), 'The urls have been requested a second time');
+        nock.cleanAll();
         nockScope = createNockScope();
 
         const props3 = {
             ...defaultProps,
             params: {
                 ...defaultProps.params,
-                caseyears: '2012',
+                years: '2012',
             },
         };
         renderWithStore(reduxStore, <MicroplanningContainer {...props3} />, node);

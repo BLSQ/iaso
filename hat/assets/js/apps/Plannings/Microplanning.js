@@ -474,31 +474,34 @@ export class Microplanning extends Component {
                         }
                         {/* Map */}
                         <div className={mapClass} id="planning-map">
-                            <Map
-                                teams={teams}
-                                teamId={this.props.params.team_id}
-                                planningId={this.props.params.planning_id}
-                                baseLayer={baseLayer}
-                                overlays={overlays}
-                                legend={legend}
-                                fullscreen={fullscreen}
-                                items={villages}
-                                assignationsMap={assignationsMap}
-                                selectedItems={selectedVillages}
-                                bufferSize={bufferSize}
-                                highlightBufferSize={highlightBufferSize}
-                                deselectItems
-                                selectionAction={list => this.props.executeSelectionAction(list)}
-                                selectItems={(list, activateSaveButton) =>
-                                    this.props.selectItems(list, activateSaveButton)}
-                                chosenItem={selection.displayedItem}
-                                showItem={item => this.props.displayItem(item)}
-                                leafletMap={map => this.props.setLeafletMap(map)}
-                                geoScope={this.props.selection.geoScope}
-                                showGeoScope={this.props.selection.showGeoScope}
-                                updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
-                                getShape={type => this.props.getShape(type)}
-                            />
+                            {
+                                !this.props.isTest &&
+                                <Map
+                                    teams={teams}
+                                    teamId={this.props.params.team_id}
+                                    planningId={this.props.params.planning_id}
+                                    baseLayer={baseLayer}
+                                    overlays={overlays}
+                                    legend={legend}
+                                    fullscreen={fullscreen}
+                                    items={villages}
+                                    assignationsMap={assignationsMap}
+                                    selectedItems={selectedVillages}
+                                    bufferSize={bufferSize}
+                                    highlightBufferSize={highlightBufferSize}
+                                    deselectItems
+                                    selectionAction={list => this.props.executeSelectionAction(list)}
+                                    selectItems={(list, activateSaveButton) =>
+                                        this.props.selectItems(list, activateSaveButton)}
+                                    chosenItem={selection.displayedItem}
+                                    showItem={item => this.props.displayItem(item)}
+                                    leafletMap={map => this.props.setLeafletMap(map)}
+                                    geoScope={this.props.selection.geoScope}
+                                    showGeoScope={this.props.selection.showGeoScope}
+                                    updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
+                                    getShape={type => this.props.getShape(type)}
+                                />
+                            }
                         </div>
                     </div>
                 </div>
@@ -506,6 +509,9 @@ export class Microplanning extends Component {
         );
     }
 }
+Microplanning.defaultProps = {
+    isTest: false,
+};
 
 Microplanning.propTypes = {
     changeBufferSize: PropTypes.func.isRequired,
@@ -531,6 +537,7 @@ Microplanning.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     toggleGeoScope: PropTypes.func.isRequired,
+    isTest: PropTypes.bool,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);

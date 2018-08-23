@@ -85,7 +85,7 @@
                             <ul>
                                 {% if perms.cases.view %}
                                 <!-- TODO => remove this patch to match the active classes -->
-                                    <li class="navigation__menu__item--secondary{% if view == 'dashboard:management' and request.path != '/dashboard/management/plannings' and request.path != '/dashboard/management/coordinations' and request.path != '/dashboard/management/teams' %}--active{% endif %}">
+                                    <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/devices' %}--active{% endif %}">
                                         <a href="{% url 'dashboard:management_devices' %}">{% trans 'Appareils' %}</a>
                                     </li>
                                 {% endif %}
@@ -105,17 +105,17 @@
                     </li>
                   {% endif %}
                     {% if perms.cases.view %}
-                        <li class="navigation__menu__item{% if view == 'dashboard:micro' or view == 'dashboard:routes' or view == 'dashboard:macro'%}--active open{% endif %} expand-collapse">
+                        <li class="navigation__menu__item{% if view == 'dashboard:plannings' %}--active open{% endif %} expand-collapse">
                             <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
                             <a href="{% url 'dashboard:plannings' %}">{% trans 'Plannings' %}</a>
                             <ul>
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:macro' %}--active{% endif %}">
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/macro' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:macro' %}">{% trans 'Macroplanning' %}</a>
                                 </li>
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:micro' %}--active{% endif %}">
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/micro' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:micro' %}">{% trans 'Microplanning' %}</a>
                                 </li>
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:routes' %}--active{% endif %}">
+                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/routes' %}--active{% endif %}">
                                     <a href="{% url 'dashboard:routes' %}">{% trans 'Itinéraires' %}</a>
                                 </li>
                             </ul>

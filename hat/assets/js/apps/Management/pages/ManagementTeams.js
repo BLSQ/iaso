@@ -4,6 +4,7 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
+import moment from 'moment';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -12,6 +13,7 @@ import TeamModaleComponent from '../components/TeamModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { saveFull, deleteFull } from '../../../utils/saveData';
 import { teamsActions } from '../redux/teams';
+import { detailsActions } from '../redux/details';
 
 const baseApiUrl = '/api/teams/?';
 
@@ -89,17 +91,25 @@ class ManagementTeams extends React.Component {
                     }),
                     sortable: false,
                     resizable: false,
+                    width: 250,
                     Cell: settings => (
                         <section>
                             <button
-                                className="button--edit"
+                                className="button--tiny margin-right"
+                                onClick={() => this.selectTeam(settings.original)}
+                            >
+                                <i className="fa fa-info-circle" />
+                                <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
+                            </button>
+                            <button
+                                className="button--edit--tiny margin-right"
                                 onClick={() => this.editTeam(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
                                 <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
                             </button>
                             <button
-                                className="button--delete"
+                                className="button--delete--tiny"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
@@ -209,6 +219,25 @@ class ManagementTeams extends React.Component {
             } else {
                 console.error(`One error occured when trying to delete team: ${team.name}`);
             }
+        });
+    }
+
+    selectTeam(team) {
+        const { dispatch } = this.props;
+        const from = moment().startOf('year').format('YYYY-MM-DD');
+        const to = moment().format('YYYY-MM-DD');
+        dispatch(detailsActions.loadCurrentDetail(team));
+        const { order, coordination_id, type } = this.props.params;
+        const tempParams = this.props.params;
+        delete tempParams.order;
+        this.props.redirectTo('detail', {
+            ...tempParams,
+            teamOrder: order,
+            teamId: team.id,
+            from,
+            to,
+            coordination_id,
+            type,
         });
     }
 

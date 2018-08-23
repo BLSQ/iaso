@@ -13,7 +13,7 @@ import {
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
-import { devicesActions } from '../redux/devices';
+import { detailsActions } from '../redux/details';
 
 
 const MESSAGES = defineMessages({
@@ -113,14 +113,14 @@ export class ManagementDevices extends Component {
         const { dispatch } = this.props;
         const from = moment().startOf('year').format('YYYY-MM-DD');
         const to = moment().format('YYYY-MM-DD');
-        dispatch(devicesActions.loadCurrentDevice(deviceItem));
+        dispatch(detailsActions.loadCurrentDetail(deviceItem));
         const { order } = this.props.params;
         const tempParams = this.props.params;
         delete tempParams.order;
-        this.props.redirectTo('devices', {
+        this.props.redirectTo('detail', {
             ...tempParams,
             deviceOrder: order,
-            id: deviceItem.id,
+            deviceId: deviceItem.id,
             from,
             to,
         });

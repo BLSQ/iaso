@@ -9,16 +9,16 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 
 import ManagementDevicesPage from './pages/ManagementDevices';
-import ManagementDevicesDetailsPage from './pages/ManagementDevicesDetails';
+import ManagementDetailsPage from './pages/ManagementDetails';
 import ManagementTeamsPage from './pages/ManagementTeams';
 import ManagementCoordinationsPage from './pages/ManagementCoordinations';
 import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementPlanningsPage from './pages/ManagementPlannings';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
-import { devicesReducer, devicesInitialState } from './redux/devices';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { planningsReducer, planningsInitialState } from './redux/plannings';
+import { detailsReducer, detailsInitialState } from './redux/details';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -36,8 +36,8 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDevicesPage}
         />,
         <Route
-            path="/devices(/deviceOrder/:deviceOrder)/id/:id/from/:from/to/:to(/order/:order)(/tab/:tab)"
-            component={ManagementDevicesDetailsPage}
+            path="/detail(/coordination_id/:coordination_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/deviceId/:deviceId)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
+            component={ManagementDetailsPage}
         />,
         <Route
             path="/teams(/coordination_id/:coordination_id)(/type/:type)(/order/:order)(/pageSize/:pageSize)(/page/:page)"
@@ -55,7 +55,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/plannings(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementPlanningsPage}
         />,
-        <Redirect path="*" to="/devices" />,
+        // <Redirect path="*" to="/devices" />,
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -67,18 +67,18 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         config: appConfig,
         load: {},
         coordinations: coordinationsInitialState,
-        devices: devicesInitialState,
         teams: teamsInitialState,
         plannings: planningsInitialState,
         map: mapInitialState,
+        details: detailsInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
         coordinations: coordinationsReducer,
-        devices: devicesReducer,
         teams: teamsReducer,
         plannings: planningsReducer,
         map: mapReducer,
+        details: detailsReducer,
     }, [
         routerMiddleware(history),
     ]);

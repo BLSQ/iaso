@@ -34,7 +34,7 @@ class UserPermissionsComponent extends Component {
 
     onChange(permissionId) {
         const permissionIndex = this.state.userPermissions.indexOf(permissionId);
-        const newUserPermissions = this.state.userPermissions;
+        const newUserPermissions = this.state.userPermissions.slice();
         if (permissionIndex === -1) {
             newUserPermissions.push(permissionId);
         } else {

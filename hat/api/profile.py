@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from hat.users.models import Profile, Institution
+from hat.users.models import Profile, Institution, UserType
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 
@@ -75,10 +75,17 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         profile.user = user
         institution = request.data.get('institution', None)
+        user_type = request.data.get('userType', None)
 
-        if institution:
-            institution = get_object_or_404(Institution, id=institution.get('id'))
-            profile.institution = institution
+        new_institution = None
+        if institution and institution.get('id'):
+            new_institution = get_object_or_404(Institution, id=institution.get('id'))
+        profile.institution = new_institution
+
+        new_user_type = None
+        if user_type:
+            new_user_type = get_object_or_404(UserType, id=user_type.get('id'))
+        profile.userType = new_user_type
 
         profile.phone = request.data.get('phone', '')
         profile.province_scope.clear()
@@ -122,9 +129,16 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
         user.save()
         institution = request.data.get('institution', None)
+        user_type = request.data.get('userType', None)
+
         if institution:
             institution = get_object_or_404(Institution, id=institution.get('id'))
             user.profile.institution = institution
+
+        if user_type:
+            new_user_type = get_object_or_404(UserType, id=user_type.get('id'))
+            user.profile.userType = new_user_type
+
         user.profile.phone = request.data.get('phone', '')
 
         if provinces:

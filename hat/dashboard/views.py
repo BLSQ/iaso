@@ -246,6 +246,7 @@ def plannings_routes(request: HttpRequest) -> HttpResponse:
 
 
 @login_required()
+@permission_required('menupermissions.x_plannings_microplanning')
 @require_http_methods(['GET'])
 def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
     # Create the HttpResponse object with the appropriate CSV header.

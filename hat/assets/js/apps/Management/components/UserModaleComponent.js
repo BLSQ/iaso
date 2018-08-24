@@ -37,13 +37,10 @@ class UserModale extends Component {
     }
 
     componentWillMount() {
+        ReactModal.setAppElement('.container--main');
         if (this.props.user.province) {
             this.props.selectProvince(this.props.user.province, this.props.user.ZS);
         }
-    }
-
-    componentDidMount() {
-        ReactModal.setAppElement('.container--main');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -82,6 +79,17 @@ class UserModale extends Component {
         });
     }
 
+    updatePermissions(permissions, userType) {
+        const newUser = Object.assign({}, this.state.user, {
+            userType,
+            permissions,
+        });
+        this.props.updateCurrentUser(newUser);
+        this.setState({
+            isChanged: true,
+        });
+    }
+
     updatePassword(password) {
         this.setState({
             password,
@@ -97,6 +105,7 @@ class UserModale extends Component {
         const { formatMessage } = this.props.intl;
         const {
             institutions,
+            userTypes,
             provinces,
             zones,
             areas,
@@ -144,9 +153,11 @@ class UserModale extends Component {
                     {
                         this.state.currentTab === 'permissions' &&
                         <UserPermissionsComponent
+                            userTypes={userTypes}
                             permissions={permissions}
                             userPermissions={this.state.user.permissions}
-                            updatePermissions={newPermissions => this.updateUserField('permissions', newPermissions)}
+                            userType={this.state.user.userType}
+                            updatePermissions={(newPermissions, newUserType) => this.updatePermissions(newPermissions, newUserType)}
                         />
                     }
                     <div className="align-right">
@@ -187,6 +198,7 @@ UserModale.propTypes = {
     user: PropTypes.object,
     saveData: PropTypes.func.isRequired,
     institutions: PropTypes.array.isRequired,
+    userTypes: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,

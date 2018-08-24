@@ -1,9 +1,19 @@
-.permission-container {
-    overflow: auto;
+.permission-tabs {
     max-height: 500px;
+    .Select {
+        height: 34px;
+        margin-right: 0 ! important;
+        flex-basis: 100% ! important;
+    }
+}
+
+.permission-container {
+    max-height: 400px;
+    overflow: auto;
     padding-right: 20px;
     margin-right: -20px;
 }
+
 .permission-item {
     display: flex;
     width: 100%;
@@ -13,10 +23,12 @@
         border-bottom: none;
     }
 }
+
 .permission-label {
     padding-top: 6px;
     flex-basis: 80%;
 }
+
 .permission-button {
     flex-basis: 20%;
     text-align: right;

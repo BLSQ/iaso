@@ -5,6 +5,7 @@ export const FETCH_ACTION_NO_UPDATE = 'hat/management/users/FETCH_ACTION_NO_UPDA
 export const SET_USERS = 'hat/management/users/SET_USERS';
 export const USER_UPDATED = 'hat/management/users/USER_UPDATED';
 export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
+export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
 export const SET_ZONES = 'hat/management/users/SET_ZONES';
@@ -23,6 +24,11 @@ export const setUsers = payload => ({
 
 export const setInstitutions = payload => ({
     type: SET_INSTITUTIONS,
+    payload,
+});
+
+export const setUserTypes = payload => ({
+    type: SET_USER_TYPES,
     payload,
 });
 
@@ -159,6 +165,21 @@ export const fetchInstitutions = (dispatch) => {
     });
 };
 
+export const fetchUserTypes = (dispatch) => {
+    req
+        .get('/api/usertypes/')
+        .then((result) => {
+            dispatch(setUserTypes(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching institutions', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
 
 export const updateUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
@@ -221,6 +242,7 @@ export const usersInitialState = {
     isUpdated: false,
     list: [],
     institutions: [],
+    userTypes: [],
     permissions: [],
     provinces: [],
     zones: [],
@@ -241,6 +263,7 @@ export const userActions = {
     selectProvince,
     selectZone,
     updateCurrentUser,
+    fetchUserTypes,
 };
 
 
@@ -287,6 +310,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 institutions,
+            };
+        }
+
+        case SET_USER_TYPES: {
+            const userTypes = action.payload;
+            return {
+                ...state,
+                userTypes,
             };
         }
 

@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
 from hat.geo.models import AS, ZS, Province
+from django.contrib.auth.models import Permission
 
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
@@ -88,6 +89,19 @@ class Team(models.Model):
 class Institution(models.Model):
     name = models.CharField(max_length=255)
 
+class UserType(models.Model):
+    name = models.CharField(max_length=255)
+    permissions = models.ManyToManyField(Permission)
+    def __str__(self):
+        return self.name
+
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'permissions': map(lambda a: a.id, self.permissions.all()),
+        }
 
 class Profile(models.Model):
     '''
@@ -102,6 +116,7 @@ class Profile(models.Model):
     # permissions will be handled by Django standard mechanisms based on the user permissions
     team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL)
     institution = models.ForeignKey(Institution, null=True, blank=True, on_delete=models.SET_NULL)
+    userType = models.ForeignKey(UserType, null=True, blank=True, on_delete=models.SET_NULL)
 
     province_scope = models.ManyToManyField(Province)
     ZS_scope = models.ManyToManyField(ZS)
@@ -129,6 +144,9 @@ class Profile(models.Model):
                 'name': self.institution.name,
                 'id': self.institution.id
             }
+        userType = None
+        if self.userType:
+            userType = self.userType.as_dict()
         return {
             "id": self.id,
             "firstName": self.user.first_name,
@@ -138,6 +156,7 @@ class Profile(models.Model):
             "phone": self.phone,
             "permissions": list(self.user.user_permissions.filter(codename__startswith="x_").values_list('id', flat=True)),
             "institution": institution,
+            "userType": userType,
             "AS": self.AS_scope.all().values_list('id', flat=True),
             "ZS": self.ZS_scope.all().values_list('id', flat=True),
             "province": self.province_scope.all().values_list('id', flat=True)

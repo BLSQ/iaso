@@ -29,11 +29,11 @@
             &:after {
                 height: 1px;
                 display: block;
-                width: 100%;
+                width: calc(100% + 2px);
                 content: '';
                 position: absolute;
                 bottom: -1px;
-                left: 0;
+                left: -1px;
                 background-color: white;
             }
         }

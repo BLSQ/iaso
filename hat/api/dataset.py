@@ -47,8 +47,6 @@ from hat.cases.filters import (
     test_results,
 )
 from hat.queries import stats_queries, microplanning_queries
-
-from hat.cases.utils import create_list_from_restrict_to_zs
 from hat.geo.models import AS, ZS, Village
 
 datasets = {}
@@ -129,14 +127,9 @@ def get_cases_filtered(request: Request, params: Dict[str, str], ignore_params: 
         date_to = localize_date(datetime.strptime(date_to_param, DATE_FORMAT) + timedelta(days=1))
         cases = cases.filter(document_date__lt=date_to)
 
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        cases = cases.filter(ZS__in=restricted_zones)
-    else:
-        location = get_param_value("location")
-        if location is not None:
-            cases = cases.filter(ZS=location)
+    location = get_param_value("location")
+    if location is not None:
+        cases = cases.filter(ZS=location)
 
     source = get_param_value("source")
     if source is not None:
@@ -432,11 +425,7 @@ def population_coverage(request: Request, params: Dict[str, str]) -> JsonType:
     (date_from, date_to) = parse_date_range(params)
 
     sql_context: JsonType = {"date_from": date_from, "date_to": date_to}
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        sql_context["zones_sante"] = restricted_zones
-    elif "location" in params:
+    if "location" in params:
         sql_context["zones_sante"] = [params["location"]]
 
     if "source" in params:
@@ -498,11 +487,7 @@ def cases_over_time(request: Request, params: Dict[str, str]) -> List[JsonType]:
         "date_interval": "1 days",
         "date_trunc_to": "day",
     }
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        sql_context["zones_sante"] = restricted_zones
-    elif "location" in params:
+    if "location" in params:
         sql_context["zones_sante"] = [params["location"]]
 
     if "source" in params:
@@ -560,11 +545,7 @@ def data_by_location(request: Request, params: Dict[str, str]) -> List[JsonType]
 
     sql_context: JsonType = {**test_results}
 
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        sql_context["zones_sante"] = ",".join(restricted_zones).lower().split(",")
-    elif "location" in params:
+    if "location" in params:
         sql_context["zones_sante"] = params["location"].lower().split(",")
 
     if "caseyears" in params:
@@ -593,10 +574,6 @@ def locations_with_shape(request: Request, params: Dict[str, str]) -> List[str]:
     """
 
     locations = Location.objects.order_by("ZS")
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        locations = locations.filter(ZS__in=restricted_zones)
 
     return locations.values_list("ZS", flat=True).distinct()
 

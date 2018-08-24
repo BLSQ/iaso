@@ -125,7 +125,8 @@ INSTALLED_APPS = [
     'hat.planning',
     'hat.patient',
     'hat.vector',
-    'hat.metrics'
+    'hat.metrics',
+    'hat.menupermissions'
 ]
 
 MIDDLEWARE = [
@@ -290,7 +291,7 @@ WEBPACK_LOADER = {
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'hat.api.permissions.UserAccessPermission',
+        'hat.api.authentication.UserAccessPermission',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,

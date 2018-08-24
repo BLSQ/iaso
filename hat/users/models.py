@@ -6,8 +6,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
-from django.utils.translation import ugettext as _
-from hat.geo.models import AS, ZS
+from hat.geo.models import AS, ZS, Province
+from django.contrib.auth.models import Permission
 
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
@@ -86,25 +86,43 @@ class Team(models.Model):
         return "%s - %s - %s - %s" % (self.name, self.capacity, type, self.coordination.name)
 
 
+class Institution(models.Model):
+    name = models.CharField(max_length=255)
+
+class UserType(models.Model):
+    name = models.CharField(max_length=255)
+    permissions = models.ManyToManyField(Permission)
+    def __str__(self):
+        return self.name
+
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'permissions': map(lambda a: a.id, self.permissions.all()),
+        }
+
 class Profile(models.Model):
     '''
     User profile.
 
     :ivar User user:           User reference.
-    :ivar text restrict_to_zs: If present give access only to the data
-        belonging to the indicated “zone de santé”.
     :ivar Team team:           User team.
-
+    :ivar Institution institution:           User insitution.
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    restrict_to_zs = models.TextField(
-        null=True,
-        blank=True,
-        help_text=_('When including Yasa Bonga, please also add Yassa Bonga\
-         or Yasa-Bonga to take into account spelling differences.')
-    )
-    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
+    # permissions will be handled by Django standard mechanisms based on the user permissions
+    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL)
+    institution = models.ForeignKey(Institution, null=True, blank=True, on_delete=models.SET_NULL)
+    userType = models.ForeignKey(UserType, null=True, blank=True, on_delete=models.SET_NULL)
+
+    province_scope = models.ManyToManyField(Province)
+    ZS_scope = models.ManyToManyField(ZS)
+    AS_scope = models.ManyToManyField(AS)
+
+    phone = models.TextField(null=True, blank=True)
 
     def full_name(self):
         name = ""
@@ -119,6 +137,30 @@ class Profile(models.Model):
 
         return name.strip()
 
+    def as_dict(self):
+        institution = None
+        if self.institution:
+            institution = {
+                'name': self.institution.name,
+                'id': self.institution.id
+            }
+        userType = None
+        if self.userType:
+            userType = self.userType.as_dict()
+        return {
+            "id": self.id,
+            "firstName": self.user.first_name,
+            "userName": self.user.username,
+            "lastName": self.user.last_name,
+            "email": self.user.email,
+            "phone": self.phone,
+            "permissions": list(self.user.user_permissions.filter(codename__startswith="x_").values_list('id', flat=True)),
+            "institution": institution,
+            "userType": userType,
+            "AS": self.AS_scope.all().values_list('id', flat=True),
+            "ZS": self.ZS_scope.all().values_list('id', flat=True),
+            "province": self.province_scope.all().values_list('id', flat=True)
+    }
 
 @receiver(post_save, sender=User)
 @disable_for_loaddata

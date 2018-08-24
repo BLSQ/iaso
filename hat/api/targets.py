@@ -12,6 +12,10 @@ class TargetsViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_vectorcontrol'
+    ]
+
 
     def list(self, request):
 

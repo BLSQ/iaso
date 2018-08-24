@@ -17,13 +17,21 @@ class ZSViewSet(viewsets.ViewSet):
 
 
     """
+
+    permission_required = [
+        'menupermissions.x_management_coordinations',
+        'menupermissions.x_management_users',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_locator',
+        'menupermissions.x_vectorcontrol'
+    ]
     def list(self, request):
-        province_id = request.GET.get("province_id", None)
+        province_ids = request.GET.get("province_id", None)
         coordination_id = request.GET.get("coordination_id", None)
 
         queryset = ZS.objects.all()
-        if province_id:
-            queryset=queryset.filter(province_id=province_id)
+        if province_ids:
+            queryset=queryset.filter(province_id__in=province_ids.split(','))
 
         # if coordination_id:
         #     coordination = get_object_or_404(Coordination, id=coordination_id)

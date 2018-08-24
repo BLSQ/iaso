@@ -44,6 +44,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_management_workzones',
+        'menupermissions.x_plannings_macroplanning'
+    ]
 
     def list(self, request):
         order = request.GET.get("order", 'name')

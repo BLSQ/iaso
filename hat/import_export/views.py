@@ -13,10 +13,12 @@ from hat.tasks.jobs import \
     import_locations_areas_task, \
     import_reconciled_task
 from .forms import UploadFileForm
+from hat.dashboard.views import get_menu
+from django.urls import reverse
 
 
 @login_required()
-@permission_required('cases.import')
+@permission_required('menupermissions.x_datasets_datauploads')
 @require_http_methods(['GET'])
 def index(request: HttpRequest) -> HttpResponse:
     return render(request, 'import_export/datasets.html')
@@ -28,7 +30,7 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.import')
+@permission_required('menupermissions.x_datasets_datauploads')
 @require_http_methods(['GET', 'POST'])
 def upload_cases(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
@@ -51,7 +53,7 @@ def upload_cases(request: HttpRequest) -> HttpResponse:
             return redirect('datasets:import_cases:state', task_id=task.id)
     else:
         form = UploadFileForm(True, '.mdb,.accdb,.enc')
-    return render(request, 'import_export/upload_cases.html', {'form': form})
+    return render(request, 'import_export/upload_cases.html', {'form': form, 'menu': get_menu(request.user, reverse("datasets:import_cases:upload"))})
 
 
 ################################################################################
@@ -60,7 +62,7 @@ def upload_cases(request: HttpRequest) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.import_locations')
+@permission_required('menupermissions.x_datasets_villageuploads')
 @require_http_methods(['GET', 'POST'])
 def upload_locations(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
@@ -83,7 +85,7 @@ def upload_locations(request: HttpRequest) -> HttpResponse:
             return redirect('datasets:import_locations:state', task_id=task.id)
     else:
         form = UploadFileForm(False, '.dbf')
-    return render(request, 'import_export/upload_locations.html', {'form': form})
+    return render(request, 'import_export/upload_locations.html', {'form': form,  'menu': get_menu(request.user, reverse("datasets:import_locations:upload"))})
 
 
 ################################################################################
@@ -92,7 +94,7 @@ def upload_locations(request: HttpRequest) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.import_reconciled')
+@permission_required('menupermissions.x_datasets_villageuploads')
 @require_http_methods(['GET', 'POST'])
 def upload_reconciled(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':

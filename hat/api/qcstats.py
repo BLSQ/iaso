@@ -12,6 +12,9 @@ class QCStatsViewSet(viewsets.ViewSet):
     Show statistics on the amounts of checked and unchecked tests for images and for videos.
     Parameters: from, to: range for test dates
     """
+    permission_required = [
+        'menupermissions.x_qualitycontrol'
+    ]
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)

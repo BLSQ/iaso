@@ -55,6 +55,14 @@ class CoordinationViewSet(viewsets.ViewSet):
     Api to list all coordinations,  retrieve information about just one, or update the assignations for a coordination.
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_management_coordinations',
+        'menupermissions.x_management_workzones',
+        'menupermissions.x_management_teams',
+        'menupermissions.x_plannings_macroplanning',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_qualitycontrol'
+    ]
 
     def list(self, request):
         order = request.GET.get("order", None)

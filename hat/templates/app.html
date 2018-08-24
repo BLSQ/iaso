@@ -15,128 +15,22 @@
             </a>
 
             {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
-
                 <ul class="navigation__menu">
-                    <li class="navigation__menu__item{% if view == 'dashboard:home' %}--active{% endif %}">
-
-                        <a href="{% url 'dashboard:home' %}">{% trans 'Home' %}</a>
-                    </li>
-                    {% if perms.cases.import or perms.cases.export %}
-                        <li class="navigation__menu__item{% if 'datasets' in ns %}--active open{% endif %} expand-collapse">
-                            <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                            <a href="{% url 'datasets:index' %}">{% trans 'Jeux de données' %}</a>
+                    {% for entry in menu %}
+                        <li class="navigation__menu__item{% if entry.active %}--active{% endif %}{% if entry.items %} expand-collapse {% if entry.active %}open{% endif %}{% endif %}">
+                            {% if entry.items %}
+                                <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
+                            {% endif %}
+                            <a href="{{ entry.url_key }}">{% trans entry.name %}</a>
+                            {% for sub in entry.items %}
                                 <ul>
-                                    {% if perms.cases.import %}
-                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_cases' in view %}--active{% endif %}">
-                                            <a href="{% url 'datasets:import_cases:upload' %}">{% trans 'Upload de cas' %}</a>
-                                        </li>
-                                    {% endif %}
-                                    {% if perms.cases.import_locations %}
-                                        <li class="navigation__menu__item--secondary{% if 'datasets:import_locations' in view %}--active{% endif %}">
-                                            <a href="{% url 'datasets:import_locations:upload' %}">{% trans 'Upload coordonnées villages' %}</a>
-                                        </li>
-                                    {% endif %}
+                                    <li class="navigation__menu__item--secondary{% if sub.active %}--active{% endif %}">
+                                        <a href="{{ sub.url_key }}">{% trans sub.name %}</a>
+                                    </li>
                                 </ul>
+                            {% endfor %}
                         </li>
-                    {% endif %}
-                {% if perms.cases %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:stats' or view == 'dashboard:monthly_report' %}--active open{% endif %} expand-collapse">
-                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                        <a href="{% url 'dashboard:stats' %}">{% trans 'Statistiques' %}</a>
-                        <ul>
-                            {% if perms.cases.view %}
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:stats' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:stats' %}">{% trans 'Graphes' %}</a>
-                                </li>
-                            {% endif %}
-                            {% if perms.cases.view %}
-                                <li class="navigation__menu__item--secondary{% if view == 'dashboard:monthly_report' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:monthly_report' %}">{% trans 'Rapports' %}</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                {% endif %}
-                    {% if perms.cases %}
-                    <li class="navigation__menu__item{% if view == 'cases:cases_list' or view == 'cases:analysis' or view == 'cases:duplicates_list' %}--active open{% endif %} expand-collapse">
-                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                        <a href="{% url 'cases:cases_list' %}">{% trans 'Records' %}</a>
-                        <ul>
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == "cases:cases_list" %}--active{% endif %}">
-                                        <a href="{% url 'cases:cases_list' %}">{% trans 'Cas' %}</a>
-                                    </li>
-                                {% endif %}
-                                {% if perms.cases.view %}
-                                    <li class="navigation__menu__item--secondary{% if view == 'cases:analysis' %}--active{% endif %}">
-                                        <a href="{% url 'cases:analysis' %}">{% trans 'Analyse des cas' %}</a>
-                                    </li>
-                                {% endif %}
-                                {% if perms.cases.reconcile_duplicates %}
-                                    <li class="navigation__menu__item--secondary{% if 'cases:duplicates_list' in view %}--active{% endif %}">
-                                        <a href="{% url 'cases:duplicates_list' %}">{% trans 'Réconciliation' %}</a>
-                                    </li>
-                                {% endif %}
-                        </ul>
-
-                    <li class="navigation__menu__item{% if view == 'dashboard:management' or view == 'dashboard:management_planning' %}--active open{% endif %} expand-collapse">
-                        <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                        <a href="{% url 'dashboard:management' %}">{% trans 'Gestion' %}</a>
-                            <ul>
-                                {% if perms.cases.view %}
-                                <!-- TODO => remove this patch to match the active classes -->
-                                    <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/devices' %}--active{% endif %}">
-                                        <a href="{% url 'dashboard:management_devices' %}">{% trans 'Appareils' %}</a>
-                                    </li>
-                                {% endif %}
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/plannings' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:management_planning' %}">{% trans 'Plannings' %}</a>
-                                </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/coordinations' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:management_coord' %}">{% trans 'Coordinations' %}</a>
-                                </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/workzones' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:management_workzone' %}">{% trans 'Champs d\'actions' %}</a>
-                                </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/management/teams' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:management_team' %}">{% trans 'Equipes' %}</a>
-                                </li>
-                            </ul>
-                    </li>
-                  {% endif %}
-                    {% if perms.cases.view %}
-                        <li class="navigation__menu__item{% if view == 'dashboard:plannings' %}--active open{% endif %} expand-collapse">
-                            <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                            <a href="{% url 'dashboard:plannings' %}">{% trans 'Plannings' %}</a>
-                            <ul>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/macro' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:macro' %}">{% trans 'Macroplanning' %}</a>
-                                </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/micro' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:micro' %}">{% trans 'Microplanning' %}</a>
-                                </li>
-                                <li class="navigation__menu__item--secondary{% if request.path == '/dashboard/plannings/routes' %}--active{% endif %}">
-                                    <a href="{% url 'dashboard:routes' %}">{% trans 'Itinéraires' %}</a>
-                                </li>
-                            </ul>
-                        </li>
-                    {% endif %}
-                  {% if perms.cases.view %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:locator_list' %}--active{% endif %}">
-                        <a href="{% url 'dashboard:locator_list' %}">{% trans 'Locator' %}</a>
-                    </li>
-                    {% endif %}
-                   {% if perms.cases.view %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:vector' %}--active{% endif %}">
-                        <a href="{% url 'dashboard:vector' %}">{% trans 'Vector control' %}</a>
-                    </li>
-                    {%  endif %}
-                {%  if perms.quality %}
-                    <li class="navigation__menu__item{% if view == 'dashboard:quality-control' %}--active{% endif %}">
-                        <a href="{% url 'dashboard:quality-control' %}">{% trans 'Contrôle de qualité' %}</a>
-                    </li>
-                {% endif %}
-
+                    {% endfor %}
                 </ul>
             {% endwith %}
 

@@ -19,6 +19,9 @@ class CasesViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_locator'
+    ]
 
     def list(self, request):
         limit = int(request.GET.get("limit", 50))

@@ -18,6 +18,10 @@ class AlgoViewSet(viewsets.ViewSet):
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
+    permission_required = [
+        'menupermissions.x_plannings_microplanning'
+    ]
+
     def list(self, request):
         return Response({"res":"There is an algo here"})
 

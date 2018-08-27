@@ -41,6 +41,13 @@ class TeamViewSet(viewsets.ViewSet):
 
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        'menupermissions.x_management_workzones',
+        'menupermissions.x_management_teams',
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_plannings_routes',
+        'menupermissions.x_locator'
+    ]
 
     def list(self, request):
         coordination_id = request.GET.get("coordination_id", None)

@@ -19,12 +19,10 @@ from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice, CaseForm
 from .models import Case, CaseView, DuplicatesPair
 from ..sync.models import ImageUpload, VideoUpload
-
-from .utils import create_list_from_restrict_to_zs
-
+from hat.dashboard.views import get_menu
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@permission_required('menupermissions.x_case_reconciliation')
 @require_http_methods(['GET'])
 def duplicatespair_list(request: HttpRequest) -> HttpResponse:
     queryset = DuplicatesPair.objects.order_by('id')
@@ -116,11 +114,12 @@ def duplicatespair_list(request: HttpRequest) -> HttpResponse:
         'page': current_page,
         'custom_filters': [f.id for f in fields_filters],
         'form': form,
+        'menu': get_menu(request.user, reverse("cases:duplicates_list"))
     })
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@permission_required('menupermissions.x_case_reconciliation')
 @require_http_methods(['GET', 'POST'])
 def duplicatespair_detail(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -173,12 +172,13 @@ def duplicatespair_detail(request: HttpRequest, pair_id: str) -> HttpResponse:
         'pair_id': pair_id,
         'headers': ['Case 1', 'Case 2', 'Merged case preview'],
         'rows': rows,
-        'back_link': back_link
+        'back_link': back_link,
+        'menu': get_menu(request.user, reverse("cases:duplicates_list"))
     })
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@permission_required('menupermissions.x_case_reconciliation')
 @require_http_methods(['POST'])
 def duplicatespair_merge(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -190,7 +190,7 @@ def duplicatespair_merge(request: HttpRequest, pair_id: str) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.reconcile_duplicates')
+@permission_required('menupermissions.x_case_reconciliation')
 @require_http_methods(['POST'])
 def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:duplicates_list')
@@ -202,7 +202,7 @@ def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.view')
+@permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:cases_list')
@@ -226,16 +226,10 @@ def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
 
 
 @login_required()
-@permission_required('cases.view')
+@permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET', 'POST'])
 def cases_list(request: HttpRequest) -> HttpResponse:
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    # To check this is not an empty string:
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        queryset = CaseView.objects.filter(ZS__in=restricted_zones).order_by('id')
-    else:
-        queryset = CaseView.objects.order_by('id')
+    queryset = CaseView.objects.order_by('id')
 
     full_access = request.user.has_perm('cases.view_full')
 
@@ -352,19 +346,15 @@ def cases_list(request: HttpRequest) -> HttpResponse:
         'columns': columns,
         'form': form,
         'download_link': download_link,
+        'menu': get_menu(request.user, reverse("cases:cases_list"))
     })
 
 
 @login_required()
-@permission_required('cases.view')
+@permission_required('menupermissions.x_case_analysis')
 @require_http_methods(['GET'])
 def analysis(request: HttpRequest) -> HttpResponse:
-    restrict_to_zs = request.user.profile.restrict_to_zs
-    if restrict_to_zs:
-        restricted_zones = create_list_from_restrict_to_zs(restrict_to_zs)
-        queryset = CaseView.objects.filter(ZS__in=restricted_zones)
-    else:
-        queryset = CaseView.objects
+    queryset = CaseView.objects
 
     locations_filters = {
         'ZS': lambda q, v: q.filter(ZS=v),
@@ -459,6 +449,7 @@ def analysis(request: HttpRequest) -> HttpResponse:
         'total_participants': total_participants,
         'total_suspect': total_suspect,
         'total_confirmed': total_confirmed,
+        'menu': get_menu(request.user, reverse("cases:analysis"))
     })
 
 

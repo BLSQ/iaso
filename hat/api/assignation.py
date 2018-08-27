@@ -37,6 +37,11 @@ class AssignationViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
+    permission_required = [
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_plannings_routes'
+    ]
+
     def list(self, request):
         planning_id = request.GET.get('planning_id', None)
         coordination_id = request.GET.get('coordination_id', None)

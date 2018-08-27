@@ -9,6 +9,9 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
     """
     Api to get statistics for the quality control tool.
     """
+    permission_required = [
+        'menupermissions.x_qualitycontrol'
+    ]
     def list(self, request):
         test_types = [CATT, RDT, PG]
 

@@ -17,6 +17,9 @@ class QCTestsViewSet(viewsets.ViewSet):
            checked: if true, get tests that have already been checked, if false: get tests without check yet (only tests with images or videos allowing a check)
     """
 
+    permission_required = [
+        'menupermissions.x_qualitycontrol'
+    ]
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)

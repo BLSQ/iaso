@@ -37,6 +37,11 @@ class VillageViewSet(viewsets.ViewSet):
     /api/villages/?types=YES,NA
     /api/villages/?search=bo&include_unlocated=true&as_list=true&limit=300
     """
+    permission_required = [
+        'menupermissions.x_plannings_microplanning',
+        'menupermissions.x_locator',
+        'menupermissions.x_vectorcontrol'
+    ]
 
     def list(self, request):
         values = ("name", "id", "longitude", "latitude", "population", "AS_id", "AS__name", "village_official")

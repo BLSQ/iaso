@@ -19,5 +19,6 @@ admin.site.register(Location, LocationAdmin)
 
 class TestGroupAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
+    raw_id_fields = ('cases',)
 
 admin.site.register(TestGroup, TestGroupAdmin)

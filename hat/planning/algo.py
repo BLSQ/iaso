@@ -1,4 +1,5 @@
 from hat.users.models import Team
+from hat.planning.models import WorkZone
 from hat.geo.models import Village
 from django.db.models import Count
 from django.db.models import Q
@@ -42,9 +43,10 @@ class TempAssignation:
         return str(self.villages)
 
 
-def assign(village_id_list, coordination_id, years=[]):
+def assign(village_id_list, workzone_id, years=[]):
     village_list = sort_villages(village_id_list, years)
-    teams = list(Team.objects.filter(coordination_id=coordination_id).order_by('-UM', '-capacity'))
+    workzone = WorkZone.objects.get(pk=workzone_id)
+    teams = list(workzone.teams.order_by('-UM', '-capacity'))
     assignations = {team.id: TempAssignation() for team in teams}
     # team_id -> (population_reached, assignations
     not_assigned = []

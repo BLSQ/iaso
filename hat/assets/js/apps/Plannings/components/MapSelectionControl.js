@@ -27,7 +27,7 @@ class MapSelectionControl extends Component {
         } = this.props;
         return (
             <div className="map__selection__control__container">
-                {this.props.coordinationId && !this.props.teamId &&
+                {this.props.workzoneId && !this.props.teamId &&
                     <div>
                         <div className="map__selection__actions">
                             <span className="map__text--select">
@@ -64,7 +64,7 @@ class MapSelectionControl extends Component {
                     </div>
                 }
 
-                {this.props.coordinationId && !this.props.isGeoScopeEnabled &&
+                {this.props.workzoneId && !this.props.isGeoScopeEnabled &&
                     <div className="map__selection__actions tooltip--warning">
                         <span className="map__text--select">
                             <FormattedMessage id="microplanning.selection.buffer" defaultMessage="Selection buffer" />
@@ -102,7 +102,7 @@ class MapSelectionControl extends Component {
                 </div>
                 }
 
-                {this.props.coordinationId && !this.props.isGeoScopeEnabled &&
+                {this.props.workzoneId && !this.props.isGeoScopeEnabled &&
                     <div
                         tabIndex={0}
                         role="button"
@@ -123,7 +123,7 @@ class MapSelectionControl extends Component {
 }
 MapSelectionControl.defaultProps = {
     teamId: '',
-    coordinationId: '',
+    workzoneId: '',
     mode: 0,
     changeMode: () => {},
     bufferSize: 0,
@@ -136,7 +136,7 @@ MapSelectionControl.defaultProps = {
 
 MapSelectionControl.propTypes = {
     teamId: PropTypes.string,
-    coordinationId: PropTypes.string,
+    workzoneId: PropTypes.string,
     mode: PropTypes.number,
     changeMode: PropTypes.func,
     bufferSize: PropTypes.number,

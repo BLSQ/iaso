@@ -203,6 +203,7 @@ export class Microplanning extends Component {
         }
         const teams = ((data && data.teams) || []);
         const coordinations = ((data && data.coordinations) || []);
+        const workzones = ((data && data.workzones) || []);
         const plannings = ((data && data.plannings) || []);
         const assignations = (this.props.selection.assignations) || [];
         const teamsMap = {};
@@ -274,7 +275,7 @@ export class Microplanning extends Component {
 
             const algoParams = {
                 village_id: inBuffer.map(x => x.id).join(','),
-                coordination_id: this.props.params.coordination_id,
+                workzone_id: this.props.params.workzone_id,
                 years: this.props.params.years,
             };
             this.props.launchAlgo(algoParams);
@@ -306,6 +307,7 @@ export class Microplanning extends Component {
                     params={this.props.params}
                     plannings={plannings}
                     coordinations={coordinations}
+                    workzones={workzones}
                     teams={teams}
                     redirect={params => this.props.redirect(params)}
                     deselectAll={() => this.props.deselectItems()}
@@ -424,7 +426,7 @@ export class Microplanning extends Component {
                                         <MapSelectionControl
                                             mode={selection.mode}
                                             teamId={this.props.params.team_id}
-                                            coordinationId={this.props.params.coordination_id}
+                                            workzoneId={this.props.params.workzone_id}
                                             changeMode={mode => this.changeSelectionModeHandler(mode)}
                                             bufferSize={selection.bufferSize}
                                             changeBufferSize={event =>

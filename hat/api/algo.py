@@ -27,9 +27,9 @@ class AlgoViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         village_ids = request.data.get('village_id', None).split(',')
-        coordination_id = request.data.get('coordination_id', None)
+        workzone_id = request.data.get('workzone_id', None)
         years = request.data.get('years', None).split(',')
-        assigned, not_assigned = assign(village_ids, coordination_id, years)
+        assigned, not_assigned = assign(village_ids, workzone_id, years)
         assignations = []
         for team_id in assigned.keys():
             temp_assignation = assigned[team_id]

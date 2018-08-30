@@ -63,10 +63,12 @@
         {% endblocktrans %}
       </p>
 
-      <a href="{% url 'dashboard:micro' %}" class="button--success">
-        {% trans 'Use the planning tool' %}
-        <i class="fa fa-arrow-right icon--right"></i>
-      </a>
+      {% if perms.menupermissions.x_plannings_microplanning %}
+        <a href="{% url 'dashboard:micro' %}" class="button--success">
+          {% trans 'Use the planning tool' %}
+          <i class="fa fa-arrow-right icon--right"></i>
+        </a>
+      {% endif %}
     </div>
   </section>
 
@@ -82,7 +84,7 @@
         Report showing monthly statistics from active screening using the HAT mobile application. Statistics include: number of suspect and confirmed cases, participants missing tests, and more.
         {% endblocktrans %}
       </p>
-      {% if perms.cases.view %}
+      {% if perms.menupermissions.x_stats_reports %}
         <a href="{% url 'dashboard:monthly_report' %}" class="button--bright">
           {% trans 'Monthly reports' %}
           <i class="fa fa-arrow-right icon--right"></i>
@@ -100,7 +102,7 @@
         Upload historical data forms from the Microsoft Access template or encrypted backup files from the Mobile Application.
         {% endblocktrans %}
       </p>
-      {% if perms.cases.import %}
+      {% if perms.menupermissions.x_datasets_datauploads %}
         <a href="{% url 'datasets:import_cases:upload' %}" class="button--bright">
           {% trans 'Data upload' %}
           <i class="fa fa-arrow-right icon--right"></i>
@@ -119,7 +121,7 @@
         View the list of participants in the screening sessions, the historical cases...
         {% endblocktrans %}
       </p>
-      {% if perms.cases.view %}
+      {% if perms.menupermissions.x_case_cases %}
         <a href="{% url 'cases:cases_list' %}" class="button--bright">
           {% trans 'Data uploaded' %}
           <i class="fa fa-arrow-right icon--right"></i>
@@ -137,7 +139,7 @@
         Download a list of participants who screened positive for HAT, but <strong>did not</strong> have a follow-up test to confirm.
         {% endblocktrans %}
       </p>
-      {% if perms.cases.view %}
+      {% if perms.menupermissions.x_case_cases %}
         <a href="{% url 'cases:cases_list' %}?suspect=true" class="button--bright">
           {% trans 'Go to HAT cases' %}
           <i class="fa fa-arrow-right icon--right"></i>

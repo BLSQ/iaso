@@ -15,17 +15,15 @@ class ImageValidatorComponent extends React.Component {
         return (
             <div className="widget__content">
                 <div className="quality-label">
-                    ID:
-                    <span>{this.props.imageItem.id}</span>
                     TYPE:
                     <span>{this.props.type}</span>
                 </div>
-                <ImageComponent imageItem={this.props.imageItem} />
+                <ImageComponent imageItem={this.props.imageItems[0]} />
                 <ImageFormComponent
-                    imageItem={this.props.imageItem}
+                    imageItems={this.props.imageItems}
                     error={this.props.error}
-                    submitForm={(test) => {
-                        this.props.saveTest({ ...test, test_id: this.props.imageItem.id });
+                    submitForm={(imageItems) => {
+                        this.props.saveTest(imageItems);
                     }}
                 />
             </div>
@@ -38,7 +36,7 @@ ImageValidatorComponent.defaultProps = {
 };
 
 ImageValidatorComponent.propTypes = {
-    imageItem: PropTypes.object.isRequired,
+    imageItems: PropTypes.array.isRequired,
     saveTest: PropTypes.func.isRequired,
     type: PropTypes.string.isRequired,
     error: PropTypes.object,

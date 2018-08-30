@@ -8,89 +8,108 @@ class ImageFormComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            result: undefined,
+            imageItems: props.imageItems,
+            isSubmitEnabled: true,
         };
     }
 
-    componentWillReceiveProps() {
+    componentWillReceiveProps(nextProps) {
         this.setState({
-            result: undefined,
+            imageItems: nextProps.imageItems,
         });
     }
 
     onSubmit(e) {
         e.preventDefault();
-        this.props.submitForm(this.state);
+        this.props.submitForm(this.state.imageItems);
     }
 
-    changeResult(result) {
+    changeResult(result, imageItemId) {
+        const imageItems = [];
+        let isSubmitEnabled = false;
+        this.state.imageItems.map((i) => {
+            const tempImageitem = i;
+            if (i.id === imageItemId) {
+                tempImageitem.result = result;
+            }
+            if (typeof i.result === 'undefined') {
+                isSubmitEnabled = true;
+            }
+            imageItems.push(tempImageitem);
+            return null;
+        });
         this.setState({
-            result,
+            imageItems,
+            isSubmitEnabled,
         });
     }
 
     render() {
-        const typeConstant = this.props.imageItem.type === 'RDT' ?
+        const typeConstant = this.props.imageItems[0].type === 'RDT' ?
             RdtTypeConstant : CattTypeConstant;
 
         return (
             <form>
-                <div>
-                    {
-                        !this.props.imageItem.index && this.props.imageItem.type === 'CATT' &&
-                        <section>
-                            <div className="quality-label inline">
-                                <FormattedMessage
-                                    id="quality.image.noindex"
-                                    defaultMessage="aucun index fourni"
-                                />
-                            </div>
-                        </section>
-                    }
-                    {
-                        this.props.imageItem.index &&
-                        <section>
-                            <div className="quality-label inline">
-                                <FormattedMessage
-                                    id="quality.image.index"
-                                    defaultMessage="Test n°:"
-                                />:
-                            </div>
-                            <div>{this.props.imageItem.index}</div>
-                        </section>
-                    }
-                    <section>
-                        <div className="quality-label inline">
-                            <FormattedMessage
-                                id="quality.image.results"
-                                defaultMessage="Résultat"
-                            />:
-                        </div>
-                        {
-                            typeConstant.map((type) => {
-                                const messageProps = {
-                                    id: type.id,
-                                    defaultMessage: type.defaultMessage,
-                                };
-                                return (
-                                    <div className="quality-radio" key={type.value}>
-                                        <input
-                                            type="radio"
-                                            id={`result-${type.value}`}
-                                            name={`result-${type.value}`}
-                                            checked={type.value === this.state.result ? 'checked' : ''}
-                                            value={type.value}
-                                            onChange={() => this.changeResult(type.value)}
+                {
+                    this.state.imageItems.map(imageItem => (
+                        <div key={`test-${imageItem.id}`}>
+                            {
+                                !imageItem.index && imageItem.type === 'CATT' &&
+                                <section>
+                                    <div className="quality-label inline">
+                                        <FormattedMessage
+                                            id="quality.image.noindex"
+                                            defaultMessage="aucun index fourni"
                                         />
-                                        <label htmlFor={`result-${type.value}`}>
-                                            <FormattedMessage {...messageProps} />
-                                        </label>
                                     </div>
-                                );
-                            })
-                        }
-                    </section>
-                </div>
+                                </section>
+                            }
+                            {
+                                imageItem.index &&
+                                <section>
+                                    <div className="quality-label inline">
+                                        <FormattedMessage
+                                            id="quality.image.index"
+                                            defaultMessage="Test n°:"
+                                        />:
+                                    </div>
+                                    <div>{imageItem.index}</div>
+                                </section>
+                            }
+                            <section>
+                                <div className="quality-label inline">
+                                    <FormattedMessage
+                                        id="quality.image.results"
+                                        defaultMessage="Résultat"
+                                    />:
+                                </div>
+                                {
+                                    typeConstant.map((type) => {
+                                        const messageProps = {
+                                            id: type.id,
+                                            defaultMessage: type.defaultMessage,
+                                        };
+                                        return (
+                                            <div className="quality-radio" key={type.value}>
+                                                <input
+                                                    type="radio"
+                                                    id={`result-${type.value}-${imageItem.id}`}
+                                                    name={`result-${type.value}-${imageItem.id} `}
+                                                    checked={type.value === imageItem.result ? 'checked' : ''}
+                                                    value={type.value}
+                                                    onChange={() => this.changeResult(type.value, imageItem.id)}
+                                                />
+                                                <label htmlFor={`result-${type.value}-${imageItem.id}`}>
+                                                    <FormattedMessage {...messageProps} />
+                                                </label>
+                                            </div>
+                                        );
+                                    })
+                                }
+                            </section>
+                        </div>
+                    ))
+                }
                 <div className="submit-area">
                     {
                         this.props.error &&
@@ -100,7 +119,7 @@ class ImageFormComponent extends React.Component {
                     }
                     <button
                         className="button"
-                        disabled={typeof this.state.result === 'undefined'}
+                        disabled={this.state.isSubmitEnabled}
                         onClick={e => this.onSubmit(e)}
                     >
                         <i className="fa fa-save" />
@@ -119,7 +138,7 @@ ImageFormComponent.defaultProps = {
 ImageFormComponent.propTypes = {
     submitForm: PropTypes.func.isRequired,
     error: PropTypes.object,
-    imageItem: PropTypes.object.isRequired,
+    imageItems: PropTypes.array.isRequired,
 };
 
 const ImageFormComponentIntl = injectIntl(ImageFormComponent);

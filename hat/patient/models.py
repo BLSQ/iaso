@@ -53,10 +53,12 @@ class Test(models.Model):
         if self.type in TYPES_WITH_IMAGES:
             if self.image:
                 res['image'] = self.image.image.url
+                res['group_id'] = self.image.participant_uuid
 
         if self.type in TYPES_WITH_VIDEOS:
             if self.video:
                 res['video'] = self.video.video.url
+                res['group_id'] = self.video.participant_uuid
 
         return res
 

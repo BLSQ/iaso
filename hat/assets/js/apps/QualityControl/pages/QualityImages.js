@@ -60,12 +60,15 @@ class QualityImages extends React.Component {
         });
     }
 
-    saveTestItem(test) {
-        saveTest(test, this.props.dispatch).then((isSaved) => {
-            if (isSaved) {
-                this.updateImageList(this.state.currentType);
-            }
+    saveTestItem(imageItems) {
+        const promisesArray = [];
+        imageItems.map((item) => {
+            promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
+            return null;
         });
+        Promise.all(promisesArray).then(() => {
+            this.updateImageList(this.state.currentType);
+        }).catch(error => console.error(`Error while saving test: ${error}`));
     }
 
     render() {
@@ -153,13 +156,12 @@ class QualityImages extends React.Component {
                             />
                         </div>
                     </div>
-
                     {
                         this.props.imageList.results[0] &&
                         <ImageValidatorComponent
-                            imageItem={this.props.imageList.results[0]}
+                            imageItems={this.props.imageList.results}
                             type={this.state.currentType}
-                            saveTest={test => this.saveTestItem(test)}
+                            saveTest={imageItems => this.saveTestItem(imageItems)}
                             error={error}
                         />
                     }

@@ -2,6 +2,7 @@ from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from hat.sync.models import ImageUpload
 from hat.patient.models import Test
 from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
 
@@ -50,9 +51,14 @@ class QCTestsViewSet(viewsets.ViewSet):
                 if ttype in TYPES_WITH_VIDEOS:
                     qs = qs.exclude(video=None)
 
-        remaining = qs.count()
-        qs = qs[:limit]
+        if qs and ttype == 'CATT':
+            first_catt_test = qs[0]
+            temp_res = qs.filter(image=first_catt_test.image).order_by("index")
+            remaining = ImageUpload.objects.filter(id__in=qs.values_list("image_id", flat=True)).count()
+        else:
+            temp_res = qs[:limit]
+            remaining = qs.count()
 
         res = {
-            'results': [test.to_dict() for test in qs], 'remaining_count': remaining}
+            'results': [test.to_dict() for test in temp_res], 'remaining_count': remaining}
         return Response(res)

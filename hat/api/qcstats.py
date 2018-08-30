@@ -4,6 +4,7 @@ from hat.quality.models import Check
 from hat.patient.models import Test
 from django.db.models import Count
 from django.db.models import F
+from hat.sync.models import ImageUpload
 
 
 class QCStatsViewSet(viewsets.ViewSet):
@@ -28,8 +29,10 @@ class QCStatsViewSet(viewsets.ViewSet):
             tests_with_images = tests_with_images.filter(date__date__lte=to_date)
             tests_with_videos = tests_with_videos.filter(date__date__lte=to_date)
 
-        images_no_checks = tests_with_images.exclude(num_checks__gt=0)
-        images_checks = tests_with_images.filter(num_checks__gt=0)
+        images_no_checks_all = tests_with_images.exclude(num_checks__gt=0)
+        images_no_checks =  ImageUpload.objects.filter(id__in=images_no_checks_all.values_list("image_id", flat=True))
+        images_checks_all = tests_with_images.filter(num_checks__gt=0)
+        images_checks = ImageUpload.objects.filter(id__in=images_checks_all.values_list("image_id", flat=True))
         videos_no_checks = tests_with_videos.exclude(num_checks__gt=0)
         videos_checks = tests_with_videos.filter(num_checks__gt=0)
 

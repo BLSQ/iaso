@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import VideoValidatorComponent from '../components/VideoValidatorComponent';
@@ -12,28 +13,57 @@ import { getRequest, createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { videoActions } from '../redux/video';
 
+const videoTypesList = [
+    {
+        label: 'PG',
+        value: 'PG',
+    },
+    {
+        label: 'PL',
+        value: 'PL',
+    },
+    {
+        label: 'CTCWOO',
+        value: 'CTCWOO',
+    },
+    {
+        label: 'MAECT',
+        value: 'MAECT',
+    },
+];
+
 class QualityVideos extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            currentType: videoTypesList[0].value,
+        };
     }
 
     componentDidMount() {
-        this.updateVideoList();
+        this.updateVideoList(this.state.currentType);
     }
 
     componentWillReceiveProps(nextProps) {
         if ((nextProps.params.date_from !== this.props.params.date_from) ||
             (nextProps.params.date_to !== this.props.params.date_to)) {
             this.updateVideoList(
+                this.state.currentType,
                 nextProps.params.date_from,
                 nextProps.params.date_to,
             );
         }
     }
 
-    updateVideoList(from = this.props.params.date_from, to = this.props.params.date_to) {
-        const url = `/api/qctests/?type=PG&limit=1&checked=false&from=${from}&to=${to}`;
+    onChangetype(newtype) {
+        this.setState({
+            currentType: newtype,
+        });
+        this.updateVideoList(newtype);
+    }
+
+    updateVideoList(type, from = this.props.params.date_from, to = this.props.params.date_to) {
+        const url = `/api/qctests/?type=${type}&limit=1&checked=false&from=${from}&to=${to}`;
         getRequest(url, this.props.dispatch).then((response) => {
             this.props.dispatch(videoActions.setVideoList(response));
         });
@@ -42,7 +72,7 @@ class QualityVideos extends React.Component {
     saveTestItem(test) {
         saveTest(test, this.props.dispatch).then((isSaved) => {
             if (isSaved) {
-                this.updateVideoList();
+                this.updateVideoList(this.state.currentType);
             }
         });
     }
@@ -113,6 +143,23 @@ class QualityVideos extends React.Component {
                                     })}
                             />
                         </h2>
+                        <div className="type-filter">
+                            <div className="filter__label">
+                                <FormattedMessage
+                                    id="quality.video.typelabel"
+                                    defaultMessage="Type de vidéo"
+                                />:
+                            </div>
+                            <Select
+                                clearable={false}
+                                simpleValue
+                                name="currentType"
+                                value={this.state.currentType}
+                                placeholder="--"
+                                options={videoTypesList}
+                                onChange={event => this.onChangetype(event)}
+                            />
+                        </div>
                     </div>
 
                     {

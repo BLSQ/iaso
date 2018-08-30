@@ -74,7 +74,8 @@ class WorkZone(models.Model):
         total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(Sum('population'))['population__sum']
         if total_population is None:
             total_population = 0  # to always output a number, and not null
-        return {
+
+        res = {
             'id': self.id,
             'name': self.name,
             'teams': teams_list,
@@ -86,6 +87,11 @@ class WorkZone(models.Model):
             'planning_name': self.planning.name,
             'coordination_name': self.coordination.name
         }
+
+        if hasattr(self, 'population_endemic_villages'):
+            res['population_endemic_villages'] = self.population_endemic_villages
+
+        return res
 
     def __str__(self):
         return "%s - % s - %s" % (self.name, self.coordination, self.planning)

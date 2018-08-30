@@ -72,6 +72,12 @@ export const urls = [
         ],
     },
     {
+        name: 'workzones',
+        url: '/api/workzones/',
+        mock: [
+        ],
+    },
+    {
         name: 'areas',
         url: '/api/as/',
         mock: [

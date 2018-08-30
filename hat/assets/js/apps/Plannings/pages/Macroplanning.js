@@ -35,7 +35,7 @@ const workzoneLabel = (workzone, formatMessage) => (
     <span>
         {workzone.name}
         <span className="Select-infos">
-            ({formatMessage(MESSAGES.capacity)} {formatThousand(workzone.total_capacity)} / {formatMessage(MESSAGES.population)} {formatThousand(workzone.total_population)})
+            ({formatMessage(MESSAGES.capacity)} {formatThousand(workzone.total_capacity)} / {formatMessage(MESSAGES.population)} {formatThousand(workzone.population_endemic_villages)})
         </span>
     </span>
 );

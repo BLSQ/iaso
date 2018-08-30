@@ -101,7 +101,7 @@ class PlanningTeamSelection extends Component {
                                     })}
                             />
                         </div>
-                    }
+                    }mlp
                     {
                         planning_id &&
                         this.state.currentPlanning &&
@@ -132,6 +132,8 @@ PlanningTeamSelection.defaultProps = {
     plannings: [],
     teams: [],
     coordinations: [],
+    workzones: [],
+    displayWorkZones: false,
 };
 PlanningTeamSelection.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -139,7 +141,9 @@ PlanningTeamSelection.propTypes = {
     plannings: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
     coordinations: PropTypes.arrayOf(PropTypes.object),
+    workzones: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
+    displayWorkZones: PropTypes.bool,
 };
 
 export default injectIntl(PlanningTeamSelection);

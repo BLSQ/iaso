@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.db.models import Sum
 from rest_framework import viewsets
 from rest_framework.response import Response
 from hat.planning.models import WorkZone, Planning
@@ -53,6 +55,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         order = request.GET.get("order", 'name')
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
+        years = request.GET.get("years", "2017,2016,2015,2014,2013")
 
 
         matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
@@ -62,8 +65,16 @@ class WorkZoneViewSet(viewsets.ViewSet):
                     prefix = '-'
         qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
-
         queryset = WorkZone.objects.all()
+
+        if years:
+            years_array = years.split(",")
+            population_endemic_villages = Sum(
+                "AS__village__population", filter=Q(AS__village__caseview__confirmed_case=True, AS__village__caseview__normalized_year__in=years_array)
+            )
+            queryset = queryset.annotate(population=population_endemic_villages)
+
+
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:

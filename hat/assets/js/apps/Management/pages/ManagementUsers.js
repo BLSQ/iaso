@@ -22,14 +22,11 @@ class ManagementUsers extends React.Component {
         const { dispatch } = props;
         dispatch(userActions.fetchInstitutions(dispatch));
         dispatch(userActions.fetchProvinces(dispatch));
+        dispatch(userActions.fetchTeams(dispatch));
         dispatch(userActions.fetchPermissions(dispatch));
         dispatch(userActions.fetchUserTypes(dispatch));
         this.state = {
             tableColumns: [
-                {
-                    Header: 'ID',
-                    accessor: 'id',
-                },
                 {
                     Header: formatMessage({
                         defaultMessage: 'Nom d\'utilisateur',
@@ -53,23 +50,10 @@ class ManagementUsers extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Téléphone',
-                        id: 'main.label.phone',
-                    }),
-                    accessor: 'phone',
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Email',
-                        id: 'main.label.email',
-                    }),
-                    accessor: 'email',
-                },
-                {
-                    Header: formatMessage({
                         defaultMessage: 'Institution',
                         id: 'main.label.institution',
                     }),
+                    width: 150,
                     accessor: 'institution',
                     Cell: settings => (<span>{settings.original.institution ? settings.original.institution.name : ''}</span>),
                 },
@@ -78,20 +62,20 @@ class ManagementUsers extends React.Component {
                         defaultMessage: 'Actions',
                         id: 'main.actions',
                     }),
-                    width: 270,
+                    width: 180,
                     sortable: false,
                     resizable: false,
                     Cell: settings => (
                         <section>
                             <button
-                                className="button--edit"
+                                className="button--edit--tiny margin-right"
                                 onClick={() => this.props.selectUser(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
                                 <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
                             </button>
                             <button
-                                className="button--delete"
+                                className="button--delete--tiny"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
@@ -169,7 +153,10 @@ class ManagementUsers extends React.Component {
             selectZone,
             updateCurrentUser,
             selectedUser,
+            teams,
+            load,
         } = this.props;
+        console.log('load', this.props.load);
         return (
             <section>
                 {
@@ -185,10 +172,13 @@ class ManagementUsers extends React.Component {
                         provinces={provinces}
                         zones={zones}
                         areas={areas}
+                        teams={teams}
                         selectProvince={(provinceId, zoneId) => selectProvince(provinceId, zoneId)}
                         selectZone={zoneId => selectZone(zoneId)}
                         updateCurrentUser={user => updateCurrentUser(user)}
                         deleteUserZones
+                        isUpdated={this.props.isUpdated}
+                        error={load.error}
                     />
                 }
                 {
@@ -274,6 +264,7 @@ ManagementUsers.propTypes = {
     userTypes: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
+    teams: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
     areas: PropTypes.array.isRequired,
     selectProvince: PropTypes.func.isRequired,
@@ -291,6 +282,7 @@ const MapStateToProps = state => ({
     userTypes: state.users.userTypes,
     permissions: state.users.permissions,
     provinces: state.users.provinces,
+    teams: state.users.teams,
     zones: state.users.zones,
     areas: state.users.areas,
     isUpdated: state.users.isUpdated,

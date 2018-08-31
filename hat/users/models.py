@@ -147,6 +147,9 @@ class Profile(models.Model):
         userType = None
         if self.userType:
             userType = self.userType.as_dict()
+        team = None
+        if self.team:
+            team = self.team.id
         return {
             "id": self.id,
             "firstName": self.user.first_name,
@@ -154,6 +157,7 @@ class Profile(models.Model):
             "lastName": self.user.last_name,
             "email": self.user.email,
             "phone": self.phone,
+            "team": team,
             "permissions": list(self.user.user_permissions.filter(codename__startswith="x_").values_list('id', flat=True)),
             "institution": institution,
             "userType": userType,

@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from hat.users.models import Profile, Institution, UserType
+from hat.users.models import Profile, Institution, UserType, Team
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 
@@ -74,8 +74,14 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
         user.save()
         profile.user = user
+        team = request.data.get('team', None)
         institution = request.data.get('institution', None)
         user_type = request.data.get('userType', None)
+
+        new_team = None
+        if team:
+            new_team = get_object_or_404(Team, id=team)
+        profile.team = new_team
 
         new_institution = None
         if institution and institution.get('id'):
@@ -130,10 +136,14 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         institution = request.data.get('institution', None)
         user_type = request.data.get('userType', None)
+        team = request.data.get('team', None)
 
         if institution:
             institution = get_object_or_404(Institution, id=institution.get('id'))
             user.profile.institution = institution
+        if team:
+            new_team = get_object_or_404(Team, id=team)
+            user.profile.team = new_team
 
         if user_type:
             new_user_type = get_object_or_404(UserType, id=user_type.get('id'))

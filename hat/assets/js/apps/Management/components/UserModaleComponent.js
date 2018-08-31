@@ -33,6 +33,8 @@ class UserModale extends Component {
             password: '',
             isChanged: false,
             currentTab: 'infos',
+            isUpdated: false,
+            error: false,
         };
     }
 
@@ -44,11 +46,32 @@ class UserModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (!deepEqual(nextProps.user, this.props.user, true)) {
-            this.setState({
-                user: nextProps.user,
-            });
+        let newState = {};
+        if (nextProps.isUpdated) {
+            newState.isUpdated = nextProps.isUpdated;
+            newState.error = false;
+            setTimeout(() => {
+                this.setState({
+                    isUpdated: false,
+                });
+            }, 10000);
         }
+        if (nextProps.error) {
+            newState = {
+                error: nextProps.error,
+                isUpdated: false,
+                isChanged: true,
+            };
+            setTimeout(() => {
+                this.setState({
+                    error: false,
+                });
+            }, 10000);
+        }
+        if (!deepEqual(nextProps.user, this.props.user, true)) {
+            newState.user = nextProps.user;
+        }
+        this.setState(newState);
     }
 
     onSave() {
@@ -107,6 +130,7 @@ class UserModale extends Component {
             institutions,
             userTypes,
             provinces,
+            teams,
             zones,
             areas,
             permissions,
@@ -135,6 +159,7 @@ class UserModale extends Component {
                         <UserInfosComponent
                             password={this.state.password}
                             institutions={institutions}
+                            teams={teams}
                             user={this.state.user}
                             updatePassword={password => this.updatePassword(password)}
                             updateUserField={(key, value) => this.updateUserField(key, value)}
@@ -159,6 +184,18 @@ class UserModale extends Component {
                             userType={this.state.user.userType}
                             updatePermissions={(newPermissions, newUserType) => this.updatePermissions(newPermissions, newUserType)}
                         />
+                    }
+                    {
+                        this.state.isUpdated &&
+                        <div className="align-right text--success">
+                            <FormattedMessage id="main.label.userupdated" defaultMessage="Utlisateur sauvegardé" />
+                        </div>
+                    }
+                    {
+                        this.state.error &&
+                        <div className="align-right text--error">
+                            <FormattedMessage id="main.label.erro" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                        </div>
                     }
                     <div className="align-right">
                         <button
@@ -190,6 +227,7 @@ UserModale.defaultProps = {
     user: {
         id: 0,
     },
+    error: null,
 };
 UserModale.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -201,11 +239,14 @@ UserModale.propTypes = {
     userTypes: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
+    teams: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
     areas: PropTypes.array.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     updateCurrentUser: PropTypes.func.isRequired,
+    isUpdated: PropTypes.bool.isRequired,
+    error: PropTypes.any,
 };
 
 export default injectIntl(UserModale);

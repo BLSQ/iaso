@@ -59,7 +59,7 @@ class ParticipationWidget extends Component {
                             </span>
                         </div>
 
-                        <div className="column--6 container__graph--6">
+                        <div className="column--6 container__graph--6 responsive">
                             <Donut value={donutValue} />
                         </div>
                     </section>

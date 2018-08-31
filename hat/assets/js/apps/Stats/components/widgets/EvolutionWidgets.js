@@ -23,7 +23,7 @@ class UnmatchCasesWidgets extends Component {
                 </div>
                 <div className="widget__content">
                     <section className="wrapper__column">
-                        <div className="container__graph">
+                        <div className="container__graph responsive">
                             <Visualization data={data} spec={spec} convert="custom" />
                         </div>
                     </section>

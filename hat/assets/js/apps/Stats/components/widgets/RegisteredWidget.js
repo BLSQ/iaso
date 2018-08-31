@@ -52,7 +52,7 @@ class RegisteredWidget extends Component {
                                 </li>
                             </ul>
                         </div>
-                        <div className="column--6 container__graph--6">
+                        <div className="column--6 container__graph--6 responsive">
                             <Visualization data={timeseries} spec={spec} />
                         </div>
                     </section>

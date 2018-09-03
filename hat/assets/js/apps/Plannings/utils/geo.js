@@ -145,7 +145,7 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
 
             // if the `longitude` is easter than the current position
             // then exit the loop
-            if (villageA._isHighli || villageB._isHighlight) {
+            if (villageA._isHighlight || villageB._isHighlight) {
             // compare distance
                 const distance = villageB._latlon.distanceTo(villageA._latlon);
                 if (distance <= (radius + villageB._radius)) {

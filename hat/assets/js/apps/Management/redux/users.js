@@ -8,6 +8,7 @@ export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
 export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
+export const SET_TEAMS = 'hat/management/users/SET_TEAMS';
 export const SET_ZONES = 'hat/management/users/SET_ZONES';
 export const SET_AREAS = 'hat/management/users/SET_AREAS';
 export const EMPTY_AREAS = 'hat/management/users/EMPTY_AREAS';
@@ -52,6 +53,11 @@ export const setProvinces = payload => ({
     payload,
 });
 
+export const setTeams = payload => ({
+    type: SET_TEAMS,
+    payload,
+});
+
 
 export const userUpdated = payload => ({
     type: USER_UPDATED,
@@ -93,7 +99,7 @@ export const fetchPermissions = (dispatch) => {
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
-            console.error('Error when fetching permissions', err);
+            console.error('Error while fetching permissions', err);
         });
     return ({
         type: FETCH_ACTION_NO_UPDATE,
@@ -180,6 +186,21 @@ export const fetchUserTypes = (dispatch) => {
     });
 };
 
+export const fetchTeams = (dispatch) => {
+    req
+        .get('/api/teams/')
+        .then((result) => {
+            dispatch(setTeams(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching institutions', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
 
 export const updateUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
@@ -206,8 +227,9 @@ export const createUser = (dispatch, user) => {
         .post('/api/profiles/')
         .set('Content-Type', 'application/json')
         .send(user)
-        .then(() => {
+        .then((res) => {
             dispatch(userUpdated(true));
+            dispatch(selectUser(res.body));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -218,6 +240,7 @@ export const createUser = (dispatch, user) => {
         type: FETCH_ACTION,
     });
 };
+
 
 export const deleteUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
@@ -247,6 +270,7 @@ export const usersInitialState = {
     provinces: [],
     zones: [],
     areas: [],
+    teams: [],
     current: null,
 };
 
@@ -264,6 +288,7 @@ export const userActions = {
     selectZone,
     updateCurrentUser,
     fetchUserTypes,
+    fetchTeams,
 };
 
 
@@ -334,6 +359,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 provinces,
+            };
+        }
+
+        case SET_TEAMS: {
+            const teams = action.payload;
+            return {
+                ...state,
+                teams,
             };
         }
 

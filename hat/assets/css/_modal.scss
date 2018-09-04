@@ -88,14 +88,14 @@
             display: flex;
             margin-bottom: 10px;
             label {
-                width: 180px;
-                flex-basis: 180px;
+                width: 190px;
+                flex-basis: 205px;
             }
         }
         .Select {
             flex-basis: calc(100% - 211px);
             width: calc(100% - 211px);
-            margin-right: 26px;
+            margin-right: 0px;
             float: none;
         }
     }
@@ -131,6 +131,7 @@
             float: right;
             position: relative;
             top: 4px;
+            height: 34px;
         }
         >section {
             outline: none !important;

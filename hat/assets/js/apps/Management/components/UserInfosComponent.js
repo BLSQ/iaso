@@ -34,6 +34,7 @@ class UserInfosComponent extends Component {
         const { formatMessage } = this.props.intl;
         const {
             institutions,
+            teams,
             password,
         } = this.props;
         return (
@@ -149,6 +150,26 @@ class UserInfosComponent extends Component {
                 </div>
                 <div>
                     <label
+                        htmlFor="teams"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.teams"
+                            defaultMessage="Equipe"
+                        />:
+                    </label>
+                    <Select
+                        simpleValue
+                        name="team_id"
+                        value={this.state.user.team}
+                        placeholder={formatMessage(MESSAGES.none)}
+                        options={teams.map(team =>
+                            ({ label: team.name, value: team.id }))}
+                        onChange={teamId => this.props.updateUserField('team', teamId)}
+                    />
+                </div>
+                <div>
+                    <label
                         htmlFor="institution"
                         className="filter__container__select__label"
                     >
@@ -176,6 +197,7 @@ UserInfosComponent.propTypes = {
     user: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     institutions: PropTypes.array.isRequired,
+    teams: PropTypes.array.isRequired,
     updateUserField: PropTypes.func.isRequired,
     updatePassword: PropTypes.func.isRequired,
     password: PropTypes.string.isRequired,

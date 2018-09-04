@@ -24,6 +24,7 @@
         border-top-left-radius: 0;
         background-color: white;
         padding: $padding-unit;
+        top:18% !important;
     }
 }
 
@@ -131,7 +132,7 @@
             float: right;
             position: relative;
             top: 4px;
-            height: 34px;
+            min-height: 34px;
         }
         >section {
             outline: none !important;

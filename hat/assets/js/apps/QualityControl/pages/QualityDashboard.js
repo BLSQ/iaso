@@ -84,8 +84,8 @@ class QualityDashboard extends React.Component {
                                 <p className={this.props.infos.videos.mismatch_count > 0 ? 'with-problems' : ''}>
                                     {`${this.props.infos.videos.mismatch_count} `}
                                     <FormattedMessage
-                                        id="quality.label.withproblems"
-                                        defaultMessage="avec problèmes"
+                                        id="quality.label.problems"
+                                        defaultMessage="problème(s)"
                                     />
                                 </p>
                                 {
@@ -123,8 +123,8 @@ class QualityDashboard extends React.Component {
                                 <p className={this.props.infos.images.mismatch_count > 0 ? 'with-problems' : ''}>
                                     {`${this.props.infos.images.mismatch_count} `}
                                     <FormattedMessage
-                                        id="quality.label.withproblems"
-                                        defaultMessage="avec problèmes"
+                                        id="quality.label.problems"
+                                        defaultMessage="problème(s)"
                                     />
                                 </p>
                                 {

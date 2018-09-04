@@ -61,6 +61,18 @@ export function saveCoordinationPlanning(assignations, planning_id, coordination
         .catch(err => false);
 }
 
+export function saveWorkzonePlanning(assignations, planning_id, workzone_id) {
+    return request
+        .patch(`/api/workzones/${workzone_id}/`)
+        .set('Content-Type', 'application/json')
+        .send({
+            planning_id,
+            assignations,
+        })
+        .then(() => true)
+        .catch(err => false);
+}
+
 export function saveAreaInGeoloc(as_id, team) {
     return request
         .put(`/api/as/${as_id}/`)

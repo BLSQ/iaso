@@ -20,7 +20,7 @@ import ReactModal from 'react-modal';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl, getRequest } from '../../utils/fetchData';
-import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
+import { saveTeamPlanning, saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
 import { getPossibleYears } from '../../utils';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
@@ -112,10 +112,10 @@ export class Microplanning extends Component {
             });
         } else {
             this.setState({ isSavingTeam: true });
-            saveCoordinationPlanning(
+            saveWorkzonePlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
-                this.props.params.coordination_id,
+                this.props.params.workzone_id,
             ).then((isSaved) => {
                 this.setState({
                     isSavingTeam: false,

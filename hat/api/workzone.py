@@ -1,9 +1,11 @@
+from collections import defaultdict
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db.models import Sum
+from hat.planning.algo import optimize_path
 from rest_framework import viewsets
 from rest_framework.response import Response
-from hat.planning.models import WorkZone, Planning
+from hat.planning.models import WorkZone, Planning, Assignation
 from hat.geo.models import AS
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
@@ -107,7 +109,6 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
         return Response(work_zone.as_dict())
 
-    
     def delete(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
         work_zone.delete()
@@ -147,6 +148,33 @@ class WorkZoneViewSet(viewsets.ViewSet):
                 elif action == "delete":
                     work_zone.teams.remove(team_id)
 
+        assignations = request.data.get('assignations', -1)
+        if assignations != -1:
+            planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
+            Assignation.objects.filter(team__workzone=work_zone, planning=planning).delete()
+
+            assignations = request.data['assignations']
+
+            teams_dict = defaultdict(list)
+            for a in assignations:
+                teams_dict[a['team_id']].append(a)
+
+            if -1 in teams_dict:
+                del teams_dict[-1]
+
+            for team_id in teams_dict:
+                assignation_list = teams_dict[team_id]
+                ordered = optimize_path(assignation_list)
+                for index, obj in enumerate(ordered):
+
+                    Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
+                    assignation = Assignation()
+                    assignation.planning = planning
+                    assignation.index = obj['index']
+                    assignation.month = obj['month']
+                    assignation.village_id = obj['village_id']
+                    assignation.team_id = obj['team_id']
+                    assignation.save()
         if name:
             work_zone.name = name
             work_zone.save()

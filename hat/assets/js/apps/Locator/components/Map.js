@@ -319,7 +319,9 @@ class Map extends Component {
                         this.props.selectVillage(village.id);
                     })
                     .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
+                        const lat = village.latitude;
+                        const lng = village.longitude;
+                        this.updateTooltipSmall(village, lat, lng);
                     })
                     .on('mouseout', () => {
                         this.updateTooltipSmall();
@@ -331,9 +333,9 @@ class Map extends Component {
         }
     }
 
-    updateTooltipSmall(item) {
+    updateTooltipSmall(item, lat, lng) {
         if (item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
+            this.state.containers.tooltipSmall.innerHTML = `${item.label ? item.label : item.name}${lat ? `, Lat: ${parseFloat(lat).toFixed(4)}` : ''}${lng ? `, Long: ${parseFloat(lng).toFixed(4)}` : ''}`;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -375,9 +377,9 @@ class Map extends Component {
             contextmenu: (event) => {
                 L.DomEvent.stop(event);
             },
-            mouseover: (event) => {
+            mousemove: (event) => {
                 L.DomEvent.stop(event);
-                this.updateTooltipSmall(item);
+                this.updateTooltipSmall(item, event.latlng.lat, event.latlng.lng);
             },
             mouseout: (event) => {
                 L.DomEvent.stop(event);

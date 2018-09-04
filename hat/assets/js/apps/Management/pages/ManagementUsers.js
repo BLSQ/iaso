@@ -156,7 +156,7 @@ class ManagementUsers extends React.Component {
             teams,
             load,
         } = this.props;
-        console.log('load', this.props.load);
+
         return (
             <section>
                 {

@@ -11,6 +11,7 @@ from django.contrib.auth.models import Permission
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Province, ZS, AS
+from django.db.models import Q
 
 
 class ProfilesViewSet(viewsets.ViewSet):
@@ -30,14 +31,32 @@ class ProfilesViewSet(viewsets.ViewSet):
         order = request.GET.get("order", 'id')
         limit = request.GET.get("limit", 50)
         page_offset = request.GET.get("page", 1)
+        search = request.GET.get("search", None)
         limit = int(limit)
         page_offset = int(page_offset)
+        institutionId = request.GET.get("institutionId", None)
 
         queryset = Profile.objects.all()
 
-        queryset = queryset.order_by(order)
+        if institutionId:
+            queryset = queryset.filter(institution_id=institutionId)
+
+        if search:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search) | Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search)
+            )
+
+        matchings = { 'userName': 'user__username', 'firstName': 'user__first_name', 'lastName': 'user__last_name' }
+        prefix = ''
+        if order.startswith('-'):
+                    order = order[1:]
+                    prefix = '-'
+        qs_order = "%s%s" % (prefix, matchings.get(order, order))
+
+        queryset = queryset.order_by(qs_order)
 
         paginator = Paginator(queryset, limit)
+
 
         res = {"count": paginator.count}
         if page_offset > paginator.num_pages:
@@ -116,6 +135,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             for permission_id in permissions:
                 permission = get_object_or_404(Permission, pk=permission_id)
                 user.user_permissions.add(permission)
+
+        profile.password_reset = request.data.get('passwordReset', False)
 
         profile.save()
         return Response(profile.as_dict())

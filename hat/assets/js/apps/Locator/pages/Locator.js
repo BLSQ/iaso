@@ -20,7 +20,7 @@ import LayersComponent from '../../../components/LayersComponent';
 
 
 import { Map } from '../components';
-import Search from '../components/Search';
+import Search from '../../../components/Search';
 
 const request = require('superagent');
 

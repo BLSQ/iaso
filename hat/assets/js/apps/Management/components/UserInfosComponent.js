@@ -188,6 +188,23 @@ class UserInfosComponent extends Component {
                         onChange={institutionId => this.props.updateUserField('institution', { id: institutionId })}
                     />
                 </div>
+                <div>
+                    <label
+                        htmlFor="passwordReset"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="management.user.resetpassword"
+                            defaultMessage="Réinitialiser le password"
+                        />:
+                    </label>
+                    <input
+                        type="checkbox"
+                        name="passwordReset"
+                        checked={this.state.user.passwordReset ? 'checked' : ''}
+                        onChange={event => this.props.updateUserField('passwordReset', event.target.checked)}
+                    />
+                </div>
             </section>
         );
     }

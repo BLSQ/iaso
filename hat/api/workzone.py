@@ -54,14 +54,13 @@ class WorkZoneViewSet(viewsets.ViewSet):
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
 
-        if order == 'coordination_name':
-            order = 'coordination_id'
-        if order == '-coordination_name':
-            order = '-coordination_id'
-        if order == 'planning_name':
-            order = 'planning_id'
-        if order == '-planning_name':
-            order = '-planning_id'
+
+        matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
+        prefix = ''
+        if order.startswith('-'):
+                    order = order[1:]
+                    prefix = '-'
+        qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
 
         queryset = WorkZone.objects.all()
@@ -69,7 +68,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id,)
-        queryset = queryset.order_by(order)
+        queryset = queryset.order_by(qs_order)
         return Response([zone.as_dict() for zone in queryset])
 
     def retrieve(self, request, pk):

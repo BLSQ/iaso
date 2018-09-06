@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { getPossibleYears } from '../../../utils';
-import Search from './Search';
+import Search from '../../../components/Search';
 
 
 const MESSAGES = defineMessages({

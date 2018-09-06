@@ -122,6 +122,8 @@ class Profile(models.Model):
     ZS_scope = models.ManyToManyField(ZS)
     AS_scope = models.ManyToManyField(AS)
 
+    password_reset = models.BooleanField(default=False)
+
     phone = models.TextField(null=True, blank=True)
 
     def full_name(self):
@@ -163,7 +165,8 @@ class Profile(models.Model):
             "userType": userType,
             "AS": self.AS_scope.all().values_list('id', flat=True),
             "ZS": self.ZS_scope.all().values_list('id', flat=True),
-            "province": self.province_scope.all().values_list('id', flat=True)
+            "province": self.province_scope.all().values_list('id', flat=True),
+            "passwordReset": self.password_reset
     }
 
 @receiver(post_save, sender=User)

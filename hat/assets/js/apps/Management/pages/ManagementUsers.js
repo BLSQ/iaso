@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import Select from 'react-select';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -10,10 +11,21 @@ import { createUrl } from '../../../utils/fetchData';
 import UserModaleComponent from '../components/UserModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { userActions } from '../redux/users';
+import Search from '../../../components/Search';
 
 const baseApiUrl = '/api/profiles/?';
 
 
+const MESSAGES = defineMessages({
+    searchPlaceholder: {
+        defaultMessage: 'Recherche',
+        id: 'listlocator.search.placeholder',
+    },
+    none: {
+        defaultMessage: 'Aucune',
+        id: 'management.none',
+    },
+});
 class ManagementUsers extends React.Component {
     constructor(props) {
         super(props);
@@ -25,6 +37,13 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.fetchTeams(dispatch));
         dispatch(userActions.fetchPermissions(dispatch));
         dispatch(userActions.fetchUserTypes(dispatch));
+        let tableUrl = baseApiUrl;
+        if (props.params.search) {
+            tableUrl += `search=${props.params.search}`;
+        }
+        if (props.params.institutionId) {
+            tableUrl += `&institutionId=${props.params.institutionId}`;
+        }
         this.state = {
             tableColumns: [
                 {
@@ -85,7 +104,7 @@ class ManagementUsers extends React.Component {
                     ),
                 },
             ],
-            tableUrl: baseApiUrl,
+            tableUrl,
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -93,8 +112,15 @@ class ManagementUsers extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        let tableUrl = baseApiUrl;
+        if (nextProps.params.search) {
+            tableUrl += `search=${nextProps.params.search}`;
+        }
+        if (nextProps.params.institutionId) {
+            tableUrl += `&institutionId=${nextProps.params.institutionId}`;
+        }
         this.setState({
-            tableUrl: baseApiUrl,
+            tableUrl,
             showEditModale: nextProps.selectedUser !== null,
         });
     }
@@ -200,6 +226,43 @@ class ManagementUsers extends React.Component {
                             />
                         </h2>
 
+                    </div>
+                </div>
+                <div className="widget__container management-control">
+                    <div className="widget__content--tier">
+                        <div>
+                            <span className="map__text--select">
+                                <FormattedMessage
+                                    id="locator.list.textualsearch.label"
+                                    defaultMessage="Recherche textuelle"
+                                />
+                            </span>
+                            <Search
+                                placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
+                                allowEmptySearch
+                                onSearch={value => this.onChangeFilters('search', value)}
+                                resetSearch={() => this.onChangeFilters('search', null)}
+                                displayResults={false}
+                                searchString={this.props.params.search}
+                            />
+                        </div>
+                        <div>
+                            <span className="map__text--select">
+                                <FormattedMessage
+                                    id="main.label.institution"
+                                    defaultMessage="Institution"
+                                />
+                            </span>
+                            <Select
+                                simpleValue
+                                name="institution_id"
+                                value={this.props.params.institutionId}
+                                placeholder={formatMessage(MESSAGES.none)}
+                                options={institutions.map(institution =>
+                                    ({ label: institution.name, value: institution.id }))}
+                                onChange={institutionId => this.onChangeFilters('institutionId', institutionId)}
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="widget__container management-control">

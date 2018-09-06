@@ -24,7 +24,7 @@
         border-top-left-radius: 0;
         background-color: white;
         padding: $padding-unit;
-        top:18% !important;
+        top: 12% !important;
     }
 }
 
@@ -83,6 +83,9 @@
 
 .edit-modal {
     width: 445px;
+    input[type="checkbox"] {
+        margin-top: 15px;
+    }
     &.large {
         width: 550px;
         >section>div {

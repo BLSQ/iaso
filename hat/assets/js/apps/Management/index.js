@@ -58,7 +58,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementPlanningsPage}
         />,
         <Route
-            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institutionId/:institutionId)"
             component={ManagementUsersPage}
         />,
         <Redirect path="*" to="/devices" />,

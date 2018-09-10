@@ -101,7 +101,7 @@ class PlanningTeamSelection extends Component {
                                     })}
                             />
                         </div>
-                    }mlp
+                    }
                     {
                         planning_id &&
                         this.state.currentPlanning &&

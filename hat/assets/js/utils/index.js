@@ -73,9 +73,12 @@ export const capitalize = text => (
         .join(' ')
 );
 
-export const formatThousand = number => (
-    number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-);
+export const formatThousand = (number) => {
+    if (number) {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    return '0';
+};
 
 export const arrayToObject = (arrayElement) => {
     const tempResult = {};

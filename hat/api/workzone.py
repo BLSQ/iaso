@@ -74,8 +74,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
             population_endemic_villages = Sum(
                 "AS__village__population", filter=Q(AS__village__caseview__confirmed_case=True, AS__village__caseview__normalized_year__in=years_array)
             )
-            queryset = queryset.annotate(population=population_endemic_villages)
-
+            queryset = queryset.annotate(population_endemic_villages=population_endemic_villages)
 
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)

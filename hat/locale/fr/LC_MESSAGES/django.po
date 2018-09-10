@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 16:06+0200\n"
+"POT-Creation-Date: 2018-09-06 16:32+0200\n"
 "PO-Revision-Date: 2018-08-22 17:25+0200\n"
 "Last-Translator: Obdulia Losantos <obdulia.losantos@ehealthnigeria.org>, "
 "2016\n"
@@ -37,138 +37,142 @@ msgstr "Ascendant"
 msgid "Descendent"
 msgstr "Ascendant"
 
-#: cases/views.py:53 cases/views.py:247
+#: cases/views.py:54 cases/views.py:250
 msgid "Internal ID"
 msgstr "ID interne"
 
-#: cases/views.py:60 cases/views.py:88 cases/views.py:255 cases/views.py:304
-#: cases/views.py:312 templates/events/list.html:24
+#: cases/views.py:61 cases/views.py:89 cases/views.py:258 cases/views.py:307
+#: cases/views.py:315 templates/events/list.html:24
 msgid "Name"
 msgstr "Nom"
 
-#: cases/views.py:74 cases/views.py:290
+#: cases/views.py:75 cases/views.py:293
 msgid "Document date"
 msgstr "Date du document"
 
-#: cases/views.py:79 cases/views.py:295 templates/cases/cases/list.html:28
+#: cases/views.py:80 cases/views.py:298 templates/cases/cases/list.html:28
 msgid "Location"
 msgstr "Localité"
 
-#: cases/views.py:197
+#: cases/views.py:200
 msgid "Match ignored."
 msgstr "Correspondance ignorée."
 
-#: cases/views.py:262
+#: cases/views.py:265
 msgid "Suspect case"
 msgstr "Cas suspect"
 
-#: cases/views.py:267
+#: cases/views.py:270
 msgid "Screening result"
 msgstr "Résultat de dépistage"
 
-#: cases/views.py:272
+#: cases/views.py:275
 msgid "Confirmation result"
 msgstr "Résultat de confirmation"
 
-#: cases/views.py:277 cases/views.py:369 cases/views.py:387
+#: cases/views.py:280 cases/views.py:373 cases/views.py:391
 #: templates/cases/cases/list.html:29
 msgid "Source"
 msgstr "Source"
 
-#: cases/views.py:282 cases/views.py:374 cases/views.py:388
+#: cases/views.py:285 cases/views.py:378 cases/views.py:392
 #: templates/devices/list.html:22
 msgid "Device"
 msgstr "Tablette"
 
-#: cases/views.py:313
+#: cases/views.py:316
 msgid "Gender"
 msgstr "Sexe"
 
-#: cases/views.py:314
+#: cases/views.py:317
 msgid "Age"
 msgstr "Âge"
 
-#: cases/views.py:381
+#: cases/views.py:385
 msgid "Year"
 msgstr "Année"
 
-#: cases/views.py:382
+#: cases/views.py:386
 msgid "Month"
 msgstr "Mois"
 
-#: cases/views.py:383
+#: cases/views.py:387
 msgid "Day"
 msgstr "Jour"
 
-#: cases/views.py:384
+#: cases/views.py:388
 msgid "Zone de Sante"
 msgstr "Zone de Santé"
 
-#: cases/views.py:385
+#: cases/views.py:389
 msgid "Aire de Sante"
 msgstr "Aire de Santé"
 
-#: cases/views.py:386 templates/cases/filters.html:96
+#: cases/views.py:390 templates/cases/filters.html:96
 msgid "Village"
 msgstr "Village"
 
-#: cases/views.py:406 templates/cases/filters.html:41
+#: cases/views.py:410 templates/cases/filters.html:41
 #: templates/cases/filters.html:107
 msgid "From"
 msgstr "De"
 
-#: cases/views.py:407 templates/cases/filters.html:114
+#: cases/views.py:411 templates/cases/filters.html:114
 msgid "To"
 msgstr "À"
 
-#: cases/views.py:408 templates/devices/list.html:35
+#: cases/views.py:412 templates/devices/list.html:35
 msgid "# Participants"
 msgstr "# Participants"
 
-#: cases/views.py:409
+#: cases/views.py:413
 msgid "# Suspect cases"
 msgstr "# Cas suspects"
 
-#: cases/views.py:410
+#: cases/views.py:414
 msgid "# Confirmed cases"
 msgstr "# Cas confirmés"
 
-#: cases/views.py:456 menupermissions/models.py:11
+#: cases/views.py:461 menupermissions/models.py:11
 #: templates/cases/cases/list.html:6
 msgid "Cases"
 msgstr "Cas"
 
-#: cases/views.py:457 templates/cases/download.html:10
+#: cases/views.py:462 templates/cases/download.html:10
 msgid "Download cases"
 msgstr "Télécharger des cas"
 
-#: cases/views.py:458
+#: cases/views.py:463
 msgid "Preparing download..."
 msgstr "Préparation du téléchargement en cours..."
 
-#: cases/views.py:459
+#: cases/views.py:464
 msgid "The download job you're looking for has expired."
 msgstr "La tâche de téléchargement recherchée a expiré."
 
-#: cases/views.py:460
+#: cases/views.py:465
 msgid "The download job has failed. Please try again."
 msgstr "La tâche de téléchargement a échoué. Veuillez réessayer."
 
-#: cases/views.py:553
+#: cases/views.py:558
 msgid "No"
 msgstr "Non"
 
-#: cases/views.py:553
+#: cases/views.py:558
 msgid "Yes"
 msgstr "Oui"
 
-#: cases/views.py:554
+#: cases/views.py:559
 msgid "Negative"
 msgstr "Négatif"
 
-#: cases/views.py:554
+#: cases/views.py:559
 msgid "Positive"
 msgstr "Positif"
+
+#: dashboard/views.py:199
+msgid "Your password was successfully updated"
+msgstr "Votre mot de passe a été modifié."
 
 #: import_export/errors.py:37
 msgid "Unknown file type. Only .mdb, .accdb and .enc accepted"
@@ -277,11 +281,11 @@ msgstr "Envoi de dossiers patients"
 msgid "Upload of villages files"
 msgstr "Envoyer des fichiers de village"
 
-#: menupermissions/models.py:6 templates/app.html:116
+#: menupermissions/models.py:6
 msgid "Macroplanning"
 msgstr "Macroplanning"
 
-#: menupermissions/models.py:7 templates/app.html:119
+#: menupermissions/models.py:7
 msgid "Microplanning"
 msgstr "Reprogrammation"
 
@@ -310,12 +314,11 @@ msgstr "Réconciliation"
 msgid "Devices"
 msgstr "Tablettes"
 
-#: menupermissions/models.py:15 templates/app.html:96 templates/app.html:113
-#: templates/dashboard/plannings.html:14
+#: menupermissions/models.py:15 templates/dashboard/plannings.html:14
 msgid "Plannings"
 msgstr "Reprogrammation"
 
-#: menupermissions/models.py:16 templates/app.html:99
+#: menupermissions/models.py:16
 msgid "Coordinations"
 msgstr "Coordinations"
 
@@ -331,12 +334,18 @@ msgstr "Equipes"
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: menupermissions/models.py:20 templates/app.html:129
+#: menupermissions/models.py:20
 msgid "Locator"
 msgstr "Localisateur"
 
-#: menupermissions/models.py:21 templates/app.html:134
+#: menupermissions/models.py:21
 msgid "Vector control"
+msgstr "Contrôle du vecteur"
+
+#: menupermissions/models.py:22
+#, fuzzy
+#| msgid "Vector control"
+msgid "Quality control"
 msgstr "Contrôle du vecteur"
 
 #: tasks/views.py:118
@@ -379,91 +388,19 @@ msgstr "Impossible d'obtenir le fichier."
 msgid "Trypelim"
 msgstr ""
 
-#: templates/app.html:22
-msgid "Home"
-msgstr "Accueil "
-
-#: templates/app.html:27
-msgid "Jeux de données"
-msgstr ""
-
-#: templates/app.html:31
-msgid "Upload de cas"
-msgstr "Envoyer des cas"
-
-#: templates/app.html:36
-msgid "Upload coordonnées villages"
-msgstr ""
-
-#: templates/app.html:45
-msgid "Statistiques"
-msgstr "Statistiques"
-
-#: templates/app.html:49
-msgid "Graphes"
-msgstr ""
-
-#: templates/app.html:54
-msgid "Rapports"
-msgstr "Rapports"
-
-#: templates/app.html:63
-msgid "Records"
-msgstr "Enregistrements"
-
-#: templates/app.html:67
-msgid "Cas"
-msgstr "Cas"
-
-#: templates/app.html:72
-msgid "Analyse des cas"
-msgstr "Analyse des cas"
-
-#: templates/app.html:77
-msgid "Réconciliation"
-msgstr "Réconciliation"
-
-#: templates/app.html:84 templates/dashboard/management.html:13
-msgid "Gestion"
-msgstr ""
-
-#: templates/app.html:89
-msgid "Appareils"
-msgstr ""
-
-#: templates/app.html:93
-msgid "Utilisateurs"
-msgstr ""
-
-#: templates/app.html:102
-msgid "Champs d\\"
-msgstr ""
-
-#: templates/app.html:105
-msgid "Equipes"
-msgstr ""
-
-#: templates/app.html:122
-msgid "Itinéraires"
-msgstr ""
-
-#: templates/app.html:139
-msgid "Contrôle de qualité"
-msgstr ""
-
-#: templates/app.html:147
+#: templates/app.html:38
 msgid "Logged in as"
 msgstr "Connecté en tant que"
 
-#: templates/app.html:149
+#: templates/app.html:40
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: templates/app.html:179
+#: templates/app.html:70
 msgid "Sense HAT"
 msgstr "Trypelim"
 
-#: templates/app.html:190
+#: templates/app.html:81
 msgid "Print this page"
 msgstr "Imprimer cette page"
 
@@ -665,6 +602,20 @@ msgstr "Ordonner"
 msgid "Group by"
 msgstr "Grouper par"
 
+#: templates/dashboard/change_password.html:8 templates/login.html:8
+msgid "Tableau de Bord Trypelim"
+msgstr ""
+
+#: templates/dashboard/change_password.html:9
+msgid "Changer votre mot de passe"
+msgstr ""
+
+#: templates/dashboard/change_password.html:13
+#, fuzzy
+#| msgid "Change Status"
+msgid "Changer"
+msgstr "Changer le statut:"
+
 #: templates/dashboard/home.html:14
 msgid "Welcome to the SENSE HAT Dashboard"
 msgstr "Bienvenue au tableau de bord de Trypelim"
@@ -761,19 +712,19 @@ msgstr ""
 "\n"
 "Exécution de la lutte"
 
-#: templates/dashboard/home.html:67
+#: templates/dashboard/home.html:68
 msgid "Use the planning tool"
 msgstr "Utiliser l'outil de reprogrammation"
 
-#: templates/dashboard/home.html:76
+#: templates/dashboard/home.html:78
 msgid "Monthly report example"
 msgstr "Exemple de rapport mensuel"
 
-#: templates/dashboard/home.html:79
+#: templates/dashboard/home.html:81
 msgid "See monthly campaign reports"
 msgstr "Voir les rapports de campagne mensuels"
 
-#: templates/dashboard/home.html:81
+#: templates/dashboard/home.html:83
 msgid ""
 "\n"
 "        Report showing monthly statistics from active screening using the "
@@ -786,15 +737,15 @@ msgstr ""
 "actifs et passifs de la THA, les statistiques comprenent le nombre de cas "
 "suspects confirmé, la PTR, la PTE et plus encore."
 
-#: templates/dashboard/home.html:87 templates/dashboard/monthly_report.html:6
+#: templates/dashboard/home.html:89 templates/dashboard/monthly_report.html:6
 msgid "Monthly reports"
 msgstr "Rapports mensuels"
 
-#: templates/dashboard/home.html:97
+#: templates/dashboard/home.html:99
 msgid "Upload data from the field"
 msgstr "Envoyer des données du terrain"
 
-#: templates/dashboard/home.html:99
+#: templates/dashboard/home.html:101
 msgid ""
 "\n"
 "        Upload historical data forms from the Microsoft Access template or "
@@ -806,19 +757,19 @@ msgstr ""
 "Access ou des fichiers de sauvegarde cryptés à partir de l'application "
 "mobile."
 
-#: templates/dashboard/home.html:105
+#: templates/dashboard/home.html:107
 msgid "Data upload"
 msgstr "Envoi des données "
 
-#: templates/dashboard/home.html:112
+#: templates/dashboard/home.html:114
 msgid "Upload data"
 msgstr "Envoyer des données"
 
-#: templates/dashboard/home.html:116
+#: templates/dashboard/home.html:118
 msgid "Check uploaded data"
 msgstr "Vérifier des données envoyées"
 
-#: templates/dashboard/home.html:118
+#: templates/dashboard/home.html:120
 msgid ""
 "\n"
 "        View the list of participants in the screening sessions, the "
@@ -829,15 +780,15 @@ msgstr ""
 "Voir la liste des participants aux séances de dépistage, les cas "
 "historiques ..."
 
-#: templates/dashboard/home.html:124
+#: templates/dashboard/home.html:126
 msgid "Data uploaded"
 msgstr "Données envoyées"
 
-#: templates/dashboard/home.html:134
+#: templates/dashboard/home.html:136
 msgid "Follow up on unconfirmed cases"
 msgstr "Suivi des cas non confirmés"
 
-#: templates/dashboard/home.html:136
+#: templates/dashboard/home.html:138
 msgid ""
 "\n"
 "        Download a list of participants who screened positive for HAT, but "
@@ -848,13 +799,17 @@ msgstr ""
 "Télécharger une liste des suspects non examinés, des examinés non confirmés, "
 "des confirmés non traités."
 
-#: templates/dashboard/home.html:142
+#: templates/dashboard/home.html:144
 msgid "Go to HAT cases"
 msgstr "Aller sur Les cas THA"
 
-#: templates/dashboard/home.html:151
+#: templates/dashboard/home.html:153
 msgid "A proud partnership"
 msgstr "Un partenariat fier"
+
+#: templates/dashboard/management.html:13
+msgid "Gestion"
+msgstr ""
 
 #: templates/dashboard/stats.html:6
 msgid "Stats"
@@ -1217,10 +1172,6 @@ msgstr ""
 "sélectionnez le fichier à partir de votre ordinateur. Appuyer \"Envoyer les "
 "aires de santé\"."
 
-#: templates/login.html:8
-msgid "Tableau de Bord Trypelim"
-msgstr ""
-
 #: templates/login.html:9
 msgid "Connectez vous pour continuer"
 msgstr ""
@@ -1281,6 +1232,30 @@ msgstr "Statut:"
 #: templates/tasks/status.html:41
 msgid "Download file"
 msgstr "Télécharger le fichier"
+
+#~ msgid "Home"
+#~ msgstr "Accueil "
+
+#~ msgid "Upload de cas"
+#~ msgstr "Envoyer des cas"
+
+#~ msgid "Statistiques"
+#~ msgstr "Statistiques"
+
+#~ msgid "Rapports"
+#~ msgstr "Rapports"
+
+#~ msgid "Records"
+#~ msgstr "Enregistrements"
+
+#~ msgid "Cas"
+#~ msgstr "Cas"
+
+#~ msgid "Analyse des cas"
+#~ msgstr "Analyse des cas"
+
+#~ msgid "Réconciliation"
+#~ msgstr "Réconciliation"
 
 #~ msgid "Merge done."
 #~ msgstr "Fusion terminée."

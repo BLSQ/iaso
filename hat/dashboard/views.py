@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -9,6 +9,10 @@ from django.conf import settings
 from django.urls import reverse
 from hat.planning.models import Planning, Assignation
 from hat.users.models import Team, Coordination
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.utils.translation import ugettext as _
 import csv
 import json
 
@@ -184,10 +188,31 @@ def get_menu(user, active_link):
     return menu
 
 @login_required()
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.profile.password_reset = False
+            user.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, _('Your password was successfully updated'))
+            return redirect('/dashboard/home')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'dashboard/change_password.html', {
+        'form': form
+    })
+
+@login_required()
 @require_http_methods(['GET'])
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
+    print(user.profile.password_reset)
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
 
 
 @login_required()
@@ -211,7 +236,11 @@ def monthly_report(request: HttpRequest) -> HttpResponse:
     })
 
     user = request.user
-    return render(request, 'dashboard/monthly_report.html', {'json_data': json_data, 'menu': get_menu(user, reverse("dashboard:monthly_report"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/monthly_report.html', {'json_data': json_data, 'menu': get_menu(user, reverse("dashboard:monthly_report"))})
 
 
 @login_required()
@@ -219,7 +248,11 @@ def monthly_report(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def stats(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/stats.html', {'menu': get_menu(user, reverse("dashboard:stats"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/stats.html', {'menu': get_menu(user, reverse("dashboard:stats"))})
 
 
 @login_required()
@@ -227,21 +260,32 @@ def stats(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def plannings_micro(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:micro"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:micro"))})
 
 @login_required()
 @permission_required('menupermissions.x_plannings_macroplanning')
 @require_http_methods(['GET'])
 def plannings_macro(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:macro"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:macro"))})
 
 @login_required()
 @permission_required('menupermissions.x_plannings_routes')
 @require_http_methods(['GET'])
 def plannings_routes(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:routes"))})
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:routes"))})
 
 
 
@@ -306,42 +350,65 @@ def device_management(request: HttpRequest) -> HttpResponse:
     })
 
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_devices"))})
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_devices"))})
 
 @login_required()
 @permission_required('menupermissions.x_management_teams')
 @require_http_methods(['GET'])
 def teams_management(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_team"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_team"))})
 
 @login_required()
 @permission_required('menupermissions.x_management_coordinations')
 @require_http_methods(['GET'])
 def coordinations_management(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_coord"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_coord"))})
 
 @login_required()
 @permission_required('menupermissions.x_management_workzones')
 @require_http_methods(['GET'])
 def workzones_management(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_workzone"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_workzone"))})
 
 @login_required()
 @permission_required('menupermissions.x_management_plannings')
 @require_http_methods(['GET'])
 def plannings_management(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_planning"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_planning"))})
 
 @login_required()
 @permission_required('menupermissions.x_management_users')
 @require_http_methods(['GET'])
 def users_management(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_user"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_user"))})
 
 
 @login_required()
@@ -349,18 +416,30 @@ def users_management(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def locator(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:locator_list"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:locator_list"))})
 
 @login_required()
 @permission_required('menupermissions.x_vectorcontrol')
 @require_http_methods(['GET'])
 def vector(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector"))})
 
 @login_required()
 @permission_required('menupermissions.x_qualitycontrol')
 @require_http_methods(['GET'])
 def quality_control(request: HttpRequest) -> HttpResponse:
     user = request.user
-    return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(user, reverse("dashboard:quality-control"))})
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(user, reverse("dashboard:quality-control"))})

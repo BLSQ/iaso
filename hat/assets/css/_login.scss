@@ -63,3 +63,14 @@
     @include text--warning;
   }
 }
+.helptext {
+    ul {
+      padding: $padding-unit / 2 0 0 $padding-unit / 2;
+      font-size: 12px;
+    }
+}
+.errorlist {
+  color: $red;
+  padding: 0 0 $padding-unit / 2  $padding-unit / 2;
+  font-size: 12px !important;
+}

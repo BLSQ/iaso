@@ -195,7 +195,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="management.user.resetpassword"
-                            defaultMessage="Réinitialiser le password"
+                            defaultMessage="Réinitialiser le mot de passe"
                         />:
                     </label>
                     <input

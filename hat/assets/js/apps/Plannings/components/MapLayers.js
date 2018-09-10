@@ -71,9 +71,11 @@ class MapLayers extends Component {
                     )) }
                 </ul>
 
-                <span className="map__option__header">
-                    <FormattedMessage id="microplanning.label.overlays" defaultMessage="Options cartes" />
-                </span>
+                {Object.keys(overlays).length > 0 ?
+                    <span className="map__option__header">
+                        <FormattedMessage id="microplanning.label.overlays" defaultMessage="Options cartes" />
+                    </span> : null
+                }
                 <ul key="overlays" className="map__option__list">
                     { Object.keys(overlays).map(key => (
                         <li

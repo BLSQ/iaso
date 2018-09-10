@@ -67,7 +67,7 @@ class MapSelectionControl extends Component {
                 {this.props.workzoneId && !this.props.isGeoScopeEnabled &&
                     <div className="map__selection__actions tooltip--warning">
                         <span className="map__text--select">
-                            <FormattedMessage id="microplanning.selection.buffer" defaultMessage="Selection buffer" />
+                            <FormattedMessage id="microplanning.selection.buffer" defaultMessage="Tampon de sélection" />
                         </span>
                         <input
                             type="number"

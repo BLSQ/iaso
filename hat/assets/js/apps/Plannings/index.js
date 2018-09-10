@@ -25,7 +25,7 @@ export default function microplanningApp(element, baseUrl) {
     const defaultPath = `micro/years/${years.join(',')}`;
     const routes = [
         <Route
-            path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)(/zs_id/:zs_id)(/as_id/:as_id)"
+            path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
             component={MicroplanningContainerPage}
         />,
         <Route
@@ -33,7 +33,7 @@ export default function microplanningApp(element, baseUrl) {
             component={RoutesPage}
         />,
         <Route
-            path="macro(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
+            path="macro(/planning_id/:planning_id)(/coordination_id/:coordination_id)"
             component={MacroplanningPage}
         />,
         <Redirect path="*" to={defaultPath} />,

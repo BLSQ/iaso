@@ -132,14 +132,14 @@ class TeamSelectionTool extends Component {
                                 />
                             </div>
                             <div>
-                                <FormattedMessage id="microplanning.label.workzone" defaultMessage="Champs de travail" />
+                                <FormattedMessage id="microplanning.label.workzone" defaultMessage="Rayon d'action" />
 
                                 <Select
                                     disabled={!this.props.params.coordination_id}
                                     simpleValue
                                     name="workzone_id"
                                     value={parseInt(this.props.params.workzone_id, 10)}
-                                    placeholder="Champs de travail"
+                                    placeholder="Rayon d'action"
                                     options={this.state.workzones.map(wz => ({ label: `${wz.name}`, value: wz.id }))}
                                     onChange={event => this.onChangeWorkZone(event)}
                                 />

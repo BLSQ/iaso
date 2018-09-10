@@ -56,7 +56,6 @@ export class Microplanning extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            locations: [],
             // selectedLocation: null,
             // isVillageListEdited: false,
             isSelectionModified: false,
@@ -65,8 +64,6 @@ export class Microplanning extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const { data, error, loading } = nextProps.load;
-        const locations = ((data && data.locations) || []);
         // Remove geoscope from map if we remove a team
         if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
             this.props.toggleGeoScope(false);
@@ -77,7 +74,6 @@ export class Microplanning extends Component {
         }
         this.setState({
             isSelectionModified: nextProps.selection.isSelectionModified || false,
-            locations,
         });
     }
     onKeyDownHandler(event) {
@@ -176,7 +172,7 @@ export class Microplanning extends Component {
                     {
                         this.state.isSavingTeam ? <i className="fa fa-spinner" /> : <i className="fa fa-save" />
                     }
-                    <FormattedMessage id="microplanning.label.save" defaultMessage="Save Selection" />
+                    <FormattedMessage id="microplanning.label.save" defaultMessage="Sauver Sélection" />
                 </button>
             </div>
         );
@@ -187,7 +183,7 @@ export class Microplanning extends Component {
         const { formatMessage } = this.props.intl;
         // params filters & load status
         const {
-            years, zs_id, as_id, planning_id, coordination_id,
+            years, planning_id,
         } = this.props.params;
         const { data, error, loading } = this.props.load;
         // possible years from 2000 to current year
@@ -322,53 +318,6 @@ export class Microplanning extends Component {
                         {/* Param Filters */}
                         <div className="map__header--filters">
                             <div className="map__filters">
-                                <div className="map__filters--option">
-                                    <span className="map__text--select">
-                                        <FormattedMessage
-                                            id="microplanning.filter.zones"
-                                            defaultMessage="Zones de santé"
-                                        />
-                                    </span>
-                                    <Select
-                                        multi
-                                        simpleValue
-                                        autosize={false}
-                                        disabled={loading}
-                                        name="zs_id"
-                                        value={zs_id ? zs_id.split(',').map(zs => parseInt(zs, 10)) : ''}
-                                        placeholder={formatMessage(MESSAGES['location-all'])}
-                                        options={this.state.locations.map(zs =>
-                                            ({ label: zs.name, value: zs.id }))}
-                                        onChange={zsId =>
-                                            this.props.redirect({
-                                                ...this.props.params, zs_id: zsId,
-                                            })}
-                                    />
-                                </div>
-
-                                <div className="map__filters--option">
-                                    <span className="map__text--select">
-                                        <FormattedMessage
-                                            id="microplanning.filter.area"
-                                            defaultMessage="Aires de santé"
-                                        />
-                                    </span>
-                                    <Select
-                                        multi
-                                        simpleValue
-                                        autosize={false}
-                                        disabled={loading}
-                                        name="as_id"
-                                        value={as_id ? as_id.split(',').map(zs => parseInt(zs, 10)) : ''}
-                                        placeholder={formatMessage(MESSAGES['location-all'])}
-                                        options={areas.map(as =>
-                                            ({ label: as.name, value: as.id }))}
-                                        onChange={asId =>
-                                            this.props.redirect({
-                                                ...this.props.params, as_id: asId,
-                                            })}
-                                    />
-                                </div>
 
                                 <div className="map__filters--option">
                                     <span className="map__text--select">

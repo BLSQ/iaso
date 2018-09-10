@@ -106,7 +106,7 @@
     "microplanning.selection.buffer": "Tampon de sélection",
     "microplanning.selection.actions.buffer.explanation": "Vous pouvez ajuster la taille de la zone tampon de sélection pour inclure/supprimer plus/moins de villages dans votre sélection.",
     "microplanning.selection.buffer.highlight.label": "autour des cas HAT confirmés",
-    "microplanning.selection.buffer.highlight": "Souligner la zone tampon",
+    "microplanning.selection.buffer.highlight": "Taille zone tampon",
     "microplanning.export.province": "Province",
     "microplanning.export.zone": "Zone de santé",
     "microplanning.export.area": "Aire de santé",

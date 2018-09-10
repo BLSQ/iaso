@@ -122,20 +122,11 @@ export class MicroplanningContainer extends Component {
     }
 
     componentDidMount() {
-        if (this.props.params.coordination_id && !this.props.params.zs_id) {
-            this.updateUrlForCoordination(this.props.params);
-        } else {
-            this.loadFullData(this.props.params);
-        }
+        this.loadFullData(this.props.params);
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.params.coordination_id && !newProps.params.zs_id &&
-            (newProps.params.coordination_id !== this.props.params.coordination_id)) {
-            this.updateUrlForCoordination(newProps.params);
-        } else {
-            this.loadFullData(newProps.params);
-        }
+        this.loadFullData(newProps.params);
     }
 
     getAdditionalSelectData(params) {

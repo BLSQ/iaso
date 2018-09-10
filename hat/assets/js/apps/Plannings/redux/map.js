@@ -91,9 +91,8 @@ export const mapInitialState = {
     legend: {
         YES: true,
     },
-    baseLayer: 'arcgis-topo',
+    baseLayer: 'osm',
     overlays: {
-        labels: false,
     },
     fullscreen: false,
 };

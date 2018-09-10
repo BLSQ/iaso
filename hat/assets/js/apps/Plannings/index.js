@@ -33,7 +33,7 @@ export default function microplanningApp(element, baseUrl) {
             component={RoutesPage}
         />,
         <Route
-            path="macro(/planning_id/:planning_id)(/coordination_id/:coordination_id)"
+            path="macro(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
             component={MacroplanningPage}
         />,
         <Redirect path="*" to={defaultPath} />,

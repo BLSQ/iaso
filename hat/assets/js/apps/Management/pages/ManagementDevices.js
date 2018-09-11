@@ -93,6 +93,20 @@ export class ManagementDevices extends Component {
                     },
                     {
                         Header: formatMessage({
+                            defaultMessage: 'Images',
+                            id: 'teamsdevices.images',
+                        }),
+                        accessor: 'count_pictures_with_filename', // maybe use count_linked_pictures ?
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Vidéos',
+                            id: 'teamsdevices.vidéos',
+                        }),
+                        accessor: 'count_video_with_filename', // maybe use count_video_with_linked_video ?
+                    },
+                    {
+                        Header: formatMessage({
                             defaultMessage: 'Total-Créé-Màj-Effacé',
                             id: 'teamsdevices.sync_summary',
                         }),

@@ -70,15 +70,16 @@ class Macroplanning extends React.Component {
         this.props.fetchPlannings();
         this.props.fetchCoordinations();
         if (this.props.params && (this.props.params.planning_id && this.props.params.coordination_id)) {
-            this.props.fetchCoordinationsDetails(this.props.params.planning_id, this.props.params.coordination_id, this.props.params.as_id);
+            this.props.fetchCoordinationsDetails(this.props.params.planning_id, this.props.params.coordination_id, this.props.params.as_id, this.props.params.years);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if ((((nextProps.params.coordination_id !== this.props.params.coordination_id)
-            || (nextProps.params.planning_id !== this.props.params.planning_id)
+        || (nextProps.params.planning_id !== this.props.params.planning_id)
+        || (nextProps.params.years !== this.props.params.years)
         ) && nextProps.params.coordination_id)) {
-            this.props.fetchCoordinationsDetails(nextProps.params.planning_id, nextProps.params.coordination_id, nextProps.params.as_id);
+            this.props.fetchCoordinationsDetails(nextProps.params.planning_id, nextProps.params.coordination_id, nextProps.params.as_id, nextProps.params.years);
         }
         if (this.props.currentArea) {
             this.setState({
@@ -159,6 +160,7 @@ class Macroplanning extends React.Component {
                         coordinations={this.props.coordinations}
                         params={this.props.params}
                         redirect={params => this.props.redirect(params)}
+                        displayYearsSelect
                     />
 
                 </div>
@@ -357,7 +359,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     redirect: params => dispatch(push(createUrl(params, 'macro'))),
-    fetchCoordinationsDetails: (planningId, coordinationId, areaId) => dispatch(coordinationActions.fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId)),
+    fetchCoordinationsDetails: (planningId, coordinationId, areaId, years) => dispatch(coordinationActions.fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId, years)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),

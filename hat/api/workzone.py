@@ -58,7 +58,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         order = request.GET.get("order", 'name')
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
-        years = request.GET.get("years", "2017,2016,2015,2014,2013")
+        years = request.GET.get("years", None)
 
         matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
         prefix = ''

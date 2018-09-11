@@ -6,7 +6,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
-import { clone } from '../../../utils';
+import { clone, getPossibleYears } from '../../../utils';
 
 
 const MESSAGES = defineMessages({
@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
     allMale: {
         defaultMessage: 'Tous',
         id: 'microplanning.allMale',
+    },
+    'years-select': {
+        defaultMessage: 'Toutes les années',
+        id: 'macroplanning.labels.years.select',
     },
 });
 
@@ -62,7 +66,9 @@ class PlanningTeamSelection extends Component {
             params: {
                 planning_id,
             },
+            displayYearsSelect,
         } = this.props;
+        const possibleYears = getPossibleYears();
         return (
             <section>
                 <div className="widget__content--tier">
@@ -102,23 +108,48 @@ class PlanningTeamSelection extends Component {
                             />
                         </div>
                     }
+                    <div>
+                        {
+                            planning_id &&
+                            this.state.currentPlanning &&
+                            this.state.coordinations.length > 0 &&
+                            <section>
+                                <FormattedMessage id="microplanning.label.coordinations" defaultMessage="Coordination" />
+                                <Select
+                                    simpleValue
+                                    name="coordination_id"
+                                    value={parseInt(this.props.params.coordination_id, 10)}
+                                    placeholder={formatMessage(MESSAGES.all)}
+                                    options={this.state.coordinations.map(c =>
+                                        ({ label: c.name, value: c.id }))}
+                                    onChange={event =>
+                                        this.props.redirect({
+                                            ...this.props.params, coordination_id: event,
+                                        })}
+                                />
+                            </section>
+                        }
+                    </div>
                     {
-                        planning_id &&
-                        this.state.currentPlanning &&
-                        this.state.coordinations.length > 0 &&
+                        displayYearsSelect &&
                         <div>
-                            <FormattedMessage id="microplanning.label.coordinations" defaultMessage="Coordination" />
+                            <FormattedMessage id="microplanning.label.years" defaultMessage="Années" />
                             <Select
+                                multi
+                                clearable={false}
                                 simpleValue
-                                name="coordination_id"
-                                value={parseInt(this.props.params.coordination_id, 10)}
-                                placeholder={formatMessage(MESSAGES.all)}
-                                options={this.state.coordinations.map(c =>
-                                    ({ label: c.name, value: c.id }))}
-                                onChange={event =>
+                                autosize={false}
+                                name="years"
+                                className={this.props.params.years.split(',').length === 1 ? 'only-one' : ''}
+                                value={this.props.params.years || ''}
+                                placeholder={formatMessage(MESSAGES['years-select'])}
+                                options={possibleYears.map(year =>
+                                    ({ label: year, value: year }))}
+                                onChange={(yearsList) => {
                                     this.props.redirect({
-                                        ...this.props.params, coordination_id: event,
-                                    })}
+                                        ...this.props.params, years: yearsList,
+                                    });
+                                }}
                             />
                         </div>
                     }
@@ -132,8 +163,7 @@ PlanningTeamSelection.defaultProps = {
     plannings: [],
     teams: [],
     coordinations: [],
-    workzones: [],
-    displayWorkZones: false,
+    displayYearsSelect: false,
 };
 PlanningTeamSelection.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -141,9 +171,8 @@ PlanningTeamSelection.propTypes = {
     plannings: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
     coordinations: PropTypes.arrayOf(PropTypes.object),
-    workzones: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
-    displayWorkZones: PropTypes.bool,
+    displayYearsSelect: PropTypes.bool,
 };
 
 export default injectIntl(PlanningTeamSelection);

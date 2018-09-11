@@ -22,7 +22,7 @@ import { mapReducer, mapInitialState } from './redux/map';
 export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
     const years = [1, 2, 3, 4, 5].map(i => currentYear - i);
-    const defaultPath = `micro/years/${years.join(',')}`;
+    const defaultPath = `macro/years/${years.join(',')}`;
     const routes = [
         <Route
             path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
@@ -33,7 +33,7 @@ export default function microplanningApp(element, baseUrl) {
             component={RoutesPage}
         />,
         <Route
-            path="macro(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
+            path="macro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
             component={MacroplanningPage}
         />,
         <Redirect path="*" to={defaultPath} />,

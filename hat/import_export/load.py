@@ -15,6 +15,7 @@ import logging
 import dateutil
 import pandas
 from django.db import transaction
+from django.db.models import Q
 from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.event_log import EventStats
@@ -235,13 +236,36 @@ def normalize_location(case):
                 # We have a numeric village but it doesn't exist, strange but leave as is.
                 logger.error("Received a numeric village id {} but could not find it in the db".format(case.village))
         else:
-            # TODO Consider creating the village (need ability to trace the creator)
             try:
                 db_as = AS.objects.get(id=int(case.AS), ZS_id=int(case.ZS))
                 case.normalized_AS = db_as
             except AS.DoesNotExist:
                 # We have a numeric AS/ZS but it doesn't exist, strange but leave as is.
                 logger.error("Received a numeric ZS {} AS {} but could not find it in the db".format(case.ZS, case.AS))
+
+            # The village could be in full text because it is a new one or it was created by a previous record but the
+            # app doesn't know its ID yet. So let's attempt to find it first
+            try:
+                village = Village.objects.get(Q(
+                    Q(village_official='YES') &
+                    Q(AS_id=case.AS) &
+                    Q(Q(name=case.village) | Q(aliases__contains=[case.village]))
+                ))
+            except Village.DoesNotExist:
+                village = Village(
+                    name=case.village,
+                    AS_id=case.AS,
+                    village_official='OTHER',
+                    village_source='device',
+                    creator_device_id=case.device_id,
+                )
+                if case.latitude and case.longitude:
+                    village.latitude = case.latitude
+                    village.longitude = case.longitude
+                    village.gps_source = 'case_geoloc'
+                # TODO add population data
+                village.save()
+            case.normalized_village = village
     else:
         norm_as, norm_village = get_single_as_and_village(case.ZS, case.AS, case.village)
         if norm_as:

@@ -117,6 +117,7 @@ class Village(models.Model):
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
     village_source = models.TextField(max_length=255, null=True, blank=True)
+    creator_device = models.ForeignKey("sync.DeviceDB", null=True, on_delete=models.SET_NULL)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)

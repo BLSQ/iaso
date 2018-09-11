@@ -13,27 +13,23 @@
 .. |p_source|     replace:: Filters results by document source. -- |sources|
 
 """
-from typing import Dict, Tuple, List, Any, Callable, Optional
 import logging
-from hat.common.typing import JsonType
-from functools import wraps
-from datetime import datetime, timedelta, date
 from calendar import monthrange
-import pytz
-from django.db import connection
-from django.db.models import Count, Min, Max
-from django.db.models.query import QuerySet
-from django.core.exceptions import ValidationError
+from datetime import datetime, timedelta, date
+from functools import wraps
+from typing import Dict, Tuple, List, Any, Callable, Optional
 
+import pytz
+from django.core.exceptions import ValidationError
+from django.db import connection
+from django.db.models import Count, Min, Max, Q
+from django.db.models.query import QuerySet
 from rest_framework import viewsets
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
 
-from hat.cases.models import CaseView, Location
-from hat.sync.models import DeviceDB, DeviceEvent
-from hat.common.jsonschema_validator import DefaultValidator
 from hat.cases.filters import (
     Q_screening,
     Q_screening_positive,
@@ -46,8 +42,14 @@ from hat.cases.filters import (
     Q_staging_stage2,
     test_results,
 )
-from hat.queries import stats_queries, microplanning_queries
+from hat.cases.models import CaseView, Location
+from hat.common.jsonschema_validator import DefaultValidator
+from hat.common.typing import JsonType
+from hat.constants import CATT, RDT, CTCWOO, MAECT, PL, PG
 from hat.geo.models import AS, ZS, Village
+from hat.patient.models import Test
+from hat.queries import stats_queries, microplanning_queries
+from hat.sync.models import DeviceDB, DeviceEvent
 
 datasets = {}
 
@@ -299,6 +301,37 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
 
     res = []
     for device in devices:
+        # Add stats about pictures and videos
+        device_stats = Test.objects.all().select_related('form').filter(form__device_id=device.device_id) \
+            .aggregate(
+                count_total=Count('id'),
+                # count_catt=Count('id', filter=Q(type=CATT)),
+                # count_catt_with_filename=Count('id', filter=Q(image_filename__isnull=False)),
+                # count_catt_with_linked_picture=Count('id',
+                #                                      filter=Q(image_filename__isnull=False) & Q(
+                #                                          image_id__isnull=False) & Q(type=CATT)),
+                # count_rdt=Count('id', filter=Q(type=RDT)),
+                # count_rdt_with_filename=Count('id', filter=Q(image_filename__isnull=False)),
+                # count_rdt_with_linked_picture=Count('id',
+                #                                     filter=Q(image_filename__isnull=False) & Q(
+                #                                         image_id__isnull=False) & Q(type=RDT)),
+                count_linked_pictures=Count('id', filter=Q(image_filename__isnull=False) & Q(
+                                        image_id__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
+                count_pictures_with_filename=Count('id', filter=Q(image_filename__isnull=False)),
+                count_video_with_filename=Count('id', filter=Q(video_filename__isnull=False)),
+                count_video_with_linked_video=Count(
+                    'id',
+                    filter=Q(video_filename__isnull=False) &
+                           Q(video_id__isnull=False) &
+                           Q(
+                               Q(type=CTCWOO) |
+                               Q(type=MAECT) |
+                               Q(type=PL) |
+                               Q(type=PG)
+                           )
+                ),
+            )
+        # Fetch user information
         last_team = ""
         last_user = ""
         if device.last_user and device.last_user.profile:
@@ -316,6 +349,7 @@ def device_status(request: Request, params: Dict[str, str]) -> List[JsonType]:
             "last_user": last_user,
             "last_team": last_team,
             "id": device.id,
+            **device_stats
         }
 
         res.append(device_dict)

@@ -386,6 +386,10 @@ class Case(CaseAbstract):
         ordering = ['-id']
         permissions = CASES_PERMISSIONS
 
+        indexes = [
+            models.Index(fields=['device_id'], name='device_id_idx'),
+        ]
+
     def as_dict(self):
         normalized_as_name = None
         normalized_as_dict = {}

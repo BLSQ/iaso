@@ -92,7 +92,8 @@ def create_test_data(case: Case):
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None):
     # I chose to ignore the filename when searching for the test, not sure that's right
     test, test_created = Test.objects.get_or_create(type=test_type, date=case.document_date, index=index,
-                                                    village=case.normalized_village, form=case)
+                                                    village=case.normalized_village, form=case,
+                                                    defaults={'image_filename': image, 'video_filename': video})
     if test_created:
         test.result = result
         test.note = note
@@ -141,18 +142,10 @@ def find_video_by_test(filepath, test_type):
 def find_tests_by_image(filepath, test_type, include_already_linked=False):
     filename = _path_leaf(filepath)
 
-    if test_type == RDT:
-        tests = Test.objects.filter(
-            Q(form__test_rdt_picture_filename=filename) |
-            Q(form__test_rdt_picture_filename__endswith=filename)
-        ).filter(type=RDT)
-    elif test_type == CATT:
-        tests = Test.objects.filter(
-            Q(form__test_catt_picture_filename=filename) |
-            Q(form__test_catt_picture_filename__endswith=filename)
-        ).filter(type=CATT)
-    else:
-        return None
+    tests = Test.objects.filter(
+            Q(image_filename=filename) |
+            Q(image_filename__endswith=filename)
+        ).filter(type=test_type)
 
     if not include_already_linked:
         tests = tests.filter(image__isnull=True)
@@ -163,28 +156,10 @@ def find_tests_by_image(filepath, test_type, include_already_linked=False):
 def find_tests_by_video(filepath, test_type, include_already_linked=False):
     filename = _path_leaf(filepath)
 
-    if test_type == PG:
-        tests = Test.objects.filter(
-            Q(form__test_pg_video_filename=filename) |
-            Q(form__test_pg_video_filename__endswith=filename)
-        ).filter(type=PG)
-    elif test_type == PL:
-        tests = Test.objects.filter(
-            Q(form__test_pl_video_filename=filename) |
-            Q(form__test_pl_video_filename__endswith=filename)
-        ).filter(type=PL)
-    elif test_type == CTCWOO:
-        tests = Test.objects.filter(
-            Q(form__test_ctcwoo_video_filename=filename) |
-            Q(form__test_ctcwoo_video_filename__endswith=filename)
-        ).filter(type=CTCWOO)
-    elif test_type == MAECT:
-        tests = Test.objects.filter(
-            Q(form__test_maect_video_filename=filename) |
-            Q(form__test_maect_video_filename__endswith=filename)
-        ).filter(type=MAECT)
-    else:
-        return None
+    tests = Test.objects.filter(
+            Q(video_filename=filename) |
+            Q(video_filename__endswith=filename)
+        ).filter(type=test_type)
 
     if not include_already_linked:
         tests = tests.filter(video__isnull=True)

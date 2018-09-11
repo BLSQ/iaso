@@ -106,12 +106,25 @@ export class Microplanning extends Component {
                     errorOnSave: !isSaved,
                 });
             });
-        } else {
+        } else if (this.props.params.workzone_id) {
             this.setState({ isSavingTeam: true });
             saveWorkzonePlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.workzone_id,
+            ).then((isSaved) => {
+                this.setState({
+                    isSavingTeam: false,
+                    isSelectionModified: !isSaved,
+                    errorOnSave: !isSaved,
+                });
+            });
+        } else if (this.props.params.coordination_id) {
+            this.setState({ isSavingTeam: true });
+            saveCoordinationPlanning(
+                this.props.selection.assignations,
+                parseInt(this.props.params.planning_id, 10),
+                this.props.params.coordination_id,
             ).then((isSaved) => {
                 this.setState({
                     isSavingTeam: false,

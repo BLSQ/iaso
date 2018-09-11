@@ -29,14 +29,16 @@ class WokzoneModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            showModale: nextProps.showModale,
-            workzone: nextProps.workzone,
-            teams: nextProps.teams,
-            coordinations: nextProps.coordinations,
-            plannings: nextProps.plannings,
-            isChanged: false,
-        });
+        if (!nextProps.isUpdating) {
+            this.setState({
+                showModale: nextProps.showModale,
+                workzone: nextProps.workzone,
+                teams: nextProps.teams,
+                coordinations: nextProps.coordinations,
+                plannings: nextProps.plannings,
+                isChanged: false,
+            });
+        }
     }
 
     updateWorkzoneField(key, value) {
@@ -166,9 +168,9 @@ class WokzoneModale extends Component {
                         <button
                             disabled={
                                 (this.state.workzone.name === '' ||
-                                this.state.workzone.planning_id === undefined ||
-                                this.state.workzone.coordination_id === undefined ||
-                                this.state.workzone.teams.length === 0 ||
+                                    this.state.workzone.planning_id === undefined ||
+                                    this.state.workzone.coordination_id === undefined ||
+                                    this.state.workzone.teams.length === 0 ||
                                     (!this.state.isChanged && this.state.workzone.id !== 0))
                             }
                             className="button--save"
@@ -201,6 +203,7 @@ WokzoneModale.propTypes = {
     coordinations: PropTypes.array.isRequired,
     plannings: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
+    isUpdating: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(WokzoneModale);

@@ -276,6 +276,7 @@ class ManagementWorkZones extends React.Component {
                     coordinations={this.props.coordinations}
                     plannings={this.props.plannings}
                     saveWorkzone={newWokzone => this.saveWorkzone(newWokzone)}
+                    isUpdating={this.state.isUpdating}
                 />
                 {
                     this.state.showDeleteModale &&

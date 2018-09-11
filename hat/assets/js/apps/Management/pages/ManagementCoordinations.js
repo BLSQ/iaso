@@ -26,10 +26,6 @@ class ManagementCoordinations extends React.Component {
         this.state = {
             tableColumns: [
                 {
-                    Header: 'ID',
-                    accessor: 'id',
-                },
-                {
                     Header: formatMessage({
                         defaultMessage: 'Nom',
                         id: 'main.label.name',
@@ -201,6 +197,7 @@ class ManagementCoordinations extends React.Component {
                     coordination={this.state.coordinationEdited}
                     locations={this.props.locations}
                     saveCoordination={newCoordination => this.saveCoordination(newCoordination)}
+                    isUpdating={this.state.isUpdating}
                 />
                 {
                     this.state.showDeleteModale &&
@@ -240,7 +237,7 @@ class ManagementCoordinations extends React.Component {
                                 showPagination
                                 endPointUrl={this.state.tableUrl}
                                 columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'id', desc: false }]}
+                                defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="coordinations"
                             />

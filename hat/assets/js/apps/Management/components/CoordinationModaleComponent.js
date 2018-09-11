@@ -27,12 +27,14 @@ class CoordinationModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            showModale: nextProps.showModale,
-            coordination: nextProps.coordination,
-            locations: nextProps.locations,
-            isChanged: false,
-        });
+        if (!nextProps.isUpdating) {
+            this.setState({
+                showModale: nextProps.showModale,
+                coordination: nextProps.coordination,
+                locations: nextProps.locations,
+                isChanged: false,
+            });
+        }
     }
 
     updateCoordinationField(key, value) {
@@ -151,6 +153,7 @@ CoordinationModale.propTypes = {
     saveCoordination: PropTypes.func.isRequired,
     locations: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
+    isUpdating: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(CoordinationModale);

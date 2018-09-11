@@ -20,11 +20,13 @@ class TeamModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            showModale: nextProps.showModale,
-            team: nextProps.team,
-            isChanged: false,
-        });
+        if (!nextProps.isUpdating) {
+            this.setState({
+                showModale: nextProps.showModale,
+                team: nextProps.team,
+                isChanged: false,
+            });
+        }
     }
 
     updateTeamField(key, value) {
@@ -154,9 +156,9 @@ class TeamModale extends Component {
                         <button
                             disabled={
                                 ((!this.state.team.coordination_id ||
-                                this.state.team.name === '' ||
-                                !this.state.team.capacity) ||
-                                (!this.state.isChanged && this.state.team.id !== 0))
+                                    this.state.team.name === '' ||
+                                    !this.state.team.capacity) ||
+                                    (!this.state.isChanged && this.state.team.id !== 0))
                             }
                             className="button--save"
                             onClick={() => this.props.saveTeam(this.state.team)}
@@ -184,6 +186,7 @@ TeamModale.propTypes = {
     team: PropTypes.object,
     coordinations: PropTypes.array.isRequired,
     saveTeam: PropTypes.func.isRequired,
+    isUpdating: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(TeamModale);

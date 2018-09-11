@@ -6,7 +6,8 @@ from hat.planning.algo import optimize_path
 from rest_framework import viewsets
 from rest_framework.response import Response
 from hat.planning.models import WorkZone, Planning, Assignation
-from hat.geo.models import AS
+from hat.geo.models import AS, Village
+from hat.cases.models import CaseView
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -59,7 +60,6 @@ class WorkZoneViewSet(viewsets.ViewSet):
         coordination_id = request.GET.get("coordination_id", None)
         years = request.GET.get("years", "2017,2016,2015,2014,2013")
 
-
         matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
         prefix = ''
         if order.startswith('-'):
@@ -69,18 +69,19 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
         queryset = WorkZone.objects.all()
 
-        if years:
-            years_array = years.split(",")
-            population_endemic_villages = Sum(
-                "AS__village__population", filter=Q(AS__village__caseview__confirmed_case=True, AS__village__caseview__normalized_year__in=years_array)
-            )
-            queryset = queryset.annotate(population_endemic_villages=population_endemic_villages)
-
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id,)
         queryset = queryset.order_by(qs_order)
+
+        if years:
+            for zone in queryset:
+                years_array = years.split(",")
+                zone.population_endemic_villages = Village.objects.filter(AS__in=zone.AS.all())\
+                    .filter(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)\
+                    .distinct().aggregate(Sum('population'))['population__sum']
+
         return Response([zone.as_dict() for zone in queryset])
 
     def retrieve(self, request, pk):

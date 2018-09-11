@@ -99,16 +99,6 @@ describe('Microplanning map redux', () => {
             );
         });
 
-        it('should toggle overlay status', () => {
-            assert.deepEqual(
-                reducer(undefined, {
-                    type: map.OVERLAY_TOGGLE,
-                    payload: 'labels',
-                }),
-                { ...initialState, overlays: { ...initialState.overlays, labels: true } },
-            );
-        });
-
         it('should do nothing on changing base layer action if base layer does not exist', () => {
             assert.deepEqual(
                 reducer(undefined, {

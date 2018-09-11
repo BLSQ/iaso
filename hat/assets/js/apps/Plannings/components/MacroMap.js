@@ -51,7 +51,7 @@ const MapDatas = (coordination) => {
                 if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
                     tempArea.properties.workzoneId = workzone.id;
                     tempArea.properties.workzone = workzone.name;
-                    tempArea.properties.workZoneIsNotFull = workzone.total_capacity < workzone.total_population;
+                    tempArea.properties.workZoneIsNotFull = workzone.total_capacity < workzone.population_endemic_villages;
                 }
                 return null;
             });

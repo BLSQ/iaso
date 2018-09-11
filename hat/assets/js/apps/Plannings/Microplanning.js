@@ -20,7 +20,7 @@ import ReactModal from 'react-modal';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl, getRequest } from '../../utils/fetchData';
-import { saveTeamPlanning, saveCoordinationPlanning } from '../../utils/saveData';
+import { saveTeamPlanning, saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
 import { getPossibleYears } from '../../utils';
 import geoUtils from './utils/geo';
 import { selectionActions, selectionModes } from './redux/selection';
@@ -56,7 +56,6 @@ export class Microplanning extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            locations: [],
             // selectedLocation: null,
             // isVillageListEdited: false,
             isSelectionModified: false,
@@ -65,8 +64,6 @@ export class Microplanning extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const { data, error, loading } = nextProps.load;
-        const locations = ((data && data.locations) || []);
         // Remove geoscope from map if we remove a team
         if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
             this.props.toggleGeoScope(false);
@@ -77,7 +74,6 @@ export class Microplanning extends Component {
         }
         this.setState({
             isSelectionModified: nextProps.selection.isSelectionModified || false,
-            locations,
         });
     }
     onKeyDownHandler(event) {
@@ -110,7 +106,20 @@ export class Microplanning extends Component {
                     errorOnSave: !isSaved,
                 });
             });
-        } else {
+        } else if (this.props.params.workzone_id) {
+            this.setState({ isSavingTeam: true });
+            saveWorkzonePlanning(
+                this.props.selection.assignations,
+                parseInt(this.props.params.planning_id, 10),
+                this.props.params.workzone_id,
+            ).then((isSaved) => {
+                this.setState({
+                    isSavingTeam: false,
+                    isSelectionModified: !isSaved,
+                    errorOnSave: !isSaved,
+                });
+            });
+        } else if (this.props.params.coordination_id) {
             this.setState({ isSavingTeam: true });
             saveCoordinationPlanning(
                 this.props.selection.assignations,
@@ -176,7 +185,7 @@ export class Microplanning extends Component {
                     {
                         this.state.isSavingTeam ? <i className="fa fa-spinner" /> : <i className="fa fa-save" />
                     }
-                    <FormattedMessage id="microplanning.label.save" defaultMessage="Save Selection" />
+                    <FormattedMessage id="microplanning.label.save" defaultMessage="Sauver Sélection" />
                 </button>
             </div>
         );
@@ -187,7 +196,7 @@ export class Microplanning extends Component {
         const { formatMessage } = this.props.intl;
         // params filters & load status
         const {
-            years, zs_id, as_id, planning_id, coordination_id,
+            years, planning_id,
         } = this.props.params;
         const { data, error, loading } = this.props.load;
         // possible years from 2000 to current year
@@ -203,6 +212,7 @@ export class Microplanning extends Component {
         }
         const teams = ((data && data.teams) || []);
         const coordinations = ((data && data.coordinations) || []);
+        const workzones = ((data && data.workzones) || []);
         const plannings = ((data && data.plannings) || []);
         const assignations = (this.props.selection.assignations) || [];
         const teamsMap = {};
@@ -274,7 +284,7 @@ export class Microplanning extends Component {
 
             const algoParams = {
                 village_id: inBuffer.map(x => x.id).join(','),
-                coordination_id: this.props.params.coordination_id,
+                workzone_id: this.props.params.workzone_id,
                 years: this.props.params.years,
             };
             this.props.launchAlgo(algoParams);
@@ -306,6 +316,7 @@ export class Microplanning extends Component {
                     params={this.props.params}
                     plannings={plannings}
                     coordinations={coordinations}
+                    workzones={workzones}
                     teams={teams}
                     redirect={params => this.props.redirect(params)}
                     deselectAll={() => this.props.deselectItems()}
@@ -320,53 +331,6 @@ export class Microplanning extends Component {
                         {/* Param Filters */}
                         <div className="map__header--filters">
                             <div className="map__filters">
-                                <div className="map__filters--option">
-                                    <span className="map__text--select">
-                                        <FormattedMessage
-                                            id="microplanning.filter.zones"
-                                            defaultMessage="Zones de santé"
-                                        />
-                                    </span>
-                                    <Select
-                                        multi
-                                        simpleValue
-                                        autosize={false}
-                                        disabled={loading}
-                                        name="zs_id"
-                                        value={zs_id ? zs_id.split(',').map(zs => parseInt(zs, 10)) : ''}
-                                        placeholder={formatMessage(MESSAGES['location-all'])}
-                                        options={this.state.locations.map(zs =>
-                                            ({ label: zs.name, value: zs.id }))}
-                                        onChange={zsId =>
-                                            this.props.redirect({
-                                                ...this.props.params, zs_id: zsId,
-                                            })}
-                                    />
-                                </div>
-
-                                <div className="map__filters--option">
-                                    <span className="map__text--select">
-                                        <FormattedMessage
-                                            id="microplanning.filter.area"
-                                            defaultMessage="Aires de santé"
-                                        />
-                                    </span>
-                                    <Select
-                                        multi
-                                        simpleValue
-                                        autosize={false}
-                                        disabled={loading}
-                                        name="as_id"
-                                        value={as_id ? as_id.split(',').map(zs => parseInt(zs, 10)) : ''}
-                                        placeholder={formatMessage(MESSAGES['location-all'])}
-                                        options={areas.map(as =>
-                                            ({ label: as.name, value: as.id }))}
-                                        onChange={asId =>
-                                            this.props.redirect({
-                                                ...this.props.params, as_id: asId,
-                                            })}
-                                    />
-                                </div>
 
                                 <div className="map__filters--option">
                                     <span className="map__text--select">
@@ -424,7 +388,7 @@ export class Microplanning extends Component {
                                         <MapSelectionControl
                                             mode={selection.mode}
                                             teamId={this.props.params.team_id}
-                                            coordinationId={this.props.params.coordination_id}
+                                            workzoneId={this.props.params.workzone_id}
                                             changeMode={mode => this.changeSelectionModeHandler(mode)}
                                             bufferSize={selection.bufferSize}
                                             changeBufferSize={event =>

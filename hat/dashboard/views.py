@@ -27,23 +27,6 @@ def get_menu(user, active_link):
             "perms": None
         },
         {
-            "name": "Jeux de données",
-            "url_key": reverse("datasets:index"),
-            "items": [
-                {
-                    "name": "Upload de cas",
-                    "url_key": reverse("datasets:import_cases:upload"),
-                    "perms": "x_datasets_datauploads"
-                },
-                {
-                    "name": "Upload coordonnées villages",
-                    "url_key": reverse("datasets:import_locations:upload"),
-                    "perms": "x_datasets_villageuploads"
-                }
-            ],
-            "perms": None
-        },
-        {
             "name": "Statistiques",
             "url_key": reverse("dashboard:stats"),
             "items": [
@@ -61,16 +44,16 @@ def get_menu(user, active_link):
             "perms": None
         },
         {
-            "name": "Records",
+            "name": "Données",
             "url_key": reverse("cases:cases_list"),
             "items": [
                 {
-                    "name": "Cas",
+                    "name": "Explorateur",
                     "url_key": reverse("cases:cases_list"),
                     "perms": "x_case_cases"
                 },
                 {
-                    "name": "Analyse des cas",
+                    "name": "Analyse",
                     "url_key": reverse("cases:analysis"),
                     "perms": "x_case_analysis"
                 },
@@ -97,9 +80,9 @@ def get_menu(user, active_link):
                     "perms": "x_management_users"
                 },
                 {
-                    "name": "Plannings ",
-                    "url_key": reverse("dashboard:management_planning"),
-                    "perms": "x_management_plannings"
+                    "name": "Equipes",
+                    "url_key": reverse("dashboard:management_team"),
+                    "perms": "x_management_teams"
                 },
                 {
                     "name": "Coordinations",
@@ -107,14 +90,15 @@ def get_menu(user, active_link):
                     "perms": "x_management_coordinations"
                 },
                 {
+                    "name": "Plannings ",
+                    "url_key": reverse("dashboard:management_planning"),
+                    "perms": "x_management_plannings"
+                },
+
+                {
                     "name": "Champs d\'actions",
                     "url_key": reverse("dashboard:management_workzone"),
                     "perms": "x_management_workzones"
-                },
-                {
-                    "name": "Equipes",
-                    "url_key": reverse("dashboard:management_team"),
-                    "perms": "x_management_teams"
                 }
             ],
             "perms": None
@@ -124,12 +108,12 @@ def get_menu(user, active_link):
                     "url_key": reverse("dashboard:macro"),
             "items": [
                 {
-                    "name": "Macroplanning",
+                    "name": "Macroplanification",
                     "url_key": reverse("dashboard:macro"),
                     "perms": "x_plannings_macroplanning"
                 },
                 {
-                    "name": "Microplanning",
+                    "name": "Microplanification",
                     "url_key": reverse("dashboard:micro"),
                     "perms": "x_plannings_microplanning"
                 },
@@ -158,6 +142,23 @@ def get_menu(user, active_link):
             "url_key": reverse("dashboard:quality-control"),
             "items": [],
             "perms": "x_qualitycontrol"
+        },
+        {
+            "name": "Chargement données",
+            "url_key": reverse("datasets:index"),
+            "items": [
+                {
+                    "name": "Upload de cas",
+                    "url_key": reverse("datasets:import_cases:upload"),
+                    "perms": "x_datasets_datauploads"
+                },
+                {
+                    "name": "Upload coordonnées villages",
+                    "url_key": reverse("datasets:import_locations:upload"),
+                    "perms": "x_datasets_villageuploads"
+                }
+            ],
+            "perms": None
         }
     ]
     menu = []

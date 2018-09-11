@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from hat.geo.models import Village
-from hat.planning.models import Assignation
+from hat.planning.models import Assignation, WorkZone, Coordination
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -48,6 +48,8 @@ class VillageViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
+        coordination_id = request.GET.get("coordination_id", None)
+        workzone_id = request.GET.get("workzone_id", None)
         years = request.GET.get("years", None)
         types = request.GET.get("types", "YES")
         as_list = request.GET.get("as_list", False)
@@ -70,6 +72,15 @@ class VillageViewSet(viewsets.ViewSet):
             queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
         if as_ids:
             queryset = queryset.filter(AS_id__in=as_ids.split(","))
+
+        if workzone_id:
+            workzone = get_object_or_404(WorkZone, pk=workzone_id)
+            queryset = queryset.filter(AS_id__in=workzone.AS.all())
+
+        if coordination_id:
+            coordination = get_object_or_404(Coordination, pk=coordination_id)
+            queryset = queryset.filter(AS__ZS__id__in=coordination.ZS.all())
+
 
         if years:
             years_array = years.split(",")

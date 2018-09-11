@@ -21,7 +21,7 @@ class MapSelectionList extends Component {
             <div>
                 <div className="map__selection__list__header">
                     <h3>
-                        <FormattedMessage id="microplanning.selected.list" defaultMessage="Village list:" />
+                        <FormattedMessage id="microplanning.selected.list" defaultMessage="Liste de villages:" />
                     </h3>
                     <a
                         tabIndex={0}
@@ -30,7 +30,7 @@ class MapSelectionList extends Component {
                             ({ village_id: village.id })))}
                         className="button--tiny button--danger"
                     >
-                        <FormattedMessage id="microplanning.selected.reset" defaultMessage="Deselect all" />
+                        <FormattedMessage id="microplanning.selected.reset" defaultMessage="Tout déselectionner" />
                     </a>
                 </div>
                 <table className="map__selection__list">

@@ -38,12 +38,22 @@ class TeamSelectionTool extends Component {
         });
         this.setState({
             currentPlanning,
+            workzones: nextProps.workzones,
             coordinations: nextProps.coordinations,
             plannings: nextProps.plannings,
             teams: nextProps.teams,
         });
     }
-
+    onChangeWorkZone(workzoneId) {
+        const tempParams = clone(this.props.params);
+        delete tempParams.team_id;
+        delete tempParams.zs_id;
+        this.props.deselectAll();
+        this.props.redirect({
+            ...tempParams,
+            workzone_id: workzoneId,
+        });
+    }
     onChangeCoordination(coordinationId) {
         const tempParams = clone(this.props.params);
         delete tempParams.team_id;
@@ -122,10 +132,23 @@ class TeamSelectionTool extends Component {
                                 />
                             </div>
                             <div>
-                                <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+                                <FormattedMessage id="microplanning.label.workzone" defaultMessage="Rayon d'action" />
 
                                 <Select
                                     disabled={!this.props.params.coordination_id}
+                                    simpleValue
+                                    name="workzone_id"
+                                    value={parseInt(this.props.params.workzone_id, 10)}
+                                    placeholder="Rayon d'action"
+                                    options={this.state.workzones.map(wz => ({ label: `${wz.name}`, value: wz.id }))}
+                                    onChange={event => this.onChangeWorkZone(event)}
+                                />
+                            </div>
+                            <div>
+                                <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+
+                                <Select
+                                    disabled={!this.props.params.workzone_id}
                                     simpleValue
                                     name="team_id"
                                     value={parseInt(this.props.params.team_id, 10)}
@@ -148,6 +171,7 @@ TeamSelectionTool.defaultProps = {
     params: null,
     plannings: [],
     coordinations: [],
+    workzones: [],
     teams: [],
 };
 TeamSelectionTool.propTypes = {
@@ -156,6 +180,7 @@ TeamSelectionTool.propTypes = {
     plannings: PropTypes.arrayOf(PropTypes.object),
     coordinations: PropTypes.arrayOf(PropTypes.object),
     teams: PropTypes.arrayOf(PropTypes.object),
+    workzones: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
     deselectAll: PropTypes.func.isRequired,
 };

@@ -29,13 +29,17 @@ const MESSAGES = defineMessages({
         defaultMessage: 'population',
         id: 'macroplanning.population',
     },
+    endemic_population: {
+        defaultMessage: 'endémique',
+        id: 'macroplanning.endemic_population',
+    },
 });
 
 const workzoneLabel = (workzone, formatMessage) => (
     <span>
         {workzone.name}
         <span className="Select-infos">
-            ({formatMessage(MESSAGES.capacity)} {formatThousand(workzone.total_capacity)} / {formatMessage(MESSAGES.population)} {formatThousand(workzone.total_population)})
+            ({formatMessage(MESSAGES.capacity)} {formatThousand(workzone.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(workzone.population_endemic_villages)})
         </span>
     </span>
 );
@@ -140,12 +144,12 @@ class Macroplanning extends React.Component {
                 <div className="widget__container">
                     <div className="widget__header with-link">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="microplanning.macro.title" defaultMessage="Assigner les champs d'actions" />
+                            <FormattedMessage id="microplanning.macro.title" defaultMessage="Définir les rayons d'actions" />
                         </h2>
                         <a
                             href="/dashboard/management/workzones"
                         >
-                            <FormattedMessage id="main.label.worzonesPage" defaultMessage="Gérer les champs d'actions" />
+                            <FormattedMessage id="main.label.worzonesPage" defaultMessage="Gérer les rayons d'actions" />
                         </a>
                     </div>
                 </div>
@@ -184,7 +188,7 @@ class Macroplanning extends React.Component {
                                             {' '}
                                             {currentArea && <b>{currentArea.name}</b>}
                                         </div>
-                                        <FormattedMessage id="microplanning.label.workzone" defaultMessage="Champ d'action" />
+                                        <FormattedMessage id="microplanning.label.workzone" defaultMessage="Rayon d'action" />
                                         <Select
                                             simpleValue
                                             name="workzone_id"
@@ -271,7 +275,7 @@ class Macroplanning extends React.Component {
                                         <li
                                             className="not-assigned"
                                         >
-                                            <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun champ d'action appliqué" />
+                                            <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Pas inclus dans un rayon d'action" />
                                         </li>
                                         <li
                                             className="notFull"
@@ -286,7 +290,7 @@ class Macroplanning extends React.Component {
                                         <li
                                             className="hover"
                                         >
-                                            <FormattedMessage id="macroplanning.legend.hover" defaultMessage="Champs d'action" />
+                                            <FormattedMessage id="macroplanning.legend.hover" defaultMessage="rayons d'action" />
                                         </li>
                                     </ul>
                                 </div>

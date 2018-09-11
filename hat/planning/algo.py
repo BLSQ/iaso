@@ -1,9 +1,14 @@
-from hat.users.models import Team
-from hat.geo.models import Village
+from tsp_solver.greedy import solve_tsp
+from geopy.distance import vincenty
 from django.db.models import Count
 from django.db.models import Q
+
 from functools import cmp_to_key
 import random
+from hat.users.models import Team
+from hat.planning.models import WorkZone
+from hat.geo.models import Village
+
 
 def village_comparator(village_1, village_2):
     positive_1 = village_1.nr_positive_cases > 0
@@ -42,9 +47,10 @@ class TempAssignation:
         return str(self.villages)
 
 
-def assign(village_id_list, coordination_id, years=[]):
+def assign(village_id_list, workzone_id, years=[]):
     village_list = sort_villages(village_id_list, years)
-    teams = list(Team.objects.filter(coordination_id=coordination_id).order_by('-UM', '-capacity'))
+    workzone = WorkZone.objects.get(pk=workzone_id)
+    teams = list(workzone.teams.order_by('-UM', '-capacity'))
     assignations = {team.id: TempAssignation() for team in teams}
     # team_id -> (population_reached, assignations
     not_assigned = []
@@ -71,6 +77,43 @@ def assign(village_id_list, coordination_id, years=[]):
 
     return assignations, not_assigned
 
+
+def optimize_path(assignation_list):
+    matrix = [[] for _ in assignation_list]
+
+    village_ids = [obj['village_id'] for obj in assignation_list]
+    village_queryset = Village.objects.filter(id__in=village_ids)
+    villages = {v.id: v for v in village_queryset}
+    total_population = sum([village.population for village in village_queryset])
+    i = 0
+    for assignation1 in assignation_list:
+        j = 0
+        village_1 = villages[assignation1['village_id']]
+        for assignation2 in assignation_list:
+            village_2 = villages[assignation2['village_id']]
+            village_1_coordinates = (village_1.longitude, village_1.latitude)
+            village_2_coordinates = (village_2.longitude, village_2.latitude)
+            matrix[i].append(vincenty(village_1_coordinates, village_2_coordinates).km)
+            j += 1
+        i += 1
+    path = solve_tsp(matrix)
+    res = []
+    current_population = 0
+    current_month = 1
+
+    i = 0
+
+    for index in path:
+        assignation_dict = assignation_list[index]
+        current_population += villages[assignation_dict['village_id']].population
+        if current_population > (total_population / 12.0) * current_month:
+            current_month += 1
+        assignation_dict['month'] = min(current_month, 12)
+        assignation_dict['index'] = i
+        res.append(assignation_list[index])
+        i += 1
+
+    return res
 
 
 

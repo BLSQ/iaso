@@ -291,7 +291,7 @@ class ManagementWorkZones extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.workzone.title"
-                                defaultMessage="Champs d'actions"
+                                defaultMessage="Rayon d'actions"
                             />
                         </h2>
                     </div>

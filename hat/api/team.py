@@ -51,12 +51,15 @@ class TeamViewSet(viewsets.ViewSet):
 
     def list(self, request):
         coordination_id = request.GET.get("coordination_id", None)
+        workzone_id = request.GET.get("workzone_id", None)
         team_type = request.GET.get("type", None)
         order = request.GET.get("order", None)
 
         queryset = Team.objects.all()
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id)
+        if workzone_id:
+            queryset = queryset.filter(workzone__id=workzone_id)
         if team_type:
             queryset = queryset.filter(UM=(team_type == 'UM'))
 

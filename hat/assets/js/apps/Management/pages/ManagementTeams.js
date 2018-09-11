@@ -40,10 +40,6 @@ class ManagementTeams extends React.Component {
         this.state = {
             tableColumns: [
                 {
-                    Header: 'ID',
-                    accessor: 'id',
-                },
-                {
                     Header: formatMessage({
                         defaultMessage: 'Nom',
                         id: 'main.label.name',
@@ -255,6 +251,7 @@ class ManagementTeams extends React.Component {
                         team={this.state.teamEdited}
                         coordinations={this.state.coordinations}
                         saveTeam={team => this.saveTeam(team)}
+                        isUpdating={this.state.isUpdating}
                     />
                 }
                 {
@@ -327,7 +324,7 @@ class ManagementTeams extends React.Component {
                                 showPagination
                                 endPointUrl={this.state.tableUrl}
                                 columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'id', desc: false }]}
+                                defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="teams"
                             />

@@ -18,11 +18,13 @@ class PlanningModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            showModale: nextProps.showModale,
-            planning: nextProps.planning,
-            isChanged: false,
-        });
+        if (!nextProps.isUpdating) {
+            this.setState({
+                showModale: nextProps.showModale,
+                planning: nextProps.planning,
+                isChanged: false,
+            });
+        }
     }
 
     updatePlanningField(key, value) {
@@ -115,6 +117,7 @@ PlanningModale.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     planning: PropTypes.object,
     savePlanning: PropTypes.func.isRequired,
+    isUpdating: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(PlanningModale);

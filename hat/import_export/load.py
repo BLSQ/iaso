@@ -252,12 +252,16 @@ def normalize_location(case):
                     Q(Q(name=case.village) | Q(aliases__contains=[case.village]))
                 ))
             except Village.DoesNotExist:
+                try:
+                    devicedb = DeviceDB.objects.get(device_id=case.device_id)
+                except DeviceDB.DoesNotExist:
+                    devicedb = None
                 village = Village(
                     name=case.village,
                     AS_id=case.AS,
                     village_official='OTHER',
                     village_source='device',
-                    creator_device_id=case.device_id,
+                    creator_device=devicedb,
                 )
                 if case.latitude and case.longitude:
                     village.latitude = case.latitude

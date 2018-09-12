@@ -54,7 +54,7 @@ export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, 
 };
 
 
-export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId, areaId, zoneId, action) => {
+export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId, areaId, zoneId, action, years) => {
     dispatch(loadActions.startLoading());
     let data = {};
     if (areaId && !zoneId) {
@@ -74,7 +74,7 @@ export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId,
         .set('Content-Type', 'application/json')
         .send(data)
         .then(() => {
-            dispatch(fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId));
+            dispatch(fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId, years));
         })
         .catch((err) => {
             console.error(`Error while updating workzone: ${err}`);

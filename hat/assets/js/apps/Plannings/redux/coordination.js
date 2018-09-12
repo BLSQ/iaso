@@ -23,9 +23,9 @@ export const showCoordinationsDetail = datas => ({
     payload: datas,
 });
 
-export const fetchWorkZones = (dispatch, planningId, coordinationId, coordination, areaId) => {
+export const fetchWorkZones = (dispatch, planningId, coordinationId, coordination, areaId, years) => {
     req
-        .get(`/api/workzones/?planning_id=${planningId}&coordination_id=${coordinationId}`)
+        .get(`/api/workzones/?planning_id=${planningId}&coordination_id=${coordinationId}&years=${years}`)
         .then((result) => {
             dispatch(showCoordinationsDetail({
                 current: coordination,
@@ -41,11 +41,11 @@ export const fetchWorkZones = (dispatch, planningId, coordinationId, coordinatio
         type: FETCH_ACTION,
     });
 };
-export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, areaId) => {
+export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, areaId, years) => {
     req
         .get(`/api/coordinations/${coordinationId}?geojson=true`)
         .then((result) => {
-            dispatch(fetchWorkZones(dispatch, planningId, coordinationId, result.body, areaId));
+            dispatch(fetchWorkZones(dispatch, planningId, coordinationId, result.body, areaId, years));
         })
         .catch(err => (console.error(`Error while fetching coordination detail ${err}`)));
     return ({

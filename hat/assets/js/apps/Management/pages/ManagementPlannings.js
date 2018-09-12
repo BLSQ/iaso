@@ -22,10 +22,6 @@ class ManagementPlannings extends React.Component {
         this.state = {
             tableColumns: [
                 {
-                    Header: 'ID',
-                    accessor: 'id',
-                },
-                {
                     Header: formatMessage({
                         defaultMessage: 'Nom',
                         id: 'main.label.name',
@@ -173,6 +169,7 @@ class ManagementPlannings extends React.Component {
                     toggleModal={() => this.toggleEditModale()}
                     planning={this.state.planningEdited}
                     savePlanning={newPlanning => this.savePlanning(newPlanning)}
+                    isUpdating={this.state.isUpdating}
                 />
                 {
                     this.state.showDeleteModale &&
@@ -212,7 +209,7 @@ class ManagementPlannings extends React.Component {
                                 showPagination
                                 endPointUrl={this.state.tableUrl}
                                 columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'id', desc: false }]}
+                                defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="plannings"
                             />

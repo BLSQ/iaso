@@ -66,6 +66,15 @@ input.small {
     &.is-open {
         z-index: 1001;
     }
+    &.only-one {
+        .Select-value-icon {
+            display: none;
+        }
+        .Select-value {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
 }
 
 .custom-radio {

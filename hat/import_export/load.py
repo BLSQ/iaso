@@ -247,7 +247,7 @@ def normalize_location(case):
             # app doesn't know its ID yet. So let's attempt to find it first
             try:
                 village = Village.objects.get(Q(
-                    Q(village_official='YES') &
+                    # Q(village_official='YES') &  # Can't use official=Y here because we're creating them in "OTHER"
                     Q(AS_id=case.AS) &
                     Q(Q(name=case.village) | Q(aliases__contains=[case.village]))
                 ))

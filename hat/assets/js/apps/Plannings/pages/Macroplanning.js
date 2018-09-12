@@ -111,17 +111,17 @@ class Macroplanning extends React.Component {
 
     assignArea() {
         if (this.state.workzoneId) {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, null, 'add');
+            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, null, 'add', this.props.params.years);
         } else {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, null, 'delete');
+            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, null, 'delete', this.props.params.years);
         }
     }
 
     assignZone() {
         if (this.state.workzoneId) {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'add');
+            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'add', this.props.params.years);
         } else {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'delete');
+            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'delete', this.props.params.years);
         }
     }
 
@@ -364,7 +364,7 @@ const MapDispatchToProps = dispatch => ({
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),
     getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
-    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action) => dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action)),
+    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years) => dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MacroplanningIntl);

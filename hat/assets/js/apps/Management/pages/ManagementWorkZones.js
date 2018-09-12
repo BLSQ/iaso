@@ -103,14 +103,6 @@ class ManagementWorkZones extends React.Component {
                         <section>
                             <button
                                 className="button--tiny margin-right"
-                                onClick={() => {
-                                    window.location.href = `/dashboard/plannings/macro/planning_id/${settings.original.planning_id}/coordination_id/${settings.original.coordination_id}`;
-                                }}
-                            >
-                                <FormattedMessage id="main.label.marcoPlanningLink" defaultMessage="Associer" />
-                            </button>
-                            <button
-                                className="button--tiny margin-right"
                                 onClick={() => this.editWorkzone(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />

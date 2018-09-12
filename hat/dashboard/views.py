@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.urls import reverse
 from hat.planning.models import Planning, Assignation
-from hat.users.models import Team, Coordination
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -17,6 +16,13 @@ import csv
 import json
 
 from hat.cases.models import CaseView
+
+
+def get_five_last_years():
+    year = datetime.now().year
+    years = [str(year - i) for i in range(5)]
+    return ','.join(years)
+
 
 def get_menu(user, active_link):
     menu_list = [
@@ -96,7 +102,7 @@ def get_menu(user, active_link):
                 },
 
                 {
-                    "name": "Champs d\'actions",
+                    "name": "Rayons d\'actions",
                     "url_key": reverse("dashboard:management_workzone"),
                     "perms": "x_management_workzones"
                 }
@@ -109,12 +115,12 @@ def get_menu(user, active_link):
             "items": [
                 {
                     "name": "Macroplanification",
-                    "url_key": reverse("dashboard:macro"),
+                    "url_key": reverse("dashboard:macro") +"/years/" + get_five_last_years(),
                     "perms": "x_plannings_macroplanning"
                 },
                 {
                     "name": "Microplanification",
-                    "url_key": reverse("dashboard:micro"),
+                    "url_key": reverse("dashboard:micro")+"/years/" + get_five_last_years(),
                     "perms": "x_plannings_microplanning"
                 },
                 {
@@ -187,6 +193,7 @@ def get_menu(user, active_link):
                 menu_item["active"] = True
             menu.append(menu_item)
     return menu
+
 
 @login_required()
 def change_password(request):

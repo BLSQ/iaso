@@ -13,7 +13,7 @@ import RoutesPage from './pages/Route';
 import MacroplanningPage from './pages/Macroplanning';
 import { planningReducer } from './redux/planning';
 import { teamReducer } from './redux/team';
-import { coordinationReducer } from './redux/coordination';
+import { coordinationReducer, coordinationInitialState } from './redux/coordination';
 import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
@@ -50,7 +50,7 @@ export default function microplanningApp(element, baseUrl) {
         map: mapInitialState,
         plannings: [],
         teams: [],
-        coordinations: [],
+        coordinations: coordinationInitialState,
         assignations: [],
     }, {
         config: (state = {}) => state,

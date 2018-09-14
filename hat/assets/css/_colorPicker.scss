@@ -1,0 +1,10 @@
+.color-picker-container {
+    display: none;
+    position: absolute;
+    top: 105%;
+    z-index: 10;
+    left: 5px;
+    &.visible {
+        display: block;
+    }
+}

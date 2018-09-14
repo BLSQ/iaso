@@ -2,6 +2,7 @@ from django.db import models
 from ..geo.models import Village, AS
 from ..users.models import Team, Coordination
 from django.db.models import Sum
+import random
 
 
 class Planning(models.Model):
@@ -54,9 +55,22 @@ class Assignation(models.Model):
             'index': self.index
         }
 
+def pick_random_color():
+     return random.choice([
+    '#FF6900',
+    '#FCB900',
+    '#7BDCB5',
+    '#22955A',
+    '#8ED1FC',
+    '#0693E3',
+    '#00008B',
+    '#bf4840',
+    '#F78DA7',
+    '#9900EF',])
 
 class WorkZone(models.Model):
     name = models.TextField()
+    color = models.TextField(default=pick_random_color)
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
     coordination = models.ForeignKey(Coordination, on_delete=models.CASCADE)
     teams = models.ManyToManyField(Team)
@@ -78,6 +92,7 @@ class WorkZone(models.Model):
         res = {
             'id': self.id,
             'name': self.name,
+            'color': self.color,
             'teams': teams_list,
             'as_list': as_list,
             'total_capacity': total_capacity,

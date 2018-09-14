@@ -9,6 +9,7 @@
         top: 20% !important;
     }
 }
+
 .ReactModal__Body--open {
     overflow: hidden;
 }
@@ -29,6 +30,24 @@
         padding: $padding-unit;
         top: 9% !important;
         max-height: 90%;
+    }
+    .half {
+        border: 1px solid $gray;
+        margin-bottom: $padding-unit / 2;
+        border-radius: 5px;
+        display: flex;
+        width: 620px;
+        >div {
+            flex-basis: 50%;
+            padding: $padding-unit / 2;
+            &:first-child {
+                border-right: 1px solid $gray;
+            }
+            button {
+                width: 100%;
+                margin-top: $padding-unit / 2;
+            }
+        }
     }
 }
 

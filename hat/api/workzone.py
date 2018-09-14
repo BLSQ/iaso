@@ -121,6 +121,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         areas = request.data.get("as", [])
         teams = request.data.get("teams", [])
         name = request.data.get("name", None)
+        color = request.data.get("color", None)
 
         areas = set(areas)
         if zones:
@@ -177,6 +178,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
                     assignation.save()
         if name:
             work_zone.name = name
+            work_zone.save()
+
+        if color:
+            work_zone.color = color
             work_zone.save()
 
         return Response(work_zone.as_dict())

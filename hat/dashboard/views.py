@@ -181,7 +181,7 @@ def get_menu(user, active_link):
             active_sub_menu_items = []
             for sub_menu_item in sub_menu_items:
                 if not sub_menu_item.get("perms") or user.has_perm('menupermissions.' + sub_menu_item.get("perms")):
-                    if sub_menu_item["url_key"] == active_link:
+                    if active_link in sub_menu_item["url_key"] :
                         sub_menu_item["active"] = True
                         menu_item["active"] = True
                     active_sub_menu_items.append(sub_menu_item)

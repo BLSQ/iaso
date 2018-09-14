@@ -91,6 +91,7 @@
     ]
   },
   "dependencies": {
-    "react-beautiful-dnd": "^7.1.0"
+    "react-beautiful-dnd": "^7.1.0",
+    "react-color": "^2.14.1"
   }
 }

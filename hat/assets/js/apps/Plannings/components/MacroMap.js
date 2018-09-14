@@ -5,13 +5,11 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import * as d3 from 'd3';
 import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
 import * as topojson from 'topojson';
 import geoUtils from '../../Plannings/utils/geo';
-import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
-import { getMonthName } from '../utils/routeUtils';
+import { getZsName, clone } from '../../../utils';
 
 
 // map base layers
@@ -41,17 +39,21 @@ const MESSAGES = defineMessages({
     },
 });
 
-const MapDatas = (coordination) => {
+const MapDatas = (coordination, workzones) => {
     const tempCoordinations = coordination;
     const tempAreas = [];
-    coordination.current.areas.features.map((area) => {
-        const tempArea = area;
-        coordination.workzones.map((workzone) => {
+    coordination.areas.features.map((area) => {
+        const tempArea = clone(area);
+        delete tempArea.properties.workzoneId;
+        delete tempArea.properties.workzone;
+        delete tempArea.properties.workzoneColor;
+        tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
+        workzones.map((workzone) => {
             workzone.as_list.map((workingArea) => {
                 if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
                     tempArea.properties.workzoneId = workzone.id;
                     tempArea.properties.workzone = workzone.name;
-                    tempArea.properties.workZoneIsNotFull = workzone.total_capacity < workzone.population_endemic_villages;
+                    tempArea.properties.workzoneColor = workzone.color ? workzone.color : null;
                 }
                 return null;
             });
@@ -60,15 +62,8 @@ const MapDatas = (coordination) => {
         tempAreas.push(tempArea);
         return null;
     });
-    tempCoordinations.current.areas = tempAreas;
+    tempCoordinations.areas.features = tempAreas;
     return tempCoordinations;
-};
-
-const polygonsColor = {
-    notFull: 'red',
-    full: 'green',
-    workzone: '#007fff',
-    notAssigned: '#898789',
 };
 
 class MacroMap extends Component {
@@ -76,6 +71,7 @@ class MacroMap extends Component {
         super(props);
         this.state = {
             containers: {},
+            isFirstLoad: true,
             layers: {
                 villages: new L.FeatureGroup(),
             },
@@ -90,21 +86,24 @@ class MacroMap extends Component {
         this.fitToBounds();
     }
 
-    componentDidUpdate(prevProps) {
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.coordinationId !== this.props.coordinationId) {
+            this.setState({
+                isFirstLoad: true,
+            });
+        }
         const { map } = this;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
         map.whenReady(() => {
             // only call if base layer changed
-            if (hasChanged(prevProps, this.props, 'baseLayer')) {
+            if (hasChanged(nextProps, this.props, 'baseLayer')) {
                 this.updateBaseLayer();
             }
-
-            if (hasChanged(prevProps, this.props, 'coordination')) {
-                this.updateCoordination(MapDatas(this.props.coordination));
+            if (hasChanged(nextProps, this.props, 'coordination') || hasChanged(nextProps, this.props, 'workzones')) {
+                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzones));
             }
-
-            if (hasChanged(prevProps, this.props, 'currentArea')) {
-                this.updateCoordination(this.props.coordination);
+            if (hasChanged(nextProps, this.props, 'currentArea')) {
+                this.updateCoordination(nextProps.coordination, nextProps.workzones);
             }
         });
     }
@@ -117,41 +116,23 @@ class MacroMap extends Component {
 
 
     onEachAsFeature(feature, layer) {
-        layer.bindTooltip(`${feature.properties.name} ${feature.properties.workzone ? `- ${feature.properties.workzone}` : ''}`);
+        layer.bindTooltip(`AS: ${feature.properties.name} - ZS: ${feature.properties.zsName} ${feature.properties.workzone ? `-  RA: ${feature.properties.workzone}` : ''}`);
         layer.setStyle({
-            strokeWidth: 2,
+            fillOpacity: 0.5,
         });
         layer.on('click', () => {
             this.props.selectAs(feature.properties);
         });
         layer.on('mouseover', () => {
-            if (feature.properties.workzoneId) {
-                d3.selectAll(`.workzone-${feature.properties.workzoneId}`)
-                    .attr('fill', polygonsColor.workzone);
-            }
             layer.setStyle({
-                fillOpacity: 0.5,
+                fillOpacity: 0.8,
             });
         });
         layer.on('mouseout', () => {
-            let fillColor = polygonsColor.notAssigned;
-            if (layer.feature.properties.workZoneIsNotFull === true) {
-                fillColor = polygonsColor.notFull;
-            }
-            if (layer.feature.properties.workZoneIsNotFull === false) {
-                fillColor = polygonsColor.full;
-            }
-            d3.selectAll(`.workzone-${feature.properties.workzoneId}`)
-                .attr('fill', fillColor);
-            layer.setStyle({
-                fillOpacity: this.props.currentArea && layer.feature.properties.pk === this.props.currentArea.pk ? 0.5 : 0.2,
-            });
-        });
-        if (this.props.currentArea && (layer.feature.properties.pk === this.props.currentArea.pk)) {
             layer.setStyle({
                 fillOpacity: 0.5,
             });
-        }
+        });
     }
 
 
@@ -276,11 +257,6 @@ class MacroMap extends Component {
             map.addLayer(shape);
             this.state.defaultBounds = shape.getBounds();
         }
-
-        L.DomEvent.on(map, 'zoomend', () => {
-            // plotOrHideLayer(zooms.zone, 'zone');
-            // plotOrHideLayer(zooms.area, 'area');
-        });
     }
 
     /*
@@ -305,16 +281,11 @@ class MacroMap extends Component {
 
     updateCoordination(coordination) {
         this.coordinationGroup.clearLayers();
-        const areas = L.geoJSON(coordination.current.areas, {
+        const areas = L.geoJSON(coordination.areas, {
             style(feature) {
                 const tempStyle = {
-                    color: polygonsColor.notAssigned,
-                    opacity: 0.5,
-                    className: `workzone-${feature.properties.workzoneId}`,
+                    color: feature.properties.workzoneId ? feature.properties.workzoneColor : 'gray',
                 };
-                if (feature.properties.workzoneId) {
-                    tempStyle.color = feature.properties.workZoneIsNotFull ? polygonsColor.notFull : polygonsColor.full;
-                }
                 return tempStyle;
             },
             onEachFeature: (feature, layer) => {
@@ -322,7 +293,12 @@ class MacroMap extends Component {
             },
         });
         areas.addTo(this.coordinationGroup);
-        this.fitToBounds();
+        if (this.state.isFirstLoad) {
+            this.fitToBounds();
+            this.setState({
+                isFirstLoad: false,
+            });
+        }
     }
 
     updateTooltipSmall(item) {
@@ -397,16 +373,17 @@ class MacroMap extends Component {
 }
 MacroMap.defaultProps = {
     coordination: {},
-    currentArea: null,
+    workzones: [],
 };
 
 MacroMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     coordination: PropTypes.object,
-    currentArea: PropTypes.object,
+    workzones: PropTypes.array,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
     selectAs: PropTypes.func.isRequired,
+    coordinationId: PropTypes.string.isRequired,
 };
 
 export default injectIntl(MacroMap);

@@ -80,7 +80,7 @@
             }
             &.notFull {
                 &:before {
-                    background-color: rgba(red, 0.5);
+                    background-color: transparent;
                     border-color: red;
                 }
             }

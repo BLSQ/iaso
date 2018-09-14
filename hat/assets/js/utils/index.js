@@ -155,3 +155,22 @@ export const getBarChartMax = (settings, d) => {
 
 export const getPercentage = (totalCount, count) => (totalCount !== 0 ? (count * (100 / totalCount)).toFixed(2) : 0);
 
+export const getZsName = (zoneId, zones) => {
+    if (zoneId && zones.length > 0) {
+        const zoneObj = zones.filter(z => parseInt(z.properties.pk, 10) === zoneId)[0];
+        if (zoneObj) {
+            return (zoneObj.properties.name);
+        }
+    }
+    return '';
+};
+
+export const getWorkZoneName = (workzoneId, workzones) => {
+    if (workzoneId && workzones.length > 0) {
+        const workZoneObj = workzones.filter(w => w.id === workzoneId)[0];
+        if (workZoneObj) {
+            return (workZoneObj.name);
+        }
+    }
+    return '';
+};

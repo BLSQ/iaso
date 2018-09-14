@@ -39,6 +39,8 @@ $fa-font-path: "~font-awesome/fonts";
 @import "tabs";
 @import "barChart";
 @import "permissions";
+@import "workZones";
+@import "colorPicker";
 
 body {
   background-color: $background-gray;

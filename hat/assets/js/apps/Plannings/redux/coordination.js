@@ -5,6 +5,8 @@ export const SHOW_COORDINATION_DETAIL = 'hat/macroplanning/coordination/SHOW_COO
 export const SELECT_AS = 'hat/macroplanning/coordination/SELECT_AS';
 export const SELECT_WORKZONE = 'hat/macroplanning/coordination/SELECT_AS';
 export const FETCH_ACTION = 'hat/macroplanning/coordination/FETCH_ACTION';
+export const SAVE_WORKZONE_COLOR = 'hat/macroplanning/SAVE_WOORKZONE_COLOR';
+export const SET_WORK_ZONES = 'hat/macroplanning/SET_WORK_ZONES';
 
 const req = require('superagent');
 
@@ -18,34 +20,40 @@ export const selectArea = area => ({
     payload: area,
 });
 
-export const showCoordinationsDetail = datas => ({
+export const setWorkZones = workzones => ({
+    type: SET_WORK_ZONES,
+    payload: workzones,
+});
+
+export const showCoordinationsDetail = coordination => ({
     type: SHOW_COORDINATION_DETAIL,
-    payload: datas,
+    payload: coordination,
 });
 
 export const fetchWorkZones = (dispatch, planningId, coordinationId, coordination, areaId, years) => {
     req
         .get(`/api/workzones/?planning_id=${planningId}&coordination_id=${coordinationId}&years=${years}`)
         .then((result) => {
-            dispatch(showCoordinationsDetail({
-                current: coordination,
-                workzones: result.body,
-            }));
+            dispatch(setWorkZones(result.body));
             if (areaId) {
-                dispatch(selectArea(coordination.areas.filter(a => a.properties.pk === areaId)[0].properties));
+                dispatch(selectArea(coordination.areas.features.filter(a => a.properties.pk === areaId)[0].properties));
             }
             dispatch(loadActions.successLoadingNoData());
         })
-        .catch(err => (console.error(`Error while fetching coordination detail ${err}`)));
+        .catch(err => (console.error(`Error while fetching workzone ${err}`)));
     return ({
         type: FETCH_ACTION,
     });
 };
+
 export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, areaId, years) => {
+    dispatch(loadActions.startLoading());
     req
         .get(`/api/coordinations/${coordinationId}?geojson=true`)
-        .then((result) => {
-            dispatch(fetchWorkZones(dispatch, planningId, coordinationId, result.body, areaId, years));
+        .then((res) => {
+            const newCoordination = res.body;
+            dispatch(showCoordinationsDetail(newCoordination));
+            dispatch(fetchWorkZones(dispatch, planningId, coordinationId, newCoordination, areaId, years));
         })
         .catch(err => (console.error(`Error while fetching coordination detail ${err}`)));
     return ({
@@ -54,7 +62,7 @@ export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, 
 };
 
 
-export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId, areaId, zoneId, action, years) => {
+export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId, areaId, zoneId, action, years, coordination) => {
     dispatch(loadActions.startLoading());
     let data = {};
     if (areaId && !zoneId) {
@@ -74,7 +82,7 @@ export const selectWorkzone = (dispatch, planningId, coordinationId, workzoneId,
         .set('Content-Type', 'application/json')
         .send(data)
         .then(() => {
-            dispatch(fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId, years));
+            dispatch(fetchWorkZones(dispatch, planningId, coordinationId, coordination, areaId, years));
         })
         .catch((err) => {
             console.error(`Error while updating workzone: ${err}`);
@@ -96,6 +104,30 @@ export const fetchCoordinations = (dispatch) => {
     });
 };
 
+export const saveWorkZoneColor = (dispatch, color, workzoneId, workzones) => {
+    req
+        .patch(`/api/workzones/${workzoneId}/`)
+        .set('Content-Type', 'application/json')
+        .send({
+            color,
+        })
+        .then((res) => {
+            const workZone = res.body;
+            const newWorkZones = workzones.slice();
+            workzones.map((w, index) => {
+                if (w.id === workZone.id) {
+                    newWorkZones[index] = workZone;
+                }
+                return null;
+            });
+            dispatch(setWorkZones(newWorkZones));
+        })
+        .catch(err => (console.error(`Error while saving workzone color: ${err}`)));
+    return ({
+        type: SAVE_WORKZONE_COLOR,
+    });
+};
+
 
 export const coordinationActions = {
     showCoordinations,
@@ -103,10 +135,20 @@ export const coordinationActions = {
     fetchCoordinationsDetails,
     selectArea,
     selectWorkzone,
+    saveWorkZoneColor,
+};
+export const coordinationInitialState = {
+    list: [],
+    current: {},
+    workzones: [],
 };
 
-export const coordinationReducer = (state = {}, action = {}) => {
+export const coordinationReducer = (state = coordinationInitialState, action = {}) => {
     switch (action.type) {
+        case SET_WORK_ZONES: {
+            const workzones = action.payload;
+            return { ...state, workzones };
+        }
         case SHOW_COORDINATION: {
             const list = action.payload;
             return { ...state, list };
@@ -116,9 +158,10 @@ export const coordinationReducer = (state = {}, action = {}) => {
             return { ...state, currentArea };
         }
         case SHOW_COORDINATION_DETAIL: {
-            const current = action.payload;
-            return { ...state, current };
+            const newCurrent = action.payload;
+            return { ...state, current: newCurrent };
         }
+        case SAVE_WORKZONE_COLOR:
         case SELECT_WORKZONE:
         case FETCH_ACTION: {
             return state;

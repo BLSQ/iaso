@@ -1,0 +1,76 @@
+.workzones-list {
+    list-style-type: none;
+    overflow: visible !important;
+    padding: 40px;
+    padding: 40px 40px 50px 40px;
+    margin: -30px -40px -25px -40px;
+}
+
+.workzones-item {
+    position: relative;
+    overflow: visible !important;
+    padding-left: 0 !important;
+    border-top: 1px solid $gray;
+    border-left: 1px solid $gray;
+    border-right: 1px solid $gray;
+    &:before {
+        display: none !important;
+    }
+    &.selected,
+    &:hover {
+        background-color: $background-gray;
+    }
+    &.none {
+        cursor: default;
+        &:hover {
+            background-color: transparent;
+        }
+    }
+    >span {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        margin-right: 10px;
+        cursor: pointer;
+        margin-left: 10px;
+        position: relative;
+        top: 0px;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    >div.infos {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        height: 100%;
+        width: calc(100% - 45px);
+        padding-top: 16px;
+        font-weight: bold;
+        outline: none !important;
+        box-shadow: none !important;
+        span {
+            font-weight: normal;
+        }
+        &.alert {
+            color: red;
+        }
+    }
+    &:first-child {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    &:last-child {
+        border-bottom: 1px solid $gray;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+}
+
+.as-select {
+    padding: 32px 0 10px 20px;
+    min-height: 76px;
+}
+
+.macro-map {
+    border-left: 1px solid $gray;
+}

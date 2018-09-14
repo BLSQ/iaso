@@ -893,6 +893,14 @@ button {
     stroke-width: 5px !important;
 }
 
+.macro-map .leaflet-pane>svg path {
+    stroke-width: 2px !important;
+    stroke-opacity: 0.5;
+    &.selected-area {
+        stroke: red !important;
+    }
+}
+
 .leaflet-pane {
     &.leaflet-custom-pane-shapes-pane {
         z-index: 200;

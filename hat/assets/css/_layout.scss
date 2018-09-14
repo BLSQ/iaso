@@ -1,126 +1,145 @@
-div, section, article {
-  box-sizing: border-box;
+div,
+section,
+article {
+    box-sizing: border-box;
 }
 
 .content {
-  padding: $padding-unit;
+    padding: $padding-unit;
 }
 
 .container--main {
-  flex: 1;
-  padding-left: $navigation-width;
+    flex: 1;
+    padding-left: $navigation-width;
 }
 
 .body--banner {
-  padding-top: $banner-height;
+    padding-top: $banner-height;
 }
 
 .banner--stage-warning {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: $z-index-banner--stage-warning;
-  height: $banner-height;
-  line-height: $banner-height;
-  font-size: $font-size-s;
-  color: white;
-  padding: 0 $padding-unit;
-  background-color: $orange;
-  text-align: center;
-  font-weight: bold;
-  -webkit-font-smoothing: antialiased;
-  a {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: $z-index-banner--stage-warning;
+    height: $banner-height;
+    line-height: $banner-height;
+    font-size: $font-size-s;
     color: white;
-  }
+    padding: 0 $padding-unit;
+    background-color: $orange;
+    text-align: center;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;
+    a {
+        color: white;
+    }
 }
 
 /* margin classes */
+
 $directions: left right top bottom;
 @each $direction in $directions {
-  .block--margin-#{$direction}--none {
-    margin-#{$direction}: 0;
-  }
-  .block--margin-#{$direction}--xxs {
-    margin-#{$direction}: $padding-unit/4;
-  }
-  .block--margin-#{$direction}--xs {
-    margin-#{$direction}: $padding-unit/2;
-  }
-  .block--margin-#{$direction}--small {
-    margin-#{$direction}: $padding-unit;
-  }
-  .block--margin-#{$direction}--med {
-    margin-#{$direction}: $padding-unit*2;
-  }
+    .block--margin-#{$direction}--none {
+        margin-#{$direction}: 0;
+    }
+    .block--margin-#{$direction}--xxs {
+        margin-#{$direction}: $padding-unit/4;
+    }
+    .block--margin-#{$direction}--xs {
+        margin-#{$direction}: $padding-unit/2;
+    }
+    .block--margin-#{$direction}--small {
+        margin-#{$direction}: $padding-unit;
+    }
+    .block--margin-#{$direction}--med {
+        margin-#{$direction}: $padding-unit*2;
+    }
 }
 
 // extremely simple grid system with flexbox
 // give a div a class .column--2 for 20% width (for example)
 // no spacing between columns, you could do that with padding
-
 .wrapper__column {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
 }
 
 @for $i from 1 through 10 {
-  .column--#{$i} {
-    box-sizing: border-box;
-    width: #{$i}0%;
-  }
+    .column--#{$i} {
+        box-sizing: border-box;
+        width: #{$i}0%;
+    }
 }
 
 .no-padding-top {
-  padding-top: 0 !important;
+    padding-top: 0 !important;
 }
+
 .no-padding-right {
-  padding-right: 0 !important;
+    padding-right: 0 !important;
 }
+
 .align-right {
-  text-align: right;
+    text-align: right;
 }
+
 .align-center {
-  text-align: center;
+    text-align: center;
 }
 
 .large-text {
-  font-size: 0.9vw;
-  line-height: 22px;
+    font-size: 0.9vw;
+    line-height: 22px;
 }
 
 .bold {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .hidden {
-  display: none;
+    display: none;
 }
+
 .border-top {
-  border-top: 1px solid $gray;
+    border-top: 1px solid $gray;
 }
 
 .flex-container {
-  display: flex;
+    display: flex;
 }
+
 .split-map {
     height: 600px;
     width: 80%;
 }
+
 .split-selector-container {
     padding: $padding-unit;
     width: 20%;
 }
+
 .padding {
-  padding: $padding-unit/2;
+    padding: $padding-unit/2;
 }
+
 .padding-bottom {
-  padding-bottom: $padding-unit/2;
+    padding-bottom: $padding-unit/2;
 }
+
 .padding-top {
-  padding-top: $padding-unit/2;
+    padding-top: $padding-unit/2;
 }
+
 .margin-right {
-  margin-right: $padding-unit/2;
+    margin-right: $padding-unit/2;
+}
+
+.bold-subtitle {
+    font-weight: bold;
+    color: $mid-gray;
+    font-size: 14px;
+    margin-bottom: 20px;
 }

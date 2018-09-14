@@ -2,67 +2,26 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
-import Select from 'react-select';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 
 import PlanningTeamSelection from '../components/PlanningTeamSelection';
+import WorkZonesSelect from '../components/WorkZonesSelect';
 import MacroMap from '../components/MacroMap';
 import { planningActions } from '../redux/planning';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import { coordinationActions } from '../redux/coordination';
-import { clone, formatThousand } from '../../../utils';
-import { mapActions } from '../redux/map';
+import { getZsName, getWorkZoneName } from '../../../utils';
+import AssingAsModale from '../components/AssingAsModale';
 
-
-const MESSAGES = defineMessages({
-    none: {
-        defaultMessage: 'Aucun',
-        id: 'macroplanning.none',
-    },
-    capacity: {
-        defaultMessage: 'capacité',
-        id: 'macroplanning.capacity',
-    },
-    population: {
-        defaultMessage: 'population',
-        id: 'macroplanning.population',
-    },
-    endemic_population: {
-        defaultMessage: 'endémique',
-        id: 'macroplanning.endemic_population',
-    },
-});
-
-const workzoneLabel = (workzone, formatMessage) => (
-    <span>
-        {workzone.name}
-        <span className="Select-infos">
-            ({formatMessage(MESSAGES.capacity)} {formatThousand(workzone.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(workzone.population_endemic_villages)})
-        </span>
-    </span>
-);
-
-const getWorkZoneName = (workzoneId, workzones) => {
-    if (workzoneId) {
-        return (workzones.filter(w => w.id === workzoneId)[0].name);
-    }
-    return '';
-};
-
-const getZsName = (zoneId, zones) => {
-    if (zoneId) {
-        return (zones.filter(z => parseInt(z.properties.pk, 10) === zoneId)[0].properties.name);
-    }
-    return '';
-};
 
 class Macroplanning extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             workzoneId: undefined,
+            showModale: false,
         };
     }
 
@@ -76,53 +35,59 @@ class Macroplanning extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if ((((nextProps.params.coordination_id !== this.props.params.coordination_id)
-        || (nextProps.params.planning_id !== this.props.params.planning_id)
-        || (nextProps.params.years !== this.props.params.years)
+            || (nextProps.params.planning_id !== this.props.params.planning_id)
+            || (nextProps.params.years !== this.props.params.years)
         ) && nextProps.params.coordination_id)) {
-            this.props.fetchCoordinationsDetails(nextProps.params.planning_id, nextProps.params.coordination_id, nextProps.params.as_id, nextProps.params.years);
-        }
-        if (this.props.currentArea) {
             this.setState({
-                workzoneId: this.props.currentArea.workzoneId ? this.props.currentArea.workzoneId : undefined,
+                showModale: false,
+                workzoneId: undefined,
             });
+            this.props.fetchCoordinationsDetails(nextProps.params.planning_id, nextProps.params.coordination_id, nextProps.params.as_id, nextProps.params.years);
         }
     }
 
-    selectMonth(monthId) {
-        const tempParams = clone(this.props.params);
-        delete tempParams.month_id;
+    selectWorkZone(workzoneId) {
+        this.setState({
+            workzoneId,
+        });
+        this.props.selectArea(null);
         this.props.redirect({
-            ...tempParams,
-            month_id: monthId,
+            ...this.props.params,
+            as_id: null,
         });
     }
 
     selectAs(currentAs) {
-        this.props.selectArea(currentAs);
+        if (this.state.workzoneId || currentAs.workzone) {
+            this.props.selectArea(currentAs);
+            this.setState({
+                showModale: true,
+            });
+        }
+    }
+
+    closeModale() {
+        this.props.selectArea(null);
         this.setState({
-            workzoneId: currentAs.workzoneId ? currentAs.workzoneId : undefined,
-        });
-        this.props.redirect({
-            ...this.props.params,
-            as_id: currentAs.pk,
+            showModale: false,
         });
     }
 
 
-    assignArea() {
-        if (this.state.workzoneId) {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, null, 'add', this.props.params.years);
-        } else {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, null, 'delete', this.props.params.years);
-        }
-    }
-
-    assignZone() {
-        if (this.state.workzoneId) {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.state.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'add', this.props.params.years);
-        } else {
-            this.props.selectWorkzone(this.props.params.planning_id, this.props.params.coordination_id, this.props.currentArea.workzoneId, this.props.currentArea.pk, this.props.currentArea.ZS, 'delete', this.props.params.years);
-        }
+    assignToWorkZone(add, zs = null) {
+        this.setState({
+            showModale: false,
+        });
+        this.props.selectWorkzone(
+            this.props.params.planning_id,
+            this.props.params.coordination_id,
+            add ? this.state.workzoneId : this.props.currentArea.workzoneId,
+            this.props.currentArea.pk,
+            zs,
+            add ? 'add' : 'delete',
+            this.props.params.years,
+            this.props.currentCoordination,
+        );
     }
 
     render() {
@@ -136,6 +101,7 @@ class Macroplanning extends React.Component {
             load: {
                 loading,
             },
+            currentWorkZones,
             currentCoordination,
             currentArea,
         } = this.props;
@@ -164,156 +130,86 @@ class Macroplanning extends React.Component {
                     />
 
                 </div>
-                <div className="widget__container">
-                    <section>
-                        <div className="widget__content--tier">
-                            {
-                                loading &&
-                                <LoadingSpinner message={formatMessage({
-                                    defaultMessage: 'Chargement en cours',
-                                    id: 'microplanning.labels.loading',
-                                })}
-                                />
-                            }
-                            <div>
+                {
+                    coordinationId &&
+                    <div className="widget__container">
+                        <section>
+                            <div className="widget__content--tier">
                                 {
-                                    !currentArea && !loading &&
-                                    <div>
-                                        <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Sélectionnez une Aire de santé sur la carte" />
+                                    loading &&
+                                    <LoadingSpinner message={formatMessage({
+                                        defaultMessage: 'Chargement en cours',
+                                        id: 'microplanning.labels.loading',
+                                    })}
+                                    />
+                                }
+                                <div>
+                                    {
+                                        currentWorkZones && currentWorkZones.length === 0 && !loading &&
+                                        <div className="bold-subtitle">
+                                            <FormattedMessage id="microplanning.macro.nows" defaultMessage="Aucun rayon d'action pour cette coordination" />
+                                        </div>
+                                    }
+                                    {
+                                        currentWorkZones && currentWorkZones.length > 0 &&
+                                        <div className="ws-select">
+                                            <div className="bold-subtitle">
+                                                1) <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Sélectionnez un rayon d'action" />
+                                            </div>
+                                            <div className="type-filters-containers">
+                                                <WorkZonesSelect
+                                                    currentArea={currentArea}
+                                                    workZones={currentWorkZones}
+                                                    saveWorkZoneColor={(color, workZoneId) => this.props.saveWorkZoneColor(color, workZoneId, currentWorkZones, currentCoordination)}
+                                                    selectedWorkZoneId={this.state.workzoneId}
+                                                    selectWorkZone={workzoneId => this.selectWorkZone(workzoneId)}
+                                                />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                {
+                                    currentCoordination &&
+                                    coordinationId &&
+                                    <div className="map macro-map">
+                                        <div className="as-select">
+                                            {
+                                                this.state.workzoneId &&
+                                                <div className="bold-subtitle">
+                                                    2) <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Sélectionnez une Aire de santé sur la carte" />
+                                                </div>
+                                            }
+                                        </div>
+                                        <MacroMap
+                                            coordinationId={coordinationId}
+                                            baseLayer={baseLayer}
+                                            overlays={{ labels: false }}
+                                            coordination={currentCoordination}
+                                            workzones={currentWorkZones}
+                                            getShape={type => this.props.getShape(type)}
+                                            selectAs={currentAs => this.selectAs(currentAs)}
+                                        />
                                     </div>
                                 }
-                                {
-                                    (currentArea || loading) &&
-                                    <section>
-                                        <div className="sub-title">
-                                            <FormattedMessage id="microplanning.macro.selectedAs" defaultMessage="Aire de santé sélectionnée" />:
-                                            {' '}
-                                            {currentArea && <b>{currentArea.name}</b>}
-                                        </div>
-                                        <FormattedMessage id="microplanning.label.workzone" defaultMessage="Rayon d'action" />
-                                        <Select
-                                            simpleValue
-                                            name="workzone_id"
-                                            value={this.state.workzoneId}
-                                            placeholder={formatMessage(MESSAGES.none)}
-                                            options={currentCoordination.workzones.map(w =>
-                                                ({ label: workzoneLabel(w, formatMessage), value: w.id }))}
-                                            onChange={event =>
-                                                this.setState({
-                                                    workzoneId: event || undefined,
-                                                })}
-                                        />
-                                        {
-                                            currentArea &&
-                                            (this.state.workzoneId !== currentArea.workzoneId) &&
-                                            <section className="widget__content align-right no-padding-right ">
-                                                <div>
-                                                    <button
-                                                        className="button"
-                                                        onClick={() => this.assignArea()}
-                                                    >
-                                                        {
-                                                            this.state.workzoneId &&
-                                                            <span>
-                                                                <FormattedMessage
-                                                                    id="macroplanning.label.assignAs"
-                                                                    defaultMessage="Assigner l'AS {asName} à"
-                                                                    values={{ asName: currentArea.name }}
-                                                                />
-                                                                {' '}   {getWorkZoneName(this.state.workzoneId, currentCoordination.workzones)}
-                                                            </span>
-                                                        }
-                                                        {
-                                                            !this.state.workzoneId &&
-                                                            <span>
-                                                                <FormattedMessage
-                                                                    id="macroplanning.label.unAssignAs"
-                                                                    defaultMessage="Enlever l'AS {asName} de"
-                                                                    values={{ asName: currentArea.name }}
-                                                                />
-                                                                {' '}  {currentArea.workzone}
-                                                            </span>
-                                                        }
-                                                    </button>
-                                                </div>
-                                                <div className="padding-top">
-                                                    <button
-                                                        className="button"
-                                                        onClick={() => this.assignZone()}
-                                                    >
-                                                        {
-                                                            this.state.workzoneId &&
-                                                            <span>
-                                                                <FormattedMessage
-                                                                    id="macroplanning.label.assignZs"
-                                                                    defaultMessage="Assigner la ZS {zsName} à"
-                                                                    values={{ zsName: getZsName(currentArea.ZS, currentCoordination.current.zones.features) }}
-                                                                />
-                                                                {' '}   {getWorkZoneName(this.state.workzoneId, currentCoordination.workzones)}
-                                                            </span>
-                                                        }
-                                                        {
-                                                            !this.state.workzoneId &&
-                                                            <span>
-                                                                <FormattedMessage
-                                                                    id="macroplanning.label.unAssignZs"
-                                                                    defaultMessage="Enlever la ZS {zsName} de"
-                                                                    values={{ zsName: getZsName(currentArea.ZS, currentCoordination.current.zones.features) }}
-                                                                />
-                                                                {' '}  {currentArea.workzone}
-                                                            </span>
-                                                        }
-                                                    </button>
-                                                </div>
-                                            </section>
-                                        }
-                                    </section>
-                                }
-                                <div className="type-filters-containers">
-                                    <span className="locator-subtitle">
-                                        <FormattedMessage id="macroplanning.legend.title" defaultMessage="Légende" />
-                                    </span>
-                                    <ul>
-                                        <li
-                                            className="not-assigned"
-                                        >
-                                            <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Pas inclus dans un rayon d'action" />
-                                        </li>
-                                        <li
-                                            className="notFull"
-                                        >
-                                            <FormattedMessage id="macroplanning.legend.notFull" defaultMessage="Capacité des équipes < population villages" />
-                                        </li>
-                                        <li
-                                            className="full"
-                                        >
-                                            <FormattedMessage id="macroplanning.legend.full" defaultMessage="Capacité des équipes > population villages" />
-                                        </li>
-                                        <li
-                                            className="hover"
-                                        >
-                                            <FormattedMessage id="macroplanning.legend.hover" defaultMessage="rayons d'action" />
-                                        </li>
-                                    </ul>
-                                </div>
                             </div>
+                        </section>
+                    </div>
+                }
+                <AssingAsModale
+                    showModale={this.state.showModale}
+                    closeModale={() => this.closeModale()}
+                    area={currentArea || {}}
+                    zoneName={currentArea && currentCoordination && currentCoordination.zones ? getZsName(currentArea ? currentArea.ZS : null, currentCoordination.zones.features) : ''}
+                    workZone={
+                        currentWorkZones && this.state.workzoneId ?
                             {
-                                currentCoordination &&
-                                coordinationId &&
-                                <div className="map">
-                                    <MacroMap
-                                        baseLayer={baseLayer}
-                                        overlays={{ labels: false }}
-                                        coordination={currentCoordination}
-                                        currentArea={currentArea}
-                                        getShape={type => this.props.getShape(type)}
-                                        selectAs={currentAs => this.selectAs(currentAs)}
-                                    />
-                                </div>
-                            }
-                        </div>
-                    </section>
-                </div>
+                                id: this.state.workzoneId,
+                                name: getWorkZoneName(this.state.workzoneId, currentWorkZones),
+                            } : {}
+                    }
+                    assignArea={add => this.assignToWorkZone(add)}
+                    assignZone={add => this.assignToWorkZone(add, this.props.currentArea.ZS)}
+                />
             </section>
         );
     }
@@ -323,6 +219,7 @@ Macroplanning.defaultProps = {
     plannings: [],
     coordinations: [],
     currentCoordination: {},
+    currentWorkZones: [],
     currentArea: null,
 };
 
@@ -342,6 +239,8 @@ Macroplanning.propTypes = {
     map: PropTypes.object.isRequired,
     selectArea: PropTypes.func.isRequired,
     selectWorkzone: PropTypes.func.isRequired,
+    saveWorkZoneColor: PropTypes.func.isRequired,
+    currentWorkZones: PropTypes.array,
 };
 
 const MacroplanningIntl = injectIntl(Macroplanning);
@@ -352,6 +251,7 @@ const MapStateToProps = state => ({
     plannings: state.plannings.list,
     coordinations: state.coordinations.list,
     currentCoordination: state.coordinations.current,
+    currentWorkZones: state.coordinations.workzones,
     currentArea: state.coordinations.currentArea,
     assignations: state.assignations.list,
     map: state.map,
@@ -364,7 +264,10 @@ const MapDispatchToProps = dispatch => ({
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),
     getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
-    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years) => dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years)),
+    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination) =>
+        dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination)),
+    saveWorkZoneColor: (color, workzoneId, currentWorkZones) =>
+        dispatch(coordinationActions.saveWorkZoneColor(dispatch, color, workzoneId, currentWorkZones)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MacroplanningIntl);

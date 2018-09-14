@@ -9,7 +9,7 @@
     "mocha": "mocha --require ./hat/assets/js/test/mocha.setup.js './hat/assets/js/**/*.spec.js'",
     "mocha-watch": "mocha --require ./hat/assets/js/test/mocha.setup.js './hat/assets/js/**/*.spec.js' --watch",
     "test": "npm run lint && npm run mocha",
-    "build": "npm run webpack && npm run extract-strings",
+    "build": "npm run webpack",
     "webpack": "webpack --config ./hat/webpack.dev.js",
     "webpack-prod": "webpack --config ./hat/webpack.prod.js",
     "extract-strings": "node ./build_scripts/merge-js-transifex.js",

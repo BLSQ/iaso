@@ -50,7 +50,7 @@ const MESSAGES = defineMessages({
 const mapVillages = (allVillages) => {
     const villages = [];
     allVillages.map((village) => {
-        if (village.village__id) {
+        if (village.village__id && village.village__latitude && village.village__longitude) {
             const tempVillage = {
                 latitude: village.village__latitude,
                 longitude: village.village__longitude,

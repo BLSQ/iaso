@@ -1,3 +1,4 @@
+import json
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -5,6 +6,7 @@ from hat.geo.models import AS
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from django.core.serializers import serialize
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -30,6 +32,7 @@ class ASViewSet(viewsets.ViewSet):
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         coordination_id = request.GET.get("coordination_id", None)
+        as_geo_json = request.GET.get("geojson", None)
 
         queryset = AS.objects.all()
         if zs_ids:
@@ -39,7 +42,13 @@ class ASViewSet(viewsets.ViewSet):
         #     coordination = get_object_or_404(Coordination, id=coordination_id)
         #     queryset = queryset.filter(ZS_id__in=coordination.ZS.all())
 
-        return Response(queryset.values('name', 'id').order_by('name'))
+
+        if as_geo_json:
+            queryset = queryset.filter(geom__isnull=False);
+            serialized_as = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk', 'ZS',))
+            return Response(json.loads(serialized_as))
+        else:
+            return Response(queryset.values('name', 'id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)

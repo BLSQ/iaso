@@ -64,6 +64,20 @@
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
     }
+
+    .expand-collapse {
+        height: 0px;
+        overflow: hidden;
+        > div {
+            padding: $padding-unit / 2;
+        }
+    }
+    &.selected {
+        .expand-collapse {
+            height: auto;
+            overflow: visible;
+        }
+    }
 }
 
 .as-select {
@@ -73,4 +87,18 @@
 
 .macro-map {
     border-left: 1px solid $gray;
+}
+
+.macro-map .leaflet-pane>svg path {
+    stroke-width: 2px !important;
+    stroke-opacity: 0.5;
+    &.selected-area {
+        stroke: red !important;
+    }
+    &.zone {
+        @include layer(black, 2);
+        fill-opacity: 0;
+        stroke-width: 1px !important;
+        pointer-events: none;
+    }
 }

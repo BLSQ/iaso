@@ -74,15 +74,19 @@ class Macroplanning extends React.Component {
     }
 
 
-    assignToWorkZone(add, zs = null) {
+    assignToWorkZone(add, zs = null, as = this.props.currentArea.pk, workzoneId = null) {
+        let currentWorkzoneId = workzoneId;
+        if (!currentWorkzoneId) {
+            currentWorkzoneId = add ? this.state.workzoneId : this.props.currentArea.workzoneId;
+        }
         this.setState({
             showModale: false,
         });
         this.props.selectWorkzone(
             this.props.params.planning_id,
             this.props.params.coordination_id,
-            add ? this.state.workzoneId : this.props.currentArea.workzoneId,
-            this.props.currentArea.pk,
+            currentWorkzoneId,
+            as,
             zs,
             add ? 'add' : 'delete',
             this.props.params.years,
@@ -158,11 +162,13 @@ class Macroplanning extends React.Component {
                                             </div>
                                             <div className="type-filters-containers">
                                                 <WorkZonesSelect
+                                                    currentCoordination={currentCoordination}
                                                     currentArea={currentArea}
                                                     workZones={currentWorkZones}
                                                     saveWorkZoneColor={(color, workZoneId) => this.props.saveWorkZoneColor(color, workZoneId, currentWorkZones, currentCoordination)}
                                                     selectedWorkZoneId={this.state.workzoneId}
                                                     selectWorkZone={workzoneId => this.selectWorkZone(workzoneId)}
+                                                    assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
                                                 />
                                             </div>
                                         </div>
@@ -186,7 +192,6 @@ class Macroplanning extends React.Component {
                                             overlays={{ labels: false }}
                                             coordination={currentCoordination}
                                             workzones={currentWorkZones}
-                                            getShape={type => this.props.getShape(type)}
                                             selectAs={currentAs => this.selectAs(currentAs)}
                                         />
                                     </div>
@@ -235,7 +240,6 @@ Macroplanning.propTypes = {
     coordinations: PropTypes.array,
     currentCoordination: PropTypes.object,
     currentArea: PropTypes.object,
-    getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     selectArea: PropTypes.func.isRequired,
     selectWorkzone: PropTypes.func.isRequired,
@@ -263,7 +267,6 @@ const MapDispatchToProps = dispatch => ({
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),
-    getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
     selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination) =>
         dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination)),
     saveWorkZoneColor: (color, workzoneId, currentWorkZones) =>

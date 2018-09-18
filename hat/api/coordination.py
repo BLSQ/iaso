@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.serializers import serialize
-
+from django.db.models import Sum
 from hat.planning.models import Planning, Assignation
 from hat.geo.models import AS, ZS, Village
 from hat.users.models import Coordination
@@ -11,8 +11,7 @@ from hat.planning.algo import optimize_path
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
-
-
+from hat.dashboard.views import get_five_last_years
 
 class CoordinationViewSet(viewsets.ViewSet):
     """
@@ -44,16 +43,34 @@ class CoordinationViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         as_geo_json = request.GET.get("geojson", None)
         coordination = get_object_or_404(Coordination, pk=pk)
+        endemic_population = request.GET.get("endemic_population", None)
+        years = request.GET.get("years", get_five_last_years())
 
         if as_geo_json:
             all_zs = coordination.ZS.all()
-            all_as = AS.objects.filter(ZS__in=all_zs)
+            areas = AS.objects.filter(ZS__in=all_zs)
+            if endemic_population:
+                as_pop_dict = {}
+                years_array = years.split(",")
+                endemic_villages_ids = Village.objects.filter(AS__in=areas).filter(caseview__confirmed_case=True,
+                                                                                   caseview__normalized_year__in=years_array).values('id')
+                endemic_as_populations = Village.objects.filter(AS__in=areas).filter(id__in=endemic_villages_ids).values('AS_id').annotate(endemic_population=Sum('population'))
+
+                for obj in endemic_as_populations:
+                    pop = obj["endemic_population"]
+                    if pop is None:
+                        pop = 0
+                    as_pop_dict[obj["AS_id"]] = pop
+
             serialized_zs = serialize('geojson', all_zs, geometry_field='geom', fields=('name', 'pk',))
-            serialized_as = serialize('geojson', all_as, geometry_field='geom', fields=('name', 'pk', 'ZS',))
-            return Response({
+            serialized_as = serialize('geojson', areas, geometry_field='geom', fields=['name', 'pk', 'ZS'])
+            res_dict = {
                 'areas': json.loads(serialized_as),
                 'zones': json.loads(serialized_zs)
-            })
+            }
+            if endemic_population:
+                res_dict["endemic_as_populations"] = as_pop_dict
+            return Response(res_dict)
         else:
             return Response(coordination.as_dict())
 

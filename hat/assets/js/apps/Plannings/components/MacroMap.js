@@ -48,6 +48,11 @@ const MapDatas = (coordination, workzones) => {
         delete tempArea.properties.workzone;
         delete tempArea.properties.workzoneColor;
         tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
+        let population = coordination.endemic_as_populations[tempArea.properties.pk];
+        if (!population) {
+            population = 0;
+        }
+        tempArea.properties.population = population;
         workzones.map((workzone) => {
             workzone.as_list.map((workingArea) => {
                 if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
@@ -116,7 +121,7 @@ class MacroMap extends Component {
 
 
     onEachAsFeature(feature, layer) {
-        layer.bindTooltip(`AS: ${feature.properties.name} - ZS: ${feature.properties.zsName} ${feature.properties.workzone ? `-  RA: ${feature.properties.workzone}` : ''}`);
+        layer.bindTooltip(`AS: ${feature.properties.name}${` - population: ${feature.properties.population}`}`);
         layer.setStyle({
             fillOpacity: 0.5,
         });
@@ -124,11 +129,13 @@ class MacroMap extends Component {
             this.props.selectAs(feature.properties);
         });
         layer.on('mouseover', () => {
+            this.updateTooltipSmall({ label: `ZS: ${feature.properties.zsName}${feature.properties.workzone ? ` -  RA: ${feature.properties.workzone}` : ''}` });
             layer.setStyle({
                 fillOpacity: 0.8,
             });
         });
         layer.on('mouseout', () => {
+            this.updateTooltipSmall();
             layer.setStyle({
                 fillOpacity: 0.5,
             });
@@ -196,7 +203,9 @@ class MacroMap extends Component {
         const { map } = this;
         const { layers } = this.state;
         this.coordinationGroup = new L.FeatureGroup();
+        this.zonesGroup = new L.FeatureGroup();
         map.addLayer(this.coordinationGroup);
+        map.addLayer(this.zonesGroup);
         // assign labels overlay using the existent labels group
 
         //
@@ -219,31 +228,6 @@ class MacroMap extends Component {
             province: -1, // always in map
             zone: 7,
             area: 9,
-        };
-
-
-        const plotOrHideLayer = (minZoom, type) => {
-            if (shapes[type]) {
-                const layer = shapes[type];
-                if (map.getZoom() > minZoom) {
-                    if (!map.hasLayer(layer)) {
-                        map.addLayer(layer);
-                    }
-                } else if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                }
-            } else if (map.getZoom() > minZoom) {
-                shapes[type] = new L.FeatureGroup();
-                this.props.getShape(type)
-                    .then((response) => {
-                        const shape = shapes[type];
-                        const data = topojson.feature(response, response.objects[`${type}s`]);
-                        data.features.forEach(geoUtils.extendBasic);
-                        const minZoomTemp = zooms[type];
-                        shape.addLayer(L.geoJson(data, shapeOptions(type)));
-                        plotOrHideLayer(minZoomTemp, type);
-                    });
-            }
         };
 
 
@@ -281,6 +265,7 @@ class MacroMap extends Component {
 
     updateCoordination(coordination) {
         this.coordinationGroup.clearLayers();
+        this.zonesGroup.clearLayers();
         const areas = L.geoJSON(coordination.areas, {
             style(feature) {
                 const tempStyle = {
@@ -293,6 +278,15 @@ class MacroMap extends Component {
             },
         });
         areas.addTo(this.coordinationGroup);
+
+        const zones = L.geoJSON(coordination.zones, {
+            onEachFeature: (feature, layer) => {
+                layer.setStyle({
+                    className: 'zone',
+                });
+            },
+        });
+        zones.addTo(this.zonesGroup);
         if (this.state.isFirstLoad) {
             this.fitToBounds();
             this.setState({
@@ -381,7 +375,6 @@ MacroMap.propTypes = {
     coordination: PropTypes.object,
     workzones: PropTypes.array,
     intl: intlShape.isRequired,
-    getShape: PropTypes.func.isRequired,
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
 };

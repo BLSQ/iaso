@@ -73,16 +73,22 @@ class WorkZoneViewSet(viewsets.ViewSet):
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id,)
-        queryset = queryset.order_by(qs_order)
+        zones = list(queryset.order_by(qs_order))
 
         if years:
-            for zone in queryset:
-                years_array = years.split(",")
-                zone.population_endemic_villages = Village.objects.filter(AS__in=zone.AS.all())\
-                    .filter(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)\
-                    .distinct().aggregate(Sum('population'))['population__sum']
+            years_array = years.split(",")
+            wz_areas = AS.objects.filter(workzone__in=queryset).distinct('id')
+            endemic_villages_ids = Village.objects.filter(AS__in=wz_areas).filter(caseview__confirmed_case=True,
+                                                                               caseview__normalized_year__in=years_array).values(
+                'id')
+            endemic_wz_populations = Village.objects.filter(AS__in=wz_areas).filter(id__in=endemic_villages_ids).values(
+                'AS__workzone__id').annotate(endemic_population=Sum('population'))
 
-        return Response([zone.as_dict() for zone in queryset])
+            pop_dict = {obj["AS__workzone__id"]: obj["endemic_population"] for obj in endemic_wz_populations}
+            for zone in zones:
+                zone.population_endemic_villages = pop_dict.get(zone.id, 0)
+
+        return Response([zone.as_dict() for zone in zones])
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)

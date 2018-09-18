@@ -34,11 +34,11 @@ export const fetchWorkZones = (dispatch, planningId, coordinationId, coordinatio
     req
         .get(`/api/workzones/?planning_id=${planningId}&coordination_id=${coordinationId}&years=${years}`)
         .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
             dispatch(setWorkZones(result.body));
             if (areaId) {
                 dispatch(selectArea(coordination.areas.features.filter(a => a.properties.pk === areaId)[0].properties));
             }
-            dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while fetching workzone ${err}`)));
     return ({
@@ -49,7 +49,7 @@ export const fetchWorkZones = (dispatch, planningId, coordinationId, coordinatio
 export const fetchCoordinationsDetails = (dispatch, planningId, coordinationId, areaId, years) => {
     dispatch(loadActions.startLoading());
     req
-        .get(`/api/coordinations/${coordinationId}?geojson=true`)
+        .get(`/api/coordinations/${coordinationId}?geojson=true&endemic_population=true&years=${years}`)
         .then((res) => {
             const newCoordination = res.body;
             dispatch(showCoordinationsDetail(newCoordination));
@@ -105,6 +105,7 @@ export const fetchCoordinations = (dispatch) => {
 };
 
 export const saveWorkZoneColor = (dispatch, color, workzoneId, workzones) => {
+    dispatch(loadActions.startLoading());
     req
         .patch(`/api/workzones/${workzoneId}/`)
         .set('Content-Type', 'application/json')
@@ -121,6 +122,7 @@ export const saveWorkZoneColor = (dispatch, color, workzoneId, workzones) => {
                 return null;
             });
             dispatch(setWorkZones(newWorkZones));
+            dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while saving workzone color: ${err}`)));
     return ({

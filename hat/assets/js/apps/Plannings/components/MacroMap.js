@@ -48,11 +48,11 @@ const MapDatas = (coordination, workzones) => {
         delete tempArea.properties.workzone;
         delete tempArea.properties.workzoneColor;
         tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
-        let population = coordination.endemic_as_populations[tempArea.properties.pk];
-        if (!population) {
-            population = 0;
+        let pop = coordination.endemic_as_populations[tempArea.properties.pk];
+        if (!pop) {
+            pop = 0;
         }
-        tempArea.properties.population = population;
+        tempArea.properties.population = pop;
         workzones.map((workzone) => {
             workzone.as_list.map((workingArea) => {
                 if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {

@@ -2,10 +2,6 @@
  * Includes the actions and state necessary for the selection process
  */
 
-export const SELECTION_DISABLED = 'hat/microplanning/selection/SELECTION_DISABLED';
-export const SELECTION_MODE_CHANGE = 'hat/microplanning/selection/SELECTION_MODE_CHANGE';
-export const SELECTION_EXECUTE = 'hat/microplanning/selection/EXECUTE';
-
 export const BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/BUFFER_SIZE_CHANGE';
 export const HIGHLIGHT_BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/HIGHLIGHT_BUFFER_SIZE_CHANGE';
 
@@ -67,8 +63,6 @@ export const changeMode = mode => ({
     payload: mode,
 });
 
-export const disableSelection = () => (changeMode(selectionModes.none));
-
 export const changeBufferSize = size => ({
     type: BUFFER_SIZE_CHANGE,
     payload: parseInt(size, 10),
@@ -112,21 +106,17 @@ export const displayItem = item => ({
 });
 
 export const selectionActions = {
-    changeBufferSize,
     changeHighlightBufferSize,
-    changeMode,
     deselectItems,
     selectItems,
     updateGeoScope,
     toggleGeoScope,
-    disableSelection,
     displayItem,
     executeSelection,
 };
 
 export const selectionInitialState = {
     mode: selectionModes.none,
-    bufferSize: 3,
     highlightBufferSize: 0,
     assignations: [],
     displayedItem: null,
@@ -137,25 +127,6 @@ export const selectionInitialState = {
 
 export const selectionReducer = (state = selectionInitialState, action = {}) => {
     switch (action.type) {
-        case SELECTION_MODE_CHANGE: {
-            const mode = action.payload;
-            if (validSelectionModes.indexOf(mode) === -1) {
-                return state;
-            }
-
-            return { ...state, mode };
-        }
-
-
-        case BUFFER_SIZE_CHANGE: {
-            const bufferSize = action.payload;
-            if (bufferSize < 0) {
-                return state;
-            }
-
-            return { ...state, bufferSize };
-        }
-
         case HIGHLIGHT_BUFFER_SIZE_CHANGE: {
             const highlightBufferSize = action.payload;
             if (highlightBufferSize < 0) {
@@ -165,17 +136,6 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
             return { ...state, highlightBufferSize };
         }
 
-        case SELECTION_EXECUTE: {
-            return {
-                ...state,
-                isSelectionModified: true,
-                assignations: calculateAssignations(
-                    state.mode,
-                    action.payload || [],
-                    state.assignations,
-                ),
-            };
-        }
         case SELECT_ITEMS: {
             return {
                 ...state,

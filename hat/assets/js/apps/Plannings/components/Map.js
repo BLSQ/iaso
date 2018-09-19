@@ -57,7 +57,6 @@ class Map extends Component {
                 // where to plot the selected markers
                 selectedGroup: new L.FeatureGroup(),
                 highlightBufferGroup: new L.FeatureGroup(),
-                mouseSelectionMarker: null, // buffer marker used to select villages
                 chosenMarker: null, // marker used to bold the chosen item
 
                 // where to plot ALL villages
@@ -154,8 +153,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             if (hasChanged(prevProps, this.props, 'chosenItem')) {
                 this.updateTooltipLarge();
             }
-
-            this.updateMouseBuffer();
             this.updateHighlightBuffer();
         });
     }
@@ -320,40 +317,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             plotOrHideLayer(zooms.zone, 'zone');
             plotOrHideLayer(zooms.area, 'area');
         });
-        //
-        // create buffer circle around the mouse pointer
-        //
-        const bufferMarker = L.circle(map.getCenter(), {
-            className: 'map-marker buffer',
-            pane: 'custom-pane-buffer',
-            radius: 0,
-        });
-        layers.mouseSelectionMarker = bufferMarker;
-
-        bufferMarker.on({
-            click: (event) => {
-                L.DomEvent.stop(event);
-                const { items } = this.props;
-                const inBuffer = geoUtils.villagesInBuffer(items, bufferMarker);
-                const { teamId } = this.props;
-                const assignations = inBuffer.map(village =>
-                    ({ village_id: village.id, team_id: parseInt(teamId, 10) }));
-
-                if (inBuffer.length) {
-                    this.props.selectionAction(assignations);
-                }
-            },
-        });
-
-        // chase the mouse...
-        map.on('mousemove', (event) => {
-            // circle needs to be in the map or `setLatLng` will fail
-            // https://github.com/Leaflet/Leaflet/issues/4629
-            if (map.hasLayer(bufferMarker)) {
-                bufferMarker.setLatLng(event.latlng);
-            }
-        });
-
 
         // create marker for the chosen item
         const chosenMarker = L.circle(map.getCenter(), {
@@ -497,21 +460,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 this.addLayerEvents(marker, { ...item, selected: true });
                 selectedGroup.addLayer(marker);
             });
-        }
-    }
-
-    updateMouseBuffer() {
-        const { bufferSize } = this.props;
-        const { map } = this.state;
-        const { mouseSelectionMarker } = this.state.layers;
-
-        if (bufferSize > 0) {
-            // in metres (buffer size = radius)
-            mouseSelectionMarker.setRadius(bufferSize * 1000);
-            map.addLayer(mouseSelectionMarker);
-        } else {
-            mouseSelectionMarker.setRadius(0);
-            map.removeLayer(mouseSelectionMarker);
         }
     }
 
@@ -726,7 +674,6 @@ Map.defaultProps = {
     fullscreen: false,
     items: [],
     selectedItems: [],
-    bufferSize: 0,
     highlightBufferSize: PropTypes.number0,
     chosenItem: undefined,
     geoScope: undefined,
@@ -744,7 +691,6 @@ Map.propTypes = {
     fullscreen: PropTypes.bool,
     items: PropTypes.arrayOf(PropTypes.object),
     selectedItems: PropTypes.arrayOf(PropTypes.object),
-    bufferSize: PropTypes.number,
     highlightBufferSize: PropTypes.number,
     selectionAction: PropTypes.func.isRequired,
     selectItems: PropTypes.func.isRequired,

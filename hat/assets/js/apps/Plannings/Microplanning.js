@@ -144,18 +144,7 @@ export class Microplanning extends Component {
         this.props.deselectItems(list);
     }
 
-    changeSelectionModeHandler(mode) {
-        if (this.props.selection.mode === mode) {
-            // deactivate
-            this.props.disableSelection();
-        } else {
-            this.props.changeMode(mode);
-        }
-    }
-
     activateFullscreenHandler() {
-        // deactivate selection mode first
-        this.props.disableSelection();
         // give focus to the map, otherwhise we need to click on the map to close it
         const planningMap = document.getElementById('planning-map').getElementsByClassName('map-container')[0];
         if (planningMap) {
@@ -263,11 +252,6 @@ export class Microplanning extends Component {
             });
         }
 
-        // buffer sizes
-        const bufferSize = (
-            (selection.mode !== selectionModes.none)
-                ? selection.bufferSize
-                : 0);
         const { highlightBufferSize } = selection;
 
         // map
@@ -365,7 +349,6 @@ export class Microplanning extends Component {
                                 base={baseLayer}
                                 overlays={overlays}
                                 toggleGeoScope={(toggle) => {
-                                    this.props.disableSelection();
                                     this.props.toggleGeoScope(toggle);
                                 }
                                 }
@@ -389,10 +372,6 @@ export class Microplanning extends Component {
                                             mode={selection.mode}
                                             teamId={this.props.params.team_id}
                                             workzoneId={this.props.params.workzone_id}
-                                            changeMode={mode => this.changeSelectionModeHandler(mode)}
-                                            bufferSize={selection.bufferSize}
-                                            changeBufferSize={event =>
-                                                this.props.changeBufferSize(event)}
                                             highlightBufferSize={selection.highlightBufferSize}
                                             changeHighlightBufferSize={event =>
                                                 this.props
@@ -451,7 +430,6 @@ export class Microplanning extends Component {
                                     items={villages}
                                     assignationsMap={assignationsMap}
                                     selectedItems={selectedVillages}
-                                    bufferSize={bufferSize}
                                     highlightBufferSize={highlightBufferSize}
                                     deselectItems
                                     selectionAction={list => this.props.executeSelectionAction(list)}
@@ -478,7 +456,6 @@ Microplanning.defaultProps = {
 };
 
 Microplanning.propTypes = {
-    changeBufferSize: PropTypes.func.isRequired,
     changeHighlightBufferSize: PropTypes.func.isRequired,
     executeSelectionAction: PropTypes.func.isRequired,
     deselectItems: PropTypes.func.isRequired,
@@ -487,10 +464,8 @@ Microplanning.propTypes = {
     toggleLegend: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     setLeafletMap: PropTypes.func.isRequired,
-    disableSelection: PropTypes.func.isRequired,
     activateFullscreen: PropTypes.func.isRequired,
     deactivateFullscreen: PropTypes.func.isRequired,
-    changeMode: PropTypes.func.isRequired,
     redirect: PropTypes.func.isRequired,
     launchAlgo: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
@@ -526,10 +501,8 @@ const MapDispatchToProps = dispatch => ({
     toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),
-    disableSelection: () => dispatch(selectionActions.disableSelection()),
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
-    changeMode: mode => dispatch(selectionActions.changeMode(mode)),
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: type => getRequest(getShapePath(type), dispatch),
 });

@@ -18,8 +18,6 @@ import { selectionModes } from '../redux/selection';
 
 class MapSelectionControl extends Component {
     render() {
-        const { mode, changeMode } = this.props;
-        const { bufferSize, changeBufferSize } = this.props;
         const {
             highlightBufferSize,
             changeHighlightBufferSize,
@@ -63,60 +61,6 @@ class MapSelectionControl extends Component {
 
                     </div>
                 }
-
-                {this.props.workzoneId && !this.props.isGeoScopeEnabled &&
-                    <div className="map__selection__actions tooltip--warning">
-                        <span className="map__text--select">
-                            <FormattedMessage id="microplanning.selection.buffer" defaultMessage="Tampon de sélection" />
-                        </span>
-                        <input
-                            type="number"
-                            className="small"
-                            min="1"
-                            name="buffer-value"
-                            value={bufferSize}
-                            onChange={changeBufferSize}
-                        />
-                        <span className="map__text--select">km</span>
-
-                        <div className="tooltip__warning">
-                            <FormattedMessage
-                                id="microplanning.selection.actions.buffer.explanation"
-                                defaultMessage="You can adjust the size of selection buffer zone to include/remove more/fewer villages in your selection."
-                            />
-                        </div>
-                    </div>
-                }
-
-                {this.props.teamId && !this.props.isGeoScopeEnabled &&
-                <div
-                    tabIndex={0}
-                    role="button"
-                    className={`map__control__button--selection--select${mode === selectionModes.select ? '--active' : ''}`}
-                    onClick={() => changeMode(selectionModes.select)}
-                >
-                    <i className="map__icon--select" />
-                    <span className="map__text--select">
-                        <FormattedMessage id="microplanning.selection.active.selection" defaultMessage="Select. villages" />
-                    </span>
-                </div>
-                }
-
-                {this.props.workzoneId && !this.props.isGeoScopeEnabled &&
-                    <div
-                        tabIndex={0}
-                        role="button"
-                        className={`map__control__button--selection--deselect${mode === selectionModes.deselect ? '--active' : ''}`}
-                        onClick={() => changeMode(selectionModes.deselect)}
-                    >
-                        <i className="map__icon--select" />
-                        <span className="map__text--select">
-                            <FormattedMessage id="microplanning.selection.active.deselect" defaultMessage="Deselect. villages" />
-                        </span>
-                    </div>
-                }
-
-
             </div>
         );
     }
@@ -125,9 +69,6 @@ MapSelectionControl.defaultProps = {
     teamId: '',
     workzoneId: '',
     mode: 0,
-    changeMode: () => {},
-    bufferSize: 0,
-    changeBufferSize: () => {},
     highlightBufferSize: 0,
     changeHighlightBufferSize: () => {},
     selectHighlightBuffer: () => {},
@@ -138,9 +79,6 @@ MapSelectionControl.propTypes = {
     teamId: PropTypes.string,
     workzoneId: PropTypes.string,
     mode: PropTypes.number,
-    changeMode: PropTypes.func,
-    bufferSize: PropTypes.number,
-    changeBufferSize: PropTypes.func,
     highlightBufferSize: PropTypes.number,
     changeHighlightBufferSize: PropTypes.func,
     selectHighlightBuffer: PropTypes.func,

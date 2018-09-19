@@ -90,9 +90,10 @@ class PlanningViewSet(viewsets.ViewSet):
 
         for obj in request.data:
             Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
-            assignation = Assignation.objects.get_or_create(planning=planning,
-                                                            village_id=obj['village_id'],
-                                                            team_id = obj['team_id'] )
+            if obj.get('team_id', 'none') != 'none':
+                Assignation.objects.get_or_create(planning=planning,
+                                                  village_id=obj['village_id'],
+                                                  team_id = obj['team_id'] )
         return Response(planning.as_dict())
 
     def delete(self, request, pk=None):

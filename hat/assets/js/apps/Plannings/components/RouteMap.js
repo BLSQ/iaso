@@ -243,7 +243,7 @@ class RouteMap extends Component {
                     pane: 'custom-pane-markers',
                     className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                 })
-                    .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
+                    .bindTooltip(`${index + 1}`, { permanent: true });
                 villageCircle.addTo(this.villageGroup);
 
                 if (previousVillage) {
@@ -262,6 +262,7 @@ class RouteMap extends Component {
                 previousVillage = village;
                 return true;
             });
+
             this.fitToBounds();
         }
         if (notSelectedVillages) {
@@ -301,6 +302,7 @@ class RouteMap extends Component {
 
         setTimeout(() => {
             const bounds = this.villageGroup.getBounds();
+            bounds.extend(this.unselectedVillageGroup.getBounds());
             if (bounds.isValid()) {
                 map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [75, 75] });
             }

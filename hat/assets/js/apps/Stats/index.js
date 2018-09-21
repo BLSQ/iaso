@@ -17,7 +17,7 @@ export default function statsApp(element, baseUrl) {
 
     const routes = [
         <Route
-            path="charts(/location/:location)(/source/:source)(/date_from/:date_from)(/date_to/:date_to)"
+            path="charts(/source/:source)(/date_from/:date_from)(/date_to/:date_to)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)"
             component={StatsContainerComponent}
         />,
         <Redirect path="*" to={`charts/date_from/${dateFrom}/date_to/${dateTo}`} />,
@@ -27,13 +27,10 @@ export default function statsApp(element, baseUrl) {
     // baseUrl is the django route to the page
         basename: baseUrl,
     });
-
     const store = createStore({
-        config: {},
-        report: {},
+        load: {},
     }, {
-        config: (state = {}) => state,
-        report: loadReducer,
+        load: loadReducer,
     }, [
         routerMiddleware(history),
     ]);

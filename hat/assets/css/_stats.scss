@@ -43,3 +43,24 @@
     font-size: $font-size-xxl;
     font-weight: bold;
 }
+
+.stats-filters {
+    padding: $padding-unit $padding-unit 0 $padding-unit;
+    width:100%;
+    &>div {
+        display: flex;
+        width:100%;
+        &>div {
+            flex-basis: 33%;
+            box-sizing: border-box;
+            padding: 0 $padding-unit $padding-unit $padding-unit;
+            >span {
+                font-weight: bold;
+                color: #868486;
+                margin-bottom: 6px;
+                font-size: 12px;
+                display: block;
+            }
+        }
+    }
+}

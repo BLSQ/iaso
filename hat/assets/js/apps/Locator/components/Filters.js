@@ -9,6 +9,8 @@ class Filters extends React.Component {
         if (!filters) {
             return null;
         }
+
+        const provinceValue = filters.provinceId;
         return (
             <div>
                 <div className="locator-filter">
@@ -22,7 +24,7 @@ class Filters extends React.Component {
                             clearable={this.props.isClearable}
                             simpleValue
                             name="provinceId"
-                            value={filters.provinceId}
+                            value={provinceValue}
                             placeholder="--"
                             options={filters.provinces.map(province =>
                                 ({ label: province.name, value: province.id }))}
@@ -30,7 +32,7 @@ class Filters extends React.Component {
                         />
                     }
                 </div>
-                {filters.zones.length !== 0 &&
+                {filters.zones && filters.zones.length !== 0 &&
                     <div className="locator-filter">
                         <div className="locator-subtitle">
                             <FormattedMessage id="locator.label.zones" defaultMessage="Zone de santé" />
@@ -50,7 +52,7 @@ class Filters extends React.Component {
                         </div>
                     </div>
                 }
-                {filters.areas.length !== 0 &&
+                {filters.areas && filters.areas.length !== 0 &&
                     <div className="locator-filter">
                         <div className="locator-subtitle">
                             <FormattedMessage id="locator.label.areas" defaultMessage="Aire de santé" />

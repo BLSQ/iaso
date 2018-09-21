@@ -25,9 +25,12 @@ class StatsViewSet(viewsets.ViewSet):
         stat = request.GET.get("stat", 'screened')
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
+        province_id = request.GET.get("province_id", None)
 
         if stat == 'screened':
             cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
+            if province_id:
+                cases = cases.filter(normalized_village__AS__ZS__province__id=province_id)
             if from_date:
                 cases = cases.filter(normalized_date__gte=from_date)
             if to_date:

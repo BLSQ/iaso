@@ -44,7 +44,8 @@ export class StatsContainer extends Component {
     }
     componentWillReceiveProps(nextProps) {
         if ((nextProps.params.date_from !== this.props.params.date_from) ||
-            (nextProps.params.date_to !== this.props.params.date_to)) {
+            (nextProps.params.date_to !== this.props.params.date_to) ||
+            (nextProps.params.province_id !== this.props.params.province_id)) {
             this.loadData(nextProps.params);
         }
     }

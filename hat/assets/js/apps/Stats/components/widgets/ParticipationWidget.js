@@ -8,10 +8,10 @@ class ParticipationWidget extends Component {
         const { coverage } = this.props;
         const totalVillages = coverage.total_visited || '0';
         const villagesWithEstimate = coverage.visited_with_population || '0';
-        const population = coverage.population || 0;
-        const registered = coverage.registered_with_population || 0;
+        const population = coverage.estimated_village_population || 0;
+        const registered = coverage.screening_count || 0;
         const percentageScreened = registered
-            ? `${Math.round(registered / (population * 10000)) / 100}%`
+            ? `${((registered / population) * 100).toFixed(2)}%`
             : <FormattedMessage id="statspage.none" defaultMessage="none" />;
         const donutValue = registered ? registered / population : 0;
 

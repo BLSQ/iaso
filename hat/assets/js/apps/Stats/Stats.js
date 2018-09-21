@@ -65,7 +65,11 @@ export class Stats extends Component {
         const { formatMessage } = this.props.intl;
         const { date_from, date_to, province_id } = this.props.params;
         const { data } = this.props.load;
-        const loading = false;
+        let showLoading = true;
+        if (data) {
+            const { loading } = data;
+            showLoading = loading;
+        }
         const pickerFrom = date_from ? moment(date_from) : moment();
         const pickerTo = date_to ? moment(date_to) : moment();
         let filters;
@@ -116,7 +120,7 @@ export class Stats extends Component {
                 </div>
 
                 {
-                    loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
+                    showLoading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }
                 {
                     data && <Widgets data={data} />

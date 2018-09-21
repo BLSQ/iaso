@@ -489,7 +489,7 @@ class CaseView(CaseAbstract):
     class Meta:
         managed = False
         db_table = 'cases_case_view'
-        ordering = ['-document_date']
+        #ordering = ['-document_date']
         permissions = CASES_PERMISSIONS
 
 

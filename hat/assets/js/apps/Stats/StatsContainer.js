@@ -26,6 +26,11 @@ export const urls = [
         url: '/api/metrics/casecount/',
         mock: [],
     },
+    {
+        name: 'coverage',
+        url: '/api/stats/',
+        mock: [],
+    },
 ];
 
 export class StatsContainer extends Component {
@@ -36,6 +41,12 @@ export class StatsContainer extends Component {
 
     componentDidMount() {
         this.loadData(this.props.params);
+    }
+    componentWillReceiveProps(nextProps) {
+        if ((nextProps.params.date_from !== this.props.params.date_from) ||
+            (nextProps.params.date_to !== this.props.params.date_to)) {
+            this.loadData(nextProps.params);
+        }
     }
 
     loadData(params) {

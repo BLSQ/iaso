@@ -121,7 +121,7 @@ class MacroMap extends Component {
 
 
     onEachAsFeature(feature, layer) {
-        layer.bindTooltip(`AS: ${feature.properties.name}${` - population: ${feature.properties.population}`}`);
+        layer.bindTooltip(`AS: ${feature.properties.name}${` - pop. vil. endém.: ${feature.properties.population}`}`);
         layer.setStyle({
             fillOpacity: 0.5,
         });

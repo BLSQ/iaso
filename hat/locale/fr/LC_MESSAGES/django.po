@@ -467,7 +467,7 @@ msgstr "Pas de données"
 
 #: templates/cases/cases/list.html:17
 msgid "Cases found"
-msgstr "Cas trouvés"
+msgstr "Enregistrements"
 
 #: templates/cases/cases/list.html:27 templates/devices/list.html:38
 #: templates/events/list.html:22

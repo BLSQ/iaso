@@ -486,6 +486,8 @@ class CaseView(CaseAbstract):
     confirmation_result = models.IntegerField(null=True)
     stage_result = models.TextField(null=True)
 
+    approx_age = models.IntegerField(null=True)
+
     class Meta:
         managed = False
         db_table = 'cases_case_view'

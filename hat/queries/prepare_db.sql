@@ -62,8 +62,8 @@
 
   {# View of cases with aggregated results for test types #}
   CREATE OR REPLACE VIEW cases_case_view AS
-    SELECT *
-         , coalesce(age, extract(year from document_date)-year_of_birth) AS approx_age
+    SELECT cc.*
+         , coalesce(age, cast(extract(year from document_date) as int)-year_of_birth) AS approx_age
          , DATE_TRUNC('day',   document_date) AS document_date_day
          , DATE_TRUNC('month', document_date) AS document_date_month
          , DATE_TRUNC('year',  document_date) AS document_date_year
@@ -83,12 +83,12 @@
          , DATE_TRUNC('year',  COALESCE(document_date, make_timestamp(form_year, coalesce(form_month, 1), 1, 1, 1, 1)))
               AS normalized_date_year
 
-         , COALESCE(province, '***') || ' - ' ||
-           COALESCE("ZS", '***') || ' - ' ||
-           COALESCE("AS", '***') || ' - ' ||
-           COALESCE(village, '***')                       AS full_location
+         , COALESCE(p.name, province, '***') || ' - ' ||
+           COALESCE(z.name, "ZS", '***') || ' - ' ||
+           COALESCE(a.name, "AS", '***') || ' - ' ||
+           COALESCE(v.name, village, '***')               AS full_location
 
-         , COALESCE(name, '') || ' ' ||
+         , COALESCE(cc.name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||
            COALESCE(lastname, '')                         AS full_name
 
@@ -116,7 +116,11 @@
 
          , test_pl_result AS stage_result
 
-      FROM cases_case
+      FROM cases_case cc
+      left join geo_as a on cc."normalized_AS_id"=a.id
+      left join geo_zs z on a."ZS_id"=z.id
+      left join geo_province p on z.province_id = p.id
+      left join geo_village v on cc.normalized_village_id = v.id
   ;
 
 

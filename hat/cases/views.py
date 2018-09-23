@@ -137,7 +137,7 @@ def duplicatespair_detail(request: HttpRequest, pair_id: str) -> HttpResponse:
         'prename',
         'lastname',
         'sex',
-        'age',
+        'approx_age',
         'mothers_surname',
         'village',
         'test_rdt',
@@ -329,7 +329,7 @@ def cases_list(request: HttpRequest) -> HttpResponse:
         columns = [
             ColumnChoice(id='full_name', label=_('Name')),
             ColumnChoice(id='sex', label=_('Gender')),
-            ColumnChoice(id='age', label=_('Age')),
+            ColumnChoice(id='approx_age', label=_('Age')),
         ]
     else:
         columns = []

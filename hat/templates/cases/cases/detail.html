@@ -27,21 +27,191 @@
             </div>
             <div class="widget__content">
                 <table class="table--minimised">
-                    <thead>
-                    <tr>
-                        <th>{% trans 'Field' %}</th>
-                        <th>{% trans 'Value' %}</th>
-                    </tr>
-                    </thead>
                     <tbody>
-                    {% for field in fields %}
                         <tr>
-                            <td>{{ field }}</td>
-                            <td><b>{{ case|get:field }}</b></td>
+                            <td>Patient:</td>
+                            <td>Localisation:</td>
                         </tr>
-                    {% endfor %}
+                        <tr>
+                            <td>
+                                Prénom: {{ case.prename }}<br/>
+                                Nom: <b>{{ case.lastname }}</b><br/>
+                                Postnom: {{ case.name|default:'-' }}<br/>
+                                Nom de la mère: {{ case.mothers_surname }}<br/>
+                                Année de naissance: {% if case.year_of_birth %}{{ case.year_of_birth }}{% else %}Inconnue{% endif %}
+                                {% if case.age %}({{ case.age }} ans){% endif %}
+                                {% if case.sex == 'male' %}
+                                  <i class="fa fa-male"></i>
+                                {% elif case.sex == 'female' %}
+                                  <i class="fa fa-female"></i>
+                                {% endif %}
+                            </td>
+                            <td>{% if case.normalized_AS %}
+                                    <i class="fa fa-check-square" style="color: green"> Aire de santé identifiée</i><br/>
+                                    Province: {{ case.normalized_AS.ZS.province.name }} <br/>
+                                    Zone: {{ case.normalized_AS.ZS.name }} <br/>
+                                    Aire: {{ case.normalized_AS.name }}<br/>
+                                {% else %}
+                                    <i class="fa fa-times-rectangle" style="color: red"> Aire de santé NON identifiée</i><br/>
+                                    Province: ({{ case.province }}) <br/>
+                                    Zone: ({{ case.ZS }}) <br/>
+                                    Aire: ({{ case.AS }})<br/>
+                                {% endif %}
+                                {% if case.normalized_village %}
+                                    <i class="fa fa-check-square" style="color: green"> Village identifié</i>
+                                    Village: {{ case.normalized_village.name }} (PTR: {{ case.normalized_village.population }})<br/>
+                                {% else %}
+                                    <i class="fa fa-times-rectangle" style="color: red"> Village NON identifié</i><br/>
+                                    Village: ({{ case.village }}) <br/>
+                                {% endif %}
+
+                                <!-- TODO: add traveller/resident information -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {% if case.circumstances_da %}
+                                    Dépistage actif, UM: {{ case.circumstances_da_um }}
+                                {% endif %}
+                                {% if case.circumstances_dp %}
+                                    Dépistage passif.
+                                    {% if case.circumstances_dp_um %}UM: {{ case.circumstances_dp_um }}<br/>{% endif %}
+                                    {% if case.circumstances_dp_cs %}CS: {{ case.circumstances_dp_cs }}<br/>{% endif %}
+                                    {% if case.circumstances_dp_hgr %}HGR: {{ case.circumstances_dp_hgr }}<br/>{% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Source: {{ case.source }}<br/>
+                                <!-- In title Document ID: {{ case.document_id }} ({{ case.document_date }})<br/> -->
+                                HAT ID: {{ case.hat_id }}<br/>
+                                {% if case.source == 'pv' or case.source == 'historic' %}
+                                    Formulaire: année {{ case.form_year }}, mois {{ case.form_month }}, n° {{ case.form_number }}<br/>
+                                {% endif %}
+                                {% if case.device_id %}<i class="fa fa-mobile-phone"></i> Device ID: {{ case.device_id }} ({{ device_details.last_user.first_name }} {{  device_details.last_user.last_name }} ({{ device_details.last_user.username }}))<br/>{% endif %}
+                                {% if case.mobile_unit %}
+                                    {% if case.normalized_team%}
+                                        <i class="fa fa-check-square" style="color: green"> Équipe identifiée</i>
+                                    {% else %}
+                                        <i class="fa fa-times-rectangle" style="color: red"> Équipe NON identifiée: ({{ case.mobile_unit }})</i>
+                                    {% endif %}<br/>
+                                {% endif %}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+
+                <br/>
+                <h2>Tests</h2>
+                <table class="table--minimised">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Village</th>
+                            <th>Type de test</th>
+                            <th>Résultat</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test in tests %}
+                            <tr>
+                                <td>{{ test.date }}</td>
+                                <td>{{ test.village.name|default:test.form.village }}</td>
+                                <td>{{ test.type }}</td>
+                                <td>
+                                    {% if test.result == 4 %}Positif +++{% endif %}
+                                    {% if test.result == 3 %}Positif ++{% endif %}
+                                    {% if test.result == 2 %}Positif{% endif %}
+                                    {% if test.result == 1 %}Négatif{% endif %}
+                                    {% if test.result == 0 %}Absent{% endif %}
+                                    {% if test.result == -1 %}Manquant{% endif %}
+                                    {% if test.result == -2 %}Illisible{% endif %}
+                                    {% if test.result == -3 %}Inutilisé{% endif %}
+                                </td>
+                                <td>
+                                    {% if test.type|upper == 'CATT' or test.type|upper == 'RDT' %}
+                                        {% if test.image_filename %}
+                                            <i class="fa fa-camera" style="color: green"> Photo prise</i>
+                                            {% if test.image %}
+                                                <i class="fa fa-upload" style="color: green"> Photo chargée</i>
+                                            {% else %}
+                                                <i class="fa fa-upload" style="color: red"> Photo pas encore transmise</i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="fa fa-camera" style="color: red"> Pas de photo prise</i>
+                                        {% endif %}<br/>
+                                    {% endif %}
+                                    {% if test.type|upper == 'PL' or test.type|upper == 'PG' or test.type|upper == 'CTCWOO' %}
+                                        {% if test.video_filename %}
+                                            <i class="fa fa-video-camera" style="color: green"> Vidéo prise</i>
+                                            {% if test.video %}
+                                                <i class="fa fa-upload" style="color: green"> Vidéo chargée</i>
+                                            {% else %}
+                                                <i class="fa fa-upload" style="color: red"> Vidéo pas encore transmise</i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="fa fa-video-camera" style="color: red"> Pas de vidéo prise</i>
+                                        {% endif %}<br/>
+                                    {% endif %}
+                                    {% if test.type|upper == 'CATT' %}
+                                        Index sur la carte: {{ test.index|default:"Aucun" }}<br/>
+                                        Dilution: {{ case.test_catt_dilution|default:"-" }}<br/>
+                                        Type de session: {{ case.test_catt_session_type|default:"-" }}<br/>
+                                    {% endif %}
+                                    {% if test.type|upper == 'PL' %}
+                                        Albumine: {{ case.test_pl_albumine|default:"-" }}<br/>
+                                        Globules blancs/mm&sup3;: {{ case.test_pl_gb_mm3|default:"-" }}<br/>
+                                        Compte blancs: {{ case.test_pl_white_count|default:"-" }}<br/>
+                                        LCR: {{ case.test_pl_lcr|default:"-" }}<br/>
+                                        Trypanosome: {{ case.test_pl_trypanosome|default:"-" }}<br/>
+                                        Commentaires: {{ case.test_pl_comments|default:"-" }}<br/>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <br/>
+                {% if case.treatment_end_date or case.treatment_center or case.treatment_prescribed or case.treatment_result or case.treatment_secondary_effects or case.treatment_start_date %}
+                <h2>Traitement</h2>
+                <p>
+                <table class="table--minimised">
+                    <tbody>
+                    <tr><td>
+                    Centre de traitement: {{ case.treatment_center|default:"-" }}<br/>
+                    Date de début de traitement: {{ case.treatment_start_date|default:"-" }}<br/>
+                    Date de fin de traitement: {{ case.treatment_end_date|default:"-" }}<br/>
+                    Prescrit: {{ case.treatment_prescribed|default:"-" }}<br/>
+                    Résultat: {{ case.treatment_result|default:"-" }}<br/>
+                    Effets secondaires: {{ case.treatment_secondary_effects|default:"-" }}<br/>
+                    </td></tr>
+                    </tbody>
+                </table>
+                </p>
+                {% endif %}
+
+                <br/>
+                {% if case.followup_done %}
+                <h2>Suivi</h2>
+                <p>
+                <table class="table--minimised">
+                    <tbody>
+                    <tr><td>
+                        Décision: {{ case.test_followup_decision|default:"-" }}<br/>
+                        PG: {{ case.test_followup_pg|default:"-" }}<br/>
+                        PL: {{ case.test_followup_pl|default:"-" }}, GB: {{ case.test_followup_pl_gb|default:"-" }}, trypanosome: {{ case.test_followup_pl_trypanosome|default:"-" }}<br/>
+                        GE: {{ case.test_followup_ge|default:"-" }}<br/>
+                        MAECT: {{ case.test_followup_maect|default:"-" }}<br/>
+                        WOO: {{ case.test_followup_woo|default:"-" }}, MAECT: {{ case.test_followup_woo_maect|default:'-' }}<br/>
+                        SF: {{ case.test_followup_sf|default:"-" }}<br/>
+                    </td></tr>
+                    </tbody>
+                </table>
+                </p>
+                {% endif %}
 
                 <br/>
                 <h2>Images</h2>

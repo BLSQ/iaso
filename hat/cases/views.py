@@ -1,3 +1,4 @@
+import logging
 from typing import List, Tuple, Any
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -13,13 +14,16 @@ from django.http import HttpResponseRedirect
 import uuid
 from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
+from hat.patient.models import Test, Patient
 
 from .duplicates import merge_cases_pair, commit_merge, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice, CaseForm
 from .models import Case, CaseView, DuplicatesPair
-from ..sync.models import ImageUpload, VideoUpload
+from ..sync.models import ImageUpload, VideoUpload, DeviceDB
 from hat.dashboard.views import get_menu
+
+logger = logging.getLogger('views.py')
 
 @login_required()
 @permission_required('menupermissions.x_case_reconciliation')
@@ -207,6 +211,14 @@ def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
 def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:cases_list')
     case = Case.objects.get(document_id=doc_id)
+    case_tests = Test.objects.filter(form=case)
+    patient = Patient.objects.filter(id=case.normalized_patient_id)
+    device_details = None
+    if case.device_id:
+        try:
+            device_details = DeviceDB.objects.get(device_id=case.device_id)
+        except DeviceDB.DoesNotExist:
+            pass
 
     images = ImageUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
     videos = VideoUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
@@ -221,7 +233,10 @@ def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
         'case': case,
         'fields': fields,
         'images': images,
-        'videos': videos
+        'videos': videos,
+        'tests': case_tests,
+        'patient': patient,
+        'device_details': device_details,
     })
 
 

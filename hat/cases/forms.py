@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from typing import NamedTuple, List, Any, Callable, Tuple, Union, Dict, Optional
 
@@ -8,9 +9,11 @@ from django.forms import ModelForm
 from django.http.request import HttpRequest
 from django.utils.translation import ugettext as _
 
+from hat.geo.models import Village, ZS, AS, Province
 from .models import Case
 
 DATE_FORMAT = '%Y-%m-%d'
+logger = logging.getLogger('cases.forms.py')
 
 
 class FieldChoice(NamedTuple):
@@ -34,7 +37,9 @@ class ColumnChoice(NamedTuple):
 
 class CasesFilterForm(forms.Form):
     def __init__(self,
-                 locations_choices: List[List[str]],
+                 locations_choices_zs,
+                 locations_choices_as,
+                 locations_choices_village,
                  custom_filters: Optional[List[FieldChoice]],
                  orders_choices: Optional[List[Tuple[str, str]]],
                  columns: Optional[List[ColumnChoice]],
@@ -61,24 +66,22 @@ class CasesFilterForm(forms.Form):
             )
         else:
             self.fields['ZS'] = forms.ChoiceField(
-                choices=[none_choice] + [(l, l) for l in locations_choices[0]],
+                choices=[none_choice] + [(row['id'], row['name']) for row in locations_choices_zs],
                 widget=forms.Select(attrs=select_attrs),
                 required=False,
             )
 
-        if len(locations_choices) > 1:
-            self.fields['AS'] = forms.ChoiceField(
-                choices=[none_choice] + [(l, l) for l in locations_choices[1]],
-                widget=forms.Select(attrs=select_attrs),
-                required=False
-            )
+        self.fields['AS'] = forms.ChoiceField(
+            choices=[none_choice] + [(row['id'], row['name']) for row in locations_choices_as],
+            widget=forms.Select(attrs=select_attrs),
+            required=False
+        )
 
-        if len(locations_choices) > 2:
-            self.fields['village'] = forms.ChoiceField(
-                choices=[none_choice] + [(l, l) for l in locations_choices[2]],
-                widget=forms.Select(attrs=select_attrs),
-                required=False,
-            )
+        self.fields['village'] = forms.ChoiceField(
+            choices=[none_choice] + [(row['id'], row['name']) for row in locations_choices_village],
+            widget=forms.Select(attrs=select_attrs),
+            required=False,
+        )
 
         ########################################################################
         # date fields
@@ -146,45 +149,6 @@ def filter_and_create_form(
     ############################################################################
     # check locations fields and filters
 
-    # extract locations list from queryset
-    if 'all' in locations_filters:
-        locations_list = locations_filters['all']
-    else:
-        locations_list = queryset
-    locations_list = locations_list \
-        .values('ZS', 'AS', 'village') \
-        .order_by('ZS', 'AS', 'village') \
-        .distinct()
-
-    locations_choices = [locations_list.order_by('ZS').values_list('ZS', flat=True).distinct()]
-
-    restricted = []  # type: List[str]
-
-    ZS = request.GET.get('ZS', None)
-
-    if ZS:
-        queryset = locations_filters['ZS'](queryset, ZS)
-        ASs = locations_list \
-            .filter(ZS=ZS) \
-            .order_by('AS') \
-            .values_list('AS', flat=True) \
-            .distinct()
-        locations_choices.append(ASs)
-
-        AS = request.GET.get('AS', None)
-        if AS and AS in ASs:
-            queryset = locations_filters['AS'](queryset, AS)
-            villages = locations_list \
-                .filter(ZS=ZS, AS=AS) \
-                .order_by('village') \
-                .values_list('village', flat=True) \
-                .distinct()
-            locations_choices.append(villages)
-
-            village = request.GET.get('village', None)
-            if village and village in villages:
-                queryset = locations_filters['village'](queryset, village)
-
     ############################################################################
     # check dates fields and filters
 
@@ -213,6 +177,39 @@ def filter_and_create_form(
                 queryset = field.filter(queryset, value)
 
     ############################################################################
+    # extract locations list from queryset
+
+    if 'all' in locations_filters:
+        cc_locations_list = locations_filters['all']
+    else:
+        cc_locations_list = queryset
+
+    location_choices_village = cc_locations_list.values_list('normalized_village_id', flat=True).distinct(
+        'normalized_village_id').order_by('normalized_village_id')[:100]
+    location_choices_as = cc_locations_list.values_list('normalized_AS_id', flat=True).distinct(
+        'normalized_AS_id').order_by('normalized_AS_id')[:100]
+    location_choices_zs = cc_locations_list.values_list('normalized_AS__ZS_id', flat=True).distinct(
+        'normalized_AS__ZS_id').order_by('normalized_AS__ZS_id')
+
+    from hat.geo.models import Village, ZS, AS  # had to import here for it to work, no idea why https://docs.python.org/3/faq/programming.html#what-are-the-best-practices-for-using-import-in-a-module
+    location_choices_village_name = Village.objects.filter(id__in=location_choices_village).values('id', 'name').order_by('name')
+    location_choices_as_name = AS.objects.filter(id__in=location_choices_as).values('id', 'name').order_by('name')
+    location_choices_zs_name = ZS.objects.filter(id__in=location_choices_zs).values('id', 'name').order_by('name')
+
+    restricted = []  # type: List[str]
+
+    ZS = request.GET.get('ZS', None)
+    AS = request.GET.get('AS', None)
+    village = request.GET.get('village', None)
+
+    if village:
+        queryset = queryset.filter(normalized_village_id=village)
+    elif AS:
+        queryset = queryset.filter(normalized_AS_id=AS)
+    elif ZS:
+        queryset = queryset.filter(normalized_AS__ZS_id=ZS)
+
+    ############################################################################
     # check order
 
     orders_choices = None
@@ -230,8 +227,9 @@ def filter_and_create_form(
 
     ############################################################################
     # create form
-
-    form = CasesFilterForm(locations_choices,
+    form = CasesFilterForm(location_choices_zs_name,
+                           location_choices_as_name,
+                           location_choices_village_name,
                            fields_filters,
                            orders_choices,
                            columns,
@@ -251,12 +249,12 @@ class CaseForm(ModelForm):
 
     # The first migrate on an empty DB will fail on this selection, just ignore
     try:
-        PROVINCE_choices = Case.objects.order_by('province').values_list("province", "province").distinct().repr()
-        AS_choices = Case.objects.order_by('AS').values_list("AS", "AS").distinct().repr()
-        ZS_choices = Case.objects.order_by('ZS').values_list("ZS", "ZS").distinct().repr()
-        VILLAGE_choices = Case.objects.order_by('village').values_list("village", "village").distinct().repr()
+        PROVINCE_choices = Province.objects.order_by('name').values_list('name', 'name').distinct().__repr__()
+        AS_choices = AS.objects.order_by('name').values_list("name", "name").distinct().__repr__()
+        ZS_choices = ZS.objects.order_by('name').values_list('name', 'name').distinct().__repr__()
+        VILLAGE_choices = Village.objects.order_by('name').values_list("name", "name").distinct().__repr__()
         TREATMENT_CENTER_choices = Case.objects.order_by('treatment_center') \
-            .values_list("treatment_center", "treatment_center").distinct().repr()
+            .values_list("treatment_center", "treatment_center").distinct().__repr__()
     except:
         PROVINCE_choices = []
         AS_choices = []
@@ -294,7 +292,6 @@ class CaseForm(ModelForm):
         "test_pl_albumine": forms.TextInput(),
         "test_pl_lcr": forms.TextInput(),
         "test_pl_comments": forms.TextInput(),
-        "test_followup_pl_trypanosome": forms.TextInput(),
 
         "test_followup_pg": forms.TextInput(),
         "test_followup_sf": forms.TextInput(),

@@ -2,7 +2,8 @@ import logging
 from typing import List, Tuple, Any
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import F, Q, Min, Max, Count, Case as QCase, When
+from django.db.models import F, Q, Min, Max, Count, Case as QCase, When, Value, CharField
+from django.db.models.functions import Concat, Cast
 from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -16,7 +17,7 @@ from hat.common.paginator import paginate
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from hat.patient.models import Test, Patient
 
-from .duplicates import merge_cases_pair, commit_merge, commit_ignore
+from .duplicates import merge_cases_pair, commit_ignore
 from .filters import Q_is_suspect, Q_screening_positive, Q_confirmation_positive
 from .forms import filter_and_create_form, FieldChoice, OrderChoice, ColumnChoice, CaseForm
 from .models import Case, CaseView, DuplicatesPair
@@ -599,4 +600,9 @@ def get_sources_choices() -> List[Tuple[str, str]]:
 
 
 def get_devices_choices() -> List[Tuple[str, str]]:
-    return get_field_choices('device_id')
+    device_query = DeviceDB.objects \
+        .annotate(full_name=Concat(
+            'last_user__username', Value(' - '),
+            'last_user__first_name', Value(' '), 'last_user__last_name',
+            Value(' ('), Cast('device_id', CharField()), Value(')')))
+    return list(device_query.values_list('device_id', 'full_name').distinct().order_by('full_name'))

@@ -63,7 +63,7 @@
   {# View of cases with aggregated results for test types #}
   CREATE OR REPLACE VIEW cases_case_view AS
     SELECT *
-
+         , coalesce(age, extract(year from document_date)-year_of_birth) AS approx_age
          , DATE_TRUNC('day',   document_date) AS document_date_day
          , DATE_TRUNC('month', document_date) AS document_date_month
          , DATE_TRUNC('year',  document_date) AS document_date_year

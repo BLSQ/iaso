@@ -21,9 +21,6 @@ migration1 = snaql_factory.load_queries('migration_0001.sql')
 # export
 export_queries = snaql_factory.load_queries('export.sql')
 
-# helpers
-filters_queries = snaql_factory.load_queries('filters.sql')
-
 sql_context = {
     # list of tests used in screening sessions
     'screening': screening_tests,

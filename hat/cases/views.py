@@ -576,14 +576,7 @@ def check_boolean(condition: Q, value: str) -> QuerySet:
 
 
 def get_field_choices(field: str) -> List[Tuple[str, str]]:
-    from django.db import connection
-    from hat.queries import filters_queries
-
-    sql = filters_queries.list_of_field_values(field=field)
-
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        return [(row[0], row[0]) for row in cursor.fetchall()]
+    return list(Case.objects.values_list(field, field).distinct().order_by(field))
 
 
 def get_sources_choices() -> List[Tuple[str, str]]:

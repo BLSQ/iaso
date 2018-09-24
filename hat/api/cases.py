@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 import csv
 
+
 class CasesViewSet(viewsets.ViewSet):
     """
     Api to list all cases,  retrieve information about just one.
@@ -143,27 +144,44 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            response = StreamingHttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="cases.csv"'
+            class Echo:
+                """An object that implements just the write method of the file-like
+                interface.
+                """
 
-            writer = csv.writer(response)
-            writer.writerow(['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
-            for case in queryset:
-                cdict = case.as_dict()
-                writer.writerow([
-                    cdict["id"],
-                    cdict["mobile_unit"],
-                    cdict["normalized_year"],
-                    cdict["source"],
-                    cdict["province"],
-                    cdict["ZS"],
-                    cdict["AS"],
-                    cdict["village"],
-                    cdict["name"],
-                    cdict["prename"],
-                    cdict["lastname"],
-                    cdict["normalized_AS_name"]
-                ])
+                def write(self, value):
+                    """Write the value by returning it, instead of storing in a buffer."""
+                    return value
+
+            def iter_items(queryset, pseudo_buffer):
+                headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée']
+                writer = csv.writer(pseudo_buffer)
+                yield pseudo_buffer.write(headers)
+                paginator = Paginator(queryset, 10000)
+                for page in range(1, paginator.num_pages + 1):
+                    for case in paginator.page(page).object_list:
+                        cdict = case.as_dict()
+                        row = [
+                            cdict["id"],
+                            cdict["mobile_unit"],
+                            cdict["normalized_year"],
+                            cdict["source"],
+                            cdict["province"],
+                            cdict["ZS"],
+                            cdict["AS"],
+                            cdict["village"],
+                            cdict["name"],
+                            cdict["prename"],
+                            cdict["lastname"],
+                            cdict["normalized_AS_name"]
+                        ]
+                        yield writer.writerow(row)
+
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo())),
+                content_type='text/csv',
+            )
+            response['Content-Disposition'] = 'attachment;filename=cases.csv'
             return response
 
     def retrieve(self, request, pk=None):

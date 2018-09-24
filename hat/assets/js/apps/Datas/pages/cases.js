@@ -70,7 +70,7 @@ class Cases extends Component {
         };
 
         if (forCsv) {
-            urlParams.csvformat = true;
+            urlParams.csv = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -413,14 +413,11 @@ class Cases extends Component {
                                 <FormattedMessage id="cases.label.nameSearch" defaultMessage="Recherche textuelle sur le nom" />
                             </div>
                             <div>
-                                <input id="searchInput" type="text" value={this.props.params.search} />
+                                <input id="searchInput" type="text" defaultValue={this.props.params.search} />
                                 <input
                                     type="submit"
                                     onClick={() => {
                                         const text = document.getElementById('searchInput').value;
-                                        if (text.length < 4) {
-                                            return;
-                                        }
                                         const params = {
                                             ...this.props.params,
                                             search: text,
@@ -482,7 +479,7 @@ class Cases extends Component {
                             <button
                                 className="button--save"
                                 onClick={() => {
-                                    window.location.href = getEndpointUrl(true);
+                                    window.location.href = this.getEndpointUrl(true);
                                 }}
                             >
                                 <i className="fa fa-download" />

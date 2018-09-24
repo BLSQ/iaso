@@ -25,6 +25,16 @@ class Patient(models.Model):
     def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
+    def as_dict(self):
+        return {
+            "post_name": self.post_name,
+            "last_name": self.last_name,
+            "first_name": self.first_name,
+            "sex": self.sex,
+            "age": self.age,
+            "mothers_surname": self.mothers_surname
+        }
+
 
 class Test(models.Model):
     type = models.TextField("Type", choices=TEST_TYPE_CHOICES)

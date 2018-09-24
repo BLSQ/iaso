@@ -46,7 +46,7 @@ class ZSViewSet(viewsets.ViewSet):
             serialized_zs = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk',))
             return Response(json.loads(serialized_zs))
         else:
-            return Response(queryset.values('name', 'id').order_by('name'))
+            return Response(queryset.values('name', 'id', 'province_id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)

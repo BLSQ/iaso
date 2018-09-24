@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from hat.cases.models import Case
+from hat.cases.models import CaseView, Case
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
@@ -34,23 +34,28 @@ class CasesViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
+        from_date = request.GET.get("from", None)
+        to_date = request.GET.get("to", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
         csvformat = request.GET.get("csv", None) #default will be json
-
-        queryset = (
-            Case.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
-            .exclude(source="mobile_sync")
-            .exclude(source="mobile_backup")
-            .exclude(province__icontains="kas")
-            .exclude(province__icontains="kinsh")
-            .exclude(province__icontains="bas")
-            .exclude(province__icontains="maniema")
-            .exclude(province__icontains="k.")
-            .exclude(province__icontains="equateur")
-            .exclude(Q(form_year=None) & Q(mobile_unit=None) & Q(form_number=None))
-            .order_by(*orders)
-        )
+        hide_located = request.GET.get("hide_located", True)
+        if hide_located == 'false':
+            queryset = CaseView.objects.order_by(*orders)
+        else:
+            queryset = (
+                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
+                .exclude(source="mobile_sync")
+                .exclude(source="mobile_backup")
+                .exclude(province__icontains="kas")
+                .exclude(province__icontains="kinsh")
+                .exclude(province__icontains="bas")
+                .exclude(province__icontains="maniema")
+                .exclude(province__icontains="k.")
+                .exclude(province__icontains="equateur")
+                .exclude(Q(form_year=None) & Q(mobile_unit=None) & Q(form_number=None))
+                .order_by(*orders)
+            )
 
         if province_ids:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
@@ -62,7 +67,10 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(form_year__in=years.split(","))
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
-
+        if from_date:
+            queryset = queryset.filter(normalized_date__gte=from_date)
+        if to_date:
+            queryset = queryset.filter(normalized_date__lte=to_date)
 
         if normalized is not None:
             if normalized != 'true':
@@ -97,13 +105,13 @@ class CasesViewSet(viewsets.ViewSet):
             response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
 
             writer = csv.writer(response)
-            writer.writerow(['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
+            writer.writerow(['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
             for case in queryset:
                 cdict = case.as_dict()
                 writer.writerow([
                     cdict["id"],
                     cdict["mobile_unit"],
-                    cdict["form_year"],
+                    cdict["normalized_year"],
                     cdict["source"],
                     cdict["province"],
                     cdict["ZS"],

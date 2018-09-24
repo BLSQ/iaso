@@ -22,7 +22,8 @@ module.exports = {
     'management': './assets/js/apps/management/index',
     'locator': './assets/js/apps/Locator/index',
     'quality_control': './assets/js/apps/QualityControl/index',
-    'vector': './assets/js/apps/Vector/index'
+    'vector': './assets/js/apps/Vector/index',
+    'datas': './assets/js/apps/Datas/index',
   },
 
   output: {

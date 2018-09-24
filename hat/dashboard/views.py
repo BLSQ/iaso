@@ -51,17 +51,12 @@ def get_menu(user, active_link):
         },
         {
             "name": "Données",
-            "url_key": reverse("cases:cases_list"),
+            "url_key": reverse("dashboard:cases_list"),
             "items": [
                 {
-                    "name": "Explorateur",
-                    "url_key": reverse("cases:cases_list"),
+                    "name": "Registre",
+                    "url_key": reverse("dashboard:cases_list"),
                     "perms": "x_case_cases"
-                },
-                {
-                    "name": "Analyse",
-                    "url_key": reverse("cases:analysis"),
-                    "perms": "x_case_analysis"
                 },
                 {
                     "name": "Réconciliation",
@@ -451,3 +446,15 @@ def quality_control(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(user, reverse("dashboard:quality-control"))})
+
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def cases_list(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})

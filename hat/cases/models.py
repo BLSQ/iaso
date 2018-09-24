@@ -494,6 +494,9 @@ class CaseView(CaseAbstract):
         #ordering = ['-document_date']
         permissions = CASES_PERMISSIONS
 
+    def as_dict(self):
+        return dict(Case.as_dict(self), **{'normalized_year': self.normalized_year})
+
 
 class Location(models.Model):
     '''

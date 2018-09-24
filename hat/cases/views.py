@@ -211,7 +211,11 @@ def duplicatespair_ignore(request: HttpRequest, pair_id: str) -> HttpResponse:
 @require_http_methods(['GET'])
 def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
     back_link = request.GET.get('back', 'cases:cases_list')
-    case = Case.objects.get(document_id=doc_id)
+    try:
+        case = Case.objects.get(document_id=doc_id)
+    except Case.DoesNotExist:
+        case = Case.objects.get(pk=doc_id)
+
     case_tests = Test.objects.filter(form=case)
     patient = Patient.objects.filter(id=case.normalized_patient_id)
     device_details = None

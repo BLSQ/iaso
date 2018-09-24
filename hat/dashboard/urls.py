@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^quality-control/.*$', views.quality_control, name='quality-control'),
     url(r'^csvexport/(?P<planning_id>\d+)/$', views.csv_export, name='csv_export'),
     url(r'^password/$', views.change_password, name='change_password'),
+    url(r'^datas/cases.*$', views.cases_list, name='cases_list'),
 ]
-

@@ -48,7 +48,7 @@ class ASViewSet(viewsets.ViewSet):
             serialized_as = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk', 'ZS',))
             return Response(json.loads(serialized_as))
         else:
-            return Response(queryset.values('name', 'id').order_by('name'))
+            return Response(queryset.values('name', 'id', 'ZS_id').order_by('name'))
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)

@@ -9,13 +9,6 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'casesList.label.name',
-            }),
-            accessor: 'name',
-        },
-        {
-            Header: formatMessage({
                 defaultMessage: 'Prénom',
                 id: 'casesList.label.prename',
             }),
@@ -23,17 +16,24 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Postnom',
+                defaultMessage: 'Nom',
                 id: 'casesList.label.lastname',
             }),
-            accessor: 'lastname',
+            accessor: 'name',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Unité',
+                defaultMessage: 'Postnom',
+                id: 'casesList.label.name',
+            }),
+            accessor: 'name',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Équipe',
                 id: 'casesList.label.team',
             }),
-            accessor: 'mobile_unit',
+            accessor: 'normalized_team_name',
         },
         {
             Header: formatMessage({

@@ -485,6 +485,7 @@ class CaseView(CaseAbstract):
     normalized_zs_name = models.TextField(null=True)
     normalized_as_name = models.TextField(null=True)
     normalized_village_name = models.TextField(null=True)
+    normalized_team_name = models.TextField(null=True)
 
     screening_result = models.IntegerField(null=True)
     confirmation_result = models.IntegerField(null=True)
@@ -506,6 +507,7 @@ class CaseView(CaseAbstract):
                'normalized_zs_name': self.normalized_zs_name,
                'normalized_as_name': self.normalized_as_name,
                'normalized_village_name': self.normalized_village_name,
+               'normalized_team_name': self.normalized_team_name,
                })
 
 

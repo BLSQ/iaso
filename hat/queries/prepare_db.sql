@@ -91,6 +91,7 @@
          , COALESCE(z.name, "ZS") as normalized_zs_name
          , COALESCE(a.name, "AS") as normalized_as_name
          , COALESCE(v.name, village) as normalized_village_name
+         , COALESCE(t.name, mobile_unit) as normalized_team_name
 
          , COALESCE(cc.name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||
@@ -125,6 +126,7 @@
       left join geo_zs z on a."ZS_id"=z.id
       left join geo_province p on z.province_id = p.id
       left join geo_village v on cc.normalized_village_id = v.id
+      left join users_team t on cc.normalized_team_id = t.id
   ;
 
 

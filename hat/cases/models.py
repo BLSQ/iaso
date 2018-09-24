@@ -481,6 +481,10 @@ class CaseView(CaseAbstract):
 
     full_name = models.TextField(null=True)
     full_location = models.TextField(null=True)
+    normalized_province_name = models.TextField(null=True)
+    normalized_zs_name = models.TextField(null=True)
+    normalized_as_name = models.TextField(null=True)
+    normalized_village_name = models.TextField(null=True)
 
     screening_result = models.IntegerField(null=True)
     confirmation_result = models.IntegerField(null=True)
@@ -495,7 +499,14 @@ class CaseView(CaseAbstract):
         permissions = CASES_PERMISSIONS
 
     def as_dict(self):
-        return dict(Case.as_dict(self), **{'normalized_year': self.normalized_year})
+        return dict(
+            Case.as_dict(self),
+            **{'normalized_year': self.normalized_year,
+               'normalized_province_name': self.normalized_province_name,
+               'normalized_zs_name': self.normalized_zs_name,
+               'normalized_as_name': self.normalized_as_name,
+               'normalized_village_name': self.normalized_village_name,
+               })
 
 
 class Location(models.Model):

@@ -87,6 +87,10 @@
            COALESCE(z.name, "ZS", '***') || ' - ' ||
            COALESCE(a.name, "AS", '***') || ' - ' ||
            COALESCE(v.name, village, '***')               AS full_location
+         , COALESCE(p.name, province) as normalized_province_name
+         , COALESCE(z.name, "ZS") as normalized_zs_name
+         , COALESCE(a.name, "AS") as normalized_as_name
+         , COALESCE(v.name, village) as normalized_village_name
 
          , COALESCE(cc.name, '') || ' ' ||
            COALESCE(prename, '') || ' ' ||

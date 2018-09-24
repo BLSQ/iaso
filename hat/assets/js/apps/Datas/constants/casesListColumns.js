@@ -47,22 +47,22 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Province',
                 id: 'casesList.tooltip.province',
             }),
-            accessor: 'province',
+            accessor: 'normalized_province_name',
         },
         {
             Header: 'ZS',
-            accessor: 'ZS',
+            accessor: 'normalized_zs_name',
         },
         {
             Header: 'AS',
-            accessor: 'AS',
+            accessor: 'normalized_as_name',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Village',
                 id: 'casesList.tooltip.village',
             }),
-            accessor: 'village',
+            accessor: 'normalized_village_name',
         },
         {
             Header: formatMessage({

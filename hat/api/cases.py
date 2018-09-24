@@ -157,25 +157,23 @@ class CasesViewSet(viewsets.ViewSet):
                 headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée']
                 writer = csv.writer(pseudo_buffer)
                 yield pseudo_buffer.write(headers)
-                paginator = Paginator(queryset, 10000)
-                for page in range(1, paginator.num_pages + 1):
-                    for case in paginator.page(page).object_list:
-                        cdict = case.as_dict()
-                        row = [
-                            cdict["id"],
-                            cdict["mobile_unit"],
-                            cdict["normalized_year"],
-                            cdict["source"],
-                            cdict["province"],
-                            cdict["ZS"],
-                            cdict["AS"],
-                            cdict["village"],
-                            cdict["name"],
-                            cdict["prename"],
-                            cdict["lastname"],
-                            cdict["normalized_AS_name"]
-                        ]
-                        yield writer.writerow(row)
+                for case in queryset.iterator(chunk_size=5000):
+                    cdict = case.as_dict()
+                    row = [
+                        cdict["id"],
+                        cdict["mobile_unit"],
+                        cdict["normalized_year"],
+                        cdict["source"],
+                        cdict["province"],
+                        cdict["ZS"],
+                        cdict["AS"],
+                        cdict["village"],
+                        cdict["name"],
+                        cdict["prename"],
+                        cdict["lastname"],
+                        cdict["normalized_AS_name"]
+                    ]
+                    yield writer.writerow(row)
 
             response = StreamingHttpResponse(
                 streaming_content=(iter_items(queryset, Echo())),

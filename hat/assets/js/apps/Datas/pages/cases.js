@@ -433,7 +433,7 @@ class Cases extends Component {
                     <div className="widget__content--quarter">
                         <div>
                             <div className="widget__label">
-                                <FormattedMessage id="cases.label.team" defaultMessage="Coordination" />
+                                <FormattedMessage id="cases.label.coordination" defaultMessage="Coordination" />
                             </div>
                             <Select
                                 clearable

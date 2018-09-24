@@ -12,6 +12,23 @@ import csv
 class CasesViewSet(viewsets.ViewSet):
     """
     Api to list all cases,  retrieve information about just one.
+    Allowed search criteria:
+    - province_id
+    - zs_id
+    - as_id
+    - years
+    - teams
+    - from
+    - to
+    - geo_search
+    - normalized
+    - csv: return data in CSV format rather than JSON. Intended for download
+    - hide_located: hide already located cases
+    - screening_result: result of the most significant screening test
+    - confirmation_result: result of the most significant confirmation test
+    - source: pv, historic, mobile_sync, mobile_backup
+    - search: substring search in first/last/post-name
+    - coordination: coordination ID
 
     Example:
         /api/cases/?limit=50&page=1&geo_search=zo
@@ -44,6 +61,7 @@ class CasesViewSet(viewsets.ViewSet):
         confirmation_result = request.GET.get("confirmation_result", None)
         source = request.GET.get("source", None)
         search = request.GET.get("search", None)
+        coordination = request.GET.get("coordination", None)
 
         if hide_located == 'false':
             queryset = CaseView.objects.order_by(*orders)
@@ -94,6 +112,9 @@ class CasesViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(normalized_AS__isnull=True)
             else:
                 queryset = queryset.exclude(normalized_AS__isnull=True)
+
+        if coordination:
+            queryset = queryset.filter(normalized_team__coordination_id=coordination)
 
         if geo_search:
             queryset = queryset.filter(

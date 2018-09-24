@@ -17,7 +17,8 @@ export const EMPTY_AREA_ID = 'hat/casesList/list/EMPTY_AREA_ID';
 export const EMPTY_VILLAGE_ID = 'hat/casesList/list/EMPTY_VILLAGE_ID';
 export const EMPTY_PROVINCE_ID = 'hat/casesList/list/EMPTY_PROVINCE_ID';
 export const SELECT_VILLAGE = 'hat/casesList/SELECT_VILLAGE';
-
+export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
+export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 
 export const casesListInitialState = {
     provinceId: null,
@@ -29,6 +30,8 @@ export const casesListInitialState = {
     zones: [],
     areas: [],
     villages: [],
+    teams: [],
+    coordinations: [],
 };
 
 const req = require('superagent');
@@ -215,6 +218,42 @@ export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = nul
     });
 };
 
+export const showTeams = teams => ({
+    type: SHOW_TEAMS,
+    payload: teams,
+});
+
+export const fetchTeams = (dispatch) => {
+    req
+        .get('/api/teams/')
+        .then((result) => {
+            console.log(result);
+            dispatch(showTeams(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching teams ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+export const showCoordinations = coordinations => ({
+    type: SHOW_COORDINATIONS,
+    payload: coordinations,
+});
+
+export const fetchCoordinations = (dispatch) => {
+    req
+        .get('/api/coordinations/')
+        .then((result) => {
+            console.log(result);
+            dispatch(showCoordinations(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching coordinations ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const casesListActions = {
     loadAreas,
     loadZones,
@@ -231,6 +270,8 @@ export const casesListActions = {
     deleteProvince,
     fetchProvinces,
     selectVillage,
+    fetchTeams,
+    fetchCoordinations,
 };
 
 export const casesListReducer = (state = casesListInitialState, action = {}) => {
@@ -346,6 +387,14 @@ export const casesListReducer = (state = casesListInitialState, action = {}) => 
             return newState;
         }
 
+        case SHOW_TEAMS: {
+            const teams = action.payload;
+            return { ...state, teams };
+        }
+        case SHOW_COORDINATIONS: {
+            const coordinations = action.payload;
+            return { ...state, coordinations };
+        }
         default:
             return state;
     }

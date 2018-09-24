@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from hat.cases.models import CaseView, Case, RES_POSITIVE
@@ -37,7 +38,7 @@ class CasesViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
-        'menupermissions.x_locator'
+        'menupermissions.x_locator', 'menupermissions.x_case_cases'
     ]
 
     def list(self, request):
@@ -142,8 +143,8 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
+            response = StreamingHttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="cases.csv"'
 
             writer = csv.writer(response)
             writer.writerow(['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])

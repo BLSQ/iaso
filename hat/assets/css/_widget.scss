@@ -169,6 +169,10 @@
     padding: 0 $padding-unit $padding-unit;
 }
 
+.widget__label {
+    padding: 0 0 $padding-unit-small 0;
+}
+
 .widget__spinner {
     position: fixed;
     top: 0px;

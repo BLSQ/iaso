@@ -22,7 +22,7 @@ export default function locator(appConfig, element, baseUrl) {
     const defaultPath = `list/order/form_year/pageSize/50/page/1/years/${years.join(',')}`;
     const routes = [
         <Route
-            path="list/order/:order/pageSize/:pageSize/page/:page(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)"
+            path="list/order/:order/pageSize/:pageSize/page/:page(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)(/screeningResult/:screeningResult)"
             component={ListLocatorComponent}
         />,
         <Route

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
-
+import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
@@ -25,7 +25,7 @@ class Cases extends Component {
 
     componentWillMount() {
         Promise.all([
-            this.props.fetchProvinces(),
+            this.props.fetchProvinces(), this.props.fetchTeams(), this.props.fetchCoordinations(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id);
@@ -57,20 +57,21 @@ class Cases extends Component {
         }
     }
 
-    getEndpointUrl() {
+    getEndpointUrl(forCsv) {
         let url = '/api/cases/?';
         const {
             params,
         } = this.props;
         const urlParams = {
+            ...params,
             hide_located: 'false',
-            province_id: params.province_id,
-            as_id: params.as_id,
-            zs_id: params.zs_id,
-            years: params.years,
             from: params.date_from,
             to: params.date_to,
         };
+
+        if (forCsv) {
+            urlParams.csvformat = true;
+        }
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
@@ -258,6 +259,14 @@ class Cases extends Component {
 
     render() {
         const { formatMessage } = this.props.intl;
+        let { teams, coordinations } = this.props.cases;
+        if (!teams) {
+            teams = [];
+        }
+        if (!coordinations) {
+            coordinations = [];
+        }
+        console.log('coordinations', coordinations);
         return (
             <section className="cases-list-container">
                 {
@@ -283,8 +292,8 @@ class Cases extends Component {
                     </div>
                 </div>
 
-                <div className="widget__container">
-                    <div className="widget__header">
+                <div className="widget__container ">
+                    <div className="widget__header widget__content--quarter">
                         <PeriodSelectorComponent
                             dateFrom={this.props.params.date_from}
                             dateTo={this.props.params.date_to}
@@ -295,6 +304,191 @@ class Cases extends Component {
                                     date_to: dateTo,
                                 })}
                         />
+                    </div>
+
+                    <div className="widget__content--quarter">
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.screening_result" defaultMessage="Dépistage" />
+                            </div>
+                            <div>
+                                <Select
+                                    clearable
+                                    simpleValue
+                                    name="screening_result"
+                                    value={this.props.params.screening_result}
+                                    placeholder="--"
+                                    options={[
+                                        {
+                                            label: 'Positif',
+                                            value: true,
+                                        },
+                                        {
+                                            label: 'Négatif',
+                                            value: false,
+                                        },
+                                    ]}
+                                    onChange={(value) => {
+                                        const params = {
+                                            ...this.props.params,
+                                            screening_result: value,
+                                        };
+                                        this.props.redirectTo('cases', params);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.confirmation_result" defaultMessage="Confirmation" />
+                            </div>
+                            <div>
+                                <Select
+                                    clearable
+                                    simpleValue
+                                    name="confirmation_result"
+                                    value={this.props.params.confirmation_result}
+                                    placeholder="--"
+                                    options={[
+                                        {
+                                            label: 'Positif',
+                                            value: true,
+                                        },
+                                        {
+                                            label: 'Négatif',
+                                            value: false,
+                                        },
+                                    ]}
+                                    onChange={(value) => {
+                                        const params = {
+                                            ...this.props.params,
+                                            confirmation_result: value,
+                                        };
+                                        this.props.redirectTo('cases', params);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.source" defaultMessage="Source" />
+                            </div>
+                            <div>
+                                <Select
+                                    clearable
+                                    simpleValue
+                                    name="source"
+                                    value={this.props.params.source}
+                                    placeholder="--"
+                                    options={[
+                                        {
+                                            label: 'Sync Tablette',
+                                            value: 'mobile_sync',
+                                        },
+                                        {
+                                            label: 'Backup Tablette',
+                                            value: 'mobile_backup',
+                                        },
+                                        {
+                                            label: 'Historique',
+                                            value: 'historic',
+                                        },
+                                        {
+                                            label: 'Pharmacovigilance',
+                                            value: 'pv',
+                                        },
+                                    ]}
+                                    onChange={(value) => {
+                                        const params = {
+                                            ...this.props.params,
+                                            source: value,
+                                        };
+                                        this.props.redirectTo('cases', params);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.nameSearch" defaultMessage="Recherche textuelle sur le nom" />
+                            </div>
+                            <div>
+                                <input id="searchInput" type="text" value={this.props.params.search} />
+                                <input
+                                    type="submit"
+                                    onClick={() => {
+                                        const text = document.getElementById('searchInput').value;
+                                        if (text.length < 4) {
+                                            return;
+                                        }
+                                        const params = {
+                                            ...this.props.params,
+                                            search: text,
+                                        };
+                                        this.props.redirectTo('cases', params);
+                                    }}
+                                    value="Rechercher"
+                                />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className="widget__content--quarter">
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.team" defaultMessage="Coordination" />
+                            </div>
+                            <Select
+                                clearable
+                                simpleValue
+                                name="coordination_id"
+                                value={this.props.params.coordination_id}
+                                placeholder="--"
+                                options={
+                                    coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))
+                                }
+                                onChange={(value) => {
+                                    const params = {
+                                        ...this.props.params,
+                                        coordination_id: value,
+                                    };
+                                    this.props.redirectTo('cases', params);
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="cases.label.team" defaultMessage="Equipe" />
+                            </div>
+                            <Select
+                                clearable
+                                simpleValue
+                                name="team"
+                                value={this.props.params.team_id}
+                                placeholder="--"
+                                options={
+                                    teams.map(team => ({ label: team.name, value: team.id }))
+                                }
+                                onChange={(value) => {
+                                    const params = {
+                                        ...this.props.params,
+                                        team_id: value,
+                                    };
+                                    this.props.redirectTo('cases', params);
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <button
+                                className="button--save"
+                                onClick={() => {
+                                    window.location.href = getEndpointUrl(true);
+                                }}
+                            >
+                                <i className="fa fa-download" />
+                                <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className="widget__container  no-border">
@@ -316,15 +510,22 @@ class Cases extends Component {
     }
 }
 
-
+Cases.defaultProps = {
+    teams: [],
+    coordinations: [],
+};
 Cases.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
+    teams: PropTypes.array,
+    coordinations: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
     cases: PropTypes.object.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
+    fetchTeams: PropTypes.func.isRequired,
+    fetchCoordinations: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -339,6 +540,8 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchTeams: () => dispatch(casesListActions.fetchTeams(dispatch)),
+    fetchCoordinations: () => dispatch(casesListActions.fetchCoordinations(dispatch)),
     fetchProvinces: () => dispatch(casesListActions.fetchProvinces(dispatch)),
     selectProvince: provinceId => dispatch(casesListActions.selectProvince(provinceId, dispatch)),
     selectVillage: villageId => dispatch(casesListActions.selectVillage(villageId, dispatch)),

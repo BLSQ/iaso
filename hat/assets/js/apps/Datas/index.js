@@ -18,7 +18,7 @@ export default function datasApp(appConfig, element, baseUrl) {
     const defaultPath = `/cases/order/form_year/pageSize/50/page/1/date_from/${dateFrom}/date_to/${dateTo}`;
     const routes = [
         <Route
-            path="/cases/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)"
+            path="/cases/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search/:search)(/team_id/:team_id)(/coordination_id/:coordination_id)"
             component={CasesPage}
         />,
         <Redirect path="*" to={defaultPath} />,

@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from hat.cases.models import CaseView, Case
+from hat.cases.models import CaseView, Case, RES_POSITIVE
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
@@ -103,9 +103,12 @@ class CasesViewSet(viewsets.ViewSet):
             )
 
         if screening_result is not None:
-            queryset = queryset.filter(screening_result=screening_result)
+            if screening_result == 'true':
+                queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
+            else:
+                queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
         if confirmation_result is not None:
-            queryset = queryset.filter(confirmation_result=confirmation_result)
+            queryset = queryset.filter(confirmed_case=(confirmation_result == 'true'))
 
         if normalized is not None:
             if normalized != 'true':

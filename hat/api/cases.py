@@ -38,8 +38,13 @@ class CasesViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
-        csvformat = request.GET.get("csv", None) #default will be json
+        csvformat = request.GET.get("csv", None)  # default will be json
         hide_located = request.GET.get("hide_located", True)
+        screening_result = request.GET.get("screening_result", None)
+        confirmation_result = request.GET.get("confirmation_result", None)
+        source = request.GET.get("source", None)
+        search = request.GET.get("search", None)
+
         if hide_located == 'false':
             queryset = CaseView.objects.order_by(*orders)
         else:
@@ -71,6 +76,18 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(normalized_date__gte=from_date)
         if to_date:
             queryset = queryset.filter(normalized_date__lte=to_date)
+
+        if source:
+            queryset = queryset.filter(source=source)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(prename__icontains=search) | Q(name__icontains=search)
+            )
+
+        if screening_result is not None:
+            queryset = queryset.filter(screening_result=screening_result)
+        if confirmation_result is not None:
+            queryset = queryset.filter(confirmation_result=confirmation_result)
 
         if normalized is not None:
             if normalized != 'true':

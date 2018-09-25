@@ -83,7 +83,7 @@ class StatsViewSet(viewsets.ViewSet):
             nr_positive_screenings = cases.filter(screening_result__gte=2).count()
             nr_positive_confirmations = cases.filter(confirmed_case=True).count()
 
-            nr_negative_confirmations = cases.filter(confirmed_case=False).count()
+            nr_negative_confirmations = cases.filter(confirmation_result=1).count()
 
             res = {
                 "positive_screenings": nr_positive_screenings,

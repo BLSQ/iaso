@@ -36,6 +36,11 @@ export const urls = [
         url: '/api/stats/?stat=positiveScreeningRate',
         mock: [],
     },
+    {
+        name: 'confirmationsRate',
+        url: '/api/stats/?stat=confirmationsRate',
+        mock: [],
+    },
 ];
 
 export class StatsContainer extends Component {

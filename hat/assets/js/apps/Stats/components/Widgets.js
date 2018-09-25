@@ -32,6 +32,7 @@ class Widgets extends Component {
             <div data-qa="stats-data-loaded">
                 <ParticipationWidget coverage={data.coverage} timeseries={data.coverage.total_counts} />
                 <ScreeningWidget total={data.positiveScreeningRate} />
+                <ConfirmationWidget total={data.confirmationsRate} />
                 <EvolutionWidgets data={data.casecount} title={formatMessage(MESSAGES.caseCount)} />
                 <EvolutionWidgets data={data.unmatch} title={formatMessage(MESSAGES.unMatch)} />
             </div>

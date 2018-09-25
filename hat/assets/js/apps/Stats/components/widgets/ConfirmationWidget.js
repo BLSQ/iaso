@@ -1,21 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Visualization from '../Visualization';
+import Donut from '../Donut';
 
 class ConfirmationWidget extends Component {
     render() {
-        const { timeseries, total } = this.props;
-        const percentagePositiveConfirmation = total.positive
-            ? `${Math.round(total.positive / (total.total * 10000)) / 100}%`
+        const { total } = this.props;
+
+        const percentagePositiveConfirmation = total.positive_confirmations
+            ? `${((total.positive_confirmations / total.positive_screenings) * 100).toFixed(2)}%`
             : <FormattedMessage id="statspage.none" defaultMessage="none" />;
-        const spec = {
-            x_accessor: 'date',
-            y_accessor: ['confirmation_pos', 'confirmation_neg', 'confirmation_total'],
-            // legend: ['positive', 'negative', 'total'],
-            right: 40,
-            top: 20,
-        };
+        const donutValue = total.positive_confirmations ? total.positive_confirmations / total.positive_screenings : 0;
+
         return (
             <div className="widget__container">
                 <div className="widget__header">
@@ -32,7 +28,7 @@ class ConfirmationWidget extends Component {
                                 <FormattedMessage id="statspage.confirmation.subheader" defaultMessage="HAT confirmed" />
                             </h2>
                             <p>
-                                <FormattedMessage id="statspage.confirmation.description" defaultMessage="The percentage of participants tested who had a positive confirmation test (PG, mAECT, CTC/WOO, or GE)" />
+                                <FormattedMessage id="statspage.confirmation.description2" defaultMessage="Pourcentage de dépistages positifs avec une confirmation positive (PG, mAECT, CTC/WOO, or GE)" />
                             </p>
                             <ul className="list--stats--reduced">
                                 <li className="list__item--stats--reduced">
@@ -40,7 +36,7 @@ class ConfirmationWidget extends Component {
                                         <FormattedMessage id="statspage.confirmation.count.pos" defaultMessage="Number of participants confirmed positive for HAT" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.positive}
+                                        {total.positive_confirmations}
                                     </span>
                                 </li>
                                 <li className="list__item--stats--reduced">
@@ -48,20 +44,20 @@ class ConfirmationWidget extends Component {
                                         <FormattedMessage id="statspage.confirmation.count.neg" defaultMessage="Number of participants confirmed negative for HAT" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.negative}
+                                        {total.negative_confirmations}
                                     </span>
                                 </li>
                             </ul>
                             <span className="text--explanation">
                                 <FormattedMessage
-                                    id="statspage.confirmation.count.total"
-                                    defaultMessage="Out of an overall total of {totalParticipants} participants registered."
-                                    values={{ totalParticipants: total.total }}
+                                    id="statspage.confirmation.count.total2"
+                                    defaultMessage="Avec un total de {totalParticipants} dépistages positifs."
+                                    values={{ totalParticipants: total.positive_screenings }}
                                 />
                             </span>
                         </div>
                         <div className="column--6 container__graph--6 responsive">
-                            <Visualization data={timeseries} spec={spec} />
+                            <Donut value={donutValue} />
                         </div>
                     </section>
                 </div>
@@ -70,7 +66,6 @@ class ConfirmationWidget extends Component {
 }
 
 ConfirmationWidget.propTypes = {
-    timeseries: PropTypes.array.isRequired,
     total: PropTypes.object.isRequired,
 };
 

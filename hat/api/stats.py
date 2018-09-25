@@ -72,5 +72,23 @@ class StatsViewSet(viewsets.ViewSet):
                 "negative": nr_negative_records,
                 "positive": nr_positive_records,
             }
+        if stat == 'confirmationsRate':
+            cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
+            if province_id:
+                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
+            if from_date:
+                cases = cases.filter(normalized_date__gte=from_date)
+            if to_date:
+                cases = cases.filter(normalized_date__lte=to_date)
+            nr_positive_screenings = cases.filter(screening_result__gte=2).count()
+            nr_positive_confirmations = cases.filter(confirmed_case=True).count()
+
+            nr_negative_confirmations = cases.filter(confirmed_case=False).count()
+
+            res = {
+                "positive_screenings": nr_positive_screenings,
+                "positive_confirmations": nr_positive_confirmations,
+                "negative_confirmations": nr_negative_confirmations,
+            }
         return Response(res)
 

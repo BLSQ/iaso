@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Donut from '../Donut';
+import Visualization from '../Visualization';
 
 class ParticipationWidget extends Component {
     render() {
-        const { coverage } = this.props;
+        const { coverage, timeseries } = this.props;
         const totalVillages = coverage.total_visited || '0';
         const villagesWithEstimate = coverage.visited_with_population || '0';
         const population = coverage.estimated_village_population || 0;
@@ -13,8 +13,13 @@ class ParticipationWidget extends Component {
         const percentageScreened = registered
             ? `${((registered / population) * 100).toFixed(2)}%`
             : <FormattedMessage id="statspage.none" defaultMessage="none" />;
-        const donutValue = registered ? registered / population : 0;
-
+        const spec = {
+            x_accessor: 'date',
+            y_accessor: ['c'],
+            // legend: ['positive', 'negative', 'total'],
+            right: 40,
+            top: 20,
+        };
         return (
             <div className="widget__container">
                 <div className="widget__header">
@@ -60,7 +65,7 @@ class ParticipationWidget extends Component {
                         </div>
 
                         <div className="column--6 container__graph--6 responsive">
-                            <Donut value={donutValue} />
+                            <Visualization data={timeseries} spec={spec} />
                         </div>
                     </section>
                 </div>
@@ -71,6 +76,7 @@ class ParticipationWidget extends Component {
 
 ParticipationWidget.propTypes = {
     coverage: PropTypes.object.isRequired,
+    timeseries: PropTypes.array.isRequired,
 };
 
 

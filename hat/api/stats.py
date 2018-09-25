@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from hat.cases.models import CaseView
 from hat.geo.models import Village
 from django.db.models import Sum
+from django.db.models.functions import TruncDate
+from django.db.models import Count
 
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -30,7 +32,7 @@ class StatsViewSet(viewsets.ViewSet):
         if stat == 'screened':
             cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
             if province_id:
-                cases = cases.filter(normalized_village__AS__ZS__province__id=province_id)
+                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
             if from_date:
                 cases = cases.filter(normalized_date__gte=from_date)
             if to_date:
@@ -41,11 +43,34 @@ class StatsViewSet(viewsets.ViewSet):
             population_result = Village.objects.filter(id__in=village_ids).aggregate(total=Sum('population'))
             estimated_population = population_result['total']
             screening_count = cases.count()
+
+            counts = cases.annotate(date=TruncDate('normalized_date')).values('date').annotate(c=Count('id')).order_by('date')
+
             res = {
                 "estimated_village_population": estimated_population,
                 "screening_count": screening_count,
                 "total_visited": village_ids.count(),
-                "visited_with_population": Village.objects.filter(id__in=village_ids, population__isnull=False).count()
+                "visited_with_population": Village.objects.filter(id__in=village_ids, population__isnull=False).count(),
+                "total_counts": counts
+            }
+
+        if stat == 'positiveScreeningRate':
+            cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
+            if province_id:
+                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
+            if from_date:
+                cases = cases.filter(normalized_date__gte=from_date)
+            if to_date:
+                cases = cases.filter(normalized_date__lte=to_date)
+
+            nr_records = cases.count()
+            nr_positive_records = cases.filter(screening_result__gte=2).count()
+            nr_negative_records = cases.filter(screening_result=1).count()
+
+            res = {
+                "total": nr_records,
+                "negative": nr_negative_records,
+                "positive": nr_positive_records,
             }
         return Response(res)
 

@@ -30,7 +30,8 @@ class Widgets extends Component {
         const data = this.props.data || [];
         return (
             <div data-qa="stats-data-loaded">
-                <ParticipationWidget coverage={data.coverage} />
+                <ParticipationWidget coverage={data.coverage} timeseries={data.coverage.total_counts} />
+                <ScreeningWidget total={data.positiveScreeningRate} />
                 <EvolutionWidgets data={data.casecount} title={formatMessage(MESSAGES.caseCount)} />
                 <EvolutionWidgets data={data.unmatch} title={formatMessage(MESSAGES.unMatch)} />
             </div>

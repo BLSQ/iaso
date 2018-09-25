@@ -2,20 +2,16 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import Visualization from '../Visualization';
+import Donut from '../Donut';
 
 class ScreeningWidget extends Component {
     render() {
-        const { timeseries, total } = this.props;
+        const { total } = this.props;
         const percentagePositiveScreening = total.positive
-            ? `${Math.round(total.positive / (total.total * 10000)) / 100}%`
+            ? `${((total.positive / total.total) * 100).toFixed(2)}%`
             : <FormattedMessage id="statspage.none" defaultMessage="none" />;
-        const spec = {
-            x_accessor: 'date',
-            y_accessor: ['screening_pos', 'screening_neg', 'screening_total'],
-            // legend: ['positive', 'negative', 'total'],
-            right: 40,
-            top: 20,
-        };
+        const donutValue = total.positive ? total.positive / total.total : 0;
+
         return (
             <div className="widget__container">
                 <div className="widget__header">
@@ -61,7 +57,7 @@ class ScreeningWidget extends Component {
                             </span>
                         </div>
                         <div className="column--6 container__graph--6 responsive">
-                            <Visualization data={timeseries} spec={spec} />
+                            <Donut value={donutValue} />
                         </div>
                     </section>
                 </div>
@@ -70,7 +66,6 @@ class ScreeningWidget extends Component {
 }
 
 ScreeningWidget.propTypes = {
-    timeseries: PropTypes.array.isRequired,
     total: PropTypes.object.isRequired,
 };
 

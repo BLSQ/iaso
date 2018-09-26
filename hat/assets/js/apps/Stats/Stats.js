@@ -18,6 +18,7 @@ import Filters from '../Locator/components/Filters';
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl } from '../../utils/fetchData';
 import Widgets from './components/Widgets';
+import { filterActions } from '../../redux/filters';
 
 
 const MESSAGES = defineMessages({
@@ -37,7 +38,20 @@ export class Stats extends Component {
         this.dateFormat = 'YYYY-MM-DD';
         this.datefromHandler = this.datefromHandler.bind(this);
         this.datetoHandler = this.datetoHandler.bind(this);
-        this.provinceHandler = this.provinceHandler.bind(this);
+    }
+
+    componentDidMount() {
+        this.props.fetchProvinces();
+        console.log(this.props.params);
+        if (this.props.params.province_id) {
+            this.props.selectProvince(this.props.params.province_id);
+        }
+        if (this.props.params.zs_id) {
+            this.props.selectZone(this.props.params.zs_id);
+        }
+        if (this.props.params.as_id) {
+            this.props.selectArea(this.props.params.as_id);
+        }
     }
 
     datefromHandler(date) {
@@ -56,15 +70,20 @@ export class Stats extends Component {
         this.props.dispatch(push(url));
     }
 
-    provinceHandler(province_id) {
-        const url = createUrl({ ...this.props.params, province_id });
+    paramChangeHandler(key, value) {
+        const newParams = {
+            ...this.props.params,
+        };
+        newParams[key] = value;
+        const url = createUrl(newParams);
         this.props.dispatch(push(url));
     }
 
     render() {
         const { formatMessage } = this.props.intl;
-        const { date_from, date_to, province_id } = this.props.params;
+        const { date_from, date_to } = this.props.params;
         const { data } = this.props.load;
+        const { filters } = this.props;
         let showLoading = true;
         if (data) {
             const { loading } = data;
@@ -72,13 +91,7 @@ export class Stats extends Component {
         }
         const pickerFrom = date_from ? moment(date_from) : moment();
         const pickerTo = date_to ? moment(date_to) : moment();
-        let filters;
-        if (data) {
-            filters = {
-                provinces: data.provinces,
-                provinceId: parseInt(province_id, 10),
-            };
-        }
+
         return (
             <div>
                 <div className="stats-filters widget__container">
@@ -111,9 +124,18 @@ export class Stats extends Component {
                                 showVillages={false}
                                 isClearable
                                 filters={filters}
-                                selectProvince={provinceId => this.provinceHandler(provinceId)}
-                                selectZone={zsId => this.selectZone(zsId)}
-                                selectArea={asId => this.selectArea(asId)}
+                                selectProvince={(provinceId) => {
+                                    this.props.selectProvince(provinceId);
+                                    this.paramChangeHandler('province_id', provinceId);
+                                }}
+                                selectZone={(zsId) => {
+                                    this.props.selectZone(zsId);
+                                    this.paramChangeHandler('zs_id', zsId);
+                                }}
+                                selectArea={(asId) => {
+                                    this.props.selectArea(asId);
+                                    this.paramChangeHandler('as_id', asId);
+                                }}
                             />
                         }
                     </div>
@@ -131,14 +153,30 @@ export class Stats extends Component {
 }
 
 Stats.propTypes = {
+    filters: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fetchProvinces: PropTypes.func.isRequired,
+    fetchTeams: PropTypes.func.isRequired,
+    fetchCoordinations: PropTypes.func.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectVillage: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    selectArea: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
+    fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
+    fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
+    selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
+    selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
+    selectArea: (areaId, villageId) => dispatch(filterActions.selectArea(areaId, dispatch, true, null, villageId)),
 });
 
 const MapStateToProps = state => ({

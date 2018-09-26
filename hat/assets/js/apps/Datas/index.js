@@ -8,7 +8,7 @@ import moment from 'moment';
 import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
-import { casesListReducer, casesListInitialState } from './redux/casesList';
+import { filtersReducer, filtersInitialState } from '../../redux/filters';
 
 import CasesPage from './pages/cases';
 
@@ -31,10 +31,10 @@ export default function datasApp(appConfig, element, baseUrl) {
 
     const store = createStore({
         load: {},
-        cases: casesListInitialState,
+        cases: filtersInitialState,
     }, {
         load: loadReducer,
-        cases: casesListReducer,
+        cases: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

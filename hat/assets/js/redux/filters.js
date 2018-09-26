@@ -1,7 +1,7 @@
 /*
  * Includes the actions and state necessary for the casesList process
  */
-import { loadActions } from '../../../redux/load';
+import { loadActions } from './load';
 
 export const FETCH_ACTION = 'hat/casesList/FETCH_ACTION';
 export const LOAD_AREAS = 'hat/casesList/LOAD_AREAS';
@@ -20,12 +20,11 @@ export const SELECT_VILLAGE = 'hat/casesList/SELECT_VILLAGE';
 export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 
-export const casesListInitialState = {
+export const filtersInitialState = {
     provinceId: null,
     zoneId: null,
     areaId: null,
     villageId: null,
-    key: null,
     provinces: [],
     zones: [],
     areas: [],
@@ -254,7 +253,7 @@ export const fetchCoordinations = (dispatch) => {
     });
 };
 
-export const casesListActions = {
+export const filterActions = {
     loadAreas,
     loadZones,
     resetFilters,
@@ -274,7 +273,7 @@ export const casesListActions = {
     fetchCoordinations,
 };
 
-export const casesListReducer = (state = casesListInitialState, action = {}) => {
+export const filtersReducer = (state = filtersInitialState, action = {}) => {
     switch (action.type) {
         case LOAD_PROVINCES: {
             const provinces = action.payload;
@@ -378,7 +377,6 @@ export const casesListReducer = (state = casesListInitialState, action = {}) => 
                 zoneId: null,
                 areaId: null,
                 villageId: null,
-                key: null,
                 provinces: state.provinces.length > 0 ? state.provinces : [],
                 zones: [],
                 areas: [],

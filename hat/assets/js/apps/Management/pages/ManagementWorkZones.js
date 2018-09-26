@@ -21,6 +21,14 @@ const request = require('superagent');
 
 const baseApiUrl = '/api/workzones/?';
 
+function getBaseURL(props) {
+    let url = baseApiUrl;
+    console.log('props.params', props.params);
+    if (props.params.planning_id) {
+        url = `${url}planning_id=${props.params.planning_id}`;
+    }
+    return url;
+}
 
 class ManagementWorkZones extends React.Component {
     constructor(props) {
@@ -120,7 +128,7 @@ class ManagementWorkZones extends React.Component {
                     ),
                 },
             ],
-            tableUrl: baseApiUrl,
+            tableUrl: getBaseURL(props),
             showEditModale: false,
             showDeleteModale: false,
             workzoneEdited: undefined,
@@ -135,13 +143,8 @@ class ManagementWorkZones extends React.Component {
     }
 
     componentWillReceiveProps(props) {
-        let url = baseApiUrl;
-        if (props.params.planning_id) {
-            url = `${url}planning_id=${props.params.planning_id}`;
-        }
-
         this.setState({
-            tableUrl: url,
+            tableUrl: getBaseURL(props),
         });
     }
 
@@ -264,6 +267,7 @@ class ManagementWorkZones extends React.Component {
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
+        console.log('this.state.tableUrl', this.state.tableUrl);
         return (
             <section>
                 <WokzoneModaleComponent

@@ -7,7 +7,8 @@ import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
-import { casesListActions } from '../redux/casesList';
+import { filterActions } from '../../../redux/filters';
+
 import casesListColumns from '../constants/casesListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
@@ -266,7 +267,7 @@ class Cases extends Component {
         if (!coordinations) {
             coordinations = [];
         }
-        console.log('coordinations', coordinations);
+
         return (
             <section className="cases-list-container">
                 {
@@ -532,18 +533,19 @@ Cases.propTypes = {
 const MapStateToProps = state => ({
     load: state.load,
     cases: state.cases,
+    filters: state.filters,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    fetchTeams: () => dispatch(casesListActions.fetchTeams(dispatch)),
-    fetchCoordinations: () => dispatch(casesListActions.fetchCoordinations(dispatch)),
-    fetchProvinces: () => dispatch(casesListActions.fetchProvinces(dispatch)),
-    selectProvince: provinceId => dispatch(casesListActions.selectProvince(provinceId, dispatch)),
-    selectVillage: villageId => dispatch(casesListActions.selectVillage(villageId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(casesListActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
-    selectArea: (areaId, villageId) => dispatch(casesListActions.selectArea(areaId, dispatch, true, null, villageId)),
+    fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
+    fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
+    fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
+    selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
+    selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
+    selectArea: (areaId, villageId) => dispatch(filterActions.selectArea(areaId, dispatch, true, null, villageId)),
 });
 
 const CasesWithIntl = injectIntl(Cases);

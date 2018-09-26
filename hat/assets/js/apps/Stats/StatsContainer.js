@@ -1,21 +1,15 @@
+import { push } from 'react-router-redux';
 import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { clone } from '../../utils';
-import { fetchUrls } from '../../utils/fetchData';
+import { createUrl, fetchUrls } from '../../utils/fetchData';
 import StatsComponent from './Stats';
+import { filterActions } from '../../redux/filters';
+
 
 export const urls = [
-    {
-        name: 'provinces',
-        url: '/api/provinces/',
-        mock: [{
-            name: 'Buele',
-            old_name: '',
-            id: 29,
-        }],
-    },
     {
         name: 'unmatch',
         url: '/api/metrics/unmatch/',
@@ -55,7 +49,9 @@ export class StatsContainer extends Component {
     componentWillReceiveProps(nextProps) {
         if ((nextProps.params.date_from !== this.props.params.date_from) ||
             (nextProps.params.date_to !== this.props.params.date_to) ||
-            (nextProps.params.province_id !== this.props.params.province_id)) {
+            (nextProps.params.province_id !== this.props.params.province_id) ||
+            (nextProps.params.as_id !== this.props.params.as_id) ||
+            (nextProps.params.zs_id !== this.props.params.zs_id)) {
             this.loadData(nextProps.params);
         }
     }
@@ -75,15 +71,26 @@ export class StatsContainer extends Component {
 StatsContainer.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
+    filters: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+
 };
 
 const MapStateToProps = state => ({
     load: state.load,
+    filters: state.filters,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
+    fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
+    fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
+    selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
+    selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
+    selectArea: (areaId, villageId) => dispatch(filterActions.selectArea(areaId, dispatch, true, null, villageId)),
 });
 
 const StatsWithIntl = injectIntl(StatsContainer);

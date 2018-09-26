@@ -10,6 +10,7 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 
 import StatsContainerComponent from './StatsContainer';
+import { filtersInitialState, filtersReducer } from '../../redux/filters';
 
 export default function statsApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
@@ -29,8 +30,10 @@ export default function statsApp(element, baseUrl) {
     });
     const store = createStore({
         load: {},
+        filters: filtersInitialState,
     }, {
         load: loadReducer,
+        filters: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

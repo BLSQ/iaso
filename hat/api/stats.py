@@ -28,16 +28,21 @@ class StatsViewSet(viewsets.ViewSet):
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
         province_id = request.GET.get("province_id", None)
+        zs_id = request.GET.get("zs_id", None)
+        as_id = request.GET.get("as_id", None)
+        cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
+        if province_id:
+            cases = cases.filter(normalized_AS__ZS__province__id=province_id)
+        if zs_id:
+            cases = cases.filter(normalized_AS__ZS__id=zs_id)
+        if as_id:
+            cases = cases.filter(normalized_AS__id=as_id)
+        if from_date:
+            cases = cases.filter(normalized_date__gte=from_date)
+        if to_date:
+            cases = cases.filter(normalized_date__lte=to_date)
 
         if stat == 'screened':
-            cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
-            if province_id:
-                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
-            if from_date:
-                cases = cases.filter(normalized_date__gte=from_date)
-            if to_date:
-                cases = cases.filter(normalized_date__lte=to_date)
-
             village_ids = cases.values('normalized_village_id').distinct('normalized_village_id')
 
             population_result = Village.objects.filter(id__in=village_ids).aggregate(total=Sum('population'))
@@ -55,13 +60,6 @@ class StatsViewSet(viewsets.ViewSet):
             }
 
         if stat == 'positiveScreeningRate':
-            cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
-            if province_id:
-                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
-            if from_date:
-                cases = cases.filter(normalized_date__gte=from_date)
-            if to_date:
-                cases = cases.filter(normalized_date__lte=to_date)
 
             nr_records = cases.count()
             nr_positive_records = cases.filter(screening_result__gte=2).count()
@@ -73,13 +71,6 @@ class StatsViewSet(viewsets.ViewSet):
                 "positive": nr_positive_records,
             }
         if stat == 'confirmationsRate':
-            cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
-            if province_id:
-                cases = cases.filter(normalized_AS__ZS__province__id=province_id)
-            if from_date:
-                cases = cases.filter(normalized_date__gte=from_date)
-            if to_date:
-                cases = cases.filter(normalized_date__lte=to_date)
             nr_positive_screenings = cases.filter(screening_result__gte=2).count()
             nr_positive_confirmations = cases.filter(confirmed_case=True).count()
 

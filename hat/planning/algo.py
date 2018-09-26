@@ -19,9 +19,16 @@ def village_comparator(village_1, village_2):
     elif positive_2 and not positive_1:
         return -1
     else:
-        if village_1.population > village_2.population:
+        pop1 = village_1.population
+        pop2 = village_2.population
+
+        if pop1 is None:
+            pop1 = 0
+        if pop2 is None:
+            pop2 = 0
+        if pop1 > pop2:
             return 1
-        elif village_1.population < village_2.population:
+        elif pop1 < pop2:
             return -1
 
     return 0

@@ -31,6 +31,11 @@ export const urls = [
         mock: [],
     },
     {
+        name: 'coordinations',
+        url: '/api/coordinations/',
+        mock: [],
+    },
+    {
         name: 'confirmationsRate',
         url: '/api/stats/?stat=confirmationsRate',
         mock: [],
@@ -51,7 +56,8 @@ export class StatsContainer extends Component {
             (nextProps.params.date_to !== this.props.params.date_to) ||
             (nextProps.params.province_id !== this.props.params.province_id) ||
             (nextProps.params.as_id !== this.props.params.as_id) ||
-            (nextProps.params.zs_id !== this.props.params.zs_id)) {
+            (nextProps.params.zs_id !== this.props.params.zs_id) ||
+            (nextProps.params.coordination_id !== this.props.params.coordination_id)) {
             this.loadData(nextProps.params);
         }
     }

@@ -30,7 +30,12 @@ class StatsViewSet(viewsets.ViewSet):
         province_id = request.GET.get("province_id", None)
         zs_id = request.GET.get("zs_id", None)
         as_id = request.GET.get("as_id", None)
+        coordination_id = request.GET.get("coordination_id", None)
+
         cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
+
+        if coordination_id:
+            cases = cases.filter(normalized_team__coordination__id=coordination_id)
         if province_id:
             cases = cases.filter(normalized_AS__ZS__province__id=province_id)
         if zs_id:

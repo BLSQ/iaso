@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import moment from 'moment';
 import DatePicker from 'react-datepicker';
-
+import Select from 'react-select';
 import {
     FormattedMessage,
     injectIntl,
@@ -42,7 +42,6 @@ export class Stats extends Component {
 
     componentDidMount() {
         this.props.fetchProvinces();
-        console.log(this.props.params);
         if (this.props.params.province_id) {
             this.props.selectProvince(this.props.params.province_id);
         }
@@ -91,7 +90,6 @@ export class Stats extends Component {
         }
         const pickerFrom = date_from ? moment(date_from) : moment();
         const pickerTo = date_to ? moment(date_to) : moment();
-
         return (
             <div>
                 <div className="stats-filters widget__container">
@@ -118,6 +116,29 @@ export class Stats extends Component {
                                 />
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div className="widget__container widget__content--quarter">
+                    <div>
+                        {data &&
+                        <div className="locator-filter">
+                            <div className="locator-subtitle">
+                                <FormattedMessage id="stats.label.coordinations" defaultMessage="Coordinations" />
+                            </div>
+                            <Select
+                                clearable
+                                simpleValue
+                                name="coordination_id"
+                                value={this.props.params.coordination_id}
+                                placeholder="--"
+                                options={this.props.load.data.coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
+                                onChange={coordination_id => this.paramChangeHandler('coordination_id', coordination_id)}
+                                noResultsText={<FormattedMessage id="locator.label.noresult" defaultMessage="Aucun village trouvé" />}
+                            />
+                        </div>
+                        }
+                    </div>
+                    <div>
                         {data &&
                             <Filters
                                 isMultiSelect={false} // need to update api to work with multiple ids

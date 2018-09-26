@@ -18,7 +18,7 @@ export default function statsApp(element, baseUrl) {
 
     const routes = [
         <Route
-            path="charts(/source/:source)(/date_from/:date_from)(/date_to/:date_to)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)"
+            path="charts(/source/:source)(/date_from/:date_from)(/date_to/:date_to)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/coordination_id/:coordination_id)"
             component={StatsContainerComponent}
         />,
         <Redirect path="*" to={`charts/date_from/${dateFrom}/date_to/${dateTo}`} />,

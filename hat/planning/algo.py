@@ -36,7 +36,7 @@ def village_comparator(village_1, village_2):
 
 def sort_villages(id_list=[], years=[]):
 
-    queryset = Village.objects.filter(id__in=id_list, village_official='YES')
+    queryset = Village.objects.filter(id__in=id_list, village_official='YES', population__isnull=False)
 
     nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)
@@ -72,11 +72,14 @@ def assign(village_id_list, workzone_id, years=[]):
 
         for team in current_team_list:
             temp_assignation = assignations[team.id]
-            if temp_assignation.population_reached + village.population < team.capacity:
+            population = village.population
+            if population is None:
+                population = 0
+            if temp_assignation.population_reached + population < team.capacity:
                 #test if village in ZS/AS of team
                 if not village.assigned and village.AS in team.get_as():
                     temp_assignation.villages.append(village)
-                    temp_assignation.population_reached += village.population
+                    temp_assignation.population_reached += population
                     village.assigned = True
 
         if not village.assigned:

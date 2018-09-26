@@ -50,7 +50,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementCoordinationsPage}
         />,
         <Route
-            path="/workzones(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="/workzones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/planning_id/:planning_id)"
             component={ManagementWorkZones}
         />,
         <Route

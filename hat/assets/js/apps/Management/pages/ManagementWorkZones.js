@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -133,9 +134,14 @@ class ManagementWorkZones extends React.Component {
         this.fetchPlannings();
     }
 
-    componentWillReceiveProps() {
+    componentWillReceiveProps(props) {
+        let url = baseApiUrl;
+        if (props.params.planning_id) {
+            url = `${url}planning_id=${props.params.planning_id}`;
+        }
+
         this.setState({
-            tableUrl: baseApiUrl,
+            tableUrl: url,
         });
     }
 
@@ -287,6 +293,28 @@ class ManagementWorkZones extends React.Component {
                                 defaultMessage="Rayon d'actions"
                             />
                         </h2>
+                    </div>
+                    <div className="widget__content--quarter">
+                        <div>
+                            <div className="widget__label">
+                                <FormattedMessage id="management.label.planning" defaultMessage="Planning" />
+                            </div>
+
+                            <Select
+                                clearable
+                                simpleValue
+                                name="planning_id"
+                                value={this.props.params.planning_id}
+                                placeholder="--"
+                                options={this.props.plannings.map(province =>
+                                    ({ label: province.name, value: province.id }))}
+                                onChange={(value) => {
+                                    this.onChangeFilters('planning_id', value);
+                                }}
+                                noResultsText={<FormattedMessage id="locator.label.noresult" defaultMessage="Aucun planning" />}
+                            />
+
+                        </div>
                     </div>
                 </div>
                 <div className="widget__container management-control">

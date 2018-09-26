@@ -84,14 +84,18 @@ class WorkZonesSelect extends Component {
     compareZs(zslist, workZoneIndex) {
         const currentWorkZone = Object.assign(this.state.workZones[workZoneIndex]);
         let currentZsId;
-        const action = zslist.length > currentWorkZone.currentZones.split(',').length;
-        if (zslist.length > currentWorkZone.currentZones.split(',').length) {
-            zslist.map((newAs) => {
-                if (currentWorkZone.currentZones.split(',').filter(oldZs => oldZs === parseInt(newAs.value, 10)).length === 0) {
-                    currentZsId = newAs.value;
-                }
-                return null;
-            });
+        const action = zslist.length > currentWorkZone.currentZones.split(',').length || currentWorkZone.currentZones === '';
+        if (action) {
+            if (currentWorkZone.currentZones === '') {
+                currentZsId = zslist[0].value;
+            } else {
+                zslist.map((newAs) => {
+                    if (currentWorkZone.currentZones.split(',').filter(oldZs => oldZs === parseInt(newAs.value, 10)).length === 0) {
+                        currentZsId = newAs.value;
+                    }
+                    return null;
+                });
+            }
         } else {
             currentWorkZone.currentZones.split(',').map((oldZs) => {
                 if (zslist.filter(newAs => newAs.value === oldZs).length === 0) {
@@ -106,14 +110,18 @@ class WorkZonesSelect extends Component {
     compareAs(asList, workZoneIndex) {
         const currentWorkZone = Object.assign(this.state.workZones[workZoneIndex]);
         let currentAsId;
-        const action = asList.length > currentWorkZone.as_list.length;
-        if (asList.length > currentWorkZone.as_list.length) {
-            asList.map((newAs) => {
-                if (currentWorkZone.as_list.filter(oldAs => oldAs.id === parseInt(newAs.value, 10)).length === 0) {
-                    currentAsId = newAs.value;
-                }
-                return null;
-            });
+        const action = asList.length > currentWorkZone.as_list.length || currentWorkZone.as_list.length === 0;
+        if (action) {
+            if (currentWorkZone.as_list.length === 0) {
+                currentAsId = asList[0].value;
+            } else {
+                asList.map((newAs) => {
+                    if (currentWorkZone.as_list.filter(oldAs => oldAs.id === parseInt(newAs.value, 10)).length === 0) {
+                        currentAsId = newAs.value;
+                    }
+                    return null;
+                });
+            }
         } else {
             currentWorkZone.as_list.map((oldAs) => {
                 if (asList.filter(newAs => parseInt(newAs.value, 10) === oldAs.id).length === 0) {

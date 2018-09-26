@@ -29,7 +29,7 @@ def village_comparator(village_1, village_2):
 
 def sort_villages(id_list=[], years=[]):
 
-    queryset = Village.objects.filter(id__in=id_list)
+    queryset = Village.objects.filter(id__in=id_list, village_official='YES')
 
     nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)

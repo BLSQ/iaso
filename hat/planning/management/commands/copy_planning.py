@@ -40,11 +40,17 @@ class Command(BaseCommand):
 
         for workzone in workzones:
             as_list = list(workzone.AS.all())
+            team_list = list(workzone.teams.all())
+
             workzone.pk = None
             workzone.planning_id = planning.id
             workzone.save()
 
             workzone.AS.clear()
             workzone.AS.set(as_list)
+
+            workzone.teams.clear()
+            workzone.teams.set(team_list)
+
 
 

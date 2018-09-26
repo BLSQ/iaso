@@ -53,6 +53,7 @@ class CasesViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
+        coordination_id = request.GET.get("coordination_id", None)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         geo_search = request.GET.get("geo_search", None)
@@ -84,6 +85,8 @@ class CasesViewSet(viewsets.ViewSet):
 
         if province_ids:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
+        if coordination_id:
+            queryset = queryset.filter(normalized_team__coordination__id=coordination_id)
         if zs_ids:
             queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(","))
         if as_ids:

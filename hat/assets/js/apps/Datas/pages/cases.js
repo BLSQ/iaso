@@ -46,7 +46,7 @@ class Cases extends Component {
                 this.props.selectZone(this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
             }
             if (this.props.params.as_id) {
-                this.props.selectArea(this.props.params.as_id, this.props.params.village_id);
+                this.props.selectArea(this.props.params.as_id, this.props.params.village_id, this.props.params.zs_id);
             }
             if (this.props.params.village_id) {
                 this.props.selectVillage(this.props.params.village_id);
@@ -62,7 +62,7 @@ class Cases extends Component {
             this.props.selectZone(newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
         }
         if (newProps.params.as_id !== this.props.params.as_id) {
-            this.props.selectArea(newProps.params.as_id, newProps.params.village_id);
+            this.props.selectArea(newProps.params.as_id, newProps.params.village_id, newProps.params.zs_id);
         }
         if (newProps.params.village_id !== this.props.params.village_id) {
             this.props.selectVillage(newProps.params.village_id);
@@ -232,7 +232,7 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
-    selectArea: (areaId, villageId) => dispatch(filterActions.selectArea(areaId, dispatch, true, null, villageId)),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
 });
 
 const CasesWithIntl = injectIntl(Cases);

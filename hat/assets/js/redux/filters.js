@@ -130,6 +130,7 @@ export const selectArea = (
         }
     } else {
         dispatch(deleteArea());
+        dispatch(selectZone(zoneId, dispatch, displayVillage, null, null)); // eslint-disable-line
     }
     return ({
         type: FETCH_ACTION,

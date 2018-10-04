@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Count
 from django.db.models import Q
-from hat.planning.models import Assignation
+from hat.planning.models import Assignation, WorkZone
 from hat.users.models import Team
 from hat.geo.models import Village
 
@@ -45,6 +45,7 @@ class AssignationViewSet(viewsets.ViewSet):
     def list(self, request):
         planning_id = request.GET.get('planning_id', None)
         coordination_id = request.GET.get('coordination_id', None)
+        workzone_id = request.GET.get('workzone_id', None)
         team_id = request.GET.get('team_id', None)
         show_case_count = request.GET.get('show_case_count', False)
 
@@ -52,6 +53,10 @@ class AssignationViewSet(viewsets.ViewSet):
         if coordination_id:
             teams = Team.objects.filter(coordination_id=coordination_id)
             assignations = assignations.filter(team__in=teams)
+
+        if workzone_id:
+            workzone = WorkZone.objects.get(pk=workzone_id)
+            assignations = assignations.filter(team__in=workzone.teams.all()).filter(village__AS__in=workzone.AS.all())
 
         if team_id:
             assignations = assignations.filter(team__id=team_id)

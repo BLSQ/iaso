@@ -1,6 +1,6 @@
 from django.db import models
 from ..geo.models import Village, AS
-from ..users.models import Team, Coordination
+from ..users.models import Coordination, Team
 from django.db.models import Sum
 import random
 
@@ -55,6 +55,7 @@ class Assignation(models.Model):
             'index': self.index
         }
 
+
 def pick_random_color():
      return random.choice([
     '#FF6900',
@@ -67,6 +68,7 @@ def pick_random_color():
     '#bf4840',
     '#F78DA7',
     '#9900EF',])
+
 
 class WorkZone(models.Model):
     name = models.TextField()
@@ -111,3 +113,11 @@ class WorkZone(models.Model):
     def __str__(self):
         return "%s - % s - %s" % (self.name, self.coordination, self.planning)
 
+
+class TeamActionZone(models.Model):
+    team = models.ForeignKey(Team, null=False, blank=False, on_delete=models.CASCADE)
+    planning = models.ForeignKey(Planning, null=False, blank=False, on_delete=models.CASCADE)
+    area = models.ForeignKey(AS, null=False, blank=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.team, self.planning, self.area)

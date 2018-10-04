@@ -157,7 +157,9 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
         assignations = request.data.get('assignations', -1)
         if assignations != -1:
-            planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
+            pk = request.data.get('planning_id', -1)
+
+            planning = get_object_or_404(Planning, pk=pk)
             Assignation.objects.filter(team__workzone=work_zone, planning=planning).delete()
 
             assignations = request.data['assignations']
@@ -173,7 +175,6 @@ class WorkZoneViewSet(viewsets.ViewSet):
                 assignation_list = teams_dict[team_id]
                 ordered = optimize_path(assignation_list)
                 for index, obj in enumerate(ordered):
-
                     Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
                     assignation = Assignation()
                     assignation.planning = planning

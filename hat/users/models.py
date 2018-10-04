@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
 from hat.geo.models import AS, ZS, Province
+
 from django.contrib.auth.models import Permission
 
 
@@ -46,7 +47,6 @@ class Coordination(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True, on_delete=models.CASCADE)
-    AS = models.ManyToManyField(AS, blank=True)
     capacity = models.IntegerField()
     UM = models.BooleanField(default=True)
     aliases = ArrayField(
@@ -58,13 +58,16 @@ class Team(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def as_dict(self):
-        return {
+    def as_dict(self, planning_id=None):
+        res = {
             'name': self.name,
             'id': self.id,
-            'AS': map(lambda a: a.as_dict(), self.get_as()),
             'capacity': self.capacity
         }
+        if planning_id is not None:
+            from hat.planning.models import TeamActionZone
+            res['AS'] = [taz.area.as_dict() for taz in TeamActionZone.objects.filter(planning_id=planning_id, team_id=self.id).select_related("area")]
+        return res
 
     def as_dict_without_as(self):
         return {
@@ -73,11 +76,13 @@ class Team(models.Model):
             'capacity': self.capacity
         }
 
-    def get_as(self):
-        if not self.AS.all():
+    def get_as(self, planning_id):
+        from hat.planning.models import TeamActionZone
+        areas = [taz.area for taz in TeamActionZone.objects.filter(planning_id=planning_id, team_id=self.id).select_related("area")]
+        if not areas:
             return AS.objects.filter(ZS__in=self.coordination.ZS.all())
         else:
-            return self.AS.all()
+            return areas
 
     def __str__(self):
         type = "MUM"
@@ -89,12 +94,13 @@ class Team(models.Model):
 class Institution(models.Model):
     name = models.CharField(max_length=255)
 
+
 class UserType(models.Model):
     name = models.CharField(max_length=255)
     permissions = models.ManyToManyField(Permission)
+
     def __str__(self):
         return self.name
-
 
     def as_dict(self):
         return {
@@ -102,6 +108,7 @@ class UserType(models.Model):
             'id': self.id,
             'permissions': map(lambda a: a.id, self.permissions.all()),
         }
+
 
 class Profile(models.Model):
     '''

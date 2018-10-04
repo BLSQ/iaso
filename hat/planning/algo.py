@@ -5,7 +5,6 @@ from django.db.models import Q
 
 from functools import cmp_to_key
 import random
-from hat.users.models import Team
 from hat.planning.models import WorkZone
 from hat.geo.models import Village
 
@@ -40,7 +39,6 @@ def sort_villages(id_list=[], years=[]):
 
     nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)
-
     return sorted(villages, key=cmp_to_key(village_comparator), reverse=True)
 
 
@@ -77,7 +75,8 @@ def assign(village_id_list, workzone_id, years=[]):
                 population = 0
             if temp_assignation.population_reached + population < team.capacity:
                 #test if village in ZS/AS of team
-                if not village.assigned and village.AS in team.get_as():
+
+                if not village.assigned and village.AS in team.get_as(workzone.planning_id):
                     temp_assignation.villages.append(village)
                     temp_assignation.population_reached += population
                     village.assigned = True

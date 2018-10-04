@@ -138,9 +138,6 @@ export class Microplanning extends Component {
     // HANDLERS
 
     deSelectVillage(list) {
-        // this.setState({
-        //     isVillageListEdited: true,
-        // });
         this.props.deselectItems(list);
     }
 

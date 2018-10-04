@@ -52,7 +52,7 @@ class CasesViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         years = request.GET.get("years", None)
-        teams = request.GET.get("teams", None)
+        teams = request.GET.get("team_id", None)
         coordination_id = request.GET.get("coordination_id", None)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)

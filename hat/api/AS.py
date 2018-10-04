@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import AS
 from hat.users.models import Team, Coordination
+from hat.planning.models import Planning
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.serializers import serialize
+from hat.planning.models import TeamActionZone
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -55,28 +57,23 @@ class ASViewSet(viewsets.ViewSet):
         return Response(aire.as_dict())
 
     def update(self, request, pk=None):
+        planning_id = request.data.get("planning_id", None)
         team_id = request.data.get("team_id", None)
         delete = request.data.get("delete", None)
 
         team = get_object_or_404(Team, id=team_id)
         area = get_object_or_404(AS, id=pk)
+        planning = get_object_or_404(Planning, id=planning_id)
 
-        if team.AS.all():
-            if delete:
-                team.AS.remove(area)
-            else:
-                team.AS.add(area)
+        if delete:
+            TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
         else:
-            areas = team.get_as()
-            team.AS.clear()
-            if delete:
-                areas = filter(lambda ar: ar.id != area.id, areas)
-                for a in areas:
-                    team.AS.add(a)
-            else:
-                for a in areas:
-                    team.AS.add(a)
-                team.AS.add(area)
+            TeamActionZone.objects.filter(area=area, planning=planning).delete()
+            taz = TeamActionZone()
+            taz.team = team
+            taz.area = area
+            taz.planning = planning
+            taz.save()
 
         return Response(area.as_dict())
 

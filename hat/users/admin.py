@@ -35,11 +35,7 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
 
-class TeamAdmin(admin.ModelAdmin):
-    raw_id_fields = ('AS',)
-
-
-admin.site.register(Team, TeamAdmin)
+admin.site.register(Team)
 admin.site.register(Coordination)
 admin.site.register(Institution)
 admin.site.register(UserType)

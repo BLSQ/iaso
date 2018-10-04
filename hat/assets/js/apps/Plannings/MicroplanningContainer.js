@@ -143,8 +143,9 @@ export class MicroplanningContainer extends Component {
                     console.error('Error when fetching assignations details');
                 });
             if (params.team_id) {
+                console.log('planning_id', params.planning_id);
                 request
-                    .get(`/api/teams/${params.team_id}`)
+                    .get(`/api/teams/${params.team_id}?planning_id=${params.planning_id}`)
                     .query(params)
                     .then((result) => {
                         const geoScope = {};
@@ -160,26 +161,6 @@ export class MicroplanningContainer extends Component {
                     });
             }
         }
-    }
-
-    updateUrlForCoordination(params) {
-        request
-            .get('/api/coordinations/')
-            .query(params)
-            .then((result) => {
-                const coordination = result.body.filter(c =>
-                    c.id === parseInt(params.coordination_id, 10))[0];
-                if (coordination && coordination.zs.length > 0) {
-                    const tempParams = clone(params);
-                    tempParams.zs_id = coordination.zs.map(z => z.id).join(',');
-                    this.props.dispatch(push(createUrl(tempParams, 'micro')));
-                } else {
-                    this.loadFullData(params);
-                }
-            })
-            .catch((err) => {
-                console.error('Error when fetching coordinations details');
-            });
     }
 
     loadFullData(params) {

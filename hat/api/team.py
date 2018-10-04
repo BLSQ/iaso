@@ -73,8 +73,8 @@ class TeamViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         team = get_object_or_404(Team, pk=pk)
-
-        return Response(team.as_dict())
+        planning_id = request.GET.get("planning_id", None)
+        return Response(team.as_dict(planning_id))
 
     def update(self, request, pk=None):
         if pk == "0":

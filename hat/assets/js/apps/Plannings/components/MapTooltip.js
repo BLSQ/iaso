@@ -251,7 +251,7 @@ class MapTooltip extends Component {
     }
 
     toggleAsFromGeoScope(as_id, zs_id, as_name) {
-        let tempTeam = { team_id: this.props.teamId };
+        let tempTeam = { team_id: this.props.teamId, planning_id: this.props.planningId };
         if (this.state.isAsInGeoScope) {
             tempTeam = { ...tempTeam, delete: true };
         }

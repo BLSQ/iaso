@@ -25,7 +25,7 @@ class CasesViewSet(viewsets.ViewSet):
     - geo_search
     - normalized
     - csv: return data in CSV format rather than JSON. Intended for download
-    - hide_located: hide already located cases
+    - located: show already located cases
     - screening_result: result of the most significant screening test
     - confirmation_result: result of the most significant confirmation test
     - source: pv, historic, mobile_sync, mobile_backup
@@ -51,24 +51,30 @@ class CasesViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
+        village_ids = request.GET.get("village_id", None)
         years = request.GET.get("years", None)
         teams = request.GET.get("team_id", None)
-        coordination_id = request.GET.get("coordination_id", None)
+
+        coordination_ids = request.GET.get("coordination_id", None)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
-        csvformat = request.GET.get("csv", None)  # default will be json
-        hide_located = request.GET.get("hide_located", True)
+        csv_format = request.GET.get("csv", None)  # default will be json
+        located = request.GET.get("located", 'all')
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
         source = request.GET.get("source", None)
-        search = request.GET.get("search", None)
+        search_name = request.GET.get("search_name", None)
+        search_prename = request.GET.get("search_prename", None)
+        search_lastname = request.GET.get("search_lastname", None)
         coordination = request.GET.get("coordination", None)
+        is_locator = request.GET.get("isLocator", None)
 
-        if hide_located == 'false':
+        if located == 'all':
             queryset = CaseView.objects.order_by(*orders)
-        else:
+
+        if is_locator == 'true':
             queryset = (
                 CaseView.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
                 .exclude(source="mobile_sync")
@@ -83,14 +89,38 @@ class CasesViewSet(viewsets.ViewSet):
                 .order_by(*orders)
             )
 
+        if located == 'only_not_located':
+            queryset = (
+                CaseView.objects.filter(normalized_village=None)
+                .order_by(*orders)
+            )
+
+
+        if located == 'only_not_located_and_not_found':
+            queryset = (
+                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=True)
+                .order_by(*orders)
+            )
+
+        if located == 'only_located':
+            queryset = (
+                CaseView.objects.filter(normalized_village__isnull=False)
+                .order_by(*orders)
+            )
+
+        if located != 'all':
+            queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup").exclude(province__icontains="kas").exclude(province__icontains="kinsh").exclude(province__icontains="bas").exclude(province__icontains="maniema").exclude(province__icontains="k.").exclude(province__icontains="equateur")
+
         if province_ids:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
-        if coordination_id:
-            queryset = queryset.filter(normalized_team__coordination__id=coordination_id)
+        if coordination_ids:
+            queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
         if zs_ids:
             queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(","))
         if as_ids:
             queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
+        if village_ids:
+            queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:
             queryset = queryset.filter(form_year__in=years.split(","))
         if teams:
@@ -102,9 +132,17 @@ class CasesViewSet(viewsets.ViewSet):
 
         if source:
             queryset = queryset.filter(source=source)
-        if search:
+        if search_name:
             queryset = queryset.filter(
-                Q(name__icontains=search) | Q(prename__icontains=search) | Q(name__icontains=search)
+                Q(name__icontains=search_name)
+            )
+        if search_prename:
+            queryset = queryset.filter(
+                Q(prename__icontains=search_prename)
+            )
+        if search_lastname:
+            queryset = queryset.filter(
+                Q(lastname__icontains=search_lastname)
             )
 
         if screening_result is not None:
@@ -129,7 +167,7 @@ class CasesViewSet(viewsets.ViewSet):
                 Q(village__icontains=geo_search) | Q(ZS__icontains=geo_search) | Q(AS__icontains=geo_search)
             )
 
-        if csvformat is None:
+        if csv_format is None:
 
             paginator = Paginator(queryset, limit)
 

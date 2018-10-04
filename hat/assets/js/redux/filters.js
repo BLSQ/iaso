@@ -130,7 +130,6 @@ export const selectArea = (
         }
     } else {
         dispatch(deleteArea());
-        dispatch(emptyVillages());
     }
     return ({
         type: FETCH_ACTION,
@@ -168,6 +167,7 @@ export const selectZone = (
     } else {
         dispatch(emptyAreas());
         dispatch(deleteZone());
+        dispatch(emptyVillages());
     }
     return ({
         type: FETCH_ACTION,
@@ -226,7 +226,6 @@ export const fetchTeams = (dispatch) => {
     req
         .get('/api/teams/')
         .then((result) => {
-            console.log(result);
             dispatch(showTeams(result.body));
         })
         .catch(err => (console.error(`Error while fetching teams ${err}`)));
@@ -244,7 +243,6 @@ export const fetchCoordinations = (dispatch) => {
     req
         .get('/api/coordinations/')
         .then((result) => {
-            console.log(result);
             dispatch(showCoordinations(result.body));
         })
         .catch(err => (console.error(`Error while fetching coordinations ${err}`)));

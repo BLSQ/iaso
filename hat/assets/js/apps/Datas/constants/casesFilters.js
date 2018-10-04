@@ -1,0 +1,505 @@
+
+const MESSAGES = {
+    positive: {
+        defaultMessage: 'Positif',
+        id: 'main.label.postive',
+    },
+    negative: {
+        defaultMessage: 'Négatif',
+        id: 'main.label.negative',
+    },
+    mobile_sync: {
+        defaultMessage: 'Sync Tablette',
+        id: 'main.label.mobile_sync',
+    },
+    mobile_backup: {
+        defaultMessage: 'Backup Tablette',
+        id: 'main.label.mobile_backup',
+    },
+    historic: {
+        defaultMessage: 'Historique',
+        id: 'main.label.historic',
+    },
+    pv: {
+        defaultMessage: 'Pharmacovigilance',
+        id: 'main.label.pv',
+    },
+    located: {
+        defaultMessage: 'Uniquement les cas localisés',
+        id: 'main.label.located',
+    },
+    notLocated: {
+        defaultMessage: 'Uniquement les cas non localisés',
+        id: 'main.label.notLocated',
+    },
+    notLocatedNotFound: {
+        defaultMessage: 'Uniquement les cas non localisés et non trouvés',
+        id: 'main.label.notLocatedNotFound',
+    },
+};
+
+const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
+
+const filtersZone1 = (formatMessage, defineMessages) => (
+    [
+        {
+            name: 'screening_result',
+            urlKey: 'screening_result',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'positive')),
+                    value: true,
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'negative')),
+                    value: false,
+                },
+            ],
+            placeholder: {
+                id: 'main.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'cases.label.screening_result',
+                defaultMessage: 'Dépistage',
+            },
+            type: 'select',
+        },
+        {
+            name: 'confirmation_result',
+            urlKey: 'confirmation_result',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'positive')),
+                    value: true,
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'negative')),
+                    value: false,
+                },
+            ],
+            placeholder: {
+                id: 'main.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'cases.label.confirmation_result',
+                defaultMessage: 'Confirmation',
+            },
+            type: 'select',
+        },
+        {
+            name: 'source',
+            urlKey: 'source',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'mobile_sync')),
+                    value: 'mobile_sync',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'mobile_backup')),
+                    value: 'mobile_backup',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'historic')),
+                    value: 'historic',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'pv')),
+                    value: 'pv',
+                },
+            ],
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.source',
+                defaultMessage: 'Source',
+            },
+            type: 'select',
+        },
+    ]
+);
+const filtersZone2 = (
+    formatMessage,
+    defineMessages,
+    coordinations,
+    teams,
+) => (
+    [
+        {
+            name: 'coordination_id',
+            urlKey: 'coordination_id',
+            isMultiSelect: true,
+            isClearable: true,
+            options: coordinations,
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.coordination',
+                defaultMessage: 'Coordination',
+            },
+            type: 'select',
+        },
+        {
+            name: 'teams',
+            urlKey: 'teams',
+            isMultiSelect: true,
+            isClearable: true,
+            options: teams,
+            placeholder: {
+                id: 'cases.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.confirmation_result',
+                defaultMessage: 'Equipe',
+            },
+            type: 'select',
+        },
+        {
+            name: 'located',
+            urlKey: 'located',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'located')),
+                    value: 'only_located',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'notLocated')),
+                    value: 'only_not_located',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'notLocatedNotFound')),
+                    value: 'only_not_located_and_not_found',
+                },
+            ],
+            placeholder: {
+                id: 'cases.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.located',
+                defaultMessage: 'Localisations',
+            },
+            type: 'select',
+        },
+    ]
+);
+
+const filtersSearch = () => (
+    [
+        {
+            name: 'search_lastname',
+            urlKey: 'search_lastname',
+            allowEmptySearch: true,
+            showResetSearch: true,
+            displayResults: false,
+            placeholder: {
+                id: 'main.label.search',
+                defaultMessage: 'Recherche',
+            },
+            label: {
+                id: 'cases.label.searchByName',
+                defaultMessage: 'Recherche par nom',
+            },
+            type: 'search',
+        },
+        {
+            name: 'search_name',
+            urlKey: 'search_name',
+            allowEmptySearch: true,
+            showResetSearch: true,
+            displayResults: false,
+            placeholder: {
+                id: 'main.label.search',
+                defaultMessage: 'Recherche',
+            },
+            label: {
+                id: 'cases.label.searchByPostName',
+                defaultMessage: 'Recherche par postnom',
+            },
+            type: 'search',
+        },
+        {
+            name: 'search_prename',
+            urlKey: 'search_prename',
+            allowEmptySearch: true,
+            showResetSearch: true,
+            displayResults: false,
+            placeholder: {
+                id: 'main.label.search',
+                defaultMessage: 'Recherche',
+            },
+            label: {
+                id: 'cases.label.searchByPrename',
+                defaultMessage: 'Recherche par prénom',
+            },
+            type: 'search',
+        },
+    ]
+);
+
+const selectProvince = (provinceId, props) => {
+    const {
+        params,
+        cases,
+    } = props;
+    const tempParams = {
+        ...params,
+        province_id: provinceId,
+    };
+    const newProvincesArray = provinceId.split(',');
+    if (!provinceId) {
+        delete tempParams.province_id;
+        delete tempParams.zs_id;
+        delete tempParams.as_id;
+        delete tempParams.village_id;
+    } else if (params.province_id && params.zs_id && newProvincesArray.length < params.province_id.split(',').length) {
+        let provinceDeleted;
+        params.province_id.split(',').map((p) => {
+            if (newProvincesArray.indexOf(p.toString()) === -1) {
+                provinceDeleted = p;
+            }
+            return null;
+        });
+        const zonesToDelete = cases.zones.filter(z => z.province_id === parseInt(provinceDeleted, 10));
+        let areasToDelete = [];
+        if (tempParams.as_id) {
+            const zsArray = tempParams.zs_id.split(',').slice();
+            zonesToDelete.map((z) => {
+                const zoneId = z.id.toString();
+                if (zsArray.indexOf(zoneId) !== -1) {
+                    zsArray.splice(zsArray.indexOf(zoneId), 1);
+                }
+                if (params.as_id) {
+                    areasToDelete = areasToDelete.concat(cases.areas.filter(a => a.ZS_id === z.id));
+                }
+                return null;
+            });
+            tempParams.zs_id = zsArray.toString();
+        }
+
+        let villagesToDelete = [];
+        if (tempParams.as_id) {
+            const asArray = tempParams.as_id.split(',').slice();
+            areasToDelete.map((a) => {
+                const areaId = a.id.toString();
+                if (asArray.indexOf(areaId) !== -1) {
+                    asArray.splice(asArray.indexOf(areaId), 1);
+                }
+                if (params.village_id) {
+                    villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
+                }
+                return null;
+            });
+            tempParams.as_id = asArray.toString();
+        }
+
+        if (tempParams.village_id) {
+            const villageArray = tempParams.village_id.split(',').slice();
+            villagesToDelete.map((a) => {
+                const villageId = a.id.toString();
+                if (villageArray.indexOf(villageId) !== -1) {
+                    villageArray.splice(villageArray.indexOf(villageId), 1);
+                }
+                return null;
+            });
+            tempParams.village_id = villageArray.toString();
+        }
+    }
+    props.redirectTo('cases', tempParams);
+};
+
+const selectZone = (zoneId, props) => {
+    const {
+        params,
+        cases,
+    } = props;
+    const tempParams = {
+        ...props.params,
+        zs_id: zoneId,
+    };
+
+    const newZonesArray = zoneId.split(',');
+    if (!zoneId) {
+        delete tempParams.zs_id;
+        delete tempParams.as_id;
+        delete tempParams.village_id;
+    } else if (params.as_id && newZonesArray.length < params.zs_id.split(',').length) {
+        let zoneDeleted;
+        params.zs_id.split(',').map((z) => {
+            if (newZonesArray.indexOf(z.toString()) === -1) {
+                zoneDeleted = z;
+            }
+            return null;
+        });
+        const areasToDelete = cases.areas.filter(a => a.ZS_id === parseInt(zoneDeleted, 10));
+        let villagesToDelete = [];
+        if (tempParams.as_id) {
+            const asArray = tempParams.as_id.split(',').slice();
+            areasToDelete.map((a) => {
+                const areaId = a.id.toString();
+                if (asArray.indexOf(areaId) !== -1) {
+                    asArray.splice(asArray.indexOf(areaId), 1);
+                }
+                if (params.village_id) {
+                    villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
+                }
+                return null;
+            });
+            tempParams.as_id = asArray.toString();
+        }
+
+        if (tempParams.village_id) {
+            const villageArray = tempParams.village_id.split(',').slice();
+            villagesToDelete.map((a) => {
+                const villageId = a.id.toString();
+                if (villageArray.indexOf(villageId) !== -1) {
+                    villageArray.splice(villageArray.indexOf(villageId), 1);
+                }
+                return null;
+            });
+            tempParams.village_id = villageArray.toString();
+        }
+    }
+    props.redirectTo('cases', tempParams);
+};
+
+const selectArea = (areaId, props) => {
+    const {
+        params,
+        cases,
+    } = props;
+    const tempParams = {
+        ...props.params,
+        as_id: areaId,
+    };
+    const newAreasArray = areaId.split(',');
+    if (!areaId) {
+        delete tempParams.as_id;
+        delete tempParams.village_id;
+    } else if (params.village_id && newAreasArray.length < params.as_id.split(',').length) {
+        let areaDeleted;
+        params.as_id.split(',').map((a) => {
+            if (newAreasArray.indexOf(a.toString()) === -1) {
+                areaDeleted = a;
+            }
+            return null;
+        });
+        const villagesToDelete = cases.villages.filter(v => v.AS_id === parseInt(areaDeleted, 10));
+
+        if (tempParams.village_id) {
+            const villageArray = tempParams.village_id.split(',').slice();
+            villagesToDelete.map((a) => {
+                const villageId = a.id.toString();
+                if (villageArray.indexOf(villageId) !== -1) {
+                    villageArray.splice(villageArray.indexOf(villageId), 1);
+                }
+                return null;
+            });
+            tempParams.village_id = villageArray.toString();
+        }
+    }
+    props.redirectTo('cases', tempParams);
+};
+
+const filtersGeo = (
+    provinces,
+    zones,
+    areas,
+    villages,
+    props,
+) => (
+    [
+        {
+            name: 'province_id',
+            urlKey: 'province_id',
+            isMultiSelect: true,
+            isClearable: true,
+            options: provinces,
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.provinces',
+                defaultMessage: 'Provinces',
+            },
+            type: 'select',
+            callback: value => selectProvince(value, props),
+        },
+        {
+            name: 'zs_id',
+            urlKey: 'zs_id',
+            hideEmpty: true,
+            isMultiSelect: true,
+            isClearable: true,
+            options: zones,
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.zones',
+                defaultMessage: 'Zones de santé',
+            },
+            type: 'select',
+            callback: value => selectZone(value, props),
+        },
+        {
+            name: 'as_id',
+            urlKey: 'as_id',
+            hideEmpty: true,
+            isMultiSelect: true,
+            isClearable: true,
+            options: areas,
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'cases.label.areas',
+                defaultMessage: 'Aire de santé',
+            },
+            type: 'select',
+            callback: value => selectArea(value, props),
+        },
+        {
+            name: 'village_id',
+            urlKey: 'village_id',
+            hideEmpty: true,
+            isMultiSelect: true,
+            isClearable: true,
+            options: villages,
+            placeholder: {
+                id: 'main.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'cases.label.village',
+                defaultMessage: 'Villages',
+            },
+            type: 'select',
+        },
+    ]
+);
+
+export {
+    filtersZone1,
+    filtersZone2,
+    filtersSearch,
+    filtersGeo,
+};
+

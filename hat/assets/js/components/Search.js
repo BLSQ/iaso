@@ -46,6 +46,7 @@ class Search extends React.Component {
             keys,
             showLimit,
             displayResults,
+            showResetSearch,
         } = this.props;
         return (
             <div className="search-container">
@@ -66,6 +67,17 @@ class Search extends React.Component {
                         }}
                     />
                     <i className="fa fa-search" aria-hidden="true" onClick={() => this.onSearch()} />
+                    {
+                        showResetSearch && this.state.searchString !== '' &&
+                        <span
+                            role="button"
+                            tabIndex={0}
+                            className="Select-clear"
+                            onClick={() => this.props.resetSearch()}
+                        >
+                            ×
+                        </span>
+                    }
                     {
                         showLimit &&
                         <div className="limit-container">
@@ -167,6 +179,7 @@ Search.defaultProps = {
     allowEmptySearch: false,
     displayResults: true,
     onSelect: () => { },
+    showResetSearch: false,
 };
 
 Search.propTypes = {
@@ -186,6 +199,7 @@ Search.propTypes = {
     displayResults: PropTypes.bool,
     searchString: PropTypes.string,
     allowEmptySearch: PropTypes.bool,
+    showResetSearch: PropTypes.bool,
 };
 
 export default Search;

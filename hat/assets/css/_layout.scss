@@ -137,9 +137,17 @@ $directions: left right top bottom;
     margin-right: $padding-unit/2;
 }
 
+.margin {
+    margin: $padding-unit/2 !important;
+}
+
 .bold-subtitle {
     font-weight: bold;
     color: $mid-gray;
     font-size: 14px;
     margin-bottom: 20px;
+}
+
+.green-icon {
+    color: green;
 }

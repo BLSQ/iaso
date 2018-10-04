@@ -1,3 +1,5 @@
+import React from 'react';
+
 const casesListColumns = formatMessage => (
     [
         {
@@ -9,6 +11,20 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Nom',
+                id: 'casesList.label.name',
+            }),
+            accessor: 'lastname',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Postnom',
+                id: 'casesList.label.Postnom',
+            }),
+            accessor: 'name',
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Prénom',
                 id: 'casesList.label.prename',
             }),
@@ -16,31 +32,10 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'casesList.label.lastname',
-            }),
-            accessor: 'name',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Postnom',
-                id: 'casesList.label.name',
-            }),
-            accessor: 'name',
-        },
-        {
-            Header: formatMessage({
                 defaultMessage: 'Équipe',
                 id: 'casesList.label.team',
             }),
             accessor: 'normalized_team_name',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'N° de formulaire',
-                id: 'casesList.label.form_number',
-            }),
-            accessor: 'form_number',
         },
         {
             Header: formatMessage({
@@ -70,6 +65,32 @@ const casesListColumns = formatMessage => (
                 id: 'main.label.name',
             }),
             accessor: 'source',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Localisation',
+                id: 'main.label.localisation',
+            }),
+            Cell: settings => (
+                <section className={`table-row-action ${!settings.original.normalized_village_id ? 'not-located' : ''}`}>
+                    {
+                        !settings.original.normalized_village_id &&
+                        <button
+                            className="button--tiny margin-right"
+                        >
+                            <i className="fa fa-thumb-tack" />
+                            {formatMessage({
+                                defaultMessage: 'Localiser',
+                                id: 'main.label.locateCase',
+                            })}
+                        </button>
+                    }
+                    {
+                        settings.original.normalized_village_id &&
+                        <i className="fa fa-check green-icon" />
+                    }
+                </section>
+            ),
         },
     ]
 );

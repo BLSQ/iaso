@@ -57,6 +57,7 @@ $select-width: 120px;
     &.date-select {
         display: inline-block;
         margin: 0 20px 0 0px;
+        padding: 0;
         .filter__container__select__label {
             width: 55px;
             text-align: center;
@@ -264,4 +265,19 @@ input.input--minimised {
 
 .filter__hidden {
     display: none;
+}
+
+.filter-item {
+    font-weight: bold;
+    color: $mid-gray;
+    font-size: 12px;
+    padding-bottom: 15px;
+    .search-container {
+        margin-bottom: 0;
+    }
+}
+.filter-item-subtitle {
+    font-weight: bold;
+    color: $mid-gray;
+    margin-bottom: 6px;
 }

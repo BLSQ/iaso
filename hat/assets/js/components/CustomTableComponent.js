@@ -125,7 +125,7 @@ class CustomTableComponent extends React.Component {
         return {
             onClick: (e) => {
                 e.preventDefault();
-                this.props.onRowClicked(rowInfo.original, state);
+                this.props.onRowClicked(rowInfo.original, state, e);
             },
         };
     }

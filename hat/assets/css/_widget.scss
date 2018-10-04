@@ -102,19 +102,23 @@
     padding: $padding-unit 0;
 }
 
+%quarter-item {
+    flex-basis: 25%;
+    box-sizing: border-box;
+    padding: $padding-unit ;
+    >span {
+        font-weight: bold;
+        color: #868486;
+        margin-bottom: 6px;
+        font-size: 12px;
+        display: block;
+    }
+}
+
 .widget__content--quarter {
     display: flex;
     &>div {
-        flex-basis: 25%;
-        box-sizing: border-box;
-        padding: $padding-unit;
-        >span {
-            font-weight: bold;
-            color: #868486;
-            margin-bottom: 6px;
-            font-size: 12px;
-            display: block;
-        }
+        @extend %quarter-item;
     }
 }
 

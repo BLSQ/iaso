@@ -52,6 +52,15 @@
             font-size: 14px;
         }
     }
+    .Select-clear {
+        position: absolute;
+        right: 29px;
+        top: 8px;
+        cursor: pointer;
+        &:hover{
+            color: red;
+        }
+    }
 }
 
 .search-results {

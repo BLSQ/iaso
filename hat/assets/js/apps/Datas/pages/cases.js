@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
-import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
@@ -12,9 +11,21 @@ import { filterActions } from '../../../redux/filters';
 import casesListColumns from '../constants/casesListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
-import Filters from '../components/Filters';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/casesFilters';
 
 export const urls = [];
+
+
+const selectCase = (caseItem, event) => {
+    let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
+    if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
+        url = `/dashboard/locator/case_id/${caseItem.id}`;
+        window.open(url, '_blank');
+    } else {
+        window.location.href = url;
+    }
+};
 
 class Cases extends Component {
     constructor(props) {
@@ -65,7 +76,7 @@ class Cases extends Component {
         } = this.props;
         const urlParams = {
             ...params,
-            hide_located: 'false',
+            located: params.located ? params.located : 'all',
             from: params.date_from,
             to: params.date_to,
         };
@@ -83,190 +94,28 @@ class Cases extends Component {
         return url;
     }
 
-    selectCase(caseItem) {
-        console.log(this);
-        const url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
-        window.location.href = url;
-    }
-
-    selectProvince(provinceId) {
-        const {
-            params,
-            cases,
-        } = this.props;
-        const tempParams = {
-            ...params,
-            province_id: provinceId,
-        };
-        const newProvincesArray = provinceId.split(',');
-        if (!provinceId) {
-            delete tempParams.province_id;
-            delete tempParams.zs_id;
-            delete tempParams.as_id;
-        } else if (params.province_id && params.zs_id && newProvincesArray.length < params.province_id.split(',').length) {
-            let provinceDeleted;
-            params.province_id.split(',').map((p) => {
-                if (newProvincesArray.indexOf(p.toString()) === -1) {
-                    provinceDeleted = p;
-                }
-                return null;
-            });
-            const zonesToDelete = cases.zones.filter(z => z.province_id === parseInt(provinceDeleted, 10));
-            let areasToDelete = [];
-            if (tempParams.as_id) {
-                const zsArray = tempParams.zs_id.split(',').slice();
-                zonesToDelete.map((z) => {
-                    const zoneId = z.id.toString();
-                    if (zsArray.indexOf(zoneId) !== -1) {
-                        zsArray.splice(zsArray.indexOf(zoneId), 1);
-                    }
-                    if (params.as_id) {
-                        areasToDelete = areasToDelete.concat(cases.areas.filter(a => a.ZS_id === z.id));
-                    }
-                    return null;
-                });
-                tempParams.zs_id = zsArray.toString();
-            }
-
-            let villagesToDelete = [];
-            if (tempParams.as_id) {
-                const asArray = tempParams.as_id.split(',').slice();
-                areasToDelete.map((a) => {
-                    const areaId = a.id.toString();
-                    if (asArray.indexOf(areaId) !== -1) {
-                        asArray.splice(asArray.indexOf(areaId), 1);
-                    }
-                    if (params.village_id) {
-                        villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
-                    }
-                    return null;
-                });
-                tempParams.as_id = asArray.toString();
-            }
-
-            if (tempParams.village_id) {
-                const villageArray = tempParams.village_id.split(',').slice();
-                villagesToDelete.map((a) => {
-                    const villageId = a.id.toString();
-                    if (villageArray.indexOf(villageId) !== -1) {
-                        villageArray.splice(villageArray.indexOf(villageId), 1);
-                    }
-                    return null;
-                });
-                tempParams.village_id = villageArray.toString();
-            }
-        }
-        this.props.redirectTo('cases', tempParams);
-    }
-
-    selectZone(zoneId) {
-        const {
-            params,
-            cases,
-        } = this.props;
-        const tempParams = {
-            ...this.props.params,
-            zs_id: zoneId,
-        };
-
-        const newZonesArray = zoneId.split(',');
-        if (!zoneId) {
-            delete tempParams.zs_id;
-            delete tempParams.as_id;
-        } else if (params.as_id && newZonesArray.length < params.zs_id.split(',').length) {
-            let zoneDeleted;
-            params.zs_id.split(',').map((z) => {
-                if (newZonesArray.indexOf(z.toString()) === -1) {
-                    zoneDeleted = z;
-                }
-                return null;
-            });
-            const areasToDelete = cases.areas.filter(a => a.ZS_id === parseInt(zoneDeleted, 10));
-            let villagesToDelete = [];
-            if (tempParams.as_id) {
-                const asArray = tempParams.as_id.split(',').slice();
-                areasToDelete.map((a) => {
-                    const areaId = a.id.toString();
-                    if (asArray.indexOf(areaId) !== -1) {
-                        asArray.splice(asArray.indexOf(areaId), 1);
-                    }
-                    if (params.village_id) {
-                        villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
-                    }
-                    return null;
-                });
-                tempParams.as_id = asArray.toString();
-            }
-
-            if (tempParams.village_id) {
-                const villageArray = tempParams.village_id.split(',').slice();
-                villagesToDelete.map((a) => {
-                    const villageId = a.id.toString();
-                    if (villageArray.indexOf(villageId) !== -1) {
-                        villageArray.splice(villageArray.indexOf(villageId), 1);
-                    }
-                    return null;
-                });
-                tempParams.village_id = villageArray.toString();
-            }
-        }
-        this.props.redirectTo('cases', tempParams);
-    }
-
-    selectArea(areaId) {
-        const {
-            params,
-            cases,
-        } = this.props;
-        const tempParams = {
-            ...this.props.params,
-            as_id: areaId,
-        };
-        const newAreasArray = areaId.split(',');
-        if (!areaId) {
-            delete tempParams.as_id;
-            delete tempParams.village_id;
-        } else if (params.village_id && newAreasArray.length < params.as_id.split(',').length) {
-            let areaDeleted;
-            params.as_id.split(',').map((a) => {
-                if (newAreasArray.indexOf(a.toString()) === -1) {
-                    areaDeleted = a;
-                }
-                return null;
-            });
-            const villagesToDelete = cases.villages.filter(v => v.AS_id === parseInt(areaDeleted, 10));
-
-            if (tempParams.village_id) {
-                const villageArray = tempParams.village_id.split(',').slice();
-                villagesToDelete.map((a) => {
-                    const villageId = a.id.toString();
-                    if (villageArray.indexOf(villageId) !== -1) {
-                        villageArray.splice(villageArray.indexOf(villageId), 1);
-                    }
-                    return null;
-                });
-                tempParams.village_id = villageArray.toString();
-            }
-        }
-        this.props.redirectTo('cases', tempParams);
-    }
-
-    selectVillage(villageId) {
-        this.props.redirectTo('cases', {
-            ...this.props.params,
-            village_id: villageId,
-        });
-    }
-
     render() {
         const { formatMessage } = this.props.intl;
-        let { teams, coordinations } = this.props.cases;
-        if (!teams) {
-            teams = [];
-        }
-        if (!coordinations) {
-            coordinations = [];
-        }
+        const {
+            cases: {
+                teams,
+                coordinations,
+                provinces,
+                zones,
+                areas,
+                villages,
+            },
+        } = this.props;
+        const filters1 = filtersZone1(formatMessage, defineMessages);
+        const filters2 = filtersZone2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const search = filtersSearch();
+        const geo = filtersGeo(
+            provinces || [],
+            zones || [],
+            areas || [],
+            villages || [],
+            this.props,
+        );
 
         return (
             <section className="cases-list-container">
@@ -277,21 +126,6 @@ class Cases extends Component {
                     })}
                     />
                 }
-
-                <div className="widget__container">
-                    <div className="widget__content list-cases-filters">
-                        <Filters
-                            isMultiSelect // need to update api to work with multiple ids
-                            showVillages
-                            isClearable
-                            filters={this.props.cases}
-                            selectProvince={provindeId => this.selectProvince(provindeId)}
-                            selectZone={zsId => this.selectZone(zsId)}
-                            selectArea={asId => this.selectArea(asId)}
-                            selectVillage={villageId => this.selectVillage(villageId)}
-                        />
-                    </div>
-                </div>
 
                 <div className="widget__container ">
                     <div className="widget__header widget__content--quarter">
@@ -309,183 +143,32 @@ class Cases extends Component {
 
                     <div className="widget__content--quarter">
                         <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.screening_result" defaultMessage="Dépistage" />
-                            </div>
-                            <div>
-                                <Select
-                                    clearable
-                                    simpleValue
-                                    name="screening_result"
-                                    value={this.props.params.screening_result}
-                                    placeholder="--"
-                                    options={[
-                                        {
-                                            label: 'Positif',
-                                            value: true,
-                                        },
-                                        {
-                                            label: 'Négatif',
-                                            value: false,
-                                        },
-                                    ]}
-                                    onChange={(value) => {
-                                        const params = {
-                                            ...this.props.params,
-                                            screening_result: value,
-                                        };
-                                        this.props.redirectTo('cases', params);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.confirmation_result" defaultMessage="Confirmation" />
-                            </div>
-                            <div>
-                                <Select
-                                    clearable
-                                    simpleValue
-                                    name="confirmation_result"
-                                    value={this.props.params.confirmation_result}
-                                    placeholder="--"
-                                    options={[
-                                        {
-                                            label: 'Positif',
-                                            value: true,
-                                        },
-                                        {
-                                            label: 'Négatif',
-                                            value: false,
-                                        },
-                                    ]}
-                                    onChange={(value) => {
-                                        const params = {
-                                            ...this.props.params,
-                                            confirmation_result: value,
-                                        };
-                                        this.props.redirectTo('cases', params);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.source" defaultMessage="Source" />
-                            </div>
-                            <div>
-                                <Select
-                                    clearable
-                                    simpleValue
-                                    name="source"
-                                    value={this.props.params.source}
-                                    placeholder="--"
-                                    options={[
-                                        {
-                                            label: 'Sync Tablette',
-                                            value: 'mobile_sync',
-                                        },
-                                        {
-                                            label: 'Backup Tablette',
-                                            value: 'mobile_backup',
-                                        },
-                                        {
-                                            label: 'Historique',
-                                            value: 'historic',
-                                        },
-                                        {
-                                            label: 'Pharmacovigilance',
-                                            value: 'pv',
-                                        },
-                                    ]}
-                                    onChange={(value) => {
-                                        const params = {
-                                            ...this.props.params,
-                                            source: value,
-                                        };
-                                        this.props.redirectTo('cases', params);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.nameSearch" defaultMessage="Recherche textuelle sur le nom" />
-                            </div>
-                            <div>
-                                <input id="searchInput" type="text" defaultValue={this.props.params.search} />
-                                <input
-                                    type="submit"
-                                    onClick={() => {
-                                        const text = document.getElementById('searchInput').value;
-                                        const params = {
-                                            ...this.props.params,
-                                            search: text,
-                                        };
-                                        this.props.redirectTo('cases', params);
-                                    }}
-                                    value="Rechercher"
-                                />
-                            </div>
-                        </div>
-
-                    </div>
-                    <div className="widget__content--quarter">
-                        <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.coordination" defaultMessage="Coordination" />
-                            </div>
-                            <Select
-                                clearable
-                                simpleValue
-                                name="coordination_id"
-                                value={this.props.params.coordination_id}
-                                placeholder="--"
-                                options={
-                                    coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))
-                                }
-                                onChange={(value) => {
-                                    const params = {
-                                        ...this.props.params,
-                                        coordination_id: value,
-                                    };
-                                    this.props.redirectTo('cases', params);
-                                }}
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="cases"
+                                filters={geo}
                             />
                         </div>
                         <div>
-                            <div className="widget__label">
-                                <FormattedMessage id="cases.label.team" defaultMessage="Equipe" />
-                            </div>
-                            <Select
-                                clearable
-                                simpleValue
-                                name="team"
-                                value={this.props.params.team_id}
-                                placeholder="--"
-                                options={
-                                    teams.map(team => ({ label: team.name, value: team.id }))
-                                }
-                                onChange={(value) => {
-                                    const params = {
-                                        ...this.props.params,
-                                        team_id: value,
-                                    };
-                                    this.props.redirectTo('cases', params);
-                                }}
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="cases"
+                                filters={search}
                             />
                         </div>
                         <div>
-                            <button
-                                className="button--save"
-                                onClick={() => {
-                                    window.location.href = this.getEndpointUrl(true);
-                                }}
-                            >
-                                <i className="fa fa-download" />
-                                <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
-                            </button>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="cases"
+                                filters={filters1}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="cases"
+                                filters={filters2}
+                            />
                         </div>
                     </div>
                 </div>
@@ -499,25 +182,29 @@ class Cases extends Component {
                         params={this.props.params}
                         defaultPath="cases"
                         dataKey="cases"
-                        onRowClicked={caseItem => this.selectCase(caseItem)}
+                        onRowClicked={(caseItem, state, event) => selectCase(caseItem, event)}
                         multiSort
                     />
+                    <div className="align-right">
+                        <button
+                            className="button--save margin"
+                            onClick={() => {
+                                window.location.href = this.getEndpointUrl(true);
+                            }}
+                        >
+                            <i className="fa fa-download" />
+                            <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
+                        </button>
+                    </div>
                 </div>
             </section>
         );
     }
 }
 
-Cases.defaultProps = {
-    teams: [],
-    coordinations: [],
-};
 Cases.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    teams: PropTypes.array,
-    coordinations: PropTypes.array,
-    dispatch: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
     cases: PropTypes.object.isRequired,

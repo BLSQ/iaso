@@ -42,7 +42,7 @@ class FiltersComponent extends React.Component {
                                 <div key={filter.name}>
                                     <div className="filter-item">
                                         <div className="filter-item-subtitle ">
-                                            <FormattedMessage id={filter.label.id} defaultMessage={filter.label.defaultMessage} />
+                                            {formatMessage(filter.label)}
                                         </div>
                                         {
                                             filter.type === 'select' &&

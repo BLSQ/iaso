@@ -15,12 +15,15 @@ import ManagementCoordinationsPage from './pages/ManagementCoordinations';
 import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementPlanningsPage from './pages/ManagementPlannings';
 import ManagementUsersPage from './pages/ManagementUsers';
+import ManagementVillagesPage from './pages/ManagementVillages';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { planningsReducer, planningsInitialState } from './redux/plannings';
 import { detailsReducer, detailsInitialState } from './redux/details';
 import { userReducer, usersInitialState } from './redux/users';
+import { villageReducer, villagesInitialState } from './redux/villages';
+import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -61,6 +64,10 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institutionId/:institutionId)"
             component={ManagementUsersPage}
         />,
+        <Route
+            path="/villages(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)"
+            component={ManagementVillagesPage}
+        />,
         <Redirect path="*" to="/devices" />,
     ];
 
@@ -78,6 +85,9 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         map: mapInitialState,
         details: detailsInitialState,
         users: usersInitialState,
+        villages: villagesInitialState,
+        geoFilters: filtersInitialState,
+        geoFiltersModale: filtersInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -87,6 +97,9 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         map: mapReducer,
         details: detailsReducer,
         users: userReducer,
+        villages: villageReducer,
+        geoFilters: filtersReducer,
+        geoFiltersModale: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

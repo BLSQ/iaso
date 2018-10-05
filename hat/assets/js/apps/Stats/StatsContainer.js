@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { clone } from '../../utils';
 import { createUrl, fetchUrls } from '../../utils/fetchData';
 import StatsComponent from './Stats';
-import { filterActions } from '../../redux/filters';
+import { filterActions } from '../../redux/filtersRedux';
 
 
 export const urls = [

@@ -151,12 +151,10 @@ export const selectZone = (
             .then((result) => {
                 const payload = { areas: result.body, zoneId };
                 dispatch(loadAreas(payload));
-                if (displayVillage) {
-                    if (areaId) {
-                        dispatch(selectArea(areaId, dispatch, true, zoneId, villageId));
-                    } else {
-                        getVillages(dispatch, null, zoneId);
-                    }
+                if (areaId) {
+                    dispatch(selectArea(areaId, dispatch, displayVillage, zoneId, villageId));
+                } else if (displayVillage) {
+                    getVillages(dispatch, null, zoneId);
                 } else {
                     dispatch(loadActions.successLoadingNoData());
                 }
@@ -192,7 +190,7 @@ export const fetchProvinces = (dispatch) => {
     });
 };
 
-export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null) => {
+export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null, displayVillage = true) => {
     if (provinceId) {
         req
             .get(`/api/zs/?province_id=${provinceId}`)
@@ -200,7 +198,7 @@ export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = nul
                 const payload = { zones: result.body, provinceId };
                 dispatch(loadZones(payload));
                 if (zoneId) {
-                    dispatch(selectZone(zoneId, dispatch, true, areaId, villageId));
+                    dispatch(selectZone(zoneId, dispatch, displayVillage, areaId, villageId));
                 } else {
                     dispatch(loadActions.successLoadingNoData());
                 }

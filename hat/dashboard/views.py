@@ -95,11 +95,15 @@ def get_menu(user, active_link):
                     "url_key": reverse("dashboard:management_planning"),
                     "perms": "x_management_plannings"
                 },
-
                 {
                     "name": "Rayons d\'actions",
                     "url_key": reverse("dashboard:management_workzone"),
                     "perms": "x_management_workzones"
+                },
+                {
+                    "name": "Villages",
+                    "url_key": reverse("dashboard:management_village"),
+                    "perms": "x_management_villages"
                 }
             ],
             "perms": None

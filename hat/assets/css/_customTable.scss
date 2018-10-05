@@ -21,6 +21,9 @@ body {
         .rt-th,
         .rt-td {
             padding: 10px;
+            &.small {
+                font-size: 12px;
+            }
         }
         .rt-thead .rt-th,
         .rt-thead .rt-td {
@@ -122,7 +125,6 @@ body {
         }
         .rt-thead.-header {
             .rt-th {
-                text-transform: CAPITALIZE;
                 font-size: 12px;
                 padding-top: 12px;
                 &.rt-resizable-header-content {

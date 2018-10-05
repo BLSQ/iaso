@@ -18,7 +18,7 @@ import Filters from '../Locator/components/Filters';
 import LoadingSpinner from '../../components/loading-spinner';
 import { createUrl } from '../../utils/fetchData';
 import Widgets from './components/Widgets';
-import { filterActions } from '../../redux/filters';
+import { filterActions } from '../../redux/filtersRedux';
 
 
 const MESSAGES = defineMessages({

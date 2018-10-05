@@ -3,8 +3,11 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
+from django.core.paginator import Paginator
 
-from hat.geo.models import Village
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
+from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.audit.models import log_modification
 
@@ -38,6 +41,7 @@ class VillageViewSet(viewsets.ViewSet):
     /api/villages/?types=YES,NA
     /api/villages/?search=bo&include_unlocated=true&as_list=true&limit=300
     """
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
         'menupermissions.x_plannings_microplanning',
         'menupermissions.x_locator',
@@ -59,7 +63,10 @@ class VillageViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         search = request.GET.get("search", None)
         limit = request.GET.get("limit", None)
+        page_offset = int(request.GET.get("page", None))
+        orders = request.GET.get("order", "name").split(",")
         include_unlocated = request.GET.get("include_unlocated", None)
+        only_unlocated = request.GET.get("only_unlocated", None)
 
         queryset = Village.objects.all()
 
@@ -99,6 +106,8 @@ class VillageViewSet(viewsets.ViewSet):
                 values = values + ("nr_positive_cases",)
 
         if types:
+            if types == 'all':
+                types = 'YES,NO,OTHER,NA'
             types_array = types.split(",")
             queryset = queryset.filter(village_official__in=types_array)
 
@@ -111,12 +120,31 @@ class VillageViewSet(viewsets.ViewSet):
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
 
+        if only_unlocated:
+            queryset = queryset.filter(
+                Q(latitude__isnull=True) | Q(longitude__isnull=True))
+
         res = queryset.values(*values)
 
         if as_list:
-            body = res.order_by("name")
-            if limit:
-                body = body[: int(limit)]
+            if page_offset:
+                queryset = queryset.order_by(*orders)
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
+                res["villages"] = map(lambda x: x.as_dict(), page.object_list)
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+            else :
+                body = res.order_by(*orders)
+                if limit:
+                    body = body[: int(limit)]
         else:
             if limit:
                 res = res[: int(limit)]
@@ -156,3 +184,46 @@ class VillageViewSet(viewsets.ViewSet):
             else:
                 res["team"] = None
         return Response(res)
+
+    def partial_update(self, request, pk=None):
+        village = get_object_or_404(Village, id=pk)
+        village.name = request.data.get('name', '')
+        village.population = request.data.get('population', 0)
+        village.population_source = request.data.get('population_source', '')
+        village.population_year = request.data.get('population_year', 0)
+        village.village_official = request.data.get('village_official', None)
+        AS_id = request.data.get('AS_id', None)
+
+        if AS_id:
+            newAs = get_object_or_404(AS, pk=AS_id)
+            village.AS = newAs
+
+        village.save()
+        return Response(village.as_dict())
+
+    def create(self, request):
+        name = request.data.get("name", None)
+        population = request.data.get("population", 0)
+        population_source = request.data.get("population_source", '')
+        population_year = request.data.get("population_year", 0)
+        village_official = request.data.get("village_official", None)
+        AS_id = request.data.get('AS_id', None)
+
+
+        village = Village()
+        village.name = name
+        village.population = population
+        village.population_source = population_source
+        village.population_year = population_year
+        village.village_official = village_official
+        if AS_id:
+            newAs = get_object_or_404(AS, pk=AS_id)
+            village.AS = newAs
+        village.save()
+
+        return Response(village.as_dict())
+
+    def delete(self, request, pk):
+        village = get_object_or_404(Village, id=pk)
+        village.delete()
+        return Response("ok")

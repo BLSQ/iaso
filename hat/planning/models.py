@@ -27,6 +27,46 @@ class Planning(models.Model):
             'assignations': assignations
         }
 
+    def copy(self, new_name):
+        planning = self
+        original_planning_id = planning.id
+
+        planning.name = new_name
+        planning.id = None
+        planning.save()
+
+        assignations = Assignation.objects.filter(planning_id=original_planning_id)
+
+        for assignation in assignations:
+            assignation.pk = None
+            assignation.planning_id = planning.id
+            assignation.save()
+
+        team_action_zones = TeamActionZone.objects.filter(planning_id=original_planning_id)
+
+        for taz in team_action_zones:
+            taz.pk = None
+            taz.planning_id = planning.id
+            taz.save()
+
+        workzones = WorkZone.objects.filter(planning_id=original_planning_id)
+
+        for workzone in workzones:
+            as_list = list(workzone.AS.all())
+            team_list = list(workzone.teams.all())
+
+            workzone.pk = None
+            workzone.planning_id = planning.id
+            workzone.save()
+
+            workzone.AS.clear()
+            workzone.AS.set(as_list)
+
+            workzone.teams.clear()
+            workzone.teams.set(team_list)
+
+        return planning
+
 
 class Assignation(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)

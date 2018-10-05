@@ -59,6 +59,25 @@ class PlanningViewSet(viewsets.ViewSet):
 
         return Response(planning.as_dict())
 
+    def create(self, request):
+        planning_to_copy_id = request.data.get('planning_to_copy', None)
+        year = request.data.get('year', None)
+        name = request.data.get('name', None)
+
+        if planning_to_copy_id:
+            planning = get_object_or_404(Planning, pk=planning_to_copy_id)
+            new_planning = planning.copy(name)
+        else:
+            new_planning = Planning()
+
+        if year:
+            new_planning.year = year
+
+        if name:
+            new_planning.name = name
+
+        return Response(new_planning.as_dict())
+
     def update(self, request, pk=None):
         if pk == "0":
             planning = Planning()

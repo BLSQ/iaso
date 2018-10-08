@@ -62,7 +62,7 @@ class VillageInfosComponent extends Component {
                             type="text"
                             name="name"
                             id={`name-${this.state.village.population}`}
-                            value={this.state.village.population}
+                            value={this.state.village.population ? this.state.village.population : 0}
                             onChange={event => updateVillageField('population', parseInt(event.currentTarget.value, 10))}
                         />
                     </div>
@@ -70,7 +70,7 @@ class VillageInfosComponent extends Component {
                     <div>
                         <label
                             htmlFor={`name-${this.state.village.village_official}`}
-                            className="filter__container__select__label"
+                            className="filter__container__select__label select-label"
                         >
                             <FormattedMessage
                                 id="main.label.village_official"

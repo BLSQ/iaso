@@ -6,7 +6,7 @@
     align-content: center;
     background: rgba(0, 0, 0, 0.5) !important;
     >div {
-        top: 20% !important;
+        top: 15% !important;
     }
 }
 
@@ -49,7 +49,7 @@
             }
         }
     }
-    .half-container{
+    .half-container, .third-container{
         display: flex;
         > div {
             box-sizing: border-box;
@@ -60,25 +60,38 @@
             > div{
                 margin-bottom: 10px;
                 label {
-                    width: 20% !important;
-                    padding-top: 0;
+                    width: 25% !important;
                     &.select-label {
                         top: -6px;
                         position: relative;
                     }
+                    &.filter__container__select__label {
+                        padding-top: 3px;
+                    }
                 }
                 input {
-                    width: 70%;
+                    width: 61%;
+                    font-size: 12px;
                     display: inline-block;
                 }
                 .Select {
-                    width: 74%;
+                    width: 65%;
+                    font-size: 12px;
                     display: inline-block;
                 }
             }
         }
         .filter-item > div.Select {
-            width: 74%;
+            width: 65%;
+            font-size: 12px;
+        }
+    }
+    .third-container {
+        >div {
+            flex-basis: 40%;
+        }
+        .map-container {
+            width: 560px;
         }
     }
 }

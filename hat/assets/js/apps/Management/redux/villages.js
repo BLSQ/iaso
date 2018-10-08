@@ -7,6 +7,8 @@ export const VILLAGE_UPDATED = 'hat/management/villages/VILLAGE_UPDATED';
 export const SELECT_VILLAGE = 'hat/management/villages/SELECT_VILLAGE';
 export const UPDATE_CURRENT_VILLAGE = 'hat/management/villages/UPDATE_CURRENT_VILLAGE';
 export const SET_GEO_PROVINCES = 'hat/management/villages/SET_GEO_PROVINCES';
+export const SET_GEO_ZONES = 'hat/management/villages/SET_GEO_ZONES';
+export const SET_GEO_AREAS = 'hat/management/villages/SET_GEO_AREAS';
 
 const req = require('superagent');
 
@@ -34,6 +36,18 @@ export const selectVillage = payload => ({
 
 export const setGeoProvinces = payload => ({
     type: SET_GEO_PROVINCES,
+    payload,
+});
+
+
+export const setGeoZones = payload => ({
+    type: SET_GEO_ZONES,
+    payload,
+});
+
+
+export const setGeoAreas = payload => ({
+    type: SET_GEO_AREAS,
     payload,
 });
 
@@ -75,35 +89,56 @@ export const createVillage = (dispatch, village) => {
     });
 };
 
+// Delete action will only mark it as erased
 
 export const deleteVillage = (dispatch, village) => {
-    console.log('Do not erase, update tu is_erased = true');
-    // dispatch(loadActions.startLoading());
-    // req
-    //     .delete(`/api/villages/${village.id}/`)
-    //     .set('Content-Type', 'application/json')
-    //     .then(() => {
-    //         dispatch(villageUpdated(true));
-    //         dispatch(loadActions.successLoadingNoData());
-    //     })
-    //     .catch((err) => {
-    //         dispatch(loadActions.errorLoading(err));
-    //         console.error('Error when deleting village', err);
-    //     });
+    const erasedVillage = {
+        id: village.id,
+        is_erased: true,
+    };
+    dispatch(loadActions.startLoading());
+    req
+        .patch(`/api/villages/${village.id}/`) // partial_update
+        .set('Content-Type', 'application/json')
+        .send(erasedVillage)
+        .then(() => {
+            dispatch(villageUpdated(true));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when deleting village', err);
+        });
     return ({
         type: FETCH_ACTION,
     });
 };
 
 
-export const fetchGeoProvinces = (dispatch) => {
-    dispatch(loadActions.startLoading());
+export const fetchGeoDatas = (dispatch) => {
     req
-        .get('/api/provinces/?geojson=true') // partial_update
+        .get('/api/provinces/?geojson=true')
         .set('Content-Type', 'application/json')
         .then((res) => {
             dispatch(setGeoProvinces(res.body));
-            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    req
+        .get('/api/zs/?geojson=true')
+        .set('Content-Type', 'application/json')
+        .then((res) => {
+            dispatch(setGeoZones(res.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    req
+        .get('/api/as/?geojson=true')
+        .set('Content-Type', 'application/json')
+        .then((res) => {
+            dispatch(setGeoAreas(res.body));
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
@@ -118,6 +153,8 @@ export const villagesInitialState = {
     list: [],
     current: null,
     geoProvinces: {},
+    geoZones: {},
+    geoAreas: {},
 };
 
 export const villageActions = {
@@ -128,7 +165,7 @@ export const villageActions = {
     createVillage,
     selectVillage,
     updateCurrentVillage,
-    fetchGeoProvinces,
+    fetchGeoDatas,
 };
 
 
@@ -183,6 +220,22 @@ export const villageReducer = (state = villagesInitialState, action = {}) => {
             return {
                 ...state,
                 geoProvinces,
+            };
+        }
+
+        case SET_GEO_ZONES: {
+            const geoZones = action.payload;
+            return {
+                ...state,
+                geoZones,
+            };
+        }
+
+        case SET_GEO_AREAS: {
+            const geoAreas = action.payload;
+            return {
+                ...state,
+                geoAreas,
             };
         }
 

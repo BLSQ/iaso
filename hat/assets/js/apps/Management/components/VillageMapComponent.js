@@ -1,10 +1,13 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import LayersComponent from '../../../components/LayersComponent';
 import VillageMap from './VillageMap';
 import { deepEqual } from '../../../utils';
 import FiltersComponent from '../../../components/FiltersComponent';
+import { mapActions } from '../redux/mapReducer';
 
 class VillageMapComponent extends Component {
     constructor(props) {
@@ -22,16 +25,18 @@ class VillageMapComponent extends Component {
         }
     }
 
-
     render() {
+        const { baseLayer } = this.props.map;
         const {
             updateVillageField,
             geoProvinces,
+            geoZones,
+            geoAreas,
             params,
             filters,
         } = this.props;
         return (
-            <section className="half-container">
+            <section className="third-container">
                 <div>
                     <div className="filters-container">
                         <FiltersComponent
@@ -40,7 +45,7 @@ class VillageMapComponent extends Component {
                             filters={filters}
                         />
                     </div>
-                    <div className="align-right">
+                    <div>
                         <label
                             htmlFor={`name-${this.state.village.latitude}`}
                             className="filter__container__select__label"
@@ -52,7 +57,7 @@ class VillageMapComponent extends Component {
                         </label>
                         <input
                             type="number"
-                            step=".00001"
+                            step=".001"
                             name="latitude"
                             placeholder="0.00000"
                             id={`name-${this.state.village.latitude}`}
@@ -60,7 +65,7 @@ class VillageMapComponent extends Component {
                             onChange={event => updateVillageField('latitude', event.currentTarget.value)}
                         />
                     </div>
-                    <div className="align-right">
+                    <div>
                         <label
                             htmlFor={`name-${this.state.village.longitude}`}
                             className="filter__container__select__label"
@@ -72,7 +77,7 @@ class VillageMapComponent extends Component {
                         </label>
                         <input
                             type="number"
-                            step=".00001"
+                            step=".001"
                             placeholder="0.00000"
                             name="longitude"
                             id={`name-${this.state.village.longitude}`}
@@ -80,12 +85,33 @@ class VillageMapComponent extends Component {
                             onChange={event => updateVillageField('longitude', event.currentTarget.value)}
                         />
                     </div>
+                    <div className="village-map-layers-container">
+                        <LayersComponent
+                            base={baseLayer}
+                            change={(type, key) => this.props.changeLayer(type, key)}
+                        />
+                    </div>
                 </div>
                 <div className="village-map-container">
-                    <VillageMap
-                        baseLayer="2"
-                        geoProvinces={geoProvinces}
-                    />
+                    {
+                        geoAreas.features && geoProvinces.features && geoZones.features &&
+                        <VillageMap
+                            baseLayer={baseLayer}
+                            geoJson={{
+                                provinces: geoProvinces,
+                                zs: geoZones,
+                                as: geoAreas,
+                            }}
+                            village={this.state.village.latitude && this.state.village.longitude ? this.state.village : null}
+                            updateVillagePosition={(lat, lng) => this.props.updateVillagePosition(lat, lng)}
+                            filters={filters}
+                        />
+                    }
+                    {
+
+                        (!geoAreas.features || !geoProvinces.features || !geoZones.features) &&
+                        <i className="fa fa-spinner fa-pulse fa-5x fa-fw" />
+                    }
                 </div>
             </section>
         );
@@ -97,8 +123,29 @@ VillageMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     updateVillageField: PropTypes.func.isRequired,
     geoProvinces: PropTypes.object.isRequired,
+    geoZones: PropTypes.object.isRequired,
+    geoAreas: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     filters: PropTypes.array.isRequired,
+    map: PropTypes.object.isRequired,
+    changeLayer: PropTypes.func.isRequired,
+    updateVillagePosition: PropTypes.func.isRequired,
 };
 
-export default injectIntl(VillageMapComponent);
+const MapStateToProps = state => ({
+    map: state.map,
+    load: state.load,
+    geoProvinces: state.villages.geoProvinces,
+    geoZones: state.villages.geoZones,
+    geoAreas: state.villages.geoAreas,
+});
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
+});
+
+const VillageMapComponentWithIntl = injectIntl(VillageMapComponent);
+
+
+export default connect(MapStateToProps, MapDispatchToProps)(VillageMapComponentWithIntl);

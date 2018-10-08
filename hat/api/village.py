@@ -67,6 +67,7 @@ class VillageViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "name").split(",")
         include_unlocated = request.GET.get("include_unlocated", None)
         only_unlocated = request.GET.get("only_unlocated", None)
+        is_erased = request.GET.get("only_unlocated", False)
 
         queryset = Village.objects.all()
 
@@ -123,6 +124,9 @@ class VillageViewSet(viewsets.ViewSet):
         if only_unlocated:
             queryset = queryset.filter(
                 Q(latitude__isnull=True) | Q(longitude__isnull=True))
+
+        if is_erased:
+            queryset = queryset.filter(is_erased=is_erased)
 
         res = queryset.values(*values)
 
@@ -192,6 +196,9 @@ class VillageViewSet(viewsets.ViewSet):
         village.population_source = request.data.get('population_source', '')
         village.population_year = request.data.get('population_year', 0)
         village.village_official = request.data.get('village_official', None)
+        village.latitude = request.data.get('latitude', 0)
+        village.longitude = request.data.get('longitude', 0)
+        village.is_erased = request.data.get('is_erased', False)
         AS_id = request.data.get('AS_id', None)
 
         if AS_id:
@@ -208,6 +215,8 @@ class VillageViewSet(viewsets.ViewSet):
         population_year = request.data.get("population_year", 0)
         village_official = request.data.get("village_official", None)
         AS_id = request.data.get('AS_id', None)
+        latitude = request.data.get('latitude', 0)
+        longitude = request.data.get('longitude', 0)
 
 
         village = Village()
@@ -216,6 +225,8 @@ class VillageViewSet(viewsets.ViewSet):
         village.population_source = population_source
         village.population_year = population_year
         village.village_official = village_official
+        village.latitude = latitude
+        village.longitude = longitude
         if AS_id:
             newAs = get_object_or_404(AS, pk=AS_id)
             village.AS = newAs

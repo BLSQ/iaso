@@ -129,6 +129,7 @@ class Village(models.Model):
     population = models.PositiveIntegerField(null=True)
     population_source = models.TextField(null=True)
     population_year = models.PositiveIntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -171,6 +172,7 @@ class Village(models.Model):
         "village_source": self.village_source,
         "gps_source": self.gps_source,
         "is_located": is_located,
+        "is_erased": self.is_erased,
     }
 
 

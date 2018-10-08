@@ -86,6 +86,10 @@ $directions: left right top bottom;
     text-align: right;
 }
 
+.align-left {
+    text-align: left;
+}
+
 .align-center {
     text-align: center;
 }
@@ -101,6 +105,14 @@ $directions: left right top bottom;
 
 .hidden {
     display: none;
+}
+.hidden-opacity {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: -100;
+    opacity: 0;
 }
 
 .border-top {

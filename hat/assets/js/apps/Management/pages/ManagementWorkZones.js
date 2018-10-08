@@ -23,7 +23,6 @@ const baseApiUrl = '/api/workzones/?';
 
 function getBaseURL(props) {
     let url = baseApiUrl;
-    console.log('props.params', props.params);
     if (props.params.planning_id) {
         url = `${url}planning_id=${props.params.planning_id}`;
     }
@@ -267,7 +266,6 @@ class ManagementWorkZones extends React.Component {
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
-        console.log('this.state.tableUrl', this.state.tableUrl);
         return (
             <section>
                 <WokzoneModaleComponent

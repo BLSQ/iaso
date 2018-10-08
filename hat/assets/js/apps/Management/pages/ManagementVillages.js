@@ -16,6 +16,8 @@ import { filterActions } from '../../../redux/filtersRedux';
 const newUser = {
     id: 0,
     name: '',
+    latitude: 0.0000,
+    longitude: 0.0000,
 };
 
 class ManagementVillages extends React.Component {
@@ -32,7 +34,7 @@ class ManagementVillages extends React.Component {
 
     componentWillMount() {
         this.props.fetchProvinces();
-        this.props.fetchGeoProvinces();
+        this.props.fetchGeoDatas();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -198,7 +200,7 @@ ManagementVillages.propTypes = {
     isUpdated: PropTypes.bool.isRequired,
     selectedVillage: PropTypes.object,
     fetchProvinces: PropTypes.func.isRequired,
-    fetchGeoProvinces: PropTypes.func.isRequired,
+    fetchGeoDatas: PropTypes.func.isRequired,
     geoFilters: PropTypes.object.isRequired,
     geoProvinces: PropTypes.object.isRequired,
 };
@@ -221,7 +223,7 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentVillage: villageId => dispatch(villageActions.updateCurrentVillage(villageId)),
     selectVillage: village => dispatch(villageActions.selectVillage(village)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoProvinces: () => dispatch(villageActions.fetchGeoProvinces(dispatch)),
+    fetchGeoDatas: () => dispatch(villageActions.fetchGeoDatas(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);

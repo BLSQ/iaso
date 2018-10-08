@@ -22,6 +22,9 @@ const MESSAGES = defineMessages({
         id: 'management.localisation',
     },
 });
+let timerSuccess;
+let timerError;
+
 class VillageModale extends Component {
     constructor(props) {
         super(props);
@@ -55,10 +58,11 @@ class VillageModale extends Component {
             this.props.selectArea(nextProps.village.AS_id, nextProps.village.ZS_id);
         }
         let newState = {};
+        newState.village = nextProps.village;
         if (nextProps.isUpdated) {
             newState.isUpdated = nextProps.isUpdated;
             newState.error = false;
-            setTimeout(() => {
+            timerSuccess = setTimeout(() => {
                 this.setState({
                     isUpdated: false,
                 });
@@ -70,7 +74,7 @@ class VillageModale extends Component {
                 isUpdated: false,
                 isChanged: true,
             };
-            setTimeout(() => {
+            timerError = setTimeout(() => {
                 this.setState({
                     error: false,
                 });
@@ -84,6 +88,12 @@ class VillageModale extends Component {
 
     componentWillUnmount() {
         this.props.selectProvince(null);
+        if (timerSuccess) {
+            clearTimeout(timerSuccess);
+        }
+        if (timerError) {
+            clearTimeout(timerError);
+        }
     }
 
 
@@ -102,16 +112,23 @@ class VillageModale extends Component {
         });
     }
 
+    updateVillagePosition(latitude, longitude) {
+        const newVillage = Object.assign({}, this.state.village, { latitude, longitude });
+        this.props.updateCurrentVillage(newVillage);
+        this.setState({
+            isChanged: true,
+        });
+    }
+
     isSavedDisabled() {
         return (this.state.village.name === '' ||
             !this.state.village.name ||
             !this.state.village.province_id ||
             !this.state.village.ZS_id ||
             !this.state.village.AS_id ||
-            !this.state.village.population ||
             !this.state.village.village_official ||
-            // !this.state.village.latitude ||
-            // !this.state.village.longitude ||
+            this.state.village.latitude === 0 ||
+            this.state.village.longitude === 0 ||
             (!this.state.isChanged && this.state.village.id !== 0));
     }
 
@@ -123,7 +140,6 @@ class VillageModale extends Component {
                 zones,
                 areas,
             },
-            geoProvinces,
             params,
         } = this.props;
         const geo = filtersGeo(
@@ -157,17 +173,15 @@ class VillageModale extends Component {
                             updateVillageField={(key, value) => this.updateVillageField(key, value)}
                         />
                     }
-
-                    {
-                        this.state.currentTab === 'localisation' &&
+                    <section className={this.state.currentTab !== 'localisation' ? 'hidden-opacity' : ''} >
                         <VillageMapComponent
                             village={this.state.village}
                             updateVillageField={(key, value) => this.updateVillageField(key, value)}
-                            geoProvinces={geoProvinces}
                             filters={geo}
                             params={params}
+                            updateVillagePosition={(lat, lng) => this.updateVillagePosition(lat, lng)}
                         />
-                    }
+                    </section>
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
@@ -186,7 +200,7 @@ class VillageModale extends Component {
                             onClick={() => this.props.closeModale()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
                         </button>
                         <button
                             disabled={this.isSavedDisabled()}
@@ -220,7 +234,6 @@ VillageModale.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
-    geoProvinces: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({

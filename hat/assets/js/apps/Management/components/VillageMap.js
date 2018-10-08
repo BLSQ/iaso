@@ -38,15 +38,66 @@ const MESSAGES = defineMessages({
     },
 });
 
+const shapes = {
+    province: new L.FeatureGroup(),
+};
+
+
+// at which zoom can be displayed in map
+const zooms = {
+    province: -1, // always in map
+    zs: 7,
+    as: 9,
+};
+const shapeOptions = (type, element) => ({
+    pane: 'custom-pane-shapes',
+    style: () => ({ className: String.raw`map-layer ${type}` }),
+    onEachFeature: (feature, layer) => {
+        element.addLayerEvents(layer, feature.properties);
+    },
+});
+
+const plotOrHideLayer = (map, minZoom, type, geoJson, element) => {
+    if (shapes[type]) {
+        const layer = shapes[type];
+        if (map.getZoom() > minZoom) {
+            if (!map.hasLayer(layer)) {
+                layer.on('click', (event) => {
+                    if (!element.props.village) {
+                        element.props.updateVillagePosition(
+                            parseFloat(event.latlng.lat).toFixed(5),
+                            parseFloat(event.latlng.lng).toFixed(5),
+                        );
+                    }
+                });
+                map.addLayer(layer);
+            }
+        } else if (map.hasLayer(layer)) {
+            map.removeLayer(layer);
+        }
+    } else if (map.getZoom() > minZoom) {
+        shapes[type] = new L.FeatureGroup();
+        const shape = shapes[type];
+        const minZoomTemp = zooms[type];
+        shape.addLayer(L.geoJson(geoJson[type], shapeOptions(type, element)));
+        shape.on('click', (event) => {
+            if (!element.props.village) {
+                element.props.updateVillagePosition(
+                    parseFloat(event.latlng.lat).toFixed(5),
+                    parseFloat(event.latlng.lng).toFixed(5),
+                );
+            }
+        });
+        plotOrHideLayer(map, minZoomTemp, type, geoJson, element);
+    }
+};
 
 class VillageMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
             containers: {},
-            layers: {
-                villages: new L.FeatureGroup(),
-            },
+            isFirstLoad: true,
         };
     }
 
@@ -54,20 +105,19 @@ class VillageMap extends Component {
         this.createMap();
         this.includeControlsInMap();
         this.includeDefaultLayersInMap();
-        this.updateBaseLayer();
+        this.updateBaseLayer(this.props.baseLayer);
         this.fitToBounds();
+        this.updateMap(this.props.village);
     }
 
     componentWillReceiveProps(nextProps) {
         const { map } = this;
-        const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
         map.whenReady(() => {
-            // only call if base layer changed
-            if (hasChanged(nextProps, this.props, 'baseLayer')) {
-                this.updateBaseLayer();
+            if (this.props.baseLayer !== nextProps.baseLayer) {
+                this.updateBaseLayer(nextProps.baseLayer);
             }
-            if (hasChanged(nextProps, this.props, 'provinces')) {
-                this.updateMap();
+            if (!this.props.village && nextProps.village) {
+                this.updateMap(nextProps.village);
             }
         });
     }
@@ -97,6 +147,16 @@ class VillageMap extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-markers');
+        map.on('mouseup', () => {
+            map.dragging.enable();
+        }).on('click', (event) => {
+            if (!this.props.village) {
+                this.props.updateVillagePosition(
+                    parseFloat(event.latlng.lat).toFixed(5),
+                    parseFloat(event.latlng.lng).toFixed(5),
+                );
+            }
+        });
         this.map = map;
     }
 
@@ -132,48 +192,35 @@ class VillageMap extends Component {
     }
 
     includeDefaultLayersInMap() {
-        //
-        // include relevant and constant layers
-        //
         const { map } = this;
-        const { layers } = this.state;
-        this.provincesGroup = new L.FeatureGroup();
-        map.addLayer(this.provincesGroup);
-        // assign labels overlay using the existent labels group
+        this.shapesGroup = new L.FeatureGroup();
+        this.villageGroup = new L.FeatureGroup();
 
-        //
-        // plot the ALL boundaries
-        //
-        const shapes = {
-            province: new L.FeatureGroup(),
-        };
-
-        const shapeOptions = type => ({
-            pane: 'custom-pane-shapes',
-            style: () => ({ className: String.raw`map-layer ${type}` }),
-            onEachFeature: (feature, layer) => {
-                this.addLayerEvents(layer, feature.properties);
-            },
-        });
-
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
-
+        map.addLayer(this.shapesGroup);
+        map.addLayer(this.villageGroup);
 
         const shape = shapes.province;
-        const data = geoUtils.data.province;
         const minZoom = zooms.province;
-
-        shape.addLayer(L.geoJson(data, shapeOptions('province')));
+        const {
+            geoJson,
+        } = this.props;
+        shape.addLayer(L.geoJson(geoJson.provinces, shapeOptions('provinces', this)));
+        shape.on('click', (event) => {
+            if (!this.props.village) {
+                this.props.updateVillagePosition(
+                    parseFloat(event.latlng.lat).toFixed(5),
+                    parseFloat(event.latlng.lng).toFixed(5),
+                );
+            }
+        });
         if (minZoom < 0) {
-            // province divisions are always visible and are use as default bounds
             map.addLayer(shape);
             this.state.defaultBounds = shape.getBounds();
         }
+        L.DomEvent.on(map, 'zoomend', () => {
+            plotOrHideLayer(map, zooms.zs, 'zs', geoJson, this);
+            plotOrHideLayer(map, zooms.as, 'as', geoJson, this);
+        });
     }
 
     /*
@@ -181,10 +228,8 @@ class VillageMap extends Component {
 * UPDATE STATE
 *************************************************************************** */
 
-    updateBaseLayer() {
-        const { baseLayer } = this.props;
+    updateBaseLayer(baseLayer) {
         const { map } = this;
-
         Object.keys(BASE_LAYERS).forEach((key) => {
             const layer = BASE_LAYERS[key];
             if (key === baseLayer) {
@@ -196,25 +241,53 @@ class VillageMap extends Component {
     }
 
 
-    updateMap() {
-        const {
-            geoProvinces,
-        } = this.props;
-        this.provincesGroup.clearLayers();
-        const areas = L.geoJSON(geoProvinces, {
-            onEachFeature: (feature, layer) => {
-                layer.setStyle({
-                    className: 'provinces',
+    updateMap(village) {
+        const { map } = this;
+        this.villageGroup.clearLayers();
+        const color = 'blue';
+        if (village && village.latitude && village.longitude) {
+            const newVillage = L.circle([village.latitude, village.longitude], {
+                color,
+                fillColor: color,
+                fillOpacity: 0.5,
+                radius: 500,
+                pane: 'custom-pane-markers',
+            }).on('mousedown', () => {
+                map.dragging.disable();
+                map.on('mousemove', (event) => {
+                    if (!map.dragging._enabled) {
+                        newVillage.setLatLng([event.latlng.lat, event.latlng.lng]);
+                    }
                 });
-            },
-        });
-        areas.addTo(this.provincesGroup);
-        this.fitToBounds();
+            }).on('mouseup', (event) => {
+                if (!map.dragging._enabled) {
+                    this.props.updateVillagePosition(
+                        parseFloat(event.latlng.lat).toFixed(5),
+                        parseFloat(event.latlng.lng).toFixed(5),
+                    );
+                }
+            });
+            newVillage.addTo(this.villageGroup);
+        }
+
+        if (this.state.isFirstLoad) {
+            this.fitToBounds();
+            this.setState({
+                isFirstLoad: false,
+            });
+        }
     }
 
     updateTooltipSmall(item) {
+        const { map } = this;
+        const currentZoom = map.getZoom();
         if (item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label;
+            if (item.ZS) {
+                const currentZS = this.props.geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === item.ZS)[0];
+                this.state.containers.tooltipSmall.innerHTML = `AS: ${item.name} - ZS: ${currentZS.properties.name}`;
+            } else {
+                this.state.containers.tooltipSmall.innerHTML = `${currentZoom <= zooms.zs ? 'Province' : 'ZS'}: ${item.name}`;
+            }
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -234,9 +307,9 @@ class VillageMap extends Component {
 
 
         setTimeout(() => {
-            const bounds = this.provincesGroup.getBounds();
+            const bounds = this.villageGroup.getBounds();
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [25, 25] });
+                map.fitBounds(bounds, { maxZoom: 10, padding: [100, 100] });
             }
             map.invalidateSize();
         }, 1);
@@ -248,7 +321,7 @@ class VillageMap extends Component {
 *************************************************************************** */
 
     addLayerEvents(layer, item) {
-        // layer.bindTooltip(item.label, {sticky: true})
+        const { map } = this;
         layer.on({
             click: (event) => {
                 L.DomEvent.stop(event);
@@ -258,7 +331,9 @@ class VillageMap extends Component {
             },
             mouseover: (event) => {
                 L.DomEvent.stop(event);
-                this.updateTooltipSmall(item);
+                if (map.dragging._enabled) {
+                    this.updateTooltipSmall(item);
+                }
             },
             mouseout: (event) => {
                 L.DomEvent.stop(event);
@@ -283,13 +358,17 @@ class VillageMap extends Component {
     }
 }
 VillageMap.defaultProps = {
-    geoProvinces: {},
+    geoJson: {},
+    village: undefined,
 };
 
 VillageMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    geoProvinces: PropTypes.object,
+    geoJson: PropTypes.object,
     intl: intlShape.isRequired,
+    village: PropTypes.object,
+    updateVillagePosition: PropTypes.func.isRequired,
+    filters: PropTypes.array.isRequired,
 };
 
 export default injectIntl(VillageMap);

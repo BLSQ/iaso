@@ -32,6 +32,7 @@ class ManagementVillages extends React.Component {
 
     componentWillMount() {
         this.props.fetchProvinces();
+        this.props.fetchGeoProvinces();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -101,6 +102,7 @@ class ManagementVillages extends React.Component {
             isUpdated,
             load,
             selectVillage,
+            geoProvinces,
         } = this.props;
         return (
             <section>
@@ -115,6 +117,7 @@ class ManagementVillages extends React.Component {
                         isUpdated={isUpdated}
                         error={load.error}
                         params={this.props.params}
+                        geoProvinces={geoProvinces}
                     />
                 }
                 {
@@ -195,7 +198,9 @@ ManagementVillages.propTypes = {
     isUpdated: PropTypes.bool.isRequired,
     selectedVillage: PropTypes.object,
     fetchProvinces: PropTypes.func.isRequired,
+    fetchGeoProvinces: PropTypes.func.isRequired,
     geoFilters: PropTypes.object.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
 };
 
 const ManagementVillagesIntl = injectIntl(ManagementVillages);
@@ -205,6 +210,7 @@ const MapStateToProps = state => ({
     isUpdated: state.villages.isUpdated,
     selectedVillage: state.villages.current,
     geoFilters: state.geoFilters,
+    geoProvinces: state.villages.geoProvinces,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -215,6 +221,7 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentVillage: villageId => dispatch(villageActions.updateCurrentVillage(villageId)),
     selectVillage: village => dispatch(villageActions.selectVillage(village)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
+    fetchGeoProvinces: () => dispatch(villageActions.fetchGeoProvinces(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);

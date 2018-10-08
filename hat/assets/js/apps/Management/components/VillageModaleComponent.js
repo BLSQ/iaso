@@ -2,16 +2,26 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { FormattedMessage, injectIntl } from 'react-intl';
-import Select from 'react-select';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
 import { createUrl } from '../../../utils/fetchData';
 import { deepEqual } from '../../../utils';
 import { filterActions } from '../../../redux/filtersRedux';
-import FiltersComponent from '../../../components/FiltersComponent';
 import filtersGeo from '../constants/geoFilters';
+import VillageInfosComponent from './VillageInfosComponent';
+import VillageMapComponent from './VillageMapComponent';
+import TabsComponent from '../../../components/TabsComponent';
 
-
+const MESSAGES = defineMessages({
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'management.infos',
+    },
+    localisation: {
+        defaultMessage: 'Localisation',
+        id: 'management.localisation',
+    },
+});
 class VillageModale extends Component {
     constructor(props) {
         super(props);
@@ -21,6 +31,7 @@ class VillageModale extends Component {
             isChanged: false,
             isUpdated: false,
             error: false,
+            currentTab: 'infos',
         };
     }
 
@@ -105,12 +116,14 @@ class VillageModale extends Component {
     }
 
     render() {
+        const { formatMessage } = this.props.intl;
         const {
             geoFiltersModale: {
                 provinces,
                 zones,
                 areas,
             },
+            geoProvinces,
             params,
         } = this.props;
         const geo = filtersGeo(
@@ -119,110 +132,42 @@ class VillageModale extends Component {
             areas,
             this,
         );
-        const { formatMessage } = this.props.intl;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.closeModale()}
             >
-                <section className="edit-modal large">
-                    <section>
-                        <div className="align-right">
-                            <label
-                                htmlFor={`name-${this.state.village.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.name"
-                                    defaultMessage="Nom"
-                                />:
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                id={`name-${this.state.village.id}`}
-                                value={this.state.village.name}
-                                onChange={event => this.updateVillageField('name', event.currentTarget.value)}
-                            />
-                        </div>
-                        <div className="align-right">
-                            <label
-                                htmlFor={`name-${this.state.village.population}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.population"
-                                    defaultMessage="population"
-                                />:
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                id={`name-${this.state.village.population}`}
-                                value={this.state.village.population}
-                                onChange={event => this.updateVillageField('population', parseInt(event.currentTarget.value, 10))}
-                            />
-                        </div>
+                <section className="edit-modal large extra">
+                    <TabsComponent
+                        selectTab={key => (this.setState({ currentTab: key }))}
+                        isRedirecting={false}
+                        currentTab={this.state.currentTab}
+                        tabs={[
+                            { label: formatMessage(MESSAGES.infos), key: 'infos' },
+                            { label: formatMessage(MESSAGES.localisation), key: 'localisation' },
+                        ]}
+                        defaultSelect={this.state.currentTab}
+                    />
 
-                        <div>
-                            <label
-                                htmlFor={`name-${this.state.village.village_official}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.village_official"
-                                    defaultMessage="Officel"
-                                />:
-                            </label>
-                            <Select
-                                multi={false}
-                                clearable
-                                simpleValue
-                                name="village_official"
-                                value={this.state.village.village_official}
-                                placeholder="--"
-                                options={[
-                                    {
-                                        label: formatMessage({
-                                            defaultMessage: 'Villages officiels',
-                                            id: 'management.village_official.YES',
-                                        }),
-                                        value: 'YES',
-                                    },
-                                    {
-                                        label: formatMessage({
-                                            defaultMessage: 'Villages non officiels',
-                                            id: 'management.village_official.NO',
-                                        }),
-                                        value: 'NO',
-                                    },
-                                    {
-                                        label: formatMessage({
-                                            defaultMessage: 'Villages trouvés lors de campagne',
-                                            id: 'management.village_official.OTHER',
-                                        }),
-                                        value: 'OTHER',
-                                    },
-                                    {
-                                        label: formatMessage({
-                                            defaultMessage: 'Villages issus d\'images satellite',
-                                            id: 'management.village_official.NA',
-                                        }),
-                                        value: 'NA',
-                                    },
-                                ]}
-                                onChange={value => this.updateVillageField('village_official', value)}
-                            />
-                        </div>
-                        <div className="filters-container">
-                            <FiltersComponent
-                                params={params}
-                                baseUrl="management/villages"
-                                filters={geo}
-                            />
-                        </div>
-                    </section>
+                    {
+                        this.state.currentTab === 'infos' &&
+                        <VillageInfosComponent
+                            village={this.state.village}
+                            updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                        />
+                    }
+
+                    {
+                        this.state.currentTab === 'localisation' &&
+                        <VillageMapComponent
+                            village={this.state.village}
+                            updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                            geoProvinces={geoProvinces}
+                            filters={geo}
+                            params={params}
+                        />
+                    }
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
@@ -275,6 +220,7 @@ VillageModale.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({

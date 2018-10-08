@@ -6,6 +6,7 @@ export const SET_VILLAGES = 'hat/management/villages/SET_VILLAGES';
 export const VILLAGE_UPDATED = 'hat/management/villages/VILLAGE_UPDATED';
 export const SELECT_VILLAGE = 'hat/management/villages/SELECT_VILLAGE';
 export const UPDATE_CURRENT_VILLAGE = 'hat/management/villages/UPDATE_CURRENT_VILLAGE';
+export const SET_GEO_PROVINCES = 'hat/management/villages/SET_GEO_PROVINCES';
 
 const req = require('superagent');
 
@@ -28,6 +29,11 @@ export const updateCurrentVillage = payload => ({
 
 export const selectVillage = payload => ({
     type: SELECT_VILLAGE,
+    payload,
+});
+
+export const setGeoProvinces = payload => ({
+    type: SET_GEO_PROVINCES,
     payload,
 });
 
@@ -71,28 +77,47 @@ export const createVillage = (dispatch, village) => {
 
 
 export const deleteVillage = (dispatch, village) => {
-    dispatch(loadActions.startLoading());
-    req
-        .delete(`/api/villages/${village.id}/`)
-        .set('Content-Type', 'application/json')
-        .then(() => {
-            dispatch(villageUpdated(true));
-            dispatch(loadActions.successLoadingNoData());
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when deleting village', err);
-        });
+    console.log('Do not erase, update tu is_erased = true');
+    // dispatch(loadActions.startLoading());
+    // req
+    //     .delete(`/api/villages/${village.id}/`)
+    //     .set('Content-Type', 'application/json')
+    //     .then(() => {
+    //         dispatch(villageUpdated(true));
+    //         dispatch(loadActions.successLoadingNoData());
+    //     })
+    //     .catch((err) => {
+    //         dispatch(loadActions.errorLoading(err));
+    //         console.error('Error when deleting village', err);
+    //     });
     return ({
         type: FETCH_ACTION,
     });
 };
 
 
+export const fetchGeoProvinces = (dispatch) => {
+    dispatch(loadActions.startLoading());
+    req
+        .get('/api/provinces/?geojson=true') // partial_update
+        .set('Content-Type', 'application/json')
+        .then((res) => {
+            dispatch(setGeoProvinces(res.body));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const villagesInitialState = {
     isUpdated: false,
     list: [],
     current: null,
+    geoProvinces: {},
 };
 
 export const villageActions = {
@@ -103,6 +128,7 @@ export const villageActions = {
     createVillage,
     selectVillage,
     updateCurrentVillage,
+    fetchGeoProvinces,
 };
 
 
@@ -149,6 +175,14 @@ export const villageReducer = (state = villagesInitialState, action = {}) => {
             return {
                 ...state,
                 current,
+            };
+        }
+
+        case SET_GEO_PROVINCES: {
+            const geoProvinces = action.payload;
+            return {
+                ...state,
+                geoProvinces,
             };
         }
 

@@ -59,6 +59,7 @@ class VillageViewSet(viewsets.ViewSet):
         types = request.GET.get("types", "YES")
         as_list = request.GET.get("as_list", False)
         results = request.GET.get("results", "ALL")
+        result = request.GET.get("results", None)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         search = request.GET.get("search", None)
@@ -66,8 +67,9 @@ class VillageViewSet(viewsets.ViewSet):
         page_offset = int(request.GET.get("page", None))
         orders = request.GET.get("order", "name").split(",")
         include_unlocated = request.GET.get("include_unlocated", None)
-        only_unlocated = request.GET.get("only_unlocated", None)
-        is_erased = request.GET.get("only_unlocated", False)
+        unlocated = request.GET.get("unlocated", None)
+        population = request.GET.get("population", None)
+        is_erased = request.GET.get("is_erased", False)
 
         queryset = Village.objects.all()
 
@@ -118,16 +120,27 @@ class VillageViewSet(viewsets.ViewSet):
         if results == "negative":
             queryset = queryset.filter(nr_positive_cases=0)
 
+        if unlocated:
+            if unlocated == "located":
+                queryset = queryset.filter(
+                    Q(latitude__isnull=False) & Q(longitude__isnull=False))
+            if unlocated == "unlocated":
+                queryset = queryset.filter(latitude__isnull=True, longitude__isnull=True)
+
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
 
-        if only_unlocated:
-            queryset = queryset.filter(
-                Q(latitude__isnull=True) | Q(longitude__isnull=True))
 
         if is_erased:
             queryset = queryset.filter(is_erased=is_erased)
 
+        if population:
+            if population == "populationOk":
+                queryset = queryset.filter(
+                    Q(population__gte=0) & Q(population__isnull=False))
+            if population == "populationNok":
+                queryset = queryset.filter(
+                    Q(population=0) | Q(population__isnull=True))
         res = queryset.values(*values)
 
         if as_list:

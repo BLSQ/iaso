@@ -1,8 +1,7 @@
-const selectProvince = (provinceId, props) => {
+const selectProvince = (provinceId, props, urlKey) => {
     const {
         params,
         filters,
-        urlKey,
     } = props;
     const tempParams = {
         ...params,
@@ -70,11 +69,10 @@ const selectProvince = (provinceId, props) => {
     props.redirectTo(urlKey, tempParams);
 };
 
-const selectZone = (zoneId, props) => {
+const selectZone = (zoneId, props, urlKey) => {
     const {
         params,
         filters,
-        urlKey,
     } = props;
     const tempParams = {
         ...props.params,
@@ -126,11 +124,10 @@ const selectZone = (zoneId, props) => {
     props.redirectTo(urlKey, tempParams);
 };
 
-const selectArea = (areaId, props) => {
+const selectArea = (areaId, props, urlKey) => {
     const {
         params,
         filters,
-        urlKey,
     } = props;
     const tempParams = {
         ...props.params,

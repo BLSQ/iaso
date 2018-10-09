@@ -59,7 +59,6 @@ class VillageViewSet(viewsets.ViewSet):
         types = request.GET.get("types", "YES")
         as_list = request.GET.get("as_list", False)
         results = request.GET.get("results", "ALL")
-        result = request.GET.get("results", None)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         search = request.GET.get("search", None)
@@ -136,8 +135,7 @@ class VillageViewSet(viewsets.ViewSet):
 
         if population:
             if population == "populationOk":
-                queryset = queryset.filter(
-                    Q(population__gte=0) & Q(population__isnull=False))
+                queryset = queryset.filter(Q(population__gt=0))
             if population == "populationNok":
                 queryset = queryset.filter(
                     Q(population=0) | Q(population__isnull=True))

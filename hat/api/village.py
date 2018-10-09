@@ -1,3 +1,4 @@
+from copy import copy
 from django.db.models import Count
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -9,7 +10,7 @@ from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
-from hat.audit.models import log_modification
+from hat.audit.models import log_modification, VILLAGE_API
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -202,6 +203,7 @@ class VillageViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         village = get_object_or_404(Village, id=pk)
+        original_village = copy(village)
         village.name = request.data.get('name', '')
         village.population = request.data.get('population', 0)
         village.population_source = request.data.get('population_source', '')
@@ -220,6 +222,7 @@ class VillageViewSet(viewsets.ViewSet):
             village.AS = newAs
 
         village.save()
+        log_modification(original_village, village, VILLAGE_API, request.user)
         return Response(village.as_dict())
 
     def create(self, request):
@@ -251,10 +254,5 @@ class VillageViewSet(viewsets.ViewSet):
             newAs = get_object_or_404(AS, pk=AS_id)
             village.AS = newAs
         village.save()
-
+        log_modification(None, village, VILLAGE_API, request.user)
         return Response(village.as_dict())
-
-    def delete(self, request, pk):
-        village = get_object_or_404(Village, id=pk)
-        village.delete()
-        return Response("ok")

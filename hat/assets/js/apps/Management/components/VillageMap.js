@@ -242,7 +242,6 @@ class VillageMap extends Component {
         }).on('mouseup', (event) => {
             map.getPane('custom-pane-as-shapes').style.zIndex = 400;
             if (!map.dragging._enabled && !map.boxZoom._box) {
-                console.log('ici');
                 this.props.updateVillagePosition(
                     parseFloat(event.latlng.lat).toFixed(5),
                     parseFloat(event.latlng.lng).toFixed(5),

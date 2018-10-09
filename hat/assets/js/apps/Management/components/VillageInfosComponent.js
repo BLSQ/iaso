@@ -118,6 +118,62 @@ class VillageInfosComponent extends Component {
                         />
                     </div>
                 </div>
+                <div>
+                    <div>
+                        <label
+                            htmlFor={`village_type-${this.state.village.village_type}`}
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.village_type"
+                                defaultMessage="Type de village"
+                            />:
+                        </label>
+                        <input
+                            type="text"
+                            name="village_type"
+                            id={`village_type-${this.state.village.village_type}`}
+                            value={this.state.village.village_type}
+                            onChange={event => updateVillageField('village_type', event.currentTarget.value)}
+                        />
+                    </div>
+                    <div>
+                        <label
+                            htmlFor={`village_source-${this.state.village.village_source}`}
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.village_source"
+                                defaultMessage="Source du village"
+                            />:
+                        </label>
+                        <input
+                            type="text"
+                            name="village_source"
+                            id={`village_source-${this.state.village.village_source}`}
+                            value={this.state.village.village_source}
+                            onChange={event => updateVillageField('village_source', event.currentTarget.value)}
+                        />
+                    </div>
+                    <div>
+                        <label
+                            htmlFor={`gps_source-${this.state.village.gps_source}`}
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.gps_source"
+                                defaultMessage="Source gps"
+                            />:
+                        </label>
+                        <input
+                            type="text"
+                            name="gps_source"
+                            id={`gps_source-${this.state.village.gps_source}`}
+                            value={this.state.village.gps_source}
+                            onChange={event => updateVillageField('gps_source', event.currentTarget.value)}
+                        />
+                    </div>
+                </div>
             </section>
         );
     }

@@ -199,6 +199,9 @@ class VillageViewSet(viewsets.ViewSet):
         village.latitude = request.data.get('latitude', 0)
         village.longitude = request.data.get('longitude', 0)
         village.is_erased = request.data.get('is_erased', False)
+        village.village_type = request.data.get('village_type', '')
+        village.village_source = request.data.get('village_source', '')
+        village.gps_source = request.data.get('gps_source', '')
         AS_id = request.data.get('AS_id', None)
 
         if AS_id:
@@ -217,6 +220,9 @@ class VillageViewSet(viewsets.ViewSet):
         AS_id = request.data.get('AS_id', None)
         latitude = request.data.get('latitude', 0)
         longitude = request.data.get('longitude', 0)
+        village_type = request.data.get('village_type', '')
+        village_source = request.data.get('village_source', '')
+        gps_source = request.data.get('gps_source', '')
 
 
         village = Village()
@@ -227,6 +233,9 @@ class VillageViewSet(viewsets.ViewSet):
         village.village_official = village_official
         village.latitude = latitude
         village.longitude = longitude
+        village.village_type = village_type
+        village.village_source = village_source
+        village.gps_source = gps_source
         if AS_id:
             newAs = get_object_or_404(AS, pk=AS_id)
             village.AS = newAs

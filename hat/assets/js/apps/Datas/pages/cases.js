@@ -6,7 +6,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
-import { filterActions } from '../../../redux/filters';
+import { filterActions } from '../../../redux/filtersRedux';
 
 import casesListColumns from '../constants/casesListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -115,6 +115,7 @@ class Cases extends Component {
             areas || [],
             villages || [],
             this.props,
+            'cases',
         );
 
         return (

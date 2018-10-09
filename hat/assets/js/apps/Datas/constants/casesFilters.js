@@ -258,6 +258,7 @@ const filtersGeo = (
     areas,
     villages,
     props,
+    urlKey,
 ) => (
     [
         {
@@ -275,7 +276,7 @@ const filtersGeo = (
                 defaultMessage: 'Provinces',
             },
             type: 'select',
-            callback: value => selectProvince(value, props),
+            callback: value => selectProvince(value, props, urlKey),
         },
         {
             name: 'zs_id',
@@ -293,7 +294,7 @@ const filtersGeo = (
                 defaultMessage: 'Zones de santé',
             },
             type: 'select',
-            callback: value => selectZone(value, props),
+            callback: value => selectZone(value, props, urlKey),
         },
         {
             name: 'as_id',
@@ -311,7 +312,7 @@ const filtersGeo = (
                 defaultMessage: 'Aire de santé',
             },
             type: 'select',
-            callback: value => selectArea(value, props),
+            callback: value => selectArea(value, props, urlKey),
         },
         {
             name: 'village_id',

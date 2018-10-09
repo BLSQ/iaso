@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import Search from './Search';
 
 import { createUrl } from '../utils/fetchData';
@@ -11,18 +11,18 @@ import { createUrl } from '../utils/fetchData';
 
 class FiltersComponent extends React.Component {
     onChange(urlKey, value, callback) {
-        const {
-            params,
-            redirectTo,
-            baseUrl,
-        } = this.props;
-        const newParams = {
-            ...params,
-        };
-        newParams[urlKey] = value;
         if (callback) {
             callback(value);
         } else {
+            const {
+                params,
+                redirectTo,
+                baseUrl,
+            } = this.props;
+            const newParams = {
+                ...params,
+            };
+            newParams[urlKey] = value;
             redirectTo(baseUrl, newParams);
         }
     }
@@ -51,7 +51,7 @@ class FiltersComponent extends React.Component {
                                                 clearable={filter.isClearable}
                                                 simpleValue
                                                 name={filter.name}
-                                                value={params[filter.urlKey]}
+                                                value={filter.value || params[filter.urlKey]}
                                                 placeholder={formatMessage(filter.placeholder)}
                                                 options={filter.options.map(item =>
                                                     ({ label: item.label || item.name, value: item.value || item.id }))}

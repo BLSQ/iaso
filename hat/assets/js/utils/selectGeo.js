@@ -1,7 +1,7 @@
-const selectProvince = (provinceId, props) => {
+const selectProvince = (provinceId, props, urlKey) => {
     const {
         params,
-        cases,
+        filters,
     } = props;
     const tempParams = {
         ...params,
@@ -21,7 +21,7 @@ const selectProvince = (provinceId, props) => {
             }
             return null;
         });
-        const zonesToDelete = cases.zones.filter(z => z.province_id === parseInt(provinceDeleted, 10));
+        const zonesToDelete = filters.zones.filter(z => z.province_id === parseInt(provinceDeleted, 10));
         let areasToDelete = [];
         if (tempParams.as_id) {
             const zsArray = tempParams.zs_id.split(',').slice();
@@ -31,7 +31,7 @@ const selectProvince = (provinceId, props) => {
                     zsArray.splice(zsArray.indexOf(zoneId), 1);
                 }
                 if (params.as_id) {
-                    areasToDelete = areasToDelete.concat(cases.areas.filter(a => a.ZS_id === z.id));
+                    areasToDelete = areasToDelete.concat(filters.areas.filter(a => a.ZS_id === z.id));
                 }
                 return null;
             });
@@ -47,7 +47,7 @@ const selectProvince = (provinceId, props) => {
                     asArray.splice(asArray.indexOf(areaId), 1);
                 }
                 if (params.village_id) {
-                    villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
+                    villagesToDelete = villagesToDelete.concat(filters.villages.filter(v => v.AS_id === a.id));
                 }
                 return null;
             });
@@ -66,13 +66,13 @@ const selectProvince = (provinceId, props) => {
             tempParams.village_id = villageArray.toString();
         }
     }
-    props.redirectTo('cases', tempParams);
+    props.redirectTo(urlKey, tempParams);
 };
 
-const selectZone = (zoneId, props) => {
+const selectZone = (zoneId, props, urlKey) => {
     const {
         params,
-        cases,
+        filters,
     } = props;
     const tempParams = {
         ...props.params,
@@ -92,7 +92,7 @@ const selectZone = (zoneId, props) => {
             }
             return null;
         });
-        const areasToDelete = cases.areas.filter(a => a.ZS_id === parseInt(zoneDeleted, 10));
+        const areasToDelete = filters.areas.filter(a => a.ZS_id === parseInt(zoneDeleted, 10));
         let villagesToDelete = [];
         if (tempParams.as_id) {
             const asArray = tempParams.as_id.split(',').slice();
@@ -102,7 +102,7 @@ const selectZone = (zoneId, props) => {
                     asArray.splice(asArray.indexOf(areaId), 1);
                 }
                 if (params.village_id) {
-                    villagesToDelete = villagesToDelete.concat(cases.villages.filter(v => v.AS_id === a.id));
+                    villagesToDelete = villagesToDelete.concat(filters.villages.filter(v => v.AS_id === a.id));
                 }
                 return null;
             });
@@ -121,13 +121,13 @@ const selectZone = (zoneId, props) => {
             tempParams.village_id = villageArray.toString();
         }
     }
-    props.redirectTo('cases', tempParams);
+    props.redirectTo(urlKey, tempParams);
 };
 
-const selectArea = (areaId, props) => {
+const selectArea = (areaId, props, urlKey) => {
     const {
         params,
-        cases,
+        filters,
     } = props;
     const tempParams = {
         ...props.params,
@@ -145,7 +145,7 @@ const selectArea = (areaId, props) => {
             }
             return null;
         });
-        const villagesToDelete = cases.villages.filter(v => v.AS_id === parseInt(areaDeleted, 10));
+        const villagesToDelete = filters.villages.filter(v => v.AS_id === parseInt(areaDeleted, 10));
 
         if (tempParams.village_id) {
             const villageArray = tempParams.village_id.split(',').slice();
@@ -159,7 +159,7 @@ const selectArea = (areaId, props) => {
             tempParams.village_id = villageArray.toString();
         }
     }
-    props.redirectTo('cases', tempParams);
+    props.redirectTo(urlKey, tempParams);
 };
 
 export {

@@ -17,6 +17,7 @@ COORDINATIONS = _("Coordinations")
 WORKZONES = _("Work zones")
 TEAMS = _("Teams")
 USERS = _("Users")
+VILLAGES = _("Villages")
 LOCATOR = _("Locator")
 VECTOR_CONTROL = _("Vector control")
 QUALITY_CONTROL = _("Quality control")
@@ -45,6 +46,7 @@ class CustomPermissionSupport(models.Model):
             ('x_management_workzones', WORKZONES),
             ('x_management_teams', TEAMS),
             ('x_management_users', USERS),
+            ('x_management_villages', VILLAGES),
             ('x_locator', LOCATOR),
             ('x_vectorcontrol', VECTOR_CONTROL),
             ('x_qualitycontrol', QUALITY_CONTROL)

@@ -10,7 +10,7 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 
 import StatsContainerComponent from './StatsContainer';
-import { filtersInitialState, filtersReducer } from '../../redux/filters';
+import { filtersInitialState, filtersReducer } from '../../redux/filtersRedux';
 
 export default function statsApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');

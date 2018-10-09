@@ -8,7 +8,7 @@ import moment from 'moment';
 import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
-import { filtersReducer, filtersInitialState } from '../../redux/filters';
+import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 
 import CasesPage from './pages/cases';
 

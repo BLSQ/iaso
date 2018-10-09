@@ -40,3 +40,39 @@
         padding-top: 10px;
     }
 }
+.village-map-container {
+    height: 450px;
+    flex-basis: 66% !important;
+    padding-right: 0 !important;
+    position: relative;
+    .fa-spinner {
+        position: absolute;
+        top: 48%;
+        left: 45%;
+    }
+}
+
+.village-map-layers-container {
+    text-align: left;
+    width: 100%;
+    margin-top: $padding-unit / 2;
+    .map__option {
+        display: flex;
+        .map__option__header {
+            flex-basis: 30%;
+            text-align: right;
+            font-size: 14px;
+            font-weight: normal;
+            &:after {
+                display: inline-block;
+                content: ':';
+            }
+        }
+        ul {
+            flex-basis: 70%;
+            box-sizing: border-box;
+            padding-left: 5px;
+            margin-top: -10px;
+        }
+    }
+}

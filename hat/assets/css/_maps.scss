@@ -467,15 +467,40 @@ $color in $types {
     }
 }
 
+
+@mixin layer-selected($stroke-color) {
+    fill: $blue;
+    fill-opacity: 0.2 !important;
+    stroke-dasharray: 1, 0;
+    stroke-opacity: 1 !important;;
+    stroke: $stroke-color;
+    stroke-width: 2;
+    &:hover {
+        stroke-width: (3);
+    }
+}
 path.map-layer {
-    &.province {
-        @include layer(#935116, 4);
+    &.province, &.provinces {
+        @include layer(#935116, 2);
+        &.selected {
+            @include layer-selected(#935116);
+        }
     }
-    &.zone {
+    &.zone, &.zs {
         @include layer(#CA6F1E, 2);
+        &.selected {
+            @include layer-selected(#CA6F1E);
+        }
     }
-    &.area {
+    &.area, &.as {
         @include layer(#F0B27A, 1);
+        &.selected {
+            @include layer-selected(#F0B27A);
+        }
+    }
+    &.no-border {
+        fill-opacity: 0 !important;
+        stroke-opacity:  0 !important;
     }
 }
 

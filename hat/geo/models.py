@@ -2,6 +2,8 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.db import models
 
+from django.shortcuts import get_object_or_404
+
 GEO_SOURCE_CHOICES = (
     ('snis', 'SNIS'),
     ('ucla', 'UCLA'),
@@ -127,9 +129,51 @@ class Village(models.Model):
     population = models.PositiveIntegerField(null=True)
     population_source = models.TextField(null=True)
     population_year = models.PositiveIntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
+
+    def as_dict(self):
+        is_located = False
+        if self.longitude and self.latitude:
+            is_located = True
+        currentAsId = None
+        currentAsName = None
+        currentZsId = None
+        currentZsName = None
+        currentProvinceId = None
+        currentProvinceName = None
+        if self.AS:
+            currentAsId = self.AS.as_dict().get('id');
+            currentAsName = self.AS.as_dict().get('name');
+            currentZs = ZS.objects.get(pk=self.AS.as_dict().get('zs_id')).as_dict()
+            currentZsId = currentZs.get('id')
+            currentZsName = currentZs.get('name')
+            currentProvinceId = Province.objects.get(pk=currentZs.get('province_id')).as_dict().get('id')
+            currentProvinceName = Province.objects.get(pk=currentZs.get('province_id')).as_dict().get('name')
+
+        return {
+        "name": self.name,
+        "id": self.id,
+        "longitude": self.longitude,
+        "latitude": self.latitude,
+        "population": self.population,
+        "population_source": self.population_source,
+        "population_year": self.population_year,
+        "AS_id": currentAsId,
+        "AS_name": currentAsName,
+        "ZS_id": currentZsId,
+        "ZS_name": currentZsName,
+        "province_id": currentProvinceId,
+        "province_name": currentProvinceName,
+        "village_type": self.village_type,
+        "village_official": self.village_official,
+        "village_source": self.village_source,
+        "gps_source": self.gps_source,
+        "is_located": is_located,
+        "is_erased": self.is_erased,
+    }
 
 
 class ZSASMappingImport(models.Model):

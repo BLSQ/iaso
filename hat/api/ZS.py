@@ -43,7 +43,7 @@ class ZSViewSet(viewsets.ViewSet):
 
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False);
-            serialized_zs = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk',))
+            serialized_zs = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk', 'province'))
             return Response(json.loads(serialized_zs))
         else:
             return Response(queryset.values('name', 'id', 'province_id').order_by('name'))

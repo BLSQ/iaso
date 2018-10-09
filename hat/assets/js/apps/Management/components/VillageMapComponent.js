@@ -34,6 +34,7 @@ class VillageMapComponent extends Component {
             geoAreas,
             params,
             filters,
+            updateVillageLocation,
         } = this.props;
         return (
             <section className="third-container">
@@ -102,9 +103,10 @@ class VillageMapComponent extends Component {
                                 zs: geoZones,
                                 as: geoAreas,
                             }}
-                            village={this.state.village.latitude && this.state.village.longitude ? this.state.village : null}
+                            village={this.state.village}
                             updateVillagePosition={(lat, lng) => this.props.updateVillagePosition(lat, lng)}
                             filters={filters}
+                            updateVillageLocation={location => updateVillageLocation(location)}
                         />
                     }
                     {
@@ -130,6 +132,7 @@ VillageMapComponent.propTypes = {
     map: PropTypes.object.isRequired,
     changeLayer: PropTypes.func.isRequired,
     updateVillagePosition: PropTypes.func.isRequired,
+    updateVillageLocation: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

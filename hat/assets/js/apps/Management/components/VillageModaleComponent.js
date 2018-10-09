@@ -96,6 +96,17 @@ class VillageModale extends Component {
         }
     }
 
+    updateVillageLocation(location) {
+        const newVillage = Object.assign({}, this.state.village, {
+            province_id: location.province_id,
+            ZS_id: location.ZS_id,
+            AS_id: location.AS_id,
+        });
+        this.props.updateCurrentVillage(newVillage);
+        this.setState({
+            isChanged: true,
+        });
+    }
 
     updateVillageField(key, value) {
         const newVillage = Object.assign({}, this.state.village, { [key]: value });
@@ -180,6 +191,7 @@ class VillageModale extends Component {
                             filters={geo}
                             params={params}
                             updateVillagePosition={(lat, lng) => this.updateVillagePosition(lat, lng)}
+                            updateVillageLocation={location => this.updateVillageLocation(location)}
                         />
                     </section>
                     {

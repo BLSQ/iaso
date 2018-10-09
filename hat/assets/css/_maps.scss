@@ -468,36 +468,39 @@ $color in $types {
 }
 
 
-@mixin layer-selected($stroke-color: $mid-gray, $stroke-width: 3) {
-    fill: $stroke-color;
-    fill-opacity: 0.2;
+@mixin layer-selected($stroke-color) {
+    fill: $blue;
+    fill-opacity: 0.2 !important;
     stroke-dasharray: 1, 0;
-    stroke-opacity: 1;
+    stroke-opacity: 1 !important;;
     stroke: $stroke-color;
-    stroke-width: $stroke-width;
+    stroke-width: 2;
     &:hover {
-        stroke: darken($stroke-color, 10%);
-        stroke-width: ($stroke-width+1);
+        stroke-width: (3);
     }
 }
 path.map-layer {
     &.province, &.provinces {
         @include layer(#935116, 2);
         &.selected {
-            @include layer(#935116, 2);
+            @include layer-selected(#935116);
         }
     }
     &.zone, &.zs {
         @include layer(#CA6F1E, 2);
         &.selected {
-            @include layer(#CA6F1E, 2);
+            @include layer-selected(#CA6F1E);
         }
     }
     &.area, &.as {
         @include layer(#F0B27A, 1);
         &.selected {
-            @include layer(#F0B27A, 2);
+            @include layer-selected(#F0B27A);
         }
+    }
+    &.no-border {
+        fill-opacity: 0 !important;
+        stroke-opacity:  0 !important;
     }
 }
 

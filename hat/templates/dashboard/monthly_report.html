@@ -9,22 +9,12 @@
 {% block content %}
 
   <div class="content">
+    <div><h4>En construction</h4></div>
     <div id="app"></div>
   </div>
 
   {% render_bundle 'common' %}
-  {% render_bundle 'monthly_report' %}
-  <script>
-    {% comment %}
-      The Monthly report app requires a config object populated via django
-      The app is started manually with that config:
-    {% endcomment %}
-    HAT.monthly_report.default(
-      {{ json_data|safe }},
-      document.getElementById('app'),
-      '/dashboard/monthly-report/'
-    )
-  </script>
+
 
   {% include 'data_sources.html' with mobile='true' only %}
 

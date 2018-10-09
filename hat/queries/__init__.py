@@ -7,10 +7,6 @@ from hat.cases.filters import screening_tests, confirmation_tests, test_values_i
 current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')
 
-# api
-stats_queries = snaql_factory.load_queries('stats.sql')
-microplanning_queries = snaql_factory.load_queries('microplanning.sql')
-
 # cases
 duplicates_queries = snaql_factory.load_queries('duplicates.sql')
 prepare_queries = snaql_factory.load_queries('prepare_db.sql')

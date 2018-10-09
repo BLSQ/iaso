@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from hat.geo.models import Village
 from hat.planning.models import Assignation, WorkZone, Coordination
+from hat.audit.models import log_modification
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -80,7 +81,6 @@ class VillageViewSet(viewsets.ViewSet):
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
             queryset = queryset.filter(AS__ZS__id__in=coordination.ZS.all())
-
 
         if years:
             years_array = years.split(",")

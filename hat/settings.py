@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'hat.patient',
     'hat.vector',
     'hat.metrics',
+    'hat.audit',
     'hat.menupermissions'
 ]
 

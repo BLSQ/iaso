@@ -2,13 +2,14 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
 from hat.cases.models import CaseView, Case, RES_POSITIVE
+from hat.audit.models import log_modification, CASE_API
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
 from django.db.models import Q
 import csv
+from copy import copy
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -229,6 +230,7 @@ class CasesViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
+        original_copy = copy(case)
         village_id = request.data.get("village_id", None)
         not_found = request.data.get("not_found", None)
 
@@ -240,5 +242,7 @@ class CasesViewSet(viewsets.ViewSet):
             case.normalized_village_not_found = True
             case.normalized_village_id = None
             case.save()
+
+        log_modification(original_copy, case, source=CASE_API, user=request.user)
 
         return Response(case.as_dict())

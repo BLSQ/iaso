@@ -227,27 +227,13 @@ def home(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def monthly_report(request: HttpRequest) -> HttpResponse:
     # Use the start of tomorrow as the maximum date to omit records with wrong future dates
-    today = datetime.today()
-    max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
-    dates = CaseView.objects \
-                    .filter(source__icontains='mobile') \
-                    .filter(normalized_date__isnull=False) \
-                    .filter(normalized_date__lt=max_date) \
-                    .order_by('normalized_date_month') \
-                    .values_list('normalized_date_month', flat=True) \
-                    .distinct()
-
-    json_data = json.dumps({
-        # dates formatted as 2014-06
-        'dates': [d.strftime('%Y-%m') for d in dates]
-    })
 
     user = request.user
 
     if user.profile.password_reset:
         return redirect('/dashboard/password')
     else:
-        return render(request, 'dashboard/monthly_report.html', {'json_data': json_data, 'menu': get_menu(user, reverse("dashboard:monthly_report"))})
+        return render(request, 'dashboard/monthly_report.html', {'menu': get_menu(user, reverse("dashboard:monthly_report"))})
 
 
 @login_required()

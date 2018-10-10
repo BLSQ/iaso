@@ -822,7 +822,7 @@ msgstr "Sources de données  "
 
 #: templates/data_sources.html:7
 msgid "HAT mobile application data"
-msgstr "Données de l'application mobile HAT"
+msgstr "Données de l'application Trypelim"
 
 #: templates/data_sources.html:11
 msgid "HAT historical forms"

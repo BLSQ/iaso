@@ -96,7 +96,6 @@ class CasesViewSet(viewsets.ViewSet):
                 .order_by(*orders)
             )
 
-
         if located == 'only_not_located_and_not_found':
             queryset = (
                 CaseView.objects.filter(normalized_village=None, normalized_village_not_found=True)

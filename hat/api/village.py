@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
+from django.http import StreamingHttpResponse
 from django.core.paginator import Paginator
 
 from .authentication import CsrfExemptSessionAuthentication
@@ -11,6 +12,7 @@ from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.audit.models import log_modification, VILLAGE_API
+import csv
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -70,6 +72,7 @@ class VillageViewSet(viewsets.ViewSet):
         unlocated = request.GET.get("unlocated", None)
         population = request.GET.get("population", None)
         is_erased = request.GET.get("is_erased", False)
+        csv_format = request.GET.get("csv", None)
 
         queryset = Village.objects.all()
 
@@ -107,12 +110,18 @@ class VillageViewSet(viewsets.ViewSet):
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
+            else:
+                nr_positive_cases = Count(
+                    "caseview",
+                    filter=Q(caseview__confirmed_case=True),
+                )
+                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+                values = values + ("nr_positive_cases",)
 
         if types:
-            if types == 'all':
-                types = 'YES,NO,OTHER,NA'
-            types_array = types.split(",")
-            queryset = queryset.filter(village_official__in=types_array)
+            if types != 'all':
+                types_array = types.split(",")
+                queryset = queryset.filter(village_official__in=types_array)
 
         if results == "positive":
             queryset = queryset.filter(nr_positive_cases__gte=1)
@@ -145,13 +154,26 @@ class VillageViewSet(viewsets.ViewSet):
         if as_list:
             if page_offset:
                 page_offset = int(page_offset)
+                queryset = queryset.select_related("AS__ZS__province")
                 queryset = queryset.order_by(*orders)
-                paginator = Paginator(queryset, limit)
+                values = values + ("AS_id",
+                    "AS__name",
+                    "AS__ZS_id",
+                    "AS__ZS__name",
+                    "AS__ZS__province_id",
+                    "AS__ZS__province__name",
+                    "population_source",
+                    "population_year",
+                    "village_type",
+                    "village_source",
+                    "gps_source",
+                    "is_erased")
+                paginator = Paginator(queryset.values(*values), limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-                res["villages"] = map(lambda x: x.as_dict(), page.object_list)
+                res["villages"] = page.object_list
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -159,9 +181,58 @@ class VillageViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else :
-                body = res.order_by(*orders)
-                if limit:
-                    body = body[: int(limit)]
+                if csv_format:
+                    class Echo:
+                        """An object that implements just the write method of the file-like
+                        interface.
+                        """
+
+                        def write(self, value):
+                            """Write the value by returning it, instead of storing in a buffer."""
+                            return value
+
+                    def iter_items(queryset, pseudo_buffer):
+                        headers = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude', 'Latitude', 'Officiel', 'Source', 'Source Gps']
+                        writer = csv.writer(pseudo_buffer)
+                        yield writer.writerow(headers)
+                        for village in queryset.iterator(chunk_size=5000):
+                            row = [
+                                village.get("id"),
+                                village.get("name"),
+                                village.get("population"),
+                                village.get("nr_positive_cases"),
+                                village.get("AS__ZS__province__name"),
+                                village.get("AS__ZS__name"),
+                                village.get("AS__name"),
+                                village.get("longitude"),
+                                village.get("latitude"),
+                                village.get("village_type"),
+                                village.get("village_source"),
+                                village.get("gps_source")
+                            ]
+                            yield writer.writerow(row)
+
+                    queryset = queryset.select_related("AS__ZS__province")
+                    queryset = queryset.order_by(*orders)
+                    values = values + ("AS__name",
+                        "AS__ZS__name",
+                        "AS__ZS__province__name",
+                        "population_source",
+                        "population_year",
+                        "village_type",
+                        "village_source",
+                        "gps_source")
+                    queryset = queryset.values(*values)
+                    response = StreamingHttpResponse(
+                        streaming_content=(iter_items(queryset, Echo())),
+                        content_type='text/csv',
+                    )
+                    response['Content-Disposition'] = 'attachment;filename=villages.csv'
+                    return response
+                else :
+                    body = res.order_by(*orders)
+                    if limit:
+                        body = body[: int(limit)]
         else:
             if limit:
                 res = res[: int(limit)]

@@ -197,7 +197,7 @@ class CasesViewSet(viewsets.ViewSet):
             def iter_items(queryset, pseudo_buffer):
                 headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée']
                 writer = csv.writer(pseudo_buffer)
-                yield pseudo_buffer.write(headers)
+                yield writer.writerow(headers)
                 for case in queryset.iterator(chunk_size=5000):
                     cdict = case.as_dict()
                     row = [

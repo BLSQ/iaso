@@ -1,6 +1,14 @@
 import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo';
 
 const MESSAGES = {
+    positive: {
+        defaultMessage: 'Positif',
+        id: 'main.label.postive',
+    },
+    negative: {
+        defaultMessage: 'Négatif',
+        id: 'main.label.negative',
+    },
     YES: {
         defaultMessage: 'Villages officiels',
         id: 'village.type.official',
@@ -32,14 +40,6 @@ const MESSAGES = {
     unlocated: {
         defaultMessage: 'Non Localisés',
         id: 'village.type.satellite',
-    },
-    positive: {
-        defaultMessage: 'Uniquement les cas positifs',
-        id: 'village.results.positive',
-    },
-    negative: {
-        defaultMessage: 'Uniquement les cas négatifs',
-        id: 'village.results.negative',
     },
 };
 
@@ -105,6 +105,39 @@ const filtersZone1 = (
             label: {
                 id: 'management.village.label.village_official',
                 defaultMessage: 'Village Officiel',
+            },
+            type: 'select',
+        },
+    ]
+);
+
+const filtersZone2 = (
+    formatMessage,
+    defineMessages,
+) => (
+    [
+        {
+            name: 'results',
+            urlKey: 'results',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'positive')),
+                    value: 'positive',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'negative')),
+                    value: 'negative',
+                },
+            ],
+            placeholder: {
+                id: 'main.label.allMasc',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'management.village.label.results',
+                defaultMessage: 'Cas',
             },
             type: 'select',
         },
@@ -223,6 +256,7 @@ const filtersGeo = (
 
 export {
     filtersZone1,
+    filtersZone2,
     filtersSearch,
     filtersGeo,
 };

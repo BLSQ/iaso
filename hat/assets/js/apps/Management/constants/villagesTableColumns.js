@@ -48,12 +48,25 @@ const villagesTableColumns = (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Cas positifs',
+                id: 'main.label.nr_positive_cases',
+            }),
+            className: 'small',
+            accessor: 'nr_positive_cases',
+            Cell: settings => (
+                <section>
+                    {formatThousand(settings.original.nr_positive_cases)}
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Province',
                 id: 'main.label.province',
             }),
             className: 'small',
-            sortable: false,
-            accessor: 'province_name',
+            sortable: true,
+            accessor: 'AS__ZS__province__name',
         },
         {
             Header: formatMessage({
@@ -61,8 +74,8 @@ const villagesTableColumns = (
                 id: 'main.label.ZS.singular',
             }),
             className: 'small',
-            sortable: false,
-            accessor: 'ZS_name',
+            sortable: true,
+            accessor: 'AS__ZS__name',
         },
         {
             Header: formatMessage({
@@ -70,8 +83,8 @@ const villagesTableColumns = (
                 id: 'main.label.AS.singular',
             }),
             className: 'small',
-            sortable: false,
-            accessor: 'AS_name',
+            sortable: true,
+            accessor: 'AS__name',
         },
         {
             Header: formatMessage({

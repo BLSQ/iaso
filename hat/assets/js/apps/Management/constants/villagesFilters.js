@@ -183,7 +183,7 @@ const filtersSearch = () => (
             },
             label: {
                 id: 'management.village.label.search',
-                defaultMessage: 'Recherche par nom',
+                defaultMessage: 'Recherche textuelle',
             },
             type: 'search',
         },

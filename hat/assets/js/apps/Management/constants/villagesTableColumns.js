@@ -103,7 +103,7 @@ const villagesTableColumns = (
             accessor: 'village_official',
             Cell: settings => (
                 <section>
-                    {formatMessage(MESSAGES[settings.original.village_official])}
+                    {settings.original.village_official !== '' ? settings.original.village_official : '' }
                 </section>
             ),
         },

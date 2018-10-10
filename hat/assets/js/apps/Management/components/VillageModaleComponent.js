@@ -40,22 +40,22 @@ class VillageModale extends Component {
 
     componentWillMount() {
         ReactModal.setAppElement('.container--main');
-        if (this.props.village.province_id) {
-            this.props.selectProvince(this.props.village.province_id, this.props.village.ZS_id, this.props.village.AS_id);
-        } else if (this.props.village.ZS_id) {
-            this.props.selectZone(this.props.village.ZS_id, this.props.village.AS_id);
+        if (this.props.village.AS__ZS__province_id) {
+            this.props.selectProvince(this.props.village.AS__ZS__province_id, this.props.village.AS__ZS_id, this.props.village.AS_id);
+        } else if (this.props.village.AS__ZS_id) {
+            this.props.selectZone(this.props.village.AS__ZS_id, this.props.village.AS_id);
         } else if (this.props.village.AS_id) {
-            this.props.selectArea(this.props.village.AS_id, this.props.village.ZS_id);
+            this.props.selectArea(this.props.village.AS_id, this.props.village.AS__ZS_id);
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.village.province_id !== this.props.village.province_id) {
-            this.props.selectProvince(nextProps.village.province_id, nextProps.village.ZS_id, nextProps.village.AS_id);
-        } else if (nextProps.village.ZS_id !== this.props.village.ZS_id) {
-            this.props.selectZone(nextProps.village.ZS_id, nextProps.village.AS_id);
+        if (nextProps.village.AS__ZS__province_id !== this.props.village.AS__ZS__province_id) {
+            this.props.selectProvince(nextProps.village.AS__ZS__province_id, nextProps.village.AS__ZS_id, nextProps.village.AS_id);
+        } else if (nextProps.village.AS__ZS_id !== this.props.village.AS__ZS_id) {
+            this.props.selectZone(nextProps.village.AS__ZS_id, nextProps.village.AS_id);
         } else if (nextProps.village.AS_id !== this.props.village.AS_id) {
-            this.props.selectArea(nextProps.village.AS_id, nextProps.village.ZS_id);
+            this.props.selectArea(nextProps.village.AS_id, nextProps.village.AS__ZS_id);
         }
         let newState = {};
         newState.village = nextProps.village;
@@ -98,8 +98,8 @@ class VillageModale extends Component {
 
     updateVillageLocation(location) {
         const newVillage = Object.assign({}, this.state.village, {
-            province_id: location.province_id,
-            ZS_id: location.ZS_id,
+            AS__ZS__province_id: location.AS__ZS__province_id,
+            AS__ZS_id: location.AS__ZS_id,
             AS_id: location.AS_id,
         });
         this.props.updateCurrentVillage(newVillage);
@@ -110,11 +110,11 @@ class VillageModale extends Component {
 
     updateVillageField(key, value) {
         const newVillage = Object.assign({}, this.state.village, { [key]: value });
-        if (key === 'province_id') {
-            newVillage.ZS_id = null;
+        if (key === 'AS__ZS__province_id') {
+            newVillage.AS__ZS_id = null;
             newVillage.AS_id = null;
         }
-        if (key === 'ZS_id') {
+        if (key === 'AS__ZS_id') {
             newVillage.AS_id = null;
         }
         this.props.updateCurrentVillage(newVillage);
@@ -134,8 +134,8 @@ class VillageModale extends Component {
     isSavedDisabled() {
         return (this.state.village.name === '' ||
             !this.state.village.name ||
-            !this.state.village.province_id ||
-            !this.state.village.ZS_id ||
+            !this.state.village.AS__ZS__province_id ||
+            !this.state.village.AS__ZS_id ||
             !this.state.village.AS_id ||
             !this.state.village.village_official ||
             this.state.village.latitude === 0 ||

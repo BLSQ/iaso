@@ -74,7 +74,7 @@ class ManagementVillages extends React.Component {
     }
 
     getEndpointUrl(forCsv = false) {
-        let newEndPointUrl = '/api/villages/?as_list=true';
+        let newEndPointUrl = '/api/villages/?is_erased=False';
         const {
             params,
         } = this.props;

@@ -13,7 +13,7 @@ import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersZone1, filtersSearch, filtersGeo } from '../constants/villagesFilters';
+import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
 
 const newUser = {
     id: 0,
@@ -73,8 +73,8 @@ class ManagementVillages extends React.Component {
         });
     }
 
-    getEndpointUrl() {
-        let newEndPointUrl = '/api/villages/?as_list=true';
+    getEndpointUrl(forCsv = false) {
+        let newEndPointUrl = '/api/villages/?is_erased=False';
         const {
             params,
         } = this.props;
@@ -87,7 +87,14 @@ class ManagementVillages extends React.Component {
             as_id: params.as_id,
             search: params.search,
             population: params.population,
+            results: params.results,
+            as_list: true,
         };
+
+        if (forCsv) {
+            delete urlParams.as_list;
+            urlParams.csv = true;
+        }
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
@@ -141,6 +148,7 @@ class ManagementVillages extends React.Component {
             },
         } = this.props;
         const filters1 = filtersZone1(formatMessage, defineMessages);
+        const filters2 = filtersZone2(formatMessage, defineMessages);
         const geo = filtersGeo(
             provinces || [],
             zones || [],
@@ -187,7 +195,7 @@ class ManagementVillages extends React.Component {
                     </div>
                 </div>
                 <div className="widget__container ">
-                    <div className="widget__content--tier">
+                    <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
@@ -209,6 +217,13 @@ class ManagementVillages extends React.Component {
                                 filters={filters1}
                             />
                         </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="villages"
+                                filters={filters2}
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="widget__container management-control">
@@ -225,6 +240,7 @@ class ManagementVillages extends React.Component {
                             pageSize={50}
                             withBorder={false}
                             isSortable
+                            multiSort
                             showPagination
                             endPointUrl={this.getEndpointUrl()}
                             columns={this.state.tableColumns}
@@ -237,6 +253,15 @@ class ManagementVillages extends React.Component {
                             isUpdated={isUpdated}
                         />
                         <div className="widget__content align-right border-top">
+                            <button
+                                className="button margin"
+                                onClick={() => {
+                                    window.location.href = this.getEndpointUrl(true);
+                                }}
+                            >
+                                <i className="fa fa-download" />
+                                <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
+                            </button>
                             <button
                                 className="button--add"
                                 onClick={() => this.props.selectVillage(newUser)}

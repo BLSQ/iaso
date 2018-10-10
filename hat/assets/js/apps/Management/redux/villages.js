@@ -93,7 +93,7 @@ export const createVillage = (dispatch, village) => {
 
 export const deleteVillage = (dispatch, village) => {
     const erasedVillage = {
-        id: village.id,
+        ...village,
         is_erased: true,
     };
     dispatch(loadActions.startLoading());

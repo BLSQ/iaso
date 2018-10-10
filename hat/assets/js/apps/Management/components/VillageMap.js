@@ -88,11 +88,11 @@ const updateShapeColors = (village) => {
     if (village.AS_id) {
         d3.select(`.as-${village.AS_id}`)
             .classed('selected', true);
-    } else if (village.ZS_id) {
-        d3.select(`.zs-${village.ZS_id}`)
+    } else if (village.AS__ZS_id) {
+        d3.select(`.zs-${village.AS__ZS_id}`)
             .classed('selected', true);
-    } else if (village.province_id) {
-        d3.select(`.provinces-${village.province_id}`)
+    } else if (village.AS__ZS__province_id) {
+        d3.select(`.provinces-${village.AS__ZS__province_id}`)
             .classed('selected', true);
     }
 };
@@ -126,8 +126,8 @@ class VillageMap extends Component {
                 this.props.village.longitude !== nextProps.village.longitude) {
                 this.updateMap(nextProps.village);
             }
-            if (this.props.village.province_id !== nextProps.village.province_id ||
-                this.props.village.ZS_id !== nextProps.village.ZS_id ||
+            if (this.props.village.AS__ZS__province_id !== nextProps.village.AS__ZS__province_id ||
+                this.props.village.AS__ZS_id !== nextProps.village.AS__ZS_id ||
                 this.props.village.AS_id !== nextProps.village.AS_id) {
                 updateShapeColors(nextProps.village);
             }
@@ -228,8 +228,8 @@ class VillageMap extends Component {
             if (event.sourceTarget.feature.properties.ZS && village.latitude === 0 && village.longitude === 0) {
                 const zone = geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === event.sourceTarget.feature.properties.ZS)[0];
                 this.props.updateVillageLocation({
-                    ZS_id: zone.properties.pk,
-                    province_id: `${zone.properties.province}`,
+                    AS__ZS_id: zone.properties.pk,
+                    AS__ZS__province_id: `${zone.properties.province}`,
                     AS_id: event.sourceTarget.feature.properties.pk,
                 });
             }
@@ -253,8 +253,8 @@ class VillageMap extends Component {
                     const provinceId = parseInt(zone.properties.province, 10);
                     const asId = parseInt(event.sourceTarget.feature.properties.pk, 10);
                     this.props.updateVillageLocation({
-                        ZS_id: zsId,
-                        province_id: provinceId,
+                        AS__ZS_id: zsId,
+                        AS__ZS__province_id: provinceId,
                         AS_id: asId,
                     });
                 }

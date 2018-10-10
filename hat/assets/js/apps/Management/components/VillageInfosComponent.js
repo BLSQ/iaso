@@ -133,7 +133,7 @@ class VillageInfosComponent extends Component {
                             type="text"
                             name="village_type"
                             id={`village_type-${this.state.village.village_type}`}
-                            value={this.state.village.village_type}
+                            value={this.state.village.village_type ? this.state.village.village_type : ''}
                             onChange={event => updateVillageField('village_type', event.currentTarget.value)}
                         />
                     </div>
@@ -151,7 +151,7 @@ class VillageInfosComponent extends Component {
                             type="text"
                             name="village_source"
                             id={`village_source-${this.state.village.village_source}`}
-                            value={this.state.village.village_source}
+                            value={this.state.village.village_source ? this.state.village.village_source : ''}
                             onChange={event => updateVillageField('village_source', event.currentTarget.value)}
                         />
                     </div>
@@ -169,7 +169,7 @@ class VillageInfosComponent extends Component {
                             type="text"
                             name="gps_source"
                             id={`gps_source-${this.state.village.gps_source}`}
-                            value={this.state.village.gps_source}
+                            value={this.state.village.gps_source ? this.state.village.gps_source : ''}
                             onChange={event => updateVillageField('gps_source', event.currentTarget.value)}
                         />
                     </div>

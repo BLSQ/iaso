@@ -136,14 +136,6 @@ const filtersZone1 = (
     ]
 );
 
-const filtersZone2 = (
-    formatMessage,
-    defineMessages,
-) => (
-    [
-    ]
-);
-
 const filtersSearch = () => (
     [
         {
@@ -231,7 +223,6 @@ const filtersGeo = (
 
 export {
     filtersZone1,
-    filtersZone2,
     filtersSearch,
     filtersGeo,
 };

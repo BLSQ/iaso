@@ -13,7 +13,7 @@ import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
+import { filtersZone1, filtersSearch, filtersGeo } from '../constants/villagesFilters';
 
 const newUser = {
     id: 0,
@@ -141,7 +141,6 @@ class ManagementVillages extends React.Component {
             },
         } = this.props;
         const filters1 = filtersZone1(formatMessage, defineMessages);
-        const filters2 = filtersZone2(formatMessage, defineMessages);
         const geo = filtersGeo(
             provinces || [],
             zones || [],
@@ -297,8 +296,8 @@ const MapDispatchToProps = dispatch => ({
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchGeoDatas: () => dispatch(villageActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);

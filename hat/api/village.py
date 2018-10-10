@@ -64,7 +64,7 @@ class VillageViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         search = request.GET.get("search", None)
         limit = request.GET.get("limit", None)
-        page_offset = int(request.GET.get("page", None))
+        page_offset = request.GET.get("page", None)
         orders = request.GET.get("order", "name").split(",")
         include_unlocated = request.GET.get("include_unlocated", None)
         unlocated = request.GET.get("unlocated", None)
@@ -144,6 +144,7 @@ class VillageViewSet(viewsets.ViewSet):
 
         if as_list:
             if page_offset:
+                page_offset = int(page_offset)
                 queryset = queryset.order_by(*orders)
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}

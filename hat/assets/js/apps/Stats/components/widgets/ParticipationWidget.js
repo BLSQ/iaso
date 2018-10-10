@@ -12,7 +12,7 @@ class ParticipationWidget extends Component {
         const registered = coverage.screening_count || 0;
         const percentageScreened = registered
             ? `${((registered / population) * 100).toFixed(2)}%`
-            : <FormattedMessage id="statspage.none" defaultMessage="none" />;
+            : <FormattedMessage id="statspage.none" defaultMessage="aucun" />;
         const spec = {
             x_accessor: 'date',
             y_accessor: ['c'],
@@ -65,7 +65,10 @@ class ParticipationWidget extends Component {
                         </div>
 
                         <div className="column--6 container__graph--6 responsive">
-                            <Visualization data={timeseries} spec={spec} />
+                            {
+                                registered > 0 &&
+                                <Visualization data={timeseries} spec={spec} />
+                            }
                         </div>
                     </section>
                 </div>

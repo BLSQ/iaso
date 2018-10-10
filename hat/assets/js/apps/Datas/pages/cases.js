@@ -232,8 +232,8 @@ const MapDispatchToProps = dispatch => ({
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
 });
 
 const CasesWithIntl = injectIntl(Cases);

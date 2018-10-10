@@ -150,7 +150,6 @@ class VillageViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(
                     Q(population=0) | Q(population__isnull=True))
         res = queryset.values(*values)
-
         if as_list:
             if page_offset:
                 page_offset = int(page_offset)
@@ -180,63 +179,61 @@ class VillageViewSet(viewsets.ViewSet):
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
                 return Response(res)
-            else :
-                if csv_format:
-                    class Echo:
-                        """An object that implements just the write method of the file-like
-                        interface.
-                        """
-
-                        def write(self, value):
-                            """Write the value by returning it, instead of storing in a buffer."""
-                            return value
-
-                    def iter_items(queryset, pseudo_buffer):
-                        headers = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude', 'Latitude', 'Officiel', 'Source', 'Source Gps']
-                        writer = csv.writer(pseudo_buffer)
-                        yield writer.writerow(headers)
-                        for village in queryset.iterator(chunk_size=5000):
-                            row = [
-                                village.get("id"),
-                                village.get("name"),
-                                village.get("population"),
-                                village.get("nr_positive_cases"),
-                                village.get("AS__ZS__province__name"),
-                                village.get("AS__ZS__name"),
-                                village.get("AS__name"),
-                                village.get("longitude"),
-                                village.get("latitude"),
-                                village.get("village_type"),
-                                village.get("village_source"),
-                                village.get("gps_source")
-                            ]
-                            yield writer.writerow(row)
-
-                    queryset = queryset.select_related("AS__ZS__province")
-                    queryset = queryset.order_by(*orders)
-                    values = values + ("AS__name",
-                        "AS__ZS__name",
-                        "AS__ZS__province__name",
-                        "population_source",
-                        "population_year",
-                        "village_type",
-                        "village_source",
-                        "gps_source")
-                    queryset = queryset.values(*values)
-                    response = StreamingHttpResponse(
-                        streaming_content=(iter_items(queryset, Echo())),
-                        content_type='text/csv',
-                    )
-                    response['Content-Disposition'] = 'attachment;filename=villages.csv'
-                    return response
-                else :
-                    body = res.order_by(*orders)
-                    if limit:
-                        body = body[: int(limit)]
         else:
-            if limit:
-                res = res[: int(limit)]
-            body = {v["id"]: v for v in res}
+            if csv_format:
+
+                class Echo:
+                    """An object that implements just the write method of the file-like
+                    interface.
+                    """
+
+                    def write(self, value):
+                        """Write the value by returning it, instead of storing in a buffer."""
+                        return value
+
+                def iter_items(queryset, pseudo_buffer):
+                    headers = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude', 'Latitude', 'Officiel', 'Source', 'Source Gps']
+                    writer = csv.writer(pseudo_buffer)
+                    yield writer.writerow(headers)
+                    for village in queryset.iterator(chunk_size=5000):
+                        row = [
+                            village.get("id"),
+                            village.get("name"),
+                            village.get("population"),
+                            village.get("nr_positive_cases"),
+                            village.get("AS__ZS__province__name"),
+                            village.get("AS__ZS__name"),
+                            village.get("AS__name"),
+                            village.get("longitude"),
+                            village.get("latitude"),
+                            village.get("village_type"),
+                            village.get("village_source"),
+                            village.get("gps_source")
+                        ]
+                        yield writer.writerow(row)
+
+                queryset = queryset.select_related("AS__ZS__province")
+                queryset = queryset.order_by(*orders)
+                values = values + ("AS__name",
+                    "AS__ZS__name",
+                    "AS__ZS__province__name",
+                    "population_source",
+                    "population_year",
+                    "village_type",
+                    "village_source",
+                    "gps_source")
+                queryset = queryset.values(*values)
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo())),
+                    content_type='text/csv',
+                )
+                response['Content-Disposition'] = 'attachment;filename=villages.csv'
+                return response
+
+            else:
+                if limit:
+                    res = res[: int(limit)]
+                body = {v["id"]: v for v in res}
 
         return Response(body)
 

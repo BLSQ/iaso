@@ -22,11 +22,11 @@ module.exports = {
       'webpack/hot/only-dev-server',
       './assets/js/apps/Plannings/index'
     ],
-    'monthly_report': [
+    /* 'monthly_report': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/apps/MonthlyReport/index'
-    ],
+    ], */
     'management': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',

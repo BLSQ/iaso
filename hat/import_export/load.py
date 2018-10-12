@@ -23,6 +23,7 @@ from hat.cases.models import Case, Location
 from hat.common.utils import is_int
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
+from hat.import_export.mapping import CASE_IGNORE
 from hat.patient.identify import get_or_create_patient, create_test_data
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
@@ -224,58 +225,58 @@ def get_case_team(case):
     return None
 
 
-def normalize_location(case):
+def normalize_location(case_zone, case_area, case_village, device_id=None, latitude=None, longitude=None):
     # If the ZS/AS are numeric, they probably are
-    if is_int(case.ZS) and is_int(case.AS):
-        if is_int(case.village):
+    if is_int(case_zone) and is_int(case_area):
+        if is_int(case_village):
             try:
-                db_village = Village.objects.get(id=int(case.village))
-                case.normalized_village = db_village
-                case.normalized_AS = db_village.AS
+                db_village = Village.objects.get(id=int(case_village))
+                return db_village.AS, db_village
             except Village.DoesNotExist:
                 # We have a numeric village but it doesn't exist, strange but leave as is.
-                logger.error("Received a numeric village id {} but could not find it in the db".format(case.village))
+                logger.error("Received a numeric village id {} but could not find it in the db".format(case_village))
+                return None, None
         else:
+            db_as = None
             try:
-                db_as = AS.objects.get(id=int(case.AS), ZS_id=int(case.ZS))
-                case.normalized_AS = db_as
+                db_as = AS.objects.get(id=int(case_area), ZS_id=int(case_zone))
             except AS.DoesNotExist:
                 # We have a numeric AS/ZS but it doesn't exist, strange but leave as is.
-                logger.error("Received a numeric ZS {} AS {} but could not find it in the db".format(case.ZS, case.AS))
+                logger.error(
+                    "Received a numeric ZS {} AS {} but could not find it in the db".format(case_zone, case_area))
 
             # The village could be in full text because it is a new one or it was created by a previous record but the
             # app doesn't know its ID yet. So let's attempt to find it first
             try:
                 village = Village.objects.get(Q(
                     # Q(village_official='YES') &  # Can't use official=Y here because we're creating them in "OTHER"
-                    Q(AS_id=case.AS) &
-                    Q(Q(name=case.village) | Q(aliases__contains=[case.village]))
+                    Q(AS_id=case_area) &
+                    Q(Q(name=case_village) | Q(aliases__contains=[case_village]))
                 ))
+                return db_as, village
             except Village.DoesNotExist:
-                try:
-                    devicedb = DeviceDB.objects.get(device_id=case.device_id)
-                except DeviceDB.DoesNotExist:
-                    devicedb = None
-                village = Village(
-                    name=case.village,
-                    AS_id=case.AS,
-                    village_official='OTHER',
-                    village_source='device',
-                    creator_device=devicedb,
-                )
-                if case.latitude and case.longitude:
-                    village.latitude = case.latitude
-                    village.longitude = case.longitude
-                    village.gps_source = 'case_geoloc'
-                # TODO add population data
-                village.save()
-            case.normalized_village = village
+                if device_id is not None:
+                    try:
+                        devicedb = DeviceDB.objects.get(device_id=device_id)
+                    except DeviceDB.DoesNotExist:
+                        devicedb = None
+                    village = Village(
+                        name=case_village,
+                        AS_id=case_area,
+                        village_official='OTHER',
+                        village_source='device',
+                        creator_device=devicedb,
+                    )
+                    if latitude and longitude:
+                        village.latitude = latitude
+                        village.longitude = longitude
+                        village.gps_source = 'case_geoloc'
+                    # TODO add population data
+                    village.save()
+                    return village.AS, village
+            return db_as, None
     else:
-        norm_as, norm_village = get_single_as_and_village(case.ZS, case.AS, case.village)
-        if norm_as:
-            case.normalized_AS_id = norm_as
-        if norm_village:
-            case.normalized_village_id = norm_village
+        return get_single_as_and_village(case_zone, case_area, case_village)
 
 
 def create_cases(df: DataFrame) -> None:
@@ -289,12 +290,30 @@ def create_cases(df: DataFrame) -> None:
                     # This needs to be delayed until case is saved and received an ID
                     json_document_id = value
                 else:
-                    setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+                    if column_name not in CASE_IGNORE:
+                        setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
-        patient, _ = get_or_create_patient(case)
+        # Determine the test and patient location
+        (normalized_AS, normalized_village) = normalize_location(case.ZS, case.AS, case.village,
+                                                                 case.device_id, case.latitude, case.longitude)
+        if normalized_AS:
+            case.normalized_AS = normalized_AS
+        if normalized_village:
+            case.normalized_village = normalized_village
+
+        if row['participant_member_type'] and row['participant_member_type'] == 'traveller':
+            patient_as, patient_village = normalize_location(
+                row['participant_origin_zone'],
+                row['participant_origin_area'],
+                None,
+            )
+        else:
+            patient_as = normalized_AS
+            patient_village = normalized_village
+
+        patient, _ = get_or_create_patient(case, patient_as, patient_village)
         case.normalized_patient = patient
         case.normalized_team = get_case_team(case)
-        normalize_location(case)
 
         case.save()
 
@@ -304,7 +323,7 @@ def create_cases(df: DataFrame) -> None:
             doc.processed = True
             doc.save()
 
-        create_test_data(case)
+        create_test_data(case, patient_as)
 
 
 def update_cases(df: DataFrame) -> int:
@@ -323,7 +342,8 @@ def update_cases(df: DataFrame) -> int:
                         # This needs to be delayed until case is saved and received an ID
                         json_document_id = value
                     else:
-                        setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+                        if column_name not in CASE_IGNORE:
+                            setattr(case, column_name, convert_to_db_type(Case, column_name, value))
             case.save()
 
             if json_document_id:

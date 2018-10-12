@@ -1545,6 +1545,46 @@ MAPPING: List[JsonType] = [
             },
         }
     },
+    {
+        "field": "participant_member_type",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.memberType")
+            },
+        },
+    },
+    {
+        "field": "participant_origin_province",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "person.traveller.travellerProvince")
+            },
+        },
+    },
+    {
+        "field": "participant_origin_zone",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "person.traveller.travellerZone")
+            },
+        },
+    },
+    {
+        "field": "participant_origin_area",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "person.traveller.travellerArea")
+            },
+        },
+    },
 
     # These fields might get added later and are currently placeholders with no source fields.
     # For now these are supported through the case sql view.
@@ -1562,7 +1602,8 @@ MAPPING: List[JsonType] = [
     }
 ]
 
-
+CASE_IGNORE = [f['field'] for f in MAPPING
+               if 'case_ignore' in f and f['case_ignore']]
 ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
                       if Export.anon in f['export_levels']]
 

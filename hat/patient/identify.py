@@ -19,7 +19,7 @@ def name_normalize(name):
     return name.strip()
 
 
-def get_or_create_patient(case):
+def get_or_create_patient(case, origin_area, origin_village):
     first_name = name_normalize(case.prename)
     last_name = name_normalize(case.lastname)
     post_name = name_normalize(case.name)
@@ -27,7 +27,7 @@ def get_or_create_patient(case):
 
     patient, patient_created = Patient.objects.get_or_create(
         post_name=post_name, first_name=first_name, last_name=last_name, mothers_surname=mothers_surname,
-        sex=case.sex, year_of_birth=case.year_of_birth)
+        sex=case.sex, year_of_birth=case.year_of_birth, origin_village=origin_village, origin_area=origin_area)
 
     if patient_created:
         if case.age is not None:
@@ -40,48 +40,53 @@ def get_or_create_patient(case):
     return patient, patient_created
 
 
-def create_test_data(case: Case):
+def create_test_data(case: Case, patient_area):
     tests = []
     tests_created = 0
     if case.test_catt is not None:
         test, test_created = get_or_create_test(
             case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
-            image=case.test_catt_picture_filename)
+            image=case.test_catt_picture_filename, travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_rdt is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename)
+            case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename,
+            travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_pg is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename)
+            case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename,
+            travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_pl is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename)
+            case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename,
+            travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_ctcwoo is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename)
+            case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename,
+            travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_maect is not None:
         test, test_created = get_or_create_test(
-            case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename)
+            case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename,
+            travaller_area=patient_area)
         if test_created:
             tests_created += 1
         tests.append(test)
@@ -89,11 +94,14 @@ def create_test_data(case: Case):
     return tests, tests_created
 
 
-def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None):
+def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, travaller_area=None):
     # I chose to ignore the filename when searching for the test, not sure that's right
     test, test_created = Test.objects.get_or_create(type=test_type, date=case.document_date, index=index,
                                                     village=case.normalized_village, form=case,
-                                                    defaults={'image_filename': image, 'video_filename': video})
+                                                    defaults={
+                                                        'image_filename': image,
+                                                        'video_filename': video,
+                                                        'traveller_area': travaller_area})
     if test_created:
         test.result = result
         test.note = note

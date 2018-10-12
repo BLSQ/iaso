@@ -1,5 +1,5 @@
 from django.db import models
-from hat.geo.models import Village
+from hat.geo.models import Village, AS
 from hat.cases.models import Case
 from hat.sync.models import VideoUpload, ImageUpload
 from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
@@ -18,6 +18,8 @@ class Patient(models.Model):
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
     year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True)
     mothers_surname = models.TextField("Nom de la mère", null=True)
+    origin_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
+    origin_village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,6 +46,7 @@ class Test(models.Model):
     index = models.IntegerField(null=True, blank=True)
     team = models.ForeignKey("users.Team", null=True, blank=True, on_delete=models.CASCADE)
     village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
+    traveller_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
     form = models.ForeignKey(Case, on_delete=models.CASCADE)
     image_filename = models.TextField("Filename for image/picture", null=True, blank=True)
     image = models.ForeignKey(ImageUpload, blank=True, null=True, on_delete=models.CASCADE)

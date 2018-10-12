@@ -242,6 +242,7 @@ def cases_details(request: HttpRequest, doc_id: str=None) -> HttpResponse:
         'tests': case_tests,
         'patient': patient,
         'device_details': device_details,
+        'menu': get_menu(request.user, reverse("cases:cases_details", kwargs={'doc_id': doc_id}))
     })
 
 

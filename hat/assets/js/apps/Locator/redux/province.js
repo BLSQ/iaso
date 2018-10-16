@@ -23,7 +23,7 @@ export const fetchProvinces = (dispatch) => {
     });
 };
 
-export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null) => {
+export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null, displayVillage = true) => {
     dispatch(locatorActions.resetFilters());
     dispatch(locatorActions.emptyVillages());
     if (provinceId) {
@@ -33,7 +33,7 @@ export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = nul
                 const payload = { zones: result.body, provinceId };
                 dispatch(locatorActions.loadZones(payload));
                 if (zoneId) {
-                    dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, true, areaId, villageId));
+                    dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, displayVillage, areaId, villageId));
                 } else {
                     dispatch(loadActions.successLoadingNoData());
                 }

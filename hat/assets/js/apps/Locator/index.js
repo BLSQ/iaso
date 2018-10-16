@@ -19,14 +19,14 @@ import { mapReducer, mapInitialState } from './redux/mapReducer';
 export default function locator(appConfig, element, baseUrl) {
     const currentYear = new Date().getFullYear();
     const years = [1, 2, 3, 4, 5].map(i => currentYear - i);
-    const defaultPath = `list/order/form_year/pageSize/50/page/1/years/${years.join(',')}`;
+    const defaultPath = `list/order/form_year/pageSize/50/page/1/years/${years.join(',')}/located/only_not_located`;
     const routes = [
         <Route
-            path="list/order/:order/pageSize/:pageSize/page/:page(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)(/screeningResult/:screeningResult)"
+            path="list/order/:order/pageSize/:pageSize/page/:page(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)(/screeningResult/:screeningResult)(/located/:located)"
             component={ListLocatorComponent}
         />,
         <Route
-            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)"
+            path="case_id/:case_id(/order/:order)(/pageSize/:pageSize)(/page/:page)(/years/:years)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/teams/:teams)(/search/:search)(/normalized/:normalized)(/located/:located)"
             component={LocatorComponent}
         />,
         <Redirect path="*" to={defaultPath} />,

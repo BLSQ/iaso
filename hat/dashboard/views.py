@@ -102,7 +102,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Villages",
-                    "url_key": reverse("dashboard:management_village"),
+                    "url_key": reverse("dashboard:management_village") + "/village_official/YES",
                     "perms": "x_management_villages"
                 }
             ],
@@ -403,6 +403,16 @@ def users_management(request: HttpRequest) -> HttpResponse:
     else:
         return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_user"))})
 
+@login_required()
+@permission_required('menupermissions.x_management_villages')
+@require_http_methods(['GET'])
+def villages_management(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_village"))})
 
 @login_required()
 @permission_required('menupermissions.x_locator')

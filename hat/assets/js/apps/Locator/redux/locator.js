@@ -8,6 +8,7 @@ import { LOAD_VILLAGES, SELECT_VILLAGE, villageActions } from '../redux/village'
 export const FETCH_ACTION = 'hat/locator/locator/FETCH_ACTION';
 export const LOAD_AREAS = 'hat/locator/locator/LOAD_AREAS';
 export const LOAD_ZONES = 'hat/locator/locator/LOAD_ZONES';
+export const LOAD_AREA_ID = 'hat/locator/locator/LOAD_AREA_ID';
 export const LOAD_SEARCH_RESULTS = 'hat/locator/locator/LOAD_SEARCH_RESULTS';
 export const RESET_FILTERS = 'hat/locator/locator/RESET_FILTERS';
 export const SELECT_TYPE = 'hat/locator/locator/SELECT_TYPE';
@@ -47,6 +48,11 @@ export const loadAreas = payload => ({
 
 export const loadZones = payload => ({
     type: LOAD_ZONES,
+    payload,
+});
+
+export const loadAreaId = payload => ({
+    type: LOAD_AREA_ID,
     payload,
 });
 
@@ -175,6 +181,7 @@ export const selectArea = (
     villageId = null,
 ) => {
     dispatch(emptyVillages());
+    dispatch(loadAreaId(areaId));
     if (areaId) {
         dispatch(loadActions.successLoadingNoData());
         if (displayVillage) {
@@ -183,7 +190,7 @@ export const selectArea = (
     } else {
         dispatch(deleteArea());
         if (zoneId) {
-            getVillages(currentTypes, dispatch, null, zoneId);
+            selectZone(zoneId, undefined, dispatch, displayVillage, null, null); // eslint-disable-line
         }
     }
     return ({
@@ -208,12 +215,10 @@ export const selectZone = (
             .then((result) => {
                 const payload = { areas: result.body, zoneId };
                 dispatch(loadAreas(payload));
-                if (displayVillage) {
-                    if (areaId) {
-                        dispatch(selectArea(areaId, undefined, dispatch, true, zoneId, villageId));
-                    } else {
-                        getVillages(currentTypes, dispatch, null, zoneId);
-                    }
+                if (areaId) {
+                    dispatch(selectArea(areaId, undefined, dispatch, true, zoneId, villageId));
+                } else if (displayVillage) {
+                    getVillages(currentTypes, dispatch, null, zoneId);
                 } else {
                     dispatch(loadActions.successLoadingNoData());
                 }
@@ -320,6 +325,13 @@ export const locatorReducer = (state = locatorInitialState, action = {}) => {
             return {
                 ...state,
                 villages,
+                areaId,
+            };
+        }
+        case LOAD_AREA_ID: {
+            const areaId = action.payload;
+            return {
+                ...state,
                 areaId,
             };
         }

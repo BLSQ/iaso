@@ -77,7 +77,7 @@ class CasesViewSet(viewsets.ViewSet):
 
         if is_locator == 'true':
             queryset = (
-                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=False, confirmed_case=True)
+                CaseView.objects.filter(confirmed_case=True)
                 .exclude(source="mobile_sync")
                 .exclude(source="mobile_backup")
                 .exclude(province__icontains="kas")
@@ -92,7 +92,7 @@ class CasesViewSet(viewsets.ViewSet):
 
         if located == 'only_not_located':
             queryset = (
-                CaseView.objects.filter(normalized_village=None)
+                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=False)
                 .order_by(*orders)
             )
 
@@ -108,7 +108,7 @@ class CasesViewSet(viewsets.ViewSet):
                 .order_by(*orders)
             )
 
-        if located != 'all':
+        if located != 'all' and is_locator != 'true':
             queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup").exclude(province__icontains="kas").exclude(province__icontains="kinsh").exclude(province__icontains="bas").exclude(province__icontains="maniema").exclude(province__icontains="k.").exclude(province__icontains="equateur")
 
         if province_ids:

@@ -173,11 +173,8 @@
 .list-locator-filters {
     padding: $padding-unit 0 0 0;
     &>div {
-        display: flex;
         .locator-filter{
-            flex-basis: 33%;
-            box-sizing: border-box;
-            padding: 0 $padding-unit $padding-unit $padding-unit;
+            padding-bottom: 15px;
             >span {
                 font-weight: bold;
                 color: #868486;

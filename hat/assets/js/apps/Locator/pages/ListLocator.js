@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
 import ListFilters from '../components/ListFilters';
-import Filters from '../components/Filters';
 import { createUrl } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -29,26 +28,22 @@ export class ListLocator extends Component {
             this.props.fetchTeams(),
         ]).then(() => {
             if (this.props.params.province_id) {
-                this.props.selectProvince(this.props.params.province_id);
-            }
-            if (this.props.params.zs_id) {
-                this.props.selectZone(this.props.params.zs_id);
-            }
-            if (this.props.params.as_id) {
-                this.props.selectArea(this.props.params.as_id);
+                this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id);
+            } else if (this.props.params.zs_id) {
+                this.props.selectZone(this.props.params.zs_id, this.props.params.as_id);
+            } else if (this.props.params.as_id) {
+                this.props.selectArea(this.props.params.as_id, this.props.params.zs_id);
             }
         });
     }
 
     componentWillReceiveProps(newProps) {
         if (newProps.params.province_id !== this.props.params.province_id) {
-            this.props.selectProvince(newProps.params.province_id);
-        }
-        if (newProps.params.zs_id !== this.props.params.zs_id) {
-            this.props.selectZone(newProps.params.zs_id);
-        }
-        if (newProps.params.as_id !== this.props.params.as_id) {
-            this.props.selectArea(newProps.params.as_id);
+            this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id);
+        } else if (newProps.params.zs_id !== this.props.params.zs_id) {
+            this.props.selectZone(newProps.params.zs_id, newProps.params.as_id);
+        } else if (newProps.params.as_id !== this.props.params.as_id) {
+            this.props.selectArea(newProps.params.as_id, newProps.params.zs_id);
         }
     }
 
@@ -63,6 +58,7 @@ export class ListLocator extends Component {
             geo_search: this.props.params.search,
             normalized: this.props.params.normalized,
             isLocator: 'true',
+            located: this.props.params.located,
         };
 
         Object.keys(urlParams).forEach((key) => {
@@ -132,18 +128,11 @@ export class ListLocator extends Component {
                             return (this.props.redirectTo('list', tempParam));
                         }}
                         resetSearch={() => this.props.resetSearch()}
+                        listFilters={this.props.listFilters}
+                        selectProvince={provindeId => this.selectProvince(provindeId)}
+                        selectZone={zsId => this.selectZone(zsId)}
+                        selectArea={asId => this.selectArea(asId)}
                     />
-                    <div className="widget__content list-locator-filters">
-                        <Filters
-                            isMultiSelect={false} // need to update api to work with multiple ids
-                            showVillages={false}
-                            isClearable
-                            filters={this.props.listFilters}
-                            selectProvince={provindeId => this.selectProvince(provindeId)}
-                            selectZone={zsId => this.selectZone(zsId)}
-                            selectArea={asId => this.selectArea(asId)}
-                        />
-                    </div>
                 </div>
                 <div className="locator-container widget__container no-border">
                     {
@@ -195,9 +184,9 @@ const MapDispatchToProps = dispatch => ({
     fetchTeams: () => dispatch(locatorActions.fetchTeams(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
-    selectProvince: provinceId => dispatch(provinceActions.selectProvince(provinceId, dispatch)),
-    selectZone: zoneId => dispatch(locatorActions.selectZone(zoneId, undefined, dispatch)),
-    selectArea: areaId => dispatch(locatorActions.selectArea(areaId, undefined, dispatch, true)),
+    selectProvince: (provinceId, zoneId, areaId) => dispatch(provinceActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
+    selectZone: (zoneId, areaId) => dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, false, areaId)),
+    selectArea: (areaId, zoneId) => dispatch(locatorActions.selectArea(areaId, undefined, dispatch, false, zoneId)),
     resetSearch: () => dispatch(locatorActions.resetSearch()),
 });
 

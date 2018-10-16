@@ -95,29 +95,6 @@ class VillageViewSet(viewsets.ViewSet):
             coordination = get_object_or_404(Coordination, pk=coordination_id)
             queryset = queryset.filter(AS__ZS__id__in=coordination.ZS.all())
 
-        if years:
-            years_array = years.split(",")
-            nr_positive_cases = Count(
-                "caseview", filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)
-            )
-            queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-            values = values + ("nr_positive_cases",)
-        else:
-            if from_date is not None and to_date is not None:
-                nr_positive_cases = Count(
-                    "caseview",
-                    filter=Q(caseview__confirmed_case=True, caseview__normalized_date__range=(from_date, to_date)),
-                )
-                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-                values = values + ("nr_positive_cases",)
-            else:
-                nr_positive_cases = Count(
-                    "caseview",
-                    filter=Q(caseview__confirmed_case=True),
-                )
-                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-                values = values + ("nr_positive_cases",)
-
         if types:
             if types != 'all':
                 types_array = types.split(",")
@@ -150,6 +127,31 @@ class VillageViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(
                     Q(population=0) | Q(population__isnull=True))
         res = queryset.values(*values)
+
+        if years:
+            years_array = years.split(",")
+            nr_positive_cases = Count(
+                "caseview", filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)
+            )
+            queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+            values = values + ("nr_positive_cases",)
+        else:
+            if from_date is not None and to_date is not None:
+                nr_positive_cases = Count(
+                    "caseview",
+                    filter=Q(caseview__confirmed_case=True, caseview__normalized_date__range=(from_date, to_date)),
+                )
+                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+                values = values + ("nr_positive_cases",)
+            else:
+                nr_positive_cases = Count(
+                    "caseview",
+                    filter=Q(caseview__confirmed_case=True),
+                )
+                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+                values = values + ("nr_positive_cases",)
+
+
         if as_list:
             if page_offset:
                 page_offset = int(page_offset)

@@ -68,6 +68,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
         queryset = WorkZone.objects.all()
+        queryset = queryset.filter(planning__is_template=False,)
 
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)

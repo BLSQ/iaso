@@ -10,6 +10,7 @@ class PlanningModale extends Component {
             showModale: props.showModale,
             planning: props.planning,
             isChanged: false,
+            duplicateName: props.isDuplicate ? props.planning.name : null,
         };
     }
 
@@ -18,13 +19,18 @@ class PlanningModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        const newState = {
+            duplicateName: nextProps.isDuplicate ? nextProps.planning.name : null,
+        };
         if (!nextProps.isUpdating) {
-            this.setState({
-                showModale: nextProps.showModale,
-                planning: nextProps.planning,
-                isChanged: false,
-            });
+            newState.showModale = nextProps.showModale;
+            newState.planning = nextProps.planning;
+            if (nextProps.isDuplicate) {
+                newState.planning.year = '';
+            }
+            newState.isChanged = false;
         }
+        this.setState(newState);
     }
 
     updatePlanningField(key, value) {
@@ -43,6 +49,13 @@ class PlanningModale extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <section className="edit-modal">
+                    {
+                        this.props.isDuplicate &&
+                        <div className="subtitle">
+                            <FormattedMessage id="main.management.planning.duplicate" defaultMessage="Copie du planning" />:
+                            {' '}{this.state.duplicateName}
+                        </div>
+                    }
                     <div>
                         <label
                             htmlFor={`name-${this.state.planning.id}`}
@@ -72,6 +85,7 @@ class PlanningModale extends Component {
                             />:
                         </label>
                         <input
+                            disabled={this.state.planning.is_template && !this.props.isDuplicate}
                             type="number"
                             name="year"
                             id={`year-${this.state.planning.id}`}
@@ -79,6 +93,27 @@ class PlanningModale extends Component {
                             onChange={event => this.updatePlanningField('year', event.currentTarget.value)}
                         />
                     </div>
+                    {
+                        this.props.canMakeTemplate && !this.props.isDuplicate &&
+                        <div>
+                            <label
+                                htmlFor={`make-template-${this.state.planning.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="management.planning.label.template"
+                                    defaultMessage="Modèle"
+                                />:
+                            </label>
+                            <input
+                                type="checkbox"
+                                name="make-template"
+                                className=""
+                                checked={this.state.planning.is_template ? 'checked' : ''}
+                                onChange={() => this.updatePlanningField('is_template', !this.state.planning.is_template)}
+                            />
+                        </div>
+                    }
                     <div className="align-right">
                         <button
                             className="button"
@@ -94,7 +129,7 @@ class PlanningModale extends Component {
                                     (!this.state.isChanged && this.state.planning.id !== 0))
                             }
                             className="button--save"
-                            onClick={() => this.props.savePlanning(this.state.planning)}
+                            onClick={() => (this.props.isDuplicate ? this.props.duplicatePlanning(this.state.planning) : this.props.savePlanning(this.state.planning))}
                         >
                             <i className="fa fa-save" />
                             <FormattedMessage id="mangement.label.savePlanning" defaultMessage="Sauvegarder la planning" />
@@ -111,13 +146,17 @@ PlanningModale.defaultProps = {
         name: '',
         year: '',
     },
+    canMakeTemplate: false,
 };
 PlanningModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     planning: PropTypes.object,
     savePlanning: PropTypes.func.isRequired,
+    duplicatePlanning: PropTypes.func.isRequired,
     isUpdating: PropTypes.bool.isRequired,
+    isDuplicate: PropTypes.bool.isRequired,
+    canMakeTemplate: PropTypes.bool,
 };
 
 export default injectIntl(PlanningModale);

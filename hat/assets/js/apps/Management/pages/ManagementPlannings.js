@@ -10,9 +10,9 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
 import PlanningModaleComponent from '../components/PlanningModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
-import { saveFull, deleteFull } from '../../../utils/saveData';
+import { saveFull, deleteFull, saveDuplicatePlanning } from '../../../utils/saveData';
 
-const baseApiUrl = '/api/plannings/?';
+const baseApiUrl = '/api/plannings/?with_template=True';
 
 
 class ManagementPlannings extends React.Component {
@@ -27,6 +27,18 @@ class ManagementPlannings extends React.Component {
                         id: 'main.label.name',
                     }),
                     accessor: 'name',
+                    Cell: settings => (
+                        <span
+                            className={`${settings.original.is_template ? 'template' : ''}`}
+                        >
+                            <span>
+                                {`${settings.original.is_template ? `${formatMessage({
+                                    defaultMessage: 'Modèle',
+                                    id: 'management.planning.label.template',
+                                })}: ` : ''}`}{settings.original.name}
+                            </span>
+                        </span>
+                    ),
                 },
                 {
                     Header: formatMessage({
@@ -34,6 +46,9 @@ class ManagementPlannings extends React.Component {
                         id: 'main.label.year',
                     }),
                     accessor: 'year',
+                    Cell: settings => (
+                        <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{!settings.original.is_template ? settings.original.year : '--'}</span></span>
+                    ),
                 },
                 {
                     Header: formatMessage({
@@ -42,7 +57,7 @@ class ManagementPlannings extends React.Component {
                     }),
                     accessor: 'updated_at',
                     Cell: settings => (
-                        <span>{moment(settings.original.updated_at).format('YYYY-MM-DD HH:mm')}</span>
+                        <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{moment(settings.original.updated_at).format('YYYY-MM-DD HH:mm')}</span></span>
                     ),
                 },
                 {
@@ -53,21 +68,42 @@ class ManagementPlannings extends React.Component {
                     sortable: false,
                     resizable: false,
                     Cell: settings => (
-                        <section>
-                            <button
-                                className="button--edit"
-                                onClick={() => this.editPlanning(settings.original)}
-                            >
-                                <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
-                            </button>
-                            <button
-                                className="button--delete"
-                                onClick={() => this.showDelete(settings.original)}
-                            >
-                                <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
-                            </button>
+                        <section className={`${settings.original.is_template ? 'template' : ''}`}>
+                            <span>
+                                <button
+                                    className="button--edit--tiny margin-right"
+                                    onClick={() => this.editPlanning(settings.original, true)}
+                                >
+                                    <i className="fa fa-files-o" />
+                                    <FormattedMessage id="main.label.duplicate" defaultMessage="Copier" />
+                                </button>
+                                {
+                                    (!settings.original.is_template ||
+                                    (settings.original.is_template && this.state.canMakeTemplate)) &&
+                                    <span>
+                                        <button
+                                            className="button--edit--tiny margin-right"
+                                            onClick={() => this.editPlanning(settings.original)}
+                                        >
+                                            <i className="fa fa-pencil-square-o" />
+                                            <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                        </button>
+                                    </span>
+                                }
+                                {
+                                    (!settings.original.is_template ||
+                                    (settings.original.is_template && this.state.canMakeTemplate)) &&
+                                    <span>
+                                        <button
+                                            className="button--delete--tiny"
+                                            onClick={() => this.showDelete(settings.original)}
+                                        >
+                                            <i className="fa fa-trash" />
+                                            <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                        </button>
+                                    </span>
+                                }
+                            </span>
                         </section>
                     ),
                 },
@@ -78,6 +114,8 @@ class ManagementPlannings extends React.Component {
             planningEdited: undefined,
             planningDeleted: undefined,
             isUpdating: false,
+            isDuplicate: false,
+            canMakeTemplate: false,
         };
     }
 
@@ -94,10 +132,17 @@ class ManagementPlannings extends React.Component {
         });
     }
 
-    editPlanning(planning) {
+    setTemplatePermission(datas) {
+        this.setState({
+            canMakeTemplate: datas.can_make_template,
+        });
+    }
+
+    editPlanning(planning, isDuplicate = false) {
         this.setState({
             showEditModale: true,
             planningEdited: planning,
+            isDuplicate,
         });
     }
 
@@ -134,9 +179,33 @@ class ManagementPlannings extends React.Component {
                     isUpdating: false,
                     showEditModale: false,
                     planningEdited: undefined,
+                    isDuplicate: false,
                 });
             } else {
                 console.error(`One error occured when trying to save planning: ${newPlanning.name}`);
+            }
+        });
+    }
+
+    duplicatePlanning(newPlanning) {
+        const duplicatePlanning = {
+            planning_to_copy: newPlanning.id,
+            name: newPlanning.name,
+            year: newPlanning.year,
+        };
+        this.setState({
+            isUpdating: true,
+        });
+        saveDuplicatePlanning(duplicatePlanning, '/api/plannings/').then((isSaved) => {
+            if (isSaved) {
+                this.setState({
+                    isUpdating: false,
+                    showEditModale: false,
+                    planningEdited: undefined,
+                    isDuplicate: false,
+                });
+            } else {
+                console.error(`One error occured when trying to duplicate planning: ${newPlanning.name}`);
             }
         });
     }
@@ -169,7 +238,10 @@ class ManagementPlannings extends React.Component {
                     toggleModal={() => this.toggleEditModale()}
                     planning={this.state.planningEdited}
                     savePlanning={newPlanning => this.savePlanning(newPlanning)}
+                    duplicatePlanning={newPlanning => this.duplicatePlanning(newPlanning)}
                     isUpdating={this.state.isUpdating}
+                    isDuplicate={this.state.isDuplicate}
+                    canMakeTemplate={this.state.canMakeTemplate}
                 />
                 {
                     this.state.showDeleteModale &&
@@ -212,6 +284,9 @@ class ManagementPlannings extends React.Component {
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="plannings"
+                                dataKey="datas"
+                                onDataLoaded={datas => this.setTemplatePermission(datas)}
+                                callBackWithDataKey={false}
                             />
                         }
                         <div className="widget__content align-right border-top">

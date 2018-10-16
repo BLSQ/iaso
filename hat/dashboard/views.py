@@ -215,7 +215,6 @@ def change_password(request):
 @require_http_methods(['GET'])
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
-    print(user.profile.password_reset)
     if user.profile.password_reset:
         return redirect('/dashboard/password')
     else:

@@ -101,3 +101,26 @@ tr:first-child td {
     display: inline-block;
   }
 }
+
+.ReactTable {
+  .rt-td {
+    position: relative;;
+  }
+  .template {
+    &:before {
+      background-color: $light-gray;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      content: '';
+      display: block;
+    }
+    span {
+      z-index: 10;
+      position: relative;
+    }
+  }
+}

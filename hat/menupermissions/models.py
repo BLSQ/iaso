@@ -13,6 +13,7 @@ CASE_ANALYSIS  = _("Cases analysis")
 RECONCILIATION = _("Reconciliation")
 DEVICES = _("Devices")
 PLANNINGS = _("Plannings")
+PLANNINGS_TEMPLATE = _("Plannings template")
 COORDINATIONS = _("Coordinations")
 WORKZONES = _("Work zones")
 TEAMS = _("Teams")
@@ -42,6 +43,7 @@ class CustomPermissionSupport(models.Model):
             ('x_case_reconciliation', RECONCILIATION),
             ('x_management_devices', DEVICES),
             ('x_management_plannings', PLANNINGS),
+            ('x_management_plannings_template', PLANNINGS_TEMPLATE),
             ('x_management_coordinations', COORDINATIONS),
             ('x_management_workzones', WORKZONES),
             ('x_management_teams', TEAMS),

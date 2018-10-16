@@ -40,6 +40,14 @@ export function saveFull(data, url) {
         .then(() => true)
         .catch(err => false);
 }
+export function saveDuplicatePlanning(data, url) {
+    return request
+        .post(url)
+        .set('Content-Type', 'application/json')
+        .send(data)
+        .then(() => true)
+        .catch(err => false);
+}
 
 export function deleteFull(url) {
     return request

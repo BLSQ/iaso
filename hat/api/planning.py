@@ -50,8 +50,21 @@ class PlanningViewSet(viewsets.ViewSet):
     ]
 
     def list(self, request):
-        orders = request.GET.get('order', '-created_at').split(',')
-        return Response(Planning.objects.all().values('name', 'id', 'year', 'updated_at').order_by(*orders))
+        orders = request.GET.get('order', '-created_at')
+        with_template = request.GET.get('with_template', False)
+        orders = ('-is_template,' + orders).split(',')
+
+        queryset = Planning.objects.all()
+        if not with_template :
+            queryset = queryset.filter(is_template=False)
+            return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template').order_by(*orders))
+        else :
+            res = {"datas": queryset.values('name', 'id', 'year', 'updated_at', 'is_template').order_by(*orders)}
+            if request.user.has_perm('menupermissions.x_management_plannings_template'):
+                res['can_make_template'] = True
+            else :
+                res['can_make_template'] = False
+            return Response(res)
 
 
     def retrieve(self, request, pk=None):
@@ -66,7 +79,9 @@ class PlanningViewSet(viewsets.ViewSet):
 
         if planning_to_copy_id:
             planning = get_object_or_404(Planning, pk=planning_to_copy_id)
-            new_planning = planning.copy(name)
+            planning.is_template = False
+            planning.year = year
+            new_planning = planning.copy(name,)
         else:
             new_planning = Planning()
 
@@ -96,26 +111,37 @@ class PlanningViewSet(viewsets.ViewSet):
         newYear = request.data.get('year', '')
         if newYear != '':
             planning.year = newYear #Bonne année !
-            planning.save()
         newName = request.data.get('name', '')
         if newName != '':
             planning.name = newName
-            planning.save()
+        is_template = request.data.get('is_template', False)
 
-        return Response(planning.as_dict())
+        planning.is_template = is_template
+
+        if is_template and not request.user.has_perm('menupermissions.x_management_plannings_template'):
+            return Response('Unauthorized', status=401)
+        else:
+            planning.save()
+            return Response(planning.as_dict())
 
     def partial_update(self, request, pk=None):
         planning = get_object_or_404(Planning, pk=pk)
 
-        for obj in request.data:
-            Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
-            if obj.get('team_id', 'none') != 'none':
-                Assignation.objects.get_or_create(planning=planning,
-                                                  village_id=obj['village_id'],
-                                                  team_id = obj['team_id'] )
-        return Response(planning.as_dict())
+        if planning.is_template and not request.user.has_perm('menupermissions.x_management_plannings_template'):
+            return Response('Unauthorized', status=401)
+        else:
+            for obj in request.data:
+                Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
+                if obj.get('team_id', 'none') != 'none':
+                    Assignation.objects.get_or_create(planning=planning,
+                                                    village_id=obj['village_id'],
+                                                    team_id = obj['team_id'] )
+            return Response(planning.as_dict())
 
     def delete(self, request, pk=None):
         planning = get_object_or_404(Planning, pk=pk)
-        planning.delete()
-        return Response(True)
+        if planning.is_template and not request.user.has_perm('menupermissions.x_management_plannings_template'):
+            return Response('Unauthorized', status=401)
+        else:
+            planning.delete()
+            return Response(True)

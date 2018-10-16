@@ -97,7 +97,11 @@ class CustomTableComponent extends React.Component {
         });
         getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
             const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
-            this.props.onDataLoaded(tempdata);
+            if (this.props.callBackWithDataKey) {
+                this.props.onDataLoaded(tempdata);
+            } else {
+                this.props.onDataLoaded(data);
+            }
             let { showPagination } = this.props;
             if (data.count) {
                 showPagination = this.props.showPagination && (data.count > settings.pageSize);
@@ -186,6 +190,7 @@ CustomTableComponent.defaultProps = {
     onDataLoaded: () => { },
     onDataUpdated: () => { },
     isUpdated: false,
+    callBackWithDataKey: true,
 };
 
 CustomTableComponent.propTypes = {
@@ -210,6 +215,7 @@ CustomTableComponent.propTypes = {
     onDataUpdated: PropTypes.func,
     withBorder: PropTypes.bool,
     isUpdated: PropTypes.bool,
+    callBackWithDataKey: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

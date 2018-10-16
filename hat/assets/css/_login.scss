@@ -22,6 +22,7 @@
 .login__content {
   width: 100%;
   max-width: 320px;
+  position: relative;
   .errorlist {
     margin-top: 1em;
     font-size: $font-size-s;
@@ -73,4 +74,21 @@
   color: $red;
   padding: 0 0 $padding-unit / 2  $padding-unit / 2;
   font-size: 12px !important;
+}
+$right-icon-position : 45px;
+#display-password {
+  position: absolute;
+  bottom: 102px;
+  right: $right-icon-position;
+  &.id_new_password1 {
+    top: 225px;
+    right: $right-icon-position;
+    bottom: auto;
+  }
+  &.id_old_password {
+    top: 145px;
+    right: $right-icon-position;
+    bottom: 102px;
+    bottom: auto;
+  }
 }

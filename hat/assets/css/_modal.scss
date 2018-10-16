@@ -160,6 +160,15 @@
 
 .edit-modal {
     width: 445px;
+    .toggle-display-password {
+        border-radius: 5px;
+        outline: none;
+        box-shadow: none;
+        height: 20px;
+        position: absolute;
+        right: 10px;
+        top: 9px;
+    }
     input[type="checkbox"] {
         margin-top: 15px;
     }

@@ -18,6 +18,7 @@ class UserInfosComponent extends Component {
         super(props);
         this.state = {
             user: props.user,
+            displayPassword: false,
         };
     }
 
@@ -27,6 +28,12 @@ class UserInfosComponent extends Component {
                 user: nextProps.user,
             });
         }
+    }
+
+    togglePasswordDisplay() {
+        this.setState({
+            displayPassword: !this.state.displayPassword,
+        });
     }
 
 
@@ -129,7 +136,7 @@ class UserInfosComponent extends Component {
                         onChange={event => this.props.updateUserField('email', event.currentTarget.value)}
                     />
                 </div>
-                <div>
+                <div className="relative">
                     <label
                         htmlFor="password"
                         className="filter__container__select__label"
@@ -141,12 +148,22 @@ class UserInfosComponent extends Component {
                     </label>
                     <input
                         autoComplete="new-password"
-                        type="password"
+                        type={this.state.displayPassword ? 'text' : 'password'}
                         name="password"
                         id="password"
                         value={password}
                         onChange={event => this.props.updatePassword(event.currentTarget.value)}
                     />
+                    <button className="toggle-display-password" onClick={() => this.togglePasswordDisplay()}>
+                        {
+                            !this.state.displayPassword &&
+                            <i className="fa fa-eye" aria-hidden="true" />
+                        }
+                        {
+                            this.state.displayPassword &&
+                            <i className="fa fa-eye-slash" aria-hidden="true" />
+                        }
+                    </button>
                 </div>
                 <div>
                     <label

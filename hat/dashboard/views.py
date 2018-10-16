@@ -456,4 +456,4 @@ def cases_list(request: HttpRequest) -> HttpResponse:
     if user.profile.password_reset:
         return redirect('/dashboard/password')
     else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dasbhoard:cases_list"))})
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})

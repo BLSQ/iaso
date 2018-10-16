@@ -122,7 +122,7 @@
         {% endblocktrans %}
       </p>
       {% if perms.menupermissions.x_case_cases %}
-        <a href="{% url 'cases:cases_list' %}" class="button--bright">
+        <a href="{% url 'dashboard:cases_list' %}" class="button--bright">
           {% trans 'Data uploaded' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
@@ -140,7 +140,7 @@
         {% endblocktrans %}
       </p>
       {% if perms.menupermissions.x_case_cases %}
-        <a href="{% url 'cases:cases_list' %}?suspect=true" class="button--bright">
+        <a href="{% url 'dashboard:cases_list' %}?suspect=true" class="button--bright">
           {% trans 'Go to HAT cases' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
@@ -154,13 +154,9 @@
     <div class="section__content--partners">
       <ul class="section__list--partners">
         <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
-        <li>Institute of Tropical Medicine</li>
-        <li>University of California Los Angeles</li>
       </ul>
       <ul class="section__list--partners">
-        <li>Liverpool School of Tropical Medicine</li>
-        <li>Institute of Disease Modelling</li>
-        <li>Memisa</li>
+        <li>Institute of Tropical Medicine</li>
       </ul>
     </div>
   </section>

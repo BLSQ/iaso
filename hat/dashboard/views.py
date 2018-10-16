@@ -25,6 +25,7 @@ def get_five_last_years():
 
 
 def get_menu(user, active_link):
+    menu = []
     menu_list = [
         {
             "name": "Accueil",
@@ -166,7 +167,6 @@ def get_menu(user, active_link):
             "perms": None
         }
     ]
-    menu = []
     for menu_item in menu_list:
         sub_menu_items = menu_item.get("items")
         add_menu = False
@@ -456,4 +456,4 @@ def cases_list(request: HttpRequest) -> HttpResponse:
     if user.profile.password_reset:
         return redirect('/dashboard/password')
     else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dasbhoard:cases_list"))})

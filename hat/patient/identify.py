@@ -96,12 +96,13 @@ def create_test_data(case: Case, patient_area):
 
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, travaller_area=None):
     # I chose to ignore the filename when searching for the test, not sure that's right
-    test, test_created = Test.objects.get_or_create(type=test_type, date=case.document_date, index=index,
+    test, test_created = Test.objects.get_or_create(type=test_type, date__date=case.document_date, index=index,
                                                     village=case.normalized_village, form=case,
                                                     defaults={
                                                         'image_filename': image,
                                                         'video_filename': video,
-                                                        'traveller_area': travaller_area})
+                                                        'traveller_area': travaller_area,
+                                                        'date': case.document_date})
     if test_created:
         test.result = result
         test.note = note

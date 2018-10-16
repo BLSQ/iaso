@@ -156,7 +156,6 @@ class CaseAbstract(models.Model):
             - > 1 / 32
 
     :ivar integer test_pl:                   “Ponction lombaire”.
-    :ivar integer test_pl_white_count:       “Ponction lombaire”: white cells count.
     :ivar integer test_pl_video_filename:    “Ponction lombaire”: filename of the video file.
     :ivar text    test_pl_albumine:          “Ponction lombaire”: Albumine (centrigr. ‰)
     :ivar text    test_pl_comments:          “Ponction lombaire”: Comments.
@@ -307,7 +306,6 @@ class CaseAbstract(models.Model):
 
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.
-    test_pl_white_count = models.PositiveIntegerField(null=True, blank=True)
     test_pl_liquid = models.TextField(null=True, blank=True)
     test_pl_trypanosome = models.TextField(null=True, blank=True)
     test_pl_gb_mm3 = models.TextField(null=True, blank=True)

@@ -25,6 +25,7 @@ from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE
 from hat.patient.identify import get_or_create_patient, create_test_data
+from hat.patient.models import Test
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
 from .errors import handle_import_stage, ImportStage
@@ -344,6 +345,22 @@ def update_cases(df: DataFrame) -> int:
                     else:
                         if column_name not in CASE_IGNORE:
                             setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+
+            # The case location cannot change on mobile. Even if it does, a new location will produce a different
+            # document_id and therefore a new document rather than an update. So we only need to worry about
+            # patient_as changes
+            if row['participant_member_type'] and row['participant_member_type'] == 'traveller':
+                patient_as, _ = normalize_location(
+                    row['participant_origin_zone'],
+                    row['participant_origin_area'],
+                    None,
+                )
+                # Now update the Test from that case
+                if patient_as:
+                    Test.objects.filter(form=case).update(traveller_area=patient_as)
+            else:
+                patient_as = None
+
             case.save()
 
             if json_document_id:
@@ -351,6 +368,8 @@ def update_cases(df: DataFrame) -> int:
                 doc.case = case
                 doc.processed = True
                 doc.save()
+
+            create_test_data(case, patient_as)
 
     return num_updated
 

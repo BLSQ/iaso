@@ -1157,16 +1157,6 @@ MAPPING: List[JsonType] = [
         "test_type": STAGING_TEST
     },
     {
-        "field": "test_pl_white_count",
-        "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.whiteCount")
-            }
-        },
-        "test_type": STAGING_TEST
-    },
-    {
         "field": "test_pl_video_filename",
         "export_levels": [Export.full, Export.anon],
         "sources": {
@@ -1350,7 +1340,11 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "DS_PL_GB_MM3")
             },
-        }
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.whiteCount")
+            },
+        },
+        "test_type": STAGING_TEST
     },
     {
         "field": "test_pl_albumine",

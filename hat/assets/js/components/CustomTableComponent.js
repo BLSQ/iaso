@@ -14,6 +14,30 @@ const getOrderArray = orders => (orders.split(',').map(stringValue => ({
     id: stringValue.replace('-', ''),
     desc: stringValue.indexOf('-') !== -1,
 })));
+let tableInfos;
+let currentTable;
+
+const setTableInfos = (element) => {
+    if (element) {
+        currentTable = element;
+        const newTableInfos = currentTable.getBoundingClientRect();
+        const header = currentTable.getElementsByClassName('rt-thead')[0];
+        if (header) {
+            header.setAttribute('style', `width:${newTableInfos.width}px;`);
+        }
+        tableInfos = newTableInfos;
+    }
+};
+
+const onResize = () => {
+    if (currentTable) {
+        const header = currentTable.getElementsByClassName('rt-thead')[0];
+        if (header) {
+            header.setAttribute('style', `width:${currentTable.getBoundingClientRect().width}px;`);
+        }
+    }
+};
+
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
@@ -29,11 +53,14 @@ class CustomTableComponent extends React.Component {
             pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
             order: orderArray,
             count: undefined,
+            isHeaderFixed: false,
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidMount() {
+        window.addEventListener('scroll', () => this.handleScroll());
+        window.addEventListener('resize', () => onResize());
         this.onFetchData({
             sorted: this.state.order,
             page: this.state.page,
@@ -55,6 +82,11 @@ class CustomTableComponent extends React.Component {
                 pageSize: newProps.params.pageSize ? parseInt(newProps.params.pageSize, 10) : this.props.pageSize,
             }, newProps.endPointUrl);
         }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('scroll', () => this.handleScroll());
+        window.removeEventListener('resize', () => onResize());
     }
 
     onChangeSort(sortList) {
@@ -134,10 +166,23 @@ class CustomTableComponent extends React.Component {
         };
     }
 
+    handleScroll() {
+        const lastScrollY = window.scrollY;
+        this.setState({
+            isHeaderFixed: tableInfos && lastScrollY > tableInfos.top,
+        });
+    }
+
     render() {
         const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
         return (
-            <section className={`custom-table-container ${this.props.selectable ? 'selectable' : ''} ${!this.state.showPagination && this.state.count ? 'no-pagination' : ''}`}>
+            <section
+                ref={setTableInfos}
+                className={`custom-table-container ${this.props.selectable ?
+                    'selectable' : ''} ${!this.state.showPagination && this.state.count ?
+                    'no-pagination' : ''} ${this.state.isHeaderFixed ?
+                    'header-fixed' : ''}`}
+            >
                 <ReactTable
                     manual
                     multiSort={this.props.multiSort}

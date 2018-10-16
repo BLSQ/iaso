@@ -154,6 +154,18 @@ body {
         .rt-tr-group {
             cursor: pointer;
         }
+        &.header-fixed {
+            .ReactTable {
+                margin-top: 40px;
+            }
+            .rt-thead.-header{
+                position: fixed;
+                top: 0;
+                width: 100%;
+                background-color: white;
+                z-index: 10;
+            }
+        }
     }
 }
 .count-container-alone {

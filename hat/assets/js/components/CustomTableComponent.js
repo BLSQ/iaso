@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
+import ReactResizeDetector from 'react-resize-detector';
 import { getRequest, createUrl } from '../utils/fetchData';
 import customTableTranslations from '../utils/constants/customTableTranslations';
 import { formatThousand } from '../utils';
@@ -29,15 +30,14 @@ const setTableInfos = (element) => {
     }
 };
 
-const onResize = () => {
+const onResize = (width) => {
     if (currentTable) {
         const header = currentTable.getElementsByClassName('rt-thead')[0];
         if (header) {
-            header.setAttribute('style', `width:${currentTable.getBoundingClientRect().width}px;`);
+            header.setAttribute('style', `width:${width}px;`);
         }
     }
 };
-
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
@@ -60,7 +60,6 @@ class CustomTableComponent extends React.Component {
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
-        window.addEventListener('resize', () => onResize());
         this.onFetchData({
             sorted: this.state.order,
             page: this.state.page,
@@ -86,7 +85,6 @@ class CustomTableComponent extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('scroll', () => this.handleScroll());
-        window.removeEventListener('resize', () => onResize());
     }
 
     onChangeSort(sortList) {
@@ -176,45 +174,47 @@ class CustomTableComponent extends React.Component {
     render() {
         const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
         return (
-            <section
-                ref={setTableInfos}
-                className={`custom-table-container ${this.props.selectable ?
-                    'selectable' : ''} ${!this.state.showPagination && this.state.count ?
-                    'no-pagination' : ''} ${this.state.isHeaderFixed ?
-                    'header-fixed' : ''}`}
-            >
-                <ReactTable
-                    manual
-                    multiSort={this.props.multiSort}
-                    columns={this.props.columns}
-                    data={this.state.data}
-                    pages={this.state.pages}
-                    loading={this.state.loading}
-                    onPageChange={page => this.onPageChange(page)}
-                    onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
-                    onSortedChange={sort => this.onChangeSort(sort)}
-                    filterable={this.props.isFilterable}
-                    sortable={this.props.isSortable}
-                    pageSize={currentPageSize}
-                    page={this.state.page - 1}
-                    className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''}`}
-                    getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
-                    showPagination={this.state.showPagination}
-                    defaultSorted={this.state.order}
-                    pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
-                />
-                <div className="count-container">
-                    {this.state.count !== undefined && this.state.count > 0 &&
-                        <div>
-                            {`${formatThousand(this.state.count)} `}
-                            <FormattedMessage
-                                id="locator.list.result"
-                                defaultMessage="résultat(s)"
-                            />
-                        </div>
-                    }
-                </div>
-            </section>
+            <ReactResizeDetector handleWidth onResize={onResize}>
+                <section
+                    ref={setTableInfos}
+                    className={`custom-table-container ${this.props.selectable ?
+                        'selectable' : ''} ${!this.state.showPagination && this.state.count ?
+                        'no-pagination' : ''} ${this.state.isHeaderFixed ?
+                        'header-fixed' : ''}`}
+                >
+                    <ReactTable
+                        manual
+                        multiSort={this.props.multiSort}
+                        columns={this.props.columns}
+                        data={this.state.data}
+                        pages={this.state.pages}
+                        loading={this.state.loading}
+                        onPageChange={page => this.onPageChange(page)}
+                        onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
+                        onSortedChange={sort => this.onChangeSort(sort)}
+                        filterable={this.props.isFilterable}
+                        sortable={this.props.isSortable}
+                        pageSize={currentPageSize}
+                        page={this.state.page - 1}
+                        className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''}`}
+                        getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
+                        showPagination={this.state.showPagination}
+                        defaultSorted={this.state.order}
+                        pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
+                    />
+                    <div className="count-container">
+                        {this.state.count !== undefined && this.state.count > 0 &&
+                            <div>
+                                {`${formatThousand(this.state.count)} `}
+                                <FormattedMessage
+                                    id="locator.list.result"
+                                    defaultMessage="résultat(s)"
+                                />
+                            </div>
+                        }
+                    </div>
+                </section>
+            </ReactResizeDetector>
         );
     }
 }

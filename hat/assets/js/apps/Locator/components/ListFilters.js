@@ -26,11 +26,11 @@ const MESSAGES = defineMessages({
     },
     not_located: {
         defaultMessage: 'Pas encore localisés',
-        id: 'listlocator.search.locationAllMasc',
+        id: 'listlocator.search.locationUnlocalized',
     },
     not_found: {
         defaultMessage: 'Marqués comme non trouvés',
-        id: 'listlocator.search.locationAllMasc',
+        id: 'listlocator.search.locationUnfound',
     },
 });
 

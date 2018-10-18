@@ -11,6 +11,11 @@ GEO_SOURCE_CHOICES = (
     ('derivated', 'Derivated from actual data'),
 )
 
+VILLAGE_SOURCE_CHOICES = (
+    ("device", 'Tablettes'),
+    ("ucla", "UCLA"),
+    ("manual", "Ajouté par un utilisateur")
+)
 
 class Province(models.Model):
     name = models.CharField(max_length=255)
@@ -118,7 +123,7 @@ class Village(models.Model):
         ('NA', 'Villages from satellite (unknown)'),
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
-    village_source = models.TextField(max_length=255, null=True, blank=True)
+    village_source = models.TextField(max_length=255, choices=VILLAGE_SOURCE_CHOICES,  null=True, blank=True)
     creator_device = models.ForeignKey("sync.DeviceDB", null=True, on_delete=models.SET_NULL)
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)

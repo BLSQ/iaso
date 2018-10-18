@@ -27,6 +27,7 @@ from .usertype import UserTypeViewSet
 from .permissions import PermissionsViewSet
 from .stats import StatsViewSet
 from .patients import PatientsViewSet
+from .village_types import VillageTypeViewSet
 
 router = routers.DefaultRouter()
 router.register(r"datasets", DatasetViewSet, base_name="datasets")
@@ -55,4 +56,6 @@ router.register(r"permissions", PermissionsViewSet, base_name="permissions")
 router.register(r"usertypes", UserTypeViewSet, base_name="usertypes") 
 router.register(r"stats", StatsViewSet, base_name="stats")
 router.register(r"patients", PatientsViewSet, base_name="patients")
+router.register(r"villagetypes", VillageTypeViewSet, base_name="village_types")
+
 urlpatterns = [url(r"^", include(router.urls))]

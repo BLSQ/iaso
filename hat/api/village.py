@@ -100,12 +100,6 @@ class VillageViewSet(viewsets.ViewSet):
                 types_array = types.split(",")
                 queryset = queryset.filter(village_official__in=types_array)
 
-        if results == "positive":
-            queryset = queryset.filter(nr_positive_cases__gte=1)
-
-        if results == "negative":
-            queryset = queryset.filter(nr_positive_cases=0)
-
         if unlocated:
             if unlocated == "located":
                 queryset = queryset.filter(
@@ -116,7 +110,6 @@ class VillageViewSet(viewsets.ViewSet):
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
 
-
         if is_erased:
             queryset = queryset.filter(is_erased=is_erased)
 
@@ -126,7 +119,6 @@ class VillageViewSet(viewsets.ViewSet):
             if population == "populationNok":
                 queryset = queryset.filter(
                     Q(population=0) | Q(population__isnull=True))
-        res = queryset.values(*values)
 
         if years:
             years_array = years.split(",")
@@ -150,7 +142,13 @@ class VillageViewSet(viewsets.ViewSet):
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
+        res = queryset.values(*values)
 
+        if results == "positive":
+            res = res.filter(nr_positive_cases__gte=1)
+
+        if results == "negative":
+            res = res.filter(nr_positive_cases=0)
 
         if as_list:
             if page_offset:
@@ -180,10 +178,9 @@ class VillageViewSet(viewsets.ViewSet):
                 res["page"] = page_offset
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
-                return Response(res)
+            return Response(res)
         else:
             if csv_format:
-
                 class Echo:
                     """An object that implements just the write method of the file-like
                     interface.
@@ -236,8 +233,7 @@ class VillageViewSet(viewsets.ViewSet):
                 if limit:
                     res = res[: int(limit)]
                 body = {v["id"]: v for v in res}
-
-        return Response(body)
+                return Response(body)
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)
@@ -308,7 +304,6 @@ class VillageViewSet(viewsets.ViewSet):
         village_type = request.data.get('village_type', '')
         village_source = request.data.get('village_source', '')
         gps_source = request.data.get('gps_source', '')
-
 
         village = Village()
         village.name = name

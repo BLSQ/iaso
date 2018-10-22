@@ -13,6 +13,7 @@ import json
 import logging
 from typing import List
 
+import dateutil
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -20,10 +21,11 @@ from django.utils.translation import ugettext as _
 from hat.cases.event_log import log_sync_import, EventStats
 from hat.common.typing import JsonType
 from hat.couchdb.utils import fetch_db_docs
+from hat.geo.models import PopulationData
 from hat.sync.models import DeviceDB, JSONDocument, DeviceImportEvent
 from .errors import get_import_error
 from .extract import prepare_mobile_data
-from .load import load_cases_into_db
+from .load import load_cases_into_db, normalize_location
 from .transform import transform_source
 from .typing import ImportResult
 
@@ -60,6 +62,7 @@ def import_synced_devices() -> List[ImportResult]:
             ).save()
             docs = data['docs']
             stats = import_synced_docs(docs, device.device_id)
+            import_synced_population(docs, device.device_id)
             result['stats'] = stats
             results.append(result)
             if stats.total:
@@ -125,3 +128,49 @@ def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
     transformed = transform_source('sync', extracted)
     stats = load_cases_into_db(transformed)
     return stats
+
+
+def import_synced_population(docs: JsonType, device_id: str):
+    records_imported = 0
+    device = DeviceDB.objects.get(device_id=device_id)
+    ptr_docs: List[dict] = [doc for doc in docs if 'ptr' in doc and doc['_id'].startswith('latest-ptr-village-')]
+    for doc in ptr_docs:
+        revision = doc.get('_rev', None)
+        doc_id = doc.get('_id', None)
+        zone = doc.get('zone').get('id') if doc.get('zone').get('id') else doc.get('zone').get('name')
+        area = doc.get('area').get('id') if doc.get('area').get('id') else doc.get('area').get('name')
+        village = doc.get('village').get('id') if doc.get('village').get('id') else doc.get('village').get('name')
+
+        (_, normalized_village) = normalize_location(zone, area, village)
+
+        date_modified = dateutil.parser.parse(doc.get('dateModified'))
+
+        couch_document, document_created = JSONDocument.objects.get_or_create(
+            doc_id=doc_id, doc_revision=revision, type='ptr',
+            defaults={'doc': doc, 'device': device, 'processed': False}
+        )
+
+        if not couch_document.processed:
+            population, _ = PopulationData.objects.get_or_create(
+                report_date__date=date_modified,
+                source="device",
+                type="PTR",
+                device=device,
+                population_year=date_modified.year,
+                village=normalized_village,
+                population=doc.get('ptr'),
+                defaults={'report_date': date_modified},
+            )
+
+            # Village contains denormalized data about population, we need to update it
+            if normalized_village.population_year != population.population_year \
+                    or normalized_village.population != population.population:
+                normalized_village.population = population.population
+                normalized_village.population_year = population.population_year
+                normalized_village.population_source = 'ptr'
+                normalized_village.save()
+
+            couch_document.processed = True
+            couch_document.population = population
+            couch_document.save()
+            records_imported += 1

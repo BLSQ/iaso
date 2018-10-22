@@ -126,6 +126,7 @@ const renderConfirmationPourcentage = (total) => {
             }
         </div>);
 };
+let tableTotal;
 
 
 export class ManagementDetails extends Component {
@@ -133,25 +134,17 @@ export class ManagementDetails extends Component {
         super(props);
         const {
             dispatch,
-            currentDetail,
             params: {
                 deviceId,
-                from,
-                to,
                 teamId,
             },
         } = props;
 
-        if (!currentDetail) {
-            if (deviceId) {
-                dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10), '/api/datasets/device_status'));
-            }
-            if (teamId) {
-                dispatch(detailsActions.fetchDetails(dispatch, parseInt(teamId, 10), '/api/teams'));
-            }
-        } else {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'villageyear'));
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'month'));
+        if (deviceId) {
+            dispatch(detailsActions.fetchDetails(dispatch, parseInt(deviceId, 10), `/api/devices/${deviceId}`));
+        }
+        if (teamId) {
+            dispatch(detailsActions.fetchDetails(dispatch, parseInt(teamId, 10), `/api/teams/${teamId}`));
         }
 
         const { formatMessage } = this.props.intl;
@@ -166,6 +159,10 @@ export class ManagementDetails extends Component {
                             id: 'details.label.village',
                         }),
                         accessor: 'village__name',
+                        Footer: formatMessage({
+                            defaultMessage: 'TOTAL',
+                            id: 'details.label.total',
+                        }),
                     },
                     {
                         Header: formatMessage({
@@ -176,32 +173,134 @@ export class ManagementDetails extends Component {
                         Cell: settings => (<FormattedDate value={new Date(settings.original.date)} />),
                     },
                     {
-                        Header: 'CATT',
-                        accessor: 'catt_count',
+                        Header: formatMessage({
+                            defaultMessage: 'Dépistages',
+                            id: 'details.label.screenings',
+                        }),
+                        columns: [
+                            {
+                                Header: 'CATT',
+                                accessor: 'catt_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_catt : ''),
+                            },
+                            {
+                                Header: 'RDT',
+                                accessor: 'rdt_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_rdt : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'Positifs',
+                                    id: 'details.label.positive',
+                                }),
+                                accessor: 'positive_screening_test_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_catt_positive + tableTotal.total_rdt_positive : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'TOTAL',
+                                    id: 'details.label.total',
+                                }),
+                                accessor: 'screening_count',
+                                className: 'small',
+                                width: 120,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_catt + tableTotal.total_rdt : ''),
+                            },
+                        ],
                     },
                     {
-                        Header: 'RDT',
-                        accessor: 'rdt_count',
-                    },
-                    {
-                        Header: 'PG',
-                        accessor: 'pg_count',
-                    },
-                    {
-                        Header: 'MAECT',
-                        accessor: 'ctcwoo_count',
-                    },
-                    {
-                        Header: 'CTCWOO',
-                        accessor: 'maect_count',
-                    },
-                    {
-                        Header: 'PL',
-                        accessor: 'pl_count',
-                    },
-                    {
-                        Header: 'TOTAL',
-                        accessor: 'test_count',
+                        Header: formatMessage({
+                            defaultMessage: 'Confirmations',
+                            id: 'details.label.confirmations',
+                        }),
+                        columns: [
+                            {
+                                Header: 'PG',
+                                accessor: 'pg_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_pg : ''),
+                            },
+                            {
+                                Header: 'CTCWOO',
+                                accessor: 'ctcwoo_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_ctc : ''),
+                            },
+                            {
+                                Header: 'MAECT',
+                                accessor: 'maect_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_maect : ''),
+                            },
+                            {
+                                Header: 'PL',
+                                accessor: 'pl_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_pl : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'Positifs',
+                                    id: 'details.label.positive',
+                                }),
+                                accessor: 'positive_confirmation_test_count',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_confirmation_tests_positive : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'TOTAL',
+                                    id: 'details.label.total',
+                                }),
+                                accessor: 'confirmation_count',
+                                className: 'small',
+                                width: 120,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_confirmation_tests : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'Stade 1',
+                                    id: 'details.label.pl_count_stage1',
+                                }),
+                                accessor: 'pl_count_stage1',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_pl_stage1 : ''),
+                            },
+                            {
+                                Header: formatMessage({
+                                    defaultMessage: 'Stade 2',
+                                    id: 'details.label.pl_count_stage2',
+                                }),
+                                accessor: 'pl_count_stage2',
+                                className: 'small',
+                                width: 100,
+                                resizable: false,
+                                Footer: () => (tableTotal ? tableTotal.total_pl_stage2 : ''),
+                            },
+                        ],
                     },
                 ],
         };
@@ -243,6 +342,11 @@ export class ManagementDetails extends Component {
         dispatch(detailsActions.resetDetails());
     }
 
+    onTableLoaded(datas) {
+        tableTotal = datas.total;
+        this.props.setVillages(datas.result);
+    }
+
     getVillageTableUrl() {
         const {
             currentDetail,
@@ -262,6 +366,7 @@ export class ManagementDetails extends Component {
     }
 
     render() {
+        console.log(tableTotal);
         const { baseLayer } = this.props.map;
         const {
             currentDetail,
@@ -382,7 +487,8 @@ export class ManagementDetails extends Component {
                             defaultPath="detail"
                             onRowClicked={() => { }}
                             multiSort
-                            onDataLoaded={villagesList => this.props.setVillages(villagesList)}
+                            callBackWithDataKey={false}
+                            onDataLoaded={result => this.onTableLoaded(result)}
                         />
                     }
                     <div className="count-container-alone">

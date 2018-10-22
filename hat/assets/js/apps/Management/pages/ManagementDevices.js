@@ -112,13 +112,6 @@ export class ManagementDevices extends Component {
                         }),
                         accessor: 'last_synced_log_message',
                     },
-                    {
-                        Header: formatMessage({
-                            defaultMessage: 'Identifiant',
-                            id: 'teamsdevices.device_id',
-                        }),
-                        accessor: 'device_id',
-                    },
                 ],
         };
     }
@@ -170,7 +163,7 @@ export class ManagementDevices extends Component {
                         selectable
                         isSortable
                         showPagination={false}
-                        endPointUrl="/api/datasets/device_status/?"
+                        endPointUrl="/api/devices/?"
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_synced_date', desc: false }]}
                         params={this.props.params}

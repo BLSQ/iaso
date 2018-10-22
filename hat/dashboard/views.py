@@ -148,23 +148,6 @@ def get_menu(user, active_link):
             "url_key": reverse("dashboard:quality-control"),
             "items": [],
             "perms": "x_qualitycontrol"
-        },
-        {
-            "name": "Chargement données",
-            "url_key": reverse("datasets:index"),
-            "items": [
-                {
-                    "name": "Upload de cas",
-                    "url_key": reverse("datasets:import_cases:upload"),
-                    "perms": "x_datasets_datauploads"
-                },
-                {
-                    "name": "Upload coordonnées villages",
-                    "url_key": reverse("datasets:import_locations:upload"),
-                    "perms": "x_datasets_villageuploads"
-                }
-            ],
-            "perms": None
         }
     ]
     for menu_item in menu_list:

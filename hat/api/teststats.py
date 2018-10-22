@@ -90,18 +90,22 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(test_count=Count("id"))
                 .annotate(catt_count=Count("id", filter=Q(type=CATT)))
                 .annotate(rdt_count=Count("id", filter=Q(type=RDT)))
+                .annotate(screening_count=Count("id", filter=Q(type=CATT) | Q(type=RDT) ))
                 .annotate(pg_count=Count("id", filter=Q(type=PG)))
                 .annotate(ctcwoo_count=Count("id", filter=Q(type=CTCWOO)))
                 .annotate(maect_count=Count("id", filter=Q(type=MAECT)))
                 .annotate(pl_count=Count("id", filter=Q(type=PL)))
                 .annotate(pl_count_stage1=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage1')))
                 .annotate(pl_count_stage2=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage2')))
-                .annotate(confirmation_count=Count("id", filter=Q(type=PG) | Q(type=CTCWOO) | Q(type=MAECT)))
+                .annotate(confirmation_count=Count("id", filter=Q(type__in=TYPES_CONFIRMATION)))
                 .annotate(positive_catt_count=Count("id", filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE)))
                 .annotate(positive_rdt_count=Count("id", filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE)))
                 .annotate(positive_screening_test_count=Count(
                     "id",
                     filter=(Q(type=RDT) & Q(result__gte=RES_POSITIVE)) | (Q(type=CATT) & Q(result__gte=RES_POSITIVE))))
+                .annotate(positive_confirmation_test_count=Count(
+                    "id",
+                    filter=(Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE))))
                 .annotate(first_test_date=Min("date"))
                 .annotate(last_test_date=Max("date"))
                 .annotate(total_population=DistinctSum("village__population"))
@@ -112,7 +116,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                       "positive_screening_test_count","pl_count_stage1" , "pl_count_stage2")
             orders = "date",
         elif grouping == "villageday":
-            values = ("village__name", "village__id", "village__latitude", "village__longitude", "date")
+            values = ("village__name", "village__id", "village__latitude", "village__longitude",
+                      "date", "positive_screening_test_count", "positive_confirmation_test_count", "pl_count_stage1" , "pl_count_stage2", "confirmation_count", "screening_count")
             # order = "date",
         elif grouping == "villageyear":
             values = ("village__name", "date", "village__id", "village__latitude", "village__longitude",
@@ -123,7 +128,6 @@ class TestStatsViewSet(viewsets.ViewSet):
 
         grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
 
-
         # To compute the positive confirmation tests, one first needs to group by form/patient and then annotate tests
         case_queryset = queryset \
             .values('form__id') \
@@ -133,17 +137,30 @@ class TestStatsViewSet(viewsets.ViewSet):
             .annotate(catt_tests=Count("id", filter=Q(type=CATT))) \
             .annotate(catt_tests_positive=Count("id", filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE))) \
             .annotate(rdt_tests=Count("id", filter=Q(type=RDT))) \
-            .annotate(rdt_tests_positive=Count("id", filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE)))
+            .annotate(rdt_tests_positive=Count("id", filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE))) \
+            .annotate(pg_tests=Count("id", filter=Q(type=PG))) \
+            .annotate(ctc_tests=Count("id", filter=Q(type=CTCWOO))) \
+            .annotate(maect_tests=Count("id", filter=Q(type=MAECT))) \
+            .annotate(pl_tests=Count("id", filter=Q(type=PL))) \
+            .annotate(pl_stage1=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage1'))) \
+            .annotate(pl_stage2=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage2'))) \
+
 
         total_queryset = case_queryset.aggregate(
             total_count=Count("*"),
-            total_confirmation_tests=Count("confirmation_tests", filter=Q(confirmation_tests__gt=0)),
+            total_confirmation_tests=Count("id", filter=Q(type__in=TYPES_CONFIRMATION)),
             total_confirmation_tests_positive=Count("confirmation_tests_positive",
                                                     filter=Q(confirmation_tests_positive__gt=0)),
             total_catt=Count("catt_tests", filter=Q(catt_tests__gt=0)),
             total_catt_positive=Count("catt_tests", filter=Q(catt_tests_positive__gt=0)),
             total_rdt=Count("rdt_tests", filter=Q(rdt_tests__gt=0)),
             total_rdt_positive=Count("rdt_tests", filter=Q(rdt_tests_positive__gt=0)),
+            total_pg=Count("pg_tests", filter=Q(pg_tests__gt=0)),
+            total_ctc=Count("ctc_tests", filter=Q(ctc_tests__gt=0)),
+            total_maect=Count("maect_tests", filter=Q(maect_tests__gt=0)),
+            total_pl=Count("pl_tests", filter=Q(pl_tests__gt=0)),
+            total_pl_stage1=Count("pl_tests", filter=Q(pl_stage1__gt=0)),
+            total_pl_stage2=Count("pl_tests", filter=Q(pl_stage2__gt=0)),
         )
 
         return Response({"result": grouped_queryset, "total": total_queryset})

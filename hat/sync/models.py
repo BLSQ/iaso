@@ -59,6 +59,21 @@ class DeviceDB(models.Model):
     def __str__(self):
         return self.device_id
 
+    def as_dict(self):
+        last_user = ""
+        last_team = ""
+        if self.last_user and self.last_user.profile:
+            last_user = self.last_user.profile.full_name()
+            if self.last_user.profile.team:
+                last_team = self.last_user.profile.team.name
+
+        return {
+            'id': self.id,
+            'device_id': self.device_id,
+            'last_user': last_user,
+            'last_team': last_team,
+        }
+
 
 @receiver(post_save, sender=DeviceDB)
 def device_db_post_save(sender, instance, *args, **kwargs):  # type: ignore

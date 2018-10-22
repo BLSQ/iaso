@@ -8,7 +8,6 @@ from .algo import AlgoViewSet
 from .assignation import AssignationViewSet
 from .cases import CasesViewSet
 from .coordination import CoordinationViewSet
-from .dataset import DatasetViewSet
 from .planning import PlanningViewSet
 from .province import ProvinceViewSet
 from .qcstats import QCStatsViewSet
@@ -28,9 +27,9 @@ from .permissions import PermissionsViewSet
 from .stats import StatsViewSet
 from .patients import PatientsViewSet
 from .village_types import VillageTypeViewSet
+from .devices import DevicesViewSet
 
 router = routers.DefaultRouter()
-router.register(r"datasets", DatasetViewSet, base_name="datasets")
 router.register(r"plannings", PlanningViewSet, base_name="planning")
 router.register(r"assignations", AssignationViewSet, base_name="assignations")
 router.register(r"provinces", ProvinceViewSet, base_name="provinces")
@@ -53,9 +52,11 @@ router.register(r"workzones", WorkZoneViewSet, base_name="workzones")
 router.register(r"profiles", ProfilesViewSet, base_name="profiles")
 router.register(r"institutions", InstitutionsViewSet, base_name="institutions")
 router.register(r"permissions", PermissionsViewSet, base_name="permissions")
-router.register(r"usertypes", UserTypeViewSet, base_name="usertypes") 
+router.register(r"usertypes", UserTypeViewSet, base_name="usertypes")
 router.register(r"stats", StatsViewSet, base_name="stats")
 router.register(r"patients", PatientsViewSet, base_name="patients")
 router.register(r"villagetypes", VillageTypeViewSet, base_name="village_types")
+router.register(r"devices", DevicesViewSet, base_name="devices")
+
 
 urlpatterns = [url(r"^", include(router.urls))]

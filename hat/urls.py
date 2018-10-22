@@ -16,7 +16,6 @@ urlpatterns = [
     url(r'^api/', include('hat.api.urls')),
     url(r'^cases/', include('hat.cases.urls')),
     url(r'^dashboard/', include('hat.dashboard.urls')),
-    url(r'^datasets/', include('hat.import_export.urls')),
 
     url(r'^login', auth.views.LoginView.as_view(template_name='login.html'), name='login'),
     url(r'^logout', auth.views.LogoutView.as_view(next_page='login'), name='logout'),

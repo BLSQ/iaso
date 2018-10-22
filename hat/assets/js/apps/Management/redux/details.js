@@ -21,17 +21,6 @@ export const loadCurrentDetail = payload => ({
     payload,
 });
 
-export const loadDetails = (payload, detailId = null, dispatch = () => { }) => {
-    if (detailId) {
-        const currentDevice = payload.filter(device => device.id === detailId)[0];
-        dispatch(loadCurrentDetail(currentDevice));
-    }
-    return ({
-        type: LOAD_DETAIL,
-        payload,
-    });
-};
-
 export const loadDetailsVillages = payload => ({
     type: LOAD_DETAIL_VILLAGES,
     payload,
@@ -51,11 +40,11 @@ export const loadDetailsVillagesMonth = payload => ({
 
 
 export const fetchDetails = (dispatch, detailId, url) => {
+    dispatch(loadActions.startLoading());
     req
         .get(url)
         .then((result) => {
-            const allDetails = result.body;
-            dispatch(loadDetails(allDetails, detailId, dispatch));
+            dispatch(loadCurrentDetail(result.body));
         })
         .catch(err => (console.error(`Error while fetching detail ${err}`)));
     return ({

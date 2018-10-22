@@ -37,7 +37,7 @@ const confirmationStatsSettings = [
         key: 'pl_count',
         label: '',
         color: '#BEC4E2',
-        defaultMessage: 'Test PG effectués',
+        defaultMessage: 'Tests PL effectués',
         id: 'testStatsSettings.pl_count',
     },
     // {

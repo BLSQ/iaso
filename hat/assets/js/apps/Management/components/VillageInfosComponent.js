@@ -26,6 +26,7 @@ class VillageInfosComponent extends Component {
         const { formatMessage } = this.props.intl;
         const {
             updateVillageField,
+            villageSources,
         } = this.props;
         return (
             <section className="half-container">
@@ -142,19 +143,22 @@ class VillageInfosComponent extends Component {
                     <div>
                         <label
                             htmlFor={`village_source-${this.state.village.village_source}`}
-                            className="filter__container__select__label"
+                            className="filter__container__select__label  select-label"
                         >
                             <FormattedMessage
                                 id="main.label.village_source"
                                 defaultMessage="Source du village"
                             />:
                         </label>
-                        <input
-                            type="text"
+                        <Select
+                            multi={false}
+                            clearable
+                            simpleValue
                             name="village_source"
-                            id={`village_source-${this.state.village.village_source}`}
-                            value={this.state.village.village_source ? this.state.village.village_source : ''}
-                            onChange={event => updateVillageField('village_source', event.currentTarget.value)}
+                            value={this.state.village.id === 0 ? 'manual' : this.state.village.village_source}
+                            placeholder="--"
+                            options={villageSources.map(v => ({ label: v[1], value: v[0] }))}
+                            onChange={value => updateVillageField('village_source', value)}
                         />
                     </div>
                     <div>
@@ -185,6 +189,7 @@ VillageInfosComponent.propTypes = {
     village: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     updateVillageField: PropTypes.func.isRequired,
+    villageSources: PropTypes.array.isRequired,
 };
 
 export default injectIntl(VillageInfosComponent);

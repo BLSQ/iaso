@@ -109,11 +109,16 @@ const villagesTableColumns = (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Source gps',
-                id: 'main.label.gps_source',
+                defaultMessage: 'Source',
+                id: 'main.label.village_source',
             }),
             className: 'small',
-            accessor: 'gps_source',
+            accessor: 'village_source',
+            Cell: settings => (
+                <section>
+                    {settings.original.village_source !== '' ? settings.original.village_source : '' }
+                </section>
+            ),
         },
         {
             Header: formatMessage({

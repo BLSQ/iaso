@@ -73,6 +73,7 @@ class VillageViewSet(viewsets.ViewSet):
         population = request.GET.get("population", None)
         is_erased = request.GET.get("is_erased", False)
         csv_format = request.GET.get("csv", None)
+        village_sources = request.GET.get("village_source", None)
 
         queryset = Village.objects.all()
 
@@ -99,6 +100,11 @@ class VillageViewSet(viewsets.ViewSet):
             if types != 'all':
                 types_array = types.split(",")
                 queryset = queryset.filter(village_official__in=types_array)
+
+
+        if village_sources:
+            village_source_array = village_sources.split(",")
+            queryset = queryset.filter(village_source__in=village_source_array)
 
         if unlocated:
             if unlocated == "located":
@@ -280,7 +286,7 @@ class VillageViewSet(viewsets.ViewSet):
         village.longitude = request.data.get('longitude', 0)
         village.is_erased = request.data.get('is_erased', False)
         village.village_type = request.data.get('village_type', '')
-        village.village_source = request.data.get('village_source', '')
+        village.village_source = request.data.get('village_source', None)
         village.gps_source = request.data.get('gps_source', '')
         AS_id = request.data.get('AS_id', None)
 
@@ -302,7 +308,7 @@ class VillageViewSet(viewsets.ViewSet):
         latitude = request.data.get('latitude', 0)
         longitude = request.data.get('longitude', 0)
         village_type = request.data.get('village_type', '')
-        village_source = request.data.get('village_source', '')
+        village_source = request.data.get('village_source', None)
         gps_source = request.data.get('gps_source', '')
 
         village = Village()

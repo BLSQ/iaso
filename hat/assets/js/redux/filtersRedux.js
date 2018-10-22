@@ -19,6 +19,7 @@ export const EMPTY_PROVINCE_ID = 'hat/casesList/list/EMPTY_PROVINCE_ID';
 export const SELECT_VILLAGE = 'hat/casesList/SELECT_VILLAGE';
 export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
+export const LOAD_VILLAGE_SOURCE = 'hat/casesList/LOAD_VILLAGE_SOURCE';
 
 export const filtersInitialState = {
     provinceId: null,
@@ -31,6 +32,7 @@ export const filtersInitialState = {
     villages: [],
     teams: [],
     coordinations: [],
+    villageSources: [],
 };
 
 const req = require('superagent');
@@ -184,7 +186,7 @@ export const fetchProvinces = (dispatch) => {
         .then((result) => {
             dispatch(loadProvinces(result.body));
         })
-        .catch(err => (console.error(`Error while fetching plannings ${err}`)));
+        .catch(err => (console.error(`Error while fetching provinces ${err}`)));
     return ({
         type: FETCH_ACTION,
     });
@@ -250,6 +252,23 @@ export const fetchCoordinations = (dispatch) => {
     });
 };
 
+export const loadVillageSource = payload => ({
+    type: LOAD_VILLAGE_SOURCE,
+    payload,
+});
+
+export const fetchVillageSource = (dispatch) => {
+    req
+        .get('/api/villagetypes/')
+        .then((result) => {
+            dispatch(loadVillageSource(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching village source types ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const filterActions = {
     loadAreas,
     loadZones,
@@ -268,6 +287,7 @@ export const filterActions = {
     selectVillage,
     fetchTeams,
     fetchCoordinations,
+    fetchVillageSource,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {
@@ -277,6 +297,13 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
             return {
                 ...state,
                 provinces,
+            };
+        }
+        case LOAD_VILLAGE_SOURCE: {
+            const villageSources = action.payload;
+            return {
+                ...state,
+                villageSources,
             };
         }
         case FETCH_ACTION: {

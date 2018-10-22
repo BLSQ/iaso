@@ -48,33 +48,9 @@ const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
 const filtersZone1 = (
     formatMessage,
     defineMessages,
+    villageSources,
 ) => (
     [
-        {
-            name: 'population',
-            urlKey: 'population',
-            isMultiSelect: false,
-            isClearable: true,
-            options: [
-                {
-                    label: formatMessage(getMessage(defineMessages, 'populationOk')),
-                    value: 'populationOk',
-                },
-                {
-                    label: formatMessage(getMessage(defineMessages, 'populationNok')),
-                    value: 'populationNok',
-                },
-            ],
-            placeholder: {
-                id: 'management.label.all',
-                defaultMessage: 'Toutes',
-            },
-            label: {
-                id: 'management.village.label.population',
-                defaultMessage: 'Population',
-            },
-            type: 'select',
-        },
         {
             name: 'village_official',
             urlKey: 'village_official',
@@ -104,7 +80,23 @@ const filtersZone1 = (
             },
             label: {
                 id: 'management.village.label.village_official',
-                defaultMessage: 'Village Officiel',
+                defaultMessage: 'Village officiel',
+            },
+            type: 'select',
+        },
+        {
+            name: 'village_source',
+            urlKey: 'village_source',
+            isMultiSelect: true,
+            isClearable: true,
+            options: villageSources.map(v => ({ label: v[1], value: v[0] })),
+            placeholder: {
+                id: 'management.label.allMasc',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'management.village.label.village_source',
+                defaultMessage: 'Source du village',
             },
             type: 'select',
         },
@@ -169,7 +161,10 @@ const filtersZone2 = (
     ]
 );
 
-const filtersSearch = () => (
+const filtersSearch = (
+    formatMessage,
+    defineMessages,
+) => (
     [
         {
             name: 'search',
@@ -186,6 +181,31 @@ const filtersSearch = () => (
                 defaultMessage: 'Recherche textuelle',
             },
             type: 'search',
+        },
+        {
+            name: 'population',
+            urlKey: 'population',
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage(getMessage(defineMessages, 'populationOk')),
+                    value: 'populationOk',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'populationNok')),
+                    value: 'populationNok',
+                },
+            ],
+            placeholder: {
+                id: 'management.label.all',
+                defaultMessage: 'Toutes',
+            },
+            label: {
+                id: 'management.village.label.population',
+                defaultMessage: 'Population',
+            },
+            type: 'select',
         },
     ]
 );

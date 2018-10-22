@@ -151,6 +151,7 @@ class VillageModale extends Component {
                 zones,
                 areas,
             },
+            villageSources,
             params,
         } = this.props;
         const geo = filtersGeo(
@@ -182,6 +183,7 @@ class VillageModale extends Component {
                         <VillageInfosComponent
                             village={this.state.village}
                             updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                            villageSources={villageSources}
                         />
                     }
                     <section className={this.state.currentTab !== 'localisation' ? 'hidden-opacity' : ''} >
@@ -246,6 +248,7 @@ VillageModale.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    villageSources: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({

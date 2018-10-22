@@ -38,6 +38,7 @@ class ManagementVillages extends React.Component {
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchGeoDatas(),
+            this.props.fetchVillageSource(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id);
@@ -88,6 +89,7 @@ class ManagementVillages extends React.Component {
             search: params.search,
             population: params.population,
             results: params.results,
+            village_source: params.village_source,
             as_list: true,
         };
 
@@ -145,9 +147,10 @@ class ManagementVillages extends React.Component {
                 provinces,
                 zones,
                 areas,
+                villageSources,
             },
         } = this.props;
-        const filters1 = filtersZone1(formatMessage, defineMessages);
+        const filters1 = filtersZone1(formatMessage, defineMessages, villageSources);
         const filters2 = filtersZone2(formatMessage, defineMessages);
         const geo = filtersGeo(
             provinces || [],
@@ -156,7 +159,7 @@ class ManagementVillages extends React.Component {
             this.props,
             'villages',
         );
-        const search = filtersSearch();
+        const search = filtersSearch(formatMessage, defineMessages);
         return (
             <section>
                 {
@@ -171,6 +174,7 @@ class ManagementVillages extends React.Component {
                         error={load.error}
                         params={this.props.params}
                         geoProvinces={geoProvinces}
+                        villageSources={villageSources}
                     />
                 }
                 {
@@ -299,6 +303,7 @@ ManagementVillages.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    fetchVillageSource: PropTypes.func.isRequired,
 };
 
 const ManagementVillagesIntl = injectIntl(ManagementVillages);
@@ -323,6 +328,7 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    fetchVillageSource: () => dispatch(filterActions.fetchVillageSource(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);

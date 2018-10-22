@@ -60,6 +60,7 @@ class UserInfosComponent extends Component {
                         type="text"
                         name="userName"
                         id="userName"
+                        className={!this.state.user.userName || this.state.user.userName === '' ? 'form-error' : ''}
                         value={this.state.user.userName ? this.state.user.userName : ''}
                         onChange={event => this.props.updateUserField('userName', event.currentTarget.value)}
                     />
@@ -141,16 +142,27 @@ class UserInfosComponent extends Component {
                         htmlFor="password"
                         className="filter__container__select__label"
                     >
-                        <FormattedMessage
-                            id="main.label.password"
-                            defaultMessage="Nouveau mot de passe"
-                        />:
+                        {
+                            this.state.user.id === 0 &&
+                            <FormattedMessage
+                                id="main.label.password"
+                                defaultMessage="Mot de passe"
+                            />
+                        }
+                        {
+                            this.state.user.id !== 0 &&
+                            <FormattedMessage
+                                id="main.label.newPassword"
+                                defaultMessage="Nouveau mot de passe"
+                            />
+                        }:
                     </label>
                     <input
                         autoComplete="new-password"
                         type={this.state.displayPassword ? 'text' : 'password'}
                         name="password"
                         id="password"
+                        className={(!password || password === '') && this.state.user.id === 0 ? 'form-error' : ''}
                         value={password}
                         onChange={event => this.props.updatePassword(event.currentTarget.value)}
                     />

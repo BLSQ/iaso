@@ -89,6 +89,7 @@ class CoordinationModale extends Component {
                             type="text"
                             name="name"
                             id={`name-${this.state.coordination.id}`}
+                            className={(!this.state.coordination.name || this.state.coordination.name === '') ? 'form-error' : ''}
                             value={this.state.coordination.name}
                             onChange={event => this.updateCoordinationField('name', event.currentTarget.value)}
                         />

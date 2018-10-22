@@ -65,6 +65,7 @@ class TeamModale extends Component {
                         </label>
                         <Select
                             id={`coordination-${this.state.team.id}`}
+                            className={!this.state.team.coordination_id ? 'form-error' : ''}
                             simpleValue
                             name="team_coordination_id"
                             value={this.state.team.coordination_id}
@@ -86,6 +87,7 @@ class TeamModale extends Component {
                         <input
                             type="text"
                             name="name"
+                            className={(!this.state.team.name || this.state.team.name === '') ? 'form-error' : ''}
                             id={`name-${this.state.team.id}`}
                             value={this.state.team.name}
                             onChange={event => this.updateTeamField('name', event.currentTarget.value)}
@@ -105,6 +107,7 @@ class TeamModale extends Component {
                             type={this.state.team.capacity ? 'number' : 'text'}
                             min="0"
                             name="capacity"
+                            className={(!this.state.team.capacity || this.state.team.capacity === '') ? 'form-error' : ''}
                             id={`capacity-${this.state.team.id}`}
                             value={this.state.team.capacity ? this.state.team.capacity : ''}
                             onChange={event => this.updateTeamField('capacity', parseInt(event.currentTarget.value, 10))}

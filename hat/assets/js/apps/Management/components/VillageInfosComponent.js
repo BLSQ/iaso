@@ -44,6 +44,7 @@ class VillageInfosComponent extends Component {
                             type="text"
                             name="name"
                             id={`name-${this.state.village.id}`}
+                            className={(!this.state.village.name || this.state.village.name === '') ? 'form-error' : ''}
                             value={this.state.village.name}
                             onChange={event => updateVillageField('name', event.currentTarget.value)}
                         />
@@ -79,10 +80,11 @@ class VillageInfosComponent extends Component {
                         </label>
                         <Select
                             multi={false}
-                            clearable
+                            clearable={false}
                             simpleValue
                             name="village_official"
                             value={this.state.village.village_official}
+                            className={!this.state.village.village_official ? 'form-error' : ''}
                             placeholder="--"
                             options={[
                                 {

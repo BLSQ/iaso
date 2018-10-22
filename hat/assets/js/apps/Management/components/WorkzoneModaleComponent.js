@@ -11,7 +11,7 @@ const MESSAGES = defineMessages({
         id: 'microplanning.labels.all',
     },
 });
-class WokzoneModale extends Component {
+class WorkzoneModale extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -43,15 +43,6 @@ class WokzoneModale extends Component {
 
     updateWorkzoneField(key, value) {
         const newTeam = Object.assign({}, this.state.workzone, { [key]: value });
-        this.setState({
-            workzone: newTeam,
-            isChanged: true,
-        });
-    }
-
-    changeOption(key) {
-        const newTeam =
-            Object.assign({}, this.state.workzone, { [key]: !this.state.workzone[key] });
         this.setState({
             workzone: newTeam,
             isChanged: true,
@@ -95,6 +86,7 @@ class WokzoneModale extends Component {
                             name="name"
                             id={`name-${this.state.workzone.id}`}
                             value={this.state.workzone.name}
+                            className={!this.state.workzone.name || this.state.workzone.name === '' ? 'form-error' : ''}
                             onChange={event => this.updateWorkzoneField('name', event.currentTarget.value)}
                         />
                     </div>
@@ -112,6 +104,7 @@ class WokzoneModale extends Component {
                             autosize={false}
                             name="planning_id"
                             value={this.state.workzone.planning_id}
+                            className={!this.state.workzone.planning_id ? 'form-error' : ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
                             options={this.state.plannings.map(planning =>
                                 ({ label: planning.name, value: planning.id }))}
@@ -132,6 +125,7 @@ class WokzoneModale extends Component {
                             autosize={false}
                             name="coordination_id"
                             value={this.state.workzone.coordination_id}
+                            className={!this.state.workzone.coordination_id ? 'form-error' : ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
                             options={this.state.coordinations.map(coordination =>
                                 ({ label: coordination.name, value: coordination.id }))}
@@ -152,6 +146,7 @@ class WokzoneModale extends Component {
                             name="team_id"
                             value={this.state.workzone.teams.map(t => t.id)}
                             placeholder={formatMessage(MESSAGES['location-all'])}
+                            className={this.state.workzone.teams.length === 0 ? 'form-error' : ''}
                             options={this.state.teams.map(team =>
                                 ({ label: team.name, value: team.id }))}
                             onChange={teamIds => this.changeSelect(teamIds, 'teams')}
@@ -185,7 +180,7 @@ class WokzoneModale extends Component {
         );
     }
 }
-WokzoneModale.defaultProps = {
+WorkzoneModale.defaultProps = {
     workzone: {
         id: 0,
         name: '',
@@ -194,7 +189,7 @@ WokzoneModale.defaultProps = {
         plannings: [],
     },
 };
-WokzoneModale.propTypes = {
+WorkzoneModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     workzone: PropTypes.object,
@@ -206,4 +201,4 @@ WokzoneModale.propTypes = {
     isUpdating: PropTypes.bool.isRequired,
 };
 
-export default injectIntl(WokzoneModale);
+export default injectIntl(WorkzoneModale);

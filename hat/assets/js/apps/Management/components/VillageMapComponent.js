@@ -62,6 +62,7 @@ class VillageMapComponent extends Component {
                             name="latitude"
                             placeholder="0.00000"
                             id={`name-${this.state.village.latitude}`}
+                            className={!this.state.village.latitude ? 'form-error' : ''}
                             value={this.state.village.latitude}
                             onChange={event => updateVillageField('latitude', event.currentTarget.value)}
                         />
@@ -83,6 +84,7 @@ class VillageMapComponent extends Component {
                             name="longitude"
                             id={`name-${this.state.village.longitude}`}
                             value={this.state.village.longitude}
+                            className={!this.state.village.longitude ? 'form-error' : ''}
                             onChange={event => updateVillageField('longitude', event.currentTarget.value)}
                         />
                     </div>

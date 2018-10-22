@@ -209,7 +209,7 @@ class UserModale extends Component {
                                 (this.state.user.userName === '' ||
                                     (!this.state.isChanged && this.state.user.id !== 0) ||
                                     (this.state.user.id === 0 &&
-                                        (this.state.user.email === '' || this.state.user.userName === '' || this.state.password === '')))
+                                        (this.state.user.userName === '' || this.state.password === '')))
                             }
                             className="button--save"
                             onClick={() => this.onSave()}

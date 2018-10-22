@@ -12,6 +12,7 @@ const filtersGeo = (
             isMultiSelect: false,
             isClearable: true,
             options: provinces,
+            className: !component.props.village.AS__ZS__province_id ? 'form-error' : '',
             placeholder: {
                 id: 'main.label.none',
                 defaultMessage: 'Aucune',
@@ -31,6 +32,7 @@ const filtersGeo = (
             isMultiSelect: false,
             isClearable: true,
             options: zones,
+            className: !component.props.village.AS__ZS_id ? 'form-error' : '',
             placeholder: {
                 id: 'main.label.none',
                 defaultMessage: 'Aucune',
@@ -50,6 +52,7 @@ const filtersGeo = (
             isMultiSelect: false,
             isClearable: true,
             options: areas,
+            className: !component.props.village.AS_id ? 'form-error' : '',
             placeholder: {
                 id: 'main.label.none',
                 defaultMessage: 'Aucune',

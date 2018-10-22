@@ -8,7 +8,7 @@ import Select from 'react-select';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
-import WokzoneModaleComponent from '../components/WokzoneModaleComponent';
+import WorkzoneModaleComponent from '../components/WorkzoneModaleComponent';
 import { loadActions } from '../../../redux/load';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { saveFull, deleteFull } from '../../../utils/saveData';
@@ -229,11 +229,11 @@ class ManagementWorkZones extends React.Component {
         });
     }
 
-    saveWorkzone(newWokzone) {
+    saveWorkzone(newWorkzone) {
         this.setState({
             isUpdating: true,
         });
-        saveFull(newWokzone, `/api/workzones/${newWokzone.id}/`).then((isSaved) => {
+        saveFull(newWorkzone, `/api/workzones/${newWorkzone.id}/`).then((isSaved) => {
             if (isSaved) {
                 this.setState({
                     isUpdating: false,
@@ -241,12 +241,12 @@ class ManagementWorkZones extends React.Component {
                     workzoneEdited: undefined,
                 });
             } else {
-                console.error(`One error occured when trying to save workzone: ${newWokzone.name}`);
+                console.error(`One error occured when trying to save workzone: ${newWorkzone.name}`);
             }
         });
     }
 
-    deleteWokzone(workzone) {
+    deleteWorkzone(workzone) {
         this.setState({
             isUpdating: true,
         });
@@ -268,14 +268,14 @@ class ManagementWorkZones extends React.Component {
         const { formatMessage } = this.props.intl;
         return (
             <section>
-                <WokzoneModaleComponent
+                <WorkzoneModaleComponent
                     showModale={this.state.showEditModale}
                     toggleModal={() => this.toggleEditModale()}
                     workzone={this.state.workzoneEdited}
                     teams={this.props.teams}
                     coordinations={this.props.coordinations}
                     plannings={this.props.plannings}
-                    saveWorkzone={newWokzone => this.saveWorkzone(newWokzone)}
+                    saveWorkzone={newWorkzone => this.saveWorkzone(newWorkzone)}
                     isUpdating={this.state.isUpdating}
                 />
                 {
@@ -284,7 +284,7 @@ class ManagementWorkZones extends React.Component {
                         showModale={this.state.showDeleteModale}
                         toggleModal={() => this.toggleDeleteModale()}
                         element={this.state.workzoneDeleted}
-                        deleteElement={workzone => this.deleteWokzone(workzone)}
+                        deleteElement={workzone => this.deleteWorkzone(workzone)}
                     />
                 }
                 <div className="widget__container management-control">
@@ -324,7 +324,7 @@ class ManagementWorkZones extends React.Component {
                         loading &&
                         <LoadingSpinner message={formatMessage({
                             defaultMessage: 'Chargement en cours',
-                            id: 'microWokzone.labels.loading',
+                            id: 'microWorkzone.labels.loading',
                         })}
                         />
                     }
@@ -374,7 +374,7 @@ ManagementWorkZones.propTypes = {
     plannings: PropTypes.array,
 };
 
-const ManagementWokzonesIntl = injectIntl(ManagementWorkZones);
+const ManagementWorkzonesIntl = injectIntl(ManagementWorkZones);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -388,4 +388,4 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(ManagementWokzonesIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(ManagementWorkzonesIntl);

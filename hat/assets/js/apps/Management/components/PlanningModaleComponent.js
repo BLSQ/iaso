@@ -71,6 +71,7 @@ class PlanningModale extends Component {
                             name="name"
                             id={`name-${this.state.planning.id}`}
                             value={this.state.planning.name}
+                            className={(!this.state.planning.name || this.state.planning.name === '') ? 'form-error' : ''}
                             onChange={event => this.updatePlanningField('name', event.currentTarget.value)}
                         />
                     </div>
@@ -90,6 +91,7 @@ class PlanningModale extends Component {
                             name="year"
                             id={`year-${this.state.planning.id}`}
                             value={this.state.planning.year}
+                            className={(!this.state.planning.year || this.state.planning.year === '') ? 'form-error' : ''}
                             onChange={event => this.updatePlanningField('year', event.currentTarget.value)}
                         />
                     </div>

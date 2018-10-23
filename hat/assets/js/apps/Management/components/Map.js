@@ -319,7 +319,7 @@ class Map extends Component {
         if (villages) {
             villages.map((village, index) => {
                 let color = 'blue';
-                if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
+                if (village.original.positive_confirmation_test_count > 0) {
                     color = '#FF3824';
                 } else {
                     color = '#22955A';
@@ -348,7 +348,7 @@ class Map extends Component {
                 const villageLabel = L.tooltip({
                     permanent: true,
                     direction: 'right',
-                    className: 'text',
+                    className: 'text see-trough',
                 })
                     .setLatLng([village.latitude, village.longitude + 0.003])
                     .setContent(`${index + 1} - ${village.name}`)

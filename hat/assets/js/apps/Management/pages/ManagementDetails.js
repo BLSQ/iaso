@@ -526,6 +526,23 @@ export class ManagementDetails extends Component {
                                     base={baseLayer}
                                     change={(type, key) => this.props.changeLayer(type, key)}
                                 />
+                                <div className="map__option padding-top">
+                                    <span className="map__option__header">
+                                        <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                                    </span>
+                                    <form>
+                                        <ul className="map__option__list legend">
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--without-positive-cases" />
+                                                <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Sans nouveau cas" />
+                                            </li>
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--with-positive-cases" />
+                                                <FormattedMessage id="management.detail.legend.newCases" defaultMessage="Avec nouveaux cas" />
+                                            </li>
+                                        </ul>
+                                    </form>
+                                </div>
                             </div>
                             <div className="split-map ">
                                 {

@@ -126,7 +126,7 @@ class TestStatsViewSet(viewsets.ViewSet):
             # order = "date",
         elif grouping == "villageyear":
             values = ("village__name", "date", "village__id", "village__latitude", "village__longitude",
-                      "first_test_date", "last_test_date")
+                      "first_test_date", "last_test_date", "positive_confirmation_test_count")
             orders = "date", "village__name"
         values = values + ("test_count", "catt_count", "rdt_count", "pg_count", "ctcwoo_count")
         values = values + ("maect_count", "pl_count", "total_population")

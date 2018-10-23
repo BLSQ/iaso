@@ -92,7 +92,7 @@ def get_menu(user, active_link):
                     "perms": "x_management_coordinations"
                 },
                 {
-                    "name": "Plannings ",
+                    "name": "Plannings",
                     "url_key": reverse("dashboard:management_planning"),
                     "perms": "x_management_plannings"
                 },

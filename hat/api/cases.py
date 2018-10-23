@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView, Case, RES_POSITIVE
+from hat.cases.models import CaseView, Case, RES_POSITIVE, RES_POSITIVE_POSITIVE_POSITIVE, RES_POSITIVE_POSITIVE, RES_NEGATIVE, RES_ABSENT, RES_MISSING, RES_UNREAD, RES_UNUSED
 from hat.audit.models import log_modification, CASE_API
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -71,6 +71,7 @@ class CasesViewSet(viewsets.ViewSet):
         search_lastname = request.GET.get("search_lastname", None)
         coordination = request.GET.get("coordination", None)
         is_locator = request.GET.get("isLocator", None)
+        test_types = request.GET.get("test_type", None)
 
         if located == 'all':
             queryset = CaseView.objects.order_by(*orders)
@@ -170,6 +171,29 @@ class CasesViewSet(viewsets.ViewSet):
                 Q(village__icontains=geo_search) | Q(ZS__icontains=geo_search) | Q(AS__icontains=geo_search)
             )
 
+        if test_types:
+            for test_type in test_types.split(","):
+                if test_type == "catt":
+                    queryset = queryset.filter(test_catt__isnull=False)
+                if test_type == "rdt":
+                    queryset = queryset.filter(test_rdt__isnull=False)
+                if test_type == "ctc":
+                    queryset = queryset.filter(test_ctcwoo__isnull=False)
+                if test_type == "ge":
+                    queryset = queryset.filter(test_ge__isnull=False)
+                if test_type == "lcr":
+                    queryset = queryset.filter(test_lcr__isnull=False)
+                if test_type == "lnp":
+                    queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
+                if test_type == "sf":
+                    queryset = queryset.filter(test_sf__isnull=False)
+                if test_type == "pg":
+                    queryset = queryset.filter(test_pg__isnull=False)
+                if test_type == "maect":
+                    queryset = queryset.filter(test_maect__isnull=False)
+                if test_type == "pl":
+                    queryset = queryset.filter(test_pl__isnull=False)
+
         if csv_format is None:
 
             paginator = Paginator(queryset, limit)
@@ -197,8 +221,29 @@ class CasesViewSet(viewsets.ViewSet):
                     """Write the value by returning it, instead of storing in a buffer."""
                     return value
 
+            def testResult(value):
+                if value == RES_POSITIVE_POSITIVE_POSITIVE:
+                    return '+++'
+                if value == RES_POSITIVE_POSITIVE:
+                    return '++'
+                if value == RES_POSITIVE:
+                    return '+'
+                if value == RES_NEGATIVE:
+                    return '-'
+                if value == RES_ABSENT:
+                    return 'Absent'
+                if value == RES_MISSING:
+                    return 'Manquant'
+                if value == RES_UNREAD:
+                    return 'Non lisible'
+                if value == RES_POSITIVE_POSITIVE_POSITIVE:
+                    return 'Non utlisé'
+                return '/'
+
             def iter_items(queryset, pseudo_buffer):
-                headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée']
+                headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
+                'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'Sex', 'Age', 'CATT', 'RDT',
+                'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction Noeud Lymph.', 'Sang frais', 'MAECT', 'PL']
                 writer = csv.writer(pseudo_buffer)
                 yield writer.writerow(headers)
                 for case in queryset.iterator(chunk_size=5000):
@@ -215,7 +260,18 @@ class CasesViewSet(viewsets.ViewSet):
                         cdict["name"],
                         cdict["prename"],
                         cdict["lastname"],
-                        cdict["normalized_AS_name"]
+                        cdict["sex"],
+                        cdict["age"],
+                        testResult(cdict["test_catt"]),
+                        testResult(cdict["test_rdt"]),
+                        testResult(cdict["test_pg"]),
+                        testResult(cdict["test_ctcwoo"]),
+                        testResult(cdict["test_ge"]),
+                        testResult(cdict["test_lcr"]),
+                        testResult(cdict["test_lymph_node_puncture"]),
+                        testResult(cdict["test_sf"]),
+                        testResult(cdict["test_maect"]),
+                        testResult(cdict["test_pl"])
                     ]
                     yield writer.writerow(row)
 

@@ -38,11 +38,11 @@ const MESSAGES = defineMessages({
         id: 'details.label.stats',
     },
     testStatsTitle: {
-        defaultMessage: 'Nombre de tests',
+        defaultMessage: 'Dépistages',
         id: 'details.title.testStatsTitle',
     },
     confirmationStatsTitle: {
-        defaultMessage: 'Nombre de confirmations',
+        defaultMessage: 'Confirmations',
         id: 'details.title.confirmationStatsTitle',
     },
 });
@@ -81,7 +81,7 @@ const renderTestPourcentage = (total) => {
             {
                 total.total_catt !== 0 &&
                 <div className="padding-bottom">
-                    {cattPercentage}% CATT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
+                    {total.total_catt_positive} CATT <FormattedMessage id="details.label.cattPositive" defaultMessage="positif(s)" /> ({cattPercentage}%)
                 </div>
             }
             <div className="padding-bottom">
@@ -96,7 +96,7 @@ const renderTestPourcentage = (total) => {
             {
                 total.total_rdt !== 0 &&
                 <div>
-                    {rdtPercentage}% RDT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
+                    {total.total_rdt_positive} RDT <FormattedMessage id="details.label.rdtPositive" defaultMessage="positif(s)" /> ({rdtPercentage}%)
                 </div>
             }
         </div>);
@@ -121,7 +121,7 @@ const renderConfirmationPourcentage = (total) => {
             {
                 total.total_confirmation_tests !== 0 &&
                 <div>
-                    {confirmationPercentage}% <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="de tests de confirmation positif" />
+                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="positif(s)" /> ({confirmationPercentage}%)
                 </div>
             }
         </div>);
@@ -366,7 +366,6 @@ export class ManagementDetails extends Component {
     }
 
     render() {
-        console.log(tableTotal);
         const { baseLayer } = this.props.map;
         const {
             currentDetail,

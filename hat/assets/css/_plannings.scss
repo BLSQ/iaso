@@ -53,12 +53,3 @@ $padding: 32;
         padding-right: 0;
     }
 }
-.macro-container {
-    .map-container {
-        height: $container-height+px;
-    }
-    .widget__content--tier>div.map {
-        flex-basis: 75%;
-        padding: 0;
-    }
-}

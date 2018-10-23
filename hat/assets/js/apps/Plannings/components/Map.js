@@ -7,6 +7,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import PrintControl from 'react-leaflet-easyprint';
+import ReactResizeDetector from 'react-resize-detector';
 import * as topojson from 'topojson';
 
 import L from 'leaflet';
@@ -44,6 +46,7 @@ const MESSAGES = defineMessages({
     },
 });
 
+let exportControl;
 class Map extends Component {
     constructor(props) {
         super(props);
@@ -162,6 +165,26 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             this.state.map.remove();
         }
     }
+    onResize(width, height) {
+        const { map } = this.state;
+        const cutomSize = {
+            width,
+            height,
+            className: 'A4Landscape page',
+            tooltip: 'PNG',
+        };
+        if (exportControl) {
+            map.removeControl(exportControl);
+        }
+        exportControl = L.easyPrint({
+            position: 'topleft',
+            sizeModes: [cutomSize],
+            hideControlContainer: true,
+            title: 'Télécharger',
+            exportOnly: true,
+            filename: 'Microplanning',
+        }).addTo(map);
+    }
 
     /* ***************************************************************************
    * CREATE MAP
@@ -238,6 +261,7 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
         const tooltipLargeControl = L.control({ position: 'bottomleft' });
         tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
         tooltipLargeControl.addTo(map);
+
         containers.tooltipLarge = tooltipLargeControl.getContainer();
     }
 
@@ -663,7 +687,13 @@ markersGroups.YES.getBounds().isValid()) {
     }
 
     render() {
-        return <div ref={(node) => { this.state.containers.map = node; }} className="map-container" />;
+        return (
+            <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
+                <section className="map-parent-container">
+                    <div ref={(node) => { this.state.containers.map = node; }} className="map-container" />
+                </section>
+            </ReactResizeDetector>
+        );
     }
 }
 Map.defaultProps = {

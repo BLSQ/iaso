@@ -116,7 +116,7 @@ class Profile(models.Model):
 
     :ivar User user:           User reference.
     :ivar Team team:           User team.
-    :ivar Institution institution:           User insitution.
+    :ivar Institution institution:           User institution.
     '''
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -125,9 +125,9 @@ class Profile(models.Model):
     institution = models.ForeignKey(Institution, null=True, blank=True, on_delete=models.SET_NULL)
     userType = models.ForeignKey(UserType, null=True, blank=True, on_delete=models.SET_NULL)
 
-    province_scope = models.ManyToManyField(Province)
-    ZS_scope = models.ManyToManyField(ZS)
-    AS_scope = models.ManyToManyField(AS)
+    province_scope = models.ManyToManyField(Province, blank=True)
+    ZS_scope = models.ManyToManyField(ZS, blank=True)
+    AS_scope = models.ManyToManyField(AS, blank=True)
 
     password_reset = models.BooleanField(default=False)
 

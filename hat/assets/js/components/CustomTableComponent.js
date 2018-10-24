@@ -22,6 +22,7 @@ class CustomTableComponent extends React.Component {
         const orderArray = props.params.order ? getOrderArray(props.params.order) : props.defaultSorted;
         const { formatMessage } = this.props.intl;
         this.state = {
+            disableHeaderFixed: props.disableHeaderFixed,
             data: [],
             pages: null,
             loading: true,
@@ -145,10 +146,16 @@ class CustomTableComponent extends React.Component {
 
     onResize(width) {
         const currentTable = document.getElementById(this.state.tableId);
+        const currentTableBody = currentTable.getElementsByClassName('rt-tbody')[0];
+        this.setState({
+            disableHeaderFixed: currentTableBody.clientWidth > width ? true : this.props.disableHeaderFixed,
+            isHeaderFixed: currentTableBody.clientWidth === width,
+        });
+        this.handleScroll();
         if (currentTable) {
-            const header = currentTable.getElementsByClassName('rt-thead')[0];
+            const header = currentTable.getElementsByClassName('-header')[0];
             if (header && width) {
-                header.setAttribute('style', `width:${width - 2}px;`);
+                header.setAttribute('style', `width:${currentTableBody.clientWidth - 2}px;`);
             }
         }
     }
@@ -156,8 +163,13 @@ class CustomTableComponent extends React.Component {
     handleScroll() {
         const lastScrollY = window.scrollY;
         const currentTable = document.getElementById(this.state.tableId);
+        let topPosition = currentTable.offsetTop;
+        const headerGroups = currentTable.getElementsByClassName('-headerGroups')[0];
+        if (headerGroups) {
+            topPosition += headerGroups.clientHeight;
+        }
         this.setState({
-            isHeaderFixed: !this.props.disableHeaderFixed && lastScrollY > currentTable.offsetTop,
+            isHeaderFixed: !this.state.disableHeaderFixed && lastScrollY > topPosition,
         });
     }
 

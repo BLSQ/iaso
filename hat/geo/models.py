@@ -1,8 +1,7 @@
-from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
+from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
-
-from django.shortcuts import get_object_or_404
+from django.db.models import SET_NULL
 
 GEO_SOURCE_CHOICES = (
     ('snis', 'SNIS'),
@@ -16,6 +15,12 @@ VILLAGE_SOURCE_CHOICES = (
     ("ucla", "UCLA"),
     ("manual", "Ajouté par un utilisateur")
 )
+
+POPULATION_TYPE_CHOICES = (
+    ("PTR", "Population Totale Recensée"),
+    ("PTE", "Population Totale Estimée"),
+)
+
 
 class Province(models.Model):
     name = models.CharField(max_length=255)
@@ -182,3 +187,17 @@ class ZSASMappingItem(models.Model):
     zsas_import = models.ForeignKey(ZSASMappingImport, on_delete=models.CASCADE)
     added_zone_alias = models.BooleanField(default=False)
     added_area_alias = models.BooleanField(default=False)
+
+
+class PopulationData(models.Model):
+    village = models.ForeignKey(to=Village, on_delete=models.DO_NOTHING)
+    population = models.IntegerField()
+    type = models.TextField(choices=POPULATION_TYPE_CHOICES, default="PTR")
+    source = models.TextField(default="device")  # "device", "ucla" or other source (see Village population source)
+    device = models.ForeignKey(to="sync.DeviceDB", on_delete=models.DO_NOTHING, null=True)
+    population_year = models.IntegerField()
+    report_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s -%s -%s" % (self.village.name, self.population, self.source, self.type)

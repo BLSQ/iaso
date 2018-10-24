@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from hat.cases.models import Case
 from hat.constants import TEST_TYPE_CHOICES
+from hat.geo.models import PopulationData
 from .couchdb_helpers import create_db, delete_user, generate_db_name
 
 logger = logging.getLogger(__name__)
@@ -260,11 +261,19 @@ class VideoUploadForm(ModelForm):
         fields = ('video', 'participant_uuid', 'hat_id', 'group_id', 'type')
 
 
+JSONDOCUMENT_TYPE_CHOICES = (
+    ('participant', 'participant information, including tests'),
+    ('ptr', 'Population data provided by tablets'),
+)
+
+
 class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
     case = models.ForeignKey(to=Case, on_delete=models.SET_NULL, null=True, blank=True)
+    population = models.ForeignKey(to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True)
+    type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default='participant')
     doc = JSONField()
 
     created_at = models.DateTimeField(auto_now_add=True)

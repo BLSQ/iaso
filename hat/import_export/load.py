@@ -226,7 +226,8 @@ def get_case_team(case):
     return None
 
 
-def normalize_location(case_zone, case_area, case_village, device_id=None, latitude=None, longitude=None):
+def normalize_location(case_zone, case_area, case_village, device_id=None, latitude=None, longitude=None) \
+        -> (AS, Village):
     # If the ZS/AS are numeric, they probably are
     if is_int(case_zone) and is_int(case_area):
         if is_int(case_village):
@@ -272,7 +273,6 @@ def normalize_location(case_zone, case_area, case_village, device_id=None, latit
                         village.latitude = latitude
                         village.longitude = longitude
                         village.gps_source = 'case_geoloc'
-                    # TODO add population data
                     village.save()
                     return village.AS, village
             return db_as, None

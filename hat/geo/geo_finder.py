@@ -66,9 +66,9 @@ def get_single_village(name, areas, official=None):
     return village
 
 
-def get_single_as_and_village(zs_name, as_name, village_name) -> (int, int):
+def get_single_as_and_village(zs_name, as_name, village_name) -> (AS, Village):
     """
-    Find a matching village by its ZS, AS and village name. If there is a village match, AS and village id will
+    Find a matching village by its ZS, AS and village name. If there is a village match, AS and village will
     be returned. Otherwise, if a unique AS can be matched, it will be returned. In other cases, it will just return None
     """
     zone = get_single_zone(zs_name)
@@ -82,8 +82,8 @@ def get_single_as_and_village(zs_name, as_name, village_name) -> (int, int):
     try:
         village = get_single_village(village_name, areas)
         if village:
-            return village.AS_id, village.id
+            return village.AS, village
         else:
-            return (areas[0].id if areas.count() == 1 else None), None
+            return (areas[0] if areas.count() == 1 else None), None
     except MultipleMatchesFoundException:
         return None, None

@@ -21,6 +21,7 @@ POPULATION_TYPE_CHOICES = (
     ("PTE", "Population Totale Estimée"),
 )
 
+
 class Province(models.Model):
     name = models.CharField(max_length=255)
     old_name = models.CharField(max_length=255)
@@ -196,3 +197,6 @@ class PopulationData(models.Model):
     population_year = models.IntegerField()
     report_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s -%s -%s" % (self.village.name, self.population, self.source, self.type)

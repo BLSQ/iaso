@@ -132,6 +132,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
+        padding-top: $padding-unit / 2;
         .video-component {
             flex-basis: 45%;
             .video-js {
@@ -141,7 +142,7 @@
         form {
             flex-basis: 50%;
             margin: 20px 2.5% 0px 2.5%;
-            & div > section > div.quality-label.inline {
+            & div>section>div.quality-label.inline {
                 width: 80%;
             }
         }

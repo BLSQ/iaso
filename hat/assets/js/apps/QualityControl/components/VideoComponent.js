@@ -3,48 +3,42 @@ import PropTypes from 'prop-types';
 import videojs from 'video.js';
 
 class VideoComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            player: null,
-        };
-    }
-
     componentDidMount() {
-        if (!this.state.player) {
-            // eslint-disable-next-line react/no-did-mount-set-state
-            this.setState({
-                player: videojs('quality-video'),
+        if (!this.player) {
+            this.player = videojs(this.videoNode, this.props, () => {
+                this.player.src({
+                    src: this.props.videoItem.video,
+                });
+            });
+        }
+    }
+    componentWillReceiveProps(newProps) {
+        if (this.player) {
+            this.player.src({
+                src: newProps.videoItem.video,
             });
         }
     }
 
     componentWillUnmount() {
-        if (this.state.player) {
-            this.state.player.dispose();
+        if (this.player) {
+            this.player.dispose();
         }
-    }
-
-    renderVideoHtml() {
-        return (`
-        <video
-            id="quality-video"
-            class="video-js vjs-default-skin"
-            controls
-            preload="auto"
-        >
-          <source src="${this.props.videoItem.video}" type="video/mp4" />
-        </video>
-        `);
     }
 
     render() {
         return (
             <section className="video-component">
-                <section>
-                    {/* eslint-disable-next-line react/no-danger */}
-                    <div dangerouslySetInnerHTML={{ __html: this.renderVideoHtml() }} />
-                </section>
+                <div data-vjs-player>
+                    <video
+                        ref={(node) => { this.videoNode = node; }}
+                        className="video-js vjs-default-skin"
+                        controls
+                        preload="auto"
+                    >
+                        <track kind="captions" />
+                    </video>
+                </div>
             </section>
         );
     }

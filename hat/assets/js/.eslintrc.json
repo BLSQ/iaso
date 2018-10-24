@@ -46,8 +46,4 @@
         "jsx-a11y/anchor-is-valid": "off",
         "max-len": ["warn", { "code": 200 }]
     },
-    "globals": {
-        "AREAS_PATH": true,
-        "ZONES_PATH": true
-    }
 }

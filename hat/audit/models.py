@@ -8,6 +8,8 @@ import json
 
 CASE_API = "case_api"
 VILLAGE_API = "village_api"
+PROFILE_API = "profile_api"
+PASSWORD_API = "password_api"
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

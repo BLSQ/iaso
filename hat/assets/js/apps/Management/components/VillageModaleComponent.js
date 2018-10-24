@@ -222,7 +222,7 @@ class VillageModale extends Component {
                             onClick={() => this.props.saveVillage(this.state.village)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveVillage" defaultMessage="Sauvegarder la village" />
+                            <FormattedMessage id="mangement.label.saveVillage" defaultMessage="Sauvegarder le village" />
                         </button>
                     </div>
                 </section>

@@ -1,9 +1,12 @@
+from copy import copy
+
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from hat.audit.models import log_modification, PROFILE_API
 from hat.users.models import Profile, Institution, UserType, Team
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
@@ -80,6 +83,9 @@ class ProfilesViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         profile = get_object_or_404(Profile, id=pk)
         user = profile.user
+        original_profile = copy(profile)
+        original_user = copy(user)
+
         user.first_name = request.data.get('firstName', '')
         user.last_name = request.data.get('lastName', '')
         user.username = request.data.get('userName', '')
@@ -92,7 +98,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         if password:
             user.set_password(password)
         user.save()
+        log_modification(original_user, user, PROFILE_API, request.user)
         profile.user = user
+
         team = request.data.get('team', None)
         institution = request.data.get('institution', None)
         user_type = request.data.get('userType', None)
@@ -139,6 +147,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.password_reset = request.data.get('passwordReset', False)
 
         profile.save()
+        log_modification(original_profile, profile, PROFILE_API, request.user)
         return Response(profile.as_dict())
 
     def create(self, request):

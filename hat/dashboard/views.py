@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
@@ -7,6 +8,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.urls import reverse
+
+from hat.audit.models import log_modification, PASSWORD_API
 from hat.planning.models import Planning, Assignation
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -182,10 +185,12 @@ def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
+            original_user = copy(request.user)
             user = form.save()
             user.profile.password_reset = False
             user.save()
             update_session_auth_hash(request, user)
+            log_modification(original_user, user, PASSWORD_API, original_user)
             messages.success(request, _('Your password was successfully updated'))
             return redirect('/dashboard/home')
     else:

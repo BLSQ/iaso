@@ -1,3 +1,44 @@
+const selectWorkZone = (workzoneId, props, urlKey) => {
+    const {
+        params,
+    } = props;
+    const currentWorkzone = props.cases.workzones.filter(w => w.id === workzoneId)[0];
+    const provinceIds = [];
+    const zoneIds = [];
+    const areaIds = [];
+    let tempParams = {};
+    if (workzoneId) {
+        currentWorkzone.as_list.map((as) => {
+            if (areaIds.indexOf(as.id) === -1) {
+                areaIds.push(as.id);
+            }
+            if (zoneIds.indexOf(as.zs_id) === -1) {
+                zoneIds.push(as.zs_id);
+            }
+            if (provinceIds.indexOf(as.province_id) === -1) {
+                provinceIds.push(as.province_id);
+            }
+            return null;
+        });
+        tempParams = {
+            ...params,
+            workzone_id: workzoneId,
+            province_id: provinceIds.toString(),
+            zs_id: zoneIds.toString(),
+            as_id: areaIds.toString(),
+        };
+    } else {
+        tempParams = {
+            ...params,
+            workzone_id: null,
+            province_id: null,
+            zs_id: null,
+            as_id: null,
+        };
+    }
+    props.redirectTo(urlKey, tempParams);
+};
+
 const selectProvince = (provinceId, props, urlKey) => {
     const {
         params,
@@ -163,6 +204,7 @@ const selectArea = (areaId, props, urlKey) => {
 };
 
 export {
+    selectWorkZone,
     selectProvince,
     selectZone,
     selectArea,

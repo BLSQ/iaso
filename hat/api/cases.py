@@ -111,14 +111,17 @@ class CasesViewSet(viewsets.ViewSet):
         if located != 'all' and is_locator != 'true':
             queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup").exclude(province__icontains="kas").exclude(province__icontains="kinsh").exclude(province__icontains="bas").exclude(province__icontains="maniema").exclude(province__icontains="k.").exclude(province__icontains="equateur")
 
-        if province_ids:
-            queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
         if coordination_ids:
             queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
-        if zs_ids:
-            queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(","))
-        if as_ids:
-            queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
+
+        if province_ids and not zs_ids and not as_ids:
+            queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
+        else:
+            if zs_ids and not as_ids:
+                queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(","))
+            else:
+                if as_ids:
+                    queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:

@@ -100,7 +100,8 @@ class AS(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "zs_id": self.ZS_id
+            "zs_id": self.ZS_id,
+            "province_id": self.ZS.province_id
         }
 
 

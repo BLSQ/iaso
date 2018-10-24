@@ -1,4 +1,4 @@
-import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo';
+import { selectWorkZone, selectProvince, selectZone, selectArea } from '../../../utils/selectGeo';
 
 const MESSAGES = {
     positive: {
@@ -253,6 +253,7 @@ const filtersSearch = () => (
 );
 
 const filtersGeo = (
+    workzones,
     provinces,
     zones,
     areas,
@@ -262,11 +263,29 @@ const filtersGeo = (
 ) => (
     [
         {
+            name: 'workzone_id',
+            urlKey: 'workzone_id',
+            isMultiSelect: false,
+            isClearable: true,
+            options: workzones,
+            placeholder: {
+                id: 'main.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'cases.label.workzones',
+                defaultMessage: 'Rayons d\'actions',
+            },
+            type: 'select',
+            callback: value => selectWorkZone(value, props, urlKey),
+        },
+        {
             name: 'province_id',
             urlKey: 'province_id',
             isMultiSelect: true,
             isClearable: true,
             options: provinces,
+            isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
             placeholder: {
                 id: 'main.label.all',
                 defaultMessage: 'Toutes',
@@ -285,6 +304,7 @@ const filtersGeo = (
             isMultiSelect: true,
             isClearable: true,
             options: zones,
+            isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
             placeholder: {
                 id: 'main.label.all',
                 defaultMessage: 'Toutes',
@@ -303,6 +323,7 @@ const filtersGeo = (
             isMultiSelect: true,
             isClearable: true,
             options: areas,
+            isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
             placeholder: {
                 id: 'main.label.all',
                 defaultMessage: 'Toutes',

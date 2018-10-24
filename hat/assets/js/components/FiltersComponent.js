@@ -57,6 +57,7 @@ class FiltersComponent extends React.Component {
                                                     ({ label: item.label || item.name, value: item.value || item.id }))}
                                                 onChange={value => this.onChange(filter.urlKey, value, filter.callback)}
                                                 className={filter.className ? filter.className : ''}
+                                                disabled={filter.isDisabled || false}
                                             />
                                         }
 

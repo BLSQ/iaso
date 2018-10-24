@@ -2,7 +2,7 @@ body {
     .ReactTable {
         min-height: 130px;
         border: 1px solid $gray;
-        &.no-border{
+        &.no-border {
             border: none;
         }
         .bullet {
@@ -159,22 +159,26 @@ body {
             cursor: pointer;
         }
         &.header-fixed {
-            .ReactTable {
-                margin-top: 40px;
+            .rt-tbody {
+                padding-top: 40px;
             }
-            .rt-thead.-header{
+            .rt-thead.-header {
                 position: fixed;
                 top: 0;
                 width: 100%;
                 background-color: white;
                 z-index: 10;
             }
+            .count-container {
+                bottom: 15px;
+            }
         }
     }
 }
+
 .count-container-alone {
     display: block;
-    width:100%;
+    width: 100%;
     text-align: right;
     padding: $padding-unit / 2;
     border: 1px solid $gray;

@@ -20,6 +20,7 @@ export const SELECT_VILLAGE = 'hat/casesList/SELECT_VILLAGE';
 export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 export const LOAD_VILLAGE_SOURCE = 'hat/casesList/LOAD_VILLAGE_SOURCE';
+export const LOAD_WORKZONES = 'hat/casesList/LOAD_WORKZONES';
 
 export const filtersInitialState = {
     provinceId: null,
@@ -33,6 +34,7 @@ export const filtersInitialState = {
     teams: [],
     coordinations: [],
     villageSources: [],
+    workzones: [],
 };
 
 const req = require('superagent');
@@ -269,6 +271,23 @@ export const fetchVillageSource = (dispatch) => {
     });
 };
 
+export const loadWorkZones = coordinations => ({
+    type: LOAD_WORKZONES,
+    payload: coordinations,
+});
+
+export const fetchWorkZones = (dispatch) => {
+    req
+        .get('/api/workzones/')
+        .then((result) => {
+            dispatch(loadWorkZones(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching work zones ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const filterActions = {
     loadAreas,
     loadZones,
@@ -288,6 +307,7 @@ export const filterActions = {
     fetchTeams,
     fetchCoordinations,
     fetchVillageSource,
+    fetchWorkZones,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {
@@ -304,6 +324,13 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
             return {
                 ...state,
                 villageSources,
+            };
+        }
+        case LOAD_WORKZONES: {
+            const workzones = action.payload;
+            return {
+                ...state,
+                workzones,
             };
         }
         case FETCH_ACTION: {

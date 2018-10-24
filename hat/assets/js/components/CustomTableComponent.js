@@ -15,29 +15,6 @@ const getOrderArray = orders => (orders.split(',').map(stringValue => ({
     id: stringValue.replace('-', ''),
     desc: stringValue.indexOf('-') !== -1,
 })));
-let tableInfos;
-let currentTable;
-
-const setTableInfos = (element) => {
-    if (element) {
-        currentTable = element;
-        const newTableInfos = currentTable.getBoundingClientRect();
-        const header = currentTable.getElementsByClassName('rt-thead')[0];
-        if (header) {
-            header.setAttribute('style', `width:${newTableInfos.width}px;`);
-        }
-        tableInfos = newTableInfos;
-    }
-};
-
-const onResize = (width) => {
-    if (currentTable) {
-        const header = currentTable.getElementsByClassName('rt-thead')[0];
-        if (header) {
-            header.setAttribute('style', `width:${width}px;`);
-        }
-    }
-};
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
@@ -54,6 +31,7 @@ class CustomTableComponent extends React.Component {
             order: orderArray,
             count: undefined,
             isHeaderFixed: false,
+            tableId: `custom-table${+new Date()}`,
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
@@ -68,6 +46,7 @@ class CustomTableComponent extends React.Component {
     }
 
     componentWillReceiveProps(newProps) {
+        this.handleScroll();
         if ((newProps.endPointUrl !== this.props.endPointUrl) ||
             (newProps.params.pageSize !== this.props.params.pageSize) ||
             (newProps.params.page !== this.props.params.page) ||
@@ -164,23 +143,34 @@ class CustomTableComponent extends React.Component {
         };
     }
 
+    onResize(width) {
+        const currentTable = document.getElementById(this.state.tableId);
+        if (currentTable) {
+            const header = currentTable.getElementsByClassName('rt-thead')[0];
+            if (header && width) {
+                header.setAttribute('style', `width:${width - 2}px;`);
+            }
+        }
+    }
+
     handleScroll() {
         const lastScrollY = window.scrollY;
+        const currentTable = document.getElementById(this.state.tableId);
         this.setState({
-            isHeaderFixed: tableInfos && lastScrollY > tableInfos.top,
+            isHeaderFixed: !this.props.disableHeaderFixed && lastScrollY > currentTable.offsetTop,
         });
     }
 
     render() {
         const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
         return (
-            <ReactResizeDetector handleWidth onResize={onResize}>
+            <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section
-                    ref={setTableInfos}
+                    id={this.state.tableId}
                     className={`custom-table-container ${this.props.selectable ?
                         'selectable' : ''} ${!this.state.showPagination && this.state.count ?
                         'no-pagination' : ''} ${this.state.isHeaderFixed ?
-                        'header-fixed' : ''}`}
+                        'header-fixed' : ''} `}
                 >
                     <ReactTable
                         manual
@@ -236,6 +226,7 @@ CustomTableComponent.defaultProps = {
     onDataUpdated: () => { },
     isUpdated: false,
     callBackWithDataKey: true,
+    disableHeaderFixed: false,
 };
 
 CustomTableComponent.propTypes = {
@@ -261,6 +252,7 @@ CustomTableComponent.propTypes = {
     withBorder: PropTypes.bool,
     isUpdated: PropTypes.bool,
     callBackWithDataKey: PropTypes.bool,
+    disableHeaderFixed: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

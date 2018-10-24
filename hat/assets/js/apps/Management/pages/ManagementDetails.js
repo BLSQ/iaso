@@ -38,11 +38,11 @@ const MESSAGES = defineMessages({
         id: 'details.label.stats',
     },
     testStatsTitle: {
-        defaultMessage: 'Nombre de tests',
+        defaultMessage: 'Dépistages',
         id: 'details.title.testStatsTitle',
     },
     confirmationStatsTitle: {
-        defaultMessage: 'Nombre de confirmations',
+        defaultMessage: 'Confirmations',
         id: 'details.title.confirmationStatsTitle',
     },
 });
@@ -69,9 +69,12 @@ const renderTestPourcentage = (total) => {
     const rdtPercentage = getPercentage(total.total_rdt, total.total_rdt_positive);
     return (
         <div className="align-right bold large-text">
-            <div className="padding-bottom">
-                {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="test(s) CATT effectué(s)" />
-            </div>
+            {
+                total.total_catt !== 0 &&
+                <div className="padding-bottom">
+                    {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="test(s) CATT effectué(s)" />
+                </div>
+            }
             {
                 total.total_catt === 0 &&
                 <div className="padding-bottom">
@@ -81,12 +84,15 @@ const renderTestPourcentage = (total) => {
             {
                 total.total_catt !== 0 &&
                 <div className="padding-bottom">
-                    {cattPercentage}% CATT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
+                    {total.total_catt_positive} CATT <FormattedMessage id="details.label.cattPositive" defaultMessage="positif(s)" /> ({cattPercentage}%)
                 </div>
             }
-            <div className="padding-bottom">
-                {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="test(s) RDT effectué(s)" />
-            </div>
+            {
+                total.total_rdt !== 0 &&
+                <div className="padding-bottom">
+                    {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="test(s) RDT effectué(s)" />
+                </div>
+            }
             {
                 total.total_rdt === 0 &&
                 <div>
@@ -96,7 +102,7 @@ const renderTestPourcentage = (total) => {
             {
                 total.total_rdt !== 0 &&
                 <div>
-                    {rdtPercentage}% RDT <FormattedMessage id="details.label.positive" defaultMessage="Positif" />
+                    {total.total_rdt_positive} RDT <FormattedMessage id="details.label.rdtPositive" defaultMessage="positif(s)" /> ({rdtPercentage}%)
                 </div>
             }
         </div>);
@@ -109,9 +115,12 @@ const renderConfirmationPourcentage = (total) => {
             <div className="padding-bottom">
                 {formatThousand(total.total_catt_positive + total.total_rdt_positive)} <FormattedMessage id="details.label.suspect" defaultMessage="test(s) suspects" />
             </div>
-            <div className="padding-bottom">
-                {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="test(s) de confirmation" />
-            </div>
+            {
+                total.total_confirmation_tests !== 0 &&
+                <div className="padding-bottom">
+                    {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="test(s) de confirmation" />
+                </div>
+            }
             {
                 total.total_confirmation_tests === 0 &&
                 <div>
@@ -121,7 +130,7 @@ const renderConfirmationPourcentage = (total) => {
             {
                 total.total_confirmation_tests !== 0 &&
                 <div>
-                    {confirmationPercentage}% <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="de tests de confirmation positif" />
+                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="positif(s)" /> ({confirmationPercentage}%)
                 </div>
             }
         </div>);
@@ -366,7 +375,6 @@ export class ManagementDetails extends Component {
     }
 
     render() {
-        console.log(tableTotal);
         const { baseLayer } = this.props.map;
         const {
             currentDetail,
@@ -527,6 +535,23 @@ export class ManagementDetails extends Component {
                                     base={baseLayer}
                                     change={(type, key) => this.props.changeLayer(type, key)}
                                 />
+                                <div className="map__option padding-top">
+                                    <span className="map__option__header">
+                                        <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                                    </span>
+                                    <form>
+                                        <ul className="map__option__list legend">
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--without-positive-cases" />
+                                                <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Sans nouveau cas" />
+                                            </li>
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--with-positive-cases" />
+                                                <FormattedMessage id="management.detail.legend.newCases" defaultMessage="Avec nouveaux cas" />
+                                            </li>
+                                        </ul>
+                                    </form>
+                                </div>
                             </div>
                             <div className="split-map ">
                                 {

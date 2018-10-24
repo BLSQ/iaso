@@ -362,6 +362,14 @@ $color in $types {
         background: white;
         border-color: red;
     }
+    &--with-positive-cases {
+        background: rgba(red, 0.5);
+        border-color: red;
+    }
+    &--without-positive-cases {
+        background: rgba($dark-green, 0.5);
+        border-color: $dark-green;
+    }
     &--route-assigned {
         background: rgba(blue, 0.5);
         border-color: blue;
@@ -1022,4 +1030,8 @@ button {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.leaflet-tooltip.see-trough {
+    opacity: 0.7 !important;
 }

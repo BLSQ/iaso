@@ -37,12 +37,77 @@ const MESSAGES = {
         defaultMessage: 'Uniquement les cas non localisés et non trouvés',
         id: 'main.label.notLocatedNotFound',
     },
+    test_lymph_node_puncture: {
+        defaultMessage: 'Ponction noeud lymphatique',
+        id: 'main.label.test_lymph_node_puncture',
+    },
+    sf: {
+        defaultMessage: 'Sang frais',
+        id: 'main.label.sf',
+    },
 };
 
 const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
 
 const filtersZone1 = (formatMessage, defineMessages) => (
     [
+        {
+            name: 'test_type',
+            urlKey: 'test_type',
+            isMultiSelect: true,
+            isClearable: true,
+            options: [
+                {
+                    label: 'CATT',
+                    value: 'catt',
+                },
+                {
+                    label: 'RDT',
+                    value: 'rdt',
+                },
+                {
+                    label: 'CTCWOO',
+                    value: 'ctc',
+                },
+                {
+                    label: 'GE',
+                    value: 'ge',
+                },
+                {
+                    label: 'LCR',
+                    value: 'lcr',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'test_lymph_node_puncture')),
+                    value: 'lnp',
+                },
+                {
+                    label: formatMessage(getMessage(defineMessages, 'sf')),
+                    value: 'sf',
+                },
+                {
+                    label: 'PG',
+                    value: 'pg',
+                },
+                {
+                    label: 'MAECT',
+                    value: 'maect',
+                },
+                {
+                    label: 'PL',
+                    value: 'pl',
+                },
+            ],
+            placeholder: {
+                id: 'cases.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'cases.label.test_type',
+                defaultMessage: 'Test(s) effectué(s)',
+            },
+            type: 'select',
+        },
         {
             name: 'screening_result',
             urlKey: 'screening_result',

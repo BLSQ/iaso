@@ -119,8 +119,8 @@ class TeamModale extends Component {
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
-                                id="main.label.um"
-                                defaultMessage="UM"
+                                id="main.label.teamtype"
+                                defaultMessage="Type"
                             />:
                         </label>
                         <section
@@ -136,7 +136,7 @@ class TeamModale extends Component {
                                 value={this.state.team.UM}
                                 onChange={() => this.changeOption('UM')}
                             />
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                            <span>UM</span>
                             <input
                                 id={`type-${this.state.team.id}-false`}
                                 type="radio"
@@ -145,7 +145,7 @@ class TeamModale extends Component {
                                 value={this.state.team.UM}
                                 onChange={() => this.changeOption('UM')}
                             />
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                            <span>MUM</span>
                         </section>
                     </div>
                     <div className="align-right">

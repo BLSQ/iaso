@@ -138,7 +138,7 @@ class MacroMap extends Component {
             hideControlContainer: true,
             title: 'Télécharger',
             exportOnly: true,
-            filename: 'Marco planning',
+            filename: 'Macro planning',
         }).addTo(map);
     }
 

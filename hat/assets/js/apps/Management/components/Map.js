@@ -6,6 +6,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import PrintControl from 'react-leaflet-easyprint';
+import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import moment from 'moment';
 import * as topojson from 'topojson';
@@ -39,6 +41,7 @@ const MESSAGES = defineMessages({
         id: 'locator.label.zoom.info',
     },
 });
+let exportControl;
 
 class Map extends Component {
     constructor(props) {
@@ -89,6 +92,28 @@ class Map extends Component {
             this.map.remove();
         }
     }
+
+    onResize(width, height) {
+        const { map } = this;
+        const cutomSize = {
+            width,
+            height,
+            className: 'A4Landscape page',
+            tooltip: 'PNG',
+        };
+        if (exportControl) {
+            map.removeControl(exportControl);
+        }
+        exportControl = L.easyPrint({
+            position: 'topleft',
+            sizeModes: [cutomSize],
+            hideControlContainer: true,
+            title: 'Télécharger',
+            exportOnly: true,
+            filename: 'Liste Villages',
+        }).addTo(map);
+    }
+
 
     /*
 ***************************************************************************
@@ -294,7 +319,7 @@ class Map extends Component {
         if (villages) {
             villages.map((village, index) => {
                 let color = 'blue';
-                if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
+                if (village.original.positive_confirmation_test_count > 0) {
                     color = '#FF3824';
                 } else {
                     color = '#22955A';
@@ -323,7 +348,7 @@ class Map extends Component {
                 const villageLabel = L.tooltip({
                     permanent: true,
                     direction: 'right',
-                    className: 'text',
+                    className: 'text see-trough',
                 })
                     .setLatLng([village.latitude, village.longitude + 0.003])
                     .setContent(`${index + 1} - ${village.name}`)
@@ -425,7 +450,13 @@ class Map extends Component {
     }
 
     render() {
-        return <div ref={(node) => { this.mapNode = node; }} className="map-container" />;
+        return (
+            <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
+                <section className="map-parent-container">
+                    <div ref={(node) => { this.mapNode = node; }} className="map-container" />
+                </section>
+            </ReactResizeDetector>
+        );
     }
 }
 Map.defaultProps = {

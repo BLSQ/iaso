@@ -11,7 +11,7 @@ from hat.planning.algo import optimize_path
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
-from hat.dashboard.views import get_five_last_years
+from hat.dashboard.views import get_last_years
 
 class CoordinationViewSet(viewsets.ViewSet):
     """
@@ -44,7 +44,7 @@ class CoordinationViewSet(viewsets.ViewSet):
         as_geo_json = request.GET.get("geojson", None)
         coordination = get_object_or_404(Coordination, pk=pk)
         endemic_population = request.GET.get("endemic_population", None)
-        years = request.GET.get("years", get_five_last_years())
+        years = request.GET.get("years", get_last_years(5))
 
         if as_geo_json:
             all_zs = coordination.ZS.all()

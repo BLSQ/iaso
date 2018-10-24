@@ -18,9 +18,9 @@ import json
 from hat.cases.models import CaseView
 
 
-def get_five_last_years():
+def get_last_years(numberOfYears):
     year = datetime.now().year
-    years = [str(year - i) for i in range(5)]
+    years = [str(year - i) for i in range(numberOfYears)]
     return ','.join(years)
 
 
@@ -92,7 +92,7 @@ def get_menu(user, active_link):
                     "perms": "x_management_coordinations"
                 },
                 {
-                    "name": "Plannings ",
+                    "name": "Plannings",
                     "url_key": reverse("dashboard:management_planning"),
                     "perms": "x_management_plannings"
                 },
@@ -115,12 +115,12 @@ def get_menu(user, active_link):
             "items": [
                 {
                     "name": "Macroplanification",
-                    "url_key": reverse("dashboard:macro") +"/years/" + get_five_last_years(),
+                    "url_key": reverse("dashboard:macro") +"/years/" + get_last_years(3),
                     "perms": "x_plannings_macroplanning"
                 },
                 {
                     "name": "Microplanification",
-                    "url_key": reverse("dashboard:micro")+"/years/" + get_five_last_years(),
+                    "url_key": reverse("dashboard:micro")+"/years/" + get_last_years(3),
                     "perms": "x_plannings_microplanning"
                 },
                 {

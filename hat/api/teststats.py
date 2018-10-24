@@ -92,9 +92,13 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(rdt_count=Count("id", filter=Q(type=RDT)))
                 .annotate(screening_count=Count("id", filter=Q(type=CATT) | Q(type=RDT) ))
                 .annotate(pg_count=Count("id", filter=Q(type=PG)))
+                .annotate(pg_count_positive=Count("id", filter=Q(type=PG) & Q(result__gte=RES_POSITIVE)))
                 .annotate(ctcwoo_count=Count("id", filter=Q(type=CTCWOO)))
+                .annotate(ctcwoo_count_positive=Count("id", filter=Q(type=CTCWOO) & Q(result__gte=RES_POSITIVE)))
                 .annotate(maect_count=Count("id", filter=Q(type=MAECT)))
+                .annotate(maect_count_positive=Count("id", filter=Q(type=MAECT) & Q(result__gte=RES_POSITIVE)))
                 .annotate(pl_count=Count("id", filter=Q(type=PL)))
+                .annotate(pl_count_positive=Count("id", filter=Q(type=PL) & Q(result__gte=RES_POSITIVE)))
                 .annotate(pl_count_stage1=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage1')))
                 .annotate(pl_count_stage2=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage2')))
                 .annotate(confirmation_count=Count("id", filter=Q(type__in=TYPES_CONFIRMATION)))
@@ -113,7 +117,8 @@ class TestStatsViewSet(viewsets.ViewSet):
 
         if grouping == "month":
             values = ("date", "confirmation_count", "positive_catt_count", "positive_rdt_count",
-                      "positive_screening_test_count","pl_count_stage1" , "pl_count_stage2")
+                      "positive_screening_test_count","pl_count_stage1" , "pl_count_stage2",
+                      "positive_confirmation_test_count","pg_count_positive", "ctcwoo_count_positive", "maect_count_positive", "pl_count_positive")
             orders = "date",
         elif grouping == "villageday":
             values = ("village__name", "village__id", "village__latitude", "village__longitude",
@@ -121,7 +126,7 @@ class TestStatsViewSet(viewsets.ViewSet):
             # order = "date",
         elif grouping == "villageyear":
             values = ("village__name", "date", "village__id", "village__latitude", "village__longitude",
-                      "first_test_date", "last_test_date")
+                      "first_test_date", "last_test_date", "positive_confirmation_test_count")
             orders = "date", "village__name"
         values = values + ("test_count", "catt_count", "rdt_count", "pg_count", "ctcwoo_count")
         values = values + ("maect_count", "pl_count", "total_population")

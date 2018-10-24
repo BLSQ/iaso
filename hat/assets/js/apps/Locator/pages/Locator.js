@@ -332,16 +332,10 @@ Locator.propTypes = {
 
 const LocatorWithIntl = injectIntl(Locator);
 
-const getShapePath = (type) => {
-    if (type === 'area') { return AREAS_PATH; }
-    if (type === 'zone') { return ZONES_PATH; }
-
-    return null;
-};
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    getShape: type => getRequest(getShapePath(type), dispatch),
+    getShape: url => getRequest(url, dispatch, null, false),
     fetchProvinces: () => dispatch(provinceActions.fetchProvinces(dispatch)),
     fetchCase: caseId => dispatch(caseActions.fetchCase(dispatch, caseId)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(provinceActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),

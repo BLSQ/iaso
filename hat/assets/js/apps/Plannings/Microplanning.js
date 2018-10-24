@@ -478,12 +478,6 @@ Microplanning.propTypes = {
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
 
-function getShapePath(type) {
-    if (type === 'area') { return AREAS_PATH; }
-    if (type === 'zone') { return ZONES_PATH; }
-    return null;
-}
-
 const MapDispatchToProps = dispatch => ({
     changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
     changeHighlightBufferSize: value => dispatch(selectionActions.changeHighlightBufferSize(value)),
@@ -501,7 +495,7 @@ const MapDispatchToProps = dispatch => ({
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
-    getShape: type => getRequest(getShapePath(type), dispatch),
+    getShape: url => getRequest(url, dispatch, null, false),
 });
 
 const MapStateToProps = state => ({

@@ -9,13 +9,13 @@ import ReactDOM from 'react-dom';
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
-import * as topojson from 'topojson';
 
 import L from 'leaflet';
 import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 
 import geoUtils from '../utils/geo';
 import MapTooltip from './MapTooltip';
+import shapeUrls from '../../../utils/constants/shapesUrls';
 
 const request = require('superagent');
 // map base layers
@@ -44,6 +44,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Current zoom level',
         id: 'microplanning.label.zoom.info',
     },
+    'shape-loader': {
+        defaultMessage: 'Chargement des délimitations',
+        id: 'main.label.shape-loader',
+    },
 });
 
 let exportControl;
@@ -52,6 +56,11 @@ class Map extends Component {
         super(props);
 
         this.state = {
+            isLoadingShape: {
+                province: false,
+                zone: false,
+                area: false,
+            },
             map: null, // this is the leaflet object that represents the map
             containers: {},
             overlays: {},
@@ -219,21 +228,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
         const { formatMessage } = this.props.intl;
         const { map, containers } = this.state;
 
-        //
-        // In TOP-LEFT
-        // .- zoom bar
-        //
-        // In TOP-RIGHT
-        // .- fullscreen warning
-        //
-        // In BOTTOM-RIGHT
-        // .- metric scale
-        //
-        // In BOTTOM-LEFT
-        // .- tooltip-small
-        // .- tooltip-large
-        //
-
         // zoom bar control
         L.control.zoombar({
             zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
@@ -293,7 +287,6 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             zone: 7,
             area: 9,
         };
-
         const shapeOptions = type => ({
             pane: 'custom-pane-shapes',
             style: () => ({ className: String.raw`map-layer ${type}` }),
@@ -301,6 +294,33 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 this.addLayerEvents(layer, feature.properties);
             },
         });
+
+        const getShape = (type) => {
+            const newIsLoadingShape = Object.assign({}, this.state.isLoadingShape, { [type]: true });
+            this.setState({
+                isLoadingShape: newIsLoadingShape,
+            });
+            return this.props.getShape(shapeUrls[type])
+                .then((response) => {
+                    const shape = shapes[type];
+                    const minZoomTemp = zooms[type];
+                    shape.addLayer(L.geoJson(response, shapeOptions(type)));
+                    map.addLayer(shape);
+                    const newIsLoadingShapeCallBack = Object.assign({}, this.state.isLoadingShape, { [type]: false });
+                    this.setState({
+                        isLoadingShape: newIsLoadingShapeCallBack,
+                    });
+                    if (type === 'province') {
+                        return shape;
+                    }
+                    return minZoomTemp;
+                });
+        };
+
+        getShape('province').then((shape) => {
+            this.state.defaultBounds = shape.getBounds();
+        });
+
 
         const plotOrHideLayer = (minZoom, type) => {
             if (shapes[type]) {
@@ -314,29 +334,11 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 }
             } else if (map.getZoom() > minZoom) {
                 shapes[type] = new L.FeatureGroup();
-                this.props.getShape(type)
-                    .then((response) => {
-                        const shape = shapes[type];
-                        const data = topojson.feature(response, response.objects[`${type}s`]);
-                        data.features.forEach(geoUtils.extendBasic);
-                        const minZoomTemp = zooms[type];
-                        shape.addLayer(L.geoJson(data, shapeOptions(type)));
-                        plotOrHideLayer(minZoomTemp, type);
-                    });
+                getShape(type).then((minZoomTemp) => {
+                    plotOrHideLayer(minZoomTemp, type);
+                });
             }
         };
-
-        const shape = shapes.province;
-        const data = geoUtils.data.province;
-        const minZoom = zooms.province;
-
-        shape.addLayer(L.geoJson(data, shapeOptions('province')));
-        if (minZoom < 0) {
-            // province divisions are always visible and are use as default bounds
-            map.addLayer(shape);
-            this.state.defaultBounds = shape.getBounds();
-        }
-
         L.DomEvent.on(map, 'zoomend', (event) => {
             plotOrHideLayer(zooms.zone, 'zone');
             plotOrHideLayer(zooms.area, 'area');
@@ -687,10 +689,15 @@ markersGroups.YES.getBounds().isValid()) {
     }
 
     render() {
+        const { formatMessage } = this.props.intl;
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
                     <div ref={(node) => { this.state.containers.map = node; }} className="map-container" />
+                    {
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
+                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                    }
                 </section>
             </ReactResizeDetector>
         );

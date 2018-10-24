@@ -21,10 +21,10 @@ export function checkLocation(params, results, dispatch) {
     // Check if we have data for the selected location,
     // if not, redirect
     const selectedLocation = params.location &&
-    decodeURIComponent(params.location);
+        decodeURIComponent(params.location);
     const validLocation = results.locations.some(location => location === selectedLocation);
     if (selectedLocation && !validLocation) {
-    // No data for this location, redirect to all
+        // No data for this location, redirect to all
         dispatch(push(createUrl({ ...params, location: '' })));
         return false;
     }
@@ -97,16 +97,20 @@ export function launchAlgo(algoParams, dispatch) {
         });
 }
 
-export function getRequest(url, dispatch, key = null) {
-    dispatch({
-        type: LOAD,
-    });
+export function getRequest(url, dispatch, key = null, displayLoader = true) {
+    if (displayLoader) {
+        dispatch({
+            type: LOAD,
+        });
+    }
     return req
         .get(url)
         .then((result) => {
-            dispatch({
-                type: LOAD_SUCCESS_NO_DATA,
-            });
+            if (displayLoader) {
+                dispatch({
+                    type: LOAD_SUCCESS_NO_DATA,
+                });
+            }
             let tempResult = {};
             if (key !== null) {
                 tempResult[key] = result.body;
@@ -116,9 +120,11 @@ export function getRequest(url, dispatch, key = null) {
             return tempResult;
         })
         .catch((err) => {
-            dispatch({
-                type: LOAD_ERROR,
-                payload: err,
-            });
+            if (displayLoader) {
+                dispatch({
+                    type: LOAD_ERROR,
+                    payload: err,
+                });
+            }
         });
 }

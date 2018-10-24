@@ -655,19 +655,13 @@ const MapStateToProps = state => ({
     load: state.load,
 });
 
-const getShapePath = (type) => {
-    if (type === 'area') { return AREAS_PATH; }
-    if (type === 'zone') { return ZONES_PATH; }
-
-    return null;
-};
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setVillages: villageList => dispatch(detailsActions.loadDetailsVillages(villageList)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
-    getShape: type => getRequest(getShapePath(type), dispatch),
+    getShape: url => getRequest(url, dispatch, null, false),
 });
 
 

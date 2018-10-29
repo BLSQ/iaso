@@ -254,10 +254,8 @@ class MacroMap extends Component {
 
 
         const shape = shapes.province;
-        const data = geoUtils.data.province;
         const minZoom = zooms.province;
 
-        shape.addLayer(L.geoJson(data, shapeOptions('province')));
         if (minZoom < 0) {
             // province divisions are always visible and are use as default bounds
             map.addLayer(shape);

@@ -399,20 +399,9 @@ class VillageMap extends Component {
             },
             mouseout: (event) => {
                 L.DomEvent.stop(event);
-                this.updateTooltipSmall();
+                // this.updateTooltipSmall();
             },
         });
-    }
-
-    injectI18n(component) {
-        // we need to wrap it with `IntlProvider` to use i18n features
-        const { locale, messages } = this.props.intl;
-
-        return (
-            <IntlProvider locale={locale} messages={messages}>
-                {component}
-            </IntlProvider>
-        );
     }
 
     render() {

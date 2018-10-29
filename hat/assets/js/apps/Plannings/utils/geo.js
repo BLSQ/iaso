@@ -4,44 +4,10 @@
  */
 
 import L from 'leaflet';
-import * as topojson from 'topojson';
-
-import provinces from './provinces.json';
-
-import { capitalize } from '../../../utils';
 
 const clean = word => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''));
 const isEqual = (a, b) => (clean(a) === clean(b));
 const areEqual = (a, b, keys) => (keys.every(key => isEqual(a[key], b[key])));
-const extendBasic = (division) => {
-    const props = division.properties;
-
-    // create fake `id` based on health structure divisions
-    props.id = `${clean(props.NEW_PROV)}:${clean(props.ZS)}:${clean(props.AS)}`;
-
-    props.province = capitalize(props.NEW_PROV);
-    props.formerProvince = capitalize(props.OLD_PROV);
-    props.label = props.province;
-    props._keys = ['province'];
-
-    if (props.ZS) {
-        props.ZS = capitalize(props.ZS);
-        props.label += ` - ${props.ZS}`;
-        props._keys = ['ZS'];
-
-        if (props.AS) {
-            props.AS = capitalize(props.AS);
-            props.label += ` - ${props.AS}`;
-            props._keys = ['ZS', 'AS'];
-        }
-    }
-};
-
-const data = {};
-// Leaflet doesn't support topoJSON format, transform them to geoJSON format.
-data.province = topojson.feature(provinces, provinces.objects.provinces);
-// include basic properties in features
-data.province.features.forEach(extendBasic);
 
 // circle size in metres depending on the village type
 const RADIUS = {
@@ -95,24 +61,6 @@ const extendVillageInfo = (village) => {
     };
 };
 
-const villagesInBuffer = (plotted, buffer) => {
-    const bufferRadius = buffer.getRadius();
-
-    // find out the points within the buffer zone
-    const latlon = buffer.getLatLng();
-    const { length } = plotted;
-
-    const inBuffer = [];
-    for (let i = 0; i < length; i += 1) {
-        const village = plotted[i];
-        const distance = latlon.distanceTo(village._latlon);
-        if (distance <= (bufferRadius + village._radius)) {
-            inBuffer.push(village);
-        }
-    }
-
-    return inBuffer;
-};
 
 const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
     if (highlightBufferSize === 0) {
@@ -170,12 +118,9 @@ export default {
     areEqual,
     center: [-4.4233379, 16.2113064],
     zoom: 7,
-    data,
     extendDivisionInfo,
     extendVillageInfo,
-    villagesInBuffer,
     villagesInHighlightBuffer,
-    extendBasic,
     zoomDelta: 0.50,
     zoomSnap: 0.50,
 };

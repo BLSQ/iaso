@@ -9,7 +9,6 @@ import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl'
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as topojson from 'topojson';
 import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
 import { getMonthName } from '../utils/routeUtils';

@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import ZS
-from hat.users.models import Team, Coordination
 from django.core.serializers import serialize
+
 
 class ZSViewSet(viewsets.ViewSet):
     """
@@ -27,6 +27,7 @@ class ZSViewSet(viewsets.ViewSet):
         'menupermissions.x_locator',
         'menupermissions.x_vectorcontrol'
     ]
+
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         coordination_id = request.GET.get("coordination_id", None)
@@ -40,10 +41,10 @@ class ZSViewSet(viewsets.ViewSet):
         #     coordination = get_object_or_404(Coordination, id=coordination_id)
         #     queryset = queryset.filter(id__in=coordination.ZS.all())
 
-
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False);
-            serialized_zs = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk', 'province'))
+            serialized_zs = serialize('geojson', queryset, geometry_field='simplified_geom',
+                                      fields=('name', 'pk', 'province'))
             return Response(json.loads(serialized_zs))
         else:
             return Response(queryset.values('name', 'id', 'province_id').order_by('name'))

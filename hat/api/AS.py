@@ -47,7 +47,8 @@ class ASViewSet(viewsets.ViewSet):
 
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False);
-            serialized_as = serialize('geojson', queryset, geometry_field='geom', fields=('name', 'pk', 'ZS',))
+            serialized_as = serialize('geojson', queryset, geometry_field='simplified_geom',
+                                      fields=('name', 'pk', 'ZS',))
             return Response(json.loads(serialized_as))
         else:
             return Response(queryset.values('name', 'id', 'ZS_id').order_by('name'))

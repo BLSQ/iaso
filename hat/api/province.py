@@ -17,7 +17,7 @@ class ProvinceViewSet(viewsets.ViewSet):
         as_geo_json = request.GET.get("geojson", None)
         provinces = Province.objects.all()
         if as_geo_json:
-            res = json.loads(serialize('geojson', provinces, geometry_field='geom', fields=('name', 'pk',)))
+            res = json.loads(serialize('geojson', provinces, geometry_field='simplified_geom', fields=('name', 'pk',)))
             return Response(res)
         else:
             return Response(provinces.values('name', 'old_name', 'id').order_by('name'))

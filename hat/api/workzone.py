@@ -1,13 +1,11 @@
 from collections import defaultdict
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from django.db.models import Sum
 from hat.planning.algo import optimize_path
 from rest_framework import viewsets
 from rest_framework.response import Response
 from hat.planning.models import WorkZone, Planning, Assignation
 from hat.geo.models import AS, Village
-from hat.cases.models import CaseView
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -79,11 +77,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if years:
             years_array = years.split(",")
             wz_areas = AS.objects.filter(workzone__in=queryset).distinct('id')
-            endemic_villages_ids = Village.objects.filter(AS__in=wz_areas).filter(caseview__confirmed_case=True,
-                                                                               caseview__normalized_year__in=years_array).values(
-                'id')
-            endemic_wz_populations = Village.objects.filter(AS__in=wz_areas).filter(id__in=endemic_villages_ids).values(
-                'AS__workzone__id').annotate(endemic_population=Sum('population'))
+            endemic_villages_ids = Village.objects.filter(AS__in=wz_areas)\
+                .filter(caseview__confirmed_case=True, caseview__normalized_year__in=years_array).values('id')
+            endemic_wz_populations = Village.objects.filter(AS__in=wz_areas).filter(id__in=endemic_villages_ids)\
+                .values('AS__workzone__id').annotate(endemic_population=Sum('population'))
 
             pop_dict = {obj["AS__workzone__id"]: obj["endemic_population"] for obj in endemic_wz_populations}
             for zone in zones:

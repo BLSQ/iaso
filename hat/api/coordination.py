@@ -62,8 +62,8 @@ class CoordinationViewSet(viewsets.ViewSet):
                         pop = 0
                     as_pop_dict[obj["AS_id"]] = pop
 
-            serialized_zs = serialize('geojson', all_zs, geometry_field='geom', fields=('name', 'pk',))
-            serialized_as = serialize('geojson', areas, geometry_field='geom', fields=['name', 'pk', 'ZS'])
+            serialized_zs = serialize('geojson', all_zs, geometry_field='simplified_geom', fields=('name', 'pk',))
+            serialized_as = serialize('geojson', areas, geometry_field='simplified_geom', fields=['name', 'pk', 'ZS'])
             res_dict = {
                 'areas': json.loads(serialized_as),
                 'zones': json.loads(serialized_zs)

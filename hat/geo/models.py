@@ -1,4 +1,4 @@
-from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
+from django.contrib.gis.db.models.fields import MultiPolygonField, PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 from django.db.models import SET_NULL
@@ -34,7 +34,8 @@ class Province(models.Model):
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     source_ref = models.TextField(null=True)
-    geom = MultiPolygonField(srid=4326, null=True)
+    geom = PolygonField(srid=4326, null=True)
+    simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
 
@@ -61,7 +62,8 @@ class ZS(models.Model):
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, default='snis')
     source_ref = models.TextField(null=True)
-    geom = MultiPolygonField(srid=4326, null=True)
+    geom = PolygonField(srid=4326, null=True)
+    simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
 
@@ -91,7 +93,8 @@ class AS(models.Model):
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     source_ref = models.TextField(null=True)
-    geom = MultiPolygonField(srid=4326, null=True)
+    geom = PolygonField(srid=4326, null=True)
+    simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
 

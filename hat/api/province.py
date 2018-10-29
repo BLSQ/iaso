@@ -1,3 +1,4 @@
+from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -13,6 +14,8 @@ class ProvinceViewSet(viewsets.ViewSet):
         'menupermissions.x_management_users',
         'menupermissions.x_locator'
     ]
+
+    @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         as_geo_json = request.GET.get("geojson", None)
         provinces = Province.objects.all()

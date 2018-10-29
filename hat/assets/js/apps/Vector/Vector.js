@@ -226,7 +226,7 @@ Vector.propTypes = {
 
 const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
+    getShape: url => getRequest(url, dispatch, null, false),
     selectMarker: (itemId, key) => getRequest(`/api/${key}/${itemId}`, dispatch),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });

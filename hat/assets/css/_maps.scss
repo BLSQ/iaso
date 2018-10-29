@@ -952,6 +952,26 @@ button {
         overflow: hidden !important;
         position: relative !important;
         width: 100% !important;
+        .loading-small {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(#FFFFFF, 0.7);
+            height: 20px;
+            width: 20px;
+            display: block;
+            z-index: 20000;
+            &:after {
+                display: block;
+                content: '';
+                height: 10px;
+                width: 10px;
+                animation: rotate 0.8s infinite linear;
+                border: 5px solid #3498db;
+                border-right-color: transparent;
+                border-radius: 50%;
+            }
+        }
         >div:not(.map-container) {
             overflow: hidden !important;
             height: 720px !important;

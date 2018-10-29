@@ -216,7 +216,7 @@ const MapDispatchToProps = dispatch => ({
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchTeams: () => dispatch(teamActions.fetchTeams(dispatch)),
     updateAssignation: (index, month, assignationId) => dispatch(assignationActions.updateAssignation(index, month, assignationId, dispatch)),
-    getShape: type => getRequest(`/static/json/${type}s.json`, dispatch),
+    getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });
 

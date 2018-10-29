@@ -13,6 +13,7 @@ import * as topojson from 'topojson';
 import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
 import { getMonthName } from '../utils/routeUtils';
+import shapeUrls from '../../../utils/constants/shapesUrls';
 
 
 // map base layers
@@ -40,6 +41,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Current zoom level',
         id: 'locator.label.zoom.info',
     },
+    'shape-loader': {
+        defaultMessage: 'Chargement des délimitations',
+        id: 'main.label.shape-loader',
+    },
 });
 
 let exportControl;
@@ -47,6 +52,11 @@ class RouteMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isLoadingShape: {
+                province: false,
+                zone: false,
+                area: false,
+            },
             containers: {},
             layers: {
                 villages: new L.FeatureGroup(),
@@ -191,6 +201,31 @@ class RouteMap extends Component {
             area: 9,
         };
 
+        const getShape = (type) => {
+            const newIsLoadingShape = Object.assign({}, this.state.isLoadingShape, { [type]: true });
+            this.setState({
+                isLoadingShape: newIsLoadingShape,
+            });
+            return this.props.getShape(shapeUrls[type])
+                .then((response) => {
+                    const shape = shapes[type];
+                    const minZoomTemp = zooms[type];
+                    shape.addLayer(L.geoJson(response, shapeOptions(type)));
+                    map.addLayer(shape);
+                    const newIsLoadingShapeCallBack = Object.assign({}, this.state.isLoadingShape, { [type]: false });
+                    this.setState({
+                        isLoadingShape: newIsLoadingShapeCallBack,
+                    });
+                    if (type === 'province') {
+                        return shape;
+                    }
+                    return minZoomTemp;
+                });
+        };
+
+        getShape('province').then((shape) => {
+            this.state.defaultBounds = shape.getBounds();
+        });
 
         const plotOrHideLayer = (minZoom, type) => {
             if (shapes[type]) {
@@ -204,29 +239,11 @@ class RouteMap extends Component {
                 }
             } else if (map.getZoom() > minZoom) {
                 shapes[type] = new L.FeatureGroup();
-                this.props.getShape(type)
-                    .then((response) => {
-                        const shape = shapes[type];
-                        const data = topojson.feature(response, response.objects[`${type}s`]);
-                        data.features.forEach(geoUtils.extendBasic);
-                        const minZoomTemp = zooms[type];
-                        shape.addLayer(L.geoJson(data, shapeOptions(type)));
-                        plotOrHideLayer(minZoomTemp, type);
-                    });
+                getShape(type).then((minZoomTemp) => {
+                    plotOrHideLayer(minZoomTemp, type);
+                });
             }
         };
-
-
-        const shape = shapes.province;
-        const data = geoUtils.data.province;
-        const minZoom = zooms.province;
-
-        shape.addLayer(L.geoJson(data, shapeOptions('province')));
-        if (minZoom < 0) {
-            // province divisions are always visible and are use as default bounds
-            map.addLayer(shape);
-            this.state.defaultBounds = shape.getBounds();
-        }
 
         L.DomEvent.on(map, 'zoomend', () => {
             plotOrHideLayer(zooms.zone, 'zone');
@@ -370,10 +387,15 @@ class RouteMap extends Component {
     }
 
     render() {
+        const { formatMessage } = this.props.intl;
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container" />
+                    {
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
+                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                    }
                 </section>
             </ReactResizeDetector>
         );

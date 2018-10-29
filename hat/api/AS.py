@@ -1,9 +1,11 @@
 import json
+
+from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import AS
-from hat.users.models import Team, Coordination
+from hat.users.models import Team
 from hat.planning.models import Planning
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -31,22 +33,17 @@ class ASViewSet(viewsets.ViewSet):
         'menupermissions.x_locator'
     ]
 
+    @cache_control(max_age=24*60*60, public=True)
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
-        coordination_id = request.GET.get("coordination_id", None)
         as_geo_json = request.GET.get("geojson", None)
 
         queryset = AS.objects.all()
         if zs_ids:
-            queryset=queryset.filter(ZS_id__in=zs_ids.split(','))
-
-        # if coordination_id:
-        #     coordination = get_object_or_404(Coordination, id=coordination_id)
-        #     queryset = queryset.filter(ZS_id__in=coordination.ZS.all())
-
+            queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
 
         if as_geo_json:
-            queryset = queryset.filter(geom__isnull=False);
+            queryset = queryset.filter(geom__isnull=False)
             serialized_as = serialize('geojson', queryset, geometry_field='simplified_geom',
                                       fields=('name', 'pk', 'ZS',))
             return Response(json.loads(serialized_as))

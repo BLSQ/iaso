@@ -101,7 +101,6 @@ class VillageViewSet(viewsets.ViewSet):
                 types_array = types.split(",")
                 queryset = queryset.filter(village_official__in=types_array)
 
-
         if village_sources:
             village_source_array = village_sources.split(",")
             queryset = queryset.filter(village_source__in=village_source_array)
@@ -233,6 +232,7 @@ class VillageViewSet(viewsets.ViewSet):
                     content_type='text/csv',
                 )
                 response['Content-Disposition'] = 'attachment;filename=villages.csv'
+                response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
                 return response
 
             else:

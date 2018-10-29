@@ -1,4 +1,6 @@
 import json
+
+from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -28,21 +30,17 @@ class ZSViewSet(viewsets.ViewSet):
         'menupermissions.x_vectorcontrol'
     ]
 
+    @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
-        coordination_id = request.GET.get("coordination_id", None)
         as_geo_json = request.GET.get("geojson", None)
 
         queryset = ZS.objects.all()
         if province_ids:
             queryset=queryset.filter(province_id__in=province_ids.split(','))
 
-        # if coordination_id:
-        #     coordination = get_object_or_404(Coordination, id=coordination_id)
-        #     queryset = queryset.filter(id__in=coordination.ZS.all())
-
         if as_geo_json:
-            queryset = queryset.filter(geom__isnull=False);
+            queryset = queryset.filter(geom__isnull=False)
             serialized_zs = serialize('geojson', queryset, geometry_field='simplified_geom',
                                       fields=('name', 'pk', 'province'))
             return Response(json.loads(serialized_zs))

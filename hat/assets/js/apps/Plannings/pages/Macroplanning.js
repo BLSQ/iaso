@@ -47,8 +47,9 @@ class Macroplanning extends React.Component {
     }
 
     selectWorkZone(workzoneId) {
+        const newWorkZoneId = workzoneId === this.state.workzoneId ? undefined : workzoneId;
         this.setState({
-            workzoneId,
+            workzoneId: newWorkZoneId,
         });
         this.props.selectArea(null);
         this.props.redirect({

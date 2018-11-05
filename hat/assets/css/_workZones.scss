@@ -54,6 +54,11 @@
         &.alert {
             color: red;
         }
+        i {
+            position: absolute;
+            right: 20px;
+            top:18px;
+        }
     }
     &:first-child {
         border-top-left-radius: 5px;

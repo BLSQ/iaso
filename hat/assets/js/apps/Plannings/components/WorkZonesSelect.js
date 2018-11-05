@@ -179,6 +179,14 @@ class WorkZonesSelect extends Component {
                                             </span>
                                             : ''
                                     }
+                                    {
+                                        selectedWorkZoneId === w.id &&
+                                        <i className="fa fa-chevron-down" />
+                                    }
+                                    {
+                                        selectedWorkZoneId !== w.id &&
+                                        <i className="fa fa-chevron-right" />
+                                    }
                                 </div>
                                 <div className={`color-picker-container${w.showColor ? ' visible' : ''}`} >
                                     <GithubPicker

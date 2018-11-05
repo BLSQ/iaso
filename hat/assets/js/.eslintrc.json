@@ -45,5 +45,5 @@
         "react/no-array-index-key": "warn",
         "jsx-a11y/anchor-is-valid": "off",
         "max-len": ["warn", { "code": 200 }]
-    },
+    }
 }

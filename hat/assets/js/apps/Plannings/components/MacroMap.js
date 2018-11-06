@@ -38,6 +38,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Current zoom level',
         id: 'locator.label.zoom.info',
     },
+    'endemic-population': {
+        defaultMessage: 'Population endémique',
+        id: 'locator.label.endemic-population',
+    },
 });
 let exportControl;
 
@@ -144,7 +148,15 @@ class MacroMap extends Component {
 
 
     onEachAsFeature(feature, layer) {
-        layer.bindTooltip(`AS: ${feature.properties.name}${` - pop. vil. endém.: ${feature.properties.population}`}`);
+        const { formatMessage } = this.props.intl;
+        const toolTipContent =
+        `<dl>
+            <dt><strong>AS:</strong> ${feature.properties.name}</dt>
+            <dt><strong>ZS:</strong> ${feature.properties.zsName}</dt>
+            ${feature.properties.workzone ? `<dt><strong>RA:</strong> ${feature.properties.workzone}</dt>` : ''}
+            <dt><strong>${formatMessage(MESSAGES['endemic-population'])}:</strong> ${feature.properties.population}</dt>
+        </dl>`;
+        layer.bindTooltip(toolTipContent);
         layer.setStyle({
             fillOpacity: 0.5,
         });
@@ -152,13 +164,11 @@ class MacroMap extends Component {
             this.props.selectAs(feature.properties);
         });
         layer.on('mouseover', () => {
-            this.updateTooltipSmall({ label: `ZS: ${feature.properties.zsName}${feature.properties.workzone ? ` -  RA: ${feature.properties.workzone}` : ''}` });
             layer.setStyle({
                 fillOpacity: 0.8,
             });
         });
         layer.on('mouseout', () => {
-            this.updateTooltipSmall();
             layer.setStyle({
                 fillOpacity: 0.5,
             });

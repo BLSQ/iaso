@@ -29,12 +29,37 @@ class Patient(models.Model):
 
     def as_dict(self):
         return {
+            "id": self.id,
             "post_name": self.post_name,
             "last_name": self.last_name,
             "first_name": self.first_name,
             "sex": self.sex,
             "age": self.age,
             "mothers_surname": self.mothers_surname
+        }
+
+    def as_full_dict(self):
+        cases = []
+        tests = []
+        for case in self.case_set.all():
+            cases.append(case.as_dict())
+            for test in case.test_set.all():
+                tests.append(test.to_dict())
+        # TODO: add list of Similar Patients
+        similar_patients = []
+
+        return {
+            "id": self.id,
+            "post_name": self.post_name,
+            "last_name": self.last_name,
+            "first_name": self.first_name,
+            "sex": self.sex,
+            "age": self.age,
+            "mothers_surname": self.mothers_surname,
+            "origin_area": self.origin_area.as_dict() if self.origin_area else None,
+            "cases": cases,
+            "tests": tests,
+            "similar_patients": similar_patients,
         }
 
 
@@ -63,14 +88,20 @@ class Test(models.Model):
             "id": self.id,
             "type": self.type,
             "index": self.index,
+            "result": self.result,
+            "date": self.date,
         }
 
         if self.type in TYPES_WITH_IMAGES:
+            if self.image_filename:
+                res['image_filename'] = self.image_filename
             if self.image:
                 res['image'] = self.image.image.url
                 res['group_id'] = self.image.participant_uuid
 
         if self.type in TYPES_WITH_VIDEOS:
+            if self.video_filename:
+                res['video_filename'] = self.video_filename
             if self.video:
                 res['video'] = self.video.video.url
                 res['group_id'] = self.video.participant_uuid

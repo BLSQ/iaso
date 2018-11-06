@@ -109,7 +109,9 @@ class AS(models.Model):
             "id": self.id,
             "name": self.name,
             "zs_id": self.ZS_id,
-            "province_id": self.ZS.province_id
+            "zs_name": self.ZS.name,
+            "province_id": self.ZS.province_id,
+            "province_name": self.ZS.province.name,
         }
 
 

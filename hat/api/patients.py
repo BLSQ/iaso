@@ -88,6 +88,6 @@ class PatientsViewSet(viewsets.ViewSet):
             return response
 
     def retrieve(self, request, pk=None):
-        case = get_object_or_404(Case, pk=pk)
-        return Response(case.as_dict())
+        patient = get_object_or_404(Patient, pk=pk)
+        return Response(patient.as_full_dict())
 

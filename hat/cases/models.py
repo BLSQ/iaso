@@ -7,6 +7,7 @@ from django.dispatch import receiver
 
 from hat.geo.models import Village
 from hat.geo.models import AS as ASModel
+from hat.sync.models import DeviceDB
 from hat.users.models import Team
 
 CASES_PERMISSIONS = (
@@ -388,46 +389,67 @@ class Case(CaseAbstract):
             models.Index(fields=['device_id'], name='device_id_idx'),
         ]
 
-    def as_dict(self):
-        normalized_as_name = None
-        normalized_as_dict = {}
+    def as_dict(self, full=False):
+        # Location
+        normalized_as_dict = {
+            'normalized_village_not_found': self.normalized_village_not_found,
+        }
         if self.normalized_AS:
-            normalized_as_name = self.normalized_AS.name
-            normalized_as_dict = {
-                "as_id": self.normalized_AS_id,
-                "zs_id": self.normalized_AS.ZS_id,
-                "province_id": self.normalized_AS.ZS.province_id
-            }
+            ZS = self.normalized_AS.ZS.name
+            AS = self.normalized_AS.name
+            province = self.normalized_AS.ZS.province.name
+            normalized_as_dict["as"] = self.normalized_AS.as_dict()
+        else:
+            ZS = self.ZS
+            AS = self.AS
+            province = self.province
+        if self.normalized_village:
+            village = self.normalized_village.name
+            normalized_as_dict['village_id'] = self.normalized_village_id
+            normalized_as_dict['village'] = self.normalized_village.as_dict()
+        else:
+            village = self.village
+
+        device = None
+        try:
+            if self.device_id:
+                device = DeviceDB.objects.get(device_id=self.device_id).as_dict()
+        except DeviceDB.DoesNotExist:
+            pass
+
+        # Test results
+        tests = [test.to_dict() if full else {'id': test.id} for test in self.test_set.all()]
+        tests.sort(key=lambda item: item['date'])  # bisect.insort() doesn't play well with lists of dicts
+
         d = {
             'id': self.id,
-            'ZS': self.ZS,
-            'AS': self.AS,
-            'village': self.village,
-            'province': self.province,
-            'name': self.name,
-            'prename': self.prename,
-            'lastname': self.lastname,
-            'sex': self.sex,
-            'age': self.age,
-            'test_catt': self.test_catt,
-            'test_rdt': self.test_rdt,
-            'test_ctcwoo': self.test_ctcwoo,
-            'test_ge': self.test_ge,
-            'test_lcr': self.test_lcr,
-            'test_lymph_node_puncture': self.test_lymph_node_puncture,
-            'test_sf': self.test_sf,
-            'test_pg': self.test_pg,
-            'test_maect': self.test_maect,
-            'test_pl': self.test_pl,
-            'normalized_AS_name': normalized_as_name,
-            'normalized_AS_dict':  normalized_as_dict,
-            'normalized_patient_id': self.normalized_patient_id,
-            'normalized_village_id': self.normalized_village_id,
-            'normalized_village_not_found': self.normalized_village_not_found,
+            'location': {
+                'normalized': normalized_as_dict,
+                'ZS': ZS,
+                'AS': AS,
+                'village': village,
+                'province': province,
+                'record_location': {
+                    'lat': self.latitude,
+                    'long': self.longitude,
+                }
+            },
+
+            'patient': self.normalized_patient.as_dict() if full else {'id': self.normalized_patient_id},
+            'hat_id': self.hat_id,
+            'hat_document_id': self.document_id,
+
+            'tests': tests,
+
+            'device_id': self.device_id,
+            'device': device,
+
             'form_number': self.form_number,
             'form_year': self.form_year,
-            'mobile_unit': self.mobile_unit,
-            'normalized_team': self.normalized_team_id,
+            'team': {
+                'mobile_unit': self.mobile_unit,
+                'normalized_team': self.normalized_team.as_dict() if self.normalized_team else None,
+            },
             'source': self.source
         }
 
@@ -509,9 +531,9 @@ class CaseView(CaseAbstract):
         #ordering = ['-document_date']
         permissions = CASES_PERMISSIONS
 
-    def as_dict(self):
+    def as_dict(self, full=False):
         return dict(
-            Case.as_dict(self),
+            Case.as_dict(self, full),
             **{'normalized_year': self.normalized_year,
                'normalized_province_name': self.normalized_province_name,
                'normalized_zs_name': self.normalized_zs_name,

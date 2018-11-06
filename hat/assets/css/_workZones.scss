@@ -26,38 +26,55 @@
             background-color: transparent;
         }
     }
-    >span {
-        display: inline-block;
-        width: 25px;
-        height: 25px;
-        margin-right: 10px;
-        cursor: pointer;
-        margin-left: 10px;
-        position: relative;
-        top: 0px;
-        outline: none !important;
-        box-shadow: none !important;
+    >section {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        >span {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            margin-right: 10px;
+            cursor: pointer;
+            margin-left: 10px;
+            position: relative;
+            top: 0px;
+            outline: none !important;
+            box-shadow: none !important;
+        }
     }
-    >div.infos {
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        height: 46px;
-        width: calc(100% - 45px);
-        padding-top: 16px;
-        font-weight: bold;
-        outline: none !important;
-        box-shadow: none !important;
-        span {
-            font-weight: normal;
-        }
-        &.alert {
-            color: red;
-        }
-        i {
+    div {
+        &.button {
             position: absolute;
-            right: 20px;
-            top:18px;
+            top: 0;
+            right: 0;
+            height: 46px;
+            width: calc(100% - 45px);
+            outline: none !important;
+            box-shadow: none !important;
+            opacity: 0;
+        }
+        &.infos {
+            display: inline-block;
+            height: auto;
+            width: calc(100% - 45px);
+            padding-top: 0px;
+            font-weight: bold;
+            outline: none !important;
+            box-shadow: none !important;
+            padding-right: 50px;
+            line-height: 14px;
+            span {
+                font-weight: normal;
+            }
+            &.alert {
+                color: red;
+            }
+            i {
+                position: absolute;
+                right: 20px;
+                top: 18px;
+            }
         }
     }
     &:first-child {
@@ -69,18 +86,18 @@
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
     }
-
     .expand-collapse {
         height: 0px;
         overflow: hidden;
-        > div {
+        >div {
             padding: 10px 0 0 0;
         }
-        .locator-filter{
+        .locator-filter {
             padding: 0;
             border-top: 1px solid $gray;
             .locator-subtitle {
-                margin: $padding-unit / 2;
+                padding: $padding-unit / 2;
+                margin: 0;
                 outline: none;
                 cursor: pointer;
                 box-shadow: none;
@@ -88,11 +105,11 @@
                     float: right;
                     margin-right: 5px;
                 }
-                & + div {
+                &+div {
                     height: 0;
                     overflow: hidden;
-                    &.open{
-                        padding: 0 $padding-unit / 2  $padding-unit / 2  $padding-unit / 2;
+                    &.open {
+                        padding: 0 $padding-unit / 2 $padding-unit / 2 $padding-unit / 2;
                         height: auto;
                         overflow: visible;
                     }

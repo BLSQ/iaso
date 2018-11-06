@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 
@@ -10,11 +10,41 @@ import PlanningTeamSelection from '../components/PlanningTeamSelection';
 import WorkZonesSelect from '../components/WorkZonesSelect';
 import MacroMap from '../components/MacroMap';
 import { planningActions } from '../redux/planning';
-import { createUrl, getRequest } from '../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import { coordinationActions } from '../redux/coordination';
-import { getZsName, getWorkZoneName } from '../../../utils';
+import { getZsName, getWorkZoneName, formatThousand } from '../../../utils';
 import AssingAsModale from '../components/AssingAsModale';
 
+const MESSAGES = defineMessages({
+    capacity: {
+        defaultMessage: 'Capacité totale de la coordination',
+        id: 'macroplanning.total_capacity',
+    },
+    endemic_population: {
+        defaultMessage: 'Population endémique totale',
+        id: 'macroplanning.endemic_population_total',
+    },
+});
+
+
+const getWorZonesTotalCapacity = (workZones, formatMessage) => {
+    if (workZones && workZones.length > 0) {
+        let totalCapacity = 0;
+        let populationEndemicVillages = 0;
+        workZones.map((w) => {
+            totalCapacity += parseInt(w.total_capacity, 10);
+            populationEndemicVillages += parseInt(w.population_endemic_villages, 10);
+            return null;
+        });
+        return (
+            <section>
+                {formatMessage(MESSAGES.capacity)}: {formatThousand(totalCapacity)}<br /><br />
+                {formatMessage(MESSAGES.endemic_population)}: {formatThousand(populationEndemicVillages)}
+            </section>
+        );
+    }
+    return null;
+};
 
 class Macroplanning extends React.Component {
     constructor(props) {
@@ -172,6 +202,7 @@ class Macroplanning extends React.Component {
                                                     assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
                                                 />
                                             </div>
+                                            {getWorZonesTotalCapacity(currentWorkZones, formatMessage)}
                                         </div>
                                     }
                                 </div>

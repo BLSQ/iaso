@@ -143,12 +143,14 @@ class WorkZonesSelect extends Component {
                     }
 
                     <li className="workzones-item none">
-                        <span
-                            style={{ backgroundColor: 'grey' }}
-                        />
-                        <div className="infos">
-                            <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
-                        </div>
+                        <section>
+                            <span
+                                style={{ backgroundColor: 'grey' }}
+                            />
+                            <div className="infos">
+                                <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
+                            </div>
+                        </section>
                     </li>
                 </ul>
             </div>

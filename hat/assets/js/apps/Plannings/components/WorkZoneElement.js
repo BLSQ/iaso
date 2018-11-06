@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Capacité insuffisante',
         id: 'macroplanning.lowCapacity',
     },
+    goodCapacity: {
+        defaultMessage: 'Capacité suffisante',
+        id: 'macroplanning.goodCapacity',
+    },
 });
 
 
@@ -67,38 +71,52 @@ class WorkZoneElement extends Component {
                 key={workZone.id}
                 className={`workzones-item ${selectedWorkZoneId === workZone.id ? 'selected' : ''}`}
             >
-                <span
-                    style={{ backgroundColor: workZone.color }}
-                    onClick={() => toggleColors(workZone.id, typeof workZone.showColor !== 'undefined' ? !workZone.showColor : true)}
-                    role="button"
-                    tabIndex={0}
-                />
+                <section>
+                    <span
+                        style={{ backgroundColor: workZone.color }}
+                        onClick={() => toggleColors(workZone.id, typeof workZone.showColor !== 'undefined' ? !workZone.showColor : true)}
+                        role="button"
+                        tabIndex={0}
+                    />
+                    <div
+                        className={`infos ${parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ? 'alert' : ''}`}
+                    >
+                        {`${workZone.name} - `}
+                        <span>
+                            {formatMessage(MESSAGES.capacity)} {formatThousand(workZone.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(workZone.population_endemic_villages)}
+                        </span>
+                        <br />
+                        <span>
+                            {
+                                parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ?
+                                    formatMessage(MESSAGES.lowCapacity)
+                                    :
+                                    formatMessage(MESSAGES.goodCapacity)
+                            }{': '}
+                            {
+                                parseInt(workZone.total_capacity, 10) > parseInt(workZone.population_endemic_villages, 10) ? '+' : ''
+                            }
+                            {
+                                formatThousand(parseInt(workZone.total_capacity, 10) - parseInt(workZone.population_endemic_villages, 10))
+                            }
+                        </span>
+                        {
+                            selectedWorkZoneId === workZone.id &&
+                            <i className="fa fa-chevron-down" />
+                        }
+                        {
+                            selectedWorkZoneId !== workZone.id &&
+                            <i className="fa fa-chevron-right" />
+                        }
+                    </div>
+                </section>
+
                 <div
                     role="button"
                     tabIndex={0}
                     onClick={() => selectWorkZone(workZone.id)}
-                    className={`infos ${parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ? 'alert' : ''}`}
-                >
-                    {`${workZone.name} - `}
-                    <span>
-                        {formatMessage(MESSAGES.capacity)} {formatThousand(workZone.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(workZone.population_endemic_villages)}
-                    </span>
-                    {
-                        parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ?
-                            <span>
-                                {' '}({formatMessage(MESSAGES.lowCapacity)})
-                            </span>
-                            : ''
-                    }
-                    {
-                        selectedWorkZoneId === workZone.id &&
-                        <i className="fa fa-chevron-down" />
-                    }
-                    {
-                        selectedWorkZoneId !== workZone.id &&
-                        <i className="fa fa-chevron-right" />
-                    }
-                </div>
+                    className={`button ${parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ? 'alert' : ''}`}
+                />
                 <div className={`color-picker-container${workZone.showColor ? ' visible' : ''}`} >
                     <GithubPicker
                         width={`${26.2 * workZonesColors.length}px`}
@@ -116,7 +134,7 @@ class WorkZoneElement extends Component {
                                 className="locator-subtitle"
                                 onClick={() => this.toggelSubSection('isZonesOpen')}
                             >
-                                <FormattedMessage id="macroplanning.label.zones" defaultMessage="Zone de santé" />
+                                <FormattedMessage id="macroplanning.label.zones" defaultMessage="Zone(s) de santé" />
                                 {
                                     this.state.isZonesOpen &&
                                     <i className="fa fa-minus" />
@@ -146,7 +164,7 @@ class WorkZoneElement extends Component {
                                 className="locator-subtitle"
                                 onClick={() => this.toggelSubSection('isAreasOpen')}
                             >
-                                <FormattedMessage id="macroplanning.label.areas" defaultMessage="Aires de santé" />
+                                <FormattedMessage id="macroplanning.label.areas" defaultMessage="Aire(s) de santé" />
                                 {
                                     this.state.isAreasOpen &&
                                     <i className="fa fa-minus" />

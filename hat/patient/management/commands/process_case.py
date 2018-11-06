@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 case.normalized_patient = patient
 
                 # Normalize the test data
-                tests, tests_created = create_test_data(case)
+                tests, tests_created = create_test_data(case, None, {})
                 if options['verbose']:
                     print("Created", tests_created, "tests")
                     print("Tests:", list(map(lambda x: x.type, tests)))

@@ -5,31 +5,9 @@
  */
 
 import React, { Component } from 'react';
-import Select from 'react-select';
-import { GithubPicker } from 'react-color';
 import PropTypes from 'prop-types';
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl';
-import { formatThousand } from '../../../utils';
-import workZonesColors from '../utils/constants/colors';
-
-const MESSAGES = defineMessages({
-    capacity: {
-        defaultMessage: 'capacité',
-        id: 'macroplanning.capacity',
-    },
-    population: {
-        defaultMessage: 'population',
-        id: 'macroplanning.population',
-    },
-    endemic_population: {
-        defaultMessage: 'endémique',
-        id: 'macroplanning.endemic_population',
-    },
-    lowCapacity: {
-        defaultMessage: 'Capacité insuffisante',
-        id: 'macroplanning.lowCapacity',
-    },
-});
+import { injectIntl, FormattedMessage } from 'react-intl';
+import WorkZoneElement from './WorkZoneElement';
 
 const mapWorkZones = (workzones) => {
     const mappedWorkzones = [];
@@ -80,7 +58,6 @@ class WorkZonesSelect extends Component {
             workZones: newWorkZones,
         });
     }
-
     compareZs(zslist, workZoneIndex) {
         const currentWorkZone = Object.assign(this.state.workZones[workZoneIndex]);
         let currentZsId;
@@ -135,9 +112,6 @@ class WorkZonesSelect extends Component {
 
     render() {
         const {
-            intl: {
-                formatMessage,
-            },
             saveWorkZoneColor,
             selectWorkZone,
             selectedWorkZoneId,
@@ -152,89 +126,19 @@ class WorkZonesSelect extends Component {
                 <ul className="workzones-list" onMouseLeave={() => this.toggleColors()}>
                     {
                         workZones.map((w, index) => (
-                            <li
-                                key={w.id}
-                                className={`workzones-item ${selectedWorkZoneId === w.id ? 'selected' : ''}`}
-                            >
-                                <span
-                                    style={{ backgroundColor: w.color }}
-                                    onClick={() => this.toggleColors(w.id, typeof w.showColor !== 'undefined' ? !w.showColor : true)}
-                                    role="button"
-                                    tabIndex={0}
-                                />
-                                <div
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => selectWorkZone(w.id)}
-                                    className={`infos ${parseInt(w.total_capacity, 10) < parseInt(w.population_endemic_villages, 10) ? 'alert' : ''}`}
-                                >
-                                    {`${w.name} - `}
-                                    <span>
-                                        {formatMessage(MESSAGES.capacity)} {formatThousand(w.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(w.population_endemic_villages)}
-                                    </span>
-                                    {
-                                        parseInt(w.total_capacity, 10) < parseInt(w.population_endemic_villages, 10) ?
-                                            <span>
-                                                {' '}({formatMessage(MESSAGES.lowCapacity)})
-                                            </span>
-                                            : ''
-                                    }
-                                    {
-                                        selectedWorkZoneId === w.id &&
-                                        <i className="fa fa-chevron-down" />
-                                    }
-                                    {
-                                        selectedWorkZoneId !== w.id &&
-                                        <i className="fa fa-chevron-right" />
-                                    }
-                                </div>
-                                <div className={`color-picker-container${w.showColor ? ' visible' : ''}`} >
-                                    <GithubPicker
-                                        width={`${26.2 * workZonesColors.length}px`}
-                                        colors={workZonesColors}
-                                        color={w.color ? w.color : workZonesColors[index]}
-                                        onChangeComplete={color => saveWorkZoneColor(color.hex, w.id)}
-                                    />
-                                </div>
-                                <div className="expand-collapse">
-                                    <div>
-                                        <div className="locator-filter">
-                                            <div className="locator-subtitle">
-                                                <FormattedMessage id="macroplanning.label.zones" defaultMessage="Zone de santé" />
-                                            </div>
-                                            <div>
-                                                <Select
-                                                    multi
-                                                    clearable={false}
-                                                    name="zoneId"
-                                                    value={w.currentZones}
-                                                    placeholder="--"
-                                                    options={zones.features.map(zone =>
-                                                        ({ label: zone.properties.name, value: zone.properties.pk }))}
-                                                    onChange={value => this.compareZs(value, index)}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="locator-filter">
-                                            <div className="locator-subtitle">
-                                                <FormattedMessage id="macroplanning.label.areas" defaultMessage="Aires de santé" />
-                                            </div>
-                                            <div>
-                                                <Select
-                                                    multi
-                                                    clearable={false}
-                                                    name="areaId"
-                                                    value={w.currentAreas}
-                                                    placeholder="--"
-                                                    options={areas.features.map(area =>
-                                                        ({ label: area.properties.name, value: area.properties.pk }))}
-                                                    onChange={value => this.compareAs(value, index)}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
+                            <WorkZoneElement
+                                key={`work-zone-${w.id}`}
+                                workZone={w}
+                                index={index}
+                                zones={zones}
+                                areas={areas}
+                                selectedWorkZoneId={selectedWorkZoneId}
+                                saveWorkZoneColor={saveWorkZoneColor}
+                                selectWorkZone={selectWorkZone}
+                                toggleColors={(workZoneId, show) => this.toggleColors(workZoneId, show)}
+                                compareZs={(zslist, workZoneIndex) => this.compareZs(zslist, workZoneIndex)}
+                                compareAs={(asList, workZoneIndex) => this.compareAs(asList, workZoneIndex)}
+                            />
                         ))
                     }
 

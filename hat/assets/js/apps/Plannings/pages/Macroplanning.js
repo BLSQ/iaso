@@ -37,10 +37,14 @@ const getWorZonesTotalCapacity = (workZones, formatMessage) => {
             return null;
         });
         return (
-            <section>
-                {formatMessage(MESSAGES.capacity)}: {formatThousand(totalCapacity)}<br /><br />
-                {formatMessage(MESSAGES.endemic_population)}: {formatThousand(populationEndemicVillages)}
-            </section>
+            <ul>
+                <li className="workzones-item">
+                    {formatMessage(MESSAGES.capacity)}: <strong>{formatThousand(totalCapacity)}</strong>
+                </li>
+                <li className="workzones-item">
+                    {formatMessage(MESSAGES.endemic_population)}: <strong>{formatThousand(populationEndemicVillages)}</strong>
+                </li>
+            </ul>
         );
     }
     return null;
@@ -202,7 +206,13 @@ class Macroplanning extends React.Component {
                                                     assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
                                                 />
                                             </div>
-                                            {getWorZonesTotalCapacity(currentWorkZones, formatMessage)}
+                                            <div className="type-filters-containers">
+                                                <div>
+                                                    <ul className="workzones-list legend">
+                                                        {getWorZonesTotalCapacity(currentWorkZones, formatMessage)}
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     }
                                 </div>

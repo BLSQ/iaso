@@ -175,33 +175,49 @@ class WorkZonesSelect extends Component {
                                     <div
                                         role="button"
                                         tabIndex={0}
-                                        className="locator-subtitle"
+                                        className={`locator-subtitle ${this.state.unUsedAreas.length > 0 ? 'alert' : ''}`}
                                         onClick={() => this.setState({
                                             isAreasOpen: !this.state.isAreasOpen,
                                         })}
                                     >
-                                        <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignées" />
                                         {
-                                            this.state.isAreasOpen &&
-                                            <i className="fa fa-minus" />
+                                            this.state.unUsedAreas.length > 0 &&
+                                            <div>
+                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignées" />:
+                                                {` ${this.state.unUsedAreas.length}`}
+                                                {
+                                                    this.state.isAreasOpen &&
+                                                    <i className="fa fa-minus" />
+                                                }
+                                                {
+                                                    !this.state.isAreasOpen &&
+                                                    <i className="fa fa-plus" />
+                                                }
+                                            </div>
                                         }
                                         {
-                                            !this.state.isAreasOpen &&
-                                            <i className="fa fa-plus" />
+                                            this.state.unUsedAreas.length === 0 &&
+                                            <div>
+                                                <FormattedMessage id="macroplanning.label.allAreasAssgined" defaultMessage="Toutes les aires de santé sont assignées" />
+                                            </div>
                                         }
                                     </div>
-                                    <div className={this.state.isAreasOpen ? 'open' : ''}>
-                                        <Select
-                                            disabled
-                                            multi
-                                            clearable={false}
-                                            name="unUsedAreas"
-                                            value={this.state.unUsedAreas}
-                                            placeholder="--"
-                                            options={areas.features.map(area =>
-                                                ({ label: area.properties.name, value: area.properties.pk }))}
-                                        />
-                                    </div>
+
+                                    {
+                                        this.state.unUsedAreas.length > 0 &&
+                                        <div className={this.state.isAreasOpen ? 'open truc' : ''}>
+                                            <Select
+                                                disabled
+                                                multi
+                                                clearable={false}
+                                                name="unUsedAreas"
+                                                value={this.state.unUsedAreas}
+                                                placeholder="--"
+                                                options={areas.features.map(area =>
+                                                    ({ label: area.properties.name, value: area.properties.pk }))}
+                                            />
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>

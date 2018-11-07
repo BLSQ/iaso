@@ -104,6 +104,9 @@
                         overflow: visible;
                     }
                 }
+                &.alert {
+                    color: $red;
+                }
             }
         }
     }

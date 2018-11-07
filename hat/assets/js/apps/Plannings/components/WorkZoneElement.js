@@ -66,6 +66,7 @@ class WorkZoneElement extends Component {
             compareZs,
             compareAs,
         } = this.props;
+        const isUnderCapicity = parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10);
         return (
             <li
                 key={workZone.id}
@@ -79,7 +80,7 @@ class WorkZoneElement extends Component {
                         tabIndex={0}
                     />
                     <div
-                        className={`infos ${parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ? 'alert' : ''}`}
+                        className={`infos ${isUnderCapicity ? 'alert' : ''}`}
                     >
                         {`${workZone.name} - `}
                         <span>
@@ -88,13 +89,13 @@ class WorkZoneElement extends Component {
                         <br />
                         <span>
                             {
-                                parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ?
+                                isUnderCapicity ?
                                     formatMessage(MESSAGES.lowCapacity)
                                     :
                                     formatMessage(MESSAGES.goodCapacity)
-                            }{': '}
+                            }{':  '}
                             {
-                                parseInt(workZone.total_capacity, 10) > parseInt(workZone.population_endemic_villages, 10) ? '+' : ''
+                                !isUnderCapicity ? '+' : ''
                             }
                             {
                                 formatThousand(parseInt(workZone.total_capacity, 10) - parseInt(workZone.population_endemic_villages, 10))

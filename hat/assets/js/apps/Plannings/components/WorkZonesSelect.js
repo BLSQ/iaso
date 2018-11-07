@@ -6,12 +6,20 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Select from 'react-select';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import WorkZoneElement from './WorkZoneElement';
 
-const mapWorkZones = (workzones) => {
-    const mappedWorkzones = [];
+const mapDatas = (workzones, allAreas) => {
+    const datas = {
+        mappedWorkzones: [],
+        unUsedAreas: [],
+    };
+    let usedAreas = [];
     workzones.map((w) => {
+        if (w.as_list) {
+            usedAreas = usedAreas.concat(w.as_list);
+        }
         const currentAreas = w.as_list ?
             w.as_list.reduce((prev, next) => `${prev === '' ? '' : `${prev},`}${next.id}`, '') : null;
         const currentZones = w.as_list ?
@@ -22,25 +30,35 @@ const mapWorkZones = (workzones) => {
                 return prev;
             }, []) : null;
         const newWorkZone = Object.assign({}, w, { currentAreas, currentZones: currentZones.toString() });
-        mappedWorkzones.push(newWorkZone);
+        datas.mappedWorkzones.push(newWorkZone);
         return null;
     });
-    return mappedWorkzones;
+    allAreas.map((a) => {
+        const areaId = parseInt(a.properties.pk, 10);
+        if (usedAreas.filter(u => u.id === areaId).length === 0) {
+            datas.unUsedAreas.push(areaId);
+        }
+        return null;
+    });
+    return datas;
 };
 
 class WorkZonesSelect extends Component {
     constructor(props) {
         super(props);
-        const mappedWorkzones = mapWorkZones(props.workZones);
+        const mappedDatas = mapDatas(props.workZones, props.currentCoordination.areas.features);
         this.state = {
-            workZones: mappedWorkzones,
+            workZones: mappedDatas.mappedWorkzones,
+            unUsedAreas: mappedDatas.unUsedAreas,
+            isAreasOpen: false,
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const mappedWorkzones = mapWorkZones(nextProps.workZones);
+        const mappedDatas = mapDatas(nextProps.workZones, nextProps.currentCoordination.areas.features);
         this.setState({
-            workZones: mappedWorkzones,
+            workZones: mappedDatas.mappedWorkzones,
+            unUsedAreas: mappedDatas.unUsedAreas,
         });
     }
 
@@ -142,7 +160,7 @@ class WorkZonesSelect extends Component {
                         ))
                     }
 
-                    <li className="workzones-item none">
+                    <li className="workzones-item none selected">
                         <section>
                             <span
                                 style={{ backgroundColor: 'grey' }}
@@ -151,6 +169,42 @@ class WorkZonesSelect extends Component {
                                 <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
                             </div>
                         </section>
+                        <div className="expand-collapse">
+                            <div>
+                                <div className="locator-filter">
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        className="locator-subtitle"
+                                        onClick={() => this.setState({
+                                            isAreasOpen: !this.state.isAreasOpen,
+                                        })}
+                                    >
+                                        <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignées" />
+                                        {
+                                            this.state.isAreasOpen &&
+                                            <i className="fa fa-minus" />
+                                        }
+                                        {
+                                            !this.state.isAreasOpen &&
+                                            <i className="fa fa-plus" />
+                                        }
+                                    </div>
+                                    <div className={this.state.isAreasOpen ? 'open' : ''}>
+                                        <Select
+                                            disabled
+                                            multi
+                                            clearable={false}
+                                            name="unUsedAreas"
+                                            value={this.state.unUsedAreas}
+                                            placeholder="--"
+                                            options={areas.features.map(area =>
+                                                ({ label: area.properties.name, value: area.properties.pk }))}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -167,7 +221,6 @@ WorkZonesSelect.defaultProps = {
 };
 
 WorkZonesSelect.propTypes = {
-    intl: PropTypes.object.isRequired,
     workZones: PropTypes.arrayOf(PropTypes.object),
     selectWorkZone: PropTypes.func.isRequired,
     saveWorkZoneColor: PropTypes.func.isRequired,

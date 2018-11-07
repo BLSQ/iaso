@@ -22,9 +22,7 @@
     }
     &.none {
         cursor: default;
-        &:hover {
-            background-color: transparent;
-        }
+        background-color: transparent !important;
     }
     >section {
         display: flex;

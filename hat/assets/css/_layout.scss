@@ -167,3 +167,7 @@ $directions: left right top bottom;
 .relative {
     position: relative;;
 }
+.no-button {
+    outline: none;
+    box-shadow: none;
+}

@@ -17,6 +17,7 @@ import { coordinationReducer, coordinationInitialState } from './redux/coordinat
 import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
+import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
 
 
 export default function microplanningApp(element, baseUrl) {
@@ -52,6 +53,7 @@ export default function microplanningApp(element, baseUrl) {
         teams: [],
         coordinations: coordinationInitialState,
         assignations: [],
+        geosScope: geoScopeMapInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -61,6 +63,7 @@ export default function microplanningApp(element, baseUrl) {
         teams: teamReducer,
         coordinations: coordinationReducer,
         assignations: assignationReducer,
+        geosScope: geoScopeMapReducer,
     }, [
         routerMiddleware(history),
     ]);

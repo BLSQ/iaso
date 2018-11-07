@@ -19,9 +19,9 @@ import {
     defineMessages,
     injectIntl,
 } from 'react-intl';
-import { saveVillageTeam, saveAreaInGeoloc } from '../../../utils/saveData';
+import { saveVillageTeam } from '../../../utils/saveData';
 
-import { capitalize, clone } from '../../../utils';
+import { capitalize } from '../../../utils';
 
 const request = require('superagent');
 
@@ -242,38 +242,10 @@ class MapTooltip extends Component {
                 this.setState({
                     isloading: false,
                     selectedTeamId: result.body.team ? result.body.team.id : null,
-                    isAsInGeoScope: typeof this.props.geoScope[result.body.as_id] !== 'undefined',
                 });
             })
             .catch((err) => {
                 console.error('Error when fetching villages details');
-            });
-    }
-
-    toggleAsFromGeoScope(as_id, zs_id, as_name) {
-        let tempTeam = { team_id: this.props.teamId, planning_id: this.props.planningId };
-        if (this.state.isAsInGeoScope) {
-            tempTeam = { ...tempTeam, delete: true };
-        }
-        saveAreaInGeoloc(
-            as_id,
-            tempTeam,
-        )
-            .then((isSaved) => {
-                if (isSaved) {
-                    const tempGeoScope = clone(this.props.geoScope);
-                    if (!this.state.isAsInGeoScope) {
-                        tempGeoScope[as_id] = { id: as_id, name: as_name, zs_id };
-                    } else {
-                        delete tempGeoScope[as_id];
-                    }
-                    this.props.updateGeoScope(tempGeoScope);
-                    this.setState({
-                        isAsInGeoScope: !this.state.isAsInGeoScope,
-                    });
-                } else {
-                    console.error('Error While saving a team for a village');
-                }
             });
     }
 
@@ -355,24 +327,6 @@ class MapTooltip extends Component {
                                     </div>
                                     <div className="value">
                                         {value}
-                                        {
-                                            row.key === 'as' && this.props.teamId ?
-                                                <button
-                                                    title={!this.state.isAsInGeoScope ?
-                                                        formatMessage(MESSAGES.add_as) :
-                                                        formatMessage(MESSAGES.remove_as)}
-                                                    className="button--edit small"
-                                                    onClick={() => this.toggleAsFromGeoScope(
-                                                        this.state.item.as_id,
-                                                        this.state.item.zs_id,
-                                                        this.state.item.as,
-                                                    )}
-                                                >
-                                                    {
-                                                        !this.state.isAsInGeoScope ?
-                                                            <i className="fa fa-plus" /> : <i className="fa fa-minus" />}{this.state.isAsInGeoScope}
-                                                </button> : null
-                                        }
                                     </div>
                                 </div>
                             );
@@ -387,7 +341,6 @@ MapTooltip.defaultProps = {
     teamId: '',
     teams: [],
     planningId: '',
-    geoScope: undefined,
 };
 
 
@@ -398,8 +351,6 @@ MapTooltip.propTypes = {
     teams: PropTypes.arrayOf(PropTypes.object),
     planningId: PropTypes.string,
     updateTeamOnVillage: PropTypes.func.isRequired,
-    geoScope: PropTypes.object,
-    updateGeoScope: PropTypes.func.isRequired,
 };
 
 export default injectIntl(MapTooltip);

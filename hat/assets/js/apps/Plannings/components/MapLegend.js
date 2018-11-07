@@ -24,65 +24,13 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
-const MESSAGES = defineMessages({
-    YES: {
-        id: 'microplanning.legend.official',
-        defaultMessage: 'Villages NON endémiques',
-    },
-    OTHER: {
-        id: 'microplanning.legend.selectedByOther',
-        defaultMessage: "Villages sélectionnés pour une autre équipe que l'équipe courante",
-    },
-
-    selected: {
-        id: 'microplanning.legend.selected',
-        defaultMessage: 'Villages sélectionnés',
-    },
-    highlight: {
-        id: 'microplanning.legend.highlight',
-        defaultMessage: 'Villages endémiques',
-    },
-    insideGeoloc: {
-        id: 'microplanning.legend.insideGeoloc',
-        defaultMessage: 'Villages dans une AS couverte par l’équipe courante',
-    },
-    outsideGeoloc: {
-        id: 'microplanning.legend.outsideGeoloc',
-        defaultMessage: 'Villages dans une AS NON couverte par l’équipe courante',
-    },
-});
 
 class MapLegend extends Component {
     render() {
-        const fixedItems = [
-            {
-                key: 'highlight',
-                isInGeoScope: false,
-            },
-            {
-                key: 'YES',
-                isInGeoScope: false,
-            },
-            {
-                key: 'selected',
-                isInGeoScope: true,
-                iAlwaysDisplayed: true,
-            },
-            {
-                key: 'OTHER',
-                isInGeoScope: false,
-            },
-            {
-                key: 'insideGeoloc',
-                isInGeoScope: true,
-            },
-            {
-                key: 'outsideGeoloc',
-                isInGeoScope: true,
-            },
-        ];
+        const { formatMessage } = this.props.intl;
+
         return (
             <div className="map__option">
                 <span className="map__option__header">
@@ -90,18 +38,14 @@ class MapLegend extends Component {
                 </span>
                 <form>
                     <ul className="map__option__list">
-                        {fixedItems.map((item) => {
-                            if ((item.isInGeoScope === this.props.isGeoScopeEnabled)
-                                || item.iAlwaysDisplayed) {
-                                return (
-                                    <li key={item.key} className="map__option__list__item">
-                                        <i className={`map__option__icon--${item.key}`} />
-                                        <FormattedMessage {...MESSAGES[item.key]} />
-                                    </li>
-                                );
-                            }
-                            return true;
-                        })}
+                        {this.props.items.map(item => (
+                            <li key={item.key} className="map__option__list__item">
+                                <i className={`map__option__icon--${item.key}`} />
+                                {formatMessage({
+                                    defaultMessage: item.defaultMessage,
+                                    id: item.messageKey,
+                                })}
+                            </li>))}
                     </ul>
                 </form>
             </div>
@@ -110,7 +54,8 @@ class MapLegend extends Component {
 }
 
 MapLegend.propTypes = {
-    isGeoScopeEnabled: PropTypes.bool.isRequired,
+    items: PropTypes.array.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(MapLegend);

@@ -9,7 +9,6 @@ export const SELECT_ITEMS = 'hat/microplanning/selection/SELECT_ITEMS';
 export const DESELECT_ITEMS = 'hat/microplanning/selection/DESELECT_ITEMS';
 
 export const DISPLAY_ITEM = 'hat/microplanning/selection/DISPLAY_ITEM';
-export const TOGGLE_GEO_SCOPE = 'hat/microplanning/selection/TOGGLE_GEO_SCOPE';
 export const UPDATE_GEO_SCOPE = 'hat/microplanning/selection/UPDATE_GEO_SCOPE';
 
 export const selectionModes = {
@@ -89,10 +88,6 @@ export const updateGeoScope = geoScope => ({
     payload: geoScope,
 });
 
-export const toggleGeoScope = showGeoScope => ({
-    type: TOGGLE_GEO_SCOPE,
-    payload: showGeoScope,
-});
 
 export const deselectItems = (items, activateSaveButton = true) => ({
     type: DESELECT_ITEMS,
@@ -110,7 +105,6 @@ export const selectionActions = {
     deselectItems,
     selectItems,
     updateGeoScope,
-    toggleGeoScope,
     displayItem,
     executeSelection,
 };
@@ -121,7 +115,6 @@ export const selectionInitialState = {
     assignations: [],
     displayedItem: null,
     geoScope: {},
-    showGeoScope: false,
     isSelectionModified: undefined,
 };
 
@@ -160,11 +153,6 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
             };
 
             return newState;
-        }
-
-        case TOGGLE_GEO_SCOPE: {
-            const showGeoScope = action.payload;
-            return { ...state, showGeoScope };
         }
 
         case UPDATE_GEO_SCOPE: {

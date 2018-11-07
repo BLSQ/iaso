@@ -143,7 +143,6 @@ export class MicroplanningContainer extends Component {
                     console.error('Error when fetching assignations details');
                 });
             if (params.team_id) {
-                console.log('planning_id', params.planning_id);
                 request
                     .get(`/api/teams/${params.team_id}?planning_id=${params.planning_id}`)
                     .query(params)

@@ -87,16 +87,6 @@ class MapLayers extends Component {
                             <FormattedMessage {...MESSAGES[key]} />
                         </li>
                     )) }
-                    {
-                        this.props.teamId ?
-                            <li
-                                className={`interactive map__option__list__item${this.props.showGeoScope ? ' active' : ''}`}
-                                onClick={() => this.props.toggleGeoScope(!this.props.showGeoScope)}
-                            >
-                                <i className={`map__option__icon square${this.props.showGeoScope ? ' active' : ''}`} />
-                                <span>Montrer la couverture géographique</span>
-                            </li> : null
-                    }
                 </ul>
             </div>
         );
@@ -106,18 +96,14 @@ class MapLayers extends Component {
 MapLayers.defaultProps = {
     overlays: undefined,
     teamId: '',
-    showGeoScope: false,
     base: '',
     change: () => {},
-    toggleGeoScope: () => {},
 };
 
 MapLayers.propTypes = {
     base: PropTypes.string,
     overlays: PropTypes.object,
     change: PropTypes.func,
-    toggleGeoScope: PropTypes.func,
-    showGeoScope: PropTypes.bool,
     teamId: PropTypes.string,
 };
 

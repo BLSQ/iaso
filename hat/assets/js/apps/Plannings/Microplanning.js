@@ -16,15 +16,17 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
-import ReactModal from 'react-modal';
 
 import LoadingSpinner from '../../components/loading-spinner';
+import TabsComponent from '../../components/TabsComponent';
+import GeoScope from './components/GeoScope';
 import { createUrl, getRequest } from '../../utils/fetchData';
 import { saveTeamPlanning, saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
 import { getPossibleYears } from '../../utils';
 import geoUtils from './utils/geo';
-import { selectionActions, selectionModes } from './redux/selection';
+import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
+import { villageSelectionLegend } from './constants/microplanningLegends';
 import {
     Map,
     MapLayers,
@@ -34,8 +36,6 @@ import {
     MapSelectionSummary,
     TeamSelectionTool,
 } from './components';
-
-const request = require('superagent');
 
 const MESSAGES = defineMessages({
     'location-all': {
@@ -50,6 +50,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Chargement en cours',
         id: 'microplanning.labels.loading',
     },
+    villageSelection: {
+        defaultMessage: 'Sélection des villages',
+        id: 'microplanning.labels.villageSelection',
+    },
+    geoScope: {
+        defaultMessage: 'Couverture géographique',
+        id: 'microplanning.labels.geoScope',
+    },
 });
 
 export class Microplanning extends Component {
@@ -60,20 +68,18 @@ export class Microplanning extends Component {
             // isVillageListEdited: false,
             isSelectionModified: false,
             errorOnSave: undefined,
+            currentTab: 'villageSelection',
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        // Remove geoscope from map if we remove a team
-        if (!nextProps.params.team_id && nextProps.selection.showGeoScope) {
-            this.props.toggleGeoScope(false);
-        }
         // if we add a team, reset highlight buffer size
         if (nextProps.params.team_id && !this.props.params.team_id) {
             this.props.changeHighlightBufferSize(0);
         }
         this.setState({
             isSelectionModified: nextProps.selection.isSelectionModified || false,
+            currentTab: !nextProps.params.team_id ? 'villageSelection' : this.state.currentTab,
         });
     }
     onKeyDownHandler(event) {
@@ -270,10 +276,12 @@ export class Microplanning extends Component {
             };
             this.props.launchAlgo(algoParams);
         };
+        console.log(this.props.selection.geoScope);
         return (
             <div
                 tabIndex={0}
                 role="button"
+                className="no-button"
                 onKeyDown={event => this.onKeyDownHandler(event)}
             >
                 {
@@ -302,11 +310,26 @@ export class Microplanning extends Component {
                     redirect={params => this.props.redirect(params)}
                     deselectAll={() => this.props.deselectItems()}
                 />
-                <div className="widget__container">
+                {
+                    this.props.params.team_id &&
+                    <TabsComponent
+                        currentTab={this.state.currentTab}
+                        selectTab={key => (this.setState({ currentTab: key }))}
+                        tabs={[
+                            { label: formatMessage(MESSAGES.villageSelection), key: 'villageSelection' },
+                            { label: formatMessage(MESSAGES.geoScope), key: 'geoScope' },
+                        ]}
+                        isRedirecting={false}
+                        defaultSelect={this.state.currentTab}
+                    />
+                }
+                <div className={`widget__container ${this.state.currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
                     <div className="widget__header">
                         {/* Map legend */}
                         <div className="map__header--legend">
-                            <MapLegend isGeoScopeEnabled={this.props.selection.showGeoScope} />
+                            <MapLegend
+                                items={villageSelectionLegend}
+                            />
                         </div>
 
                         {/* Param Filters */}
@@ -345,12 +368,7 @@ export class Microplanning extends Component {
                             <MapLayers
                                 base={baseLayer}
                                 overlays={overlays}
-                                toggleGeoScope={(toggle) => {
-                                    this.props.toggleGeoScope(toggle);
-                                }
-                                }
                                 change={(type, key) => this.props.changeLayer(type, key)}
-                                showGeoScope={this.props.selection.showGeoScope}
                                 teamId={this.props.params.team_id}
                             />
                         </div>
@@ -374,7 +392,6 @@ export class Microplanning extends Component {
                                                 this.props
                                                     .changeHighlightBufferSize(event.target.value)}
                                             selectHighlightBuffer={selectHighlightBuffer}
-                                            isGeoScopeEnabled={this.props.selection.showGeoScope}
                                         />
 
                                         {/* Selected summary */}
@@ -435,14 +452,18 @@ export class Microplanning extends Component {
                                     chosenItem={selection.displayedItem}
                                     showItem={item => this.props.displayItem(item)}
                                     leafletMap={map => this.props.setLeafletMap(map)}
-                                    geoScope={this.props.selection.geoScope}
-                                    showGeoScope={this.props.selection.showGeoScope}
-                                    updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
                                     getShape={type => this.props.getShape(type)}
                                 />
                             }
                         </div>
                     </div>
+                </div>
+
+                <div className={`widget__container ${this.state.currentTab !== 'geoScope' ? 'hidden-opacity' : ''}`}>
+                    <GeoScope
+                        coordinationId={this.props.params.coordination_id}
+                        workzoneId={this.props.params.workzone_id}
+                    />
                 </div>
             </div>
         );
@@ -472,7 +493,6 @@ Microplanning.propTypes = {
     map: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    toggleGeoScope: PropTypes.func.isRequired,
     isTest: PropTypes.bool,
 };
 
@@ -481,7 +501,6 @@ const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
     changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
     changeHighlightBufferSize: value => dispatch(selectionActions.changeHighlightBufferSize(value)),
-    toggleGeoScope: toggle => dispatch(selectionActions.toggleGeoScope(toggle)),
     updateGeoScope: geoScope => dispatch(selectionActions.updateGeoScope(geoScope)),
     executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
     deselectItems: (list, activateSaveButton) =>

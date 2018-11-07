@@ -324,7 +324,7 @@ def create_cases(df: DataFrame) -> None:
             doc.processed = True
             doc.save()
 
-        create_test_data(case, patient_as)
+        create_test_data(case, patient_as, row)
 
 
 def update_cases(df: DataFrame) -> int:
@@ -369,7 +369,7 @@ def update_cases(df: DataFrame) -> int:
                 doc.processed = True
                 doc.save()
 
-            create_test_data(case, patient_as)
+            create_test_data(case, patient_as, row)
 
     return num_updated
 

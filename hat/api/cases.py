@@ -14,7 +14,7 @@ from copy import copy
 
 class CasesViewSet(viewsets.ViewSet):
     """
-    Api to list all cases,  retrieve information about just one.
+    Api to list all records (cases),  retrieve information about just one.
     Allowed search criteria:
     - province_id
     - zs_id
@@ -36,6 +36,10 @@ class CasesViewSet(viewsets.ViewSet):
     Example:
         /api/cases/?limit=50&page=1&geo_search=zo
 
+    To retrieve aall details on a specific record (case):
+        GET /api/cases/12345?full
+    All information related to the record will be returned with normalized location, patient, tests, device...
+    Note that 12345 is the ID of the record, not the document_id or hat_id
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
@@ -283,8 +287,9 @@ class CasesViewSet(viewsets.ViewSet):
             return response
 
     def retrieve(self, request, pk=None):
+        full = request.GET.get('full')
         case = get_object_or_404(Case, pk=pk)
-        return Response(case.as_dict())
+        return Response(case.as_dict(full is not None))
 
     def partial_update(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)

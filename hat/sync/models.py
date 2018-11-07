@@ -8,7 +8,6 @@ from django.dispatch import receiver
 from django.forms import ModelForm
 from django.utils import timezone
 
-from hat.cases.models import Case
 from hat.constants import TEST_TYPE_CHOICES
 from hat.geo.models import PopulationData
 from .couchdb_helpers import create_db, delete_user, generate_db_name
@@ -271,7 +270,7 @@ class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
-    case = models.ForeignKey(to=Case, on_delete=models.SET_NULL, null=True, blank=True)
+    case = models.ForeignKey(to="cases.Case", on_delete=models.SET_NULL, null=True, blank=True)
     population = models.ForeignKey(to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True)
     type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default='participant')
     doc = JSONField()

@@ -135,7 +135,7 @@
                                         {% if test.image_filename %}
                                             <i class="fa fa-camera" style="color: green"> Photo prise</i>
                                             {% if test.image %}
-                                                <i class="fa fa-upload" style="color: green"> Photo chargée</i>
+                                                <i class="fa fa-upload" style="color: green"> <a href="{{ test.image.image.url }}" target="_blank">Photo chargée</a></i>
                                             {% else %}
                                                 <i class="fa fa-upload" style="color: red"> Photo pas encore transmise</i>
                                             {% endif %}
@@ -147,7 +147,7 @@
                                         {% if test.video_filename %}
                                             <i class="fa fa-video-camera" style="color: green"> Vidéo prise</i>
                                             {% if test.video %}
-                                                <i class="fa fa-upload" style="color: green"> Vidéo chargée</i>
+                                                <i class="fa fa-upload" style="color: green"> <a href="{{ test.video.video.url }}" target="_blank">Vidéo chargée</a></i>
                                             {% else %}
                                                 <i class="fa fa-upload" style="color: red"> Vidéo pas encore transmise</i>
                                             {% endif %}

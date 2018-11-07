@@ -1579,6 +1579,66 @@ MAPPING: List[JsonType] = [
             },
         },
     },
+    {
+        "field": "test_catt_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.testTime")
+            },
+        },
+    },
+    {
+        "field": "test_rdt_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.testTime")
+            },
+        },
+    },
+    {
+        "field": "test_ctcwoo_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.testTime")
+            },
+        },
+    },
+    {
+        "field": "test_maect_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.testTime")
+            },
+        },
+    },
+    {
+        "field": "test_pl_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.testTime")
+            },
+        },
+    },
+    {
+        "field": "test_pg_test_time",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.testTime")
+            },
+        },
+    },
 
     # These fields might get added later and are currently placeholders with no source fields.
     # For now these are supported through the case sql view.

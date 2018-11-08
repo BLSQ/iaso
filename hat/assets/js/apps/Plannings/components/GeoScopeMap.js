@@ -80,12 +80,11 @@ class GeoScopeMap extends Component {
         this.includeControlsInMap();
         this.includeDefaultLayersInMap();
         this.updateBaseLayer(this.props.baseLayer);
-        this.updateCoordination(MapDatas(this.props.coordination, this.props.workzone));
+        this.updateCoordination(MapDatas(this.props.coordination, this.props.workzone, this.props.teamGeoScope));
         this.fitToBounds();
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log('teamGeoScope', nextProps.teamGeoScope);
         if (nextProps.coordinationId !== this.props.coordinationId) {
             this.setState({
                 isFirstLoad: true,
@@ -98,11 +97,11 @@ class GeoScopeMap extends Component {
             if (hasChanged(nextProps, this.props, 'baseLayer')) {
                 this.updateBaseLayer(nextProps.baseLayer);
             }
-            if (hasChanged(nextProps, this.props, 'coordination') || hasChanged(nextProps, this.props, 'workzone')) {
-                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone));
-            }
-            if (hasChanged(nextProps, this.props, 'currentArea')) {
-                this.updateCoordination(nextProps.coordination, nextProps.workzone);
+            if (hasChanged(nextProps, this.props, 'coordination') ||
+                hasChanged(nextProps, this.props, 'workzone') ||
+                hasChanged(nextProps, this.props, 'teamGeoScope') ||
+                hasChanged(nextProps, this.props, 'teamId')) {
+                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone), nextProps.teamGeoScope);
             }
         });
     }
@@ -134,9 +133,13 @@ class GeoScopeMap extends Component {
         }).addTo(map);
     }
 
-
     onEachAsFeature(feature, layer) {
-        layer.bindTooltip(`AS: ${feature.properties.name}${` - pop. vil. endém.: ${feature.properties.population}`}`);
+        const toolTipContent =
+        `<dl>
+            <dt><strong>AS:</strong> ${feature.properties.name}</dt>
+            <dt><strong>ZS:</strong> ${feature.properties.zsName}</dt>
+        </dl>`;
+        layer.bindTooltip(toolTipContent);
         layer.setStyle({
             fillOpacity: 0.5,
         });
@@ -144,13 +147,11 @@ class GeoScopeMap extends Component {
             this.props.selectAs(feature.properties);
         });
         layer.on('mouseover', () => {
-            this.updateTooltipSmall({ label: `ZS: ${feature.properties.zsName}${feature.properties.workzone ? ` -  RA: ${feature.properties.workzone}` : ''}` });
             layer.setStyle({
                 fillOpacity: 0.8,
             });
         });
         layer.on('mouseout', () => {
-            this.updateTooltipSmall();
             layer.setStyle({
                 fillOpacity: 0.5,
             });
@@ -276,13 +277,13 @@ class GeoScopeMap extends Component {
     }
 
 
-    updateCoordination(coordination) {
+    updateCoordination(coordination, teamGeoScope) {
         this.coordinationGroup.clearLayers();
         this.zonesGroup.clearLayers();
         const areas = L.geoJSON(coordination.areas, {
             style(feature) {
                 const tempStyle = {
-                    color: 'red',
+                    color: teamGeoScope && teamGeoScope[feature.properties.pk] ? 'green' : 'red',
                 };
                 return tempStyle;
             },
@@ -396,6 +397,7 @@ GeoScopeMap.propTypes = {
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
     teamGeoScope: PropTypes.object.isRequired,
+    teamId: PropTypes.string.isRequired,
 };
 
 export default injectIntl(GeoScopeMap);

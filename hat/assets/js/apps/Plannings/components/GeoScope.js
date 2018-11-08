@@ -31,6 +31,11 @@ class GeoScope extends Component {
         }
     }
 
+    selectAs(newAs) {
+        console.log(this.state);
+        console.log(newAs);
+    }
+
     render() {
         const {
             geoScope: {
@@ -39,6 +44,7 @@ class GeoScope extends Component {
                 currentCoordination,
             },
             teamGeoScope,
+            teamId,
         } = this.props;
         return (
             <section>
@@ -62,6 +68,7 @@ class GeoScope extends Component {
                 <div className="map__panel__container">
                     <div className="map__panel--left">
                         truc
+                        {teamId}
                     </div>
                     <div className="map geo-scope-map">
                         {
@@ -74,6 +81,7 @@ class GeoScope extends Component {
                                 workzone={this.state.currentWorkZone}
                                 selectAs={currentAs => this.selectAs(currentAs)}
                                 teamGeoScope={teamGeoScope}
+                                teamId={teamId}
                             />
                         }
                     </div>
@@ -95,6 +103,7 @@ GeoScope.propTypes = {
     workzones: PropTypes.array,
     getShapes: PropTypes.func.isRequired,
     teamGeoScope: PropTypes.object,
+    teamId: PropTypes.string.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -459,12 +459,16 @@ export class Microplanning extends Component {
                 </div>
 
                 <div className={`widget__container ${this.state.currentTab !== 'geoScope' ? 'hidden-opacity' : ''}`}>
-                    <GeoScope
-                        coordinationId={this.props.params.coordination_id}
-                        workzoneId={this.props.params.workzone_id}
-                        workzones={workzones}
-                        teamGeoScope={this.props.selection.geoScope}
-                    />
+                    {
+                        this.props.params.team_id &&
+                        <GeoScope
+                            coordinationId={this.props.params.coordination_id}
+                            workzoneId={this.props.params.workzone_id}
+                            workzones={workzones}
+                            teamGeoScope={this.props.selection.geoScope}
+                            teamId={this.props.params.team_id}
+                        />
+                    }
                 </div>
             </div>
         );

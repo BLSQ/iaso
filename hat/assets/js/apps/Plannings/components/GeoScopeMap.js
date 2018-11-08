@@ -41,29 +41,19 @@ const MESSAGES = defineMessages({
 });
 let exportControl;
 
-const MapDatas = (coordination, workzones) => {
+const MapDatas = (coordination, workzone) => {
     const tempCoordinations = coordination;
     const tempAreas = [];
     coordination.areas.features.map((area) => {
         const tempArea = clone(area);
         delete tempArea.properties.workzoneId;
         delete tempArea.properties.workzone;
-        delete tempArea.properties.workzoneColor;
         tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
-        let pop = coordination.endemic_as_populations[tempArea.properties.pk];
-        if (!pop) {
-            pop = 0;
-        }
-        tempArea.properties.population = pop;
-        workzones.map((workzone) => {
-            workzone.as_list.map((workingArea) => {
-                if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
-                    tempArea.properties.workzoneId = workzone.id;
-                    tempArea.properties.workzone = workzone.name;
-                    tempArea.properties.workzoneColor = workzone.color ? workzone.color : null;
-                }
-                return null;
-            });
+        workzone.as_list.map((workingArea) => {
+            if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
+                tempArea.properties.workzoneId = workzone.id;
+                tempArea.properties.workzone = workzone.name;
+            }
             return null;
         });
         tempAreas.push(tempArea);
@@ -90,10 +80,12 @@ class GeoScopeMap extends Component {
         this.includeControlsInMap();
         this.includeDefaultLayersInMap();
         this.updateBaseLayer(this.props.baseLayer);
+        this.updateCoordination(MapDatas(this.props.coordination, this.props.workzone));
         this.fitToBounds();
     }
 
     componentWillReceiveProps(nextProps) {
+        console.log('teamGeoScope', nextProps.teamGeoScope);
         if (nextProps.coordinationId !== this.props.coordinationId) {
             this.setState({
                 isFirstLoad: true,
@@ -102,16 +94,15 @@ class GeoScopeMap extends Component {
         const { map } = this;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
         map.whenReady(() => {
-            console.log('map ready');
             // only call if base layer changed
             if (hasChanged(nextProps, this.props, 'baseLayer')) {
                 this.updateBaseLayer(nextProps.baseLayer);
             }
-            if (hasChanged(nextProps, this.props, 'coordination') || hasChanged(nextProps, this.props, 'workzones')) {
-                // this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzones));
+            if (hasChanged(nextProps, this.props, 'coordination') || hasChanged(nextProps, this.props, 'workzone')) {
+                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone));
             }
             if (hasChanged(nextProps, this.props, 'currentArea')) {
-                this.updateCoordination(nextProps.coordination, nextProps.workzones);
+                this.updateCoordination(nextProps.coordination, nextProps.workzone);
             }
         });
     }
@@ -291,7 +282,7 @@ class GeoScopeMap extends Component {
         const areas = L.geoJSON(coordination.areas, {
             style(feature) {
                 const tempStyle = {
-                    color: feature.properties.workzoneId ? feature.properties.workzoneColor : 'gray',
+                    color: 'red',
                 };
                 return tempStyle;
             },
@@ -395,16 +386,16 @@ class GeoScopeMap extends Component {
 }
 GeoScopeMap.defaultProps = {
     coordination: {},
-    workzones: [],
 };
 
 GeoScopeMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     coordination: PropTypes.object,
-    workzones: PropTypes.array,
+    workzone: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
+    teamGeoScope: PropTypes.object.isRequired,
 };
 
 export default injectIntl(GeoScopeMap);

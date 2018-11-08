@@ -3,15 +3,16 @@
  */
 
 export const UNKNOWN = 'hat/microplanning/leaflet/geoscope/action/UNKNWON';
-export const LEGEND_TOGGLE = 'hat/microplanning/leaflet/geoscope/legend/TOGGLE';
 export const BASE_LAYER_CHANGE = 'hat/microplanning/leaflet/geoscope/base-layer/CHANGE';
-export const OVERLAY_TOGGLE = 'hat/microplanning/leaftlet/geoscope/overlay/TOGGLE';
 export const LEAFLET_MAP = 'hat/microplanning/leaflet/geoscope/MAP';
+export const FETCH_ACTION = 'hat/microplanning/leaflet/FETCH_ACTION';
+export const SHOW_COORDINATION_DETAIL = 'hat/microplanning/leaflet/SHOW_COORDINATION_DETAIL';
+
+
+const req = require('superagent');
 
 export const mapLayerTypes = {
-    legend: 1,
     baseLayer: 2,
-    overlay: 3,
 };
 
 export const mapBaseLayers = [
@@ -24,21 +25,9 @@ export const mapBaseLayers = [
 
 export const changeLayer = (layerType, payload) => {
     switch (layerType) {
-        case mapLayerTypes.legend:
-            return {
-                type: LEGEND_TOGGLE,
-                payload,
-            };
-
         case mapLayerTypes.baseLayer:
             return {
                 type: BASE_LAYER_CHANGE,
-                payload,
-            };
-
-        case mapLayerTypes.overlay:
-            return {
-                type: OVERLAY_TOGGLE,
                 payload,
             };
 
@@ -47,54 +36,45 @@ export const changeLayer = (layerType, payload) => {
     }
 };
 
-export const toggleLegend = legend => ({
-    type: LEGEND_TOGGLE,
-    payload: legend,
-});
 
 export const changeBaseLayer = baseLayer => ({
     type: BASE_LAYER_CHANGE,
     payload: baseLayer,
 });
 
-export const toggleOverlay = overlay => ({
-    type: OVERLAY_TOGGLE,
-    payload: overlay,
+export const showCoordinationsDetail = coordination => ({
+    type: SHOW_COORDINATION_DETAIL,
+    payload: coordination,
 });
-export const setLeafletMap = map => ({
-    type: LEAFLET_MAP,
-    payload: map,
-});
+
+export const getShapes = (dispatch, coordinationId, workzoneId) => {
+    req
+        .get(`/api/coordinations/${coordinationId}?geojson=true&workzone_id=${workzoneId}`)
+        .then((res) => {
+            const newCoordination = res.body;
+            dispatch(showCoordinationsDetail(newCoordination));
+        })
+        .catch(err => (console.error(`Error while fetching coordination detail ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
 
 export const geoScopeMapActions = {
     changeBaseLayer,
     changeLayer,
-    setLeafletMap,
-    toggleLegend,
-    toggleOverlay,
+    getShapes,
 };
 
 export const geoScopeMapInitialState = {
-    legend: {
-        YES: true,
-    },
     baseLayer: 'osm',
     overlays: {
     },
+    currentCoordination: null,
 };
 
 export const geoScopeMapReducer = (state = geoScopeMapInitialState, action = {}) => {
     switch (action.type) {
-        case LEGEND_TOGGLE: {
-            const { legend } = state;
-            const option = action.payload;
-            if (legend[option] === undefined) {
-                return state;
-            }
-
-            return { ...state, legend: { ...legend, [option]: !legend[option] } };
-        }
-
         case BASE_LAYER_CHANGE: {
             const baseLayer = action.payload;
 
@@ -103,20 +83,10 @@ export const geoScopeMapReducer = (state = geoScopeMapInitialState, action = {})
             }
             return { ...state, baseLayer };
         }
-
-        case OVERLAY_TOGGLE: {
-            const { overlays } = state;
-            const option = action.payload;
-
-            if (overlays[option] === undefined) {
-                return state;
-            }
-
-            return { ...state, overlays: { ...overlays, [option]: !overlays[option] } };
+        case SHOW_COORDINATION_DETAIL: {
+            const currentCoordination = action.payload;
+            return { ...state, currentCoordination };
         }
-
-        case LEAFLET_MAP:
-            return { ...state, leafletMap: action.payload };
 
         default:
             return state;

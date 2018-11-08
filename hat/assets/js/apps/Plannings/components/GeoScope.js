@@ -11,17 +11,38 @@ import { MapLegend, GeoScopeMap, MapLayers } from './../components';
 import { geoScopeMapActions } from './../redux/geoScope';
 
 class GeoScope extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentWorkZone: null,
+        };
+    }
+
+    componentDidMount() {
+        this.props.getShapes(this.props.coordinationId, this.props.workzoneId);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.workzones.length > 0) {
+            const currentWorkZone = nextProps.workzones.filter(w => w.id === parseInt(nextProps.workzoneId, 10))[0];
+            this.setState({
+                currentWorkZone,
+            });
+        }
+    }
+
     render() {
         const {
-            geosScope: {
+            geoScope: {
                 baseLayer,
                 overlays,
+                currentCoordination,
             },
+            teamGeoScope,
         } = this.props;
-        console.log(baseLayer);
         return (
             <section>
-                <div className="widget__content">
+                <div className="widget__header">
                     {/* Map legend */}
                     <div className="map__header--legend">
                         <MapLegend
@@ -36,35 +57,53 @@ class GeoScope extends Component {
                             change={(type, key) => this.props.changeLayer(type, key)}
                         />
                     </div>
+                </div>
 
+                <div className="map__panel__container">
+                    <div className="map__panel--left">
+                        truc
+                    </div>
                     <div className="map geo-scope-map">
-                        <GeoScopeMap
-                            coordinationId={this.props.coordinationId}
-                            baseLayer={baseLayer}
-                            overlays={{ labels: false }}
-                            coordination={{}}
-                            workzones={[]}
-                            selectAs={currentAs => this.selectAs(currentAs)}
-                        />
+                        {
+                            currentCoordination && this.state.currentWorkZone &&
+                            <GeoScopeMap
+                                coordinationId={this.props.coordinationId}
+                                baseLayer={baseLayer}
+                                overlays={{ labels: false }}
+                                coordination={currentCoordination}
+                                workzone={this.state.currentWorkZone}
+                                selectAs={currentAs => this.selectAs(currentAs)}
+                                teamGeoScope={teamGeoScope}
+                            />
+                        }
                     </div>
                 </div>
             </section>
         );
     }
 }
+GeoScope.defaultProps = {
+    workzones: [],
+    teamGeoScope: {},
+};
+
 GeoScope.propTypes = {
-    geosScope: PropTypes.object.isRequired,
+    geoScope: PropTypes.object.isRequired,
     workzoneId: PropTypes.string.isRequired,
     coordinationId: PropTypes.string.isRequired,
     changeLayer: PropTypes.func.isRequired,
+    workzones: PropTypes.array,
+    getShapes: PropTypes.func.isRequired,
+    teamGeoScope: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
-    geosScope: state.geosScope,
+    geoScope: state.geoScope,
 });
 
 const MapDispatchToProps = dispatch => ({
     changeLayer: (type, key) => dispatch(geoScopeMapActions.changeLayer(type, key)),
+    getShapes: (coordinationId, workzoneId) => dispatch(geoScopeMapActions.getShapes(dispatch, coordinationId, workzoneId)),
 });
 
 const GeoScopeIntl = injectIntl(GeoScope);

@@ -53,7 +53,7 @@ export default function microplanningApp(element, baseUrl) {
         teams: [],
         coordinations: coordinationInitialState,
         assignations: [],
-        geosScope: geoScopeMapInitialState,
+        geoScope: geoScopeMapInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -63,7 +63,7 @@ export default function microplanningApp(element, baseUrl) {
         teams: teamReducer,
         coordinations: coordinationReducer,
         assignations: assignationReducer,
-        geosScope: geoScopeMapReducer,
+        geoScope: geoScopeMapReducer,
     }, [
         routerMiddleware(history),
     ]);

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.serializers import serialize
 from django.db.models import Sum
-from hat.planning.models import Planning, Assignation
+from hat.planning.models import Planning, Assignation, WorkZone
 from hat.geo.models import AS, ZS, Village
 from hat.users.models import Coordination
 from hat.planning.algo import optimize_path
@@ -45,10 +45,20 @@ class CoordinationViewSet(viewsets.ViewSet):
         coordination = get_object_or_404(Coordination, pk=pk)
         endemic_population = request.GET.get("endemic_population", None)
         years = request.GET.get("years", get_last_years(5))
+        workzone_id = request.GET.get('workzone_id', None)
 
         if as_geo_json:
-            all_zs = coordination.ZS.all()
-            areas = AS.objects.filter(ZS__in=all_zs)
+            if workzone_id:
+                work_zone = get_object_or_404(WorkZone, id=workzone_id)
+                print ('work_zone', work_zone.AS.all())
+                areas = work_zone.AS.all()
+                all_zs = ZS.objects.filter(id__in=work_zone.AS.values_list('ZS_id', flat=True)).distinct()
+
+            else:
+                all_zs = coordination.ZS.all()
+                areas = AS.objects.filter(ZS__in=all_zs)
+
+
             if endemic_population:
                 as_pop_dict = {}
                 years_array = years.split(",")

@@ -276,7 +276,6 @@ export class Microplanning extends Component {
             };
             this.props.launchAlgo(algoParams);
         };
-        console.log(this.props.selection.geoScope);
         return (
             <div
                 tabIndex={0}
@@ -463,6 +462,8 @@ export class Microplanning extends Component {
                     <GeoScope
                         coordinationId={this.props.params.coordination_id}
                         workzoneId={this.props.params.workzone_id}
+                        workzones={workzones}
+                        teamGeoScope={this.props.selection.geoScope}
                     />
                 </div>
             </div>

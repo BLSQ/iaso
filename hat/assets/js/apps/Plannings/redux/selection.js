@@ -11,6 +11,11 @@ export const DESELECT_ITEMS = 'hat/microplanning/selection/DESELECT_ITEMS';
 export const DISPLAY_ITEM = 'hat/microplanning/selection/DISPLAY_ITEM';
 export const UPDATE_GEO_SCOPE = 'hat/microplanning/selection/UPDATE_GEO_SCOPE';
 
+export const GET_TEAM_DETAIL = 'hat/microplanning/selection/GET_TEAM_DETAIL';
+export const SAVE_AREA_IN_GEOLOC = 'hat/microplanning/selection/SAVE_AREA_IN_GEOLOC';
+
+const request = require('superagent');
+
 export const selectionModes = {
     none: 0,
     select: 1,
@@ -88,6 +93,42 @@ export const updateGeoScope = geoScope => ({
     payload: geoScope,
 });
 
+export const getTeamDetails = (dispatch, teamId, planningId) => {
+    request
+        .get(`/api/teams/${teamId}?planning_id=${planningId}`)
+        .then((result) => {
+            const geoScope = {};
+            result.body.AS.map((aire) => {
+                geoScope[aire.id] = aire;
+                return true;
+            });
+            dispatch(updateGeoScope(geoScope));
+        })
+        .catch((err) => {
+            console.error(err);
+            console.error('Error when fetching geo scope');
+        });
+    return ({
+        type: GET_TEAM_DETAIL,
+    });
+};
+
+export function saveAreaInGeoloc(asId, team) {
+    request
+        .put(`/api/as/${asId}/`)
+        .set('Content-Type', 'application/json')
+        .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
+        .then(() => {
+            getTeamDetails();
+        })
+        .catch((err) => {
+            console.error(err);
+            console.error('Error when saving geo scope');
+        });
+    return ({
+        type: SAVE_AREA_IN_GEOLOC,
+    });
+}
 
 export const deselectItems = (items, activateSaveButton = true) => ({
     type: DESELECT_ITEMS,
@@ -107,6 +148,7 @@ export const selectionActions = {
     updateGeoScope,
     displayItem,
     executeSelection,
+    getTeamDetails,
 };
 
 export const selectionInitialState = {

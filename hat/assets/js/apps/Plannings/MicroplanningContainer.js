@@ -142,22 +142,9 @@ export class MicroplanningContainer extends Component {
                     console.error(err);
                     console.error('Error when fetching assignations details');
                 });
+
             if (params.team_id) {
-                request
-                    .get(`/api/teams/${params.team_id}?planning_id=${params.planning_id}`)
-                    .query(params)
-                    .then((result) => {
-                        const geoScope = {};
-                        result.body.AS.map((aire) => {
-                            geoScope[aire.id] = aire;
-                            return true;
-                        });
-                        dispatch(selectionActions.updateGeoScope(geoScope));
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                        console.error('Error when fetching geo scope');
-                    });
+                dispatch(selectionActions.getTeamDetails(dispatch, params.team_id, params.planning_id));
             }
         }
     }

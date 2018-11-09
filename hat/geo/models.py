@@ -115,6 +115,27 @@ class AS(models.Model):
         }
 
 
+class HealthStructure(models.Model):
+    name = models.TextField()
+    AS = models.ForeignKey(AS, on_delete=models.CASCADE)
+    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
+    source_ref = models.TextField(null=True)
+    location = PointField(srid=4326, null=True)
+
+    def __str__(self):
+        return "%s - (Area: %s)" % (self.name, self.AS.name)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "as_id": self.ZS_id,
+            "as_name": self.ZS.name,
+            "source": self.source,
+            "source_ref": self.source_ref
+        }
+
+
 class Village(models.Model):
     name = models.CharField(max_length=255)
     AS = models.ForeignKey(AS, on_delete=models.CASCADE)

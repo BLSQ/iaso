@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from hat.geo.models import Province, ZS, AS, Village
 import json
 
+
 class Command(BaseCommand):
     help = 'Import new villages from the case_location table into normalized tables'
 
@@ -20,6 +21,7 @@ class Command(BaseCommand):
 
                 for area in zone.as_set.order_by('name'):
                     villages = []
+                    structures = []
                     area_dict = {
                         "id": str(zone.id),
                         "name": zone.name
@@ -30,11 +32,18 @@ class Command(BaseCommand):
                         village_dict = {
                             'id': str(village.id),
                             'name': village.name,
-                            #'latitude': float(village.latitude),
-                            #'longitude': float(village.longitude)
                         }
                         villages.append(village_dict)
+
+                    for structure in area.healthstructure_set.order_by('name'):
+                        structure_dict = {
+                            'id': str(structure.id),
+                            'name': structure.name,
+                        }
+                        structures.append(structure_dict)
+
                     area_dict['villages'] = villages
+                    area_dict['structures'] = structures
                     areas.append(area_dict)
 
                 zone_dict['areas'] = areas

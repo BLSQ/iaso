@@ -1,13 +1,19 @@
 from django.contrib import admin
 
-from .models import Province, ZS, AS, Village, PopulationData
+from .models import Province, ZS, AS, Village, HealthStructure, PopulationData
 
-admin.site.register(Province)
+
+class ProvinceAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'source_ref')
+    ordering = ('name',)
+
+
+admin.site.register(Province, ProvinceAdmin)
 
 
 class ZSAdmin(admin.ModelAdmin):
     list_filter = ('province', )
-    search_fields = ('name',)
+    search_fields = ('name', 'source_ref')
     ordering = ('name',)
 
 
@@ -16,7 +22,7 @@ admin.site.register(ZS, ZSAdmin)
 
 class ASAdmin(admin.ModelAdmin):
     list_filter = ('ZS',)
-    search_fields = ('name',)
+    search_fields = ('name', 'source_ref')
     ordering = ('name', )
 
 
@@ -30,6 +36,15 @@ class VillageAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Village, VillageAdmin)
+
+
+class HealthStructureAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    search_fields = ('name', 'source_ref')
+    raw_id_fields = ('AS',)
+
+
+admin.site.register(HealthStructure, HealthStructureAdmin)
 
 
 class PopulationDataAdmin(admin.ModelAdmin):

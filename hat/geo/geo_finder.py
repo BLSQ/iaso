@@ -23,8 +23,12 @@ def get_single_zone(name):
     return zone
 
 
-def get_zones_by_name_or_alias(name):
-    return ZS.objects.filter(name_or_alias(name))
+def get_zones_by_name_or_alias(name, provinces=None):
+    zones = ZS.objects.filter(name_or_alias(name))
+    if provinces is not None:
+        zones = zones.filter(province__in=provinces)
+
+    return zones
 
 
 def get_single_area(name, zone=None):

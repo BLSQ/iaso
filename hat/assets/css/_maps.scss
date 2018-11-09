@@ -11,8 +11,8 @@ $official: $green;
 $notofficial: $light-gray;
 $other: $bright-blue;
 $unknown: $dark-gray;
-$insideGeoloc: $orange;
-$outsideGeoloc: $light-blue;
+$insideGeoloc: $green;
+$outsideGeoloc: $red;
 /* map size */
 
 $map-height: 720px;
@@ -63,6 +63,14 @@ $color in $types {
         overflow: hidden;
         vertical-align: top;
         width: calc(100% - 370px);
+    }
+}
+.map__panel--left {
+    &.geo-scope{
+        padding: $padding-unit / 2;
+        >div{
+            margin-bottom: $padding-unit / 2;
+        }
     }
 }
 

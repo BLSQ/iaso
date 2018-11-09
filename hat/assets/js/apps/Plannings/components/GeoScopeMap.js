@@ -41,14 +41,16 @@ const MESSAGES = defineMessages({
 });
 let exportControl;
 
-const MapDatas = (coordination, workzone) => {
+const MapDatas = (coordination, workzone, teamGeoScope) => {
     const tempCoordinations = coordination;
     const tempAreas = [];
     coordination.areas.features.map((area) => {
         const tempArea = clone(area);
         delete tempArea.properties.workzoneId;
         delete tempArea.properties.workzone;
+        delete tempArea.properties.isInGeoScope;
         tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
+        tempArea.properties.isInGeoScope = teamGeoScope && (teamGeoScope[area.properties.pk] !== undefined);
         workzone.as_list.map((workingArea) => {
             if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
                 tempArea.properties.workzoneId = workzone.id;
@@ -98,10 +100,8 @@ class GeoScopeMap extends Component {
                 this.updateBaseLayer(nextProps.baseLayer);
             }
             if (hasChanged(nextProps, this.props, 'coordination') ||
-                hasChanged(nextProps, this.props, 'workzone') ||
-                hasChanged(nextProps, this.props, 'teamGeoScope') ||
-                hasChanged(nextProps, this.props, 'teamId')) {
-                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone), nextProps.teamGeoScope);
+                hasChanged(nextProps, this.props, 'teamGeoScope')) {
+                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone, nextProps.teamGeoScope));
             }
         });
     }
@@ -129,7 +129,7 @@ class GeoScopeMap extends Component {
             hideControlContainer: true,
             title: 'Télécharger',
             exportOnly: true,
-            filename: 'Macro planning',
+            filename: 'Couverture Géographique',
         }).addTo(map);
     }
 
@@ -277,13 +277,13 @@ class GeoScopeMap extends Component {
     }
 
 
-    updateCoordination(coordination, teamGeoScope) {
+    updateCoordination(coordination) {
         this.coordinationGroup.clearLayers();
         this.zonesGroup.clearLayers();
         const areas = L.geoJSON(coordination.areas, {
             style(feature) {
                 const tempStyle = {
-                    color: teamGeoScope && teamGeoScope[feature.properties.pk] ? 'green' : 'red',
+                    color: feature.properties.isInGeoScope ? 'green' : 'red',
                 };
                 return tempStyle;
             },
@@ -397,7 +397,6 @@ GeoScopeMap.propTypes = {
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
     teamGeoScope: PropTypes.object.isRequired,
-    teamId: PropTypes.string.isRequired,
 };
 
 export default injectIntl(GeoScopeMap);

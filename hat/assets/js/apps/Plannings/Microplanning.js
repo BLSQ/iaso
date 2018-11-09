@@ -276,6 +276,12 @@ export class Microplanning extends Component {
             };
             this.props.launchAlgo(algoParams);
         };
+        let currentTeam;
+        if (this.props.params.team_id) {
+            [currentTeam] = teams.filter(t => t.id === parseInt(this.props.params.team_id, 10));
+        }
+        const shortVillageSelectionLegend = villageSelectionLegend.slice();
+        shortVillageSelectionLegend.pop();
         return (
             <div
                 tabIndex={0}
@@ -327,7 +333,7 @@ export class Microplanning extends Component {
                         {/* Map legend */}
                         <div className="map__header--legend">
                             <MapLegend
-                                items={villageSelectionLegend}
+                                items={this.props.params.team_id ? villageSelectionLegend : shortVillageSelectionLegend}
                             />
                         </div>
 
@@ -460,13 +466,14 @@ export class Microplanning extends Component {
 
                 <div className={`widget__container ${this.state.currentTab !== 'geoScope' ? 'hidden-opacity' : ''}`}>
                     {
-                        this.props.params.team_id &&
+                        currentTeam &&
                         <GeoScope
                             coordinationId={this.props.params.coordination_id}
                             workzoneId={this.props.params.workzone_id}
                             workzones={workzones}
                             teamGeoScope={this.props.selection.geoScope}
-                            teamId={this.props.params.team_id}
+                            team={currentTeam}
+                            planningId={this.props.params.planning_id}
                         />
                     }
                 </div>
@@ -484,7 +491,6 @@ Microplanning.propTypes = {
     deselectItems: PropTypes.func.isRequired,
     selectItems: PropTypes.func.isRequired,
     displayItem: PropTypes.func.isRequired,
-    toggleLegend: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     setLeafletMap: PropTypes.func.isRequired,
     activateFullscreen: PropTypes.func.isRequired,
@@ -493,7 +499,6 @@ Microplanning.propTypes = {
     launchAlgo: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     selection: PropTypes.object.isRequired,
-    updateGeoScope: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
@@ -506,14 +511,12 @@ const MicroplanningWithIntl = injectIntl(Microplanning);
 const MapDispatchToProps = dispatch => ({
     changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
     changeHighlightBufferSize: value => dispatch(selectionActions.changeHighlightBufferSize(value)),
-    updateGeoScope: geoScope => dispatch(selectionActions.updateGeoScope(geoScope)),
     executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
     deselectItems: (list, activateSaveButton) =>
         dispatch(selectionActions.deselectItems(list, activateSaveButton)),
     selectItems: (list, activateSaveButton) =>
         dispatch(selectionActions.selectItems(list, activateSaveButton)),
     displayItem: item => dispatch(selectionActions.displayItem(item)),
-    toggleLegend: legend => dispatch(mapActions.toggleLegend(legend)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),

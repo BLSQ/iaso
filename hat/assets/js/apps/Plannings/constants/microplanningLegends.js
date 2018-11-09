@@ -10,6 +10,11 @@ const villageSelectionLegend = [
         messageKey: 'microplanning.legend.official',
     },
     {
+        key: 'selected',
+        defaultMessage: 'Villages sélectionnés',
+        messageKey: 'microplanning.legend.selected',
+    },
+    {
         key: 'OTHER',
         defaultMessage: 'Villages sélectionnés pour une autre équipe que l’équipe courante',
         messageKey: 'microplanning.legend.selectedByOther',
@@ -17,11 +22,6 @@ const villageSelectionLegend = [
 ];
 
 const geoScopeLegend = [
-    {
-        key: 'selected',
-        defaultMessage: 'Villages sélectionnés',
-        messageKey: 'microplanning.legend.selected',
-    },
     {
         key: 'insideGeoloc',
         defaultMessage: 'Villages dans une AS couverte par l’équipe courante',

@@ -420,7 +420,8 @@ class Map extends Component {
 
                             className = String.raw`map-marker ${item._class}`;
                             if (team_id) {
-                                if (team_id === this.props.teamId) {
+                                console.log(team_id);
+                                if (parseInt(team_id, 10) === parseInt(this.props.teamId, 10)) {
                                     className += ' assignedToCurrentTeam';
                                 } else {
                                     className += ' assignedToOtherTeam';

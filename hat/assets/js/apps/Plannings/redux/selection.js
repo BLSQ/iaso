@@ -1,6 +1,7 @@
 /*
  * Includes the actions and state necessary for the selection process
  */
+import { loadActions } from '../../../redux/load';
 
 export const BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/BUFFER_SIZE_CHANGE';
 export const HIGHLIGHT_BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/HIGHLIGHT_BUFFER_SIZE_CHANGE';
@@ -93,7 +94,7 @@ export const updateGeoScope = geoScope => ({
     payload: geoScope,
 });
 
-export const getTeamDetails = (dispatch, teamId, planningId) => {
+export const getTeamDetails = (dispatch, teamId, planningId, stopLoading = false) => {
     request
         .get(`/api/teams/${teamId}?planning_id=${planningId}`)
         .then((result) => {
@@ -102,6 +103,9 @@ export const getTeamDetails = (dispatch, teamId, planningId) => {
                 geoScope[aire.id] = aire;
                 return true;
             });
+            if (stopLoading) {
+                dispatch(loadActions.successLoadingNoData());
+            }
             dispatch(updateGeoScope(geoScope));
         })
         .catch((err) => {
@@ -113,13 +117,13 @@ export const getTeamDetails = (dispatch, teamId, planningId) => {
     });
 };
 
-export function saveAreaInGeoloc(asId, team) {
+export function saveAreaInGeoloc(dispatch, asId, team, planningId, stopLoading = false) {
     request
         .put(`/api/as/${asId}/`)
         .set('Content-Type', 'application/json')
         .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
         .then(() => {
-            getTeamDetails();
+            dispatch(getTeamDetails(dispatch, team.team_id, planningId, stopLoading));
         })
         .catch((err) => {
             console.error(err);
@@ -149,6 +153,7 @@ export const selectionActions = {
     displayItem,
     executeSelection,
     getTeamDetails,
+    saveAreaInGeoloc,
 };
 
 export const selectionInitialState = {

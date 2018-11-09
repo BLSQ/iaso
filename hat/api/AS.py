@@ -60,18 +60,19 @@ class ASViewSet(viewsets.ViewSet):
         delete = request.data.get("delete", None)
 
         team = get_object_or_404(Team, id=team_id)
-        area = get_object_or_404(AS, id=pk)
         planning = get_object_or_404(Planning, id=planning_id)
 
-        if delete:
-            TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
-        else:
-            TeamActionZone.objects.filter(area=area, planning=planning).delete()
-            taz = TeamActionZone()
-            taz.team = team
-            taz.area = area
-            taz.planning = planning
-            taz.save()
+        for as_id in pk.split(','):
+            area = get_object_or_404(AS, id=as_id)
+            if delete:
+                TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
+            else:
+                TeamActionZone.objects.filter(area=area, planning=planning).delete()
+                taz = TeamActionZone()
+                taz.team = team
+                taz.area = area
+                taz.planning = planning
+                taz.save()
 
         return Response(area.as_dict())
 

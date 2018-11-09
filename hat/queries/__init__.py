@@ -8,7 +8,6 @@ current_dir = os.path.abspath(os.path.dirname(__file__))
 snaql_factory = Snaql(current_dir, '.')
 
 # cases
-duplicates_queries = snaql_factory.load_queries('duplicates.sql')
 prepare_queries = snaql_factory.load_queries('prepare_db.sql')
 event_log_queries = snaql_factory.load_queries('event_log.sql')
 
@@ -35,4 +34,3 @@ def prepare_premigration() -> None:
 def prepare_postmigration() -> None:
     with connection.cursor() as cursor:
         cursor.execute(prepare_queries.run_postmigration(**sql_context))
-        cursor.execute(duplicates_queries.prepare())

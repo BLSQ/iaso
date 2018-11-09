@@ -1,14 +1,13 @@
-from rest_framework import viewsets
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
-from hat.cases.models import Case
-from hat.patient.models import Patient, Test, TestGroup
-from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-from django.core.paginator import Paginator
-from django.db.models import Q
 import csv
+
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+from hat.patient.models import Patient
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -39,11 +38,10 @@ class PatientsViewSet(viewsets.ViewSet):
         date_from = request.GET.get("date_from", None)
         date_to = request.GET.get("date_to", None)
 
-        csvformat = request.GET.get("csv", None) #default will be json
+        csvformat = request.GET.get("csv", None)  # default will be json
 
         queryset = (
-            Patient.objects
-            .order_by(*orders)
+            Patient.objects.order_by(*orders)
         )
 
         if csvformat is None:
@@ -68,7 +66,9 @@ class PatientsViewSet(viewsets.ViewSet):
             response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
 
             writer = csv.writer(response)
-            writer.writerow(['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
+            writer.writerow(
+                ['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée',
+                 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
             for case in queryset:
                 cdict = case.as_dict()
                 writer.writerow([
@@ -90,4 +90,3 @@ class PatientsViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(Patient, pk=pk)
         return Response(patient.as_full_dict())
-

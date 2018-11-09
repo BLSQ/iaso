@@ -615,50 +615,6 @@ class Location(models.Model):
         return "%s - %s - %s - %s" % (self.village, self.AS, self.ZS, self.village_type)
 
 
-class DuplicatesPair(models.Model):
-    '''
-    Potential duplicate cases. Two cases are considered potential duplicates if:
-        - Have **same** values in:
-            - **ZS**
-            - **AS**
-            - **village**
-            - **sex**
-        - Have **similar** values in:
-            - **name**
-            - **prename**
-            - **lastname**
-            - **mothers_surname**
-
-    :ivar Case case1: Case 1 **reference**.
-    :ivar Case case2: Case 2 **reference**.
-
-    :ivar text document_id1: Case 1 **document_id**.
-    :ivar text document_id2: Case 2 **document_id**.
-
-    **Permissions**
-
-    - **reconcile_duplicates** -- Can reconcile duplicates.
-
-    '''
-
-    case1 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
-    case2 = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='+', db_index=True)
-    document_id1 = models.TextField(db_index=True, null=True)
-    document_id2 = models.TextField(db_index=True, null=True)
-
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        if self.case1_id > self.case2_id:
-            super(DuplicatesPair, self).save(*args, **kwargs)
-        else:
-            raise Exception("Case1's id MUST always be greater than case2's id")
-
-    class Meta:
-        unique_together = (('case1', 'case2'),)
-        permissions = (
-            ('reconcile_duplicates', 'Can reconcile duplicates'),
-        )
-
-
 class TestGroup(models.Model):
     type = models.TextField()
     cases = models.ManyToManyField('Case')
@@ -667,24 +623,3 @@ class TestGroup(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.type, self.group_id, self.created_at)
-
-
-class IgnoredPair(models.Model):
-    '''
-    This table tracks all duplicates pairs that have been found not to be actual matches.
-    When the process for finding duplicates reruns, we don't want any previously ignored
-    pairs to show up again and need to keep track of them. The pairs are tracked by the
-    ``document_id``, so that they are not dependent on the table instance.
-
-    :ivar text document_id1: Case 1 **document_id**.
-    :ivar text document_id2: Case 2 **document_id**.
-
-    '''
-    document_id1 = models.TextField(db_index=True)
-    document_id2 = models.TextField(db_index=True)
-
-    class Meta:
-        unique_together = (('document_id1', 'document_id2'),)
-
-    def __str__(self):
-        return "%s - %s" % (self.document_id1, self.document_id2)

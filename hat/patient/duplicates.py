@@ -2,7 +2,7 @@ from typing import List, NamedTuple
 from django.db import transaction
 from django.db.models import Q
 
-from hat.cases.models import Case, DuplicatesPair, IgnoredPair
+from hat.cases.models import Case
 from .event_log import log_cases_merge
 
 

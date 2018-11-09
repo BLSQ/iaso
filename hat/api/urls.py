@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
+from hat.api.patientduplicates import PatientDuplicatesViewSet
 from hat.api.qcchecks import QCChecksViewSet
 from .AS import ASViewSet
 from .ZS import ZSViewSet
@@ -55,6 +56,7 @@ router.register(r"permissions", PermissionsViewSet, base_name="permissions")
 router.register(r"usertypes", UserTypeViewSet, base_name="usertypes")
 router.register(r"stats", StatsViewSet, base_name="stats")
 router.register(r"patients", PatientsViewSet, base_name="patients")
+router.register(r"patientduplicates", PatientDuplicatesViewSet, base_name="patientduplicates")
 router.register(r"villagetypes", VillageTypeViewSet, base_name="village_types")
 router.register(r"devices", DevicesViewSet, base_name="devices")
 

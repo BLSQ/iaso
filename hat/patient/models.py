@@ -170,6 +170,9 @@ class PatientDuplicatesPair(models.Model):
             'algorithm': self.algorithm,
         }
 
+    def __str__(self):
+        return "%s: %s > %s" % (self.id, self.patient1_id, self.patient2_id)
+
 
 class PatientIgnoredPair(models.Model):
     """

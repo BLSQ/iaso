@@ -24,6 +24,7 @@ from hat.common.utils import is_int
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE
+from hat.patient.duplicates import create_potential_duplicates_for_patient
 from hat.patient.identify import get_or_create_patient, create_test_data
 from hat.patient.models import Test
 from hat.sync.models import JSONDocument, DeviceDB
@@ -312,7 +313,7 @@ def create_cases(df: DataFrame) -> None:
             patient_as = normalized_AS
             patient_village = normalized_village
 
-        patient, _ = get_or_create_patient(case, patient_as, patient_village)
+        patient, patient_created = get_or_create_patient(case, patient_as, patient_village)
         case.normalized_patient = patient
         case.normalized_team = get_case_team(case)
 
@@ -325,6 +326,10 @@ def create_cases(df: DataFrame) -> None:
             doc.save()
 
         create_test_data(case, patient_as, row)
+
+        # Check potential patient duplicates
+        if patient_created:
+            create_potential_duplicates_for_patient(patient)
 
 
 def update_cases(df: DataFrame) -> int:

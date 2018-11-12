@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from hat.audit.models import log_modification, PATIENT_API
 from hat.cases.models import Case
+from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
 from hat.patient.models import PatientDuplicatesPair, PatientIgnoredPair
 from .authentication import CsrfExemptSessionAuthentication
 
@@ -132,18 +133,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 return Response("merge field should be the ID of either patient 1 or patient 2",
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            log_modification(patient_dupe.as_dict(), merge_to.as_dict(), PATIENT_API, request.user)
-            Case.objects.filter(normalized_patient=merge_from).update(normalized_patient=merge_to)
-            merge_from.delete()
-            patient_dupe.delete()
-            return Response(merge_to.as_dict(), status.HTTP_200_OK)
+            result = merge_patient_duplicate(patient_dupe, merge_from, merge_to, request.user)
+
+            return Response(result.as_dict(), status.HTTP_200_OK)
 
         if ignore:
-            ignored_pair, ignored_pair_created = PatientIgnoredPair.objects.get_or_create(
-                patient1_id=patient_dupe.patient1_id,
-                patient2_id=patient_dupe.patient2_id,
-                defaults={'algorithm': patient_dupe.algorithm, 'user': request.user}
-            )
-            if ignored_pair:
-                patient_dupe.delete()
-                return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)
+            ignored_pair = ignore_patient_duplicate(patient_dupe)
+            return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)

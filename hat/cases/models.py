@@ -417,10 +417,6 @@ class Case(CaseAbstract):
         except DeviceDB.DoesNotExist:
             pass
 
-        # Test results
-        tests = [test.to_dict() if full else {'id': test.id, 'date': test.date} for test in self.test_set.all()]
-        tests.sort(key=lambda item: item['date'])  # bisect.insort() doesn't play well with lists of dicts
-
         d = {
             'id': self.id,
             'location': {
@@ -439,8 +435,6 @@ class Case(CaseAbstract):
             'hat_id': self.hat_id,
             'hat_document_id': self.document_id,
 
-            'tests': tests,
-
             'device_id': self.device_id,
             'device': device,
 
@@ -452,6 +446,12 @@ class Case(CaseAbstract):
             },
             'source': self.source
         }
+
+        if full and self.test_set:
+            # Test results
+            tests = [test.to_dict() if full else {'id': test.id, 'date': test.date} for test in self.test_set.all()]
+            tests.sort(key=lambda item: item['date'])  # bisect.insort() doesn't play well with lists of dicts
+            d['tests'] = tests
 
         return d
 

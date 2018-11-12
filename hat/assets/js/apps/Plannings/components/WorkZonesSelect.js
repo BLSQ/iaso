@@ -183,7 +183,7 @@ class WorkZonesSelect extends Component {
                                         {
                                             this.state.unUsedAreas.length > 0 &&
                                             <div>
-                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignées" />:
+                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignée(s)" />:
                                                 {` ${this.state.unUsedAreas.length}`}
                                                 {
                                                     this.state.isAreasOpen &&

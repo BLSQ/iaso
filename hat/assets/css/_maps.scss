@@ -68,6 +68,14 @@ $color in $types {
 .map__panel--left {
     &.geo-scope{
         padding: $padding-unit / 2;
+        width: 520px;
+        overflow: auto;
+        .map__option {
+            width: 100%;
+            .map__option__list__item {
+                white-space: initial;
+            }
+        }
         >div{
             margin-bottom: $padding-unit / 2;
         }

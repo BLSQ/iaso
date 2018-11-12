@@ -15,9 +15,7 @@ import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 
 import geoUtils from '../utils/geo';
 import MapTooltip from './MapTooltip';
-import shapeUrls from '../../../utils/constants/shapesUrls';
 
-const request = require('superagent');
 // map base layers
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -294,29 +292,7 @@ class Map extends Component {
             },
         });
 
-        const getShape = (type) => {
-            const newIsLoadingShape = Object.assign({}, this.state.isLoadingShape, { [type]: true });
-            this.setState({
-                isLoadingShape: newIsLoadingShape,
-            });
-            return this.props.getShape(shapeUrls[type])
-                .then((response) => {
-                    const shape = shapes[type];
-                    const minZoomTemp = zooms[type];
-                    shape.addLayer(L.geoJson(response, shapeOptions(type)));
-                    map.addLayer(shape);
-                    const newIsLoadingShapeCallBack = Object.assign({}, this.state.isLoadingShape, { [type]: false });
-                    this.setState({
-                        isLoadingShape: newIsLoadingShapeCallBack,
-                    });
-                    if (type === 'province') {
-                        return shape;
-                    }
-                    return minZoomTemp;
-                });
-        };
-
-        getShape('province').then((shape) => {
+        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
         });
 
@@ -333,7 +309,7 @@ class Map extends Component {
                 }
             } else if (map.getZoom() > minZoom) {
                 shapes[type] = new L.FeatureGroup();
-                getShape(type).then((minZoomTemp) => {
+                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
                     plotOrHideLayer(minZoomTemp, type);
                 });
             }

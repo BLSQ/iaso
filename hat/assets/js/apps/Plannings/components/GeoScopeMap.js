@@ -11,6 +11,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import geoUtils from '../../Plannings/utils/geo';
 import { getZsName, clone } from '../../../utils';
+import shapeUrls from '../../../utils/constants/shapesUrls';
 
 
 // map base layers
@@ -135,7 +136,7 @@ class GeoScopeMap extends Component {
 
     onEachAsFeature(feature, layer) {
         const toolTipContent =
-        `<dl>
+            `<dl>
             <dt><strong>AS:</strong> ${feature.properties.name}</dt>
             <dt><strong>ZS:</strong> ${feature.properties.zsName}</dt>
         </dl>`;
@@ -238,24 +239,13 @@ class GeoScopeMap extends Component {
             },
         });
 
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
-
-
         const shape = shapes.province;
-        const data = geoUtils.data.province;
-        const minZoom = zooms.province;
-
-        shape.addLayer(L.geoJson(data, shapeOptions('province')));
-        if (minZoom < 0) {
-            // province divisions are always visible and are use as default bounds
-            map.addLayer(shape);
-            this.state.defaultBounds = shape.getBounds();
-        }
+        this.props.getShape(shapeUrls.province)
+            .then((response) => {
+                shape.addLayer(L.geoJson(response, shapeOptions('province')));
+                map.addLayer(shape);
+                this.state.defaultBounds = shape.getBounds();
+            });
     }
 
     /*
@@ -397,6 +387,7 @@ GeoScopeMap.propTypes = {
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
     teamGeoScope: PropTypes.object.isRequired,
+    getShape: PropTypes.func.isRequired,
 };
 
 export default injectIntl(GeoScopeMap);

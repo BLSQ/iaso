@@ -12,6 +12,7 @@ import { MapLegend, GeoScopeMap, MapLayers } from './../components';
 import { geoScopeMapActions } from './../redux/geoScope';
 import { selectionActions } from './../redux/selection';
 import { loadActions } from '../../../redux/load';
+import { getRequest } from '../../../utils/fetchData';
 
 const getActiveGeoList = (geosScope) => {
     const list = {
@@ -202,6 +203,7 @@ class GeoScope extends Component {
                                 workzone={this.state.currentWorkZone}
                                 selectAs={currentAs => this.selectAsMap(currentAs)}
                                 teamGeoScope={teamGeoScope}
+                                getShape={type => this.props.getShape(type)}
                             />
                         }
                     </div>
@@ -227,6 +229,7 @@ GeoScope.propTypes = {
     planningId: PropTypes.string.isRequired,
     saveAreaInGeoloc: PropTypes.func.isRequired,
     startLoading: PropTypes.func.isRequired,
+    getShape: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -238,6 +241,7 @@ const MapDispatchToProps = dispatch => ({
     changeLayer: (type, key) => dispatch(geoScopeMapActions.changeLayer(type, key)),
     getShapes: (coordinationId, workzoneId) => dispatch(geoScopeMapActions.getShapes(dispatch, coordinationId, workzoneId)),
     saveAreaInGeoloc: (asId, team, planningId, stopLoading) => dispatch(selectionActions.saveAreaInGeoloc(dispatch, asId, team, planningId, stopLoading)),
+    getShape: url => getRequest(url, dispatch, null, false),
 });
 
 const GeoScopeIntl = injectIntl(GeoScope);

@@ -15,9 +15,7 @@ import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 
 import geoUtils from '../utils/geo';
 import MapTooltip from './MapTooltip';
-import shapeUrls from '../../../utils/constants/shapesUrls';
 
-const request = require('superagent');
 // map base layers
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -143,8 +141,7 @@ class Map extends Component {
 
 
             // only call if legend or items changed
-            if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems') ||
-prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== this.props.geoScope
+            if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems')
             ) {
                 this.updateItems(true);
             } else if (hasChanged(prevProps, this.props, 'legend')) {
@@ -295,29 +292,7 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
             },
         });
 
-        const getShape = (type) => {
-            const newIsLoadingShape = Object.assign({}, this.state.isLoadingShape, { [type]: true });
-            this.setState({
-                isLoadingShape: newIsLoadingShape,
-            });
-            return this.props.getShape(shapeUrls[type])
-                .then((response) => {
-                    const shape = shapes[type];
-                    const minZoomTemp = zooms[type];
-                    shape.addLayer(L.geoJson(response, shapeOptions(type)));
-                    map.addLayer(shape);
-                    const newIsLoadingShapeCallBack = Object.assign({}, this.state.isLoadingShape, { [type]: false });
-                    this.setState({
-                        isLoadingShape: newIsLoadingShapeCallBack,
-                    });
-                    if (type === 'province') {
-                        return shape;
-                    }
-                    return minZoomTemp;
-                });
-        };
-
-        getShape('province').then((shape) => {
+        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
         });
 
@@ -334,7 +309,7 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 }
             } else if (map.getZoom() > minZoom) {
                 shapes[type] = new L.FeatureGroup();
-                getShape(type).then((minZoomTemp) => {
+                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
                     plotOrHideLayer(minZoomTemp, type);
                 });
             }
@@ -418,21 +393,13 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                         .forEach((item) => {
                             const team_id = assignationsMap[`${item.id}`];
                             let className;
-                            if (this.props.showGeoScope) {
-                                className = 'map-marker';
-                                if (this.props.geoScope[`${item.AS_id}`]) {
-                                    className += ' geoScope';
+
+                            className = String.raw`map-marker ${item._class}`;
+                            if (team_id) {
+                                if (parseInt(team_id, 10) === parseInt(this.props.teamId, 10)) {
+                                    className += ' assignedToCurrentTeam';
                                 } else {
-                                    className += ' outOfScope';
-                                }
-                            } else {
-                                className = String.raw`map-marker ${item._class}`;
-                                if (team_id) {
-                                    if (team_id === this.props.teamId) {
-                                        className += ' assignedToCurrentTeam';
-                                    } else {
-                                        className += ' assignedToOtherTeam';
-                                    }
+                                    className += ' assignedToOtherTeam';
                                 }
                             }
 
@@ -474,19 +441,18 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
         const { selectedGroup } = this.state.layers;
 
         selectedGroup.clearLayers();
-        if (!this.props.showGeoScope) {
-            selectedItems.forEach((item) => {
-                const options = {
-                    className: 'map-marker selected',
-                    pane: 'custom-pane-selected',
-                    radius,
-                };
 
-                const marker = L.circle(item._latlon, options);
-                this.addLayerEvents(marker, { ...item, selected: true });
-                selectedGroup.addLayer(marker);
-            });
-        }
+        selectedItems.forEach((item) => {
+            const options = {
+                className: 'map-marker selected',
+                pane: 'custom-pane-selected',
+                radius,
+            };
+
+            const marker = L.circle(item._latlon, options);
+            this.addLayerEvents(marker, { ...item, selected: true });
+            selectedGroup.addLayer(marker);
+        });
     }
 
     updateHighlightBuffer() {
@@ -599,14 +565,12 @@ prevProps.showGeoScope !== this.props.showGeoScope || prevProps.geoScope !== thi
                 </div>
                 <MapTooltip
                     item={item}
-                    geoScope={this.props.geoScope}
                     teamId={this.props.teamId}
                     teams={this.props.teams}
                     areas={this.props.areas}
                     planningId={this.props.planningId}
                     updateTeamOnVillage={(village_id, team_id) =>
                         this.props.selectItems([{ village_id, team_id }], false)}
-                    updateGeoScope={geoScope => this.props.updateGeoScope(geoScope)}
                 />
             </div>
         );
@@ -713,12 +677,10 @@ Map.defaultProps = {
     selectedItems: [],
     highlightBufferSize: PropTypes.number0,
     chosenItem: undefined,
-    geoScope: undefined,
     areas: undefined,
     teams: [],
     assignationsMap: undefined,
     teamId: '',
-    showGeoScope: false,
 };
 
 Map.propTypes = {
@@ -731,16 +693,13 @@ Map.propTypes = {
     highlightBufferSize: PropTypes.number,
     selectionAction: PropTypes.func.isRequired,
     selectItems: PropTypes.func.isRequired,
-    updateGeoScope: PropTypes.func.isRequired,
     chosenItem: PropTypes.object,
     showItem: PropTypes.func.isRequired,
     leafletMap: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
-    geoScope: PropTypes.object,
     teams: PropTypes.arrayOf(PropTypes.object),
     assignationsMap: PropTypes.object,
     teamId: PropTypes.string,
-    showGeoScope: PropTypes.bool,
     getShape: PropTypes.func.isRequired,
     areas: PropTypes.object,
     planningId: PropTypes.string,

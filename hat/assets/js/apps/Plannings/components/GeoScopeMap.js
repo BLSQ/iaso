@@ -10,8 +10,8 @@ import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import geoUtils from '../../Plannings/utils/geo';
-import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
-import { getMonthName } from '../utils/routeUtils';
+import { getZsName, clone } from '../../../utils';
+import shapeUrls from '../../../utils/constants/shapesUrls';
 
 
 // map base layers
@@ -39,23 +39,39 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Current zoom level',
         id: 'locator.label.zoom.info',
     },
-    'shape-loader': {
-        defaultMessage: 'Chargement des délimitations',
-        id: 'main.label.shape-loader',
-    },
 });
-
 let exportControl;
-class RouteMap extends Component {
+
+const MapDatas = (coordination, workzone, teamGeoScope) => {
+    const tempCoordinations = coordination;
+    const tempAreas = [];
+    coordination.areas.features.map((area) => {
+        const tempArea = clone(area);
+        delete tempArea.properties.workzoneId;
+        delete tempArea.properties.workzone;
+        delete tempArea.properties.isInGeoScope;
+        tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
+        tempArea.properties.isInGeoScope = teamGeoScope && (teamGeoScope[area.properties.pk] !== undefined);
+        workzone.as_list.map((workingArea) => {
+            if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
+                tempArea.properties.workzoneId = workzone.id;
+                tempArea.properties.workzone = workzone.name;
+            }
+            return null;
+        });
+        tempAreas.push(tempArea);
+        return null;
+    });
+    tempCoordinations.areas.features = tempAreas;
+    return tempCoordinations;
+};
+
+class GeoScopeMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isLoadingShape: {
-                province: false,
-                zone: false,
-                area: false,
-            },
             containers: {},
+            isFirstLoad: true,
             layers: {
                 villages: new L.FeatureGroup(),
             },
@@ -66,22 +82,27 @@ class RouteMap extends Component {
         this.createMap();
         this.includeControlsInMap();
         this.includeDefaultLayersInMap();
-        this.updateBaseLayer();
+        this.updateBaseLayer(this.props.baseLayer);
+        this.updateCoordination(MapDatas(this.props.coordination, this.props.workzone, this.props.teamGeoScope));
         this.fitToBounds();
     }
 
-    componentDidUpdate(prevProps) {
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.coordinationId !== this.props.coordinationId) {
+            this.setState({
+                isFirstLoad: true,
+            });
+        }
         const { map } = this;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
-
         map.whenReady(() => {
             // only call if base layer changed
-            if (hasChanged(prevProps, this.props, 'baseLayer')) {
-                this.updateBaseLayer();
+            if (hasChanged(nextProps, this.props, 'baseLayer')) {
+                this.updateBaseLayer(nextProps.baseLayer);
             }
-
-            if (hasChanged(prevProps, this.props, 'villages')) {
-                this.updateVillages();
+            if (hasChanged(nextProps, this.props, 'coordination') ||
+                hasChanged(nextProps, this.props, 'teamGeoScope')) {
+                this.updateCoordination(MapDatas(nextProps.coordination, nextProps.workzone, nextProps.teamGeoScope));
             }
         });
     }
@@ -91,6 +112,7 @@ class RouteMap extends Component {
             this.map.remove();
         }
     }
+
     onResize(width, height) {
         const { map } = this;
         const cutomSize = {
@@ -108,8 +130,33 @@ class RouteMap extends Component {
             hideControlContainer: true,
             title: 'Télécharger',
             exportOnly: true,
-            filename: 'Itinéraires',
+            filename: 'Couverture Géographique',
         }).addTo(map);
+    }
+
+    onEachAsFeature(feature, layer) {
+        const toolTipContent =
+            `<dl>
+            <dt><strong>AS:</strong> ${feature.properties.name}</dt>
+            <dt><strong>ZS:</strong> ${feature.properties.zsName}</dt>
+        </dl>`;
+        layer.bindTooltip(toolTipContent);
+        layer.setStyle({
+            fillOpacity: 0.5,
+        });
+        layer.on('click', () => {
+            this.props.selectAs(feature.properties);
+        });
+        layer.on('mouseover', () => {
+            layer.setStyle({
+                fillOpacity: 0.8,
+            });
+        });
+        layer.on('mouseout', () => {
+            layer.setStyle({
+                fillOpacity: 0.5,
+            });
+        });
     }
 
     /*
@@ -171,10 +218,10 @@ class RouteMap extends Component {
         //
         const { map } = this;
         const { layers } = this.state;
-        this.villageGroup = new L.FeatureGroup();
-        map.addLayer(this.villageGroup);
-        this.unselectedVillageGroup = new L.FeatureGroup();
-        map.addLayer(this.unselectedVillageGroup);
+        this.coordinationGroup = new L.FeatureGroup();
+        this.zonesGroup = new L.FeatureGroup();
+        map.addLayer(this.coordinationGroup);
+        map.addLayer(this.zonesGroup);
         // assign labels overlay using the existent labels group
 
         //
@@ -192,39 +239,13 @@ class RouteMap extends Component {
             },
         });
 
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
-
-        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
-            this.state.defaultBounds = shape.getBounds();
-        });
-
-        const plotOrHideLayer = (minZoom, type) => {
-            if (shapes[type]) {
-                const layer = shapes[type];
-                if (map.getZoom() > minZoom) {
-                    if (!map.hasLayer(layer)) {
-                        map.addLayer(layer);
-                    }
-                } else if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                }
-            } else if (map.getZoom() > minZoom) {
-                shapes[type] = new L.FeatureGroup();
-                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
-                    plotOrHideLayer(minZoomTemp, type);
-                });
-            }
-        };
-
-        L.DomEvent.on(map, 'zoomend', () => {
-            plotOrHideLayer(zooms.zone, 'zone');
-            plotOrHideLayer(zooms.area, 'area');
-        });
+        const shape = shapes.province;
+        this.props.getShape(shapeUrls.province)
+            .then((response) => {
+                shape.addLayer(L.geoJson(response, shapeOptions('province')));
+                map.addLayer(shape);
+                this.state.defaultBounds = shape.getBounds();
+            });
     }
 
     /*
@@ -232,13 +253,11 @@ class RouteMap extends Component {
 * UPDATE STATE
 *************************************************************************** */
 
-    updateBaseLayer() {
-        const { baseLayer } = this.props;
+    updateBaseLayer(baseLayer) {
         const { map } = this;
 
         Object.keys(BASE_LAYERS).forEach((key) => {
             const layer = BASE_LAYERS[key];
-
             if (key === baseLayer) {
                 layer.addTo(map);
             } else if (map.hasLayer(layer)) {
@@ -247,50 +266,35 @@ class RouteMap extends Component {
         });
     }
 
-    updateVillages() {
-        const { villages, notSelectedVillages } = this.props;
-        this.villageGroup.clearLayers();
-        this.unselectedVillageGroup.clearLayers();
-        if (villages) {
-            let previousVillage = null;
-            villages.map((village, index) => {
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                    className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
-                })
-                    .bindTooltip(`${index + 1}`, { permanent: true });
-                villageCircle.addTo(this.villageGroup);
 
-                if (previousVillage) {
-                    const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
-                    const villageB = new L.LatLng(village.latitude, village.longitude);
-                    const pointList = [villageA, villageB];
-                    const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
-                    const polyLine = new L.Polyline(pointList, {
-                        smoothFactor: 10,
-                        className: 'routeLine',
-                    })
-                        .bindTooltip(distance);
-                    polyLine
-                        .addTo(this.villageGroup);
-                }
-                previousVillage = village;
-                return true;
-            });
+    updateCoordination(coordination) {
+        this.coordinationGroup.clearLayers();
+        this.zonesGroup.clearLayers();
+        const areas = L.geoJSON(coordination.areas, {
+            style(feature) {
+                const tempStyle = {
+                    color: feature.properties.isInGeoScope ? 'green' : 'red',
+                };
+                return tempStyle;
+            },
+            onEachFeature: (feature, layer) => {
+                this.onEachAsFeature(feature, layer);
+            },
+        });
+        areas.addTo(this.coordinationGroup);
 
+        const zones = L.geoJSON(coordination.zones, {
+            onEachFeature: (feature, layer) => {
+                layer.setStyle({
+                    className: 'zone',
+                });
+            },
+        });
+        zones.addTo(this.zonesGroup);
+        if (this.state.isFirstLoad) {
             this.fitToBounds();
-        }
-        if (notSelectedVillages) {
-            notSelectedVillages.map((village) => {
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                    className: `routeCircle not-selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
-                })
-                    .bindTooltip(`${village.village_name} - ${getMonthName(village.month)}`);
-                villageCircle.addTo(this.unselectedVillageGroup);
-                return true;
+            this.setState({
+                isFirstLoad: false,
             });
         }
     }
@@ -317,10 +321,9 @@ class RouteMap extends Component {
 
 
         setTimeout(() => {
-            const bounds = this.villageGroup.getBounds();
-            bounds.extend(this.unselectedVillageGroup.getBounds());
+            const bounds = this.coordinationGroup.getBounds();
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [75, 75] });
+                map.fitBounds(bounds, { maxZoom: MAX_ZOOM, padding: [25, 25] });
             }
             map.invalidateSize();
         }, 1);
@@ -363,31 +366,28 @@ class RouteMap extends Component {
     }
 
     render() {
-        const { formatMessage } = this.props.intl;
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container" />
-                    {
-                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
-                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
-                    }
                 </section>
             </ReactResizeDetector>
         );
     }
 }
-RouteMap.defaultProps = {
-    villages: [],
-    notSelectedVillages: [],
+GeoScopeMap.defaultProps = {
+    coordination: {},
 };
 
-RouteMap.propTypes = {
+GeoScopeMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    villages: PropTypes.array,
-    notSelectedVillages: PropTypes.array,
+    coordination: PropTypes.object,
+    workzone: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
+    selectAs: PropTypes.func.isRequired,
+    coordinationId: PropTypes.string.isRequired,
+    teamGeoScope: PropTypes.object.isRequired,
     getShape: PropTypes.func.isRequired,
 };
 
-export default injectIntl(RouteMap);
+export default injectIntl(GeoScopeMap);

@@ -4,6 +4,7 @@
  */
 
 import L from 'leaflet';
+import shapeUrls from '../../../utils/constants/shapesUrls';
 
 const clean = word => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''));
 const isEqual = (a, b) => (clean(a) === clean(b));
@@ -113,6 +114,29 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
     return inBuffer;
 };
 
+const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
+    const newIsLoadingShape = Object.assign({}, element.state.isLoadingShape, { [type]: true });
+    element.setState({
+        isLoadingShape: newIsLoadingShape,
+    });
+    return element.props.getShape(shapeUrls[type])
+        .then((response) => {
+            const shape = shapes[type];
+            const minZoomTemp = zooms[type];
+            shape.addLayer(L.geoJson(response, shapeOptions(type)));
+            map.addLayer(shape);
+            const newIsLoadingShapeCallBack = Object.assign({}, element.state.isLoadingShape, { [type]: false });
+            element.setState({
+                isLoadingShape: newIsLoadingShapeCallBack,
+            });
+            if (type === 'province') {
+                return shape;
+            }
+            return minZoomTemp;
+        });
+};
+
+
 export default {
     isEqual,
     areEqual,
@@ -123,4 +147,5 @@ export default {
     villagesInHighlightBuffer,
     zoomDelta: 0.50,
     zoomSnap: 0.50,
+    getShape,
 };

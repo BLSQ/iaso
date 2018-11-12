@@ -13,6 +13,7 @@ import MapSelectionList from './MapSelectionList';
 import MapTooltip from './MapTooltip';
 import TeamSelectionTool from './TeamSelectionTool';
 import AreaModal from './AreaModal';
+import GeoScopeMap from './GeoScopeMap';
 
 export {
     Map,
@@ -24,4 +25,5 @@ export {
     MapTooltip,
     TeamSelectionTool,
     AreaModal,
+    GeoScopeMap,
 };

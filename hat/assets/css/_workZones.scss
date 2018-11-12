@@ -128,7 +128,8 @@
     border-left: 1px solid $gray;
 }
 
-.macro-map .leaflet-pane>svg path {
+.macro-map .leaflet-pane>svg path,
+.geo-scope-map .leaflet-pane>svg path  {
     stroke-width: 2px !important;
     stroke-opacity: 0.5;
     &.selected-area {

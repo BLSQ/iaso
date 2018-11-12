@@ -1,6 +1,7 @@
 /*
  * Includes the actions and state necessary for the selection process
  */
+import { loadActions } from '../../../redux/load';
 
 export const BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/BUFFER_SIZE_CHANGE';
 export const HIGHLIGHT_BUFFER_SIZE_CHANGE = 'hat/microplanning/selection/HIGHLIGHT_BUFFER_SIZE_CHANGE';
@@ -9,8 +10,12 @@ export const SELECT_ITEMS = 'hat/microplanning/selection/SELECT_ITEMS';
 export const DESELECT_ITEMS = 'hat/microplanning/selection/DESELECT_ITEMS';
 
 export const DISPLAY_ITEM = 'hat/microplanning/selection/DISPLAY_ITEM';
-export const TOGGLE_GEO_SCOPE = 'hat/microplanning/selection/TOGGLE_GEO_SCOPE';
 export const UPDATE_GEO_SCOPE = 'hat/microplanning/selection/UPDATE_GEO_SCOPE';
+
+export const GET_TEAM_DETAIL = 'hat/microplanning/selection/GET_TEAM_DETAIL';
+export const SAVE_AREA_IN_GEOLOC = 'hat/microplanning/selection/SAVE_AREA_IN_GEOLOC';
+
+const request = require('superagent');
 
 export const selectionModes = {
     none: 0,
@@ -89,10 +94,45 @@ export const updateGeoScope = geoScope => ({
     payload: geoScope,
 });
 
-export const toggleGeoScope = showGeoScope => ({
-    type: TOGGLE_GEO_SCOPE,
-    payload: showGeoScope,
-});
+export const getTeamDetails = (dispatch, teamId, planningId, stopLoading = false) => {
+    request
+        .get(`/api/teams/${teamId}?planning_id=${planningId}`)
+        .then((result) => {
+            const geoScope = {};
+            result.body.AS.map((aire) => {
+                geoScope[aire.id] = aire;
+                return true;
+            });
+            if (stopLoading) {
+                dispatch(loadActions.successLoadingNoData());
+            }
+            dispatch(updateGeoScope(geoScope));
+        })
+        .catch((err) => {
+            console.error(err);
+            console.error('Error when fetching geo scope');
+        });
+    return ({
+        type: GET_TEAM_DETAIL,
+    });
+};
+
+export function saveAreaInGeoloc(dispatch, asId, team, planningId, stopLoading = false) {
+    request
+        .put(`/api/as/${asId}/`)
+        .set('Content-Type', 'application/json')
+        .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
+        .then(() => {
+            dispatch(getTeamDetails(dispatch, team.team_id, planningId, stopLoading));
+        })
+        .catch((err) => {
+            console.error(err);
+            console.error('Error when saving geo scope');
+        });
+    return ({
+        type: SAVE_AREA_IN_GEOLOC,
+    });
+}
 
 export const deselectItems = (items, activateSaveButton = true) => ({
     type: DESELECT_ITEMS,
@@ -110,9 +150,10 @@ export const selectionActions = {
     deselectItems,
     selectItems,
     updateGeoScope,
-    toggleGeoScope,
     displayItem,
     executeSelection,
+    getTeamDetails,
+    saveAreaInGeoloc,
 };
 
 export const selectionInitialState = {
@@ -121,7 +162,6 @@ export const selectionInitialState = {
     assignations: [],
     displayedItem: null,
     geoScope: {},
-    showGeoScope: false,
     isSelectionModified: undefined,
 };
 
@@ -160,11 +200,6 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
             };
 
             return newState;
-        }
-
-        case TOGGLE_GEO_SCOPE: {
-            const showGeoScope = action.payload;
-            return { ...state, showGeoScope };
         }
 
         case UPDATE_GEO_SCOPE: {

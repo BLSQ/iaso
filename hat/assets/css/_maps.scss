@@ -11,8 +11,8 @@ $official: $green;
 $notofficial: $light-gray;
 $other: $bright-blue;
 $unknown: $dark-gray;
-$insideGeoloc: $orange;
-$outsideGeoloc: $light-blue;
+$insideGeoloc: $green;
+$outsideGeoloc: $red;
 /* map size */
 
 $map-height: 720px;
@@ -63,6 +63,22 @@ $color in $types {
         overflow: hidden;
         vertical-align: top;
         width: calc(100% - 370px);
+    }
+}
+.map__panel--left {
+    &.geo-scope{
+        padding: $padding-unit / 2;
+        width: 520px;
+        overflow: auto;
+        .map__option {
+            width: 100%;
+            .map__option__list__item {
+                white-space: initial;
+            }
+        }
+        >div{
+            margin-bottom: $padding-unit / 2;
+        }
     }
 }
 
@@ -939,12 +955,18 @@ button {
     height: 100%;
 }
 
+.geo-scope-map {
+    height: 720px;
+    width: 100%;
+}
+
 .macro-container,
 #planning-map,
 .route-map,
 .split-map,
 .village-map-container,
-.vector-map {
+.vector-map,
+.geo-scope-map {
     .map-container {
         height: 720px;
     }

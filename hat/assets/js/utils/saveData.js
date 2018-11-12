@@ -81,15 +81,6 @@ export function saveWorkzonePlanning(assignations, planning_id, workzone_id) {
         .catch(err => false);
 }
 
-export function saveAreaInGeoloc(as_id, team) {
-    return request
-        .put(`/api/as/${as_id}/`)
-        .set('Content-Type', 'application/json')
-        .send(team) // PUT = {"team_id"}  / DELETE = {"team_id": 2, "delete": true}
-        .then(() => true)
-        .catch(err => false);
-}
-
 
 export function saveTest(test, dispatch) {
     return request

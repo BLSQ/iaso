@@ -82,7 +82,6 @@ MapSelectionControl.propTypes = {
     highlightBufferSize: PropTypes.number,
     changeHighlightBufferSize: PropTypes.func,
     selectHighlightBuffer: PropTypes.func,
-    isGeoScopeEnabled: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(MapSelectionControl);

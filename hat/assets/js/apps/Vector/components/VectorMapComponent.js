@@ -8,8 +8,6 @@ import moment from 'moment';
 import 'leaflet.markercluster'; // eslint-disable-line
 import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
-import shapeUrls from '../../../utils/constants/shapesUrls';
-
 
 // map base layers
 const tileOptions = { keepBuffer: 4 };
@@ -213,29 +211,7 @@ class VectorMapComponent extends Component {
             area: 9,
         };
 
-        const getShape = (type) => {
-            const newIsLoadingShape = Object.assign({}, this.state.isLoadingShape, { [type]: true });
-            this.setState({
-                isLoadingShape: newIsLoadingShape,
-            });
-            return this.props.getShape(shapeUrls[type])
-                .then((response) => {
-                    const shape = shapes[type];
-                    const minZoomTemp = zooms[type];
-                    shape.addLayer(L.geoJson(response, shapeOptions(type)));
-                    map.addLayer(shape);
-                    const newIsLoadingShapeCallBack = Object.assign({}, this.state.isLoadingShape, { [type]: false });
-                    this.setState({
-                        isLoadingShape: newIsLoadingShapeCallBack,
-                    });
-                    if (type === 'province') {
-                        return shape;
-                    }
-                    return minZoomTemp;
-                });
-        };
-
-        getShape('province').then((shape) => {
+        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
         });
 
@@ -251,7 +227,7 @@ class VectorMapComponent extends Component {
                 }
             } else if (map.getZoom() > minZoom) {
                 shapes[type] = new L.FeatureGroup();
-                getShape(type).then((minZoomTemp) => {
+                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
                     plotOrHideLayer(minZoomTemp, type);
                 });
             }

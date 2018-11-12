@@ -163,14 +163,16 @@ class CustomTableComponent extends React.Component {
     handleScroll() {
         const lastScrollY = window.scrollY;
         const currentTable = document.getElementById(this.state.tableId);
-        let topPosition = currentTable.offsetTop;
-        const headerGroups = currentTable.getElementsByClassName('-headerGroups')[0];
-        if (headerGroups) {
-            topPosition += headerGroups.clientHeight;
+        if (currentTable) {
+            let topPosition = currentTable.offsetTop;
+            const headerGroups = currentTable.getElementsByClassName('-headerGroups')[0];
+            if (headerGroups) {
+                topPosition += headerGroups.clientHeight;
+            }
+            this.setState({
+                isHeaderFixed: !this.state.disableHeaderFixed && lastScrollY > topPosition,
+            });
         }
-        this.setState({
-            isHeaderFixed: !this.state.disableHeaderFixed && lastScrollY > topPosition,
-        });
     }
 
     render() {

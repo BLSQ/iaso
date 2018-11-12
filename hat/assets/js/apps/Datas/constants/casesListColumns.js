@@ -15,6 +15,13 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.name',
             }),
             accessor: 'lastname',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.patient.last_name
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -22,6 +29,13 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.Postnom',
             }),
             accessor: 'name',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.patient.post_name
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -29,6 +43,13 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.prename',
             }),
             accessor: 'prename',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.patient.first_name
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -62,7 +83,7 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Source',
-                id: 'main.label.name',
+                id: 'main.label.source',
             }),
             accessor: 'source',
         },

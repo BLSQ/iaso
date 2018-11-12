@@ -246,7 +246,7 @@ class CasesViewSet(viewsets.ViewSet):
 
             def iter_items(queryset, pseudo_buffer):
                 headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
-                'AS encodée', 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'Sex', 'Age', 'CATT', 'RDT',
+                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sex', 'Age', 'CATT', 'RDT',
                 'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction Noeud Lymph.', 'Sang frais', 'MAECT', 'PL']
                 writer = csv.writer(pseudo_buffer)
                 yield writer.writerow(headers)
@@ -254,28 +254,28 @@ class CasesViewSet(viewsets.ViewSet):
                     cdict = case.as_dict()
                     row = [
                         cdict["id"],
-                        cdict["mobile_unit"],
+                        cdict["normalized_team_name"],
                         cdict["normalized_year"],
                         cdict["source"],
-                        cdict["province"],
-                        cdict["ZS"],
-                        cdict["AS"],
-                        cdict["village"],
-                        cdict["name"],
-                        cdict["prename"],
-                        cdict["lastname"],
-                        cdict["sex"],
-                        cdict["age"],
-                        testResult(cdict["test_catt"]),
-                        testResult(cdict["test_rdt"]),
-                        testResult(cdict["test_pg"]),
-                        testResult(cdict["test_ctcwoo"]),
-                        testResult(cdict["test_ge"]),
-                        testResult(cdict["test_lcr"]),
-                        testResult(cdict["test_lymph_node_puncture"]),
-                        testResult(cdict["test_sf"]),
-                        testResult(cdict["test_maect"]),
-                        testResult(cdict["test_pl"])
+                        cdict["location"].get('province'),
+                        cdict["location"].get('ZS'),
+                        cdict["location"].get('AS'),
+                        cdict["location"].get('village'),
+                        cdict["patient"].get('last_name'),
+                        cdict["patient"].get('post_name'),
+                        cdict["patient"].get('first_name'),
+                        cdict["patient"].get('sex'),
+                        cdict["patient"].get('age'),
+                        testResult(case.test_catt),
+                        testResult(case.test_rdt),
+                        testResult(case.test_pg),
+                        testResult(case.test_ctcwoo),
+                        testResult(case.test_ge),
+                        testResult(case.test_lcr),
+                        testResult(case.test_lymph_node_puncture),
+                        testResult(case.test_sf),
+                        testResult(case.test_maect),
+                        testResult(case.test_pl)
                     ]
                     yield writer.writerow(row)
 

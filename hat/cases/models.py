@@ -431,7 +431,7 @@ class Case(CaseAbstract):
                 }
             },
 
-            'patient': self.normalized_patient.as_dict() if full else {'id': self.normalized_patient_id},
+            'patient': self.normalized_patient.as_dict(),
             'hat_id': self.hat_id,
             'hat_document_id': self.document_id,
 

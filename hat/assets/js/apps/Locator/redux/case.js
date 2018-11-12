@@ -28,9 +28,9 @@ export const fetchCase = (dispatch, caseId) => {
             dispatch(setCase(kase));
 
             if (kase) {
-                const { normalized_AS_dict } = kase;
-                if (normalized_AS_dict.as_id) {
-                    dispatch(selectProvince(normalized_AS_dict.province_id, dispatch, normalized_AS_dict.zs_id, normalized_AS_dict.as_id));
+                const { location } = kase;
+                if (location.normalized && location.normalized.as) {
+                    dispatch(selectProvince(location.normalized.as.province_id, dispatch, location.normalized.as.zs_id, location.normalized.as.id));
                     dispatch(emptyVillages());
                 } else {
                     dispatch(resetFilters());

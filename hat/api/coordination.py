@@ -50,7 +50,6 @@ class CoordinationViewSet(viewsets.ViewSet):
         if as_geo_json:
             if workzone_id:
                 work_zone = get_object_or_404(WorkZone, id=workzone_id)
-                print ('work_zone', work_zone.AS.all())
                 areas = work_zone.AS.all()
                 all_zs = ZS.objects.filter(id__in=work_zone.AS.values_list('ZS_id', flat=True)).distinct()
 

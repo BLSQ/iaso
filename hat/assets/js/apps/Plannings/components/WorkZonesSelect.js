@@ -5,35 +5,21 @@
  */
 
 import React, { Component } from 'react';
-import Select from 'react-select';
-import { GithubPicker } from 'react-color';
 import PropTypes from 'prop-types';
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl';
-import { formatThousand } from '../../../utils';
-import workZonesColors from '../utils/constants/colors';
+import Select from 'react-select';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import WorkZoneElement from './WorkZoneElement';
 
-const MESSAGES = defineMessages({
-    capacity: {
-        defaultMessage: 'capacité',
-        id: 'macroplanning.capacity',
-    },
-    population: {
-        defaultMessage: 'population',
-        id: 'macroplanning.population',
-    },
-    endemic_population: {
-        defaultMessage: 'endémique',
-        id: 'macroplanning.endemic_population',
-    },
-    lowCapacity: {
-        defaultMessage: 'Capacité insuffisante',
-        id: 'macroplanning.lowCapacity',
-    },
-});
-
-const mapWorkZones = (workzones) => {
-    const mappedWorkzones = [];
+const mapDatas = (workzones, allAreas) => {
+    const datas = {
+        mappedWorkzones: [],
+        unUsedAreas: [],
+    };
+    let usedAreas = [];
     workzones.map((w) => {
+        if (w.as_list) {
+            usedAreas = usedAreas.concat(w.as_list);
+        }
         const currentAreas = w.as_list ?
             w.as_list.reduce((prev, next) => `${prev === '' ? '' : `${prev},`}${next.id}`, '') : null;
         const currentZones = w.as_list ?
@@ -44,25 +30,35 @@ const mapWorkZones = (workzones) => {
                 return prev;
             }, []) : null;
         const newWorkZone = Object.assign({}, w, { currentAreas, currentZones: currentZones.toString() });
-        mappedWorkzones.push(newWorkZone);
+        datas.mappedWorkzones.push(newWorkZone);
         return null;
     });
-    return mappedWorkzones;
+    allAreas.map((a) => {
+        const areaId = parseInt(a.properties.pk, 10);
+        if (usedAreas.filter(u => u.id === areaId).length === 0) {
+            datas.unUsedAreas.push(areaId);
+        }
+        return null;
+    });
+    return datas;
 };
 
 class WorkZonesSelect extends Component {
     constructor(props) {
         super(props);
-        const mappedWorkzones = mapWorkZones(props.workZones);
+        const mappedDatas = mapDatas(props.workZones, props.currentCoordination.areas.features);
         this.state = {
-            workZones: mappedWorkzones,
+            workZones: mappedDatas.mappedWorkzones,
+            unUsedAreas: mappedDatas.unUsedAreas,
+            isAreasOpen: false,
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const mappedWorkzones = mapWorkZones(nextProps.workZones);
+        const mappedDatas = mapDatas(nextProps.workZones, nextProps.currentCoordination.areas.features);
         this.setState({
-            workZones: mappedWorkzones,
+            workZones: mappedDatas.mappedWorkzones,
+            unUsedAreas: mappedDatas.unUsedAreas,
         });
     }
 
@@ -80,7 +76,6 @@ class WorkZonesSelect extends Component {
             workZones: newWorkZones,
         });
     }
-
     compareZs(zslist, workZoneIndex) {
         const currentWorkZone = Object.assign(this.state.workZones[workZoneIndex]);
         let currentZsId;
@@ -135,9 +130,6 @@ class WorkZonesSelect extends Component {
 
     render() {
         const {
-            intl: {
-                formatMessage,
-            },
             saveWorkZoneColor,
             selectWorkZone,
             selectedWorkZoneId,
@@ -152,90 +144,82 @@ class WorkZonesSelect extends Component {
                 <ul className="workzones-list" onMouseLeave={() => this.toggleColors()}>
                     {
                         workZones.map((w, index) => (
-                            <li
-                                key={w.id}
-                                className={`workzones-item ${selectedWorkZoneId === w.id ? 'selected' : ''}`}
-                            >
-                                <span
-                                    style={{ backgroundColor: w.color }}
-                                    onClick={() => this.toggleColors(w.id, typeof w.showColor !== 'undefined' ? !w.showColor : true)}
-                                    role="button"
-                                    tabIndex={0}
-                                />
-                                <div
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => selectWorkZone(w.id)}
-                                    className={`infos ${parseInt(w.total_capacity, 10) < parseInt(w.population_endemic_villages, 10) ? 'alert' : ''}`}
-                                >
-                                    {`${w.name} - `}
-                                    <span>
-                                        {formatMessage(MESSAGES.capacity)} {formatThousand(w.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(w.population_endemic_villages)}
-                                    </span>
-                                    {
-                                        parseInt(w.total_capacity, 10) < parseInt(w.population_endemic_villages, 10) ?
-                                            <span>
-                                                {' '}({formatMessage(MESSAGES.lowCapacity)})
-                                            </span>
-                                            : ''
-                                    }
-                                </div>
-                                <div className={`color-picker-container${w.showColor ? ' visible' : ''}`} >
-                                    <GithubPicker
-                                        width={`${26.2 * workZonesColors.length}px`}
-                                        colors={workZonesColors}
-                                        color={w.color ? w.color : workZonesColors[index]}
-                                        onChangeComplete={color => saveWorkZoneColor(color.hex, w.id)}
-                                    />
-                                </div>
-                                <div className="expand-collapse">
-                                    <div>
-                                        <div className="locator-filter">
-                                            <div className="locator-subtitle">
-                                                <FormattedMessage id="macroplanning.label.zones" defaultMessage="Zone de santé" />
-                                            </div>
-                                            <div>
-                                                <Select
-                                                    multi
-                                                    clearable={false}
-                                                    name="zoneId"
-                                                    value={w.currentZones}
-                                                    placeholder="--"
-                                                    options={zones.features.map(zone =>
-                                                        ({ label: zone.properties.name, value: zone.properties.pk }))}
-                                                    onChange={value => this.compareZs(value, index)}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="locator-filter">
-                                            <div className="locator-subtitle">
-                                                <FormattedMessage id="macroplanning.label.areas" defaultMessage="Aires de santé" />
-                                            </div>
-                                            <div>
-                                                <Select
-                                                    multi
-                                                    clearable={false}
-                                                    name="areaId"
-                                                    value={w.currentAreas}
-                                                    placeholder="--"
-                                                    options={areas.features.map(area =>
-                                                        ({ label: area.properties.name, value: area.properties.pk }))}
-                                                    onChange={value => this.compareAs(value, index)}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
+                            <WorkZoneElement
+                                key={`work-zone-${w.id}`}
+                                workZone={w}
+                                index={index}
+                                zones={zones}
+                                areas={areas}
+                                selectedWorkZoneId={selectedWorkZoneId}
+                                saveWorkZoneColor={saveWorkZoneColor}
+                                selectWorkZone={selectWorkZone}
+                                toggleColors={(workZoneId, show) => this.toggleColors(workZoneId, show)}
+                                compareZs={(zslist, workZoneIndex) => this.compareZs(zslist, workZoneIndex)}
+                                compareAs={(asList, workZoneIndex) => this.compareAs(asList, workZoneIndex)}
+                            />
                         ))
                     }
 
-                    <li className="workzones-item none">
-                        <span
-                            style={{ backgroundColor: 'grey' }}
-                        />
-                        <div className="infos">
-                            <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
+                    <li className="workzones-item none selected">
+                        <section>
+                            <span
+                                style={{ backgroundColor: 'grey' }}
+                            />
+                            <div className="infos">
+                                <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
+                            </div>
+                        </section>
+                        <div className="expand-collapse">
+                            <div>
+                                <div className="locator-filter">
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        className={`locator-subtitle ${this.state.unUsedAreas.length > 0 ? 'alert' : ''}`}
+                                        onClick={() => this.setState({
+                                            isAreasOpen: !this.state.isAreasOpen,
+                                        })}
+                                    >
+                                        {
+                                            this.state.unUsedAreas.length > 0 &&
+                                            <div>
+                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignées" />:
+                                                {` ${this.state.unUsedAreas.length}`}
+                                                {
+                                                    this.state.isAreasOpen &&
+                                                    <i className="fa fa-minus" />
+                                                }
+                                                {
+                                                    !this.state.isAreasOpen &&
+                                                    <i className="fa fa-plus" />
+                                                }
+                                            </div>
+                                        }
+                                        {
+                                            this.state.unUsedAreas.length === 0 &&
+                                            <div>
+                                                <FormattedMessage id="macroplanning.label.allAreasAssgined" defaultMessage="Toutes les aires de santé sont assignées" />
+                                            </div>
+                                        }
+                                    </div>
+
+                                    {
+                                        this.state.unUsedAreas.length > 0 &&
+                                        <div className={this.state.isAreasOpen ? 'open truc' : ''}>
+                                            <Select
+                                                disabled
+                                                multi
+                                                clearable={false}
+                                                name="unUsedAreas"
+                                                value={this.state.unUsedAreas}
+                                                placeholder="--"
+                                                options={areas.features.map(area =>
+                                                    ({ label: area.properties.name, value: area.properties.pk }))}
+                                            />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </li>
                 </ul>
@@ -253,7 +237,6 @@ WorkZonesSelect.defaultProps = {
 };
 
 WorkZonesSelect.propTypes = {
-    intl: PropTypes.object.isRequired,
     workZones: PropTypes.arrayOf(PropTypes.object),
     selectWorkZone: PropTypes.func.isRequired,
     saveWorkZoneColor: PropTypes.func.isRequired,

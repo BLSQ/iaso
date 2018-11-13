@@ -48,6 +48,14 @@ const MESSAGES = defineMessages({
     },
 });
 
+const getChoosenMarkerRadius = (map) => {
+    const currentZoom = map.getZoom();
+    const zoomMaxLevel = 13;
+    const ratio = currentZoom < 8 ? 1.8 : 1;
+    const newRadius = (zoomMaxLevel - currentZoom) <= 1 ? radius : radius * (zoomMaxLevel - currentZoom) * ratio;
+    return newRadius;
+};
+
 let exportControl;
 class Map extends Component {
     constructor(props) {
@@ -256,6 +264,14 @@ class Map extends Component {
         containers.tooltipLarge = tooltipLargeControl.getContainer();
     }
 
+    resizeChoosenMarker() {
+        const { map } = this.state;
+        const { chosenMarker } = this.state.layers;
+        if (map.hasLayer(chosenMarker)) {
+            chosenMarker.setRadius(getChoosenMarkerRadius(map));
+        }
+    }
+
     includeDefaultLayersInMap() {
         //
         // include relevant and constant layers
@@ -317,6 +333,7 @@ class Map extends Component {
         L.DomEvent.on(map, 'zoomend', (event) => {
             plotOrHideLayer(zooms.zone, 'zone');
             plotOrHideLayer(zooms.area, 'area');
+            this.resizeChoosenMarker();
         });
 
         // create marker for the chosen item
@@ -391,12 +408,12 @@ class Map extends Component {
                 if (markers.getLayers().length === 0) {
                     items
                         .forEach((item) => {
-                            const team_id = assignationsMap[`${item.id}`];
+                            const teamId = assignationsMap[`${item.id}`];
                             let className;
 
                             className = String.raw`map-marker ${item._class}`;
-                            if (team_id) {
-                                if (parseInt(team_id, 10) === parseInt(this.props.teamId, 10)) {
+                            if (teamId) {
+                                if (parseInt(teamId, 10) === parseInt(this.props.teamId, 10)) {
                                     className += ' assignedToCurrentTeam';
                                 } else {
                                     className += ' assignedToOtherTeam';
@@ -529,9 +546,8 @@ class Map extends Component {
         const { tooltipSmall, tooltipLarge } = this.state.containers;
         const { chosenMarker } = this.state.layers;
         const {
-            chosenItem, showItem, legend, items,
+            chosenItem, legend, items,
         } = this.props;
-        const { formatMessage } = this.props.intl;
         // clean previous
         if (map.hasLayer(chosenMarker)) {
             chosenMarker.setRadius(0);
@@ -547,7 +563,7 @@ class Map extends Component {
 
         if (item._latlon) {
             map.addLayer(chosenMarker);
-            chosenMarker.setRadius(radius);
+            chosenMarker.setRadius(getChoosenMarkerRadius(map));
             chosenMarker.setLatLng(item._latlon);
             map.panTo(item._latlon);
         }
@@ -569,8 +585,8 @@ class Map extends Component {
                     teams={this.props.teams}
                     areas={this.props.areas}
                     planningId={this.props.planningId}
-                    updateTeamOnVillage={(village_id, team_id) =>
-                        this.props.selectItems([{ village_id, team_id }], false)}
+                    updateTeamOnVillage={(villageId, teamId) =>
+                        this.props.selectItems([{ villageId, teamId }], false)}
                 />
             </div>
         );

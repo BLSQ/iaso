@@ -586,7 +586,8 @@ class Map extends Component {
                     teams={this.props.teams}
                     areas={this.props.areas}
                     planningId={this.props.planningId}
-                    getAdditionalSelectData={() => this.props.getAdditionalSelectData()}
+                    assignations={this.props.assignations}
+                    selectItems={(itemList, activateSaveButton) => this.props.selectItems(itemList, activateSaveButton)}
                 />
             </div>
         );
@@ -696,6 +697,7 @@ Map.defaultProps = {
     areas: undefined,
     teams: [],
     assignationsMap: undefined,
+    assignations: [],
     teamId: '',
 };
 
@@ -713,11 +715,12 @@ Map.propTypes = {
     intl: intlShape.isRequired,
     teams: PropTypes.arrayOf(PropTypes.object),
     assignationsMap: PropTypes.object,
+    assignations: PropTypes.array,
     teamId: PropTypes.string,
     getShape: PropTypes.func.isRequired,
     areas: PropTypes.object,
     planningId: PropTypes.string,
-    getAdditionalSelectData: PropTypes.func.isRequired,
+    selectItems: PropTypes.func.isRequired,
 };
 
 export default injectIntl(Map);

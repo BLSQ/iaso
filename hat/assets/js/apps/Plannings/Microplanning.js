@@ -242,7 +242,6 @@ export class Microplanning extends Component {
                 assignationsTempList = assignationsTempList.filter(x =>
                     x.team_id === parseInt(this.props.params.team_id, 10));
             }
-
             selectedVillages = assignationsTempList.filter(assignation =>
                 (assignation.team_id !== -1 && assignation.village_id in villagesMap))
                 .map(assignation => villagesMap[assignation.village_id]);
@@ -447,6 +446,7 @@ export class Microplanning extends Component {
                                     fullscreen={fullscreen}
                                     items={villages}
                                     assignationsMap={assignationsMap}
+                                    assignations={assignations}
                                     selectedItems={selectedVillages}
                                     highlightBufferSize={highlightBufferSize}
                                     deselectItems
@@ -454,7 +454,7 @@ export class Microplanning extends Component {
                                     showItem={item => this.props.displayItem(item)}
                                     leafletMap={map => this.props.setLeafletMap(map)}
                                     getShape={type => this.props.getShape(type)}
-                                    getAdditionalSelectData={() => this.props.getAdditionalSelectData()}
+                                    selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
                                 />
                             }
                         </div>
@@ -500,7 +500,6 @@ Microplanning.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     isTest: PropTypes.bool,
-    getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
@@ -511,8 +510,6 @@ const MapDispatchToProps = dispatch => ({
     executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
     deselectItems: (list, activateSaveButton) =>
         dispatch(selectionActions.deselectItems(list, activateSaveButton)),
-    selectItems: (list, activateSaveButton) =>
-        dispatch(selectionActions.selectItems(list, activateSaveButton)),
     displayItem: item => dispatch(selectionActions.displayItem(item)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),

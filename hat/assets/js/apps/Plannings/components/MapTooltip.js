@@ -189,7 +189,7 @@ class MapTooltip extends Component {
     }
 
     componentDidMount() {
-    // If this is a village we need to fetch the detail of it
+        // If this is a village we need to fetch the detail of it
         if (this.state.item.name) {
             this.loadVillageDetail(this.state.item.id);
         } else {
@@ -208,13 +208,27 @@ class MapTooltip extends Component {
 
     onChangeTeam(selectedTeamId) {
         this.setState({ selectedTeamId });
-        saveVillageTeam(
-            [{ village_id: this.props.item.id, team_id: selectedTeamId }],
-            this.props.planningId,
-        )
-            .then((res) => {
-                this.props.getAdditionalSelectData();
+        const villageId = parseInt(this.state.item.id, 10);
+        const newAssignations = [];
+        this.props.assignations.map((a) => {
+            const newAssignation = Object.assign({}, a);
+            if (a.village_id === villageId) {
+                newAssignation.team_id = parseInt(selectedTeamId, 10);
+                if (selectedTeamId !== 'none') {
+                    newAssignations.push(newAssignation);
+                }
+            } else {
+                newAssignations.push(newAssignation);
+            }
+            return null;
+        });
+        if (!this.state.existingTeamId) {
+            newAssignations.push({
+                team_id: parseInt(selectedTeamId, 10),
+                village_id: villageId,
             });
+        }
+        this.props.selectItems(newAssignations, true);
     }
 
 
@@ -235,9 +249,10 @@ class MapTooltip extends Component {
                 .query({ planning_id: this.props.planningId })
                 .then((result) => {
                     this.updateItemField(result.body);
+                    const existingTeamId = this.props.assignations.filter(a => a.village_id === parseInt(itemId, 10));
                     this.setState({
                         isloading: false,
-                        selectedTeamId: result.body.team ? result.body.team.id : null,
+                        selectedTeamId: existingTeamId.length > 0 ? existingTeamId[0].team_id : null,
                     });
                 })
                 .catch((err) => {
@@ -338,6 +353,7 @@ MapTooltip.defaultProps = {
     teamId: '',
     teams: [],
     planningId: '',
+    assignations: [],
 };
 
 
@@ -347,7 +363,8 @@ MapTooltip.propTypes = {
     teamId: PropTypes.string,
     teams: PropTypes.arrayOf(PropTypes.object),
     planningId: PropTypes.string,
-    getAdditionalSelectData: PropTypes.func.isRequired,
+    assignations: PropTypes.array,
+    selectItems: PropTypes.func.isRequired,
 };
 
 export default injectIntl(MapTooltip);

@@ -602,7 +602,7 @@ path.map-marker {
         }
     }
     &.chosen {
-        @include marker($active, $fill-opacity: 0.8, $stroke-width: 0);
+        @include marker($active, $fill-opacity: 0.5, $stroke-width: 0);
         -webkit-animation-name: chosen-marker-animation;
         -webkit-animation-duration: 4s;
         -webkit-animation-iteration-count: infinite;
@@ -611,7 +611,7 @@ path.map-marker {
         animation-duration: 1s;
         animation-iteration-count: infinite;
         &:hover {
-            fill-opacity: 1;
+            fill-opacity: 0.5;
             fill: $active;
         }
     }
@@ -622,7 +622,7 @@ path.map-marker {
         stroke-width: 0px;
     }
     50% {
-        stroke-width: 0.1px;
+        stroke-width: 3px;
     }
     100% {
         stroke-width: 0px;

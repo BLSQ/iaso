@@ -52,7 +52,7 @@ const getChoosenMarkerRadius = (map) => {
     const currentZoom = map.getZoom();
     const zoomMaxLevel = 13;
     const ratio = currentZoom < 8 ? 1.8 : 1;
-    const newRadius = (zoomMaxLevel - currentZoom) <= 1 ? radius : radius * (zoomMaxLevel - currentZoom) * ratio;
+    const newRadius = (zoomMaxLevel - currentZoom) <= 1 ? (radius + 50) : (radius + 100) * (zoomMaxLevel - currentZoom) * ratio;
     return newRadius;
 };
 
@@ -149,7 +149,9 @@ class Map extends Component {
 
 
             // only call if legend or items changed
-            if (!containSameItems(prevProps, this.props, 'items') || !containSameItems(prevProps, this.props, 'selectedItems')
+            if (!containSameItems(prevProps, this.props, 'items') ||
+            !containSameItems(prevProps, this.props, 'selectedItems') ||
+            hasChanged(prevProps, this.props, 'assignationsMap')
             ) {
                 this.updateItems(true);
             } else if (hasChanged(prevProps, this.props, 'legend')) {
@@ -378,7 +380,7 @@ class Map extends Component {
     }
 
     updateItems(force) {
-        const { legend, items } = this.props;
+        const { legend, items, assignationsMap } = this.props;
         const { layers } = this.state;
         const { labelsGroups, markersGroups, shadowsGroups } = layers;
 
@@ -387,8 +389,6 @@ class Map extends Component {
             const markers = markersGroups[key];
             const shadows = shadowsGroups[key];
             const labels = labelsGroups[key];
-
-            const { assignationsMap } = this.props;
 
             if (force) {
                 markers.clearLayers();
@@ -537,6 +537,7 @@ class Map extends Component {
 
     closeTooltipLarge() {
         const { tooltipLarge } = this.state.containers;
+        this.props.showItem(null);
         ReactDOM.unmountComponentAtNode(tooltipLarge);
     }
 
@@ -585,8 +586,7 @@ class Map extends Component {
                     teams={this.props.teams}
                     areas={this.props.areas}
                     planningId={this.props.planningId}
-                    updateTeamOnVillage={(villageId, teamId) =>
-                        this.props.selectItems([{ villageId, teamId }], false)}
+                    getAdditionalSelectData={() => this.props.getAdditionalSelectData()}
                 />
             </div>
         );
@@ -707,8 +707,6 @@ Map.propTypes = {
     items: PropTypes.arrayOf(PropTypes.object),
     selectedItems: PropTypes.arrayOf(PropTypes.object),
     highlightBufferSize: PropTypes.number,
-    selectionAction: PropTypes.func.isRequired,
-    selectItems: PropTypes.func.isRequired,
     chosenItem: PropTypes.object,
     showItem: PropTypes.func.isRequired,
     leafletMap: PropTypes.func.isRequired,
@@ -719,6 +717,7 @@ Map.propTypes = {
     getShape: PropTypes.func.isRequired,
     areas: PropTypes.object,
     planningId: PropTypes.string,
+    getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
 export default injectIntl(Map);

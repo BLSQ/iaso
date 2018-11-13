@@ -74,6 +74,7 @@ export const urls = [
     {
         name: 'workzones',
         url: '/api/workzones/',
+        paramsToRemove: 'years',
         mock: [
         ],
     },
@@ -129,13 +130,16 @@ export class MicroplanningContainer extends Component {
         this.loadFullData(newProps.params);
     }
 
-    getAdditionalSelectData(params) {
+    getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
+        const newParams = Object.assign({}, params);
+        delete newParams.team_id;
         if (!this.props.isTest) {
             request
                 .get('/api/assignations/')
-                .query(params)
+                .query(newParams)
                 .then((result) => {
+                    dispatch(selectionActions.deselectItems());
                     dispatch(selectionActions.selectItems(result.body, false));
                 })
                 .catch((err) => {
@@ -175,6 +179,7 @@ export class MicroplanningContainer extends Component {
                 isTest={this.props.isTest}
                 params={this.props.params}
                 launchAlgo={algoParams => this.launchAlgo(algoParams)}
+                getAdditionalSelectData={() => this.getAdditionalSelectData()}
             />
         );
     }

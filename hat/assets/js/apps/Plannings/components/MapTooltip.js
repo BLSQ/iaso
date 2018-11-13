@@ -212,12 +212,8 @@ class MapTooltip extends Component {
             [{ village_id: this.props.item.id, team_id: selectedTeamId }],
             this.props.planningId,
         )
-            .then((isSaved) => {
-                if (isSaved) {
-                    this.props.updateTeamOnVillage(this.props.item.id, selectedTeamId);
-                } else {
-                    console.error('Error While saving a team for a village');
-                }
+            .then((res) => {
+                this.props.getAdditionalSelectData();
             });
     }
 
@@ -228,25 +224,26 @@ class MapTooltip extends Component {
         });
     }
 
-    loadVillageDetail(item_id) {
+    loadVillageDetail(itemId) {
         this.setState({
             isloading: true,
             // isVillage: true,
         });
-
-        request
-            .get(`/api/villages/${item_id}`)
-            .query({ planning_id: this.props.planningId })
-            .then((result) => {
-                this.updateItemField(result.body);
-                this.setState({
-                    isloading: false,
-                    selectedTeamId: result.body.team ? result.body.team.id : null,
+        if (itemId) {
+            request
+                .get(`/api/villages/${itemId}`)
+                .query({ planning_id: this.props.planningId })
+                .then((result) => {
+                    this.updateItemField(result.body);
+                    this.setState({
+                        isloading: false,
+                        selectedTeamId: result.body.team ? result.body.team.id : null,
+                    });
+                })
+                .catch((err) => {
+                    console.error('Error when fetching villages details');
                 });
-            })
-            .catch((err) => {
-                console.error('Error when fetching villages details');
-            });
+        }
     }
 
 
@@ -350,7 +347,7 @@ MapTooltip.propTypes = {
     teamId: PropTypes.string,
     teams: PropTypes.arrayOf(PropTypes.object),
     planningId: PropTypes.string,
-    updateTeamOnVillage: PropTypes.func.isRequired,
+    getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
 export default injectIntl(MapTooltip);

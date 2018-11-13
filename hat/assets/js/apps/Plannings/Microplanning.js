@@ -221,7 +221,6 @@ export class Microplanning extends Component {
                 capacity = team.capacity; // eslint-disable-line
             }
         }
-
         const assignationsMap = {};
         for (let i = 0; i < assignations.length; i += 1) {
             const assignation = assignations[i];
@@ -451,13 +450,11 @@ export class Microplanning extends Component {
                                     selectedItems={selectedVillages}
                                     highlightBufferSize={highlightBufferSize}
                                     deselectItems
-                                    selectionAction={list => this.props.executeSelectionAction(list)}
-                                    selectItems={(list, activateSaveButton) =>
-                                        this.props.selectItems(list, activateSaveButton)}
                                     chosenItem={selection.displayedItem}
                                     showItem={item => this.props.displayItem(item)}
                                     leafletMap={map => this.props.setLeafletMap(map)}
                                     getShape={type => this.props.getShape(type)}
+                                    getAdditionalSelectData={() => this.props.getAdditionalSelectData()}
                                 />
                             }
                         </div>
@@ -487,7 +484,6 @@ Microplanning.defaultProps = {
 
 Microplanning.propTypes = {
     changeHighlightBufferSize: PropTypes.func.isRequired,
-    executeSelectionAction: PropTypes.func.isRequired,
     deselectItems: PropTypes.func.isRequired,
     selectItems: PropTypes.func.isRequired,
     displayItem: PropTypes.func.isRequired,
@@ -504,6 +500,7 @@ Microplanning.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     isTest: PropTypes.bool,
+    getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);

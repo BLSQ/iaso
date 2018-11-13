@@ -7,10 +7,8 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.audit.models import log_modification, PATIENT_API
-from hat.cases.models import Case
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
-from hat.patient.models import PatientDuplicatesPair, PatientIgnoredPair
+from hat.patient.models import PatientDuplicatesPair
 from .authentication import CsrfExemptSessionAuthentication
 
 
@@ -89,27 +87,38 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         else:
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="patientduplicatepairs.csv"'
+            queryset = queryset.select_related('patient1', 'patient2')
 
             writer = csv.writer(response)
             writer.writerow(
-                ['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée',
-                 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
-            for case in queryset:
-                cdict = case.as_dict()
+                ['ID candidat duplicat', 'Score de similarité'
+                 'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
+                 'Année naissance patient 1',  # 'Détails patient 1',
+                 'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
+                 'Année naissance patient 2',  # 'Détails patient 2',
+                 'Même patient ? (O/N)',
+                 ])
+            for dupe in queryset:
                 writer.writerow([
-                    cdict["id"],
-                    cdict["mobile_unit"],
-                    cdict["form_year"],
-                    cdict["source"],
-                    cdict["province"],
-                    cdict["ZS"],
-                    cdict["AS"],
-                    cdict["village"],
-                    cdict["name"],
-                    cdict["prename"],
-                    cdict["lastname"],
-                    cdict["normalized_AS_name"]
+                    dupe.id,
+                    dupe.similarity_score,
+                    dupe.patient1_id,
+                    dupe.patient1.first_name,
+                    dupe.patient1.last_name,
+                    dupe.patient1.post_name,
+                    dupe.patient1.mothers_surname,
+                    dupe.patient1.year_of_birth,
+                    # Compose patient 1 details URL,
+                    dupe.patient2_id,
+                    dupe.patient2.first_name,
+                    dupe.patient2.last_name,
+                    dupe.patient2.post_name,
+                    dupe.patient2.mothers_surname,
+                    dupe.patient2.year_of_birth,
+                    # Compose patient 2 details URL,
+                    ''
                 ])
+
             return response
 
     def retrieve(self, request, pk=None):

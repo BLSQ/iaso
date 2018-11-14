@@ -37,6 +37,8 @@ import {
     TeamSelectionTool,
 } from './components';
 
+let timerMsg;
+
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
@@ -82,6 +84,13 @@ export class Microplanning extends Component {
             currentTab: !nextProps.params.team_id ? 'villageSelection' : this.state.currentTab,
         });
     }
+
+    componentWillUnmount() {
+        if (timerMsg) {
+            clearTimeout(timerMsg);
+        }
+    }
+
     onKeyDownHandler(event) {
         switch (event.keyCode) {
             case 27: { // `ESC`
@@ -96,47 +105,53 @@ export class Microplanning extends Component {
         }
     }
 
+    removeSavingMsg() {
+        if (timerMsg) {
+            clearTimeout(timerMsg);
+        }
+        timerMsg = setTimeout(() => {
+            this.setState({
+                errorOnSave: undefined,
+            });
+        }, 10000);
+    }
+
+    saveCallBack(isSaved) {
+        this.setState({
+            isSavingTeam: false,
+            isSelectionModified: !isSaved,
+            errorOnSave: !isSaved,
+        });
+        this.removeSavingMsg();
+    }
+
     saveTeam() {
+        this.setState({ isSavingTeam: true });
         if (this.props.params.team_id) {
             const tempVillages = this.props.selection.assignations
                 .filter(v => v.team_id === parseInt(this.props.params.team_id, 10));
-            this.setState({ isSavingTeam: true });
             saveTeamPlanning(
                 tempVillages,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.team_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         } else if (this.props.params.workzone_id) {
-            this.setState({ isSavingTeam: true });
             saveWorkzonePlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.workzone_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         } else if (this.props.params.coordination_id) {
-            this.setState({ isSavingTeam: true });
             saveCoordinationPlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.coordination_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         }
     }

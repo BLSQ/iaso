@@ -6,6 +6,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
+import * as d3 from 'd3';
 import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
@@ -93,13 +94,6 @@ class Map extends Component {
                     NO: new L.FeatureGroup(),
                     OTHER: new L.FeatureGroup(),
                     NA: new L.FeatureGroup(),
-                },
-
-                labelsGroups: {
-                    group: new L.FeatureGroup(),
-                    YES: new L.FeatureGroup(),
-                    NO: new L.FeatureGroup(),
-                    // unknown: new L.FeatureGroup() // it's always `Inconnu`
                 },
             },
         };
@@ -224,7 +218,7 @@ class Map extends Component {
         map.createPane('custom-pane-markers');
         map.createPane('custom-pane-highlight');
         map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-labels');
+        map.createPane('custom-pane-chosen');
         map.createPane('custom-pane-buffer');
 
         this.state.map = map;
@@ -279,14 +273,11 @@ class Map extends Component {
         // include relevant and constant layers
         //
 
-        const { map, layers, overlays } = this.state;
+        const { map, layers } = this.state;
         map.addLayer(layers.selectedGroup);
         map.addLayer(layers.markersGroups.group);
         map.addLayer(layers.shadowsGroups.group);
         map.addLayer(layers.highlightBufferGroup);
-
-        // assign labels overlay using the existent labels group
-        overlays.labels = layers.labelsGroups.group;
 
         //
         // plot the ALL boundaries
@@ -310,9 +301,18 @@ class Map extends Component {
             },
         });
 
+        // create marker for the chosen item
+        const chosenMarker = L.circle(map.getCenter(), {
+            className: 'map-marker chosen',
+            pane: 'custom-pane-chosen',
+            radius: 0,
+        });
+        layers.chosenMarker = chosenMarker;
+
         geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
         });
+        map.addLayer(chosenMarker);
 
 
         const plotOrHideLayer = (minZoom, type) => {
@@ -337,14 +337,6 @@ class Map extends Component {
             plotOrHideLayer(zooms.area, 'area');
             this.resizeChoosenMarker();
         });
-
-        // create marker for the chosen item
-        const chosenMarker = L.circle(map.getCenter(), {
-            className: 'map-marker chosen',
-            pane: 'custom-pane-selected',
-            radius: 0,
-        });
-        layers.chosenMarker = chosenMarker;
     }
 
     /* ***************************************************************************
@@ -382,25 +374,21 @@ class Map extends Component {
     updateItems(force) {
         const { legend, items, assignationsMap } = this.props;
         const { layers } = this.state;
-        const { labelsGroups, markersGroups, shadowsGroups } = layers;
+        const { markersGroups, shadowsGroups } = layers;
 
         // plot indicated villages (active in legend)
         Object.keys(legend).forEach((key) => {
             const markers = markersGroups[key];
             const shadows = shadowsGroups[key];
-            const labels = labelsGroups[key];
-
             if (force) {
                 markers.clearLayers();
                 shadows.clearLayers();
-                if (labels) labels.clearLayers();
             }
             if (legend[key]) {
                 // include layers in group
                 if (!markersGroups.group.hasLayer(markers)) {
                     markersGroups.group.addLayer(markers);
                     shadowsGroups.group.addLayer(shadows);
-                    if (labels) labelsGroups.group.addLayer(labels);
                 }
 
                 // this.fitToBounds();
@@ -429,26 +417,12 @@ class Map extends Component {
                             const marker = L.circle(item._latlon, options);
                             this.addLayerEvents(marker, item);
                             markers.addLayer(marker);
-
-                            // the label
-                            if (labels) {
-                                const label = L.marker(item._latlon, {
-                                    icon: L.divIcon({
-                                        className: '',
-                                        iconAnchor: [20, 20],
-                                        html: String.raw`<div className="map__marker__label ${key}">${item.name}</div>`,
-                                    }),
-                                    pane: 'custom-pane-labels',
-                                });
-                                labels.addLayer(label);
-                            }
                         });
                 }
             } else if (markersGroups.group.hasLayer(markers)) {
                 // remove layers from group
                 markersGroups.group.removeLayer(markers);
                 shadowsGroups.group.removeLayer(shadows);
-                if (labels) labelsGroups.group.removeLayer(labels);
             }
         });
     }
@@ -529,7 +503,7 @@ class Map extends Component {
 
     updateTooltipSmall(item) {
         if (!this.props.chosenItem && item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label;
+            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }

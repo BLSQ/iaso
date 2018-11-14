@@ -576,6 +576,9 @@ path.map-marker {
     }
     &.selected {
         @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
+        &:hover {
+            fill-opacity: 0;
+        }
     }
     &.assignedToOtherTeam {
         @include marker($green, $stroke-color: blue);
@@ -828,6 +831,7 @@ button {
 .map__selection__control__container {
     width: 100%;
     font-size: $font-size-xs;
+    text-align: right;
     .map__text--select {
         display: inline-block;
         vertical-align: middle;
@@ -862,6 +866,7 @@ button {
     color: white;
     font-size: $font-size-xs;
     padding: 6px;
+    margin-bottom: 10px;
     &:hover {
         background-color: $red;
         color: white;

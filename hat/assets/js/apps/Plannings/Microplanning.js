@@ -208,7 +208,6 @@ export class Microplanning extends Component {
         const { data, error, loading } = this.props.load;
         // possible years from 2000 to current year
         const possibleYears = getPossibleYears();
-        const areas = ((data && data.areas) || []);
         let villages = [];
         const villagesMap = {};
         if (data && data.villagesMap) {
@@ -398,6 +397,10 @@ export class Microplanning extends Component {
                                     <div className="map__selection__top">
                                         <div className="map__selection__title">
                                             <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                                            {
+                                                this.state.isSelectionModified && !this.state.isSavingTeam &&
+                                                <div className="warning-box"><FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modifié mais non sauvegardé" /></div>
+                                            }
                                         </div>
 
                                         {/* Selection actions */}

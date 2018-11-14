@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.geo.models import Province, ZS, AS, Village
+from hat.geo.models import Province
 import json
 
 
@@ -7,9 +7,15 @@ class Command(BaseCommand):
     help = 'Import new villages from the case_location table into normalized tables'
 
     def handle(self, *args, **options):
-        provinces = Province.objects.filter(name__in=['Maindombe', 'Kwilu', 'Kwango'])
-        zones = []
-        for province in provinces:
+        provinces = []
+
+        for province in Province.objects.order_by('name'):
+            zones = []
+            province_dict = {
+                "id": str(province.id),
+                "name": province.name
+            }
+
             #print("PROVINCE", province.name)
             for zone in province.zs_set.order_by('name'):
                 areas = []
@@ -23,8 +29,8 @@ class Command(BaseCommand):
                     villages = []
                     structures = []
                     area_dict = {
-                        "id": str(zone.id),
-                        "name": zone.name
+                        "id": str(area.id),
+                        "name": area.name
                     }
                     #print("area", area.name)
 
@@ -48,10 +54,11 @@ class Command(BaseCommand):
 
                 zone_dict['areas'] = areas
                 zones.append(zone_dict)
-        zones_sorted = sorted(zones, key=lambda k: k['name'])
+            province_dict['zones'] = zones
+            provinces.append(province_dict)
 
         f = open('location.js', 'w')
-        f.write('module.exports = {locations: [')
-        f.write(json.dumps(zones_sorted))
-        f.write(']};')
+        f.write('module.exports = {provinces: ')
+        f.write(json.dumps(provinces))
+        f.write('};')
         f.close()

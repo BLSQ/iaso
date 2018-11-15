@@ -183,14 +183,14 @@ class CasesViewSet(viewsets.ViewSet):
                     queryset = queryset.filter(test_rdt__isnull=False)
                 if test_type == "ctc":
                     queryset = queryset.filter(test_ctcwoo__isnull=False)
-                if test_type == "ge":
-                    queryset = queryset.filter(test_ge__isnull=False)
-                if test_type == "lcr":
-                    queryset = queryset.filter(test_lcr__isnull=False)
-                if test_type == "lnp":
-                    queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
-                if test_type == "sf":
-                    queryset = queryset.filter(test_sf__isnull=False)
+                # if test_type == "ge":
+                #     queryset = queryset.filter(test_ge__isnull=False)
+                # if test_type == "lcr":
+                #     queryset = queryset.filter(test_lcr__isnull=False)
+                # if test_type == "lnp":
+                #     queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
+                # if test_type == "sf":
+                #     queryset = queryset.filter(test_sf__isnull=False)
                 if test_type == "pg":
                     queryset = queryset.filter(test_pg__isnull=False)
                 if test_type == "maect":

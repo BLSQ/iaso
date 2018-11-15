@@ -8,11 +8,11 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
-import casesListColumns from '../constants/casesListColumns';
+import registerListColumns from '../constants/registerListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from '../constants/filtersSelect';
+import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
 
 export const urls = [];
 
@@ -27,11 +27,11 @@ const selectCase = (caseItem, event) => {
     }
 };
 
-class Cases extends Component {
+class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: casesListColumns(props.intl.formatMessage),
+            tableColumns: registerListColumns(props.intl.formatMessage),
         };
     }
 
@@ -65,14 +65,14 @@ class Cases extends Component {
             this.props.selectVillage(newProps.params.village_id);
         }
     }
+
     getEndpointUrl(forCsv) {
-        let url = '/api/cases/?';
+        let url = '/api/patients/?';
         const {
             params,
         } = this.props;
         const urlParams = {
             ...params,
-            located: params.located ? params.located : 'all',
             from: params.date_from,
             to: params.date_to,
         };
@@ -80,11 +80,12 @@ class Cases extends Component {
             delete urlParams.workzone_id;
         }
 
-        if (forCsv) {
-            urlParams.csv = true;
-        }
         if (urlParams.order) {
             delete urlParams.order;
+        }
+
+        if (forCsv) {
+            urlParams.csv = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -99,7 +100,7 @@ class Cases extends Component {
     render() {
         const { formatMessage } = this.props.intl;
         const {
-            testsFilters: {
+            patientsFilters: {
                 teams,
                 coordinations,
                 provinces,
@@ -109,17 +110,17 @@ class Cases extends Component {
                 workzones,
             },
         } = this.props;
-        const filters1 = filtersCases(formatMessage, defineMessages);
-        const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
-        const search = filtersCasesSearch();
-        const geo = filtersCasesGeo(
+        const filters1 = filtersPatients(formatMessage, defineMessages);
+        const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const search = filtersPatientsSearch();
+        const geo = filtersPatientsGeo(
             workzones,
             provinces || [],
             zones || [],
             areas || [],
             villages || [],
             this.props,
-            'tests',
+            'register',
         );
 
         return (
@@ -134,14 +135,14 @@ class Cases extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.tests.header.title" defaultMessage="Tests" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
                     </div>
                     <div className="widget__header widget__content--quarter">
                         <PeriodSelectorComponent
                             dateFrom={this.props.params.date_from}
                             dateTo={this.props.params.date_to}
                             onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo('tests', {
+                                this.props.redirectTo('register', {
                                     ...this.props.params,
                                     date_from: dateFrom,
                                     date_to: dateTo,
@@ -153,29 +154,29 @@ class Cases extends Component {
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
+                                baseUrl="register"
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
+                                baseUrl="register"
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
-                                filters={filters1}
+                                baseUrl="register"
+                                filters={filters2}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
-                                filters={filters2}
+                                baseUrl="register"
+                                filters={filters1}
                             />
                         </div>
                     </div>
@@ -186,10 +187,10 @@ class Cases extends Component {
                         showPagination
                         endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'form_year', desc: false }]}
+                        defaultSorted={[{ id: 'last_name', desc: false }]}
                         params={this.props.params}
-                        defaultPath="tests"
-                        dataKey="cases"
+                        defaultPath="register"
+                        dataKey="patient"
                         onRowClicked={(caseItem, state, event) => selectCase(caseItem, event)}
                         multiSort
                     />
@@ -210,12 +211,12 @@ class Cases extends Component {
     }
 }
 
-Cases.propTypes = {
+Register.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
-    testsFilters: PropTypes.object.isRequired,
+    patientsFilters: PropTypes.object.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
@@ -228,7 +229,7 @@ Cases.propTypes = {
 
 const MapStateToProps = state => ({
     load: state.load,
-    testsFilters: state.testsFilters,
+    patientsFilters: state.patientsFilters,
     filters: state.filters,
 });
 
@@ -245,6 +246,6 @@ const MapDispatchToProps = dispatch => ({
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
 });
 
-const CasesWithIntl = injectIntl(Cases);
+const RegisterWithIntl = injectIntl(Register);
 
-export default connect(MapStateToProps, MapDispatchToProps)(CasesWithIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(RegisterWithIntl);

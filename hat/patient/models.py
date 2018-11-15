@@ -30,6 +30,16 @@ class Patient(models.Model):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
     def as_dict(self):
+        AS = None
+        ZS = None
+        province = None
+        if self.origin_area:
+            AS = self.origin_area.name
+            ZS = self.origin_area.ZS.name
+            province = self.origin_area.ZS.province.name
+        village = None
+        if self.origin_village:
+            village = self.origin_village.name
         return {
             "id": self.id,
             "post_name": self.post_name,
@@ -37,7 +47,11 @@ class Patient(models.Model):
             "first_name": self.first_name,
             "sex": self.sex,
             "age": self.age,
-            "mothers_surname": self.mothers_surname
+            "mothers_surname": self.mothers_surname,
+            "province": province,
+            "ZS": ZS,
+            "AS": AS,
+            "village": village
         }
 
     def as_full_dict(self):

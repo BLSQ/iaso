@@ -1,8 +1,8 @@
-const selectWorkZone = (workzoneId, props, urlKey) => {
+const selectWorkZone = (workzones, workzoneId, props, urlKey) => {
     const {
         params,
     } = props;
-    const currentWorkzone = props.cases.workzones.filter(w => w.id === workzoneId)[0];
+    const currentWorkzone = workzones.filter(w => w.id === workzoneId)[0];
     const provinceIds = [];
     const zoneIds = [];
     const areaIds = [];
@@ -34,6 +34,7 @@ const selectWorkZone = (workzoneId, props, urlKey) => {
             province_id: null,
             zs_id: null,
             as_id: null,
+            village_id: null,
         };
     }
     props.redirectTo(urlKey, tempParams);

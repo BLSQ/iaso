@@ -50,6 +50,7 @@ for key in \
     FD3A5288F042B6850C66B31F09FE44734EB7990E \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
+    gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
     gpg --keyserver pgp.mit.edu                --recv-keys "$key" || \
     gpg --keyserver keyserver.pgp.com          --recv-keys "$key" ; \
   done

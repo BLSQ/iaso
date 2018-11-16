@@ -462,3 +462,14 @@ def register(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def register_detail(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})

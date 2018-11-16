@@ -28,5 +28,6 @@ urlpatterns = [
     url(r'^csvexport/(?P<planning_id>\d+)/$', views.csv_export, name='csv_export'),
     url(r'^password/$', views.change_password, name='change_password'),
     url(r'^datas/tests.*$', views.cases_list, name='cases_list'),
-    url(r'^datas/register.*$', views.register, name='register'),
+    url(r'^datas/register/list.*$', views.register, name='register'),
+    url(r'^datas/register/detail.*$', views.register_detail, name='register_detail'),
 ]

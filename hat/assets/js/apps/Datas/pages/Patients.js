@@ -16,18 +16,7 @@ import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatien
 
 export const urls = [];
 
-
-const selectCase = (caseItem, event) => {
-    let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
-    if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
-        url = `/dashboard/locator/case_id/${caseItem.id}`;
-        window.open(url, '_blank');
-    } else {
-        window.location.href = url;
-    }
-};
-
-class Register extends Component {
+class Patients extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -84,6 +73,10 @@ class Register extends Component {
             delete urlParams.order;
         }
 
+        if (urlParams.patient_id) {
+            delete urlParams.patient_id;
+        }
+
         if (forCsv) {
             urlParams.csv = true;
         }
@@ -95,6 +88,17 @@ class Register extends Component {
             }
         });
         return url;
+    }
+
+    selectPatient(patient) {
+        const { params } = this.props;
+
+        const newParams = {
+            patient_id: patient.id,
+            ...params,
+        };
+
+        this.props.redirectTo('register/detail', newParams);
     }
 
     render() {
@@ -120,9 +124,8 @@ class Register extends Component {
             areas || [],
             villages || [],
             this.props,
-            'register',
+            'register/list',
         );
-
         return (
             <section className="cases-list-container">
                 {
@@ -142,7 +145,7 @@ class Register extends Component {
                             dateFrom={this.props.params.date_from}
                             dateTo={this.props.params.date_to}
                             onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo('register', {
+                                this.props.redirectTo('register/list', {
                                     ...this.props.params,
                                     date_from: dateFrom,
                                     date_to: dateTo,
@@ -154,28 +157,28 @@ class Register extends Component {
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register"
+                                baseUrl="register/list"
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register"
+                                baseUrl="register/list"
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register"
+                                baseUrl="register/list"
                                 filters={filters2}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register"
+                                baseUrl="register/list"
                                 filters={filters1}
                             />
                         </div>
@@ -189,9 +192,9 @@ class Register extends Component {
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_name', desc: false }]}
                         params={this.props.params}
-                        defaultPath="register"
+                        defaultPath="register/list"
                         dataKey="patient"
-                        onRowClicked={(caseItem, state, event) => selectCase(caseItem, event)}
+                        onRowClicked={patientItem => this.selectPatient(patientItem)}
                         multiSort
                     />
                     <div className="align-right">
@@ -211,7 +214,7 @@ class Register extends Component {
     }
 }
 
-Register.propTypes = {
+Patients.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
@@ -246,6 +249,6 @@ const MapDispatchToProps = dispatch => ({
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
 });
 
-const RegisterWithIntl = injectIntl(Register);
+const RegisterWithIntl = injectIntl(Patients);
 
 export default connect(MapStateToProps, MapDispatchToProps)(RegisterWithIntl);

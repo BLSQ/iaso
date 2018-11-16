@@ -1,6 +1,9 @@
 table {
   width: 100%;
   margin: 0;
+  .custom-head {
+    border-bottom: 1px solid $mid-mid-gray;
+  }
 }
 
 @mixin table-cell-styles {
@@ -33,6 +36,7 @@ td {
 td.error, span.error {
   background: $red;
   color: white;
+  padding: 10px;
 }
 
 td.warning, span.warning {

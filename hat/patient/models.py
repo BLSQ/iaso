@@ -29,6 +29,7 @@ class Patient(models.Model):
     def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
+
     def as_dict(self):
         AS = None
         ZS = None
@@ -58,13 +59,24 @@ class Patient(models.Model):
         cases = []
         tests = []
         for case in self.case_set.all():
-            cases.append(case.as_dict())
+            cases.append(case.as_dict(True))
             for test in case.test_set.all():
                 tests.append(test.to_dict())
 
         similar_patients = [pair.patient1.as_dict() if pair.patient1_id != self.id else pair.patient2.as_dict()
                             for pair in
                             PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id))]
+
+        AS = None
+        ZS = None
+        province = None
+        if self.origin_area:
+            AS = self.origin_area.name
+            ZS = self.origin_area.ZS.name
+            province = self.origin_area.ZS.province.name
+        village = None
+        if self.origin_village:
+            village = self.origin_village.name
 
         return {
             "id": self.id,
@@ -78,6 +90,10 @@ class Patient(models.Model):
             "cases": cases,
             "tests": tests,
             "similar_patients": similar_patients,
+            "province": province,
+            "ZS": ZS,
+            "AS": AS,
+            "village": village
         }
 
 

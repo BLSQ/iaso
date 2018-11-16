@@ -71,6 +71,7 @@ class FiltersComponent extends React.Component {
                                                 resetSearch={() => this.onChange(filter.urlKey, null, filter.callback)}
                                                 displayResults={filter.displayResults}
                                                 searchString={params[filter.urlKey]}
+                                                resetOnUnmount={false}
                                             />
                                         }
                                     </div>

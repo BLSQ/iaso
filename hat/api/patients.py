@@ -45,6 +45,8 @@ class PatientsViewSet(viewsets.ViewSet):
         search_lastname = request.GET.get("search_lastname", None)
         search_mother_name = request.GET.get("search_mother_name", None)
         test_types = request.GET.get("test_type", None)
+        screening_result = request.GET.get("screening_result", None)
+        confirmation_result = request.GET.get("confirmation_result", None)
 
         csvformat = request.GET.get("csv", None)  # default will be json
 
@@ -52,7 +54,7 @@ class PatientsViewSet(viewsets.ViewSet):
             Patient.objects.order_by(*orders)
         )
 
-        # To-do: improve those queries
+        # To-do:
         if date_from:
             print ('Query on date_from:', date_from)
             # queryset = queryset.filter(case__test__date__gte=date_from).distinct()
@@ -69,6 +71,27 @@ class PatientsViewSet(viewsets.ViewSet):
         if test_types:
             for test_type in test_types.split(","):
                 print ('Query on test type:', test_type)
+
+        if screening_result is not None:
+            if screening_result == 'true':
+                print ('Query on screening test positive:')
+                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
+            else:
+                print ('Query on screening test negative:')
+                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+
+        if screening_result is not None:
+            if screening_result == 'true':
+                print ('Query on screening test positive')
+                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
+            else:
+                print ('Query on screening test negative')
+                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+
+        if confirmation_result is not None:
+            print ('Query on confirmation test:', confirmation_result)
+            # queryset = queryset.filter(confirmed_case=(confirmation_result == 'true'))
+
         #
 
         if province_ids and not zs_ids and not as_ids:

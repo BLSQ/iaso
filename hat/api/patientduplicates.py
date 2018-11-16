@@ -1,12 +1,16 @@
 import csv
+import time
 
 from django.core.paginator import Paginator
+from django.db.models import Subquery, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
+from hat.cases.models import Case
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
 from hat.patient.models import PatientDuplicatesPair
 from .authentication import CsrfExemptSessionAuthentication
@@ -68,6 +72,13 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         if similarity:
             queryset = queryset.filter(similarity_score__lte=similarity)
 
+        cases_for_patient1 = Case.objects.filter(normalized_patient_id=OuterRef('patient1_id')).order_by('-id')
+        queryset = queryset.annotate(patient1_village=Subquery(cases_for_patient1.values('village')[:1]))\
+            .annotate(patient1_latest_case_id=Subquery(cases_for_patient1.values('id')[:1]))
+        cases_for_patient2 = Case.objects.filter(normalized_patient_id=OuterRef('patient2_id')).order_by('-id')
+        queryset = queryset.annotate(patient2_village=Subquery(cases_for_patient2.values('village')[:1])) \
+            .annotate(patient2_latest_case_id=Subquery(cases_for_patient2.values('id')[:1]))
+
         if csvformat is None:
             paginator = Paginator(queryset, limit)
 
@@ -91,13 +102,14 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
             writer = csv.writer(response)
             writer.writerow(
-                ['ID candidat duplicat', 'Score de similarité'
+                ['ID candidat duplicat', 'Score de similarité',
                  'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
-                 'Année naissance patient 1',  # 'Détails patient 1',
+                 'Année naissance patient 1', 'Village patient 1', 'Détails patient 1',
                  'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
-                 'Année naissance patient 2',  # 'Détails patient 2',
+                 'Année naissance patient 2', 'Village patient 2', 'Détails patient 2',
                  'Même patient ? (O/N)',
                  ])
+            mid = time.time()
             for dupe in queryset:
                 writer.writerow([
                     dupe.id,
@@ -108,14 +120,18 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                     dupe.patient1.post_name,
                     dupe.patient1.mothers_surname,
                     dupe.patient1.year_of_birth,
-                    # Compose patient 1 details URL,
+                    dupe.patient1_village,
+                    request.build_absolute_uri(
+                        reverse('cases:cases_details', kwargs={'doc_id': dupe.patient1_latest_case_id})),
                     dupe.patient2_id,
                     dupe.patient2.first_name,
                     dupe.patient2.last_name,
                     dupe.patient2.post_name,
                     dupe.patient2.mothers_surname,
                     dupe.patient2.year_of_birth,
-                    # Compose patient 2 details URL,
+                    dupe.patient2_village,
+                    request.build_absolute_uri(
+                        reverse('cases:cases_details', kwargs={'doc_id': dupe.patient2_latest_case_id})),
                     ''
                 ])
 

@@ -2,7 +2,6 @@ import logging
 import uuid
 
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Case
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http.request import HttpRequest
@@ -10,6 +9,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from hat.cases.models import Case
 from hat.dashboard.views import get_menu
 from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from hat.patient.models import Test, Patient

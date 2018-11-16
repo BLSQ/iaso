@@ -74,7 +74,50 @@ class Migration(migrations.Migration):
                               "and p1.mothers_surname % p2.mothers_surname "
                               "and (p1.year_of_birth is null or p2.year_of_birth is null "
                               "     or abs(p2.year_of_birth-p1.year_of_birth)<5) "
-                              "and p1.id > p2.id", reverse_sql="drop view if exists patient_matching_namesimilarity"),
+                              "and p1.id > p2.id "
+                              "and not exists (select 1 from patient_patientignoredpair i "
+                              "  where i.patient1_id=p1.id and i.patient2_id=p2.id)",
+                          reverse_sql="drop view if exists patient_matching_namesimilarity"),
+        # The following function sorts an array and makes a single string. This is useful to compare permutations of
+        # objects {'toto', 'titi'} and {'titi', 'toto'} will both result in 'titi|toto'
+        migrations.RunSQL(sql="""
+            CREATE OR REPLACE FUNCTION array_sort_agg (ANYARRAY)
+            RETURNS TEXT LANGUAGE SQL
+            AS $$
+            SELECT ARRAY_TO_STRING(ARRAY(SELECT unnest($1) ORDER BY 1), '|')
+            $$ IMMUTABLE;
+        """, reverse_sql="drop function array_sort_agg (ANYARRAY)"),
+        # Add a function index on the result of the permutation string
+        migrations.RunSQL(sql="""
+            create index idx_names_permutations on 
+                patient_patient(array_sort_agg(ARRAY[first_name, last_name, post_name]))
+        """, reverse_sql="drop index idx_names_permutations"),
+        # Algorithm to compare patients with inverted last_name-first_name or post-name. It is based on the above
+        # function index. It is drastically faster than the direct method but still very slow (about 12x slower
+        # than the namesim). It might be because of the mix of similarity and function indexes.
+        migrations.RunSQL(sql="""
+            create or replace view patient_matching_invert as
+              select p1.id as patient1_id, p2.id as patient2_id,
+                     cast(
+                           case when p1.origin_village_id=p2.origin_village_id then 0
+                                 when p1.origin_area_id=p2.origin_area_id then 500
+                                 else 1000 end as smallint
+                     ) as similarity_score,
+                     'invert' as algorithm
+              from patient_patient p1, patient_patient p2
+              where
+              (
+                array_sort_agg(ARRAY[p1.first_name, p1.last_name, p1.post_name]) =
+                    array_sort_agg(ARRAY[p2.first_name, p2.last_name, p2.post_name])
+              )
+                and p1.mothers_surname % p2.mothers_surname
+                and (p1.year_of_birth is null or p2.year_of_birth is null or abs(p2.year_of_birth-p1.year_of_birth)<5)
+                and p1.id > p2.id
+                and not exists (select 1 from patient_patientignoredpair i 
+                    where i.patient1_id=p1.id and i.patient2_id=p2.id)
+        """, reverse_sql="drop view patient_matching_invert"),
+        # This view gathers all the various algorithm views. It is not yet including the invert one because
+        # it is still too slow.
         migrations.RunSQL(sql="create or replace view patient_matching_all as "
                               "select patient1_id, patient2_id, similarity_score, algorithm "
                               "from patient_matching_namesimilarity",

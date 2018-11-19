@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView, Case, RES_POSITIVE, RES_POSITIVE_POSITIVE_POSITIVE, RES_POSITIVE_POSITIVE, RES_NEGATIVE, RES_ABSENT, RES_MISSING, RES_UNREAD, RES_UNUSED
+from hat.cases.models import CaseView, Case, RES_POSITIVE, RES_POSITIVE_POSITIVE_POSITIVE, RES_POSITIVE_POSITIVE, RES_NEGATIVE, RES_ABSENT, RES_MISSING, RES_UNREAD, RES_UNUSED, testResultString
 from hat.audit.models import log_modification, CASE_API
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -225,25 +225,6 @@ class CasesViewSet(viewsets.ViewSet):
                     """Write the value by returning it, instead of storing in a buffer."""
                     return value
 
-            def testResult(value):
-                if value == RES_POSITIVE_POSITIVE_POSITIVE:
-                    return '+++'
-                if value == RES_POSITIVE_POSITIVE:
-                    return '++'
-                if value == RES_POSITIVE:
-                    return '+'
-                if value == RES_NEGATIVE:
-                    return '-'
-                if value == RES_ABSENT:
-                    return 'Absent'
-                if value == RES_MISSING:
-                    return 'Manquant'
-                if value == RES_UNREAD:
-                    return 'Non lisible'
-                if value == RES_POSITIVE_POSITIVE_POSITIVE:
-                    return 'Non utlisé'
-                return '/'
-
             def iter_items(queryset, pseudo_buffer):
                 headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
                 'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sex', 'Age', 'CATT', 'RDT',
@@ -266,16 +247,16 @@ class CasesViewSet(viewsets.ViewSet):
                         cdict["patient"].get('first_name'),
                         cdict["patient"].get('sex'),
                         cdict["patient"].get('age'),
-                        testResult(case.test_catt),
-                        testResult(case.test_rdt),
-                        testResult(case.test_pg),
-                        testResult(case.test_ctcwoo),
-                        testResult(case.test_ge),
-                        testResult(case.test_lcr),
-                        testResult(case.test_lymph_node_puncture),
-                        testResult(case.test_sf),
-                        testResult(case.test_maect),
-                        testResult(case.test_pl)
+                        testResultString(case.test_catt),
+                        testResultString(case.test_rdt),
+                        testResultString(case.test_pg),
+                        testResultString(case.test_ctcwoo),
+                        testResultString(case.test_ge),
+                        testResultString(case.test_lcr),
+                        testResultString(case.test_lymph_node_puncture),
+                        testResultString(case.test_sf),
+                        testResultString(case.test_maect),
+                        testResultString(case.test_pl)
                     ]
                     yield writer.writerow(row)
 

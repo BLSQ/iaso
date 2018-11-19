@@ -21,6 +21,12 @@ class PatientDetails extends React.Component {
         };
     }
 
+    componentWillMount() {
+        this.setState({
+            patient: null,
+        });
+    }
+
     componentDidMount() {
         this.props.fetchDetails(this.props.params.patient_id);
     }
@@ -47,7 +53,12 @@ class PatientDetails extends React.Component {
 
     render() {
         const { loading } = this.props.load;
-        const { formatMessage } = this.props.intl;
+        const {
+            intl: {
+                formatMessage,
+            },
+            testsMapping,
+        } = this.props;
         const { patient } = this.state;
         return (
             <section>
@@ -69,7 +80,7 @@ class PatientDetails extends React.Component {
                                 <i className="fa fa-arrow-left" />{' '}
                             </button>
                             <h2 className="widget__heading">
-                                <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillée" />:
+                                <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
                             </h2>
                         </div>
                         <div className="widget__content--quarter">
@@ -86,7 +97,7 @@ class PatientDetails extends React.Component {
                                             <div className="widget__content--tier split-bottom" key={c.id}>
                                                 <PatientCasesInfos currentCase={c} />
                                                 <PatientCasesLocation currentCase={c} />
-                                                <PatientCasesTests tests={c.tests} />
+                                                <PatientCasesTests tests={c.tests} testsMapping={testsMapping} />
                                             </div>
                                         ))
                                     }
@@ -109,6 +120,7 @@ PatientDetails.propTypes = {
     fetchDetails: PropTypes.func.isRequired,
     patient: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    testsMapping: PropTypes.object.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -116,6 +128,7 @@ const PatientDetailsIntl = injectIntl(PatientDetails);
 const MapStateToProps = state => ({
     load: state.load,
     patient: state.patientsDetail.current,
+    testsMapping: state.patientsDetail.testsMapping,
 });
 
 const MapDispatchToProps = dispatch => ({

@@ -23,6 +23,10 @@ const MESSAGES = {
         defaultMessage: 'Historique',
         id: 'main.label.historic',
     },
+    pv: {
+        defaultMessage: 'Pharmacovigilance',
+        id: 'main.label.pv',
+    },
 };
 
 class PatientCasesInfo extends React.Component {
@@ -72,9 +76,11 @@ class PatientCasesInfo extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsCases.source" defaultMessage="Source" />
                             </th>
-                            <td>{currentCase.source ?
-                                formatMessage(MESSAGES[currentCase.source])
-                                : '--'}
+                            <td>
+                                {currentCase.source && MESSAGES[currentCase.source] ?
+                                    formatMessage(MESSAGES[currentCase.source])
+                                    : currentCase.source}
+                                {!currentCase.source && '--'}
                             </td>
                         </tr>
                         <tr>

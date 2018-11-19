@@ -26,6 +26,25 @@ MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aou
           'Décembre']
 MONTH_CHOICES = [(i + 1, MONTHS[i]) for i in range(0, 12)]
 
+def testResultString(value):
+    if value == RES_POSITIVE_POSITIVE_POSITIVE:
+        return '+++'
+    if value == RES_POSITIVE_POSITIVE:
+        return '++'
+    if value == RES_POSITIVE:
+        return '+'
+    if value == RES_NEGATIVE:
+        return '-'
+    if value == RES_ABSENT:
+        return 'Absent'
+    if value == RES_MISSING:
+        return 'Manquant'
+    if value == RES_UNREAD:
+        return 'Non lisible'
+    if value == RES_UNUSED:
+        return 'Non utlisé'
+    return '/'
+
 RES_POSITIVE_POSITIVE_POSITIVE = 4
 RES_POSITIVE_POSITIVE = 3
 RES_POSITIVE = 2

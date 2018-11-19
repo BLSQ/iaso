@@ -187,6 +187,7 @@ $directions: left right top bottom;
     box-shadow: none;
 }
 
+
 .split-bottom {
     border-bottom: 1px solid $gray;
     margin-bottom: $padding-unit;
@@ -203,4 +204,10 @@ $directions: left right top bottom;
             margin-bottom: 0;
         }
     }
+
+.home-login-button {
+    position: absolute;
+    top: $padding-unit;
+    right: $padding-unit;
+
 }

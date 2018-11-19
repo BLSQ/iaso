@@ -199,14 +199,16 @@ def change_password(request):
         'form': form
     })
 
-@login_required()
 @require_http_methods(['GET'])
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
+    if user.is_anonymous:
+        return render(request, 'dashboard/home.html')
     else:
-        return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
+        if user.profile.password_reset:
+            return redirect('/dashboard/password')
+        else:
+            return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
 
 
 @login_required()

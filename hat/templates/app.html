@@ -2,57 +2,59 @@
 {% load i18n %}
 
 {% block body %}
-    <div class="navigation__container">
-        <div class="navigation__content">
-            <div class="brand">
-                <a class="brand__heading" href="/">{% trans 'Trypelim' %}</a>
-            </div>
+    {% if menu %}
+        <div class="navigation__container">
+            <div class="navigation__content">
+                <div class="brand">
+                    <a class="brand__heading" href="/">{% trans 'Trypelim' %}</a>
+                </div>
 
-            <!-- Menu toggle -->
-            <a href=".navigation" id="menuLink" class="menu-link">
-                <!-- Hamburger icon -->
-                <span></span>
-            </a>
-
-            {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
-                <ul class="navigation__menu">
-                    {% for entry in menu %}
-                        <li class="navigation__menu__item{% if entry.active %}--active{% endif %}{% if entry.items %} expand-collapse {% if entry.active %}open{% endif %}{% endif %}">
-                            {% if entry.items %}
-                                <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
-                            {% endif %}
-                            <a href="{{ entry.url_key }}">{% trans entry.name %}</a>
-                            {% for sub in entry.items %}
-                                <ul>
-                                    <li class="navigation__menu__item--secondary{% if sub.active %}--active{% endif %}">
-                                        <a href="{{ sub.url_key }}">{% trans sub.name %}</a>
-                                    </li>
-                                </ul>
-                            {% endfor %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endwith %}
-
-            <div class="navigation__footer">
-                <span class="label--user">{% trans 'Logged in as' %} “{{ user }}”</span>
-                <a href="{% url 'logout' %}" class="navigation__logout-link">
-                    {% trans 'Log out' %}
-                    <i class="fa fa-sign-out"></i>
+                <!-- Menu toggle -->
+                <a href=".navigation" id="menuLink" class="menu-link">
+                    <!-- Hamburger icon -->
+                    <span></span>
                 </a>
-                <span class="label--version">Rev: “{{ version_commit }}”</span>
+
+                {% with ns=request.resolver_match.namespace view=request.resolver_match.view_name %}
+                    <ul class="navigation__menu">
+                        {% for entry in menu %}
+                            <li class="navigation__menu__item{% if entry.active %}--active{% endif %}{% if entry.items %} expand-collapse {% if entry.active %}open{% endif %}{% endif %}">
+                                {% if entry.items %}
+                                    <span onclick="javascript: this.parentNode.classList.toggle('open');"></span>
+                                {% endif %}
+                                <a href="{{ entry.url_key }}">{% trans entry.name %}</a>
+                                {% for sub in entry.items %}
+                                    <ul>
+                                        <li class="navigation__menu__item--secondary{% if sub.active %}--active{% endif %}">
+                                            <a href="{{ sub.url_key }}">{% trans sub.name %}</a>
+                                        </li>
+                                    </ul>
+                                {% endfor %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endwith %}
+
+                <div class="navigation__footer">
+                    <span class="label--user">{% trans 'Logged in as' %} “{{ user }}”</span>
+                    <a href="{% url 'logout' %}" class="navigation__logout-link">
+                        {% trans 'Log out' %}
+                        <i class="fa fa-sign-out"></i>
+                    </a>
+                    <span class="label--version">Rev: “{{ version_commit }}”</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class='toggle-menu-container'>
-        <button
-            class='toggle-menu-button'
-            onClick="document.body.className = document.body.className === 'menu-close' ? document.body.className.replace('menu-close', '') : 'menu-close'"
-        >
-            <i class="fa fa-bars"></i>
-        </button>
-    </div>
+        <div class='toggle-menu-container'>
+            <button
+                class='toggle-menu-button'
+                onClick="document.body.className = document.body.className === 'menu-close' ? document.body.className.replace('menu-close', '') : 'menu-close'"
+            >
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+    {% endif %}
     <div class="container--main">
         {% if messages %}
             <ul class="messages">
@@ -84,6 +86,4 @@
 
 
     </div>
-    <script>
-    </script>
 {% endblock %}

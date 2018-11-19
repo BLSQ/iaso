@@ -32,6 +32,12 @@
 
     {% if user.is_authenticated %}
     <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
+    {% else %}
+      <meta property="og:title" content="{% trans 'Welcome to the SENSE HAT Dashboard' %}"/>
+      <meta property="og:description" content="{% trans 'The Trypelim project aims at digitalization of the sleeping sickness elimination program.' %}"/>
+      <meta property="og:type" content="website"/>
+      <meta property="og:image" content="{% static 'images/pnltha-logo.png' %}"/>
+      <meta property="og:url" content="https://www.trypelim.org" />
     {% endif %}
   </head>
   <body class="menu-close">

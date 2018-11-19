@@ -6,7 +6,9 @@
 {% endblock %}
 
 {% block content %}
-
+  {% if request.user.is_anonymous %}
+    <a href="/login" class="button home-login-button">{% trans 'Se connecter' %}</a>
+  {% endif %}
   {# welcome section #}
   <section class="section--feature--welcome">
     <div class="section__content">
@@ -115,12 +117,11 @@
   <section class="section--feature--partners">
     <h2>{% trans 'A proud partnership' %}</h2>
     <div class="section__content--partners">
-      <ul class="section__list--partners">
-        <li>Programme National de Lutte contre la Trypanosomiase Humaine Africaine</li>
-      </ul>
-      <ul class="section__list--partners">
-        <li>Institute of Tropical Medicine</li>
-      </ul>
+      <div class="section__list--partners">
+        <a href="https://www.itg.be/" target="_blank">
+          <img src="{% static 'images/itg_logo.png' %}" alt="ITG logo">
+        </a>
+      </div>
     </div>
   </section>
 

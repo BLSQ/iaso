@@ -312,7 +312,6 @@ class Map extends Component {
         geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
         });
-        map.addLayer(chosenMarker);
 
 
         const plotOrHideLayer = (minZoom, type) => {

@@ -173,7 +173,7 @@ export class MicroplanningContainer extends Component {
 
     selectItems(items, activateSaveButton) {
         const { dispatch } = this.props;
-        dispatch(selectionActions.deselectItems());
+        dispatch(selectionActions.deselectItems(null, false));
         dispatch(selectionActions.selectItems(items, activateSaveButton));
     }
 

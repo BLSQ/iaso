@@ -398,7 +398,7 @@ export class Microplanning extends Component {
                                         <div className="map__selection__title">
                                             <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
                                             {
-                                                this.state.isSelectionModified && !this.state.isSavingTeam &&
+                                                this.state.isSelectionModified && !this.state.isSavingTeam && !loading &&
                                                 <div className="warning-box"><FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modifié mais non sauvegardé" /></div>
                                             }
                                         </div>

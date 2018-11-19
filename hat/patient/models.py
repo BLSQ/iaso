@@ -213,9 +213,9 @@ class PatientDuplicatesView(models.Model):
 
     You should never query the whole table at once as it would take forever, one should apply filter on specific IDs
     """
-    # Primary key is set on unique field combination although it is not necessary for such a view
-    patient1 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+', primary_key=True)
-    patient2 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+', primary_key=True)
+    # Django forces us to name a primary key and doesn't support composite keys. This is a read only view, we don't care
+    patient1 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
+    patient2 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
     similarity_score = models.SmallIntegerField(null=True)
     algorithm = models.CharField(max_length=10, primary_key=True)
 

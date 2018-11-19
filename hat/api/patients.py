@@ -142,27 +142,26 @@ class PatientsViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
+            response['Content-Disposition'] = 'attachment; filename="patients.csv"'
 
             writer = csv.writer(response)
-            writer.writerow(
-                ['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée',
-                 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
-            for case in queryset:
-                cdict = case.as_dict()
+
+            writer.writerow(['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village'])
+            for patient in queryset:
+                pdict = patient.as_dict()
+
                 writer.writerow([
-                    cdict["id"],
-                    cdict["mobile_unit"],
-                    cdict["form_year"],
-                    cdict["source"],
-                    cdict["province"],
-                    cdict["ZS"],
-                    cdict["AS"],
-                    cdict["village"],
-                    cdict["name"],
-                    cdict["prename"],
-                    cdict["lastname"],
-                    cdict["normalized_AS_name"]
+                    pdict["id"],
+                    pdict["last_name"],
+                    pdict["post_name"],
+                    pdict["first_name"],
+                    pdict["sex"],
+                    pdict["age"],
+                    pdict["mothers_surname"],
+                    pdict["province"],
+                    pdict["ZS"],
+                    pdict["AS"],
+                    pdict["village"]
                 ])
             return response
 

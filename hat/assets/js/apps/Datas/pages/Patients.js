@@ -13,6 +13,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
+import { patientsActions } from '../redux/patients';
 
 export const urls = [];
 
@@ -113,6 +114,12 @@ class Patients extends Component {
                 villages,
                 workzones,
             },
+            setPatientList,
+            patientList,
+            params,
+            reduxParams,
+            reduxCount,
+            reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
@@ -191,11 +198,17 @@ class Patients extends Component {
                         endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_name', desc: false }]}
-                        params={this.props.params}
+                        params={params}
                         defaultPath="register/list"
                         dataKey="patient"
                         onRowClicked={patientItem => this.selectPatient(patientItem)}
                         multiSort
+                        onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
+                        reduxDatas={patientList}
+                        reduxParams={reduxParams}
+                        reduxShowPagination
+                        reduxCount={reduxCount}
+                        reduxPages={reduxPages}
                     />
                     <div className="align-right">
                         <button
@@ -228,12 +241,21 @@ Patients.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    setPatientList: PropTypes.func.isRequired,
+    patientList: PropTypes.array.isRequired,
+    reduxParams: PropTypes.object.isRequired,
+    reduxCount: PropTypes.number.isRequired,
+    reduxPages: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     patientsFilters: state.patientsFilters,
     filters: state.filters,
+    patientList: state.patients.list,
+    reduxParams: state.patients.params,
+    reduxCount: state.patients.count,
+    reduxPages: state.patients.pages,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -247,6 +269,7 @@ const MapDispatchToProps = dispatch => ({
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
 });
 
 const RegisterWithIntl = injectIntl(Patients);

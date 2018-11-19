@@ -9,7 +9,7 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
-import { patientDetailsReducer, patientDetailsInitialState } from './redux/patientDetails';
+import { patientsReducer, patientsInitialState } from './redux/patients';
 
 import CasesPage from './pages/Cases';
 import PatientsPage from './pages/Patients';
@@ -46,12 +46,12 @@ export default function datasApp(appConfig, element, baseUrl) {
         load: {},
         testsFilters: filtersInitialState,
         patientsFilters: filtersInitialState,
-        patientsDetail: patientDetailsInitialState,
+        patients: patientsInitialState,
     }, {
         load: loadReducer,
         testsFilters: filtersReducer,
         patientsFilters: filtersReducer,
-        patientsDetail: patientDetailsReducer,
+        patients: patientsReducer,
     }, [
         routerMiddleware(history),
     ]);

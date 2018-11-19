@@ -6,7 +6,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
-import { patientDetailsActions } from '../redux/patientDetails';
+import { patientsActions } from '../redux/patients';
 import PatientInfos from '../components/PatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
 import PatientCasesLocation from '../components/PatientCasesLocation';
@@ -19,12 +19,6 @@ class PatientDetails extends React.Component {
         this.state = {
             patient: null,
         };
-    }
-
-    componentWillMount() {
-        this.setState({
-            patient: null,
-        });
     }
 
     componentDidMount() {
@@ -127,13 +121,13 @@ const PatientDetailsIntl = injectIntl(PatientDetails);
 
 const MapStateToProps = state => ({
     load: state.load,
-    patient: state.patientsDetail.current,
-    testsMapping: state.patientsDetail.testsMapping,
+    patient: state.patients.current,
+    testsMapping: state.patients.testsMapping,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    fetchDetails: patientId => dispatch(patientDetailsActions.fetchDetails(dispatch, patientId)),
+    fetchDetails: patientId => dispatch(patientsActions.fetchDetails(dispatch, patientId)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

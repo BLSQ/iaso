@@ -25,7 +25,7 @@ class CustomTableComponent extends React.Component {
             disableHeaderFixed: props.disableHeaderFixed,
             data: [],
             pages: null,
-            loading: true,
+            loading: props.reduxDatas.length === 0,
             showPagination: false,
             page: props.params.page ? parseInt(props.params.page, 10) : props.page,
             pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
@@ -33,17 +33,20 @@ class CustomTableComponent extends React.Component {
             count: undefined,
             isHeaderFixed: false,
             tableId: `custom-table${+new Date()}`,
+            reduxDatas: props.reduxDatas,
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
-        this.onFetchData({
-            sorted: this.state.order,
-            page: this.state.page,
-            pageSize: this.state.pageSize,
-        }, this.props.endPointUrl);
+        if (this.props.reduxDatas.length === 0) {
+            this.onFetchData({
+                sorted: this.state.order,
+                page: this.state.page,
+                pageSize: this.state.pageSize,
+            }, this.props.endPointUrl);
+        }
     }
 
     componentWillReceiveProps(newProps) {
@@ -60,6 +63,17 @@ class CustomTableComponent extends React.Component {
                 page: newProps.params.page ? parseInt(newProps.params.page, 10) : this.props.page,
                 pageSize: newProps.params.pageSize ? parseInt(newProps.params.pageSize, 10) : this.props.pageSize,
             }, newProps.endPointUrl);
+        }
+        if (newProps.reduxDatas.length > 0) {
+            this.setState({
+                reduxDatas: newProps.reduxDatas,
+                loading: false,
+                page: newProps.reduxParams.page,
+                pageSize: newProps.reduxParams.pageSize,
+                pages: newProps.reduxPages,
+                showPagination: newProps.reduxShowPagination,
+                count: newProps.reduxCount,
+            });
         }
     }
 
@@ -108,9 +122,9 @@ class CustomTableComponent extends React.Component {
         getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
             const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
             if (this.props.callBackWithDataKey) {
-                this.props.onDataLoaded(tempdata);
+                this.props.onDataLoaded(tempdata, parseInt(data.count, 10), data.pages);
             } else {
-                this.props.onDataLoaded(data);
+                this.props.onDataLoaded(data, parseInt(data.count, 10), data.pages);
             }
             let { showPagination } = this.props;
             if (data.count) {
@@ -190,7 +204,7 @@ class CustomTableComponent extends React.Component {
                         manual
                         multiSort={this.props.multiSort}
                         columns={this.props.columns}
-                        data={this.state.data}
+                        data={this.state.reduxDatas.length > 0 ? this.state.reduxDatas : this.state.data}
                         pages={this.state.pages}
                         loading={this.state.loading}
                         onPageChange={page => this.onPageChange(page)}
@@ -241,6 +255,11 @@ CustomTableComponent.defaultProps = {
     isUpdated: false,
     callBackWithDataKey: true,
     disableHeaderFixed: false,
+    reduxDatas: [],
+    reduxParams: {},
+    reduxShowPagination: false,
+    reduxCount: 0,
+    reduxPages: 0,
 };
 
 CustomTableComponent.propTypes = {
@@ -267,6 +286,11 @@ CustomTableComponent.propTypes = {
     isUpdated: PropTypes.bool,
     callBackWithDataKey: PropTypes.bool,
     disableHeaderFixed: PropTypes.bool,
+    reduxDatas: PropTypes.array,
+    reduxParams: PropTypes.object,
+    reduxShowPagination: PropTypes.bool,
+    reduxCount: PropTypes.number,
+    reduxPages: PropTypes.number,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -66,11 +66,6 @@ def get_menu(user, active_link):
                     "name": "Registre",
                     "url_key": reverse("dashboard:register"),
                     "perms": "x_case_cases"
-                },
-                {
-                    "name": "Réconciliation",
-                    "url_key": reverse("cases:duplicates_list"),
-                    "perms": "x_case_reconciliation"
                 }
             ],
             "perms": None

@@ -31,7 +31,6 @@ const calculateAssignations = (mode, patchAssignations, existingAssignations) =>
         case selectionModes.select: {
             const result = patchAssignations;
             const patchIds = {};
-
             for (let j = 0; j < patchAssignations.length; j += 1) {
                 patchIds[patchAssignations[j].village_id] = true;
             }
@@ -63,11 +62,6 @@ const calculateAssignations = (mode, patchAssignations, existingAssignations) =>
     return existingAssignations;
 };
 
-export const changeMode = mode => ({
-    type: SELECTION_MODE_CHANGE,
-    payload: mode,
-});
-
 export const changeBufferSize = size => ({
     type: BUFFER_SIZE_CHANGE,
     payload: parseInt(size, 10),
@@ -76,11 +70,6 @@ export const changeBufferSize = size => ({
 export const changeHighlightBufferSize = size => ({
     type: HIGHLIGHT_BUFFER_SIZE_CHANGE,
     payload: parseInt(size, 10),
-});
-
-export const executeSelection = items => ({
-    type: SELECTION_EXECUTE,
-    payload: items,
 });
 
 export const selectItems = (items, activateSaveButton = true) => ({
@@ -151,7 +140,6 @@ export const selectionActions = {
     selectItems,
     updateGeoScope,
     displayItem,
-    executeSelection,
     getTeamDetails,
     saveAreaInGeoloc,
 };

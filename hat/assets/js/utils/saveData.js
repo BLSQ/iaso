@@ -16,8 +16,10 @@ export function saveVillageTeam(village, planning_id) {
         .patch(`/api/plannings/${planning_id}/`)
         .set('Content-Type', 'application/json')
         .send(village)
-        .then(() => true)
-        .catch(err => false);
+        .then(res => res.body)
+        .catch((err) => {
+            console.error(`Error While saving a team for a village: ${err}`);
+        });
 }
 
 export function saveTeamPlanning(villagesList, planning_id, team_id) {

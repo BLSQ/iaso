@@ -37,6 +37,8 @@ import {
     TeamSelectionTool,
 } from './components';
 
+let timerMsg;
+
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
@@ -82,6 +84,13 @@ export class Microplanning extends Component {
             currentTab: !nextProps.params.team_id ? 'villageSelection' : this.state.currentTab,
         });
     }
+
+    componentWillUnmount() {
+        if (timerMsg) {
+            clearTimeout(timerMsg);
+        }
+    }
+
     onKeyDownHandler(event) {
         switch (event.keyCode) {
             case 27: { // `ESC`
@@ -96,47 +105,53 @@ export class Microplanning extends Component {
         }
     }
 
+    removeSavingMsg() {
+        if (timerMsg) {
+            clearTimeout(timerMsg);
+        }
+        timerMsg = setTimeout(() => {
+            this.setState({
+                errorOnSave: undefined,
+            });
+        }, 10000);
+    }
+
+    saveCallBack(isSaved) {
+        this.setState({
+            isSavingTeam: false,
+            isSelectionModified: !isSaved,
+            errorOnSave: !isSaved,
+        });
+        this.removeSavingMsg();
+    }
+
     saveTeam() {
+        this.setState({ isSavingTeam: true });
         if (this.props.params.team_id) {
             const tempVillages = this.props.selection.assignations
                 .filter(v => v.team_id === parseInt(this.props.params.team_id, 10));
-            this.setState({ isSavingTeam: true });
             saveTeamPlanning(
                 tempVillages,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.team_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         } else if (this.props.params.workzone_id) {
-            this.setState({ isSavingTeam: true });
             saveWorkzonePlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.workzone_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         } else if (this.props.params.coordination_id) {
-            this.setState({ isSavingTeam: true });
             saveCoordinationPlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
                 this.props.params.coordination_id,
             ).then((isSaved) => {
-                this.setState({
-                    isSavingTeam: false,
-                    isSelectionModified: !isSaved,
-                    errorOnSave: !isSaved,
-                });
+                this.saveCallBack(isSaved);
             });
         }
     }
@@ -193,7 +208,6 @@ export class Microplanning extends Component {
         const { data, error, loading } = this.props.load;
         // possible years from 2000 to current year
         const possibleYears = getPossibleYears();
-        const areas = ((data && data.areas) || []);
         let villages = [];
         const villagesMap = {};
         if (data && data.villagesMap) {
@@ -221,7 +235,6 @@ export class Microplanning extends Component {
                 capacity = team.capacity; // eslint-disable-line
             }
         }
-
         const assignationsMap = {};
         for (let i = 0; i < assignations.length; i += 1) {
             const assignation = assignations[i];
@@ -243,7 +256,6 @@ export class Microplanning extends Component {
                 assignationsTempList = assignationsTempList.filter(x =>
                     x.team_id === parseInt(this.props.params.team_id, 10));
             }
-
             selectedVillages = assignationsTempList.filter(assignation =>
                 (assignation.team_id !== -1 && assignation.village_id in villagesMap))
                 .map(assignation => villagesMap[assignation.village_id]);
@@ -385,6 +397,10 @@ export class Microplanning extends Component {
                                     <div className="map__selection__top">
                                         <div className="map__selection__title">
                                             <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                                            {
+                                                this.state.isSelectionModified && !this.state.isSavingTeam && !loading &&
+                                                <div className="warning-box"><FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modifié mais non sauvegardé" /></div>
+                                            }
                                         </div>
 
                                         {/* Selection actions */}
@@ -448,16 +464,15 @@ export class Microplanning extends Component {
                                     fullscreen={fullscreen}
                                     items={villages}
                                     assignationsMap={assignationsMap}
+                                    assignations={assignations}
                                     selectedItems={selectedVillages}
                                     highlightBufferSize={highlightBufferSize}
                                     deselectItems
-                                    selectionAction={list => this.props.executeSelectionAction(list)}
-                                    selectItems={(list, activateSaveButton) =>
-                                        this.props.selectItems(list, activateSaveButton)}
                                     chosenItem={selection.displayedItem}
                                     showItem={item => this.props.displayItem(item)}
                                     leafletMap={map => this.props.setLeafletMap(map)}
                                     getShape={type => this.props.getShape(type)}
+                                    selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
                                 />
                             }
                         </div>
@@ -487,7 +502,6 @@ Microplanning.defaultProps = {
 
 Microplanning.propTypes = {
     changeHighlightBufferSize: PropTypes.func.isRequired,
-    executeSelectionAction: PropTypes.func.isRequired,
     deselectItems: PropTypes.func.isRequired,
     selectItems: PropTypes.func.isRequired,
     displayItem: PropTypes.func.isRequired,
@@ -514,8 +528,6 @@ const MapDispatchToProps = dispatch => ({
     executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
     deselectItems: (list, activateSaveButton) =>
         dispatch(selectionActions.deselectItems(list, activateSaveButton)),
-    selectItems: (list, activateSaveButton) =>
-        dispatch(selectionActions.selectItems(list, activateSaveButton)),
     displayItem: item => dispatch(selectionActions.displayItem(item)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),

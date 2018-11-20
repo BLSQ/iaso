@@ -74,6 +74,7 @@ export const urls = [
     {
         name: 'workzones',
         url: '/api/workzones/',
+        paramsToRemove: 'years',
         mock: [
         ],
     },
@@ -129,14 +130,16 @@ export class MicroplanningContainer extends Component {
         this.loadFullData(newProps.params);
     }
 
-    getAdditionalSelectData(params) {
+    getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
+        const newParams = Object.assign({}, params);
+        delete newParams.team_id;
         if (!this.props.isTest) {
             request
                 .get('/api/assignations/')
-                .query(params)
+                .query(newParams)
                 .then((result) => {
-                    dispatch(selectionActions.selectItems(result.body, false));
+                    this.selectItems(result.body, false);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -164,9 +167,14 @@ export class MicroplanningContainer extends Component {
         const { dispatch } = this.props;
         launchAlgo(algoParams, dispatch)
             .then((result) => {
-                dispatch(selectionActions.deselectItems());
-                dispatch(selectionActions.selectItems(result.assignations));
+                this.selectItems(result.assignations, true);
             });
+    }
+
+    selectItems(items, activateSaveButton) {
+        const { dispatch } = this.props;
+        dispatch(selectionActions.deselectItems(null, false));
+        dispatch(selectionActions.selectItems(items, activateSaveButton));
     }
 
     render() {
@@ -175,6 +183,7 @@ export class MicroplanningContainer extends Component {
                 isTest={this.props.isTest}
                 params={this.props.params}
                 launchAlgo={algoParams => this.launchAlgo(algoParams)}
+                selectItems={(items, activateSaveButton) => this.selectItems(items, activateSaveButton)}
             />
         );
     }

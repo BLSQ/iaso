@@ -38,6 +38,9 @@ export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
 
     const promises = urls.map((config) => {
         const ps = { ...config.defaultParams, ...params };
+        if (config.paramsToRemove) {
+            delete ps[config.paramsToRemove];
+        }
         let { url } = config;
         if (typeof config.id !== 'undefined' && ps[config.id]) {
             url = `${config.url}${ps[config.id]}`;

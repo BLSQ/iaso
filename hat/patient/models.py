@@ -1,8 +1,10 @@
 from django.db import models
-from hat.geo.models import Village, AS
+from django.db.models import Q
+
 from hat.cases.models import Case
-from hat.sync.models import VideoUpload, ImageUpload
 from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+from hat.geo.models import Village, AS
+from hat.sync.models import VideoUpload, ImageUpload
 
 
 class Patient(models.Model):
@@ -16,7 +18,7 @@ class Patient(models.Model):
     )
     sex = models.TextField("Sexe", choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
-    year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True)
+    year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True, db_index=True)
     mothers_surname = models.TextField("Nom de la mère", null=True)
     origin_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
     origin_village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
@@ -45,8 +47,10 @@ class Patient(models.Model):
             cases.append(case.as_dict())
             for test in case.test_set.all():
                 tests.append(test.to_dict())
-        # TODO: add list of Similar Patients
-        similar_patients = []
+
+        similar_patients = [pair.patient1.as_dict() if pair.patient1_id != self.id else pair.patient2.as_dict()
+                            for pair in
+                            PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id))]
 
         return {
             "id": self.id,
@@ -54,7 +58,7 @@ class Patient(models.Model):
             "last_name": self.last_name,
             "first_name": self.first_name,
             "sex": self.sex,
-            "age": self.age,
+            "year_of_birth": self.year_of_birth,
             "mothers_surname": self.mothers_surname,
             "origin_area": self.origin_area.as_dict() if self.origin_area else None,
             "cases": cases,
@@ -120,3 +124,109 @@ class TestGroup(models.Model):
         return "%s - %s - %s" % (self.type, self.group_id, self.created_at)
 
 
+class PatientDuplicatesPair(models.Model):
+    """
+    Potential duplicate patients. Duplicate candidates have multiple origins, including:
+        - Exact location similarity
+            - Same normalized_village
+            - Similar, first name, last name, post name, mother's name
+        - Geographic distance similarity
+            - normalized_village is within x km of a similar name
+        - Data permutations
+            - tight match where the first name is switched with last name or post name
+        - Historical data Form Number and similar ids matching
+            - similar names and team/form numbers
+            - similar names and obviously incorrect form numbers
+
+    **Permissions**
+
+    - **reconcile_duplicates** -- Can reconcile duplicates.
+
+    """
+
+    patient1 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
+    patient2 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
+    similarity_score = models.SmallIntegerField(null=True)
+    algorithm = models.CharField(max_length=10)
+
+    def save(self, *args, **kwargs) -> None:
+        if self.patient1_id > self.patient2_id:
+            super(PatientDuplicatesPair, self).save(*args, **kwargs)
+        else:
+            raise Exception("Patient1's id MUST always be greater than patient2's id")
+
+    class Meta:
+        unique_together = (('patient1', 'patient2'),)
+        permissions = (
+            ('reconcile_duplicates', 'Can reconcile duplicates'),
+        )
+
+    def as_dict(self, full=False):
+        return {
+            'id': self.id,
+            'patient1': self.patient1.as_dict() if full else {'id': self.patient1_id},
+            'patient2': self.patient2.as_dict() if full else {'id': self.patient2_id},
+            'similarity_score': self.similarity_score,
+            'algorithm': self.algorithm,
+        }
+
+    def __str__(self):
+        return "%s: %s > %s" % (self.id, self.patient1_id, self.patient2_id)
+
+
+class PatientIgnoredPair(models.Model):
+    """
+    This table tracks all duplicates pairs that have been found not to be actual matches.
+    When the process for finding duplicates reruns, we don't want any previously ignored
+    pairs to show up again and need to keep track of them. The pairs are tracked by the
+    ``document_id``, so that they are not dependent on the table instance.
+
+    :ivar fk patient1: Patient 1
+    :ivar fk patient2: Patient 2
+    :ivar text algorithm: The algorithm that generated the excluded pair, will affect all other algorithms too
+
+    """
+    patient1 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
+    patient2 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
+    algorithm = models.CharField(max_length=10)  # Only for information, the pair will be ignored with all algorithms
+    ignored_by = models.ForeignKey('auth.User', on_delete=models.DO_NOTHING, related_name='+')
+
+    class Meta:
+        unique_together = (('patient1', 'patient2'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.patient1_id, self.patient2_id)
+
+    def as_dict(self, full=False):
+        return {
+            'id': self.id,
+            'patient1': self.patient1.as_dict() if full else {'id': self.patient1_id},
+            'patient2': self.patient2.as_dict() if full else {'id': self.patient2_id},
+            'algorithm': self.algorithm,
+            'ignore': True,
+        }
+
+
+class PatientDuplicatesView(models.Model):
+    """
+    This view groups all the various search algorithms for patient duplicates identification.
+
+    You should never query the whole table at once as it would take forever, one should apply filter on specific IDs
+    """
+    # Django forces us to name a primary key and doesn't support composite keys. This is a read only view, we don't care
+    patient1 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
+    patient2 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
+    similarity_score = models.SmallIntegerField(null=True)
+    algorithm = models.CharField(max_length=10, primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'patient_matching_all'
+
+    def as_dict(self):
+        return {
+            'patient1_id': self.patient1_id,
+            'patient2_id': self.patient2_id,
+            'similarity_score': self.similarity_score,
+            'algorithm': self.algorithm,
+        }

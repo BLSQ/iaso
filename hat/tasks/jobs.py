@@ -11,7 +11,6 @@ from hat.import_export.import_synced import import_synced_devices
 from hat.import_export.reimport import reimport
 from hat.import_export.typing import ImportResult
 from hat.cases.event_log import EventStats
-from hat.queries import duplicates_queries
 
 
 ################################################################################
@@ -92,27 +91,6 @@ def reimport_task() -> List[EventStats]:
     (:func:`hat.import_export.reimport.reimport`).
     '''
     return reimport()
-
-
-################################################################################
-# cases
-################################################################################
-
-@job('default', timeout=15*60)
-def duplicates_task() -> None:
-    '''
-    Duplicates detection task.
-
-    Due to all the different sources it's possible and probable that the same HAT case
-    is contained in many files (encrypted backup, historial and even pharmacovigilance).
-    The import process cannot always detect them and creates the pertinent new entries.
-    This task tries to detect similarities between records and returns a list of possible
-    matches that could be ignored or merged.
-
-    .. Note:: The task is executed every night at 02:00.
-    '''
-    with connection.cursor() as cursor:
-        cursor.execute(duplicates_queries.makepairs())
 
 
 ################################################################################

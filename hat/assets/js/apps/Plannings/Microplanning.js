@@ -325,7 +325,7 @@ export class Microplanning extends Component {
                     workzones={workzones}
                     teams={teams}
                     redirect={params => this.props.redirect(params)}
-                    deselectAll={() => this.props.deselectItems()}
+                    deselectAll={() => this.props.deselectItems(null, false)}
                 />
                 {
                     this.props.params.team_id &&

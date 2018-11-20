@@ -8,30 +8,20 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
-import casesListColumns from '../constants/casesListColumns';
+import registerListColumns from '../constants/registerListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from '../constants/filtersSelect';
+import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
+import { patientsActions } from '../redux/patients';
 
 export const urls = [];
 
-
-const selectCase = (caseItem, event) => {
-    let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
-    if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
-        url = `/dashboard/locator/case_id/${caseItem.id}`;
-        window.open(url, '_blank');
-    } else {
-        window.location.href = url;
-    }
-};
-
-class Cases extends Component {
+class Patients extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: casesListColumns(props.intl.formatMessage),
+            tableColumns: registerListColumns(props.intl.formatMessage),
         };
     }
 
@@ -65,14 +55,14 @@ class Cases extends Component {
             this.props.selectVillage(newProps.params.village_id);
         }
     }
+
     getEndpointUrl(forCsv) {
-        let url = '/api/cases/?';
+        let url = '/api/patients/?';
         const {
             params,
         } = this.props;
         const urlParams = {
             ...params,
-            located: params.located ? params.located : 'all',
             from: params.date_from,
             to: params.date_to,
         };
@@ -80,11 +70,16 @@ class Cases extends Component {
             delete urlParams.workzone_id;
         }
 
-        if (forCsv) {
-            urlParams.csv = true;
-        }
         if (urlParams.order) {
             delete urlParams.order;
+        }
+
+        if (urlParams.patient_id) {
+            delete urlParams.patient_id;
+        }
+
+        if (forCsv) {
+            urlParams.csv = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -96,10 +91,21 @@ class Cases extends Component {
         return url;
     }
 
+    selectPatient(patient) {
+        const { params } = this.props;
+
+        const newParams = {
+            patient_id: patient.id,
+            ...params,
+        };
+
+        this.props.redirectTo('register/detail', newParams);
+    }
+
     render() {
         const { formatMessage } = this.props.intl;
         const {
-            testsFilters: {
+            patientsFilters: {
                 teams,
                 coordinations,
                 provinces,
@@ -108,20 +114,25 @@ class Cases extends Component {
                 villages,
                 workzones,
             },
+            setPatientList,
+            patientList,
+            params,
+            reduxParams,
+            reduxCount,
+            reduxPages,
         } = this.props;
-        const filters1 = filtersCases(formatMessage, defineMessages);
-        const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
-        const search = filtersCasesSearch();
-        const geo = filtersCasesGeo(
+        const filters1 = filtersPatients(formatMessage, defineMessages);
+        const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const search = filtersPatientsSearch();
+        const geo = filtersPatientsGeo(
             workzones,
             provinces || [],
             zones || [],
             areas || [],
             villages || [],
             this.props,
-            'tests',
+            'register/list',
         );
-
         return (
             <section className="cases-list-container">
                 {
@@ -134,14 +145,14 @@ class Cases extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.tests.header.title" defaultMessage="Tests" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
                     </div>
                     <div className="widget__header widget__content--quarter">
                         <PeriodSelectorComponent
                             dateFrom={this.props.params.date_from}
                             dateTo={this.props.params.date_to}
                             onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo('tests', {
+                                this.props.redirectTo('register/list', {
                                     ...this.props.params,
                                     date_from: dateFrom,
                                     date_to: dateTo,
@@ -153,29 +164,29 @@ class Cases extends Component {
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
+                                baseUrl="register/list"
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
+                                baseUrl="register/list"
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
-                                filters={filters1}
+                                baseUrl="register/list"
+                                filters={filters2}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="tests"
-                                filters={filters2}
+                                baseUrl="register/list"
+                                filters={filters1}
                             />
                         </div>
                     </div>
@@ -186,12 +197,18 @@ class Cases extends Component {
                         showPagination
                         endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'form_year', desc: false }]}
-                        params={this.props.params}
-                        defaultPath="tests"
-                        dataKey="cases"
-                        onRowClicked={(caseItem, state, event) => selectCase(caseItem, event)}
+                        defaultSorted={[{ id: 'last_name', desc: false }]}
+                        params={params}
+                        defaultPath="register/list"
+                        dataKey="patient"
+                        onRowClicked={patientItem => this.selectPatient(patientItem)}
                         multiSort
+                        onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
+                        reduxDatas={patientList}
+                        reduxParams={reduxParams}
+                        reduxShowPagination
+                        reduxCount={reduxCount}
+                        reduxPages={reduxPages}
                     />
                     <div className="align-right">
                         <button
@@ -210,12 +227,12 @@ class Cases extends Component {
     }
 }
 
-Cases.propTypes = {
+Patients.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
-    testsFilters: PropTypes.object.isRequired,
+    patientsFilters: PropTypes.object.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
@@ -224,12 +241,21 @@ Cases.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    setPatientList: PropTypes.func.isRequired,
+    patientList: PropTypes.array.isRequired,
+    reduxParams: PropTypes.object.isRequired,
+    reduxCount: PropTypes.number.isRequired,
+    reduxPages: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
-    testsFilters: state.testsFilters,
+    patientsFilters: state.patientsFilters,
     filters: state.filters,
+    patientList: state.patients.list,
+    reduxParams: state.patients.params,
+    reduxCount: state.patients.count,
+    reduxPages: state.patients.pages,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -243,8 +269,9 @@ const MapDispatchToProps = dispatch => ({
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
 });
 
-const CasesWithIntl = injectIntl(Cases);
+const RegisterWithIntl = injectIntl(Patients);
 
-export default connect(MapStateToProps, MapDispatchToProps)(CasesWithIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(RegisterWithIntl);

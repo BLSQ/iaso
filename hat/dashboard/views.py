@@ -58,10 +58,15 @@ def get_menu(user, active_link):
             "url_key": reverse("dashboard:cases_list"),
             "items": [
                 {
-                    "name": "Registre",
+                    "name": "Tests",
                     "url_key": reverse("dashboard:cases_list"),
                     "perms": "x_case_cases"
                 },
+                {
+                    "name": "Registre",
+                    "url_key": reverse("dashboard:register"),
+                    "perms": "x_case_cases"
+                }
             ],
             "perms": None
         },
@@ -440,3 +445,26 @@ def cases_list(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})
+
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def register(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def register_detail(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})

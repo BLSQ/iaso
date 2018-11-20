@@ -3,7 +3,11 @@
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-  <h1 class="header__title">Registre</h1>
+  <h1 class="header__title">
+    {% blocktrans %}
+    Données
+    {% endblocktrans %}
+  </h1>
 {% endblock %}
 
 {% block content %}

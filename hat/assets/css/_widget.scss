@@ -119,6 +119,9 @@
     display: flex;
     &>div {
         @extend %quarter-item;
+        &.three-quarter {
+            flex-basis: 75%;
+        }
     }
 }
 

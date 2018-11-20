@@ -24,7 +24,9 @@ class Search extends React.Component {
             searchString: this.props.searchString,
             isChanged: false,
         });
-        this.props.resetSearch();
+        if (this.props.resetOnUnmount) {
+            this.props.resetSearch();
+        }
     }
 
     onSearch() {
@@ -180,6 +182,7 @@ Search.defaultProps = {
     displayResults: true,
     onSelect: () => { },
     showResetSearch: false,
+    resetOnUnmount: true,
 };
 
 Search.propTypes = {
@@ -200,6 +203,7 @@ Search.propTypes = {
     searchString: PropTypes.string,
     allowEmptySearch: PropTypes.bool,
     showResetSearch: PropTypes.bool,
+    resetOnUnmount: PropTypes.bool,
 };
 
 export default Search;

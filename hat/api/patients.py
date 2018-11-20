@@ -1,13 +1,15 @@
 import csv
 
-from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 from hat.patient.models import Patient
 from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -30,19 +32,96 @@ class PatientsViewSet(viewsets.ViewSet):
 
         orders = request.GET.get("order", "id").split(",")
 
+        village_ids = request.GET.get("village_id", None)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
-        years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
+        coordination_ids = request.GET.get("coordination_id", None)
         date_from = request.GET.get("date_from", None)
         date_to = request.GET.get("date_to", None)
+        search_name = request.GET.get("search_name", None)
+        search_prename = request.GET.get("search_prename", None)
+        search_lastname = request.GET.get("search_lastname", None)
+        search_mother_name = request.GET.get("search_mother_name", None)
+        test_types = request.GET.get("test_type", None)
+        screening_result = request.GET.get("screening_result", None)
+        confirmation_result = request.GET.get("confirmation_result", None)
 
         csvformat = request.GET.get("csv", None)  # default will be json
 
         queryset = (
             Patient.objects.order_by(*orders)
         )
+
+        # To-do:
+        if date_from:
+            print ('Query on date_from:', date_from)
+            # queryset = queryset.filter(case__test__date__gte=date_from).distinct()
+        if date_to:
+            print ('Query on date_to:', date_to)
+            # queryset = queryset.filter(case__test__date__lte=date_to).distinct()
+        if teams:
+            print ('Query on test type:', teams)
+            # queryset = queryset.filter(case__normalized_team_id__in=teams.split(",")).distinct()
+        if coordination_ids:
+            print ('Query on test type:', coordination_ids)
+            # queryset = queryset.filter(case__normalized_team__coordination__id__in=coordination_ids.split(",")).distinct()
+
+        if test_types:
+            for test_type in test_types.split(","):
+                print ('Query on test type:', test_type)
+
+        if screening_result is not None:
+            if screening_result == 'true':
+                print ('Query on screening test positive:')
+                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
+            else:
+                print ('Query on screening test negative:')
+                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+
+        if screening_result is not None:
+            if screening_result == 'true':
+                print ('Query on screening test positive')
+                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
+            else:
+                print ('Query on screening test negative')
+                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+
+        if confirmation_result is not None:
+            print ('Query on confirmation test:', confirmation_result)
+            # queryset = queryset.filter(confirmed_case=(confirmation_result == 'true'))
+
+        #
+
+        if province_ids and not zs_ids and not as_ids:
+            queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
+        else:
+            if zs_ids and not as_ids:
+                queryset = queryset.filter(origin_area__ZS_id__in=zs_ids.split(","))
+            else:
+                if as_ids:
+                    queryset = queryset.filter(origin_area_id__in=as_ids.split(","))
+
+        if village_ids:
+            queryset = queryset.filter(origin_village_id__in=village_ids.split(","))
+
+        if search_name:
+            queryset = queryset.filter(
+                Q(post_name__icontains=search_name)
+            )
+        if search_prename:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search_prename)
+            )
+        if search_lastname:
+            queryset = queryset.filter(
+                Q(last_name__icontains=search_lastname)
+            )
+        if search_mother_name:
+            queryset = queryset.filter(
+                Q(mothers_surname__icontains=search_mother_name)
+            )
 
         if csvformat is None:
 
@@ -63,27 +142,26 @@ class PatientsViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="locatorcases.csv"'
+            response['Content-Disposition'] = 'attachment; filename="patients.csv"'
 
             writer = csv.writer(response)
-            writer.writerow(
-                ['Identifiant', 'UM', 'Année Formulaire', 'Source', 'Province encodée', 'ZS encodée', 'AS encodée',
-                 'Village encodé', 'Nom', 'Prénom', 'Postnom', 'AS trouvée'])
-            for case in queryset:
-                cdict = case.as_dict()
+
+            writer.writerow(['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village'])
+            for patient in queryset:
+                pdict = patient.as_dict()
+
                 writer.writerow([
-                    cdict["id"],
-                    cdict["mobile_unit"],
-                    cdict["form_year"],
-                    cdict["source"],
-                    cdict["province"],
-                    cdict["ZS"],
-                    cdict["AS"],
-                    cdict["village"],
-                    cdict["name"],
-                    cdict["prename"],
-                    cdict["lastname"],
-                    cdict["normalized_AS_name"]
+                    pdict["id"],
+                    pdict["last_name"],
+                    pdict["post_name"],
+                    pdict["first_name"],
+                    pdict["sex"],
+                    pdict["age"],
+                    pdict["mothers_surname"],
+                    pdict["province"],
+                    pdict["ZS"],
+                    pdict["AS"],
+                    pdict["village"]
                 ])
             return response
 

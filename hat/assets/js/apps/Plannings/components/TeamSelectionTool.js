@@ -58,6 +58,7 @@ class TeamSelectionTool extends Component {
         const tempParams = clone(this.props.params);
         delete tempParams.team_id;
         delete tempParams.zs_id;
+        delete tempParams.workzone_id;
         this.props.deselectAll();
         this.props.redirect({
             ...tempParams,
@@ -70,6 +71,7 @@ class TeamSelectionTool extends Component {
         delete tempParams.coordination_id;
         delete tempParams.team_id;
         delete tempParams.zs_id;
+        delete tempParams.workzone_id;
         this.props.deselectAll();
         this.props.redirect({
             ...tempParams,

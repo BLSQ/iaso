@@ -121,13 +121,12 @@ class WorkZone(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def as_dict(self):
+    def as_dict(self, withAreas = True):
         total_capacity = 0
         for team in self.teams.all():
             total_capacity += team.capacity
 
         teams_list = [team.as_dict_without_as() for team in self.teams.all()]
-        as_list = [area.as_dict() for area in self.AS.all()]
         total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(Sum('population'))['population__sum']
         if total_population is None:
             total_population = 0  # to always output a number, and not null
@@ -137,7 +136,6 @@ class WorkZone(models.Model):
             'name': self.name,
             'color': self.color,
             'teams': teams_list,
-            'as_list': as_list,
             'total_capacity': total_capacity,
             'total_population': total_population,
             'planning_id': self.planning_id,
@@ -145,6 +143,9 @@ class WorkZone(models.Model):
             'planning_name': self.planning.name,
             'coordination_name': self.coordination.name
         }
+        if withAreas:
+            as_list = [area.as_dict() for area in self.AS.all()]
+            res['as_list'] = as_list
 
         if hasattr(self, 'population_endemic_villages'):
             res['population_endemic_villages'] = self.population_endemic_villages

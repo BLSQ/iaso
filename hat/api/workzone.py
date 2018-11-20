@@ -57,6 +57,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
         years = request.GET.get("years", None)
+        with_areas = request.GET.get("with_areas", True)
 
         matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
         prefix = ''
@@ -65,14 +66,14 @@ class WorkZoneViewSet(viewsets.ViewSet):
                     prefix = '-'
         qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
-        queryset = WorkZone.objects.all()
+        queryset = WorkZone.objects.all().prefetch_related('AS__ZS__province')
         queryset = queryset.filter(planning__is_template=False,)
 
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
             queryset = queryset.filter(coordination_id=coordination_id,)
-        zones = list(queryset.order_by(qs_order))
+        workzones = list(queryset.order_by(qs_order))
 
         if years:
             years_array = years.split(",")
@@ -83,10 +84,12 @@ class WorkZoneViewSet(viewsets.ViewSet):
                 .values('AS__workzone__id').annotate(endemic_population=Sum('population'))
 
             pop_dict = {obj["AS__workzone__id"]: obj["endemic_population"] for obj in endemic_wz_populations}
-            for zone in zones:
-                zone.population_endemic_villages = pop_dict.get(zone.id, 0)
-
-        return Response([zone.as_dict() for zone in zones])
+            for workzone in workzones:
+                workzone.population_endemic_villages = pop_dict.get(workzone.id, 0)
+        if with_areas == 'False':
+            return Response([workzone.as_dict(False) for workzone in workzones])
+        else:
+            return Response([workzone.as_dict() for workzone in workzones])
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)

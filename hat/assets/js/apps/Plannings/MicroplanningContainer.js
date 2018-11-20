@@ -25,96 +25,98 @@ const request = require('superagent');
 // the order is used in the success handler below
 // the value for each key is some url, name and mock data.
 // The name is used as the key in the results payload.
-export const urls = [
-    {
-        name: 'villagesMap',
-        url: '/api/villages/',
-        mock: [{
-            AS: 'Muwanda-koso',
-            confirmedCases: 1,
-            lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
-            village: 'Polongo',
-            ZS: 'Mosango',
-        }, {
-            AS: 'Fula',
-            confirmedCases: 2,
-            lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
-            village: 'Kikonzi-mf',
-            ZS: 'Yasa Bonga',
-        }],
-    },
-    {
-        name: 'locations',
-        url: '/api/zs/',
-        mock: [
-            [
+export const urls = workZonesWithAreas => (
+    [
+        {
+            name: 'villagesMap',
+            url: '/api/villages/',
+            mock: [{
+                AS: 'Muwanda-koso',
+                confirmedCases: 1,
+                lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
+                village: 'Polongo',
+                ZS: 'Mosango',
+            }, {
+                AS: 'Fula',
+                confirmedCases: 2,
+                lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
+                village: 'Kikonzi-mf',
+                ZS: 'Yasa Bonga',
+            }],
+        },
+        {
+            name: 'locations',
+            url: '/api/zs/',
+            mock: [
+                [
+                    1,
+                    'Mosango',
+                ],
+                [
+                    2,
+                    'Yasa-bonga',
+                ],
+            ],
+        },
+        {
+            name: 'coordinations',
+            url: '/api/coordinations/',
+            mock: [
+                [
+                    1,
+                    'Mosango',
+                ],
+                [
+                    2,
+                    'Yasa-bonga',
+                ],
+            ],
+        },
+        {
+            name: 'workzones',
+            url: workZonesWithAreas ? '/api/workzones' : '/api/workzones/?with_areas=False',
+            paramsToRemove: 'years',
+            mock: [
+            ],
+        },
+        {
+            name: 'areas',
+            url: '/api/as/',
+            mock: [
                 1,
-                'Mosango',
+                'Kinzamba Ii',
             ],
-            [
-                2,
-                'Yasa-bonga',
+        },
+        {
+            name: 'plannings',
+            url: '/api/plannings/',
+            mock: [
+                {
+                    name: 'planning 2',
+                    id: 2,
+                },
+                {
+                    name: 'Test',
+                    id: 1,
+                },
             ],
-        ],
-    },
-    {
-        name: 'coordinations',
-        url: '/api/coordinations/',
-        mock: [
-            [
-                1,
-                'Mosango',
+        },
+        {
+            name: 'teams',
+            url: '/api/teams/',
+            mock: [
+                [
+                    2,
+                    'qsdf',
+                ],
+                [
+                    1,
+                    'team 1',
+                ],
             ],
-            [
-                2,
-                'Yasa-bonga',
-            ],
-        ],
-    },
-    {
-        name: 'workzones',
-        url: '/api/workzones/',
-        paramsToRemove: 'years',
-        mock: [
-        ],
-    },
-    {
-        name: 'areas',
-        url: '/api/as/',
-        mock: [
-            1,
-            'Kinzamba Ii',
-        ],
-    },
-    {
-        name: 'plannings',
-        url: '/api/plannings/',
-        mock: [
-            {
-                name: 'planning 2',
-                id: 2,
-            },
-            {
-                name: 'Test',
-                id: 1,
-            },
-        ],
-    },
-    {
-        name: 'teams',
-        url: '/api/teams/',
-        mock: [
-            [
-                2,
-                'qsdf',
-            ],
-            [
-                1,
-                'team 1',
-            ],
-        ],
-    },
-];
+        },
+    ]
+);
 
 export class MicroplanningContainer extends Component {
     constructor(props) {
@@ -157,7 +159,7 @@ export class MicroplanningContainer extends Component {
         const oldParams = clone(this.currentParams);
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
-            fetchUrls(urls, params, oldParams, dispatch).then(() => {
+            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch).then(() => {
                 this.getAdditionalSelectData(params);
             });
         }

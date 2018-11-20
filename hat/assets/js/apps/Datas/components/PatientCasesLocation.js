@@ -54,7 +54,7 @@ class PatientCasesLocation extends React.Component {
                             <tr>
                                 <th />
                                 <td className="error">
-                                    <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Non trouvé" />
+                                    <FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Non trouvé" />
                                 </td>
                             </tr>
                         </tbody>

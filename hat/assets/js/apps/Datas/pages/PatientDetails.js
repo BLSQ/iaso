@@ -84,7 +84,7 @@ class PatientDetails extends React.Component {
                                 patient.cases &&
                                 <div className="three-quarter">
                                     <h2 className="widget__heading padding-bottom">
-                                        <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Tests effectués" />:
+                                        <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Tests effectués" />:
                                     </h2>
                                     {
                                         patient.cases.map(c => (

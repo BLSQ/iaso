@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 
 # Create your models here.
@@ -5,6 +7,7 @@ from django.db import models
 
 #Site	Zone	Zone.Abb	LAT	LONG	Habitat	FirstSurvey	FirstSurveyDate	Count	Total
 #Site	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
+from django.db.models import CASCADE
 
 
 class Site(models.Model):
@@ -86,4 +89,51 @@ class Target(models.Model):
         }
 
 
+class GpsImport(models.Model):
+    filename = models.TextField()
+    file_date_time = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
 
+    def __str__(self):
+        return "%s - %s - %s" % (self.id, self.filename, self.user.username)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'file_date_time': self.file_date_time,
+            'user': self.user.username,
+            'created_at': self.created_at,
+        }
+
+
+class GpsWaypoint(models.Model):
+    gps_import = models.ForeignKey(GpsImport, on_delete=CASCADE)
+    name = models.TextField()
+    date_time = models.DateTimeField()
+    latitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
+    longitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
+    elevation = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    tags = ArrayField(
+        CITextField(max_length=255, blank=True),
+        size=20,
+        null=True,
+        blank=True,
+    )
+    ignore = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "%s - %s - %s - %s %s" % (self.id, self.name, self.date_time, self.latitude, self.longitude)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'elevation': self.elevation,
+            'date_time': self.date_time,
+            'tags': self.tags,
+            'ignore': self.ignore,
+        }

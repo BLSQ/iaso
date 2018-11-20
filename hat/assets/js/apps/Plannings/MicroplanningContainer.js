@@ -122,6 +122,9 @@ export class MicroplanningContainer extends Component {
     constructor(props) {
         super(props);
         this.currentParams = '';
+        this.state = {
+            isAssignationLoading: false,
+        };
     }
 
     componentDidMount() {
@@ -136,16 +139,25 @@ export class MicroplanningContainer extends Component {
         const { dispatch } = this.props;
         const newParams = Object.assign({}, params);
         delete newParams.team_id;
+        this.setState({
+            isAssignationLoading: true,
+        });
         if (!this.props.isTest) {
             request
                 .get('/api/assignations/')
                 .query(newParams)
                 .then((result) => {
                     this.selectItems(result.body, false);
+                    this.setState({
+                        isAssignationLoading: false,
+                    });
                 })
                 .catch((err) => {
                     console.error(err);
                     console.error('Error when fetching assignations details');
+                    this.setState({
+                        isAssignationLoading: false,
+                    });
                 });
 
             if (params.team_id) {
@@ -160,7 +172,9 @@ export class MicroplanningContainer extends Component {
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
             fetchUrls(urls(params.workzone_id), params, oldParams, dispatch).then(() => {
-                this.getAdditionalSelectData(params);
+                if (params.planning_id) {
+                    this.getAdditionalSelectData(params);
+                }
             });
         }
     }
@@ -186,6 +200,7 @@ export class MicroplanningContainer extends Component {
                 params={this.props.params}
                 launchAlgo={algoParams => this.launchAlgo(algoParams)}
                 selectItems={(items, activateSaveButton) => this.selectItems(items, activateSaveButton)}
+                isAssignationLoading={this.state.isAssignationLoading}
             />
         );
     }

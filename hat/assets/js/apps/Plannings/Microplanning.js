@@ -21,7 +21,7 @@ import LoadingSpinner from '../../components/loading-spinner';
 import TabsComponent from '../../components/TabsComponent';
 import GeoScope from './components/GeoScope';
 import { createUrl, getRequest } from '../../utils/fetchData';
-import { saveTeamPlanning, saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
+import { saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
 import { getPossibleYears } from '../../utils';
 import geoUtils from './utils/geo';
 import { selectionActions } from './redux/selection';
@@ -119,25 +119,15 @@ export class Microplanning extends Component {
     saveCallBack(isSaved) {
         this.setState({
             isSavingTeam: false,
-            isSelectionModified: !isSaved,
             errorOnSave: !isSaved,
         });
         this.removeSavingMsg();
+        this.props.chageSelectionModified(!isSaved);
     }
 
     saveTeam() {
         this.setState({ isSavingTeam: true });
-        if (this.props.params.team_id) {
-            const tempVillages = this.props.selection.assignations
-                .filter(v => v.team_id === parseInt(this.props.params.team_id, 10));
-            saveTeamPlanning(
-                tempVillages,
-                parseInt(this.props.params.planning_id, 10),
-                this.props.params.team_id,
-            ).then((isSaved) => {
-                this.saveCallBack(isSaved);
-            });
-        } else if (this.props.params.workzone_id) {
+        if (this.props.params.workzone_id) {
             saveWorkzonePlanning(
                 this.props.selection.assignations,
                 parseInt(this.props.params.planning_id, 10),
@@ -326,6 +316,7 @@ export class Microplanning extends Component {
                     teams={teams}
                     redirect={params => this.props.redirect(params)}
                     deselectAll={() => this.props.deselectItems(null, false)}
+                    closeTooltip={() => this.props.displayItem(null)}
                 />
                 {
                     this.props.params.team_id &&
@@ -416,22 +407,36 @@ export class Microplanning extends Component {
                                         />
 
                                         {/* Selected summary */}
-                                        <MapSelectionSummary
-                                            data={selectedAndUnselectedVillages}
-                                            assignationsMap={assignationsMap}
-                                            capacity={capacity}
-                                        />
+                                        {
+                                            !this.props.isAssignationLoading &&
+                                            <MapSelectionSummary
+                                                data={selectedAndUnselectedVillages}
+                                                assignationsMap={assignationsMap}
+                                                capacity={capacity}
+                                            />
+                                        }
                                     </div>
 
                                     <div className="map__selection__middle">
+
                                         {/* Selected list */}
-                                        <MapSelectionList
-                                            data={selectedAndUnselectedVillages}
-                                            show={item => this.props.displayItem(item)}
-                                            deselect={list => this.deSelectVillage(list)}
-                                            assignationsMap={assignationsMap}
-                                            teamsMap={teamsMap}
-                                        />
+                                        {
+                                            this.props.isAssignationLoading &&
+                                            <div className="loading-small">
+                                                <i className="fa fa-spinner" />
+                                            </div>
+                                        }
+                                        {
+                                            !this.props.isAssignationLoading &&
+                                            <MapSelectionList
+                                                data={selectedAndUnselectedVillages}
+                                                show={item => this.props.displayItem(item)}
+                                                deselect={list => this.deSelectVillage(list)}
+                                                assignationsMap={assignationsMap}
+                                                teamsMap={teamsMap}
+                                                coordinationId={this.props.params.coordination_id}
+                                            />
+                                        }
                                     </div>
 
                                     <div className="map__selection__bottom">
@@ -473,6 +478,7 @@ export class Microplanning extends Component {
                                     leafletMap={map => this.props.setLeafletMap(map)}
                                     getShape={type => this.props.getShape(type)}
                                     selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
+                                    workzoneId={this.props.params.workzone_id}
                                 />
                             }
                         </div>
@@ -518,6 +524,8 @@ Microplanning.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     isTest: PropTypes.bool,
+    isAssignationLoading: PropTypes.bool.isRequired,
+    chageSelectionModified: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
@@ -535,6 +543,7 @@ const MapDispatchToProps = dispatch => ({
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: url => getRequest(url, dispatch, null, false),
+    chageSelectionModified: isSelectionModified => dispatch(selectionActions.chageSelectionModified(isSelectionModified)),
 });
 
 const MapStateToProps = state => ({
@@ -546,3 +555,4 @@ const MapStateToProps = state => ({
 
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);
+

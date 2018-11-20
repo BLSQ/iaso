@@ -178,9 +178,8 @@ Select {
     height: 29px;
     overflow: hidden;
     width: 100%;
-    margin-bottom: 10px;
-    margin-top: 10px;
     box-shadow: none !important;
+    min-width: 0px;
     select {
         background: transparent;
         border: none !important;

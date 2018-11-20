@@ -49,6 +49,7 @@ class TeamSelectionTool extends Component {
         delete tempParams.team_id;
         delete tempParams.zs_id;
         this.props.deselectAll();
+        this.props.closeTooltip();
         this.props.redirect({
             ...tempParams,
             workzone_id: workzoneId,
@@ -60,6 +61,7 @@ class TeamSelectionTool extends Component {
         delete tempParams.zs_id;
         delete tempParams.workzone_id;
         this.props.deselectAll();
+        this.props.closeTooltip();
         this.props.redirect({
             ...tempParams,
             coordination_id: coordinationId,
@@ -73,6 +75,7 @@ class TeamSelectionTool extends Component {
         delete tempParams.zs_id;
         delete tempParams.workzone_id;
         this.props.deselectAll();
+        this.props.closeTooltip();
         this.props.redirect({
             ...tempParams,
             planning_id: planningId,
@@ -185,6 +188,7 @@ TeamSelectionTool.propTypes = {
     workzones: PropTypes.arrayOf(PropTypes.object),
     redirect: PropTypes.func.isRequired,
     deselectAll: PropTypes.func.isRequired,
+    closeTooltip: PropTypes.func.isRequired,
 };
 
 export default injectIntl(TeamSelectionTool);

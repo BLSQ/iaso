@@ -14,6 +14,7 @@ export const UPDATE_GEO_SCOPE = 'hat/microplanning/selection/UPDATE_GEO_SCOPE';
 
 export const GET_TEAM_DETAIL = 'hat/microplanning/selection/GET_TEAM_DETAIL';
 export const SAVE_AREA_IN_GEOLOC = 'hat/microplanning/selection/SAVE_AREA_IN_GEOLOC';
+export const CHANGE_SELECTION_MODIFIED = 'hat/microplanning/selection/CHANGE_SELECTION_MODIFIED';
 
 const request = require('superagent');
 
@@ -65,6 +66,11 @@ const calculateAssignations = (mode, patchAssignations, existingAssignations) =>
 export const changeBufferSize = size => ({
     type: BUFFER_SIZE_CHANGE,
     payload: parseInt(size, 10),
+});
+
+export const chageSelectionModified = isSelectionModified => ({
+    type: CHANGE_SELECTION_MODIFIED,
+    payload: isSelectionModified,
 });
 
 export const changeHighlightBufferSize = size => ({
@@ -142,6 +148,7 @@ export const selectionActions = {
     displayItem,
     getTeamDetails,
     saveAreaInGeoloc,
+    chageSelectionModified,
 };
 
 export const selectionInitialState = {
@@ -199,7 +206,17 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
         }
 
         case DISPLAY_ITEM: {
-            return { ...state, displayedItem: action.payload };
+            return {
+                ...state,
+                displayedItem: action.payload,
+            };
+        }
+
+        case CHANGE_SELECTION_MODIFIED: {
+            return {
+                ...state,
+                isSelectionModified: action.payload,
+            };
         }
 
         default:

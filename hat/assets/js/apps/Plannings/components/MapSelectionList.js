@@ -10,7 +10,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 class MapSelectionList extends Component {
     render() {
-        const { data, show } = this.props;
+        const { data, show, coordinationId } = this.props;
 
         if (!data || data.length === 0) {
             return <div />;
@@ -36,7 +36,7 @@ class MapSelectionList extends Component {
                 <table className="map__selection__list">
                     <thead>
                         <tr>
-                            <th colSpan="2" />
+                            <th colSpan={coordinationId !== '' ? '2' : '1'} />
                             <th>
                                 <FormattedMessage id="main.name" defaultMessage="Nom" />
                             </th>
@@ -50,18 +50,21 @@ class MapSelectionList extends Component {
                     <tbody>
                         {data.map(item => (
                             <tr className="map__selection__list__item" key={item.id}>
-                                <td className="tools">
-                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
-                                        <span
-                                            tabIndex={0}
-                                            role="button"
-                                            className="remove"
-                                            onClick={() => this.props.deselect([{ village_id: item.id }])}
-                                        >
-                                            <i className="fa fa-close" />
-                                        </span>
-                                    }
-                                </td>
+                                {
+                                    coordinationId !== '' &&
+                                    <td className="tools">
+                                        {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
+                                            <span
+                                                tabIndex={0}
+                                                role="button"
+                                                className="remove"
+                                                onClick={() => this.props.deselect([{ village_id: item.id }])}
+                                            >
+                                                <i className="fa fa-close" />
+                                            </span>
+                                        }
+                                    </td>
+                                }
                                 <td className="tools">
                                     <span
                                         tabIndex={0}
@@ -99,6 +102,7 @@ MapSelectionList.defaultProps = {
     teamsMap: undefined,
     show: () => { },
     deselect: () => { },
+    coordinationId: '',
 };
 
 MapSelectionList.propTypes = {
@@ -107,6 +111,7 @@ MapSelectionList.propTypes = {
     teamsMap: PropTypes.object,
     show: PropTypes.func,
     deselect: PropTypes.func,
+    coordinationId: PropTypes.string,
 };
 
 export default injectIntl(MapSelectionList);

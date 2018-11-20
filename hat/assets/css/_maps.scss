@@ -441,6 +441,10 @@ $color in $types {
             display: inline-block;
             width: 40%;
             font-size: $font-size-xs;
+            &.select-team {
+                position: relative;
+                top: -7px;
+            }
         }
         div.value {
             display: inline-block;

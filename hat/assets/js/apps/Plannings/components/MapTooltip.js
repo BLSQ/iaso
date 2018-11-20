@@ -19,7 +19,6 @@ import {
     defineMessages,
     injectIntl,
 } from 'react-intl';
-import { saveVillageTeam } from '../../../utils/saveData';
 
 import { capitalize } from '../../../utils';
 
@@ -222,7 +221,7 @@ class MapTooltip extends Component {
             }
             return null;
         });
-        if (!this.state.existingTeamId) {
+        if (!this.state.selectedTeamId && (selectedTeamId !== 'none')) {
             newAssignations.push({
                 team_id: parseInt(selectedTeamId, 10),
                 village_id: villageId,
@@ -267,29 +266,44 @@ class MapTooltip extends Component {
         if (!this.state.item || this.state.isloading) {
             return null;
         }
+        let selectedTeam = {
+            name: '--',
+        };
+        if (this.state.selectedTeamId) {
+            [selectedTeam] = this.state.teams.filter(t => t.id === parseInt(this.state.selectedTeamId, 10));
+        }
         return (
             <div key={this.state.item.id} className="map__tooltip">
                 {this.state.item.name && this.props.planningId ? (
                     <div className="property">
-                        <FormattedMessage
-                            id="microplanning.label.team"
-                            defaultMessage="Unité"
-                        />
-                        <div>
-                            <select
-                                value={this.state.selectedTeamId || ''}
-                                className="styled-select"
-                                onChange={event => this.onChangeTeam(event.currentTarget.value)}
-                            >
-                                <option value="none">{formatMessage(MESSAGES.team_all)}</option>
-                                {
-                                    this.state.teams.map(value =>
-                                        (
-                                            <option key={value.id} value={value.id}>
-                                                {value.name}
-                                            </option>
-                                        ))}
-                            </select>
+                        <div className={`label${this.props.workzoneId !== '' ? ' select-team' : ''}`}>
+                            <FormattedMessage
+                                id="microplanning.label.team"
+                                defaultMessage="Unité"
+                            />
+                        </div>
+                        <div className="value">
+                            {
+                                this.props.workzoneId === '' &&
+                                selectedTeam.name
+                            }
+                            {
+                                this.props.workzoneId !== '' &&
+                                <select
+                                    value={this.state.selectedTeamId || ''}
+                                    className="styled-select"
+                                    onChange={event => this.onChangeTeam(event.currentTarget.value)}
+                                >
+                                    <option value="none">{formatMessage(MESSAGES.team_all)}</option>
+                                    {
+                                        this.state.teams.map(value =>
+                                            (
+                                                <option key={value.id} value={value.id}>
+                                                    {value.name}
+                                                </option>
+                                            ))}
+                                </select>
+                            }
                         </div>
                     </div>) :
                     null}
@@ -365,6 +379,7 @@ MapTooltip.propTypes = {
     planningId: PropTypes.string,
     assignations: PropTypes.array,
     selectItems: PropTypes.func.isRequired,
+    workzoneId: PropTypes.string.isRequired,
 };
 
 export default injectIntl(MapTooltip);

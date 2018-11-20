@@ -161,10 +161,9 @@ class Map extends Component {
             if (hasChanged(prevProps, this.props, 'fullscreen')) {
                 this.updateFullscreenMode();
             }
-
             // show/hide tooltip
             if (hasChanged(prevProps, this.props, 'chosenItem')) {
-                this.updateTooltipLarge();
+                this.updateTooltipLarge(this.props.chosenItem);
             }
             this.updateHighlightBuffer();
         });
@@ -515,12 +514,12 @@ class Map extends Component {
     }
 
 
-    updateTooltipLarge() {
+    updateTooltipLarge(chosenItem) {
         const { map } = this.state;
         const { tooltipSmall, tooltipLarge } = this.state.containers;
         const { chosenMarker } = this.state.layers;
         const {
-            chosenItem, legend, items,
+            legend, items,
         } = this.props;
         // clean previous
         if (map.hasLayer(chosenMarker)) {
@@ -528,6 +527,7 @@ class Map extends Component {
             map.removeLayer(chosenMarker);
         }
         if (!chosenItem) {
+            this.closeTooltipLarge();
             return;
         }
         const item = (!chosenItem.name
@@ -561,6 +561,7 @@ class Map extends Component {
                     planningId={this.props.planningId}
                     assignations={this.props.assignations}
                     selectItems={(itemList, activateSaveButton) => this.props.selectItems(itemList, activateSaveButton)}
+                    workzoneId={this.props.workzoneId}
                 />
             </div>
         );
@@ -672,6 +673,7 @@ Map.defaultProps = {
     assignationsMap: undefined,
     assignations: [],
     teamId: '',
+    workzoneId: '',
 };
 
 Map.propTypes = {
@@ -694,6 +696,8 @@ Map.propTypes = {
     areas: PropTypes.object,
     planningId: PropTypes.string,
     selectItems: PropTypes.func.isRequired,
+    workzoneId: PropTypes.string,
+
 };
 
 export default injectIntl(Map);

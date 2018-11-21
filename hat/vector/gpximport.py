@@ -8,13 +8,17 @@ from hat.vector.models import GpsImport, GpsWaypoint, Target
 def gpximport(filename, file=None, user=None):
     if file is None:
         file = open(filename, 'r')
+    content = file.read()
+    if hasattr(content, 'decode'):
+        content = content.decode('utf-8')
 
-    gpx = gpxpy.parse(file)
+    gpx = gpxpy.parse(content)
     file.close()
 
     gps_import = GpsImport.objects.create(
         filename=filename,
         file_date_time=gpx.time.replace(tzinfo=timezone.utc),
+        creator=gpx.creator,
         user=user,
     )
 
@@ -42,7 +46,7 @@ def import_traps_from_gpx(gpx_import):
             name=wp.name,
             deployment=None,
             full_name=gpx_import.filename + " " + wp.name,
-            gps=gpx_import.filename,
+            gps=gpx_import.creator if gpx_import.creator else gpx_import.filename,
             date_time=wp.date_time,
             river=None,
         )

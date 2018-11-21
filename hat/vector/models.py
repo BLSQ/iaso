@@ -92,6 +92,7 @@ class Target(models.Model):
 class GpsImport(models.Model):
     filename = models.TextField()
     file_date_time = models.DateTimeField(null=True)
+    creator = models.TextField(null=True, blank=True)  # This usually holds the model of GPS that created the file.
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
 
@@ -103,6 +104,7 @@ class GpsImport(models.Model):
             'id': self.id,
             'filename': self.filename,
             'file_date_time': self.file_date_time,
+            'creator': self.creator,
             'user': self.user.username,
             'created_at': self.created_at,
         }

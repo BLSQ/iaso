@@ -18,5 +18,5 @@ def gpx_upload(request: HttpRequest) -> HttpResponse:
 
     gpx_import = gpximport(gpx_file.name, gpx_file.file, None)  # Should get user from request
     return JsonResponse(
-        {'gpx_import_id': gpx_import.id, 'items': len(gpx_import.gpswaypoint_set)},
+        {'gpx_import_id': gpx_import.id, 'items': gpx_import.gpswaypoint_set.count()},
         status=status.HTTP_201_CREATED)

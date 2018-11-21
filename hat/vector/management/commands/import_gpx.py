@@ -3,7 +3,7 @@ import sys
 
 from django.core.management.base import BaseCommand
 
-from hat.vector.gpximport import gpximport
+from hat.vector.gpximport import gpximport, import_traps_from_gpx
 
 
 class Command(BaseCommand):
@@ -19,7 +19,18 @@ class Command(BaseCommand):
             default=sys.stdin
         )
 
+        parser.add_argument(
+            '--load',
+            action='store_true',
+            dest='load',
+            help='Load the file right away to the Target table',
+        )
+
+
     def handle(self, *args, **options):
-        gpximport(options['infile'].name, options['infile'])
+        gpx_import = gpximport(options['infile'].name, options['infile'])
+
+        if options['load']:
+            import_traps_from_gpx(gpx_import)
 
         sys.stdout.write("Done importing")

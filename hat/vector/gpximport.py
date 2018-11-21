@@ -34,14 +34,15 @@ def gpximport(filename, file=None, user=None):
 
 def import_traps_from_gpx(gpx_import):
     for wp in GpsWaypoint.objects.filter(gps_import=gpx_import, ignore=False):
-        Target(
+        Target.objects.get_or_create(
+            id=gpx_import.filename + " " + wp.name + " " + str(wp.id),
             latitude=wp.latitude,
             longitude=wp.longitude,
             altitude=wp.elevation,
             name=wp.name,
             deployment=None,
-            full_name=None,
-            gps=None,
+            full_name=gpx_import.filename + " " + wp.name,
+            gps=gpx_import.filename,
             date_time=wp.date_time,
             river=None,
-        ).save()
+        )

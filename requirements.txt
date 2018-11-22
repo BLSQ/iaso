@@ -31,9 +31,6 @@ snaql==0.4.1
 # webpack loader
 django-webpack-loader==0.6.0
 
-# notes
-jupyter==1.0.0
-
 # importing tools
 jsonschema==2.6.0
 simpledbf==0.2.6

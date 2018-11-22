@@ -16,7 +16,6 @@ show_help() {
   start_dev        : start django devserver
   start_webpack    : start webpack server (only in DEV mode)
   start_rq         : start rq worker
-  start_jupyter    : start jupyter notebook
 
   manage           : run django manage.py
   eval             : eval shell command
@@ -66,7 +65,6 @@ case "$1" in
     cat build_scripts/prod/www.trypelim.org/privkey.pem > /etc/nginx/privkey.pem
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
-    ./scripts/gen_docs.sh
     ./manage.py collectstatic --noinput
     ./scripts/start_web.sh
   ;;
@@ -75,7 +73,6 @@ case "$1" in
       # Test prod configuration
       envsubst "\$COUCHDB_URL" < build_scripts/local/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
-      ./scripts/gen_docs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
       npm run webpack
@@ -85,7 +82,6 @@ case "$1" in
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
-      ./scripts/gen_docs.sh
       ./manage.py migrate --noinput
       ./manage.py runserver 0.0.0.0:8080
     fi
@@ -116,13 +112,6 @@ case "$1" in
     # it finds the old worker under it's name in redis.
     ./manage.py rqscheduler &
     ./manage.py rqworker default --name "rq-${RANDOM}"
-  ;;
-  "start_jupyter" )
-    # We only run this server if not testing prod config
-    if [ -n "$TEST_PROD" ]; then
-      exit 0
-    fi
-    jupyter notebook -y --no-browser --ip=0.0.0.0 --config=/opt/notebooks/jupyter_notebook_config.py --notebook-dir=/opt/notebooks/
   ;;
   "manage" )
     ./manage.py "${@:2}"

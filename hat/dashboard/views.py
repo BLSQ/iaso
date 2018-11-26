@@ -143,8 +143,19 @@ def get_menu(user, active_link):
         {
             "name": "Vector control",
             "url_key": reverse("dashboard:vector"),
-            "items": [],
-            "perms": "x_vectorcontrol"
+            "items": [
+                {
+                    "name": "Carte",
+                    "url_key": reverse("dashboard:vector"),
+                    "perms": "x_vectorcontrol"
+                },
+                {
+                    "name": "Import GPX",
+                    "url_key": reverse("dashboard:vector_upload"),
+                    "perms": "x_vectorcontrolupload"
+                },
+            ],
+            "perms": None
         },
         {
             "name": "Contrôle de qualité",
@@ -424,6 +435,17 @@ def vector(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector"))})
+
+@login_required()
+@permission_required('menupermissions.x_vectorcontrolupload')
+@require_http_methods(['GET'])
+def vector_upload(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector_upload"))})
 
 @login_required()
 @permission_required('menupermissions.x_qualitycontrol')

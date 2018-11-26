@@ -21,6 +21,7 @@ USERS = _("Users")
 VILLAGES = _("Villages")
 LOCATOR = _("Locator")
 VECTOR_CONTROL = _("Vector control")
+VECTOR_CONTROL_UPLOAD = _("Vector control import Gpx")
 QUALITY_CONTROL = _("Quality control")
 
 
@@ -51,5 +52,6 @@ class CustomPermissionSupport(models.Model):
             ('x_management_villages', VILLAGES),
             ('x_locator', LOCATOR),
             ('x_vectorcontrol', VECTOR_CONTROL),
+            ('x_vectorcontrolupload', VECTOR_CONTROL_UPLOAD),
             ('x_qualitycontrol', QUALITY_CONTROL)
         )

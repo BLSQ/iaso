@@ -10,17 +10,22 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 
 import VectorContainer from './VectorContainer';
+import GpxUpload from './pages/GpxUpload';
 import { vectorReducer, vectorInitialState } from './redux/vectorReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 
 export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-    const defaultPath = `/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultPath = `/map/date_from/${dateFrom}/date_to/${dateTo}`;
     const routes = [
         <Route
-            path="/date_from/:date_from/date_to/:date_to(/zs_id/:zs_id)"
+            path="/map/date_from/:date_from/date_to/:date_to(/zs_id/:zs_id)"
             component={VectorContainer}
+        />,
+        <Route
+            path="/upload"
+            component={GpxUpload}
         />,
         <Redirect path="*" to={defaultPath} />,
     ];

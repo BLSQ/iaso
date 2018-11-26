@@ -74,7 +74,7 @@ class Target(models.Model):
     river = models.TextField(null=True)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.site, self.operation, self.collect_date)
+        return "%s - %s - %s" % (self.id, self.name, self.date_time)
 
     def as_dict(self):
         return {

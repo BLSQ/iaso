@@ -5,15 +5,15 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import Select from 'react-select';
 
-import LoadingSpinner from '../../components/loading-spinner';
-import { createUrl, getRequest } from '../../utils/fetchData';
-import PeriodSelectorComponent from '../../components/PeriodSelectorComponent';
-import { mapActions } from './redux/mapReducer';
+import LoadingSpinner from '../../../components/loading-spinner';
+import { createUrl, getRequest } from '../../../utils/fetchData';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
+import { mapActions } from '../redux/mapReducer';
 
 
-import VectorMapComponent from './components/VectorMapComponent';
-import RadiosComponent from '../../components/RadiosComponent';
-import LayersComponent from '../../components/LayersComponent';
+import VectorMapComponent from '../components/VectorMapComponent';
+import RadiosComponent from '../../../components/RadiosComponent';
+import LayersComponent from '../../../components/LayersComponent';
 
 const MESSAGES = defineMessages({
     'location-all': {

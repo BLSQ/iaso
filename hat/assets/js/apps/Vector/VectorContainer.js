@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import VectorElement from './Vector';
+import VectorElement from './pages/Vector';
 import { vectorActions } from './redux/vectorReducer';
 import { loadActions } from '../../redux/load';
 

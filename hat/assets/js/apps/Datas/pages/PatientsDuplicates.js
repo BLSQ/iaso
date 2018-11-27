@@ -17,7 +17,7 @@ import { patientsActions } from '../redux/patients';
 
 export const urls = [];
 
-class Patients extends Component {
+class PatientsDuplicates extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -122,9 +122,10 @@ class Patients extends Component {
             reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, 'register/list');
+        const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
+            workzones,
             provinces || [],
             zones || [],
             areas || [],
@@ -225,11 +226,8 @@ class Patients extends Component {
         );
     }
 }
-Patients.defaultProps = {
-    patientList: null,
-};
 
-Patients.propTypes = {
+PatientsDuplicates.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
@@ -244,7 +242,7 @@ Patients.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     setPatientList: PropTypes.func.isRequired,
-    patientList: PropTypes.array,
+    patientList: PropTypes.array.isRequired,
     reduxParams: PropTypes.object.isRequired,
     reduxCount: PropTypes.number.isRequired,
     reduxPages: PropTypes.number.isRequired,
@@ -274,6 +272,6 @@ const MapDispatchToProps = dispatch => ({
     setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
 });
 
-const PatientsWithIntl = injectIntl(Patients);
+const PatientsDuplicatesWithIntl = injectIntl(PatientsDuplicates);
 
-export default connect(MapStateToProps, MapDispatchToProps)(PatientsWithIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(PatientsDuplicatesWithIntl);

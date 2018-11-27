@@ -66,6 +66,11 @@ def get_menu(user, active_link):
                     "name": "Registre",
                     "url_key": reverse("dashboard:register"),
                     "perms": "x_case_cases"
+                },
+                {
+                    "name": "Doublons",
+                    "url_key": reverse("dashboard:register_duplicates"),
+                    "perms": "x_case_cases"
                 }
             ],
             "perms": None
@@ -492,3 +497,28 @@ def register_detail(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})
+
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def register_duplicates(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register_duplicates"))})
+
+
+
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register_duplicates"))})

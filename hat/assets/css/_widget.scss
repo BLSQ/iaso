@@ -26,12 +26,12 @@
         display: block;
         width: 100%;
     }
-    &.with-link {
+    &.with-, &.with-button {
         position: relative;
         h2 {
             width: 80%;
         }
-        a {
+        a, button {
             position: absolute;
             right: $padding-unit;
         }

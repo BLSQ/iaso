@@ -31,4 +31,6 @@ urlpatterns = [
     url(r'^datas/tests.*$', views.cases_list, name='cases_list'),
     url(r'^datas/register/list.*$', views.register, name='register'),
     url(r'^datas/register/detail.*$', views.register_detail, name='register_detail'),
+    url(r'^datas/register/duplicates/detail.*$', views.register_duplicates_detail, name='register_duplicates_detail'),
+    url(r'^datas/register/duplicates.*$', views.register_duplicates, name='register_duplicates'),
 ]

@@ -13,7 +13,7 @@ import PatientCasesLocation from '../components/PatientCasesLocation';
 import PatientCasesTests from '../components/PatientCasesTests';
 
 
-class PatientDetails extends React.Component {
+class PatientDuplicateDetails extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -45,16 +45,6 @@ class PatientDetails extends React.Component {
         });
     }
 
-    goToDuplicates(id1, id2) {
-        const params = {
-            patient_id: id1,
-            patient_id_2: id2,
-        };
-        this.props.redirectTo('register/duplicates/detail', {
-            ...params,
-        });
-    }
-
     render() {
         const { loading } = this.props.load;
         const {
@@ -83,19 +73,9 @@ class PatientDetails extends React.Component {
                             >
                                 <i className="fa fa-arrow-left" />{' '}
                             </button>
-                            <h2 className="widget__heading with-button">
+                            <h2 className="widget__heading">
                                 <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
                             </h2>
-                            {
-                                patient.similar_patients.length > 0 &&
-                                <button
-                                    className="button--save"
-                                    onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id)}
-                                >
-                                    <i className="fa fa-files-o" />
-                                    <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Doublon" />
-                                </button>
-                            }
                         </div>
                         <div className="widget__content--quarter">
                             <PatientInfos patient={patient} />
@@ -124,10 +104,10 @@ class PatientDetails extends React.Component {
     }
 }
 
-PatientDetails.defaultProps = {
+PatientDuplicateDetails.defaultProps = {
 };
 
-PatientDetails.propTypes = {
+PatientDuplicateDetails.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
@@ -137,7 +117,7 @@ PatientDetails.propTypes = {
     testsMapping: PropTypes.object.isRequired,
 };
 
-const PatientDetailsIntl = injectIntl(PatientDetails);
+const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -151,4 +131,4 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(PatientDetailsIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(PatientDuplicateDetailsIntl);

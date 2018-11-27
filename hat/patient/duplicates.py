@@ -7,7 +7,7 @@ from hat.patient.models import PatientIgnoredPair, PatientDuplicatesView, Patien
 
 @transaction.atomic
 def merge_patient_duplicate(patient_dupe, merge_from, merge_to, user):
-    log_modification(merge_from.as_dict(), merge_to.as_dict(), PATIENT_API, user)
+    log_modification(patient_dupe, merge_to, PATIENT_API, user)
     Case.objects.filter(normalized_patient=merge_from).update(normalized_patient=merge_to)
     merge_from.delete()
     patient_dupe.delete()

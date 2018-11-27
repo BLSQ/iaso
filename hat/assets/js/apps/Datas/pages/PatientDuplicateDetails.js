@@ -66,7 +66,7 @@ class PatientDuplicateDetails extends React.Component {
                     />
                 }
                 <div className="widget__container ">
-                    <div className="widget__header">
+                    <div className="widget__header with-button">
                         <button
                             className="button--back"
                             onClick={() => this.goBack()}
@@ -74,7 +74,7 @@ class PatientDuplicateDetails extends React.Component {
                             <i className="fa fa-arrow-left" />{' '}
                         </button>
                         <h2 className="widget__heading">
-                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
+                            <FormattedMessage id="datas.patientsDuplicate.header.title" defaultMessage="Détail Doublon" />:
                         </h2>
                     </div>
                     <div className="widget__content--half with-separation border-bottom">
@@ -82,7 +82,7 @@ class PatientDuplicateDetails extends React.Component {
                             patient && patient.id &&
                             <div>
                                 <h2 className="widget__heading padding-bottom">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Patient" /> A: {patient.id}
+                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> A:
                                 </h2>
                                 <PatientDetailsWrapper
                                     patient={patient}
@@ -105,7 +105,7 @@ class PatientDuplicateDetails extends React.Component {
                             duplicatePatient && duplicatePatient.id &&
                             <div>
                                 <h2 className="widget__heading padding-bottom">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Patient" /> B: {duplicatePatient.id}
+                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> B:
                                 </h2>
                                 <PatientDetailsWrapper
                                     patient={duplicatePatient}

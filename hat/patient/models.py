@@ -87,6 +87,7 @@ class Patient(models.Model):
             "last_name": self.last_name,
             "first_name": self.first_name,
             "sex": self.sex,
+            "age": self.age,
             "year_of_birth": self.year_of_birth,
             "mothers_surname": self.mothers_surname,
             "origin_area": self.origin_area.as_dict() if self.origin_area else None,

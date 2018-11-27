@@ -157,11 +157,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             else:
                 return Response("merge field should be the ID of either patient 1 or patient 2",
                                 status=status.HTTP_400_BAD_REQUEST)
-
             result = merge_patient_duplicate(patient_dupe, merge_from, merge_to, request.user)
 
             return Response(result.as_dict(), status.HTTP_200_OK)
 
         if ignore:
-            ignored_pair = ignore_patient_duplicate(patient_dupe)
+            ignored_pair = ignore_patient_duplicate(patient_dupe, request.user)
             return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)

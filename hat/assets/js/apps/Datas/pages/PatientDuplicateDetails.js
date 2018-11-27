@@ -7,10 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { patientsActions } from '../redux/patients';
-import PatientInfos from '../components/PatientInfos';
-import PatientCasesInfos from '../components/PatientCasesInfos';
-import PatientCasesLocation from '../components/PatientCasesLocation';
-import PatientCasesTests from '../components/PatientCasesTests';
+import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 
 
 class PatientDuplicateDetails extends React.Component {
@@ -18,16 +15,18 @@ class PatientDuplicateDetails extends React.Component {
         super(props);
         this.state = {
             patient: null,
+            duplicatePatient: null,
         };
     }
 
     componentDidMount() {
-        this.props.fetchDetails(this.props.params.patient_id);
+        this.props.fetchDuplicatesDetails(this.props.params.patient_id, this.props.params.patient_id_2);
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
             patient: nextProps.patient,
+            duplicatePatient: nextProps.duplicatePatient,
         });
     }
 
@@ -37,10 +36,13 @@ class PatientDuplicateDetails extends React.Component {
             ...params,
         };
         delete tempParams.patient_id;
+        delete tempParams.patient_id_2;
+        delete tempParams.duplicate_id;
         this.setState({
             patient: null,
+            duplicatePatient: null,
         });
-        this.props.redirectTo('register/list', {
+        this.props.redirectTo('register/duplicates', {
             ...tempParams,
         });
     }
@@ -53,7 +55,7 @@ class PatientDuplicateDetails extends React.Component {
             },
             testsMapping,
         } = this.props;
-        const { patient } = this.state;
+        const { patient, duplicatePatient } = this.state;
         return (
             <section>
                 {
@@ -63,58 +65,93 @@ class PatientDuplicateDetails extends React.Component {
                     })}
                     />
                 }
-                {
-                    patient && patient.id &&
-                    <div className="widget__container ">
-                        <div className="widget__header">
-                            <button
-                                className="button--back"
-                                onClick={() => this.goBack()}
-                            >
-                                <i className="fa fa-arrow-left" />{' '}
-                            </button>
-                            <h2 className="widget__heading">
-                                <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
-                            </h2>
-                        </div>
-                        <div className="widget__content--quarter">
-                            <PatientInfos patient={patient} />
-
-                            {
-                                patient.cases &&
-                                <div className="three-quarter">
-                                    <h2 className="widget__heading padding-bottom">
-                                        <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Tests effectués" />:
-                                    </h2>
-                                    {
-                                        patient.cases.map(c => (
-                                            <div className="widget__content--tier split-bottom" key={c.id}>
-                                                <PatientCasesInfos currentCase={c} />
-                                                <PatientCasesLocation currentCase={c} />
-                                                <PatientCasesTests tests={c.tests} testsMapping={testsMapping} />
-                                            </div>
-                                        ))
-                                    }
-                                </div>
-                            }
-                        </div>
+                <div className="widget__container ">
+                    <div className="widget__header">
+                        <button
+                            className="button--back"
+                            onClick={() => this.goBack()}
+                        >
+                            <i className="fa fa-arrow-left" />{' '}
+                        </button>
+                        <h2 className="widget__heading">
+                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
+                        </h2>
                     </div>
-                }
+                    <div className="widget__content--half with-separation border-bottom">
+                        {
+                            patient && patient.id &&
+                            <div>
+                                <h2 className="widget__heading padding-bottom">
+                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Patient" /> A: {patient.id}
+                                </h2>
+                                <PatientDetailsWrapper
+                                    patient={patient}
+                                    duplicatePatient={duplicatePatient}
+                                    testsMapping={testsMapping}
+                                    isInline={false}
+                                    showInfosTitle={false}
+                                />
+                                <div className="align-center">
+                                    <button
+                                        className="button"
+                                        onClick={() => this.props.mergeDuplicates(patient.id, this.props.params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage id="patientsDuplicate.merge" defaultMessage="Garder cet enregistrement" />
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        {
+                            duplicatePatient && duplicatePatient.id &&
+                            <div>
+                                <h2 className="widget__heading padding-bottom">
+                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Patient" /> B: {duplicatePatient.id}
+                                </h2>
+                                <PatientDetailsWrapper
+                                    patient={duplicatePatient}
+                                    duplicatePatient={patient}
+                                    testsMapping={testsMapping}
+                                    isInline={false}
+                                    showInfosTitle={false}
+                                />
+                                <div className="align-center">
+                                    <button
+                                        className="button"
+                                        onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage id="patientsDuplicate.merge" defaultMessage="Garder cet enregistrement" />
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                    {
+                        patient && patient.id && duplicatePatient && duplicatePatient.id &&
+                        <div className="align-center widget__content">
+                            <button
+                                className="button--warning"
+                                onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
+                            >
+                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
+                            </button>
+                        </div>
+                    }
+                </div>
             </section>);
     }
 }
-
-PatientDuplicateDetails.defaultProps = {
-};
 
 PatientDuplicateDetails.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    fetchDetails: PropTypes.func.isRequired,
+    fetchDuplicatesDetails: PropTypes.func.isRequired,
     patient: PropTypes.object.isRequired,
+    duplicatePatient: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     testsMapping: PropTypes.object.isRequired,
+    mergeDuplicates: PropTypes.func.isRequired,
 };
 
 const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
@@ -122,12 +159,14 @@ const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
 const MapStateToProps = state => ({
     load: state.load,
     patient: state.patients.current,
+    duplicatePatient: state.patients.duplicateCurrent,
     testsMapping: state.patients.testsMapping,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    fetchDetails: patientId => dispatch(patientsActions.fetchDetails(dispatch, patientId)),
+    fetchDuplicatesDetails: (patientId, patientId2) => dispatch(patientsActions.fetchDuplicatesDetails(dispatch, patientId, patientId2)),
+    mergeDuplicates: (targetId, duplicateId, goBack, ignore = false) => dispatch(patientsActions.mergeDuplicates(dispatch, duplicateId, targetId, goBack, ignore)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

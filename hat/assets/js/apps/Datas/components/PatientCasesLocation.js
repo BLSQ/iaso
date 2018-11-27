@@ -4,7 +4,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 class PatientCasesLocation extends React.Component {
     render() {
-        const { currentCase } = this.props;
+        const { currentCase, similarCase } = this.props;
         return (
             <div className="patient-infos-container no-padding-left no-padding-top">
 
@@ -23,7 +23,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.province" defaultMessage="Province" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.province !== currentCase.location.province) ? 'error' : ''}`}>
                                     {currentCase.location && currentCase.location.province ? currentCase.location.province : '--'}
                                 </td>
                             </tr>
@@ -31,7 +31,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.ZS" defaultMessage="Zone de santé" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.ZS !== currentCase.location.ZS) ? 'error' : ''}`}>
                                     {currentCase.location && currentCase.location.ZS ? currentCase.location.ZS : '--'}
                                 </td>
                             </tr>
@@ -39,7 +39,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.AS" defaultMessage="Aire de santé" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.AS !== currentCase.location.AS) ? 'error' : ''}`}>
                                     {currentCase.location && currentCase.location.AS ? currentCase.location.AS : '--'}
                                 </td>
                             </tr>
@@ -47,7 +47,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Village" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.village !== currentCase.location.village) ? 'error' : ''}`}>
                                     {currentCase.location && currentCase.location.village ? currentCase.location.village : '--'}
                                 </td>
                             </tr>
@@ -66,7 +66,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.province" defaultMessage="Province" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.province_name !== currentCase.location.normalized.village.province_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.province_name}
                                 </td>
                             </tr>
@@ -74,7 +74,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.ZS" defaultMessage="Zone de santé" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.ZS_name !== currentCase.location.normalized.village.ZS_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.ZS_name}
                                 </td>
                             </tr>
@@ -82,7 +82,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.AS" defaultMessage="Aire de santé" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.AS_name !== currentCase.location.normalized.village.AS_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.AS_name}
                                 </td>
                             </tr>
@@ -90,7 +90,7 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Village" />
                                 </th>
-                                <td>
+                                <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.name !== currentCase.location.normalized.village.name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.name}
                                 </td>
                             </tr>
@@ -103,8 +103,14 @@ class PatientCasesLocation extends React.Component {
 }
 
 
+PatientCasesLocation.defaultProps = {
+    similarCase: undefined,
+};
+
+
 PatientCasesLocation.propTypes = {
     currentCase: PropTypes.object.isRequired,
+    similarCase: PropTypes.object,
 };
 
 const PatientCasesInfoWithIntl = injectIntl(PatientCasesLocation);

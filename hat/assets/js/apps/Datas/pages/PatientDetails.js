@@ -7,11 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { patientsActions } from '../redux/patients';
-import PatientInfos from '../components/PatientInfos';
-import PatientCasesInfos from '../components/PatientCasesInfos';
-import PatientCasesLocation from '../components/PatientCasesLocation';
-import PatientCasesTests from '../components/PatientCasesTests';
-
+import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 
 class PatientDetails extends React.Component {
     constructor(props) {
@@ -45,10 +41,11 @@ class PatientDetails extends React.Component {
         });
     }
 
-    goToDuplicates(id1, id2) {
+    goToDuplicates(id1, id2, duplicateId) {
         const params = {
             patient_id: id1,
             patient_id_2: id2,
+            duplicate_id: duplicateId,
         };
         this.props.redirectTo('register/duplicates/detail', {
             ...params,
@@ -73,53 +70,33 @@ class PatientDetails extends React.Component {
                     })}
                     />
                 }
-                {
-                    patient && patient.id &&
-                    <div className="widget__container ">
-                        <div className="widget__header">
+                <div className="widget__container ">
+                    <div className="widget__header with-button">
+                        <button
+                            className="button--back"
+                            onClick={() => this.goBack()}
+                        >
+                            <i className="fa fa-arrow-left" />{' '}
+                        </button>
+                        <h2 className="widget__heading with-button">
+                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
+                        </h2>
+                        {
+                            patient && patient.similar_patients && patient.similar_patients.length > 0 &&
                             <button
-                                className="button--back"
-                                onClick={() => this.goBack()}
+                                className="button--save"
+                                onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id, patient.similar_patients[0].duplicateId)}
                             >
-                                <i className="fa fa-arrow-left" />{' '}
+                                <i className="fa fa-files-o" />
+                                <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Doublon" />
                             </button>
-                            <h2 className="widget__heading with-button">
-                                <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
-                            </h2>
-                            {
-                                patient.similar_patients.length > 0 &&
-                                <button
-                                    className="button--save"
-                                    onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id)}
-                                >
-                                    <i className="fa fa-files-o" />
-                                    <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Doublon" />
-                                </button>
-                            }
-                        </div>
-                        <div className="widget__content--quarter">
-                            <PatientInfos patient={patient} />
-
-                            {
-                                patient.cases &&
-                                <div className="three-quarter">
-                                    <h2 className="widget__heading padding-bottom">
-                                        <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Tests effectués" />:
-                                    </h2>
-                                    {
-                                        patient.cases.map(c => (
-                                            <div className="widget__content--tier split-bottom" key={c.id}>
-                                                <PatientCasesInfos currentCase={c} />
-                                                <PatientCasesLocation currentCase={c} />
-                                                <PatientCasesTests tests={c.tests} testsMapping={testsMapping} />
-                                            </div>
-                                        ))
-                                    }
-                                </div>
-                            }
-                        </div>
+                        }
                     </div>
-                }
+                    {
+                        patient && patient.id &&
+                        <PatientDetailsWrapper patient={patient} testsMapping={testsMapping} />
+                    }
+                </div>
             </section>);
     }
 }

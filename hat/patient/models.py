@@ -52,7 +52,7 @@ class Patient(models.Model):
             "province": province,
             "ZS": ZS,
             "AS": AS,
-            "village": village
+            "village": village,
         }
 
     def as_full_dict(self):
@@ -62,11 +62,14 @@ class Patient(models.Model):
             cases.append(case.as_dict(True))
             for test in case.test_set.all():
                 tests.append(test.to_dict())
-
-        similar_patients = [pair.patient1.as_dict() if pair.patient1_id != self.id else pair.patient2.as_dict()
-                            for pair in
-                            PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id))]
-
+        similar_patients = []
+        for pair in PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id)):
+            if pair.patient1_id != self.id:
+                duplicatePatient = pair.patient1.as_dict()
+            else:
+                duplicatePatient = pair.patient2.as_dict()
+            duplicatePatient['duplicateId'] = pair.id
+            similar_patients.append(duplicatePatient)
         AS = None
         ZS = None
         province = None

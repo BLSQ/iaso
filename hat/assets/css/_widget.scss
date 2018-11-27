@@ -26,14 +26,22 @@
         display: block;
         width: 100%;
     }
-    &.with-, &.with-button {
+    &.with-link,
+    &.with-button {
         position: relative;
         h2 {
             width: 80%;
         }
-        a, button {
+        a,
+        button:not(.button--back) {
             position: absolute;
             right: $padding-unit;
+        }
+    }
+    &.with-button {
+        h2 {
+            position: relative;
+            top: 2px;
         }
     }
 }
@@ -102,10 +110,36 @@
     padding: $padding-unit 0;
 }
 
+
+%half-item {
+    flex-basis: 50%;
+    box-sizing: border-box;
+    padding: $padding-unit;
+    >span {
+        font-weight: bold;
+        color: #868486;
+        margin-bottom: 6px;
+        font-size: 12px;
+        display: block;
+    }
+}
+
+.widget__content--half {
+    display: flex;
+    &>div {
+        @extend %half-item;
+    }
+    &.with-separation {
+        &>div:first-child {
+            position: relative;
+            border-right: 1px solid $gray;
+        }
+    }
+}
 %quarter-item {
     flex-basis: 25%;
     box-sizing: border-box;
-    padding: $padding-unit ;
+    padding: $padding-unit;
     >span {
         font-weight: bold;
         color: #868486;
@@ -149,6 +183,7 @@
         }
     }
 }
+
 .widget__content--double {
     display: flex;
     &>div {

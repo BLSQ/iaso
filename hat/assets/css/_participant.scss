@@ -1,0 +1,20 @@
+.patient-infos-container {
+    table {
+        margin-bottom: $padding-unit/2;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.not-inline {
+    .patient-infos-container {
+        width: 100%;
+        table {
+            margin-bottom: $padding-unit/2;
+            &:last-child {
+                margin-bottom: $padding-unit/2;
+            }
+        }
+    }
+}

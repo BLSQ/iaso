@@ -41,7 +41,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             component={PatientsDuplicates}
         />,
         <Route
-            path="/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2"
+            path="/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2/duplicate_id/:duplicate_id"
             component={PatientDuplicateDetails}
         />,
         <Redirect path="/register/list" to={defaultPathRegister} />,

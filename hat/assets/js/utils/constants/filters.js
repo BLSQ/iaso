@@ -66,7 +66,7 @@ const testType = (formatMessage, defineMessages) => (
             },
             {
                 label: 'CTCWOO',
-                value: 'ctc',
+                value: 'ctcwoo',
             },
             // {
             //     label: 'GE',

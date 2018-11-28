@@ -84,7 +84,7 @@ class PatientsViewSet(viewsets.ViewSet):
 
         if test_types:
             test_with_type_in = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))\
-                .filter(type__in=test_types.split(","))
+                .filter(type__in=test_types.upper().split(","))
             queryset = queryset \
                 .annotate(test_with_type_in=Exists(test_with_type_in)) \
                 .filter(test_with_type_in=True)

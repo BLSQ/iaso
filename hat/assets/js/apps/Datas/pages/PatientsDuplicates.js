@@ -8,20 +8,20 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
-import registerListColumns from '../constants/registerListColumns';
+import duplicateListColumns from '../constants/duplicateListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
-import { patientsActions } from '../redux/patients';
 
-export const urls = [];
+
+const baseUrl = 'register/duplicates';
 
 class PatientsDuplicates extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: registerListColumns(props.intl.formatMessage),
+            tableColumns: duplicateListColumns(props.intl.formatMessage),
         };
     }
 
@@ -57,7 +57,7 @@ class PatientsDuplicates extends Component {
     }
 
     getEndpointUrl(forCsv) {
-        let url = '/api/patients/?';
+        let url = '/api/patientduplicates/?full=true';
         const {
             params,
         } = this.props;
@@ -78,6 +78,14 @@ class PatientsDuplicates extends Component {
             delete urlParams.patient_id;
         }
 
+        if (urlParams.patient_id_2) {
+            delete urlParams.patient_id_2;
+        }
+
+        if (urlParams.duplicate_id) {
+            delete urlParams.duplicate_id;
+        }
+
         if (forCsv) {
             urlParams.csv = true;
         }
@@ -91,15 +99,17 @@ class PatientsDuplicates extends Component {
         return url;
     }
 
-    selectPatient(patient) {
+    selectDuplicate(duplicate) {
         const { params } = this.props;
 
         const newParams = {
-            patient_id: patient.id,
+            patient_id: duplicate.patient1.id,
+            patient_id_2: duplicate.patient2.id,
+            duplicate_id: duplicate.id,
             ...params,
         };
 
-        this.props.redirectTo('register/detail', newParams);
+        this.props.redirectTo('register/duplicates/detail', newParams);
     }
 
     render() {
@@ -114,12 +124,7 @@ class PatientsDuplicates extends Component {
                 villages,
                 workzones,
             },
-            setPatientList,
-            patientList,
             params,
-            reduxParams,
-            reduxCount,
-            reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
@@ -131,7 +136,7 @@ class PatientsDuplicates extends Component {
             areas || [],
             villages || [],
             this.props,
-            'register/list',
+            baseUrl,
         );
         return (
             <section className="cases-list-container">
@@ -152,7 +157,7 @@ class PatientsDuplicates extends Component {
                             dateFrom={this.props.params.date_from}
                             dateTo={this.props.params.date_to}
                             onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo('register/list', {
+                                this.props.redirectTo(baseUrl, {
                                     ...this.props.params,
                                     date_from: dateFrom,
                                     date_to: dateTo,
@@ -164,28 +169,28 @@ class PatientsDuplicates extends Component {
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={filters2}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={filters1}
                             />
                         </div>
@@ -199,16 +204,10 @@ class PatientsDuplicates extends Component {
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_name', desc: false }]}
                         params={params}
-                        defaultPath="register/list"
-                        dataKey="patient"
-                        onRowClicked={patientItem => this.selectPatient(patientItem)}
+                        defaultPath={baseUrl}
+                        dataKey="patientduplicatepairs"
+                        onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
                         multiSort
-                        onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
-                        reduxDatas={patientList}
-                        reduxParams={reduxParams}
-                        reduxShowPagination
-                        reduxCount={reduxCount}
-                        reduxPages={reduxPages}
                     />
                     <div className="align-right">
                         <button
@@ -241,11 +240,6 @@ PatientsDuplicates.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
-    setPatientList: PropTypes.func.isRequired,
-    patientList: PropTypes.array.isRequired,
-    reduxParams: PropTypes.object.isRequired,
-    reduxCount: PropTypes.number.isRequired,
-    reduxPages: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -269,7 +263,6 @@ const MapDispatchToProps = dispatch => ({
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
-    setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
 });
 
 const PatientsDuplicatesWithIntl = injectIntl(PatientsDuplicates);

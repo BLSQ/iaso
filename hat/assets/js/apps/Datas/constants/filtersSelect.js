@@ -78,13 +78,14 @@ const filtersPatients = (formatMessage, defineMessages) => (
 );
 
 const filtersPatients2 = (
-    formatMessage,
-    defineMessages,
     coordinationsList,
     teamsList,
+    workzonesList,
+    props,
+    urlKey,
 ) => (
     [
-        searchMotherName(),
+        workZones(workzonesList, props, urlKey),
         coordinations(coordinationsList),
         teams(teamsList),
     ]
@@ -95,11 +96,11 @@ const filtersPatientsSearch = () => (
         searchLastname(),
         searchName(),
         searchPrename(),
+        searchMotherName(),
     ]
 );
 
 const filtersPatientsGeo = (
-    workzonesList,
     provincesList,
     zoneslist,
     areasList,
@@ -108,7 +109,6 @@ const filtersPatientsGeo = (
     urlKey,
 ) => (
     [
-        workZones(workzonesList, props, urlKey),
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),

@@ -41,6 +41,14 @@ class Search extends React.Component {
         }
     }
 
+    onChange(value) {
+        this.setState({
+            searchString: value,
+            isChanged: true,
+        });
+        this.props.onChange(value);
+    }
+
     render() {
         const {
             results,
@@ -57,11 +65,7 @@ class Search extends React.Component {
                         type="text"
                         value={this.state.searchString}
                         placeholder={this.props.placeholderText}
-                        onChange={event =>
-                            this.setState({
-                                searchString: event.target.value,
-                                isChanged: true,
-                            })}
+                        onChange={event => this.onChange(event.target.value)}
                         onKeyPress={(event) => {
                             if (event.which === 13 || event.keyCode === 13) {
                                 this.onSearch();
@@ -181,6 +185,7 @@ Search.defaultProps = {
     allowEmptySearch: false,
     displayResults: true,
     onSelect: () => { },
+    onChange: () => { },
     showResetSearch: false,
     resetOnUnmount: true,
 };
@@ -204,6 +209,7 @@ Search.propTypes = {
     allowEmptySearch: PropTypes.bool,
     showResetSearch: PropTypes.bool,
     resetOnUnmount: PropTypes.bool,
+    onChange: PropTypes.func,
 };
 
 export default Search;

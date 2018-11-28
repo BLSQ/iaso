@@ -43,6 +43,14 @@ $filter-container-height: 2rem;
 $select-width: 120px;
 .date-select-container {
     display: inline-block;
+    .button--save--tiny {
+        height: 33px;
+        font-size: 13px;
+        outline: none;
+        box-shadow: none;
+        z-index: 10;
+        position: relative;
+    }
 }
 
 .filter__container__select {
@@ -58,6 +66,8 @@ $select-width: 120px;
         display: inline-block;
         margin: 0 20px 0 0px;
         padding: 0;
+        z-index: 1;
+        position: relative;
         .filter__container__select__label {
             width: 55px;
             text-align: center;

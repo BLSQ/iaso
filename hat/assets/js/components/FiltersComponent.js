@@ -10,6 +10,10 @@ import { createUrl } from '../utils/fetchData';
 
 
 class FiltersComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
     onChange(urlKey, value, callback) {
         if (callback) {
             callback(value);
@@ -25,6 +29,32 @@ class FiltersComponent extends React.Component {
             newParams[urlKey] = value;
             redirectTo(baseUrl, newParams);
         }
+    }
+
+    onSearchChange(value, key, launchSearch = false) {
+        const newState = Object.assign({}, this.state, { [key]: value });
+        this.setState(newState);
+        if (launchSearch) {
+            this.onSearch(newState);
+        }
+    }
+
+    onSearch(state = this.state) {
+        const {
+            params,
+            redirectTo,
+            baseUrl,
+        } = this.props;
+        const newParams = {
+            ...params,
+        };
+        Object.keys(state).map((objectKey) => {
+            const value = state[objectKey];
+            newParams[objectKey] = value;
+            return null;
+        });
+
+        redirectTo(baseUrl, newParams);
     }
 
     render() {
@@ -67,11 +97,12 @@ class FiltersComponent extends React.Component {
                                                 placeholderText={formatMessage(filter.placeholder)}
                                                 allowEmptySearch={filter.allowEmptySearch}
                                                 showResetSearch={filter.showResetSearch}
-                                                onSearch={value => this.onChange(filter.urlKey, value, filter.callback)}
-                                                resetSearch={() => this.onChange(filter.urlKey, null, filter.callback)}
+                                                onSearch={() => this.onSearch()}
+                                                resetSearch={() => this.onSearchChange('', filter.urlKey, true)}
                                                 displayResults={filter.displayResults}
                                                 searchString={params[filter.urlKey]}
                                                 resetOnUnmount={false}
+                                                onChange={value => this.onSearchChange(value, filter.urlKey)}
                                             />
                                         }
                                     </div>

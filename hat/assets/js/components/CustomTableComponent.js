@@ -25,7 +25,7 @@ class CustomTableComponent extends React.Component {
             disableHeaderFixed: props.disableHeaderFixed,
             data: [],
             pages: null,
-            loading: props.reduxDatas.length === 0,
+            loading: false,
             showPagination: false,
             page: props.params.page ? parseInt(props.params.page, 10) : props.page,
             pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
@@ -40,7 +40,7 @@ class CustomTableComponent extends React.Component {
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
-        if (this.props.reduxDatas.length === 0) {
+        if (this.props.reduxDatas) {
             this.onFetchData({
                 sorted: this.state.order,
                 page: this.state.page,
@@ -64,7 +64,7 @@ class CustomTableComponent extends React.Component {
                 pageSize: newProps.params.pageSize ? parseInt(newProps.params.pageSize, 10) : this.props.pageSize,
             }, newProps.endPointUrl);
         }
-        if (newProps.reduxDatas.length > 0) {
+        if (newProps.reduxDatas) {
             this.setState({
                 reduxDatas: newProps.reduxDatas,
                 loading: false,
@@ -204,7 +204,7 @@ class CustomTableComponent extends React.Component {
                         manual
                         multiSort={this.props.multiSort}
                         columns={this.props.columns}
-                        data={this.state.reduxDatas.length > 0 ? this.state.reduxDatas : this.state.data}
+                        data={this.state.reduxDatas ? this.state.reduxDatas : this.state.data}
                         pages={this.state.pages}
                         loading={this.state.loading}
                         onPageChange={page => this.onPageChange(page)}

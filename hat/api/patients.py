@@ -1,15 +1,16 @@
 import csv
 
+from django.core.paginator import Paginator
+from django.db.models import Q, OuterRef, Exists
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.response import Response
-from hat.patient.models import Patient
-from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
-from django.core.paginator import Paginator
-from django.db.models import Q
+from rest_framework.response import Response
 
+from hat.cases.models import CaseView, RES_POSITIVE
+from hat.patient.models import Patient, Test
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -37,7 +38,7 @@ class PatientsViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         teams = request.GET.get("teams", None)
-        coordination_ids = request.GET.get("coordination_id", None)
+        coordination_id = request.GET.get("coordination_id", None)
         date_from = request.GET.get("date_from", None)
         date_to = request.GET.get("date_to", None)
         search_name = request.GET.get("search_name", None)
@@ -54,45 +55,56 @@ class PatientsViewSet(viewsets.ViewSet):
             Patient.objects.order_by(*orders)
         )
 
-        # To-do:
-        if date_from:
-            print ('Query on date_from:', date_from)
-            # queryset = queryset.filter(case__test__date__gte=date_from).distinct()
-        if date_to:
-            print ('Query on date_to:', date_to)
-            # queryset = queryset.filter(case__test__date__lte=date_to).distinct()
+        if date_from or date_to:
+            test_with_date_in_range = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))
+            if date_from:
+                test_with_date_in_range = test_with_date_in_range.filter(date__gte=date_from)
+            if date_to:
+                test_with_date_in_range = test_with_date_in_range.filter(date__lte=date_to)
+
+            queryset = queryset\
+                .annotate(test_with_date_in_range=Exists(test_with_date_in_range))\
+                .filter(test_with_date_in_range=True)
+
         if teams:
-            print ('Query on test type:', teams)
-            # queryset = queryset.filter(case__normalized_team_id__in=teams.split(",")).distinct()
-        if coordination_ids:
-            print ('Query on test type:', coordination_ids)
-            # queryset = queryset.filter(case__normalized_team__coordination__id__in=coordination_ids.split(",")).distinct()
+            teams_cases = CaseView.objects\
+                .filter(normalized_team_id__in=teams.split(","))\
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(teams_cases=Exists(teams_cases))\
+                .filter(teams_cases=True)
+
+        if coordination_id:
+            coord_cases = CaseView.objects\
+                .filter(normalized_team__coordination_id__in=coordination_id.split(","))\
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(teams_cases=Exists(coord_cases))\
+                .filter(teams_cases=True)
 
         if test_types:
-            for test_type in test_types.split(","):
-                print ('Query on test type:', test_type)
+            test_with_type_in = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))\
+                .filter(type__in=test_types.upper().split(","))
+            queryset = queryset \
+                .annotate(test_with_type_in=Exists(test_with_type_in)) \
+                .filter(test_with_type_in=True)
 
         if screening_result is not None:
-            if screening_result == 'true':
-                print ('Query on screening test positive:')
-                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
-            else:
-                print ('Query on screening test negative:')
-                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
-
-        if screening_result is not None:
-            if screening_result == 'true':
-                print ('Query on screening test positive')
-                # queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
-            else:
-                print ('Query on screening test negative')
-                # queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+            # setting this to false will provide patients that had no positive screening result at all
+            positive_screening_cases = CaseView.objects\
+                .filter(screening_result__gte=RES_POSITIVE)\
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
+                .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
 
         if confirmation_result is not None:
-            print ('Query on confirmation test:', confirmation_result)
-            # queryset = queryset.filter(confirmed_case=(confirmation_result == 'true'))
-
-        #
+            confirmed_cases = CaseView.objects\
+                .filter(confirmed_case=True)\
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(has_confirmed_case=Exists(confirmed_cases))\
+                .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
 
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
@@ -108,23 +120,22 @@ class PatientsViewSet(viewsets.ViewSet):
 
         if search_name:
             queryset = queryset.filter(
-                Q(post_name__icontains=search_name)
+                Q(post_name__contains=search_name)
             )
         if search_prename:
             queryset = queryset.filter(
-                Q(first_name__icontains=search_prename)
+                Q(first_name__contains=search_prename)
             )
         if search_lastname:
             queryset = queryset.filter(
-                Q(last_name__icontains=search_lastname)
+                Q(last_name__contains=search_lastname)
             )
         if search_mother_name:
             queryset = queryset.filter(
-                Q(mothers_surname__icontains=search_mother_name)
+                Q(mothers_surname__contains=search_mother_name)
             )
 
         if csvformat is None:
-
             paginator = Paginator(queryset, limit)
 
             res = {"count": paginator.count}

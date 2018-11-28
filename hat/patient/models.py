@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+from django.contrib.postgres import fields as contrib
 
 from hat.cases.models import Case
 from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
@@ -8,9 +9,9 @@ from hat.sync.models import VideoUpload, ImageUpload
 
 
 class Patient(models.Model):
-    post_name = models.TextField("Postnom", null=True)
-    last_name = models.TextField("Nom de famille", null=True)
-    first_name = models.TextField("Prénom", null=True)
+    post_name = contrib.CITextField("Postnom", null=True)
+    last_name = contrib.CITextField("Nom de famille", null=True)
+    first_name = contrib.CITextField("Prénom", null=True)
 
     SEX_CHOICES = (
         ('female', 'Femme'),
@@ -19,7 +20,7 @@ class Patient(models.Model):
     sex = models.TextField("Sexe", choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
     year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True, db_index=True)
-    mothers_surname = models.TextField("Nom de la mère", null=True)
+    mothers_surname = contrib.CITextField("Nom de la mère", null=True)
     origin_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
     origin_village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
 
@@ -28,7 +29,6 @@ class Patient(models.Model):
 
     def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
-
 
     def as_dict(self):
         AS = None

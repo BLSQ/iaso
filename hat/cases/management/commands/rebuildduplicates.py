@@ -50,6 +50,8 @@ class Command(BaseCommand):
             min_id = 1
         else:
             min_id = PatientDuplicatesPair.objects.aggregate(Max('patient2_id'))['patient2_id__max']
+            if not min_id:
+                min_id = 1
 
         if options['start']:
             min_id = int(options['start'])

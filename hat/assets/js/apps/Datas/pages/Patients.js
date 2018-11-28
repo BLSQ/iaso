@@ -122,10 +122,9 @@ class Patients extends Component {
             reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, 'register/list');
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
-            workzones,
             provinces || [],
             zones || [],
             areas || [],
@@ -226,6 +225,9 @@ class Patients extends Component {
         );
     }
 }
+Patients.defaultProps = {
+    patientList: null,
+};
 
 Patients.propTypes = {
     load: PropTypes.object.isRequired,
@@ -242,7 +244,7 @@ Patients.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     setPatientList: PropTypes.func.isRequired,
-    patientList: PropTypes.array.isRequired,
+    patientList: PropTypes.array,
     reduxParams: PropTypes.object.isRequired,
     reduxCount: PropTypes.number.isRequired,
     reduxPages: PropTypes.number.isRequired,

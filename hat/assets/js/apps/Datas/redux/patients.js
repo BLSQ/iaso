@@ -62,7 +62,7 @@ export const patientsActions = {
 export const patientsInitialState = {
     current: {},
     testsMapping: {},
-    list: [],
+    list: null,
     showPagination: false,
     params: {},
     count: 0,

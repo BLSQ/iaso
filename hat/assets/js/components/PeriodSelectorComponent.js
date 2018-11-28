@@ -43,10 +43,9 @@ class PeriodSelectorComponent extends React.Component {
                         dateFormatCalendar={this.state.dateFormat}
                         selected={this.state.dateFrom}
                         onChange={date =>
-                            this.props.onChangeDate(
-                                moment(date).format(this.state.dateFormat),
-                                this.props.dateTo,
-                            )}
+                            this.setState({
+                                dateFrom: moment(date),
+                            })}
                         maxDate={this.state.dateTo}
                     />
                 </div>
@@ -67,12 +66,24 @@ class PeriodSelectorComponent extends React.Component {
                         selected={this.state.dateTo}
                         minDate={this.state.dateFrom}
                         onChange={date =>
-                            this.props.onChangeDate(
-                                this.props.dateFrom,
-                                moment(date).format(this.state.dateFormat),
-                            )}
+                            this.setState({
+                                dateTo: moment(date),
+                            })}
                     />
                 </div>
+                <button
+                    onClick={() =>
+                        this.props.onChangeDate(
+                            moment(this.state.dateFrom).format(this.state.dateFormat),
+                            moment(this.state.dateTo).format(this.state.dateFormat),
+                        )}
+                    className="button--save--tiny"
+                >
+                    <FormattedMessage
+                        id="PeriodSelectorComponent.label.apply"
+                        defaultMessage="Appliquer"
+                    />
+                </button>
             </section>
         );
     }

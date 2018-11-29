@@ -456,6 +456,21 @@ const villages = villagesList => (
     }
 );
 
+const onlyDupes = () => (
+    {
+        name: 'only_dupes',
+        urlKey: 'only_dupes',
+        allowEmptySearch: true,
+        showResetSearch: true,
+        displayResults: false,
+        label: {
+            id: 'main.label.onlyDupes',
+            defaultMessage: 'Uniquement avec Doublons',
+        },
+        type: 'checkbox',
+    }
+);
+
 
 export {
     testType,
@@ -474,4 +489,5 @@ export {
     aires,
     villages,
     searchMotherName,
+    onlyDupes,
 };

@@ -124,9 +124,10 @@ class Patients extends Component {
             reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, baseUrl);
+        const filters2 = filtersPatients2(coordinations || [], teams || []);
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
+            workzones,
             provinces || [],
             zones || [],
             areas || [],

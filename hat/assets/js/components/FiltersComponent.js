@@ -57,6 +57,23 @@ class FiltersComponent extends React.Component {
         redirectTo(baseUrl, newParams);
     }
 
+    toggleCheckbox(checked, urlKey) {
+        const {
+            params,
+            redirectTo,
+            baseUrl,
+        } = this.props;
+        const newParams = {
+            ...params,
+        };
+        if (checked) {
+            newParams[urlKey] = 'true';
+        } else if (newParams[urlKey]) {
+            delete newParams[urlKey];
+        }
+        redirectTo(baseUrl, newParams);
+    }
+
     render() {
         const { formatMessage } = this.props.intl;
         const { filters, params } = this.props;
@@ -71,9 +88,12 @@ class FiltersComponent extends React.Component {
                             return (
                                 <div key={filter.name}>
                                     <div className="filter-item">
-                                        <div className="filter-item-subtitle ">
-                                            {formatMessage(filter.label)}
-                                        </div>
+                                        {
+                                            filter.type !== 'checkbox' &&
+                                            <div className="filter-item-subtitle ">
+                                                {formatMessage(filter.label)}
+                                            </div>
+                                        }
                                         {
                                             filter.type === 'select' &&
                                             <Select
@@ -104,6 +124,20 @@ class FiltersComponent extends React.Component {
                                                 resetOnUnmount={false}
                                                 onChange={value => this.onSearchChange(value, filter.urlKey)}
                                             />
+                                        }
+
+                                        {
+                                            filter.type === 'checkbox' &&
+                                            <span className="map__text--select align-left">
+                                                {formatMessage(filter.label)}
+                                                <input
+                                                    type="checkbox"
+                                                    name="only dupes"
+                                                    className="list--normalized-as-checkbox"
+                                                    checked={this.props.params.only_dupes === 'true' ? 'checked' : ''}
+                                                    onChange={event => this.toggleCheckbox(event.target.checked, filter.urlKey)}
+                                                />
+                                            </span>
                                         }
                                     </div>
                                 </div>

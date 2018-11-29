@@ -9,7 +9,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, RES_POSITIVE
-from hat.patient.models import Patient, Test
+from hat.patient.models import Patient, Test, PatientDuplicatesPair
 from .authentication import CsrfExemptSessionAuthentication
 
 
@@ -48,12 +48,21 @@ class PatientsViewSet(viewsets.ViewSet):
         test_types = request.GET.get("test_type", None)
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
+        only_dupes = request.GET.get("only_dupes", None)
 
         csvformat = request.GET.get("csv", None)  # default will be json
 
         queryset = (
             Patient.objects.order_by(*orders)
         )
+
+        if only_dupes:
+            dupes = PatientDuplicatesPair.objects\
+                .filter(Q(patient1_id=OuterRef('id')) | Q(patient2_id=OuterRef('id')))
+            queryset = queryset\
+                .annotate(has_dupes=Exists(dupes))\
+                .filter(has_dupes=True)
+
 
         if date_from or date_to:
             test_with_date_in_range = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))

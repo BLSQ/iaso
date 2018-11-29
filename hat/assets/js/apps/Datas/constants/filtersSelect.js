@@ -15,6 +15,7 @@ import {
     aires,
     villages,
     searchMotherName,
+    onlyDupes,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -80,14 +81,11 @@ const filtersPatients = (formatMessage, defineMessages) => (
 const filtersPatients2 = (
     coordinationsList,
     teamsList,
-    workzonesList,
-    props,
-    urlKey,
 ) => (
     [
-        workZones(workzonesList, props, urlKey),
         coordinations(coordinationsList),
         teams(teamsList),
+        onlyDupes(),
     ]
 );
 
@@ -101,6 +99,7 @@ const filtersPatientsSearch = () => (
 );
 
 const filtersPatientsGeo = (
+    workzonesList,
     provincesList,
     zoneslist,
     areasList,
@@ -109,6 +108,7 @@ const filtersPatientsGeo = (
     urlKey,
 ) => (
     [
+        workZones(workzonesList, props, urlKey),
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),

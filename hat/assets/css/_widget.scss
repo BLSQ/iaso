@@ -105,6 +105,12 @@
         padding: 0;
     }
 }
+.with-separation {
+    &>div:first-child {
+        position: relative;
+        border-right: 1px solid $gray;
+    }
+}
 
 .widget__content--flush {
     padding: $padding-unit 0;
@@ -128,12 +134,6 @@
     display: flex;
     &>div {
         @extend %half-item;
-    }
-    &.with-separation {
-        &>div:first-child {
-            position: relative;
-            border-right: 1px solid $gray;
-        }
     }
 }
 %quarter-item {
@@ -171,6 +171,9 @@
             margin-bottom: 6px;
             font-size: 12px;
             display: block;
+        }
+        &.three-tier {
+            flex-basis: 66%;
         }
     }
     &>div>section {

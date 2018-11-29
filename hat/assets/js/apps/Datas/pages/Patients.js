@@ -4,7 +4,7 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
+import ChoosePeriodSelectorComponent from '../../../components/ChoosePeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
@@ -16,6 +16,8 @@ import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatien
 import { patientsActions } from '../redux/patients';
 
 export const urls = [];
+
+const baseUrl = 'register/list';
 
 class Patients extends Component {
     constructor(props) {
@@ -122,7 +124,7 @@ class Patients extends Component {
             reduxPages,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, 'register/list');
+        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, baseUrl);
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
             provinces || [],
@@ -130,7 +132,7 @@ class Patients extends Component {
             areas || [],
             villages || [],
             this.props,
-            'register/list',
+            baseUrl,
         );
         return (
             <section className="cases-list-container">
@@ -146,49 +148,42 @@ class Patients extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
                     </div>
-                    <div className="widget__header widget__content--quarter">
-                        <PeriodSelectorComponent
-                            dateFrom={this.props.params.date_from}
-                            dateTo={this.props.params.date_to}
-                            onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo('register/list', {
-                                    ...this.props.params,
-                                    date_from: dateFrom,
-                                    date_to: dateTo,
-                                })}
-                        />
-                    </div>
 
                     <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={filters2}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
-                                baseUrl="register/list"
+                                baseUrl={baseUrl}
                                 filters={filters1}
                             />
                         </div>
                     </div>
+                    <ChoosePeriodSelectorComponent
+                        params={this.props.params}
+                        baseUrl={baseUrl}
+                        redirectTo={this.props.redirectTo}
+                    />
                 </div>
                 <div className="widget__container  no-border">
                     <CustomTableComponent
@@ -198,7 +193,7 @@ class Patients extends Component {
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_name', desc: false }]}
                         params={params}
-                        defaultPath="register/list"
+                        defaultPath={baseUrl}
                         dataKey="patient"
                         onRowClicked={patientItem => this.selectPatient(patientItem)}
                         multiSort

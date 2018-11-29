@@ -40,7 +40,7 @@ class CustomTableComponent extends React.Component {
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
-        if (this.props.reduxDatas) {
+        if (!this.props.reduxDatas) {
             this.onFetchData({
                 sorted: this.state.order,
                 page: this.state.page,
@@ -255,7 +255,7 @@ CustomTableComponent.defaultProps = {
     isUpdated: false,
     callBackWithDataKey: true,
     disableHeaderFixed: false,
-    reduxDatas: [],
+    reduxDatas: null,
     reduxParams: {},
     reduxShowPagination: false,
     reduxCount: 0,

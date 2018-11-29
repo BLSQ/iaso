@@ -4,7 +4,6 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
@@ -127,10 +126,9 @@ class PatientsDuplicates extends Component {
             params,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const filters2 = filtersPatients2(coordinations || [], teams || [], workzones, this.props, 'register/list');
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
-            workzones,
             provinces || [],
             zones || [],
             areas || [],
@@ -151,18 +149,6 @@ class PatientsDuplicates extends Component {
                 <div className="widget__container ">
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
-                    </div>
-                    <div className="widget__header widget__content--quarter">
-                        <PeriodSelectorComponent
-                            dateFrom={this.props.params.date_from}
-                            dateTo={this.props.params.date_to}
-                            onChangeDate={(dateFrom, dateTo) =>
-                                this.props.redirectTo(baseUrl, {
-                                    ...this.props.params,
-                                    date_from: dateFrom,
-                                    date_to: dateTo,
-                                })}
-                        />
                     </div>
 
                     <div className="widget__content--quarter">
@@ -202,7 +188,7 @@ class PatientsDuplicates extends Component {
                         showPagination
                         endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'last_name', desc: false }]}
+                        defaultSorted={[{ id: 'id', desc: false }]}
                         params={params}
                         defaultPath={baseUrl}
                         dataKey="patientduplicatepairs"

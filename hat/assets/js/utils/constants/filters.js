@@ -118,11 +118,11 @@ const screeningResult = (formatMessage, defineMessages) => (
         options: [
             {
                 label: formatMessage(getMessage(defineMessages, 'positive')),
-                value: true,
+                value: 'true',
             },
             {
                 label: formatMessage(getMessage(defineMessages, 'negative')),
-                value: false,
+                value: 'false',
             },
         ],
         placeholder: {
@@ -146,11 +146,11 @@ const confirmationResult = (formatMessage, defineMessages) => (
         options: [
             {
                 label: formatMessage(getMessage(defineMessages, 'positive')),
-                value: true,
+                value: 'true',
             },
             {
                 label: formatMessage(getMessage(defineMessages, 'negative')),
-                value: false,
+                value: 'false',
             },
         ],
         placeholder: {

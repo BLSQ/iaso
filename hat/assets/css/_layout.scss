@@ -204,3 +204,20 @@ $directions: left right top bottom;
     top: $padding-unit;
     right: $padding-unit;
 }
+
+.middle-align {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stars {
+    color: $yellow;
+    & > span {
+        color: $gray;
+        font-size: 12px;
+        display: inline-block;
+        margin-left: 10px;
+    }
+}

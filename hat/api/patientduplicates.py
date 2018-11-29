@@ -2,7 +2,7 @@ import csv
 import time
 
 from django.core.paginator import Paginator
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef, Exists, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -10,7 +10,7 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import Case
+from hat.cases.models import Case, CaseView
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
 from hat.patient.models import PatientDuplicatesPair
 from .authentication import CsrfExemptSessionAuthentication
@@ -59,6 +59,22 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         algorithm = request.GET.get("algorithm", None)
         similarity = request.GET.get("similarity", None)
         full = request.GET.get("full", None) is not None
+
+        # TO-DO
+        village_ids = request.GET.get("village_id", None)
+        province_ids = request.GET.get("province_id", None)
+        zs_ids = request.GET.get("zs_id", None)
+        as_ids = request.GET.get("as_id", None)
+        teams = request.GET.get("teams", None)
+        coordination_id = request.GET.get("coordination_id", None)
+        search_name = request.GET.get("search_name", None)
+        search_prename = request.GET.get("search_prename", None)
+        search_lastname = request.GET.get("search_lastname", None)
+        search_mother_name = request.GET.get("search_mother_name", None)
+        test_types = request.GET.get("test_type", None)
+        screening_result = request.GET.get("screening_result", None)
+        confirmation_result = request.GET.get("confirmation_result", None)
+        # TO-DO
 
         csvformat = request.GET.get("csv", None)  # default will be json
 

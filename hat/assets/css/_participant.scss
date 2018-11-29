@@ -18,3 +18,21 @@
         }
     }
 }
+
+.duplicate-infos {
+    strong {
+        display: inline-block;
+    }
+    li {
+        & > span {
+            display: inline-block;
+            min-width: 100px;
+            &.error {
+                background-color: transparent;
+                height: auto;
+                color: $red;
+                padding: 0;
+            }
+        }
+    }
+}

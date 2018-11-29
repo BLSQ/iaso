@@ -89,6 +89,16 @@ const filtersPatients2 = (
     ]
 );
 
+const filtersPatientsDuplicates = (
+    coordinationsList,
+    teamsList,
+) => (
+    [
+        coordinations(coordinationsList),
+        teams(teamsList),
+    ]
+);
+
 const filtersPatientsSearch = () => (
     [
         searchLastname(),
@@ -124,5 +134,6 @@ export {
     filtersPatients2,
     filtersPatientsSearch,
     filtersPatientsGeo,
+    filtersPatientsDuplicates,
 };
 

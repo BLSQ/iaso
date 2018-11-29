@@ -11,7 +11,7 @@ import duplicateListColumns from '../constants/duplicateListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
+import { filtersPatients, filtersPatientsDuplicates, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
 
 
 const baseUrl = 'register/duplicates';
@@ -126,7 +126,7 @@ class PatientsDuplicates extends Component {
             params,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(coordinations || [], teams || []);
+        const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
             workzones,

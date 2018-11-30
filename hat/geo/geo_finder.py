@@ -50,6 +50,14 @@ def get_areas_by_name_or_alias(name, zones=None):
     return areas
 
 
+def get_areas_by_name(name, zones=None):
+    areas = AS.objects.filter(name__iexact=name)
+    if zones is not None:
+        areas = areas.filter(ZS__in=zones)
+
+    return areas
+
+
 def get_single_village(name, areas, official=None):
     try:
         villages = Village.objects.filter(name_or_alias(name), AS__in=areas)

@@ -59,15 +59,9 @@ def get_areas_by_name(name, zones=None):
 
 
 def get_single_village(name, areas, official=None):
-    try:
-        villages = Village.objects.filter(name_or_alias(name), AS__in=areas)
-        if official is not None:
-            villages = villages.filter(village_official=official)
-    except ValueError as ve:
-        print("value error", ve)
-        print("value error2", type(areas), "--", areas)
-        print("value error3", name)
-        exit(1)
+    villages = Village.objects.filter(name_or_alias(name), AS__in=areas)
+    if official is not None:
+        villages = villages.filter(Q(village_official=official) | Q(village_source='device'))
 
     village = None
     if villages.count() == 1:

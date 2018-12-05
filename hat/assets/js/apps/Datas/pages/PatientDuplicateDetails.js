@@ -77,7 +77,42 @@ class PatientDuplicateDetails extends React.Component {
                             <FormattedMessage id="datas.patientsDuplicate.header.title" defaultMessage="Détail Doublon" />:
                         </h2>
                     </div>
-                    <div className="widget__content--half with-separation border-bottom">
+                    {
+                        patient && patient.id && duplicatePatient && duplicatePatient.id &&
+                        <div className="align-center widget__content">
+                            <button
+                                className="button"
+                                onClick={() => this.props.mergeDuplicates(patient.id, this.props.params.duplicate_id, this)}
+                            >
+                                <FormattedMessage
+                                    id="patientsDuplicate.merge"
+                                    defaultMessage="Fusionner les patients dans {value}"
+                                    values={{
+                                        value: 'A',
+                                    }}
+                                />
+                            </button>
+                            <button
+                                className="button--warning middle-margin-element"
+                                onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
+                            >
+                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
+                            </button>
+                            <button
+                                className="button"
+                                onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this)}
+                            >
+                                <FormattedMessage
+                                    id="patientsDuplicate.merge"
+                                    defaultMessage="Fusionner les patients dans {value}"
+                                    values={{
+                                        value: 'B',
+                                    }}
+                                />
+                            </button>
+                        </div>
+                    }
+                    <div className="widget__content--half with-separation border-top">
                         {
                             patient && patient.id &&
                             <div>
@@ -91,14 +126,6 @@ class PatientDuplicateDetails extends React.Component {
                                     isInline={false}
                                     showInfosTitle={false}
                                 />
-                                <div className="align-center">
-                                    <button
-                                        className="button"
-                                        onClick={() => this.props.mergeDuplicates(patient.id, this.props.params.duplicate_id, this)}
-                                    >
-                                        <FormattedMessage id="patientsDuplicate.merge" defaultMessage="Garder cet enregistrement" />
-                                    </button>
-                                </div>
                             </div>
                         }
                         {
@@ -114,29 +141,10 @@ class PatientDuplicateDetails extends React.Component {
                                     isInline={false}
                                     showInfosTitle={false}
                                 />
-                                <div className="align-center">
-                                    <button
-                                        className="button"
-                                        onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this)}
-                                    >
-                                        <FormattedMessage id="patientsDuplicate.merge" defaultMessage="Garder cet enregistrement" />
-                                    </button>
-                                </div>
                             </div>
                         }
 
                     </div>
-                    {
-                        patient && patient.id && duplicatePatient && duplicatePatient.id &&
-                        <div className="align-center widget__content">
-                            <button
-                                className="button--warning"
-                                onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
-                            >
-                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
-                            </button>
-                        </div>
-                    }
                 </div>
             </section>);
     }

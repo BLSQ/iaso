@@ -6,7 +6,6 @@ import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import moment from 'moment';
 import 'leaflet.markercluster'; // eslint-disable-line
-import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
 
 import {
@@ -15,6 +14,8 @@ import {
     onResizeMap,
     defaultFitToBound,
     includeControlsInMap,
+    genericMap,
+    includeDefaultLayersInMap,
 } from '../../../utils/mapUtils';
 
 let exportControl;
@@ -28,18 +29,15 @@ class VectorMapComponent extends Component {
                 area: false,
             },
             containers: {},
-            layers: {
-                // where to plot the selected markers
-                villages: new L.FeatureGroup(),
-                chosenMarker: null, // marker used to bold the chosen item
-            },
         };
     }
 
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
-        this.includeDefaultLayersInMap();
+        this.itemsGroup = new L.FeatureGroup();
+        this.map.addLayer(this.itemsGroup);
+        includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
@@ -77,95 +75,12 @@ class VectorMapComponent extends Component {
    *************************************************************************** */
 
     createMap() {
-        const map = L.map(this.mapNode, {
-            attributionControl: false,
-            zoomControl: false, // zoom control will be added manually
-            scrollWheelZoom: false, // disable scroll zoom
-            center: geoUtils.center,
-            zoom: geoUtils.zoom,
-            zoomDelta: geoUtils.zoomDelta,
-            zoomSnap: geoUtils.zoomSnap,
-        });
+        const map = genericMap(this.mapNode);
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
-        map.createPane('custom-pane-highlight-buffer');
-        map.createPane('custom-pane-shadows');
-        map.createPane('custom-pane-markers');
-        map.createPane('custom-pane-highlight');
         map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-labels');
-        map.createPane('custom-pane-buffer');
-        map.createPane('custom-pane-villages');
         this.map = map;
-    }
-
-    includeDefaultLayersInMap() {
-        //
-        // include relevant and constant layers
-        //
-        const { map } = this;
-        const { layers } = this.state;
-        this.itemsGroup = new L.FeatureGroup();
-        map.addLayer(this.itemsGroup);
-
-        //
-        // plot the ALL boundaries
-        //
-
-        const shapeOptions = type => ({
-            pane: 'custom-pane-shapes',
-            style: () => ({ className: String.raw`map-layer ${type}` }),
-            onEachFeature: (feature, layer) => {
-                this.addLayerEvents(layer, feature.properties);
-            },
-        });
-
-        const shapes = {
-            province: new L.FeatureGroup(),
-        };
-
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
-
-        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
-            this.state.defaultBounds = shape.getBounds();
-        });
-
-        const plotOrHideLayer = (minZoom, type) => {
-            if (shapes[type]) {
-                const layer = shapes[type];
-                if (map.getZoom() > minZoom) {
-                    if (!map.hasLayer(layer)) {
-                        map.addLayer(layer);
-                    }
-                } else if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                }
-            } else if (map.getZoom() > minZoom) {
-                shapes[type] = new L.FeatureGroup();
-                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
-                    plotOrHideLayer(minZoomTemp, type);
-                });
-            }
-        };
-
-        L.DomEvent.on(map, 'zoomend', () => {
-            plotOrHideLayer(zooms.zone, 'zone');
-            plotOrHideLayer(zooms.area, 'area');
-        });
-
-        // create marker for the chosen item
-        const chosenMarker = L.circle(map.getCenter(), {
-            className: 'map-marker chosen',
-            pane: 'custom-pane-selected',
-            radius: 0,
-        });
-        layers.chosenMarker = chosenMarker;
     }
 
     /* ***************************************************************************

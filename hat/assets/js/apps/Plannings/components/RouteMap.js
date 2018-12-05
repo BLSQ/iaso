@@ -9,7 +9,6 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
 import { getMonthName } from '../utils/routeUtils';
 
@@ -19,6 +18,8 @@ import {
     defaultFitToBound,
     updateBaseLayer,
     includeControlsInMap,
+    genericMap,
+    includeDefaultLayersInMap,
 } from '../../../utils/mapUtils';
 
 
@@ -33,16 +34,17 @@ class RouteMap extends Component {
                 area: false,
             },
             containers: {},
-            layers: {
-                villages: new L.FeatureGroup(),
-            },
         };
     }
 
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map);
-        this.includeDefaultLayersInMap();
+        this.villageGroup = new L.FeatureGroup();
+        this.map.addLayer(this.villageGroup);
+        this.unselectedVillageGroup = new L.FeatureGroup();
+        this.map.addLayer(this.unselectedVillageGroup);
+        includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
@@ -79,82 +81,12 @@ class RouteMap extends Component {
 *************************************************************************** */
 
     createMap() {
-        const map = L.map(this.mapNode, {
-            attributionControl: false,
-            zoomControl: false, // zoom control will be added manually
-            scrollWheelZoom: false, // disable scroll zoom
-            center: geoUtils.center,
-            zoom: geoUtils.zoom,
-            zoomDelta: geoUtils.zoomDelta,
-            zoomSnap: geoUtils.zoomSnap,
-        });
+        const map = genericMap(this.mapNode);
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-markers');
         this.map = map;
-    }
-
-    includeDefaultLayersInMap() {
-        //
-        // include relevant and constant layers
-        //
-        const { map } = this;
-        const { layers } = this.state;
-        this.villageGroup = new L.FeatureGroup();
-        map.addLayer(this.villageGroup);
-        this.unselectedVillageGroup = new L.FeatureGroup();
-        map.addLayer(this.unselectedVillageGroup);
-        // assign labels overlay using the existent labels group
-
-        //
-        // plot the ALL boundaries
-        //
-        const shapes = {
-            province: new L.FeatureGroup(),
-        };
-
-        const shapeOptions = type => ({
-            pane: 'custom-pane-shapes',
-            style: () => ({ className: String.raw`map-layer ${type}` }),
-            onEachFeature: (feature, layer) => {
-                this.addLayerEvents(layer, feature.properties);
-            },
-        });
-
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
-
-        geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
-            this.state.defaultBounds = shape.getBounds();
-        });
-
-        const plotOrHideLayer = (minZoom, type) => {
-            if (shapes[type]) {
-                const layer = shapes[type];
-                if (map.getZoom() > minZoom) {
-                    if (!map.hasLayer(layer)) {
-                        map.addLayer(layer);
-                    }
-                } else if (map.hasLayer(layer)) {
-                    map.removeLayer(layer);
-                }
-            } else if (map.getZoom() > minZoom) {
-                shapes[type] = new L.FeatureGroup();
-                geoUtils.getShape(type, this, shapes, shapeOptions, zooms, map).then((minZoomTemp) => {
-                    plotOrHideLayer(minZoomTemp, type);
-                });
-            }
-        };
-
-        L.DomEvent.on(map, 'zoomend', () => {
-            plotOrHideLayer(zooms.zone, 'zone');
-            plotOrHideLayer(zooms.area, 'area');
-        });
     }
 
     /*

@@ -6,7 +6,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import * as d3 from 'd3';
 import { FormattedMessage, IntlProvider, injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
@@ -14,7 +13,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 
-import geoUtils from '../utils/geo';
+import geoUtils from '../../../utils/geo';
 import MapTooltip from './MapTooltip';
 
 import {
@@ -22,6 +21,8 @@ import {
     onResizeMap,
     updateBaseLayer,
     includeControlsInMap,
+    genericMap,
+    zooms,
 } from '../../../utils/mapUtils';
 
 const radius = 400;
@@ -155,25 +156,15 @@ class Map extends Component {
    *************************************************************************** */
 
     createMap() {
-        const map = L.map(this.state.containers.map, {
-            attributionControl: false,
-            zoomControl: false, // zoom control will be added manually
-            scrollWheelZoom: false, // disable scroll zoom
-            center: geoUtils.center,
-            zoom: geoUtils.zoom,
-            zoomDelta: geoUtils.zoomDelta,
-            zoomSnap: geoUtils.zoomSnap,
-        });
+        const map = genericMap(this.state.containers.map);
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-highlight-buffer');
-        map.createPane('custom-pane-shadows');
         map.createPane('custom-pane-markers');
         map.createPane('custom-pane-highlight');
         map.createPane('custom-pane-selected');
         map.createPane('custom-pane-chosen');
-        map.createPane('custom-pane-buffer');
 
         this.state.map = map;
     }
@@ -205,12 +196,6 @@ class Map extends Component {
             province: new L.FeatureGroup(),
         };
 
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
-        };
         const shapeOptions = type => ({
             pane: 'custom-pane-shapes',
             style: () => ({ className: String.raw`map-layer ${type}` }),

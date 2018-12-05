@@ -10,22 +10,16 @@ import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import * as d3 from 'd3';
-import geoUtils from '../../Plannings/utils/geo';
 
 import {
     updateBaseLayer,
     includeControlsInMap,
     onResizeMap,
     defaultFitToBound,
+    genericMap,
+    zooms,
 } from '../../../utils/mapUtils';
 
-
-// at which zoom can be displayed in map
-const zooms = {
-    province: -1, // always in map
-    zs: 7,
-    as: 9,
-};
 const shapeOptions = (type, element) => ({
     pane: 'custom-pane-shapes',
     onEachFeature: (feature, layer) => {
@@ -136,15 +130,7 @@ class VillageMap extends Component {
 *************************************************************************** */
 
     createMap() {
-        const map = L.map(this.mapNode, {
-            attributionControl: false,
-            zoomControl: false, // zoom control will be added manually
-            scrollWheelZoom: false, // disable scroll zoom
-            center: geoUtils.center,
-            zoom: geoUtils.zoom,
-            zoomDelta: geoUtils.zoomDelta,
-            zoomSnap: geoUtils.zoomSnap,
-        });
+        const map = genericMap(this.mapNode);
 
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');

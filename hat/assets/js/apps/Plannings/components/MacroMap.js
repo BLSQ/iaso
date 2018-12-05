@@ -9,7 +9,6 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import geoUtils from '../../Plannings/utils/geo';
 import { getZsName, clone } from '../../../utils';
 
 import {
@@ -18,6 +17,8 @@ import {
     onResizeMap,
     defaultFitToBound,
     includeControlsInMap,
+    genericMap,
+    zooms,
 } from '../../../utils/mapUtils';
 
 let exportControl;
@@ -60,9 +61,6 @@ class MacroMap extends Component {
         this.state = {
             containers: {},
             isFirstLoad: true,
-            layers: {
-                villages: new L.FeatureGroup(),
-            },
         };
     }
 
@@ -142,16 +140,7 @@ class MacroMap extends Component {
 *************************************************************************** */
 
     createMap() {
-        const map = L.map(this.mapNode, {
-            attributionControl: false,
-            zoomControl: false, // zoom control will be added manually
-            scrollWheelZoom: false, // disable scroll zoom
-            center: geoUtils.center,
-            zoom: geoUtils.zoom,
-            zoomDelta: geoUtils.zoomDelta,
-            zoomSnap: geoUtils.zoomSnap,
-        });
-
+        const map = genericMap(this.mapNode);
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-markers');
@@ -163,7 +152,6 @@ class MacroMap extends Component {
         // include relevant and constant layers
         //
         const { map } = this;
-        const { layers } = this.state;
         this.coordinationGroup = new L.FeatureGroup();
         this.zonesGroup = new L.FeatureGroup();
         map.addLayer(this.coordinationGroup);
@@ -174,21 +162,6 @@ class MacroMap extends Component {
         //
         const shapes = {
             province: new L.FeatureGroup(),
-        };
-
-        const shapeOptions = type => ({
-            pane: 'custom-pane-shapes',
-            style: () => ({ className: String.raw`map-layer ${type}` }),
-            onEachFeature: (feature, layer) => {
-                this.addLayerEvents(layer, feature.properties);
-            },
-        });
-
-        // at which zoom can be displayed in map
-        const zooms = {
-            province: -1, // always in map
-            zone: 7,
-            area: 9,
         };
 
 

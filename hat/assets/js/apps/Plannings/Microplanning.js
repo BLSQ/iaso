@@ -23,7 +23,7 @@ import GeoScope from './components/GeoScope';
 import { createUrl, getRequest } from '../../utils/fetchData';
 import { saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
 import { getPossibleYears } from '../../utils';
-import geoUtils from './utils/geo';
+import geoUtils from '../../utils/geo';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { villageSelectionLegend } from './constants/microplanningLegends';

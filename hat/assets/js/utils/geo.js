@@ -4,7 +4,7 @@
  */
 
 import L from 'leaflet';
-import shapeUrls from '../../../utils/constants/shapesUrls';
+import shapeUrls from './constants/shapesUrls';
 
 const clean = word => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''));
 const isEqual = (a, b) => (clean(a) === clean(b));

@@ -120,7 +120,6 @@ export class Vector extends Component {
     render() {
         const { baseLayer } = this.props.map;
         const zsId = this.props.params.zs_id;
-        const overlays = { labels: false };
         const { formatMessage } = this.props.intl;
         return (
             <section className="vectors-container">
@@ -196,7 +195,6 @@ export class Vector extends Component {
                 <div className="vector-map widget__container">
                     <VectorMapComponent
                         baseLayer={baseLayer}
-                        overlays={overlays}
                         traps={this.state.traps}
                         targets={this.state.targets}
                         villages={this.state.villages}

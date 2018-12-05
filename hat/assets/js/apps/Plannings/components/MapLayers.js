@@ -52,7 +52,7 @@ const MESSAGES = defineMessages({
 
 class MapLayers extends Component {
     render() {
-        const { base, overlays, change } = this.props;
+        const { base, change } = this.props;
         return (
             <div className="map__option">
                 <span className="map__option__header">
@@ -70,31 +70,12 @@ class MapLayers extends Component {
                         </li>
                     )) }
                 </ul>
-
-                {Object.keys(overlays).length > 0 ?
-                    <span className="map__option__header">
-                        <FormattedMessage id="microplanning.label.overlays" defaultMessage="Options cartes" />
-                    </span> : null
-                }
-                <ul key="overlays" className="map__option__list">
-                    { Object.keys(overlays).map(key => (
-                        <li
-                            key={key}
-                            className={`interactive map__option__list__item${overlays[key] ? ' active' : ''}`}
-                            onClick={() => change(mapLayerTypes.overlay, key)}
-                        >
-                            <i className={`map__option__icon square${overlays[key] ? ' active' : ''}`} />
-                            <FormattedMessage {...MESSAGES[key]} />
-                        </li>
-                    )) }
-                </ul>
             </div>
         );
     }
 }
 
 MapLayers.defaultProps = {
-    overlays: undefined,
     teamId: '',
     base: '',
     change: () => {},
@@ -102,7 +83,6 @@ MapLayers.defaultProps = {
 
 MapLayers.propTypes = {
     base: PropTypes.string,
-    overlays: PropTypes.object,
     change: PropTypes.func,
     teamId: PropTypes.string,
 };

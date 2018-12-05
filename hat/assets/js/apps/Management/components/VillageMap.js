@@ -5,40 +5,19 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import * as d3 from 'd3';
 import geoUtils from '../../Plannings/utils/geo';
 
-
-// map base layers
-const tileOptions = { keepBuffer: 4 };
-const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
-const BASE_LAYERS = {
-    blank: L.tileLayer(''),
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
-    'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
-    'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
-    'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
-};
-
-
-const MESSAGES = defineMessages({
-    'fit-to-bounds': {
-        defaultMessage: 'Center to relevant villages',
-        id: 'locator.label.fitToBounds',
-    },
-    'box-zoom-title': {
-        defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'locator.label.zoom.box',
-    },
-    'info-zoom-title': {
-        defaultMessage: 'Current zoom level',
-        id: 'locator.label.zoom.info',
-    },
-});
+import {
+    updateBaseLayer,
+    includeControlsInMap,
+    onResizeMap,
+    defaultFitToBound,
+} from '../../../utils/mapUtils';
 
 
 // at which zoom can be displayed in map
@@ -112,10 +91,10 @@ class VillageMap extends Component {
 
     componentDidMount() {
         this.createMap();
-        this.includeControlsInMap();
+        includeControlsInMap(this, this.map);
         this.includeDefaultLayersInMap();
         updateShapeColors(this.props.village);
-        this.updateBaseLayer(this.props.baseLayer);
+        updateBaseLayer(this.map, this.props.baseLayer);
         this.updateMap(this.props.village);
     }
 
@@ -123,7 +102,7 @@ class VillageMap extends Component {
         const { map } = this;
         map.whenReady(() => {
             if (this.props.baseLayer !== nextProps.baseLayer) {
-                this.updateBaseLayer(nextProps.baseLayer);
+                updateBaseLayer(this.map, nextProps.baseLayer);
             }
             if (this.props.village.latitude !== nextProps.village.latitude ||
                 this.props.village.longitude !== nextProps.village.longitude) {
@@ -145,25 +124,10 @@ class VillageMap extends Component {
             this.map.remove();
         }
     }
+
     onResize(width, height) {
         const { map } = this;
-        const cutomSize = {
-            width,
-            height,
-            className: 'A4Landscape page',
-            tooltip: 'PNG',
-        };
-        if (exportControl) {
-            map.removeControl(exportControl);
-        }
-        exportControl = L.easyPrint({
-            position: 'topleft',
-            sizeModes: [cutomSize],
-            hideControlContainer: true,
-            title: 'Télécharger',
-            exportOnly: true,
-            filename: 'Village',
-        }).addTo(map);
+        exportControl = onResizeMap(width, height, exportControl, map, 'Village');
     }
 
     /*
@@ -198,37 +162,6 @@ class VillageMap extends Component {
             }
         });
         this.map = map;
-    }
-
-    includeControlsInMap() {
-        // The order in which the controls are added matters
-        const { formatMessage } = this.props.intl;
-        const { containers } = this.state;
-        const { map } = this;
-
-        // zoom bar control
-        L.control.zoombar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => { this.fitToBounds(); },
-            position: 'topleft',
-        }).addTo(map);
-
-        // control to visualize warnings
-        const warningControl = L.control({ position: 'topright' });
-        warningControl.onAdd = () => (L.DomUtil.create('div', 'hide-on-print'));
-        warningControl.addTo(map);
-        containers.warning = warningControl.getContainer();
-
-        // metric scale
-        L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
-
-        // controls to visualize the shape/marker tooltip
-        const tooltipSmallControl = L.control({ position: 'bottomleft' });
-        tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipSmallControl.addTo(map);
-        containers.tooltipSmall = tooltipSmallControl.getContainer();
     }
 
     includeDefaultLayersInMap() {
@@ -300,18 +233,6 @@ class VillageMap extends Component {
 * UPDATE STATE
 *************************************************************************** */
 
-    updateBaseLayer(baseLayer) {
-        const { map } = this;
-        Object.keys(BASE_LAYERS).forEach((key) => {
-            const layer = BASE_LAYERS[key];
-            if (key === baseLayer) {
-                layer.addTo(map);
-            } else if (map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-
 
     updateMap(village) {
         const { map } = this;
@@ -367,14 +288,7 @@ class VillageMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-
-        setTimeout(() => {
-            const bounds = this.villageGroup.getBounds();
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: 10, padding: [100, 100] });
-            }
-            map.invalidateSize();
-        }, 1);
+        defaultFitToBound(map, this.villageGroup.getBounds(), 10);
     }
 
     /*

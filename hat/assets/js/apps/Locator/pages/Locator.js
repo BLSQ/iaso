@@ -116,7 +116,6 @@ export class Locator extends Component {
 
     render() {
         const { baseLayer } = this.props.map;
-        const overlays = { labels: false };
         const { formatMessage } = this.props.intl;
         const { dispatch } = this.props;
         const searchResultsKeys = [
@@ -287,7 +286,6 @@ export class Locator extends Component {
                                     this.props.locatorState.villages &&
                                         <Map
                                             baseLayer={baseLayer}
-                                            overlays={overlays}
                                             villages={this.props.locatorState.villages}
                                             selectVillage={villageId => this.props.selectVillage(villageId)}
                                             selectedVillageId={this.props.locatorState.villageId}

@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import { FormattedMessage, IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import { FormattedMessage, IntlProvider, injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 
@@ -17,37 +17,14 @@ import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 import geoUtils from '../utils/geo';
 import MapTooltip from './MapTooltip';
 
-// map base layers
-const tileOptions = { keepBuffer: 4 };
-const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
-const BASE_LAYERS = {
-    blank: L.tileLayer(''),
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
-    'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
-    'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
-    'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
-};
+import {
+    MESSAGES,
+    onResizeMap,
+    updateBaseLayer,
+    includeControlsInMap,
+} from '../../../utils/mapUtils';
 
 const radius = 400;
-
-const MESSAGES = defineMessages({
-    'fit-to-bounds': {
-        defaultMessage: 'Center to relevant villages',
-        id: 'microplanning.label.fitToBounds',
-    },
-    'box-zoom-title': {
-        defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'microplanning.label.zoom.box',
-    },
-    'info-zoom-title': {
-        defaultMessage: 'Current zoom level',
-        id: 'microplanning.label.zoom.info',
-    },
-    'shape-loader': {
-        defaultMessage: 'Chargement des délimitations',
-        id: 'main.label.shape-loader',
-    },
-});
 
 const getChoosenMarkerRadius = (map) => {
     const currentZoom = map.getZoom();
@@ -70,7 +47,6 @@ class Map extends Component {
             },
             map: null, // this is the leaflet object that represents the map
             containers: {},
-            overlays: {},
 
             layers: {
                 // where to plot the selected markers
@@ -101,10 +77,9 @@ class Map extends Component {
 
     componentDidMount() {
         this.createMap();
-        this.includeControlsInMap();
+        includeControlsInMap(this, this.state.map);
         this.includeDefaultLayersInMap();
-        this.updateBaseLayer();
-        this.updateOverlays();
+        updateBaseLayer(this.state.map, this.props.baseLayer);
         this.fitToBounds();
 
         // return map object to parent
@@ -133,12 +108,7 @@ class Map extends Component {
         map.whenReady(() => {
             // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
-                this.updateBaseLayer();
-            }
-
-            // only call if one of the overlays changed
-            if (hasChanged(prevProps, this.props, 'overlays')) {
-                this.updateOverlays();
+                updateBaseLayer(this.state.map, this.props.baseLayer);
             }
 
 
@@ -174,25 +144,10 @@ class Map extends Component {
             this.state.map.remove();
         }
     }
+
     onResize(width, height) {
         const { map } = this.state;
-        const cutomSize = {
-            width,
-            height,
-            className: 'A4Landscape page',
-            tooltip: 'PNG',
-        };
-        if (exportControl) {
-            map.removeControl(exportControl);
-        }
-        exportControl = L.easyPrint({
-            position: 'topleft',
-            sizeModes: [cutomSize],
-            hideControlContainer: true,
-            title: 'Télécharger',
-            exportOnly: true,
-            filename: 'Microplanning',
-        }).addTo(map);
+        exportControl = onResizeMap(width, height, exportControl, map, 'Microplanning');
     }
 
     /* ***************************************************************************
@@ -221,42 +176,6 @@ class Map extends Component {
         map.createPane('custom-pane-buffer');
 
         this.state.map = map;
-    }
-
-    includeControlsInMap() {
-        // The order in which the controls are added matters
-        const { formatMessage } = this.props.intl;
-        const { map, containers } = this.state;
-
-        // zoom bar control
-        L.control.zoombar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => { this.fitToBounds(); },
-            position: 'topleft',
-        }).addTo(map);
-
-        // control to visualize warnings
-        const warningControl = L.control({ position: 'topright' });
-        warningControl.onAdd = () => (L.DomUtil.create('div', 'hide-on-print'));
-        warningControl.addTo(map);
-        containers.warning = warningControl.getContainer();
-
-        // metric scale
-        L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
-
-        // controls to visualize the shape/marker tooltip
-        const tooltipSmallControl = L.control({ position: 'bottomleft' });
-        tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipSmallControl.addTo(map);
-        containers.tooltipSmall = tooltipSmallControl.getContainer();
-
-        const tooltipLargeControl = L.control({ position: 'bottomleft' });
-        tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipLargeControl.addTo(map);
-
-        containers.tooltipLarge = tooltipLargeControl.getContainer();
     }
 
     resizeChoosenMarker() {
@@ -340,35 +259,6 @@ class Map extends Component {
     /* ***************************************************************************
    * UPDATE STATE
    *************************************************************************** */
-
-    updateBaseLayer() {
-        const { baseLayer } = this.props;
-        const { map } = this.state;
-
-        Object.keys(BASE_LAYERS).forEach((key) => {
-            const layer = BASE_LAYERS[key];
-            if (key === baseLayer) {
-                layer.addTo(map);
-            } else if (map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-
-    updateOverlays() {
-        const { map } = this.state;
-
-        Object.keys(this.props.overlays).forEach((key) => {
-            const active = this.props.overlays[key];
-            const layer = this.state.overlays[key];
-            if (active && !map.hasLayer(layer)) {
-                layer.addTo(map);
-            } else if (!active && map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-
     updateItems(force) {
         const { legend, items, assignationsMap } = this.props;
         const { layers } = this.state;
@@ -661,7 +551,6 @@ markersGroups.YES.getBounds().isValid()) {
 Map.defaultProps = {
     planningId: '',
     baseLayer: '',
-    overlays: undefined,
     legend: undefined,
     fullscreen: false,
     items: [],
@@ -678,7 +567,6 @@ Map.defaultProps = {
 
 Map.propTypes = {
     baseLayer: PropTypes.string,
-    overlays: PropTypes.object,
     legend: PropTypes.object,
     fullscreen: PropTypes.bool,
     items: PropTypes.arrayOf(PropTypes.object),

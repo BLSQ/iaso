@@ -5,7 +5,6 @@
 export const UNKNOWN = 'hat/microplanning/leaflet/action/UNKNWON';
 export const LEGEND_TOGGLE = 'hat/microplanning/leaflet/legend/TOGGLE';
 export const BASE_LAYER_CHANGE = 'hat/microplanning/leaflet/base-layer/CHANGE';
-export const OVERLAY_TOGGLE = 'hat/microplanning/leaftlet/overlay/TOGGLE';
 export const FULLSCREEN_ACTIVATE = 'hat/microplanning/leaftlet/fullscreen/ACTIVATE';
 export const FULLSCREEN_DEACTIVATE = 'hat/microplanning/leaftlet/fullscreen/DEACTIVATE';
 export const LEAFLET_MAP = 'hat/microplanning/leaflet/MAP';
@@ -13,7 +12,6 @@ export const LEAFLET_MAP = 'hat/microplanning/leaflet/MAP';
 export const mapLayerTypes = {
     legend: 1,
     baseLayer: 2,
-    overlay: 3,
 };
 
 export const mapBaseLayers = [
@@ -38,12 +36,6 @@ export const changeLayer = (layerType, payload) => {
                 payload,
             };
 
-        case mapLayerTypes.overlay:
-            return {
-                type: OVERLAY_TOGGLE,
-                payload,
-            };
-
         default:
             return { type: UNKNOWN };
     }
@@ -59,10 +51,6 @@ export const changeBaseLayer = baseLayer => ({
     payload: baseLayer,
 });
 
-export const toggleOverlay = overlay => ({
-    type: OVERLAY_TOGGLE,
-    payload: overlay,
-});
 
 export const activateFullscreen = () => ({
     type: FULLSCREEN_ACTIVATE,
@@ -84,7 +72,6 @@ export const mapActions = {
     deactivateFullscreen,
     setLeafletMap,
     toggleLegend,
-    toggleOverlay,
 };
 
 export const mapInitialState = {
@@ -92,8 +79,6 @@ export const mapInitialState = {
         YES: true,
     },
     baseLayer: 'osm',
-    overlays: {
-    },
     fullscreen: false,
 };
 
@@ -116,17 +101,6 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
                 return state;
             }
             return { ...state, baseLayer };
-        }
-
-        case OVERLAY_TOGGLE: {
-            const { overlays } = state;
-            const option = action.payload;
-
-            if (overlays[option] === undefined) {
-                return state;
-            }
-
-            return { ...state, overlays: { ...overlays, [option]: !overlays[option] } };
         }
 
         case FULLSCREEN_ACTIVATE:

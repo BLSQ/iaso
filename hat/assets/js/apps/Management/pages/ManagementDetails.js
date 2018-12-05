@@ -558,7 +558,6 @@ export class ManagementDetails extends Component {
                                     villagesYear.list.length > 0 &&
                                     <Map
                                         baseLayer={baseLayer}
-                                        overlays={{ labels: false }}
                                         villages={mapVillages(villagesYear.list)}
                                         selectVillage={() => { }}
                                         selectedVillageId={0}

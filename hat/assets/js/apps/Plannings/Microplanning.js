@@ -261,7 +261,7 @@ export class Microplanning extends Component {
 
         // map
         const {
-            baseLayer, overlays, legend, fullscreen,
+            baseLayer, legend, fullscreen,
         } = this.props.map;
         const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`;
         const selectHighlightBuffer = () => {
@@ -375,7 +375,6 @@ export class Microplanning extends Component {
                         <div className="map__header--layers">
                             <MapLayers
                                 base={baseLayer}
-                                overlays={overlays}
                                 change={(type, key) => this.props.changeLayer(type, key)}
                                 teamId={this.props.params.team_id}
                             />
@@ -464,7 +463,6 @@ export class Microplanning extends Component {
                                     teamId={this.props.params.team_id}
                                     planningId={this.props.params.planning_id}
                                     baseLayer={baseLayer}
-                                    overlays={overlays}
                                     legend={legend}
                                     fullscreen={fullscreen}
                                     items={villages}

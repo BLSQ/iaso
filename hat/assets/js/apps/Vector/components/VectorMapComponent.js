@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { IntlProvider, defineMessages, injectIntl, intlShape } from 'react-intl';
+import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
@@ -9,34 +9,13 @@ import 'leaflet.markercluster'; // eslint-disable-line
 import geoUtils from '../../Plannings/utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
 
-// map base layers
-const tileOptions = { keepBuffer: 4 };
-const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
-const BASE_LAYERS = {
-    blank: L.tileLayer(''),
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
-    'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
-    'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
-    'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
-};
-const MESSAGES = defineMessages({
-    'fit-to-bounds': {
-        defaultMessage: 'Center to relevant villages',
-        id: 'locator.label.fitToBounds',
-    },
-    'box-zoom-title': {
-        defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'locator.label.zoom.box',
-    },
-    'info-zoom-title': {
-        defaultMessage: 'Current zoom level',
-        id: 'locator.label.zoom.info',
-    },
-    'shape-loader': {
-        defaultMessage: 'Chargement des délimitations',
-        id: 'main.label.shape-loader',
-    },
-});
+import {
+    updateBaseLayer,
+    MESSAGES,
+    onResizeMap,
+    defaultFitToBound,
+    includeControlsInMap,
+} from '../../../utils/mapUtils';
 
 let exportControl;
 class VectorMapComponent extends Component {
@@ -49,7 +28,6 @@ class VectorMapComponent extends Component {
                 area: false,
             },
             containers: {},
-            overlays: {},
             layers: {
                 // where to plot the selected markers
                 villages: new L.FeatureGroup(),
@@ -60,9 +38,9 @@ class VectorMapComponent extends Component {
 
     componentDidMount() {
         this.createMap();
-        this.includeControlsInMap();
+        includeControlsInMap(this, this.map, true);
         this.includeDefaultLayersInMap();
-        this.updateBaseLayer();
+        updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
 
@@ -72,12 +50,7 @@ class VectorMapComponent extends Component {
         map.whenReady(() => {
             // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
-                this.updateBaseLayer();
-            }
-
-            // only call if one of the overlays changed
-            if (hasChanged(prevProps, this.props, 'overlays')) {
-                this.updateOverlays();
+                updateBaseLayer(this.map, this.props.baseLayer);
             }
 
             if (hasChanged(prevProps, this.props, 'traps') ||
@@ -96,23 +69,7 @@ class VectorMapComponent extends Component {
 
     onResize(width, height) {
         const { map } = this;
-        const cutomSize = {
-            width,
-            height,
-            className: 'A4Landscape page',
-            tooltip: 'PNG',
-        };
-        if (exportControl) {
-            map.removeControl(exportControl);
-        }
-        exportControl = L.easyPrint({
-            position: 'topleft',
-            sizeModes: [cutomSize],
-            hideControlContainer: true,
-            title: 'Télécharger',
-            exportOnly: true,
-            filename: 'Contrôle de vecteur',
-        }).addTo(map);
+        exportControl = onResizeMap(width, height, exportControl, map, 'Contrôle de vecteur');
     }
 
     /* ***************************************************************************
@@ -143,41 +100,6 @@ class VectorMapComponent extends Component {
         this.map = map;
     }
 
-    includeControlsInMap() {
-        // The order in which the controls are added matters
-        const { formatMessage } = this.props.intl;
-        const { containers } = this.state;
-        const { map } = this;
-
-        L.control.zoombar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => { this.fitToBounds(); },
-            position: 'topleft',
-        }).addTo(map);
-
-        // control to visualize warnings
-        const warningControl = L.control({ position: 'topright' });
-        warningControl.onAdd = () => (L.DomUtil.create('div', 'hide-on-print'));
-        warningControl.addTo(map);
-        containers.warning = warningControl.getContainer();
-
-        // metric scale
-        L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
-
-        // controls to visualize the shape/marker tooltip
-        const tooltipSmallControl = L.control({ position: 'bottomleft' });
-        tooltipSmallControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipSmallControl.addTo(map);
-        containers.tooltipSmall = tooltipSmallControl.getContainer();
-
-        const tooltipLargeControl = L.control({ position: 'bottomleft' });
-        tooltipLargeControl.onAdd = () => L.DomUtil.create('div', 'map__control__tooltip hide-on-print');
-        tooltipLargeControl.addTo(map);
-        containers.tooltipLarge = tooltipLargeControl.getContainer();
-    }
-
     includeDefaultLayersInMap() {
         //
         // include relevant and constant layers
@@ -186,7 +108,6 @@ class VectorMapComponent extends Component {
         const { layers } = this.state;
         this.itemsGroup = new L.FeatureGroup();
         map.addLayer(this.itemsGroup);
-        // assign labels overlay using the existent labels group
 
         //
         // plot the ALL boundaries
@@ -250,35 +171,6 @@ class VectorMapComponent extends Component {
     /* ***************************************************************************
    * UPDATE STATE
    *************************************************************************** */
-
-    updateBaseLayer() {
-        const { baseLayer } = this.props;
-        const { map } = this;
-
-        Object.keys(BASE_LAYERS).forEach((key) => {
-            const layer = BASE_LAYERS[key];
-
-            if (key === baseLayer) {
-                layer.addTo(map);
-            } else if (map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
-
-    updateOverlays() {
-        const { map } = this;
-
-        Object.keys(this.props.overlays).forEach((key) => {
-            const active = this.props.overlays[key];
-            const layer = this.state.overlays[key];
-            if (active && !map.hasLayer(layer)) {
-                layer.addTo(map);
-            } else if (!active && map.hasLayer(layer)) {
-                map.removeLayer(layer);
-            }
-        });
-    }
 
     updateItems() {
         const { traps, targets, villages } = this.props;
@@ -404,18 +296,7 @@ class VectorMapComponent extends Component {
 
     fitToBounds() {
         const { map } = this;
-
-        // maximum zoom allowed to fit to relevant markers
-        const MAX_ZOOM = 13;
-
-
-        setTimeout(() => {
-            const bounds = this.itemsGroup.getBounds();
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: MAX_ZOOM });
-            }
-            map.invalidateSize();
-        }, 1);
+        defaultFitToBound(map, this.itemsGroup.getBounds(), 13);
     }
 
     /* ***************************************************************************
@@ -442,16 +323,6 @@ class VectorMapComponent extends Component {
         });
     }
 
-    injectI18n(component) {
-        // we need to wrap it with `IntlProvider` to use i18n features
-        const { locale, messages } = this.props.intl;
-
-        return (
-            <IntlProvider locale={locale} messages={messages}>
-                {component}
-            </IntlProvider>
-        );
-    }
     renderTrapsPopup(trap) {
         const { formatMessage } = this.props.intl;
         return `<section class="custom-popup-container">
@@ -590,7 +461,6 @@ VectorMapComponent.defaultProps = {
 VectorMapComponent.propTypes = {
     selectMarker: PropTypes.func.isRequired,
     baseLayer: PropTypes.string.isRequired,
-    overlays: PropTypes.object.isRequired,
     traps: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
     villages: PropTypes.object.isRequired,

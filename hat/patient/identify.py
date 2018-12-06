@@ -1,6 +1,7 @@
 import ntpath
 
 import dateutil
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Q
 
 from hat.cases.models import Case
@@ -20,21 +21,47 @@ def name_normalize(name):
     return name.strip()
 
 
-def get_or_create_patient(case, origin_area, origin_village):
+def get_or_create_patient(case: Case, origin_area, origin_village):
     first_name = name_normalize(case.prename)
     last_name = name_normalize(case.lastname)
     post_name = name_normalize(case.name)
     mothers_surname = name_normalize(case.mothers_surname)
 
-    patient, patient_created = Patient.objects.get_or_create(
-        post_name=post_name, first_name=first_name, last_name=last_name, mothers_surname=mothers_surname,
-        sex=case.sex, year_of_birth=case.year_of_birth, origin_village=origin_village, origin_area=origin_area)
+    patient_search_params = dict(
+        post_name=post_name,
+        first_name=first_name,
+        last_name=last_name,
+        mothers_surname=mothers_surname,
+        sex=case.sex,
+        year_of_birth=case.year_of_birth,
+    )
+
+    if origin_area:
+        patient_search_params['origin_area'] = origin_area
+    else:
+        patient_search_params['origin_raw_AS'] = case.AS
+        patient_search_params['origin_raw_ZS'] = case.ZS
+
+    if origin_village:
+        patient_search_params['origin_village'] = origin_village
+    else:
+        patient_search_params['origin_raw_village'] = case.village
+
+    # This should normally return only one result. In case of MultipleObjectsReturned, we want this to fail.
+    try:
+        patient, patient_created = Patient.objects.get_or_create(**patient_search_params)
+    except MultipleObjectsReturned as exc:
+        print("multiple patients found")
+        for p in Patient.objects.filter(**patient_search_params):
+            print(f"[{p.id}] {p.first_name} {p.last_name} {p.post_name} (m: {p.mothers_surname}) in {p.origin_village}")
+        raise exc
 
     if patient_created:
         if case.age is not None:
             patient.age = case.age
         else:
-            if case.year_of_birth is not None and case.year_of_birth <= case.entry_date.year:
+            if case.year_of_birth is not None and case.entry_date is not None \
+                    and case.year_of_birth <= case.entry_date.year:
                 patient.age = case.entry_date.year - int(case.year_of_birth)
         patient.save()
 

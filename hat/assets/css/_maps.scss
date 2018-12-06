@@ -1069,6 +1069,16 @@ button {
             height: 600px !important;
         }
     }
+    &.big {
+        .map-container {
+            height: 800px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 800px !important;
+            }
+        }
+    }
 }
 
 .village-map-container {

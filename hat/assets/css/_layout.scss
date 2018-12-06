@@ -141,6 +141,9 @@ $directions: left right top bottom;
 .split-map {
     height: 600px;
     width: 80%;
+    &.big {
+        height: 800px;
+    }
 }
 
 .split-selector-container {
@@ -166,6 +169,10 @@ $directions: left right top bottom;
 
 .margin-bottom {
     margin-bottom: $padding-unit/2;
+}
+
+.margin-top {
+    margin-top: $padding-unit/2;
 }
 
 .margin {

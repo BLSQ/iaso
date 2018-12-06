@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
-import Select from 'react-select';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl, getRequest } from '../../../utils/fetchData';
@@ -14,113 +13,123 @@ import { mapActions } from '../redux/mapReducer';
 import VectorMapComponent from '../components/VectorMapComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
+import TabsComponent from '../../../components/TabsComponent';
 
 const MESSAGES = defineMessages({
-    'location-all': {
-        defaultMessage: 'All',
-        id: 'microplanning.labels.all',
+    map: {
+        defaultMessage: 'Carte',
+        id: 'details.label.map',
+    },
+    list: {
+        defaultMessage: 'Liste',
+        id: 'details.label.list',
     },
 });
+
+const itemsToShow = params => [
+    {
+        id: 'traps',
+        defaultMessage: 'Pièges',
+        isActive: params.traps === 'true',
+        iconClass: 'map__option__icon--traps',
+    },
+    {
+        id: 'targets',
+        defaultMessage: 'Ecrans',
+        isActive: params.targets === 'true',
+        iconClass: 'map__option__icon--targets',
+    },
+    {
+        id: 'nonEndemicVillages',
+        defaultMessage: 'Villages non endémiques',
+        isActive: params.nonEndemicVillages === 'true',
+        iconClass: 'map__option__icon--villages',
+    },
+    {
+        id: 'endemicVillages',
+        defaultMessage: 'Villages endémiques',
+        isActive: params.endemicVillages === 'true',
+        iconClass: 'map__option__icon--villages-with-case',
+    },
+];
 
 export class Vector extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
-            itemsToShow: [
-                {
-                    id: 'traps',
-                    defaultMessage: 'Traps',
-                    isActive: true,
-                    iconClass: 'map__option__icon--traps',
-                },
-                {
-                    id: 'targets',
-                    defaultMessage: 'Targets',
-                    isActive: false,
-                    iconClass: 'map__option__icon--targets',
-                },
-                {
-                    id: 'villagesNoneCase',
-                    defaultMessage: 'Villages non endémiques',
-                    isActive: false,
-                    iconClass: 'map__option__icon--villages',
-                },
-                {
-                    id: 'villages',
-                    defaultMessage: 'Villages endémiques',
-                    isActive: false,
-                    iconClass: 'map__option__icon--villages-with-case',
-                },
-            ],
-            traps: props.vectors.traps,
-            targets: props.vectors.targets,
-            villages: props.vectors.villages,
+            itemsToShow: itemsToShow(props.params),
+            traps: [],
+            targets: [],
+            nonEndemicVillages: {},
+            endemicVillages: {},
+            currentTab: 'map',
         };
     }
 
+
     componentWillReceiveProps(newProps) {
-        if ((newProps.vectors.traps.length !== this.state.traps.length) &&
-            this.state.itemsToShow[0].isActive) {
-            this.setState({
-                traps: newProps.vectors.traps,
-            });
+        const newState = {
+            ...this.state,
+            itemsToShow: itemsToShow(newProps.params),
+            traps: [],
+            targets: [],
+            nonEndemicVillages: {},
+            endemicVillages: {},
+        };
+        if (newProps.params.traps === 'true') {
+            newState.traps = newProps.vectors.traps;
         }
-        if ((newProps.vectors.targets.length !== this.state.targets.length) &&
-            this.state.itemsToShow[1].isActive) {
-            this.setState({
-                targets: newProps.vectors.targets,
-            });
+        if (newProps.params.targets === 'true') {
+            newState.targets = newProps.vectors.targets;
         }
-        if ((Object.keys(newProps.vectors.villages).length !==
-            Object.keys(this.state.villages).length) &&
-            (this.state.itemsToShow[2].isActive || this.state.itemsToShow[3].isActive)) {
-            this.setState({
-                villages: newProps.vectors.villages,
-            });
+        if (newProps.params.nonEndemicVillages === 'true') {
+            newState.nonEndemicVillages = newProps.vectors.nonEndemicVillages;
         }
-
-        if (newProps.params.zs_id !== this.props.params.zs_id) {
-            this.showItems(this.state.itemsToShow, newProps.params.zs_id);
+        if (newProps.params.endemicVillages === 'true') {
+            newState.endemicVillages = newProps.vectors.endemicVillages;
         }
 
-        if ((newProps.params.date_from !== this.props.params.date_from) ||
-            (newProps.params.date_to !== this.props.params.date_to)) {
-            this.showItems(this.state.itemsToShow);
-        }
+        this.setState(newState);
     }
 
-    showItems(itemsToShow, zsId = this.props.params.zs_id) {
-        this.setState({
-            itemsToShow,
+    showItems(newItemsToShow) {
+        const tempParams = {
+            ...this.props.params,
+        };
+        newItemsToShow.map((i) => {
+            if (i.isActive) {
+                tempParams[i.id] = 'true';
+            } else {
+                delete tempParams[i.id];
+            }
+            return null;
         });
-        if (itemsToShow[0].isActive) {
-            this.props.fetchTraps();
-        } else {
-            this.setState({
-                traps: [],
-            });
-        }
-        if (itemsToShow[1].isActive) {
-            this.props.fetchTargets();
-        } else {
-            this.setState({
-                targets: [],
-            });
-        }
-        if (itemsToShow[2].isActive || itemsToShow[3].isActive) {
-            this.props.fetchVillages(itemsToShow[2].isActive, itemsToShow[3].isActive, zsId);
-        } else {
-            this.setState({
-                villages: {},
-            });
-        }
+        this.props.redirectTo('map', tempParams);
     }
 
     render() {
-        const { baseLayer } = this.props.map;
-        const zsId = this.props.params.zs_id;
-        const { formatMessage } = this.props.intl;
+        const {
+            map: {
+                baseLayer,
+            },
+            intl: {
+                formatMessage,
+            },
+            params,
+            getShape,
+            changeLayer,
+            selectMarker,
+            redirectTo,
+        } = this.props;
+        const {
+            currentTab,
+            traps,
+            targets,
+            nonEndemicVillages,
+            endemicVillages,
+        } = this.state;
+
+        const villages = Object.assign({}, nonEndemicVillages, endemicVillages);
         return (
             <section className="vectors-container">
                 {
@@ -136,11 +145,11 @@ export class Vector extends Component {
                             <FormattedMessage id="vector.title" defaultMessage="Vector control: " />
                             {' '}
                             <PeriodSelectorComponent
-                                dateFrom={this.props.params.date_from}
-                                dateTo={this.props.params.date_to}
+                                dateFrom={params.date_from}
+                                dateTo={params.date_to}
                                 onChangeDate={(dateFrom, dateTo) =>
-                                    this.props.redirectTo('map', {
-                                        ...this.props.params,
+                                    redirectTo('map', {
+                                        ...params,
                                         date_from: dateFrom,
                                         date_to: dateTo,
                                     })}
@@ -148,59 +157,56 @@ export class Vector extends Component {
                         </h2>
                     </div>
                     <div className="widget__content--tier">
-                        <RadiosComponent
-                            showItems={items => this.showItems(items)}
-                            items={this.state.itemsToShow}
-                        />
                         <div>
-                            <LayersComponent
-                                base={baseLayer}
-                                change={(type, key) => this.props.changeLayer(type, key)}
-                            />
+                            truc
+                            <br />
+                            <br />
+                            <br />
+                            <br />
+                            <br />
+                            <br />
+                            <br />
                         </div>
-                        {
-                            this.props.vectors.locations &&
-                            (this.state.itemsToShow[2].isActive ||
-                                this.state.itemsToShow[3].isActive) &&
-                                <div className="map__header--filters">
-                                    <div className="map__filters">
-                                        <div className="map__filters--option">
-                                            <span className="map__text--select">
-                                                <FormattedMessage
-                                                    id="microplanning.filter.zones"
-                                                    defaultMessage="Zones de santé"
-                                                />
-                                            </span>
-                                            <Select
-                                                multi
-                                                simpleValue
-                                                autosize={false}
-                                                name="zs_id"
-                                                value={zsId ? zsId.split(',').map(zs => parseInt(zs, 10)) : ''}
-                                                placeholder={formatMessage(MESSAGES['location-all'])}
-                                                options={this.props.vectors.locations.map(zs =>
-                                                    ({ label: zs.name, value: zs.id }))}
-                                                onChange={newZsId =>
-                                                    this.props.redirectTo('map', {
-                                                        ...this.props.params,
-                                                        zs_id: newZsId,
-                                                    })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                        }
                     </div>
                 </div>
-                <div className="vector-map widget__container">
-                    <VectorMapComponent
-                        baseLayer={baseLayer}
-                        traps={this.state.traps}
-                        targets={this.state.targets}
-                        villages={this.state.villages}
-                        getShape={type => this.props.getShape(type)}
-                        selectMarker={(itemId, key) => this.props.selectMarker(itemId, key)}
-                    />
+                <TabsComponent
+                    defaultPath="map"
+                    params={params}
+                    selectTab={key => (this.setState({ currentTab: key }))}
+                    tabs={[
+                        { label: formatMessage(MESSAGES.map), key: 'map' },
+                        { label: formatMessage(MESSAGES.list), key: 'list' },
+                    ]}
+                    defaultSelect={currentTab}
+                />
+                <div className={`vector-map widget__container ${currentTab === 'map' ? '' : 'hidden'}`}>
+                    <div className="flex-container">
+                        <div className="split-selector-container ">
+                            <RadiosComponent
+                                showItems={items => this.showItems(items)}
+                                items={this.state.itemsToShow}
+                            />
+                            <div className="margin-top">
+                                <LayersComponent
+                                    base={baseLayer}
+                                    change={(type, key) => changeLayer(type, key)}
+                                />
+                            </div>
+                        </div>
+                        <div className="split-map big">
+                            <VectorMapComponent
+                                baseLayer={baseLayer}
+                                traps={traps || []}
+                                targets={targets || []}
+                                villages={villages}
+                                getShape={type => getShape(type)}
+                                selectMarker={(itemId, key) => selectMarker(itemId, key)}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className={`vector-map widget__container ${currentTab === 'list' ? '' : 'hidden'}`}>
+                    list
                 </div>
             </section>
         );
@@ -209,9 +215,6 @@ export class Vector extends Component {
 
 Vector.propTypes = {
     selectMarker: PropTypes.func.isRequired,
-    fetchTraps: PropTypes.func.isRequired,
-    fetchTargets: PropTypes.func.isRequired,
-    fetchVillages: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,

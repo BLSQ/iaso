@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import VectorElement from './pages/Vector';
-import { vectorActions } from './redux/vectorReducer';
+import {
+    fetchTraps,
+    fetchTargets,
+    fetchNonEndemicVillages,
+    fetchEndemicVillages,
+} from './utlls';
 import { loadActions } from '../../redux/load';
 
-const request = require('superagent');
-
-export const urls = [];
 
 class VectorContainer extends Component {
     constructor(props) {
@@ -17,88 +19,65 @@ class VectorContainer extends Component {
     }
 
     componentDidMount() {
-        this.fetchTraps();
-        this.fetchLocations();
-    }
-
-    fetchLocations() {
-        const { dispatch } = this.props;
+        const { params, dispatch } = this.props;
         dispatch(loadActions.startLoading());
-        return request
-            .get('/api/zs/')
-            .then((result) => {
-                dispatch(vectorActions.loadLocations(result.body));
-                dispatch(loadActions.successLoadingNoData());
-            })
-            .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
-                console.error('Error when fetching traps', err);
-            });
-    }
-
-    fetchTraps() {
-        const { dispatch } = this.props;
-        dispatch(loadActions.startLoading());
-        return request
-            .get(`/api/sites?from=${this.props.params.date_from}&to=${this.props.params.date_to}`)
-            .then((result) => {
-                dispatch(vectorActions.loadTraps(result.body));
-                dispatch(loadActions.successLoadingNoData());
-            })
-            .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
-                console.error('Error when fetching traps', err);
-            });
-    }
-
-    fetchTargets() {
-        const { dispatch } = this.props;
-        dispatch(loadActions.startLoading());
-        return request
-            .get(`/api/targets?from=${this.props.params.date_from}&to=${this.props.params.date_to}`)
-            .then((result) => {
-                dispatch(vectorActions.loadTargets(result.body));
-                dispatch(loadActions.successLoadingNoData());
-            })
-            .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
-                console.error('Error when fetching targets', err);
-            });
-    }
-
-    fetchVillages(withNegativeCases, withPositiveCases, zsIds = this.props.params.zs_id) {
-        const { dispatch } = this.props;
-        dispatch(loadActions.startLoading());
-        let filterCases = '';
-        let filterLocations = '';
-        if (withPositiveCases && !withNegativeCases) {
-            filterCases = '&results=positive';
+        const promises = [];
+        if (params.traps === 'true') {
+            promises.push(fetchTraps(dispatch, params.date_from, params.date_to));
         }
-        if (!withPositiveCases && withNegativeCases) {
-            filterCases = '&results=negative';
+        if (params.targets === 'true') {
+            promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
         }
-        if (zsIds) {
-            filterLocations = `&zs_id=${zsIds}`;
+        if (params.endemicVillages === 'true') {
+            promises.push(fetchEndemicVillages(dispatch, params.date_from, params.date_to));
         }
-        return request
-            .get(`/api/villages?from=${this.props.params.date_from}&to=${this.props.params.date_to}${filterCases}${filterLocations}`)
-            .then((result) => {
-                dispatch(vectorActions.loadVillages(result.body));
-                dispatch(loadActions.successLoadingNoData());
-            })
-            .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
-                console.error('Error when fetching villages', err);
-            });
+        if (params.nonEndemicVillages === 'true') {
+            promises.push(fetchNonEndemicVillages(dispatch, params.date_from, params.date_to));
+        }
+        Promise.all(promises).then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        }).catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    }
+
+    componentWillReceiveProps(newProps) {
+        const { dispatch } = this.props;
+        if (!newProps.load.loading && !this.props.load.loading) {
+            const promises = [];
+            const paramsChanged = (newProps.params.date_from !== this.props.params.date_from) ||
+                                  (newProps.params.date_to !== this.props.params.date_to);
+            if ((paramsChanged && newProps.params.traps === 'true') ||
+                (newProps.params.traps === 'true' && !this.props.vectors.traps)) {
+                promises.push(fetchTraps(dispatch, newProps.params.date_from, newProps.params.date_to));
+            }
+            if ((paramsChanged && newProps.params.targets === 'true') ||
+                (newProps.params.targets === 'true' && !this.props.vectors.targets)) {
+                promises.push(fetchTargets(dispatch, newProps.params.date_from, newProps.params.date_to));
+            }
+
+            if ((paramsChanged && newProps.params.endemicVillages === 'true') ||
+                (newProps.params.endemicVillages === 'true' && !this.props.vectors.endemicVillages)) {
+                promises.push(fetchEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
+            }
+            if ((paramsChanged && newProps.params.nonEndemicVillages === 'true') ||
+                (newProps.params.nonEndemicVillages === 'true' && !this.props.vectors.nonEndemicVillages)) {
+                promises.push(fetchNonEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
+            }
+            if (promises.length > 0) {
+                dispatch(loadActions.startLoading());
+                Promise.all(promises).then(() => {
+                    dispatch(loadActions.successLoadingNoData());
+                }).catch((err) => {
+                    dispatch(loadActions.errorLoading(err));
+                });
+            }
+        }
     }
 
     render() {
         return (
             <VectorElement
-                fetchTraps={() => this.fetchTraps()}
-                fetchTargets={() => this.fetchTargets()}
-                fetchVillages={(withNegativeCases, withPositiveCases) =>
-                    this.fetchVillages(withNegativeCases, withPositiveCases)}
                 params={this.props.params}
             />
         );
@@ -107,13 +86,16 @@ class VectorContainer extends Component {
 
 
 VectorContainer.propTypes = {
-    params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
+    vectors: PropTypes.object.isRequired,
+    load: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     infos: state.infos,
+    vectors: state.vectors,
 });
 
 const MapDispatchToProps = dispatch => ({

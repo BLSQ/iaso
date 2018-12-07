@@ -14,7 +14,7 @@ import VectorMapComponent from '../components/VectorMapComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
-import trapsColumns from '../utlls/trapsColumns';
+import sitesColumns from '../utlls/sitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
@@ -24,9 +24,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Carte',
         id: 'details.label.map',
     },
-    traps: {
+    sites: {
         defaultMessage: 'Pièges',
-        id: 'details.label.traps',
+        id: 'details.label.sites',
     },
     targets: {
         defaultMessage: 'Ecrans',
@@ -36,10 +36,10 @@ const MESSAGES = defineMessages({
 
 const itemsToShow = params => [
     {
-        id: 'traps',
+        id: 'sites',
         defaultMessage: 'Pièges',
-        isActive: params.traps === 'true',
-        iconClass: 'map__option__icon--traps',
+        isActive: params.sites === 'true',
+        iconClass: 'map__option__icon--sites',
     },
     {
         id: 'targets',
@@ -66,12 +66,12 @@ export class Vector extends Component {
         super(props);
         this.state = {
             itemsToShow: itemsToShow(props.params),
-            traps: [],
+            sites: [],
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: props.params.tab || 'map',
-            trapsColumns: trapsColumns(props.intl.formatMessage),
+            sitesColumns: sitesColumns(props.intl.formatMessage),
             targetsColumns: targetsColumns(props.intl.formatMessage),
         };
     }
@@ -81,21 +81,21 @@ export class Vector extends Component {
         const newState = {
             ...this.state,
             itemsToShow: itemsToShow(newProps.params),
-            traps: [],
+            sites: [],
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
         };
-        if (newProps.params.traps === 'true') {
-            newState.traps = newProps.vectors.traps;
+        if (newProps.params.sites) {
+            newState.sites = newProps.vectors.sites;
         }
-        if (newProps.params.targets === 'true') {
+        if (newProps.params.targets) {
             newState.targets = newProps.vectors.targets;
         }
-        if (newProps.params.nonEndemicVillages === 'true') {
+        if (newProps.params.nonEndemicVillages) {
             newState.nonEndemicVillages = newProps.vectors.nonEndemicVillages;
         }
-        if (newProps.params.endemicVillages === 'true') {
+        if (newProps.params.endemicVillages) {
             newState.endemicVillages = newProps.vectors.endemicVillages;
         }
 
@@ -133,7 +133,7 @@ export class Vector extends Component {
         } = this.props;
         const {
             currentTab,
-            traps,
+            sites,
             targets,
             nonEndemicVillages,
             endemicVillages,
@@ -185,7 +185,7 @@ export class Vector extends Component {
                     selectTab={key => (this.setState({ currentTab: key }))}
                     tabs={[
                         { label: formatMessage(MESSAGES.map), key: 'map' },
-                        { label: formatMessage(MESSAGES.traps), key: 'traps' },
+                        { label: formatMessage(MESSAGES.sites), key: 'sites' },
                         { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}
@@ -207,7 +207,7 @@ export class Vector extends Component {
                         <div className="split-map big">
                             <VectorMapComponent
                                 baseLayer={baseLayer}
-                                traps={traps || []}
+                                sites={sites || []}
                                 targets={targets || []}
                                 villages={villages}
                                 getShape={type => getShape(type)}
@@ -216,19 +216,19 @@ export class Vector extends Component {
                         </div>
                     </div>
                 </div>
-                <div className={`vector-map widget__container ${currentTab === 'traps' ? '' : 'hidden'}`}>
+                <div className={`vector-map widget__container ${currentTab === 'sites' ? '' : 'hidden'}`}>
                     <CustomTableComponent
                         isSortable
                         showPagination={false}
                         endPointUrl=""
-                        columns={this.state.trapsColumns}
+                        columns={this.state.sitesColumns}
                         defaultSorted={[{ id: 'id', desc: false }]}
                         params={params}
                         defaultPath="map"
                         onRowClicked={() => { }}
                         multiSort
                         onDataLoaded={() => { }}
-                        reduxDatas={this.props.vectors.traps}
+                        reduxDatas={this.props.vectors.sites}
                     // reduxParams={reduxParams}
                     // reduxShowPagination
                     // reduxCount={reduxCount}

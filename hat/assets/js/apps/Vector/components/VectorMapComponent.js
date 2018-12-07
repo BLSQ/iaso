@@ -51,7 +51,7 @@ class VectorMapComponent extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'traps') ||
+            if (hasChanged(prevProps, this.props, 'sites') ||
                 hasChanged(prevProps, this.props, 'targets') ||
                 hasChanged(prevProps, this.props, 'villages')) {
                 this.updateItems();
@@ -88,7 +88,7 @@ class VectorMapComponent extends Component {
    *************************************************************************** */
 
     updateItems() {
-        const { traps, targets, villages } = this.props;
+        const { sites, targets, villages } = this.props;
         const renderDivIcon = (content, key, size) => L.divIcon({
             html: `<div><span>${content}</span></div>`,
             className: `marker-cluster marker-cluster-${key}`,
@@ -106,9 +106,9 @@ class VectorMapComponent extends Component {
             maxClusterRadius: 30,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'targets', 40),
         });
-        const markersTraps = L.markerClusterGroup({
+        const markersSites = L.markerClusterGroup({
             maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'traps', 40),
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'sites', 40),
         });
 
         this.itemsGroup.clearLayers();
@@ -137,20 +137,20 @@ class VectorMapComponent extends Component {
 
         this.itemsGroup.addLayer(markersTargets);
 
-        traps.map((trap) => {
-            markersTraps.addLayer(L.marker(
-                [trap.latitude, trap.longitude],
-                { icon: renderDivIcon('1', 'traps small', 30) },
+        sites.map((site) => {
+            markersSites.addLayer(L.marker(
+                [site.latitude, site.longitude],
+                { icon: renderDivIcon('1', 'sites small', 30) },
             )
                 .on('click', (event) => {
                     const popUp = event.target.getPopup();
-                    this.props.selectMarker(trap.id, 'traps')
+                    this.props.selectMarker(site.id, 'sites')
                         .then((response) => {
-                            popUp.setContent(this.renderTrapsPopup(response));
+                            popUp.setContent(this.renderSitesPopup(response));
                         });
                 })
                 .on('mouseover', () => {
-                    this.updateTooltipSmall(trap);
+                    this.updateTooltipSmall(site);
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
@@ -159,7 +159,7 @@ class VectorMapComponent extends Component {
 
             return true;
         });
-        this.itemsGroup.addLayer(markersTraps);
+        this.itemsGroup.addLayer(markersSites);
 
         Object.keys(villages).forEach((key) => {
             const village = villages[key];
@@ -192,7 +192,6 @@ class VectorMapComponent extends Component {
         });
         this.itemsGroup.addLayer(markersVillages);
         this.itemsGroup.addLayer(markersVillagesWithCases);
-        this.fitToBounds();
     }
 
     updateTooltipSmall(item) {
@@ -238,42 +237,43 @@ class VectorMapComponent extends Component {
         });
     }
 
-    renderTrapsPopup(trap) {
+    renderSitesPopup(site) {
+        console.log('renderSitesPopup', site);
         const { formatMessage } = this.props.intl;
         return `<section class="custom-popup-container">
                     <h6>
-                        ${formatMessage({ defaultMessage: 'Trap', id: 'vector.labels.trap' })}:
+                        ${formatMessage({ defaultMessage: 'Sites', id: 'vector.labels.sites' })}:
                     </h6>
                     <div>
                         ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}:
-                        <span>${trap.zone === '' ? '/' : trap.zone}</span></div>
+                        <span>${site.zone === '' ? '/' : site.zone}</span></div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
-                        <span>${trap.latitude}</span>
+                        <span>${site.latitude}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}:
-                        <span>${trap.longitude}</span>
+                        <span>${site.longitude}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}:
-                        <span>${trap.habitat === '' ? '/' : trap.habitat}</span>
+                        <span>${site.habitat === '' ? '/' : site.habitat}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Premier relevé', id: 'vector.labels.first_survey' })}:
-                        <span>${trap.first_survey}</span>
+                        <span>${site.first_survey}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}:
-                        <span>${moment(trap.first_survey_date).format('hh:mm YYYY-MM-DD')}</span>
+                        <span>${moment(site.first_survey_date).format('hh:mm YYYY-MM-DD')}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Compte', id: 'vector.labels.count' })}:
-                        <span>${trap.count}</span>
+                        <span>${site.count}</span>
                     </div>
                     <div>
                         ${formatMessage({ defaultMessage: 'Total', id: 'vector.labels.total' })}:
-                        <span>${trap.total}</span>
+                        <span>${site.total}</span>
                     </div>
                 </section>`;
     }
@@ -376,7 +376,7 @@ VectorMapComponent.defaultProps = {
 VectorMapComponent.propTypes = {
     selectMarker: PropTypes.func.isRequired,
     baseLayer: PropTypes.string.isRequired,
-    traps: PropTypes.arrayOf(PropTypes.object).isRequired,
+    sites: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
     villages: PropTypes.object.isRequired,
     intl: intlShape.isRequired,

@@ -93,7 +93,7 @@ class GpsImport(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
 
     def __str__(self):
-        return "%s - %s - %s" % (self.id, self.filename, self.user.username)
+        return "%s - %s " % (self.id, self.filename)
 
     def as_dict(self):
         return {

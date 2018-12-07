@@ -3,20 +3,23 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
+from hat.api.authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
+
 from hat.vector_control.gpximport import gpximport
 
 
 @csrf_exempt
 @api_view(http_method_names=['POST'])
 # @throttle_classes([AnonRateThrottle])
-@authentication_classes([])
+@authentication_classes((CsrfExemptSessionAuthentication, BasicAuthentication))
 @permission_classes([])
 def gpx_upload(request: HttpRequest) -> HttpResponse:
     gpx_file = request.FILES['gpx']
     if not gpx_file:
         return JsonResponse({"Error": "No gpx file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-    gpx_import = gpximport(gpx_file.name, gpx_file.file, None)  # Should get user from request
+    gpx_import = gpximport(gpx_file.name, gpx_file.file, request.user)  # Should get user from request
 
     return JsonResponse(
         {'gpx_import_id': gpx_import.id, 'items': gpx_import.target_set.count()},

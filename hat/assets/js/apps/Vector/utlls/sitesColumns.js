@@ -1,6 +1,6 @@
 import React from 'react';
 
-const trapsColumns = formatMessage => (
+const sitesColumns = formatMessage => (
     [
         {
             Header: 'Id',
@@ -22,5 +22,5 @@ const trapsColumns = formatMessage => (
         },
     ]
 );
-export default trapsColumns;
+export default sitesColumns;
 

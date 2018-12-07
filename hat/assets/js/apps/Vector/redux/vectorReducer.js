@@ -2,7 +2,7 @@
  * Includes the actions and state necessary for the vector process
  */
 
-export const LOAD_TRAPS = 'hat/vector/LOAD_TRAPS';
+export const LOAD_SITES = 'hat/vector/LOAD_SITES';
 export const LOAD_TARGETS = 'hat/vector/LOAD_TARGETS';
 export const LOAD_NON_ENDEMIC_VILLAGES = 'hat/vector/LOAD_NON_ENDEMIC_VILLAGES';
 export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
@@ -10,8 +10,8 @@ export const SELECT_TYPE = 'hat/vector/SELECT_TYPE';
 export const FETCH_ACTION = 'hat/vector/FETCH_ACTION';
 
 
-export const loadTraps = payload => ({
-    type: LOAD_TRAPS,
+export const loadSites = payload => ({
+    type: LOAD_SITES,
     payload,
 });
 
@@ -36,7 +36,7 @@ export const selectType = newType => ({
 
 export const vectorActions = {
     selectType,
-    loadTraps,
+    loadSites,
     loadTargets,
     loadNonEndemicVillages,
     loadEndemicVillages,
@@ -44,7 +44,7 @@ export const vectorActions = {
 
 export const vectorInitialState = {
     currentTypes: ['YES'],
-    traps: null,
+    sites: null,
     targets: null,
     endemicVillages: undefined,
     nonEndemicVillages: undefined,
@@ -52,9 +52,9 @@ export const vectorInitialState = {
 
 export const vectorReducer = (state = vectorInitialState, action = {}) => {
     switch (action.type) {
-        case LOAD_TRAPS: {
-            const traps = action.payload;
-            return { ...state, traps };
+        case LOAD_SITES: {
+            const sites = action.payload;
+            return { ...state, sites };
         }
         case LOAD_TARGETS: {
             const targets = action.payload;

@@ -312,7 +312,7 @@ $color in $types {
     }
     &--villages,
     &--villages-with-case,
-    &--traps,
+    &--sites,
     &--targets {
         border: none;
         background: transparent;
@@ -358,7 +358,7 @@ $color in $types {
             background: red;
         }
     }
-    &--traps {
+    &--sites {
         &:before {
             background: rgba(orange, 0.5);
         }

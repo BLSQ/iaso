@@ -5,13 +5,13 @@ import { vectorActions } from '../redux/vectorReducer';
 const req = require('superagent');
 
 
-export const fetchTraps = (dispatch, dateFrom, dateTo) => req
-    .get(`/api/traps?from=${dateFrom}&to=${dateTo}`)
+export const fetchSites = (dispatch, dateFrom, dateTo) => req
+    .get(`/api/sites?from=${dateFrom}&to=${dateTo}`)
     .then((result) => {
-        dispatch(vectorActions.loadTraps(result.body));
+        dispatch(vectorActions.loadSites(result.body));
     })
     .catch((err) => {
-        console.error('Error when fetching traps', err);
+        console.error('Error when fetching sites', err);
     });
 
 export const fetchTargets = (dispatch, dateFrom, dateTo) => req

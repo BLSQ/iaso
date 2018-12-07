@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import VectorElement from './pages/Vector';
 import {
-    fetchTraps,
+    fetchSites,
     fetchTargets,
     fetchNonEndemicVillages,
     fetchEndemicVillages,
@@ -22,8 +22,8 @@ class VectorContainer extends Component {
         const { params, dispatch } = this.props;
         dispatch(loadActions.startLoading());
         const promises = [];
-        if (params.traps || params.tab === 'traps') {
-            promises.push(fetchTraps(dispatch, params.date_from, params.date_to));
+        if (params.sites || params.tab === 'sites') {
+            promises.push(fetchSites(dispatch, params.date_from, params.date_to));
         }
         if (params.targets || params.tab === 'targets') {
             promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
@@ -47,10 +47,10 @@ class VectorContainer extends Component {
             const promises = [];
             const paramsChanged = (newProps.params.date_from !== this.props.params.date_from) ||
                                   (newProps.params.date_to !== this.props.params.date_to);
-            if ((paramsChanged && newProps.params.traps) ||
-                (newProps.params.traps && !this.props.vectors.traps) ||
-                (newProps.params.tab === 'traps' && !this.props.vectors.targets)) {
-                promises.push(fetchTraps(dispatch, newProps.params.date_from, newProps.params.date_to));
+            if ((paramsChanged && newProps.params.sites) ||
+                (newProps.params.sites && !this.props.vectors.sites) ||
+                (newProps.params.tab === 'sites' && !this.props.vectors.targets)) {
+                promises.push(fetchSites(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
             if ((paramsChanged && newProps.params.targets) ||
                 (newProps.params.targets && !this.props.vectors.targets) ||

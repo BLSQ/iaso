@@ -20,7 +20,6 @@ class VectorContainer extends Component {
 
     componentDidMount() {
         const { params, dispatch } = this.props;
-        dispatch(loadActions.startLoading());
         const promises = [];
         if (params.sites || params.tab === 'sites') {
             promises.push(fetchSites(dispatch, params.date_from, params.date_to));
@@ -28,12 +27,13 @@ class VectorContainer extends Component {
         if (params.targets || params.tab === 'targets') {
             promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
         }
-        if (params.endemicVillages) {
+        if (params.endemicVillages === 'true') {
             promises.push(fetchEndemicVillages(dispatch, params.date_from, params.date_to));
         }
-        if (params.nonEndemicVillages) {
+        if (params.nonEndemicVillages === 'true') {
             promises.push(fetchNonEndemicVillages(dispatch, params.date_from, params.date_to));
         }
+        dispatch(loadActions.startLoading());
         Promise.all(promises).then(() => {
             dispatch(loadActions.successLoadingNoData());
         }).catch((err) => {
@@ -57,7 +57,6 @@ class VectorContainer extends Component {
                 (newProps.params.tab === 'targets' && !this.props.vectors.targets)) {
                 promises.push(fetchTargets(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
-
             if ((paramsChanged && newProps.params.endemicVillages) ||
                 (newProps.params.endemicVillages && !this.props.vectors.endemicVillages)) {
                 promises.push(fetchEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));

@@ -138,8 +138,6 @@ export class Vector extends Component {
             nonEndemicVillages,
             endemicVillages,
         } = this.state;
-
-        const villages = Object.assign({}, nonEndemicVillages, endemicVillages);
         return (
             <section className="vectors-container">
                 {
@@ -190,7 +188,7 @@ export class Vector extends Component {
                     ]}
                     defaultSelect={currentTab}
                 />
-                <div className={`vector-map widget__container ${currentTab === 'map' ? '' : 'hidden'}`}>
+                <div className={`vector-map widget__container ${currentTab === 'map' ? '' : 'hidden-opacity'}`}>
                     <div className="flex-container">
                         <div className="split-selector-container ">
                             <RadiosComponent
@@ -209,49 +207,42 @@ export class Vector extends Component {
                                 baseLayer={baseLayer}
                                 sites={sites || []}
                                 targets={targets || []}
-                                villages={villages}
+                                endemicVillages={endemicVillages || {}}
+                                nonEndemicVillages={nonEndemicVillages || {}}
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => selectMarker(itemId, key)}
                             />
                         </div>
                     </div>
                 </div>
-                <div className={`vector-map widget__container ${currentTab === 'sites' ? '' : 'hidden'}`}>
+                <div className={`widget__container ${currentTab === 'sites' ? '' : 'hidden'}`}>
                     <CustomTableComponent
                         isSortable
                         showPagination={false}
-                        endPointUrl=""
+                        endPointUrl={`/api/sites?from=${params.date_from}&to=${params.date_to}`}
                         columns={this.state.sitesColumns}
                         defaultSorted={[{ id: 'id', desc: false }]}
                         params={params}
+                        pageSize={50}
                         defaultPath="map"
                         onRowClicked={() => { }}
                         multiSort
                         onDataLoaded={() => { }}
-                        reduxDatas={this.props.vectors.sites}
-                    // reduxParams={reduxParams}
-                    // reduxShowPagination
-                    // reduxCount={reduxCount}
-                    // reduxPages={reduxPages}
                     />·
                 </div>
-                <div className={`vector-map widget__container ${currentTab === 'targets' ? '' : 'hidden'}`}>
+                <div className={`widget__container ${currentTab === 'targets' ? '' : 'hidden'}`}>
                     <CustomTableComponent
                         isSortable
                         showPagination={false}
-                        endPointUrl=""
+                        endPointUrl={`/api/targets?from=${params.date_from}&to=${params.date_to}`}
                         columns={this.state.targetsColumns}
                         defaultSorted={[{ id: 'id', desc: false }]}
                         params={params}
                         defaultPath="map"
+                        pageSize={50}
                         onRowClicked={() => { }}
                         multiSort
                         onDataLoaded={() => { }}
-                        reduxDatas={this.props.vectors.targets}
-                    // reduxParams={reduxParams}
-                    // reduxShowPagination
-                    // reduxCount={reduxCount}
-                    // reduxPages={reduxPages}
                     />·
                 </div>
             </section>

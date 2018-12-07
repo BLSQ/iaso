@@ -19,6 +19,13 @@ import {
 } from '../../../utils/mapUtils';
 
 let exportControl;
+
+const renderDivIcon = (content, key, size) => L.divIcon({
+    html: `<div><span>${content}</span></div>`,
+    className: `marker-cluster marker-cluster-${key}`,
+    iconSize: L.point(size, size),
+});
+
 class VectorMapComponent extends Component {
     constructor(props) {
         super(props);
@@ -35,8 +42,18 @@ class VectorMapComponent extends Component {
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
-        this.itemsGroup = new L.FeatureGroup();
-        this.map.addLayer(this.itemsGroup);
+        this.sitesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.sitesGroup);
+
+        this.targetsGroup = new L.FeatureGroup();
+        this.map.addLayer(this.targetsGroup);
+
+        this.nonEndemicVillagesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.nonEndemicVillagesGroup);
+
+        this.endemicVillagesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.endemicVillagesGroup);
+
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
@@ -51,10 +68,17 @@ class VectorMapComponent extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'sites') ||
-                hasChanged(prevProps, this.props, 'targets') ||
-                hasChanged(prevProps, this.props, 'villages')) {
-                this.updateItems();
+            if (hasChanged(prevProps, this.props, 'sites')) {
+                this.updateSites();
+            }
+            if (hasChanged(prevProps, this.props, 'targets')) {
+                this.updateTargets();
+            }
+            if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
+                this.updateNonEndemicVillages();
+            }
+            if (hasChanged(prevProps, this.props, 'endemicVillages')) {
+                this.updateEndemicVillages();
             }
         });
     }
@@ -86,56 +110,13 @@ class VectorMapComponent extends Component {
     /* ***************************************************************************
    * UPDATE STATE
    *************************************************************************** */
-
-    updateItems() {
-        const { sites, targets, villages } = this.props;
-        const renderDivIcon = (content, key, size) => L.divIcon({
-            html: `<div><span>${content}</span></div>`,
-            className: `marker-cluster marker-cluster-${key}`,
-            iconSize: L.point(size, size),
-        });
-        const markersVillages = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
-        });
-        const markersVillagesWithCases = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
-        });
-        const markersTargets = L.markerClusterGroup({
-            maxClusterRadius: 30,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'targets', 40),
-        });
+    updateSites() {
+        const { sites } = this.props;
         const markersSites = L.markerClusterGroup({
             maxClusterRadius: 50,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'sites', 40),
         });
-
-        this.itemsGroup.clearLayers();
-
-        targets.map((target) => {
-            markersTargets.addLayer(L.marker(
-                [target.latitude, target.longitude],
-                { icon: renderDivIcon('1', 'targets small', 30) },
-            )
-                .on('click', (event) => {
-                    const popUp = event.target.getPopup();
-                    this.props.selectMarker(target.id, 'targets')
-                        .then((response) => {
-                            popUp.setContent(this.renderTargetsPopup(response));
-                        });
-                })
-                .on('mouseover', () => {
-                    this.updateTooltipSmall(target);
-                })
-                .on('mouseout', () => {
-                    this.updateTooltipSmall();
-                })
-                .bindPopup());
-            return true;
-        });
-
-        this.itemsGroup.addLayer(markersTargets);
+        this.sitesGroup.clearLayers();
 
         sites.map((site) => {
             markersSites.addLayer(L.marker(
@@ -159,19 +140,63 @@ class VectorMapComponent extends Component {
 
             return true;
         });
-        this.itemsGroup.addLayer(markersSites);
+        this.sitesGroup.addLayer(markersSites);
+    }
 
-        Object.keys(villages).forEach((key) => {
-            const village = villages[key];
+    updateTargets() {
+        const { targets } = this.props;
+        const markersTargets = L.markerClusterGroup({
+            maxClusterRadius: 30,
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'targets', 40),
+        });
+
+        this.targetsGroup.clearLayers();
+
+        targets.map((target) => {
+            markersTargets.addLayer(L.marker(
+                [target.latitude, target.longitude],
+                { icon: renderDivIcon('1', 'targets small', 30) },
+            )
+                .on('click', (event) => {
+                    const popUp = event.target.getPopup();
+                    this.props.selectMarker(target.id, 'targets')
+                        .then((response) => {
+                            popUp.setContent(this.renderTargetsPopup(response));
+                        });
+                })
+                .on('mouseover', () => {
+                    this.updateTooltipSmall(target);
+                })
+                .on('mouseout', () => {
+                    this.updateTooltipSmall();
+                })
+                .bindPopup());
+            return true;
+        });
+
+        this.targetsGroup.addLayer(markersTargets);
+    }
+    updateNonEndemicVillages() {
+        const { nonEndemicVillages } = this.props;
+        const markersNonEndemicVillages = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
+        });
+
+        this.nonEndemicVillagesGroup.clearLayers();
+
+        Object.keys(nonEndemicVillages).forEach((key) => {
+            const village = nonEndemicVillages[key];
             if (village) {
                 const newMarker = L.marker(
                     [village.latitude, village.longitude],
-                    { icon: renderDivIcon('1', `villages${village.nr_positive_cases !== 0 ? '-with-cases small' : ' small'}`, 30) },
+                    { icon: renderDivIcon('1', 'villages small', 30) },
                 )
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
                         this.props.selectMarker(village.id, 'villages')
                             .then((response) => {
+                                response.nr_positive_cases = village.nr_positive_cases;
                                 popUp.setContent(this.renderVillagesPopup(response));
                             });
                     })
@@ -182,16 +207,49 @@ class VectorMapComponent extends Component {
                         this.updateTooltipSmall();
                     })
                     .bindPopup();
-                if (village.nr_positive_cases === 0) {
-                    markersVillages.addLayer(newMarker);
-                } else {
-                    markersVillagesWithCases.addLayer(newMarker);
-                }
+                markersNonEndemicVillages.addLayer(newMarker);
             }
             return true;
         });
-        this.itemsGroup.addLayer(markersVillages);
-        this.itemsGroup.addLayer(markersVillagesWithCases);
+        this.nonEndemicVillagesGroup.addLayer(markersNonEndemicVillages);
+    }
+    updateEndemicVillages() {
+        const { endemicVillages } = this.props;
+        const markersVillagesWithCases = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
+        });
+
+        this.endemicVillagesGroup.clearLayers();
+
+        Object.keys(endemicVillages).forEach((key) => {
+            const village = endemicVillages[key];
+            if (village) {
+                const newMarker = L.marker(
+                    [village.latitude, village.longitude],
+                    { icon: renderDivIcon('1', 'villages-with-cases small', 30) },
+                )
+                    .on('click', (event) => {
+                        const popUp = event.target.getPopup();
+                        this.props.selectMarker(village.id, 'villages')
+                            .then((response) => {
+                                response.nr_positive_cases = village.nr_positive_cases;
+                                popUp.setContent(this.renderVillagesPopup(response));
+                            });
+                    })
+                    .on('mouseover', () => {
+                        this.updateTooltipSmall(village);
+                    })
+                    .on('mouseout', () => {
+                        this.updateTooltipSmall();
+                    })
+                    .bindPopup();
+
+                markersVillagesWithCases.addLayer(newMarker);
+            }
+            return true;
+        });
+        this.endemicVillagesGroup.addLayer(markersVillagesWithCases);
     }
 
     updateTooltipSmall(item) {
@@ -210,7 +268,8 @@ class VectorMapComponent extends Component {
 
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.itemsGroup.getBounds(), 13);
+        const group = new L.FeatureGroup([this.sitesGroup, this.targetsGroup, this.endemicVillagesGroup, this.nonEndemicVillagesGroup]);
+        defaultFitToBound(map, group.getBounds(), 13);
     }
 
     /* ***************************************************************************
@@ -238,7 +297,6 @@ class VectorMapComponent extends Component {
     }
 
     renderSitesPopup(site) {
-        console.log('renderSitesPopup', site);
         const { formatMessage } = this.props.intl;
         return `<section class="custom-popup-container">
                     <h6>
@@ -314,6 +372,7 @@ class VectorMapComponent extends Component {
     }
     renderVillagesPopup(village) {
         const { formatMessage } = this.props.intl;
+        console.log(village.nr_positive_cases);
         return `<section class="custom-popup-container">
                     <h6>
                         ${formatMessage({ defaultMessage: 'Village', id: 'vector.labels.village' })}:
@@ -378,7 +437,8 @@ VectorMapComponent.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     sites: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
-    villages: PropTypes.object.isRequired,
+    nonEndemicVillages: PropTypes.object.isRequired,
+    endemicVillages: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
 };

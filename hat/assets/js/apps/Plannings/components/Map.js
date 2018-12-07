@@ -78,7 +78,7 @@ class Map extends Component {
 
     componentDidMount() {
         this.createMap();
-        includeControlsInMap(this, this.state.map);
+        includeControlsInMap(this, this.state.map, true);
         this.includeDefaultLayersInMap();
         updateBaseLayer(this.state.map, this.props.baseLayer);
         this.fitToBounds();

@@ -21,8 +21,13 @@ class Patient(models.Model):
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
     year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True, db_index=True)
     mothers_surname = contrib.CITextField("Nom de la mère", null=True)
+    # Origin area/village is the normalized test location for residents and origin location for travellers
     origin_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
     origin_village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
+    # Raw location names when not yet normalized. Exclusive with the above IDs
+    origin_raw_village = models.TextField(null=True, blank=True, db_index=True)
+    origin_raw_AS = models.TextField(null=True, blank=True, db_index=True)
+    origin_raw_ZS = models.TextField(null=True, blank=True, db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

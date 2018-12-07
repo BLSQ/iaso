@@ -31,7 +31,7 @@ def create_potential_duplicates_for_patient(patient):
     This method will look for potential duplicates for a (new) patient and store them if appropriate
     """
     to_insert = []
-    for dupe in PatientDuplicatesView.objects.filter(Q(patient1_id=patient.id)|Q(patient2_id=patient.id)):
+    for dupe in PatientDuplicatesView.objects.filter(patient1_id=patient.id):
         to_insert.append(PatientDuplicatesPair(
             patient1_id=dupe.patient1_id,
             patient2_id=dupe.patient2_id,
@@ -49,15 +49,16 @@ def create_potential_duplicates_for_patient_range(low_id, high_id):
     """
     count=0
     for dupe in PatientDuplicatesView.objects.filter(patient1_id__gte=low_id, patient1_id__lt=high_id):
-        dupe, dupe_created = PatientDuplicatesPair.objects.update_or_create(
-            patient1_id=dupe.patient1_id,
-            patient2_id=dupe.patient2_id,
-            similarity_score=dupe.similarity_score,
-            algorithm=dupe.algorithm,
-        )
-        if dupe_created:
-            count += 1
-        else:
-            print("Duplicate pair detected, ignoring", dupe)
+        if dupe.patient1_id > dupe.patient2_id:  # we will have 3,5 and 5,3. Only add 5,3.
+            dupe, dupe_created = PatientDuplicatesPair.objects.update_or_create(
+                patient1_id=dupe.patient1_id,
+                patient2_id=dupe.patient2_id,
+                similarity_score=dupe.similarity_score,
+                algorithm=dupe.algorithm,
+            )
+            if dupe_created:
+                count += 1
+            else:
+                print("Duplicate pair detected, ignoring", dupe)
 
     return count

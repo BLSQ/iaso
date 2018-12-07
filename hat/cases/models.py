@@ -470,7 +470,7 @@ class Case(CaseAbstract):
         if full and self.test_set:
             # Test results
             tests = [test.to_dict() if full else {'id': test.id, 'date': test.date} for test in self.test_set.all()]
-            tests.sort(key=lambda item: item['date'])  # bisect.insort() doesn't play well with lists of dicts
+            tests.sort(key=lambda item: item['date'] if item['date'] else "")  # bisect.insort() doesn't play well with lists of dicts
             d['tests'] = tests
 
         return d

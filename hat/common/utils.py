@@ -49,7 +49,7 @@ def queryset_iterator(queryset, chunk_size=1000):
     source: https://gist.github.com/syrusakbary/7982653
     """
     try:
-        last_pk = queryset.order_by('-id')[:1].get()['id']
+        last_pk = queryset.order_by('-id')[:1].get().id
     except ObjectDoesNotExist:
         return
 
@@ -57,6 +57,6 @@ def queryset_iterator(queryset, chunk_size=1000):
     queryset = queryset.order_by('id')
     while pk < last_pk:
         for row in queryset.filter(id__gt=pk)[:chunk_size]:
-            pk = row['id']
+            pk = row.id
             yield row
         gc.collect()

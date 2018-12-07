@@ -16,7 +16,7 @@ from .qctests import QCTestsViewSet
 from .team import TeamViewSet
 from .village import VillageViewSet
 from .qc_check_stats import QCCheckStatsViewSet
-from .traps import TrapsViewSet
+from .sites import SitesViewSet
 from .targets import TargetsViewSet
 from .metrics import MetricsViewSet
 from .teststats import TestStatsViewSet
@@ -30,6 +30,7 @@ from .patients import PatientsViewSet
 from .village_types import VillageTypeViewSet
 from .devices import DevicesViewSet
 from .tests_mapping import TestsMappingViewSet
+from .catches import CatchesViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -46,8 +47,9 @@ router.register(r"qcstats", QCStatsViewSet, base_name="qcstats")
 router.register(r"qctests", QCTestsViewSet, base_name="qctests")
 router.register(r"checks", QCChecksViewSet, base_name="checks")
 router.register(r"qccheckstats", QCCheckStatsViewSet, base_name="qc_check_stats")
-router.register(r"traps", TrapsViewSet, base_name="traps")
+router.register(r"sites", SitesViewSet, base_name="sites")
 router.register(r"targets", TargetsViewSet, base_name="targets")
+router.register(r"catches", CatchesViewSet, base_name="catches")
 router.register(r"metrics", MetricsViewSet, base_name="metrics")
 router.register(r"teststats", TestStatsViewSet, base_name="teststats")
 router.register(r"workzones", WorkZoneViewSet, base_name="workzones")

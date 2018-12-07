@@ -40,7 +40,7 @@ class VectorContainer extends Component {
         const { dispatch } = this.props;
         dispatch(loadActions.startLoading());
         return request
-            .get(`/api/traps?from=${this.props.params.date_from}&to=${this.props.params.date_to}`)
+            .get(`/api/sites?from=${this.props.params.date_from}&to=${this.props.params.date_to}`)
             .then((result) => {
                 dispatch(vectorActions.loadTraps(result.body));
                 dispatch(loadActions.successLoadingNoData());

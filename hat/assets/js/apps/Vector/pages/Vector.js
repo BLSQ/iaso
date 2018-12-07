@@ -139,7 +139,7 @@ export class Vector extends Component {
                                 dateFrom={this.props.params.date_from}
                                 dateTo={this.props.params.date_to}
                                 onChangeDate={(dateFrom, dateTo) =>
-                                    this.props.redirectTo('', {
+                                    this.props.redirectTo('map', {
                                         ...this.props.params,
                                         date_from: dateFrom,
                                         date_to: dateTo,
@@ -181,7 +181,7 @@ export class Vector extends Component {
                                                 options={this.props.vectors.locations.map(zs =>
                                                     ({ label: zs.name, value: zs.id }))}
                                                 onChange={newZsId =>
-                                                    this.props.redirectTo('', {
+                                                    this.props.redirectTo('map', {
                                                         ...this.props.params,
                                                         zs_id: newZsId,
                                                     })}

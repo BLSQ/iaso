@@ -124,7 +124,7 @@ INSTALLED_APPS = [
     'hat.geo',
     'hat.planning',
     'hat.patient',
-    'hat.vector',
+    'hat.vector_control',
     'hat.metrics',
     'hat.audit',
     'hat.menupermissions'

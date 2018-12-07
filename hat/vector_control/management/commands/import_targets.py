@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.vector.models import Target
+from hat.vector_control.models import Target
 import csv
 from datetime import datetime
 

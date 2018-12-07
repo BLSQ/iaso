@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
+import uuid
 
 # Create your models here.
 #Site	Zone	Zone.Abb	LAT	LONG	Habitat	FirstSurvey	FirstSurveyDate	Count	Total	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
@@ -9,17 +10,28 @@ from django.db import models
 #Site	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
 from django.db.models import CASCADE
 
+SOURCE_CHOICES = (
+    ('excel', 'Excel'),
+    ('API', 'API'),
+)
+
 
 class Site(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=50, null=True)
     zone = models.TextField(null=True)
     latitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
     longitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
+    altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     habitat = models.CharField(max_length=255, null=True)
+    description = models.CharField(max_length=255, null=True)
     first_survey = models.CharField(max_length=255, null=True)
     first_survey_date = models.DateTimeField(null=True)
     count = models.IntegerField()
     total = models.IntegerField()
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
+    uuid = models.TextField(unique=True, default=uuid.uuid4)
+    source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.zone, self.habitat)
@@ -54,41 +66,25 @@ class Catch(models.Model):
     trap_elev = models.IntegerField(null=True)
     target_elev = models.IntegerField(null=True)
     elev_diff = models.IntegerField(null=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
+    uuid = models.TextField(unique=True, default=uuid.uuid4)
+    source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
 
     def __str__(self):
         return "%s - %s - %s" % (self.site, self.operation, self.collect_date)
 
-#ID	NAME	Deployment	FullName	GPS	Lat	Long	Altitude	DateTimeS	Date	River
-
-
-class Target(models.Model):
-    id = models.CharField(max_length=128, primary_key=True)
-    name = models.TextField(null=True)
-    deployment = models.IntegerField(null=True)
-    full_name = models.TextField(null=True)
-    gps = models.CharField(max_length=100)
-    latitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
-    longitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
-    altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    date_time = models.DateTimeField(null=True)
-    river = models.TextField(null=True)
-
-    def __str__(self):
-        return "%s - %s - %s" % (self.id, self.name, self.date_time)
-
     def as_dict(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
-            'deployment': self.deployment,
-            'altitude': self.altitude,
-            'date_time': self.date_time,
-            'river': self.river
-        }
+        'id': self.id,
+        'site': self.site.id,
+        'male_count': self.male_count,
+        'female_count': self.female_count,
+        'unknown_count': self.unknown_count,
+        'source': self.source,
+        'near_intervention': self.near_intervention,
+    }
 
-
+#ID	NAME	Deployment	FullName	GPS	Lat	Long	Altitude	DateTimeS	Date	River
 class GpsImport(models.Model):
     filename = models.TextField()
     file_date_time = models.DateTimeField(null=True)
@@ -110,23 +106,20 @@ class GpsImport(models.Model):
         }
 
 
-class GpsWaypoint(models.Model):
-    gps_import = models.ForeignKey(GpsImport, on_delete=CASCADE)
-    name = models.TextField()
-    date_time = models.DateTimeField()
+class Target(models.Model):
+    name = models.TextField(null=True)
+    deployment = models.IntegerField(null=True)
+    full_name = models.TextField(null=True)
+    gps = models.CharField(max_length=100)
     latitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
     longitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
-    elevation = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    tags = ArrayField(
-        CITextField(max_length=255, blank=True),
-        size=20,
-        null=True,
-        blank=True,
-    )
-    ignore = models.BooleanField(default=False)
+    altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    date_time = models.DateTimeField(null=True)
+    river = models.TextField(null=True)
+    gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
 
     def __str__(self):
-        return "%s - %s - %s - %s %s" % (self.id, self.name, self.date_time, self.latitude, self.longitude)
+        return "%s - %s - %s" % (self.id, self.name, self.date_time)
 
     def as_dict(self):
         return {
@@ -134,8 +127,8 @@ class GpsWaypoint(models.Model):
             'name': self.name,
             'latitude': self.latitude,
             'longitude': self.longitude,
-            'elevation': self.elevation,
+            'deployment': self.deployment,
+            'altitude': self.altitude,
             'date_time': self.date_time,
-            'tags': self.tags,
-            'ignore': self.ignore,
+            'river': self.river
         }

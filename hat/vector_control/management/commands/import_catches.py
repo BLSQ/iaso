@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.vector.models import Catch, Site
+from hat.vector_control.models import Catch, Site
 import csv
 from datetime import datetime
 

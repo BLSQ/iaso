@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
-from hat.vector.gpximport import gpximport, import_traps_from_gpx
+from hat.vector_control.gpximport import gpximport
 
 
 @csrf_exempt
@@ -17,7 +17,7 @@ def gpx_upload(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"Error": "No gpx file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
     gpx_import = gpximport(gpx_file.name, gpx_file.file, None)  # Should get user from request
-    import_traps_from_gpx(gpx_import)
+
     return JsonResponse(
-        {'gpx_import_id': gpx_import.id, 'items': gpx_import.gpswaypoint_set.count()},
+        {'gpx_import_id': gpx_import.id, 'items': gpx_import.target_set.count()},
         status=status.HTTP_201_CREATED)

@@ -27,7 +27,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             path="/upload"
             component={GpxUpload}
         />,
-        // <Redirect path="*" to={defaultPath} />,
+        <Redirect path="*" to={defaultPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

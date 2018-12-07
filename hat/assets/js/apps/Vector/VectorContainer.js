@@ -22,16 +22,16 @@ class VectorContainer extends Component {
         const { params, dispatch } = this.props;
         dispatch(loadActions.startLoading());
         const promises = [];
-        if (params.traps === 'true') {
+        if (params.traps || params.tab === 'traps') {
             promises.push(fetchTraps(dispatch, params.date_from, params.date_to));
         }
-        if (params.targets === 'true') {
+        if (params.targets || params.tab === 'targets') {
             promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
         }
-        if (params.endemicVillages === 'true') {
+        if (params.endemicVillages) {
             promises.push(fetchEndemicVillages(dispatch, params.date_from, params.date_to));
         }
-        if (params.nonEndemicVillages === 'true') {
+        if (params.nonEndemicVillages) {
             promises.push(fetchNonEndemicVillages(dispatch, params.date_from, params.date_to));
         }
         Promise.all(promises).then(() => {
@@ -47,21 +47,23 @@ class VectorContainer extends Component {
             const promises = [];
             const paramsChanged = (newProps.params.date_from !== this.props.params.date_from) ||
                                   (newProps.params.date_to !== this.props.params.date_to);
-            if ((paramsChanged && newProps.params.traps === 'true') ||
-                (newProps.params.traps === 'true' && !this.props.vectors.traps)) {
+            if ((paramsChanged && newProps.params.traps) ||
+                (newProps.params.traps && !this.props.vectors.traps) ||
+                (newProps.params.tab === 'traps' && !this.props.vectors.targets)) {
                 promises.push(fetchTraps(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
-            if ((paramsChanged && newProps.params.targets === 'true') ||
-                (newProps.params.targets === 'true' && !this.props.vectors.targets)) {
+            if ((paramsChanged && newProps.params.targets) ||
+                (newProps.params.targets && !this.props.vectors.targets) ||
+                (newProps.params.tab === 'targets' && !this.props.vectors.targets)) {
                 promises.push(fetchTargets(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
 
-            if ((paramsChanged && newProps.params.endemicVillages === 'true') ||
-                (newProps.params.endemicVillages === 'true' && !this.props.vectors.endemicVillages)) {
+            if ((paramsChanged && newProps.params.endemicVillages) ||
+                (newProps.params.endemicVillages && !this.props.vectors.endemicVillages)) {
                 promises.push(fetchEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
-            if ((paramsChanged && newProps.params.nonEndemicVillages === 'true') ||
-                (newProps.params.nonEndemicVillages === 'true' && !this.props.vectors.nonEndemicVillages)) {
+            if ((paramsChanged && newProps.params.nonEndemicVillages) ||
+                (newProps.params.nonEndemicVillages && !this.props.vectors.nonEndemicVillages)) {
                 promises.push(fetchNonEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
             if (promises.length > 0) {
@@ -77,9 +79,7 @@ class VectorContainer extends Component {
 
     render() {
         return (
-            <VectorElement
-                params={this.props.params}
-            />
+            <VectorElement params={this.props.params} />
         );
     }
 }

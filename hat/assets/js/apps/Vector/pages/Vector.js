@@ -14,15 +14,23 @@ import VectorMapComponent from '../components/VectorMapComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
+import trapsColumns from '../utlls/trapsColumns';
+import targetsColumns from '../utlls/targetsColumns';
+import CustomTableComponent from '../../../components/CustomTableComponent';
+
 
 const MESSAGES = defineMessages({
     map: {
         defaultMessage: 'Carte',
         id: 'details.label.map',
     },
-    list: {
-        defaultMessage: 'Liste',
-        id: 'details.label.list',
+    traps: {
+        defaultMessage: 'Pièges',
+        id: 'details.label.traps',
+    },
+    targets: {
+        defaultMessage: 'Ecrans',
+        id: 'details.label.targets',
     },
 });
 
@@ -62,7 +70,9 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
-            currentTab: 'map',
+            currentTab: props.params.tab || 'map',
+            trapsColumns: trapsColumns(props.intl.formatMessage),
+            targetsColumns: targetsColumns(props.intl.formatMessage),
         };
     }
 
@@ -175,7 +185,8 @@ export class Vector extends Component {
                     selectTab={key => (this.setState({ currentTab: key }))}
                     tabs={[
                         { label: formatMessage(MESSAGES.map), key: 'map' },
-                        { label: formatMessage(MESSAGES.list), key: 'list' },
+                        { label: formatMessage(MESSAGES.traps), key: 'traps' },
+                        { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}
                 />
@@ -205,8 +216,43 @@ export class Vector extends Component {
                         </div>
                     </div>
                 </div>
-                <div className={`vector-map widget__container ${currentTab === 'list' ? '' : 'hidden'}`}>
-                    list
+                <div className={`vector-map widget__container ${currentTab === 'traps' ? '' : 'hidden'}`}>
+                    <CustomTableComponent
+                        isSortable
+                        showPagination={false}
+                        endPointUrl=""
+                        columns={this.state.trapsColumns}
+                        defaultSorted={[{ id: 'id', desc: false }]}
+                        params={params}
+                        defaultPath="map"
+                        onRowClicked={() => { }}
+                        multiSort
+                        onDataLoaded={() => { }}
+                        reduxDatas={this.props.vectors.traps}
+                    // reduxParams={reduxParams}
+                    // reduxShowPagination
+                    // reduxCount={reduxCount}
+                    // reduxPages={reduxPages}
+                    />·
+                </div>
+                <div className={`vector-map widget__container ${currentTab === 'targets' ? '' : 'hidden'}`}>
+                    <CustomTableComponent
+                        isSortable
+                        showPagination={false}
+                        endPointUrl=""
+                        columns={this.state.targetsColumns}
+                        defaultSorted={[{ id: 'id', desc: false }]}
+                        params={params}
+                        defaultPath="map"
+                        onRowClicked={() => { }}
+                        multiSort
+                        onDataLoaded={() => { }}
+                        reduxDatas={this.props.vectors.targets}
+                    // reduxParams={reduxParams}
+                    // reduxShowPagination
+                    // reduxCount={reduxCount}
+                    // reduxPages={reduxPages}
+                    />·
                 </div>
             </section>
         );

@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
     atomic = True
 
     dependencies = [
-        ('patient', '0013_patientduplicatesview'),
+        ('patient', '0015_patient_raw_location'),
     ]
 
     operations = [

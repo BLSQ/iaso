@@ -22,13 +22,6 @@ class Command(BaseCommand):
             help='Be verbose about what it is doing',
         )
 
-        parser.add_argument(
-            '--dry-run',
-            action='store_true',
-            dest='dry-run',
-            help='Go through the process but don\'t actually save the normalized village',
-        )
-
     def handle(self, *args, **options):
         cases = Case.objects.filter(normalized_patient_id__isnull=True)
         print(f"Cases to associate: {cases.count()}")

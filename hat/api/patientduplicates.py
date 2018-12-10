@@ -10,9 +10,9 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import Case, CaseView
+from hat.cases.models import Case, CaseView, RES_POSITIVE
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
-from hat.patient.models import PatientDuplicatesPair
+from hat.patient.models import PatientDuplicatesPair, Test
 from .authentication import CsrfExemptSessionAuthentication
 
 
@@ -81,6 +81,85 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         queryset = (
             PatientDuplicatesPair.objects.order_by(*orders)
         )
+
+        if search_name:
+            queryset = queryset.filter(
+                Q(patient1__post_name__contains=search_name) | Q(patient2__post_name__contains=search_name)
+            )
+        if search_prename:
+            queryset = queryset.filter(
+                Q(patient1__first_name__contains=search_prename) | Q(patient2__first_name__contains=search_prename)
+            )
+        if search_lastname:
+            queryset = queryset.filter(
+                Q(patient1__last_name__contains=search_lastname) | Q(patient2__last_name__contains=search_lastname)
+            )
+        if search_mother_name:
+            queryset = queryset.filter(
+                Q(patient1__mothers_surname__contains=search_mother_name)
+                | Q(patient2__mothers_surname__contains=search_mother_name)
+            )
+
+        if coordination_id:
+            coord_cases = CaseView.objects\
+                .filter(normalized_team__coordination_id__in=coordination_id.split(","))\
+                .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
+                        | Q(normalized_patient_id=OuterRef('patient2_id')))
+            queryset = queryset\
+                .annotate(teams_cases=Exists(coord_cases))\
+                .filter(teams_cases=True)
+
+        if test_types:
+            test_with_type_in = Test.objects.filter(Q(form__normalized_patient_id=OuterRef('patient1_id'))
+                                                    | Q(form__normalized_patient_id=OuterRef('patient2_id')))\
+                .filter(type__in=test_types.upper().split(","))
+            queryset = queryset \
+                .annotate(test_with_type_in=Exists(test_with_type_in)) \
+                .filter(test_with_type_in=True)
+
+        if screening_result is not None:
+            # setting this to false will provide patients that had no positive screening result at all
+            positive_screening_cases = CaseView.objects\
+                .filter(screening_result__gte=RES_POSITIVE)\
+                .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
+                        | Q(normalized_patient_id=OuterRef('patient2_id')))
+            queryset = queryset\
+                .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
+                .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
+
+        if confirmation_result is not None:
+            confirmed_cases = CaseView.objects\
+                .filter(confirmed_case=True)\
+                .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
+                        | Q(normalized_patient_id=OuterRef('patient2_id')))
+            queryset = queryset\
+                .annotate(has_confirmed_case=Exists(confirmed_cases))\
+                .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
+
+        if province_ids and not zs_ids and not as_ids:
+            queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=province_ids.split(","))
+                                       | Q(patient2__origin_area__ZS__province_id__in=province_ids.split(",")))
+        else:
+            if zs_ids and not as_ids:
+                queryset = queryset.filter(Q(patient1__origin_area__ZS_id__in=zs_ids.split(","))
+                                           | Q(patient2__origin_area__ZS_id__in=zs_ids.split(",")))
+            else:
+                if as_ids:
+                    queryset = queryset.filter(Q(patient1__origin_area_id__in=as_ids.split(","))
+                                               | Q(patient2__origin_area_id__in=as_ids.split(",")))
+
+        if village_ids:
+            queryset = queryset.filter(Q(patient1__origin_village_id__in=village_ids.split(","))
+                                       | Q(patient2__origin_village_id__in=village_ids.split(",")))
+
+        if teams:
+            teams_cases = CaseView.objects\
+                .filter(normalized_team_id__in=teams.split(","))\
+                .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
+                        | Q(normalized_patient_id=OuterRef('patient2_id')))
+            queryset = queryset\
+                .annotate(teams_cases=Exists(teams_cases))\
+                .filter(teams_cases=True)
 
         if algorithm:
             queryset = queryset.filter(algorithm=algorithm)

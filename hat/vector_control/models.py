@@ -39,6 +39,7 @@ class Site(models.Model):
     def as_dict(self):
         return {
             'id': self.id,
+            'name': self.name,
             'zone': self.zone,
             'latitude': self.latitude,
             'longitude': self.longitude,

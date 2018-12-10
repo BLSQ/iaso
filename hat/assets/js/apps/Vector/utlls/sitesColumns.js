@@ -1,10 +1,35 @@
+import moment from 'moment';
 import React from 'react';
 
 const sitesColumns = formatMessage => (
     [
         {
-            Header: 'Id',
-            accessor: 'id',
+            Header: formatMessage({
+                defaultMessage: 'Première collecte',
+                id: 'main.label.first_survey_date',
+            }),
+            accessor: 'first_survey_date',
+            Cell: settings => (
+                <span>
+                    {
+                        moment(settings.original.first_survey_date).format('DD/MM/YYYY HH:mm')
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Name',
+                id: 'main.label.nom',
+            }),
+            accessor: 'name',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Zone',
+                id: 'main.label.zone',
+            }),
+            accessor: 'zone',
         },
         {
             Header: formatMessage({
@@ -19,6 +44,27 @@ const sitesColumns = formatMessage => (
                 id: 'main.label.longitude',
             }),
             accessor: 'longitude',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Habitat',
+                id: 'main.label.habitat',
+            }),
+            accessor: 'habitat',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Décompte',
+                id: 'main.label.count',
+            }),
+            accessor: 'count',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Total',
+                id: 'main.label.total',
+            }),
+            accessor: 'total',
         },
     ]
 );

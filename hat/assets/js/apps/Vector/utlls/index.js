@@ -23,13 +23,17 @@ export const fetchTargets = (dispatch, dateFrom, dateTo) => req
         console.error('Error when fetching targets', err);
     });
 
-export const fetchPaginatedSites = (dispatch, params, limit, page) => {
+export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     const {
         date_from,
         date_to,
     } = params;
+    let url = `/api/sites?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`;
+    if (order) {
+        url += `&order=${order}`;
+    }
     return (req
-        .get(`/api/sites?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`)
+        .get(url)
         .then((result) => {
             dispatch(vectorActions.loadPaginatedSites(result.body, params));
         })
@@ -38,13 +42,17 @@ export const fetchPaginatedSites = (dispatch, params, limit, page) => {
         }));
 };
 
-export const fetchPaginatedTargets = (dispatch, params, limit, page) => {
+export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     const {
         date_from,
         date_to,
     } = params;
+    let url = `/api/targets?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`;
+    if (order) {
+        url += `&order=${order}`;
+    }
     return (req
-        .get(`/api/targets?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`)
+        .get(url)
         .then((result) => {
             dispatch(vectorActions.loadPaginatedTargets(result.body, params));
         })

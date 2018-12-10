@@ -24,7 +24,8 @@ class TargetsViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
-        queryset = Target.objects.all()
+        orders = request.GET.get("order", "date_time").split(",")
+        queryset = Target.objects.all().order_by(*orders)
 
         if from_date is not None:
             queryset = queryset.filter(date_time__date__gte=from_date)

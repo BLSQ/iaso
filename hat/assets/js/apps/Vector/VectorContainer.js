@@ -29,17 +29,17 @@ class VectorContainer extends Component {
         if (params.targets && params.tab === 'map') {
             promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
         }
-        if (params.tab === 'sites') {
-            promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage));
-        }
-        if (params.tab === 'targets') {
-            promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage));
-        }
         if (params.endemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchEndemicVillages(dispatch, params.date_from, params.date_to));
         }
         if (params.nonEndemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchNonEndemicVillages(dispatch, params.date_from, params.date_to));
+        }
+        if (params.tab === 'sites') {
+            promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
+        }
+        if (params.tab === 'targets') {
+            promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
         }
         dispatch(loadActions.startLoading());
         Promise.all(promises).then(() => {
@@ -81,13 +81,11 @@ class VectorContainer extends Component {
                 promises.push(fetchNonEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
 
-            if ((paramsChanged || sitesTableChanged || !this.props.vectors.sitesPage.list)
-            && newProps.params.tab === 'sites') {
-                promises.push(fetchPaginatedSites(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage));
+            if (paramsChanged || ((sitesTableChanged || !this.props.vectors.sitesPage.list) && newProps.params.tab === 'sites')) {
+                promises.push(fetchPaginatedSites(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage, newProps.params.orderSites));
             }
-            if ((paramsChanged || targetsTableChanged || !this.props.vectors.targetsPage.list)
-            && newProps.params.tab === 'targets') {
-                promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage));
+            if (paramsChanged || ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets')) {
+                promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
             }
             if (promises.length > 0) {
                 dispatch(loadActions.startLoading());

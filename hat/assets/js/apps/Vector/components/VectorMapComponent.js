@@ -4,7 +4,11 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import moment from 'moment';
+import {
+    renderSitesPopup,
+    renderTargetsPopup,
+    renderVillagesPopup,
+} from '../utlls/vectorMapPopupContents';
 import 'leaflet.markercluster'; // eslint-disable-line
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
 
@@ -111,7 +115,13 @@ class VectorMapComponent extends Component {
    * UPDATE STATE
    *************************************************************************** */
     updateSites() {
-        const { sites } = this.props;
+        const {
+            sites,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+
         const markersSites = L.markerClusterGroup({
             maxClusterRadius: 50,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'sites', 40),
@@ -127,7 +137,7 @@ class VectorMapComponent extends Component {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(site.id, 'sites')
                         .then((response) => {
-                            popUp.setContent(this.renderSitesPopup(response));
+                            popUp.setContent(renderSitesPopup(response, formatMessage));
                         });
                 })
                 .on('mouseover', () => {
@@ -144,7 +154,12 @@ class VectorMapComponent extends Component {
     }
 
     updateTargets() {
-        const { targets } = this.props;
+        const {
+            targets,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         const markersTargets = L.markerClusterGroup({
             maxClusterRadius: 30,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'targets', 40),
@@ -161,7 +176,7 @@ class VectorMapComponent extends Component {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(target.id, 'targets')
                         .then((response) => {
-                            popUp.setContent(this.renderTargetsPopup(response));
+                            popUp.setContent(renderTargetsPopup(response, formatMessage));
                         });
                 })
                 .on('mouseover', () => {
@@ -177,7 +192,12 @@ class VectorMapComponent extends Component {
         this.targetsGroup.addLayer(markersTargets);
     }
     updateNonEndemicVillages() {
-        const { nonEndemicVillages } = this.props;
+        const {
+            nonEndemicVillages,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         const markersNonEndemicVillages = L.markerClusterGroup({
             maxClusterRadius: 50,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
@@ -197,7 +217,7 @@ class VectorMapComponent extends Component {
                         this.props.selectMarker(village.id, 'villages')
                             .then((response) => {
                                 response.nr_positive_cases = village.nr_positive_cases;
-                                popUp.setContent(this.renderVillagesPopup(response));
+                                popUp.setContent(renderVillagesPopup(response, formatMessage, false));
                             });
                     })
                     .on('mouseover', () => {
@@ -214,7 +234,12 @@ class VectorMapComponent extends Component {
         this.nonEndemicVillagesGroup.addLayer(markersNonEndemicVillages);
     }
     updateEndemicVillages() {
-        const { endemicVillages } = this.props;
+        const {
+            endemicVillages,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         const markersVillagesWithCases = L.markerClusterGroup({
             maxClusterRadius: 50,
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
@@ -234,7 +259,7 @@ class VectorMapComponent extends Component {
                         this.props.selectMarker(village.id, 'villages')
                             .then((response) => {
                                 response.nr_positive_cases = village.nr_positive_cases;
-                                popUp.setContent(this.renderVillagesPopup(response));
+                                popUp.setContent(renderVillagesPopup(response, formatMessage, true));
                             });
                     })
                     .on('mouseover', () => {
@@ -295,123 +320,6 @@ class VectorMapComponent extends Component {
             },
         });
     }
-
-    renderSitesPopup(site) {
-        const { formatMessage } = this.props.intl;
-        return `<section class="custom-popup-container">
-                    <h6>
-                        ${formatMessage({ defaultMessage: 'Sites', id: 'vector.labels.sites' })}:
-                    </h6>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}:
-                        <span>${site.zone === '' ? '/' : site.zone}</span></div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
-                        <span>${site.latitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}:
-                        <span>${site.longitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}:
-                        <span>${site.habitat === '' ? '/' : site.habitat}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Premier relevé', id: 'vector.labels.first_survey' })}:
-                        <span>${site.first_survey}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}:
-                        <span>${moment(site.first_survey_date).format('hh:mm YYYY-MM-DD')}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Compte', id: 'vector.labels.count' })}:
-                        <span>${site.count}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Total', id: 'vector.labels.total' })}:
-                        <span>${site.total}</span>
-                    </div>
-                </section>`;
-    }
-    renderTargetsPopup(target) {
-        const { formatMessage } = this.props.intl;
-        return `<section class="custom-popup-container">
-                    <h6>
-                        ${formatMessage({ defaultMessage: 'Target', id: 'vector.labels.target' })}:
-                    </h6>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}:
-                        <span>${target.name}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}:
-                        <span>${target.altitude}</span>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
-                        <span>${target.latitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}:
-                        <span>${target.longitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}:
-                        <span>${moment(target.date_time).format('hh:mm YYYY-MM-DD')}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}:
-                        <span>${target.deployment}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Rivière', id: 'vector.labels.river' })}:
-                        <span>${target.river}</span>
-                    </div>
-                </section>`;
-    }
-    renderVillagesPopup(village) {
-        const { formatMessage } = this.props.intl;
-        console.log(village.nr_positive_cases);
-        return `<section class="custom-popup-container">
-                    <h6>
-                        ${formatMessage({ defaultMessage: 'Village', id: 'vector.labels.village' })}:
-                    </h6>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}:
-                        <span>${village.name}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'As', id: 'vector.labels.as' })}:
-                        <span>${village.as}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Zs', id: 'vector.labels.zs' })}:
-                        <span>${village.zs}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
-                        <span>${village.latitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}:
-                        <span>${village.longitude}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Cas positifs', id: 'vector.labels.nr_positive_cases' })}:
-                        <span>${village.nr_positive_cases}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Population', id: 'vector.labels.population' })}:
-                        <span>${village.population}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Source GPS', id: 'vector.labels.gps_source' })}:
-                        <span>${village.gps_source}</span>
-                    </div>
-                </section>`;
-    }
-
 
     render() {
         const { formatMessage } = this.props.intl;

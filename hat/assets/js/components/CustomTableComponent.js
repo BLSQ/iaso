@@ -229,7 +229,7 @@ class CustomTableComponent extends React.Component {
                         sortable={this.props.isSortable}
                         pageSize={currentPageSize}
                         page={this.state.page - 1}
-                        className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''}`}
+                        className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''} ${!this.props.canSelect ? 'no-select' : ''}`}
                         getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
                         showPagination={this.state.showPagination}
                         defaultSorted={this.state.order}
@@ -282,6 +282,7 @@ CustomTableComponent.defaultProps = {
     pageKey: 'page',
     pageSizeKey: 'pageSize',
     orderKey: 'order',
+    canSelect: true,
 };
 
 CustomTableComponent.propTypes = {
@@ -313,6 +314,7 @@ CustomTableComponent.propTypes = {
     pageKey: PropTypes.string,
     pageSizeKey: PropTypes.string,
     orderKey: PropTypes.string,
+    canSelect: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -107,6 +107,15 @@ tr:first-child td {
 }
 
 .ReactTable {
+  &.no-select.-highlight .rt-tbody .rt-tr:not(.-padRow) {
+    cursor: default;
+    &.-even {
+      background-color: white !important;
+    }
+    &.-odd {
+      background:rgba(0,0,0,0.03) !important;
+    }
+  }
   .rt-td {
     position: relative;;
   }

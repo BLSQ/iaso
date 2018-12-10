@@ -42,9 +42,10 @@ class SitesViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
-        queryset = Site.objects.all()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "first_survey_date").split(",")
+        queryset = Site.objects.all().order_by(*orders)
         if from_date is not None:
             queryset = queryset.filter(first_survey_date__date__gte=from_date)
         if to_date is not None:

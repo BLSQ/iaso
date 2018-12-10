@@ -102,6 +102,25 @@ export class Vector extends Component {
         this.setState(newState);
     }
 
+    getDownloadUrl(key) {
+        const {
+            params: {
+                date_from,
+                date_to,
+                orderSites,
+                orderTargets,
+            },
+        } = this.props;
+        let url = `/api/${key}?from=${date_from}&to=${date_to}&csv=True`;
+        if ((key === 'targets') && orderTargets) {
+            url += `&order=${orderTargets}`;
+        }
+        if ((key === 'sites') && orderSites) {
+            url += `&order=${orderSites}`;
+        }
+        return url;
+    }
+
     showItems(newItemsToShow) {
         const tempParams = {
             ...this.props.params,
@@ -117,6 +136,7 @@ export class Vector extends Component {
         this.props.redirectTo('map', tempParams);
     }
 
+
     render() {
         const {
             map: {
@@ -130,6 +150,8 @@ export class Vector extends Component {
             changeLayer,
             selectMarker,
             redirectTo,
+            reduxSitesPage,
+            reduxTargetsPage,
         } = this.props;
         const {
             currentTab,
@@ -218,32 +240,62 @@ export class Vector extends Component {
                 <div className={`widget__container ${currentTab === 'sites' ? '' : 'hidden'}`}>
                     <CustomTableComponent
                         isSortable
-                        showPagination={false}
-                        endPointUrl={`/api/sites?from=${params.date_from}&to=${params.date_to}`}
+                        showPagination
                         columns={this.state.sitesColumns}
-                        defaultSorted={[{ id: 'id', desc: false }]}
+                        defaultSorted={[{ id: 'first_survey_date', desc: false }]}
                         params={params}
-                        pageSize={50}
-                        defaultPath="map"
                         onRowClicked={() => { }}
                         multiSort
-                        onDataLoaded={() => { }}
-                    />·
+                        pageSize={50}
+                        fetchDatas={false}
+                        reduxPage={reduxSitesPage}
+                        pageKey="sitesPage"
+                        pageSizeKey="sitesPageSize"
+                        defaultPath="map"
+                        orderKey="orderSites"
+                        canSelect={false}
+                    />
+                    <div className="align-right">
+                        <button
+                            className="button--save margin"
+                            onClick={() => {
+                                window.location.href = this.getDownloadUrl('sites');
+                            }}
+                        >
+                            <i className="fa fa-download" />
+                            <FormattedMessage id="main.label.download" defaultMessage="Télécharger" />
+                        </button>
+                    </div>
                 </div>
                 <div className={`widget__container ${currentTab === 'targets' ? '' : 'hidden'}`}>
                     <CustomTableComponent
                         isSortable
-                        showPagination={false}
-                        endPointUrl={`/api/targets?from=${params.date_from}&to=${params.date_to}`}
+                        showPagination
                         columns={this.state.targetsColumns}
-                        defaultSorted={[{ id: 'id', desc: false }]}
+                        defaultSorted={[{ id: 'date_time', desc: false }]}
                         params={params}
-                        defaultPath="map"
-                        pageSize={50}
                         onRowClicked={() => { }}
                         multiSort
-                        onDataLoaded={() => { }}
-                    />·
+                        fetchDatas={false}
+                        reduxPage={reduxTargetsPage}
+                        pageSize={50}
+                        pageKey="targetsPage"
+                        pageSizeKey="targetsPageSize"
+                        defaultPath="map"
+                        orderKey="orderTargets"
+                        canSelect={false}
+                    />
+                    <div className="align-right">
+                        <button
+                            className="button--save margin"
+                            onClick={() => {
+                                window.location.href = this.getDownloadUrl('targets');
+                            }}
+                        >
+                            <i className="fa fa-download" />
+                            <FormattedMessage id="main.label.download" defaultMessage="Télécharger" />
+                        </button>
+                    </div>
                 </div>
             </section>
         );
@@ -260,6 +312,8 @@ Vector.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
+    reduxSitesPage: PropTypes.object.isRequired,
+    reduxTargetsPage: PropTypes.object.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -273,6 +327,8 @@ const MapStateToProps = state => ({
     vectors: state.vectors,
     load: state.load,
     map: state.map,
+    reduxSitesPage: state.vectors.sitesPage,
+    reduxTargetsPage: state.vectors.targetsPage,
 });
 const VectorWithIntl = injectIntl(Vector);
 

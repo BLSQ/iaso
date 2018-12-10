@@ -123,11 +123,13 @@ export const patientsInitialState = {
     current: {},
     duplicateCurrent: {},
     testsMapping: {},
-    list: null,
-    showPagination: false,
-    params: {},
-    count: 0,
-    pages: 0,
+    patientsPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
 };
 
 export const patientsReducer = (state = patientsInitialState, action = {}) => {
@@ -153,11 +155,13 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
             } = action.payload;
             return {
                 ...state,
-                list,
-                showPagination,
-                params,
-                count,
-                pages,
+                patientsPage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
             };
         }
 

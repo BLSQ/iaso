@@ -6,6 +6,8 @@ import VectorElement from './pages/Vector';
 import {
     fetchSites,
     fetchTargets,
+    fetchPaginatedSites,
+    fetchPaginatedTargets,
     fetchNonEndemicVillages,
     fetchEndemicVillages,
 } from './utlls';
@@ -21,16 +23,22 @@ class VectorContainer extends Component {
     componentDidMount() {
         const { params, dispatch } = this.props;
         const promises = [];
-        if (params.sites || params.tab === 'sites') {
+        if (params.sites && params.tab === 'map') {
             promises.push(fetchSites(dispatch, params.date_from, params.date_to));
         }
-        if (params.targets || params.tab === 'targets') {
+        if (params.targets && params.tab === 'map') {
             promises.push(fetchTargets(dispatch, params.date_from, params.date_to));
         }
-        if (params.endemicVillages === 'true') {
+        if (params.tab === 'sites') {
+            promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage));
+        }
+        if (params.tab === 'targets') {
+            promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage));
+        }
+        if (params.endemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchEndemicVillages(dispatch, params.date_from, params.date_to));
         }
-        if (params.nonEndemicVillages === 'true') {
+        if (params.nonEndemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchNonEndemicVillages(dispatch, params.date_from, params.date_to));
         }
         dispatch(loadActions.startLoading());
@@ -45,25 +53,41 @@ class VectorContainer extends Component {
         const { dispatch } = this.props;
         if (!newProps.load.loading && !this.props.load.loading) {
             const promises = [];
-            const paramsChanged = (newProps.params.date_from !== this.props.params.date_from) ||
-                                  (newProps.params.date_to !== this.props.params.date_to);
+
+            const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
+            const paramsChanged = hasChanged(this.props.params, newProps.params, 'date_from') ||
+                hasChanged(this.props.params, newProps.params, 'date_to');
+            const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||
+                hasChanged(this.props.params, newProps.params, 'sitesPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderSites');
+            const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
+                hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderTargets');
+
             if ((paramsChanged && newProps.params.sites) ||
-                (newProps.params.sites && !this.props.vectors.sites) ||
-                (newProps.params.tab === 'sites' && !this.props.vectors.targets)) {
+                (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map')) {
                 promises.push(fetchSites(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
             if ((paramsChanged && newProps.params.targets) ||
-                (newProps.params.targets && !this.props.vectors.targets) ||
-                (newProps.params.tab === 'targets' && !this.props.vectors.targets)) {
+                (newProps.params.targets && !this.props.vectors.targets && newProps.params.tab === 'map')) {
                 promises.push(fetchTargets(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
             if ((paramsChanged && newProps.params.endemicVillages) ||
-                (newProps.params.endemicVillages && !this.props.vectors.endemicVillages)) {
+                (newProps.params.endemicVillages && !this.props.vectors.endemicVillages && newProps.params.tab === 'map')) {
                 promises.push(fetchEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
             }
             if ((paramsChanged && newProps.params.nonEndemicVillages) ||
-                (newProps.params.nonEndemicVillages && !this.props.vectors.nonEndemicVillages)) {
+                (newProps.params.nonEndemicVillages && !this.props.vectors.nonEndemicVillages && newProps.params.tab === 'map')) {
                 promises.push(fetchNonEndemicVillages(dispatch, newProps.params.date_from, newProps.params.date_to));
+            }
+
+            if ((paramsChanged || sitesTableChanged || !this.props.vectors.sitesPage.list)
+            && newProps.params.tab === 'sites') {
+                promises.push(fetchPaginatedSites(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage));
+            }
+            if ((paramsChanged || targetsTableChanged || !this.props.vectors.targetsPage.list)
+            && newProps.params.tab === 'targets') {
+                promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage));
             }
             if (promises.length > 0) {
                 dispatch(loadActions.startLoading());

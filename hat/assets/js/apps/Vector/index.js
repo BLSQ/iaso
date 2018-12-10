@@ -20,7 +20,12 @@ export default function vectorApp(appConfig, element, baseUrl) {
     const defaultPath = `/map/date_from/${dateFrom}/date_to/${dateTo}/sites/true`;
     const routes = [
         <Route
-            path="/map/date_from/:date_from/date_to/:date_to(/sites/:sites)(/targets/:targets)(/endemicVillages/:endemicVillages)(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)"
+            path={'/map/date_from/:date_from/date_to/:date_to(/sites/:sites)' +
+            '(/targets/:targets)(/endemicVillages/:endemicVillages)' +
+            '(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)' +
+            '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
+            '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
+            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)'}
             component={VectorContainer}
         />,
         <Route

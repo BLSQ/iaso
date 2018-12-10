@@ -117,11 +117,8 @@ class Patients extends Component {
                 workzones,
             },
             setPatientList,
-            patientList,
             params,
-            reduxParams,
-            reduxCount,
-            reduxPages,
+            reduxPage,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatients2(coordinations || [], teams || []);
@@ -199,11 +196,7 @@ class Patients extends Component {
                         onRowClicked={patientItem => this.selectPatient(patientItem)}
                         multiSort
                         onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
-                        reduxDatas={patientList}
-                        reduxParams={reduxParams}
-                        reduxShowPagination
-                        reduxCount={reduxCount}
-                        reduxPages={reduxPages}
+                        reduxPage={reduxPage}
                     />
                     <div className="align-right">
                         <button
@@ -222,7 +215,7 @@ class Patients extends Component {
     }
 }
 Patients.defaultProps = {
-    patientList: null,
+    reduxPage: undefined,
 };
 
 Patients.propTypes = {
@@ -240,20 +233,14 @@ Patients.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     setPatientList: PropTypes.func.isRequired,
-    patientList: PropTypes.array,
-    reduxParams: PropTypes.object.isRequired,
-    reduxCount: PropTypes.number.isRequired,
-    reduxPages: PropTypes.number.isRequired,
+    reduxPage: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     patientsFilters: state.patientsFilters,
     filters: state.filters,
-    patientList: state.patients.list,
-    reduxParams: state.patients.params,
-    reduxCount: state.patients.count,
-    reduxPages: state.patients.pages,
+    reduxPage: state.patients.patientsPage,
 });
 
 const MapDispatchToProps = dispatch => ({

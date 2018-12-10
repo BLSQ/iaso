@@ -23,6 +23,36 @@ export const fetchTargets = (dispatch, dateFrom, dateTo) => req
         console.error('Error when fetching targets', err);
     });
 
+export const fetchPaginatedSites = (dispatch, params, limit, page) => {
+    const {
+        date_from,
+        date_to,
+    } = params;
+    return (req
+        .get(`/api/sites?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedSites(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching paginated sites', err);
+        }));
+};
+
+export const fetchPaginatedTargets = (dispatch, params, limit, page) => {
+    const {
+        date_from,
+        date_to,
+    } = params;
+    return (req
+        .get(`/api/targets?from=${date_from}&to=${date_to}&limit=${limit || '50'}&page=${page || '1'}`)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedTargets(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching paginated targets', err);
+        }));
+};
+
 export const fetchNonEndemicVillages = (dispatch, dateFrom, dateTo) => req
     .get(`/api/villages?from=${dateFrom}&to=${dateTo}&results=negative`)
     .then((result) => {

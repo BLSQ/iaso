@@ -19,7 +19,7 @@ const getOrderArray = orders => (orders.split(',').map(stringValue => ({
 class CustomTableComponent extends React.Component {
     constructor(props) {
         super(props);
-        const orderArray = props.params.order ? getOrderArray(props.params.order) : props.defaultSorted;
+        const orderArray = props.params[props.orderKey] ? getOrderArray(props.params[props.orderKey]) : props.defaultSorted;
         const { formatMessage } = this.props.intl;
         this.state = {
             disableHeaderFixed: props.disableHeaderFixed,
@@ -27,20 +27,20 @@ class CustomTableComponent extends React.Component {
             pages: null,
             loading: false,
             showPagination: false,
-            page: props.params.page ? parseInt(props.params.page, 10) : props.page,
-            pageSize: props.params.pageSize ? parseInt(props.params.pageSize, 10) : props.pageSize,
+            page: props.params[props.pageKey] ? parseInt(props.params[props.pageKey], 10) : parseInt(props.page, 10),
+            pageSize: props.params[props.pageSizeKey] ? parseInt(props.params[props.pageSizeKey], 10) : parseInt(props.pageSize, 10),
             order: orderArray,
             count: undefined,
             isHeaderFixed: false,
             tableId: `custom-table${+new Date()}`,
-            reduxDatas: props.reduxDatas,
+            reduxDatas: props.reduxPage.list,
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
-        if (!this.props.reduxDatas) {
+        if (!this.props.reduxPage.list && this.props.fetchDatas) {
             this.onFetchData({
                 sorted: this.state.order,
                 page: this.state.page,
@@ -51,28 +51,37 @@ class CustomTableComponent extends React.Component {
 
     componentWillReceiveProps(newProps) {
         this.handleScroll();
-        if ((newProps.endPointUrl !== this.props.endPointUrl) ||
-            (newProps.params.pageSize !== this.props.params.pageSize) ||
-            (newProps.params.page !== this.props.params.page) ||
-            (newProps.params.order !== this.props.params.order) ||
-            newProps.isUpdated) {
-            const orderArray = newProps.params.order ?
-                getOrderArray(newProps.params.order) : this.props.defaultSorted;
+        if (((newProps.endPointUrl !== this.props.endPointUrl) ||
+            (newProps.params[newProps.pageSizeKey] !== this.props.params[this.props.pageSizeKey]) ||
+            (newProps.params[newProps.pageKey] !== this.props.params[this.props.pageKey]) ||
+            (newProps.params[newProps.orderKey] !== this.props.params[newProps.orderKey]) ||
+            newProps.isUpdated) && newProps.fetchDatas) {
+            const orderArray = newProps.params[newProps.orderKey] ?
+                getOrderArray(newProps.params[newProps.orderKey]) : this.props.defaultSorted;
             this.onFetchData({
                 sorted: orderArray,
-                page: newProps.params.page ? parseInt(newProps.params.page, 10) : this.props.page,
-                pageSize: newProps.params.pageSize ? parseInt(newProps.params.pageSize, 10) : this.props.pageSize,
+                page: newProps.params[newProps.pageKey] ? parseInt(newProps.params[newProps.pageKey], 10) : parseInt(this.props.page, 10),
+                pageSize: newProps.params[newProps.pageSizeKey] ? parseInt(newProps.params[newProps.pageSizeKey], 10) : parseInt(this.props.pageSize, 10),
             }, newProps.endPointUrl);
         }
-        if (newProps.reduxDatas) {
+
+        if (newProps.reduxPage.list) {
+            const pageSize = newProps.reduxPage.params[newProps.pageSizeKey] || parseInt(newProps.pageSize, 10);
+            let { showPagination } = newProps.reduxPage;
+            if (newProps.reduxPage.count) {
+                showPagination = newProps.showPagination && (newProps.reduxPage.count > pageSize);
+            }
+            if (!newProps.reduxPage.pages) {
+                showPagination = false;
+            }
             this.setState({
-                reduxDatas: newProps.reduxDatas,
+                reduxDatas: newProps.reduxPage.list,
                 loading: false,
-                page: newProps.reduxParams.page,
-                pageSize: newProps.reduxParams.pageSize,
-                pages: newProps.reduxPages,
-                showPagination: newProps.reduxShowPagination,
-                count: newProps.reduxCount,
+                page: newProps.reduxPage.params[newProps.pageKey] || parseInt(newProps.page, 10),
+                pageSize,
+                pages: newProps.reduxPage.pages,
+                showPagination,
+                count: newProps.reduxPage.count,
             });
         }
     }
@@ -87,27 +96,30 @@ class CustomTableComponent extends React.Component {
             orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
             return true;
         });
-        if (orderTemp !== this.props.params.order) {
-            this.props.redirectTo(this.props.defaultPath, {
+        if (orderTemp !== this.props.params[this.props.orderKey]) {
+            const newParams = {
                 ...this.props.params,
-                order: orderTemp,
-            });
+            };
+            newParams[this.props.orderKey] = orderTemp;
+            this.props.redirectTo(this.props.defaultPath, newParams);
         }
     }
 
     onPageSizeChange(pageSize) {
-        this.props.redirectTo(this.props.defaultPath, {
+        const newParams = {
             ...this.props.params,
-            pageSize,
-            page: 1,
-        });
+        };
+        newParams[this.props.pageSizeKey] = pageSize;
+        newParams[this.props.pageKey] = 1;
+        this.props.redirectTo(this.props.defaultPath, newParams);
     }
 
     onPageChange(page) {
-        this.props.redirectTo(this.props.defaultPath, {
+        const newParams = {
             ...this.props.params,
-            page: page + 1,
-        });
+        };
+        newParams[this.props.pageKey] = page + 1;
+        this.props.redirectTo(this.props.defaultPath, newParams);
     }
 
     onFetchData(settings, url = this.props.endPointUrl) {
@@ -190,7 +202,10 @@ class CustomTableComponent extends React.Component {
     }
 
     render() {
-        const currentPageSize = this.state.showPagination || (!this.state.showPagination && this.state.data.length === 0) ? this.state.pageSize : this.state.data.length;
+        const data = this.state.reduxDatas ? this.state.reduxDatas : this.state.data;
+        const currentPageSize = this.state.showPagination ||
+            (!this.state.showPagination && data.length === 0)
+            ? this.state.pageSize : data.length;
         return (
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section
@@ -204,7 +219,7 @@ class CustomTableComponent extends React.Component {
                         manual
                         multiSort={this.props.multiSort}
                         columns={this.props.columns}
-                        data={this.state.reduxDatas ? this.state.reduxDatas : this.state.data}
+                        data={data}
                         pages={this.state.pages}
                         loading={this.state.loading}
                         onPageChange={page => this.onPageChange(page)}
@@ -242,6 +257,7 @@ CustomTableComponent.defaultProps = {
     isSortable: false,
     pageSize: 1,
     page: 1,
+    endPointUrl: '',
     onRowClicked: () => { },
     showPagination: false,
     defaultSorted: [],
@@ -255,11 +271,17 @@ CustomTableComponent.defaultProps = {
     isUpdated: false,
     callBackWithDataKey: true,
     disableHeaderFixed: false,
-    reduxDatas: null,
-    reduxParams: {},
-    reduxShowPagination: false,
-    reduxCount: 0,
-    reduxPages: 0,
+    reduxPage: {
+        list: null,
+        params: {},
+        showPagination: false,
+        count: 0,
+        pages: 0,
+    },
+    fetchDatas: true,
+    pageKey: 'page',
+    pageSizeKey: 'pageSize',
+    orderKey: 'order',
 };
 
 CustomTableComponent.propTypes = {
@@ -267,7 +289,7 @@ CustomTableComponent.propTypes = {
     isSortable: PropTypes.bool,
     pageSize: PropTypes.number,
     page: PropTypes.number,
-    endPointUrl: PropTypes.string.isRequired,
+    endPointUrl: PropTypes.string,
     columns: PropTypes.arrayOf(PropTypes.object).isRequired,
     params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -286,11 +308,11 @@ CustomTableComponent.propTypes = {
     isUpdated: PropTypes.bool,
     callBackWithDataKey: PropTypes.bool,
     disableHeaderFixed: PropTypes.bool,
-    reduxDatas: PropTypes.array,
-    reduxParams: PropTypes.object,
-    reduxShowPagination: PropTypes.bool,
-    reduxCount: PropTypes.number,
-    reduxPages: PropTypes.number,
+    reduxPage: PropTypes.object,
+    fetchDatas: PropTypes.bool,
+    pageKey: PropTypes.string,
+    pageSizeKey: PropTypes.string,
+    orderKey: PropTypes.string,
 };
 
 const MapDispatchToProps = dispatch => ({

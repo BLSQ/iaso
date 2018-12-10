@@ -234,9 +234,6 @@ const MapStateToProps = state => ({
     patientsFilters: state.patientsFilters,
     filters: state.filters,
     patientList: state.patients.list,
-    reduxParams: state.patients.params,
-    reduxCount: state.patients.count,
-    reduxPages: state.patients.pages,
 });
 
 const MapDispatchToProps = dispatch => ({

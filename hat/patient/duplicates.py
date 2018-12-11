@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import F
 
 from hat.audit.models import log_modification, PATIENT_API
 from hat.cases.models import Case
@@ -52,14 +53,15 @@ def create_potential_duplicates_for_patient_range(low_id, high_id):
     """
     This method will look for potential duplicates for a range of patient ids and store them if appropriate
     """
-    count=0
-    for dupe in PatientDuplicatesView.objects.filter(patient1_id__gte=low_id, patient1_id__lt=high_id).filter(F()):
+    count = 0
+    for dupe in PatientDuplicatesView.objects.filter(patient1_id__gte=low_id, patient1_id__lt=high_id)\
+            .filter(patient1_id__gt=F('patient2_id')):
         if dupe.patient1_id > dupe.patient2_id:  # we will have 3,5 and 5,3. Only add 5,3.
             dupe, dupe_created = PatientDuplicatesPair.objects.update_or_create(
                 patient1_id=dupe.patient1_id,
                 patient2_id=dupe.patient2_id,
-                similarity_score=dupe.similarity_score,
                 algorithm=dupe.algorithm,
+                defaults={'similarity_score': dupe.similarity_score}
             )
             if dupe_created:
                 count += 1

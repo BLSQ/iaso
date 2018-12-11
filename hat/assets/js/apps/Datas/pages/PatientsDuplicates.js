@@ -114,7 +114,7 @@ class PatientsDuplicates extends Component {
     render() {
         const { formatMessage } = this.props.intl;
         const {
-            patientsFilters: {
+            filters: {
                 teams,
                 coordinations,
                 provinces,
@@ -218,7 +218,7 @@ PatientsDuplicates.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
-    patientsFilters: PropTypes.object.isRequired,
+    filters: PropTypes.object.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
@@ -231,8 +231,7 @@ PatientsDuplicates.propTypes = {
 
 const MapStateToProps = state => ({
     load: state.load,
-    patientsFilters: state.patientsFilters,
-    filters: state.filters,
+    filters: state.patientsFilters,
     patientList: state.patients.list,
 });
 

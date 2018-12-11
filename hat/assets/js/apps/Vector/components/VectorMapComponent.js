@@ -72,17 +72,17 @@ class VectorMapComponent extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'sites')) {
-                this.updateSites();
-            }
-            if (hasChanged(prevProps, this.props, 'targets')) {
-                this.updateTargets();
-            }
             if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
                 this.updateNonEndemicVillages();
             }
             if (hasChanged(prevProps, this.props, 'endemicVillages')) {
                 this.updateEndemicVillages();
+            }
+            if (hasChanged(prevProps, this.props, 'sites')) {
+                this.updateSites();
+            }
+            if (hasChanged(prevProps, this.props, 'targets')) {
+                this.updateTargets();
             }
         });
     }
@@ -115,6 +115,7 @@ class VectorMapComponent extends Component {
    * UPDATE STATE
    *************************************************************************** */
     updateSites() {
+        console.log('updateSites');
         const {
             sites,
             intl: {
@@ -154,6 +155,7 @@ class VectorMapComponent extends Component {
     }
 
     updateTargets() {
+        console.log('updateTargets');
         const {
             targets,
             intl: {
@@ -192,6 +194,7 @@ class VectorMapComponent extends Component {
         this.targetsGroup.addLayer(markersTargets);
     }
     updateNonEndemicVillages() {
+        console.log('updateNonEndemicVillages');
         const {
             nonEndemicVillages,
             intl: {
@@ -234,6 +237,7 @@ class VectorMapComponent extends Component {
         this.nonEndemicVillagesGroup.addLayer(markersNonEndemicVillages);
     }
     updateEndemicVillages() {
+        console.log('updateEndemicVillages');
         const {
             endemicVillages,
             intl: {

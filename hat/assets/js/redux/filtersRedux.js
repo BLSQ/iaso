@@ -123,9 +123,12 @@ export const selectArea = (
     displayVillage = true,
     zoneId = null,
     villageId = null,
+    removeLoading = true,
 ) => {
     if (areaId) {
-        dispatch(loadActions.successLoadingNoData());
+        if (removeLoading) {
+            dispatch(loadActions.successLoadingNoData());
+        }
         if (villageId) {
             dispatch(selectVillage(villageId));
         }
@@ -148,6 +151,7 @@ export const selectZone = (
     displayVillage = true,
     areaId = null,
     villageId = null,
+    removeLoading = true,
 ) => {
     if (zoneId) {
         req
@@ -159,12 +163,14 @@ export const selectZone = (
                     dispatch(selectArea(areaId, dispatch, displayVillage, zoneId, villageId));
                 } else if (displayVillage) {
                     getVillages(dispatch, null, zoneId);
-                } else {
+                } else if (removeLoading) {
                     dispatch(loadActions.successLoadingNoData());
                 }
             })
             .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
+                if (removeLoading) {
+                    dispatch(loadActions.errorLoading(err));
+                }
                 console.error(`Error while fetching Areas: ${err}`);
             });
     } else {
@@ -194,7 +200,15 @@ export const fetchProvinces = (dispatch) => {
     });
 };
 
-export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = null, villageId = null, displayVillage = true) => {
+export const selectProvince = (
+    provinceId,
+    dispatch,
+    zoneId = null,
+    areaId = null,
+    villageId = null,
+    displayVillage = true,
+    removeLoading = true,
+) => {
     if (provinceId) {
         req
             .get(`/api/zs/?province_id=${provinceId}`)
@@ -203,12 +217,14 @@ export const selectProvince = (provinceId, dispatch, zoneId = null, areaId = nul
                 dispatch(loadZones(payload));
                 if (zoneId) {
                     dispatch(selectZone(zoneId, dispatch, displayVillage, areaId, villageId));
-                } else {
+                } else if (removeLoading) {
                     dispatch(loadActions.successLoadingNoData());
                 }
             })
             .catch((err) => {
-                dispatch(loadActions.errorLoading(err));
+                if (removeLoading) {
+                    dispatch(loadActions.errorLoading(err));
+                }
                 console.error(`Error while fetching zones: ${err}`);
             });
     } else {

@@ -12,6 +12,9 @@ export const fetchSites = (dispatch, params) => {
         userId,
         habitats,
         onlyReferenceSites,
+        province_id,
+        zs_id,
+        as_id,
     } = params;
     let url = `/api/sites?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -22,6 +25,15 @@ export const fetchSites = (dispatch, params) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
     }
     return req
         .get(url)
@@ -40,6 +52,9 @@ export const fetchTargets = (dispatch, params) => {
         userId,
         habitats,
         onlyReferenceSites,
+        province_id,
+        zs_id,
+        as_id,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -50,6 +65,15 @@ export const fetchTargets = (dispatch, params) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
     }
     return req
         .get(url)
@@ -68,6 +92,9 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         userId,
         habitats,
         onlyReferenceSites,
+        province_id,
+        zs_id,
+        as_id,
     } = params;
     let url = `/api/sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -81,6 +108,15 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
     }
     return (req
         .get(url)
@@ -99,6 +135,9 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         userId,
         habitats,
         onlyReferenceSites,
+        province_id,
+        zs_id,
+        as_id,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -113,6 +152,15 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
     }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -123,23 +171,39 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         }));
 };
 
-export const fetchNonEndemicVillages = (dispatch, dateFrom, dateTo) => req
-    .get(`/api/villages?from=${dateFrom}&to=${dateTo}&results=negative`)
-    .then((result) => {
-        dispatch(vectorActions.loadNonEndemicVillages(result.body));
-    })
-    .catch((err) => {
-        console.error('Error when fetching villages', err);
-    });
+export const fetchVillages = (dispatch, params, withEndemic) => {
+    const {
+        dateFrom,
+        dateTo,
+        province_id,
+        zs_id,
+        as_id,
+    } = params;
 
-export const fetchEndemicVillages = (dispatch, dateFrom, dateTo) => req
-    .get(`/api/villages?from=${dateFrom}&to=${dateTo}&results=positive`)
-    .then((result) => {
-        dispatch(vectorActions.loadEndemicVillages(result.body));
-    })
-    .catch((err) => {
-        console.error('Error when fetching villages', err);
-    });
+    let url = `/api/villages?from=${dateFrom}&to=${dateTo}`;
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    url += `&results=${withEndemic ? 'positive' : 'negative'}`;
+    return req
+        .get(url)
+        .then((result) => {
+            if (withEndemic) {
+                dispatch(vectorActions.loadEndemicVillages(result.body));
+            } else {
+                dispatch(vectorActions.loadNonEndemicVillages(result.body));
+            }
+        })
+        .catch((err) => {
+            console.error('Error when fetching villages', err);
+        });
+};
 
 export const fetchProfiles = dispatch => req
     .get('/api/profiles?as_list=True')

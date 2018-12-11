@@ -1,6 +1,57 @@
 import moment from 'moment';
 import { defineMessages } from 'react-intl';
 
+export const MESSAGES = defineMessages({
+    map: {
+        defaultMessage: 'Carte',
+        id: 'details.label.map',
+    },
+    sites: {
+        defaultMessage: 'Pièges',
+        id: 'details.label.sites',
+    },
+    targets: {
+        defaultMessage: 'Ecrans',
+        id: 'details.label.targets',
+    },
+    unknown: {
+        defaultMessage: 'Inconnu',
+        id: 'vectors.label.unknown',
+    },
+    bush: {
+        defaultMessage: 'Buisson',
+        id: 'vectors.label.bush',
+    },
+    fish_pond: {
+        defaultMessage: 'Etang à poissons',
+        id: 'vectors.label.fish_pond',
+    },
+    farm: {
+        defaultMessage: 'Ferme',
+        id: 'vectors.label.farm',
+    },
+    forest: {
+        defaultMessage: 'Forêt',
+        id: 'vectors.label.forest',
+    },
+    lake: {
+        defaultMessage: 'Lac',
+        id: 'vectors.label.lake',
+    },
+    river: {
+        defaultMessage: 'Rivière',
+        id: 'vectors.label.river',
+    },
+    stream: {
+        defaultMessage: 'Ruisseau',
+        id: 'vectors.label.stream',
+    },
+    road: {
+        defaultMessage: 'Route',
+        id: 'vectors.label.road',
+    },
+});
+
 export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
                 <h6>
                     ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.site' })}:
@@ -45,7 +96,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                                 ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
                             </td>
                             <td class="${!site.habitat ? 'align-center' : ''}">
-                                ${site.habitat === '' ? '/' : site.habitat}
+                                ${site.habitat === '' ? '/' : formatMessage(MESSAGES[site.habitat])}
                             </td>
                         </tr>
                         <tr>
@@ -231,57 +282,6 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                     </tbody>
                 </table>
             </section>`;
-
-export const MESSAGES = defineMessages({
-    map: {
-        defaultMessage: 'Carte',
-        id: 'details.label.map',
-    },
-    sites: {
-        defaultMessage: 'Pièges',
-        id: 'details.label.sites',
-    },
-    targets: {
-        defaultMessage: 'Ecrans',
-        id: 'details.label.targets',
-    },
-    unknown: {
-        defaultMessage: 'Inconnu',
-        id: 'vectors.label.unknown',
-    },
-    bush: {
-        defaultMessage: 'Buisson',
-        id: 'vectors.label.bush',
-    },
-    fish_pond: {
-        defaultMessage: 'Etang à poissons',
-        id: 'vectors.label.fish_pond',
-    },
-    farm: {
-        defaultMessage: 'Ferme',
-        id: 'vectors.label.farm',
-    },
-    forest: {
-        defaultMessage: 'Forêt',
-        id: 'vectors.label.forest',
-    },
-    lake: {
-        defaultMessage: 'Lac',
-        id: 'vectors.label.lake',
-    },
-    river: {
-        defaultMessage: 'Rivière',
-        id: 'vectors.label.river',
-    },
-    stream: {
-        defaultMessage: 'Ruisseau',
-        id: 'vectors.label.stream',
-    },
-    road: {
-        defaultMessage: 'Route',
-        id: 'vectors.label.road',
-    },
-});
 
 export const itemsToShow = params => [
     {

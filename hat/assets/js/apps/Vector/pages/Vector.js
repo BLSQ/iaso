@@ -109,6 +109,11 @@ export class Vector extends Component {
             intl: {
                 formatMessage,
             },
+            filters: {
+                provinces,
+                zones,
+                areas,
+            },
             params,
             getShape,
             changeLayer,
@@ -127,13 +132,10 @@ export class Vector extends Component {
             endemicVillages,
         } = this.state;
         const filters = filtersVectors(formatMessage, MESSAGES, profiles, habitats);
-        // provinces || [],
-        // zones || [],
-        // areas || [],
         const geoFilters = filtersVectorsGeo(
-            [],
-            [],
-            [],
+            provinces || [],
+            zones || [],
+            areas || [],
             this.props,
             baseUrl,
         );
@@ -297,6 +299,7 @@ Vector.propTypes = {
     reduxTargetsPage: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
+    filters: PropTypes.object.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -314,6 +317,7 @@ const MapStateToProps = state => ({
     map: state.map,
     reduxSitesPage: state.vectors.sitesPage,
     reduxTargetsPage: state.vectors.targetsPage,
+    filters: state.geoFilters,
 });
 const VectorWithIntl = injectIntl(Vector);
 

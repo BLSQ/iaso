@@ -31,6 +31,9 @@ class TargetsViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         orders = request.GET.get("order", "date_time").split(",")
         user_ids = request.GET.get("userId", None)
+        province_ids = request.GET.get("province_id", None)
+        zs_ids = request.GET.get("zs_id", None)
+        as_ids = request.GET.get("as_id", None)
         queryset = Target.objects.all().order_by(*orders)
 
         if from_date is not None:
@@ -39,6 +42,13 @@ class TargetsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(date_time__date__lte=to_date)
         if user_ids is not None:
             queryset = queryset.filter(gps_import__user_id__in=user_ids.split(","))
+
+        # if province_ids:
+        #     queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
+        # if zs_ids:
+        #     queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
+        # if as_ids:
+        #     queryset = queryset.filter(AS_id__in=as_ids.split(","))
 
         if csv_format is None:
             if limit:

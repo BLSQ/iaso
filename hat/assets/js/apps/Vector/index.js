@@ -13,6 +13,7 @@ import VectorContainer from './VectorContainer';
 import GpxUpload from './pages/GpxUpload';
 import { vectorReducer, vectorInitialState } from './redux/vectorReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
+import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 
 export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
@@ -26,7 +27,8 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
             '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)'}
+            '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)' +
+            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={VectorContainer}
         />,
         <Route
@@ -45,10 +47,12 @@ export default function vectorApp(appConfig, element, baseUrl) {
         load: {},
         vectors: vectorInitialState,
         map: mapInitialState,
+        geoFilters: filtersInitialState,
     }, {
         load: loadReducer,
         vectors: vectorReducer,
         map: mapReducer,
+        geoFilters: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

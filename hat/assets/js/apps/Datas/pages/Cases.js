@@ -99,7 +99,7 @@ class Cases extends Component {
     render() {
         const { formatMessage } = this.props.intl;
         const {
-            testsFilters: {
+            filters: {
                 teams,
                 coordinations,
                 provinces,
@@ -215,7 +215,7 @@ Cases.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
-    testsFilters: PropTypes.object.isRequired,
+    filters: PropTypes.object.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
@@ -228,8 +228,7 @@ Cases.propTypes = {
 
 const MapStateToProps = state => ({
     load: state.load,
-    testsFilters: state.testsFilters,
-    filters: state.filters,
+    filters: state.testsFilters,
 });
 
 const MapDispatchToProps = dispatch => ({

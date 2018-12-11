@@ -50,6 +50,9 @@ class SitesViewSet(viewsets.ViewSet):
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
         only_reference_sites = request.GET.get("only_reference_sites", False)
+        province_ids = request.GET.get("province_id", None)
+        zs_ids = request.GET.get("zs_id", None)
+        as_ids = request.GET.get("as_id", None)
         queryset = Site.objects.all().order_by(*orders)
         if from_date is not None:
             queryset = queryset.filter(first_survey_date__date__gte=from_date)
@@ -61,6 +64,13 @@ class SitesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(habitat__in=habitats.split(","))
         if only_reference_sites:
             queryset = queryset.filter(is_reference=True)
+
+        # if province_ids:
+        #     queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
+        # if zs_ids:
+        #     queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
+        # if as_ids:
+        #     queryset = queryset.filter(AS_id__in=as_ids.split(","))
 
         if csv_format is None:
             if limit:

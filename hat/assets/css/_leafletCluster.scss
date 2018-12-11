@@ -43,6 +43,7 @@
 
 .marker-cluster-targets {
     background-color: rgba(blue, 0.6);
+    z-index: 1000000 !important;
     div {
         background-color: blue;
         color: white;
@@ -51,6 +52,7 @@
 
 .marker-cluster-sites {
     background-color: rgba(yellow, 0.6);
+    z-index: 1000000 !important;
     div {
         background-color: yellow;
     }

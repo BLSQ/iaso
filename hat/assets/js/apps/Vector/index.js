@@ -17,15 +17,16 @@ import { mapReducer, mapInitialState } from './redux/mapReducer';
 export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-    const defaultPath = `/map/date_from/${dateFrom}/date_to/${dateTo}/sites/true`;
+    const defaultPath = `/map/dateFrom/${dateFrom}/dateTo/${dateTo}/sites/true/tab/map`;
     const routes = [
         <Route
-            path={'/map/date_from/:date_from/date_to/:date_to(/sites/:sites)' +
+            path={'/map/dateFrom/:dateFrom/dateTo/:dateTo(/sites/:sites)' +
             '(/targets/:targets)(/endemicVillages/:endemicVillages)' +
             '(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
-            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)'}
+            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)' +
+            '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)'}
             component={VectorContainer}
         />,
         <Route

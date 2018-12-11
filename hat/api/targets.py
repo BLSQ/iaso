@@ -30,12 +30,15 @@ class TargetsViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
         orders = request.GET.get("order", "date_time").split(",")
+        user_ids = request.GET.get("userId", None)
         queryset = Target.objects.all().order_by(*orders)
 
         if from_date is not None:
             queryset = queryset.filter(date_time__date__gte=from_date)
         if to_date is not None:
             queryset = queryset.filter(date_time__date__lte=to_date)
+        if user_ids is not None:
+            queryset = queryset.filter(gps_import__user_id__in=user_ids.split(","))
 
         if csv_format is None:
             if limit:

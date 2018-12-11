@@ -9,6 +9,10 @@ import { createUrl, getRequest } from '../../../utils/fetchData';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { mapActions } from '../redux/mapReducer';
 
+import {
+    MESSAGES,
+    itemsToShow,
+} from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
@@ -17,49 +21,10 @@ import TabsComponent from '../../../components/TabsComponent';
 import sitesColumns from '../utlls/sitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
 
-
-const MESSAGES = defineMessages({
-    map: {
-        defaultMessage: 'Carte',
-        id: 'details.label.map',
-    },
-    sites: {
-        defaultMessage: 'Pièges',
-        id: 'details.label.sites',
-    },
-    targets: {
-        defaultMessage: 'Ecrans',
-        id: 'details.label.targets',
-    },
-});
-
-const itemsToShow = params => [
-    {
-        id: 'sites',
-        defaultMessage: 'Pièges',
-        isActive: params.sites === 'true',
-        iconClass: 'map__option__icon--sites',
-    },
-    {
-        id: 'targets',
-        defaultMessage: 'Ecrans',
-        isActive: params.targets === 'true',
-        iconClass: 'map__option__icon--targets',
-    },
-    {
-        id: 'nonEndemicVillages',
-        defaultMessage: 'Villages non endémiques',
-        isActive: params.nonEndemicVillages === 'true',
-        iconClass: 'map__option__icon--villages',
-    },
-    {
-        id: 'endemicVillages',
-        defaultMessage: 'Villages endémiques',
-        isActive: params.endemicVillages === 'true',
-        iconClass: 'map__option__icon--villages-with-case',
-    },
-];
+const baseUrl = 'map';
 
 export class Vector extends Component {
     constructor(props) {
@@ -70,12 +35,11 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
-            currentTab: props.params.tab || 'map',
-            sitesColumns: sitesColumns(props.intl.formatMessage),
+            currentTab: props.params.tab || baseUrl,
+            sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES),
             targetsColumns: targetsColumns(props.intl.formatMessage),
         };
     }
-
 
     componentWillReceiveProps(newProps) {
         const newState = {
@@ -105,13 +69,13 @@ export class Vector extends Component {
     getDownloadUrl(key) {
         const {
             params: {
-                date_from,
-                date_to,
+                dateFrom,
+                dateTo,
                 orderSites,
                 orderTargets,
             },
         } = this.props;
-        let url = `/api/${key}?from=${date_from}&to=${date_to}&csv=True`;
+        let url = `/api/${key}?from=${dateFrom}&to=${dateTo}&csv=True`;
         if ((key === 'targets') && orderTargets) {
             url += `&order=${orderTargets}`;
         }
@@ -133,7 +97,7 @@ export class Vector extends Component {
             }
             return null;
         });
-        this.props.redirectTo('map', tempParams);
+        this.props.redirectTo(baseUrl, tempParams);
     }
 
 
@@ -152,6 +116,8 @@ export class Vector extends Component {
             redirectTo,
             reduxSitesPage,
             reduxTargetsPage,
+            profiles,
+            habitats,
         } = this.props;
         const {
             currentTab,
@@ -160,6 +126,17 @@ export class Vector extends Component {
             nonEndemicVillages,
             endemicVillages,
         } = this.state;
+        const filters = filtersVectors(formatMessage, MESSAGES, profiles, habitats);
+        // provinces || [],
+        // zones || [],
+        // areas || [],
+        const geoFilters = filtersVectorsGeo(
+            [],
+            [],
+            [],
+            this.props,
+            baseUrl,
+        );
         return (
             <section className="vectors-container">
                 {
@@ -175,42 +152,46 @@ export class Vector extends Component {
                             <FormattedMessage id="vector.title" defaultMessage="Vector control: " />
                             {' '}
                             <PeriodSelectorComponent
-                                dateFrom={params.date_from}
-                                dateTo={params.date_to}
+                                dateFrom={params.dateFrom}
+                                dateTo={params.dateTo}
                                 onChangeDate={(dateFrom, dateTo) =>
-                                    redirectTo('map', {
+                                    redirectTo(baseUrl, {
                                         ...params,
-                                        date_from: dateFrom,
-                                        date_to: dateTo,
+                                        dateFrom,
+                                        dateTo,
                                     })}
                             />
                         </h2>
                     </div>
                     <div className="widget__content--tier">
                         <div>
-                            truc
-                            <br />
-                            <br />
-                            <br />
-                            <br />
-                            <br />
-                            <br />
-                            <br />
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={filters}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={geoFilters}
+                            />
                         </div>
                     </div>
                 </div>
                 <TabsComponent
-                    defaultPath="map"
+                    defaultPath={baseUrl}
                     params={params}
                     selectTab={key => (this.setState({ currentTab: key }))}
                     tabs={[
-                        { label: formatMessage(MESSAGES.map), key: 'map' },
+                        { label: formatMessage(MESSAGES.map), key: baseUrl },
                         { label: formatMessage(MESSAGES.sites), key: 'sites' },
                         { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}
                 />
-                <div className={`vector-map widget__container ${currentTab === 'map' ? '' : 'hidden-opacity'}`}>
+                <div className={`vector-map widget__container ${currentTab === baseUrl ? '' : 'hidden-opacity'}`}>
                     <div className="flex-container">
                         <div className="split-selector-container ">
                             <RadiosComponent
@@ -251,7 +232,7 @@ export class Vector extends Component {
                         reduxPage={reduxSitesPage}
                         pageKey="sitesPage"
                         pageSizeKey="sitesPageSize"
-                        defaultPath="map"
+                        defaultPath={baseUrl}
                         orderKey="orderSites"
                         canSelect={false}
                     />
@@ -281,7 +262,7 @@ export class Vector extends Component {
                         pageSize={50}
                         pageKey="targetsPage"
                         pageSizeKey="targetsPageSize"
-                        defaultPath="map"
+                        defaultPath={baseUrl}
                         orderKey="orderTargets"
                         canSelect={false}
                     />
@@ -314,6 +295,8 @@ Vector.propTypes = {
     map: PropTypes.object.isRequired,
     reduxSitesPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
+    profiles: PropTypes.array.isRequired,
+    habitats: PropTypes.array.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -325,6 +308,8 @@ const MapDispatchToProps = dispatch => ({
 
 const MapStateToProps = state => ({
     vectors: state.vectors,
+    profiles: state.vectors.profiles,
+    habitats: state.vectors.habitats,
     load: state.load,
     map: state.map,
     reduxSitesPage: state.vectors.sitesPage,

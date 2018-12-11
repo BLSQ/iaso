@@ -15,6 +15,17 @@ SOURCE_CHOICES = (
     ('API', 'API'),
 )
 
+HABITAT_CHOICES = (
+    ("bush", "Buisson"),
+    ("fish_pond", "Etang à poissons"),
+    ("farm", "Ferme"),
+    ("forest", "Forêt"),
+    ("unknown", 'Inconnu'),
+    ("lake", "Lac"),
+    ("river", "Rivière"),
+    ("road", "Route"),
+    ("stream", "Ruisseau")
+)
 
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
@@ -23,7 +34,7 @@ class Site(models.Model):
     longitude = models.DecimalField(null=True, decimal_places=6, max_digits=10)
     altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    habitat = models.CharField(max_length=255, null=True)
+    habitat = models.TextField(max_length=255, choices=HABITAT_CHOICES,  null=True, blank=True)
     description = models.CharField(max_length=255, null=True)
     first_survey = models.CharField(max_length=255, null=True)
     first_survey_date = models.DateTimeField(null=True)
@@ -32,6 +43,7 @@ class Site(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
+    is_reference = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.zone, self.habitat)
@@ -47,7 +59,9 @@ class Site(models.Model):
             'first_survey': self.first_survey,
             'first_survey_date': self.first_survey_date,
             'count': self.count,
-            'total': self.total
+            'total': self.total,
+            'username': self.user.username,
+            'is_reference': self.is_reference
         }
 
 
@@ -131,5 +145,6 @@ class Target(models.Model):
             'deployment': self.deployment,
             'altitude': self.altitude,
             'date_time': self.date_time,
-            'river': self.river
+            'river': self.river,
+            'username': self.gps_import.user.username
         }

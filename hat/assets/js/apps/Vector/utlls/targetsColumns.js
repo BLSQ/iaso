@@ -40,6 +40,20 @@ const targetsColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Utilisateur',
+                id: 'main.label.user',
+            }),
+            accessor: 'gps_import__user__username',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.username
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Altitude',
                 id: 'main.label.altitude',
             }),

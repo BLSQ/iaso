@@ -47,11 +47,20 @@ class SitesViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
         orders = request.GET.get("order", "first_survey_date").split(",")
+        user_ids = request.GET.get("userId", None)
+        habitats = request.GET.get("habitats", None)
+        only_reference_sites = request.GET.get("only_reference_sites", False)
         queryset = Site.objects.all().order_by(*orders)
         if from_date is not None:
             queryset = queryset.filter(first_survey_date__date__gte=from_date)
         if to_date is not None:
             queryset = queryset.filter(first_survey_date__date__lte=to_date)
+        if user_ids is not None:
+            queryset = queryset.filter(user_id__in=user_ids.split(","))
+        if habitats is not None:
+            queryset = queryset.filter(habitat__in=habitats.split(","))
+        if only_reference_sites:
+            queryset = queryset.filter(is_reference=True)
 
         if csv_format is None:
             if limit:

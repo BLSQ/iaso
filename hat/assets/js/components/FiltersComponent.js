@@ -128,13 +128,16 @@ class FiltersComponent extends React.Component {
 
                                         {
                                             filter.type === 'checkbox' &&
-                                            <span className="map__text--select align-left">
-                                                {formatMessage(filter.label)}
+                                            <span className="filter-checkbox">
+                                                <label htmlFor={`checkbox-${filter.urlKey}`}>
+                                                    {formatMessage(filter.label)}
+                                                </label>
                                                 <input
+                                                    id={`checkbox-${filter.urlKey}`}
                                                     type="checkbox"
-                                                    name="only dupes"
+                                                    name={`checkbox-${filter.urlKey}`}
                                                     className="list--normalized-as-checkbox"
-                                                    checked={this.props.params.only_dupes === 'true' ? 'checked' : ''}
+                                                    checked={this.props.params[filter.urlKey] === 'true' ? 'checked' : ''}
                                                     onChange={event => this.toggleCheckbox(event.target.checked, filter.urlKey)}
                                                 />
                                             </span>

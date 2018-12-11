@@ -8,6 +8,8 @@ export const LOAD_PAGINATED_SITES = 'hat/vector/LOAD_PAGINATED_SITES';
 export const LOAD_PAGINATED_TARGETS = 'hat/vector/LOAD_PAGINATED_TARGETS';
 export const LOAD_NON_ENDEMIC_VILLAGES = 'hat/vector/LOAD_NON_ENDEMIC_VILLAGES';
 export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
+export const LOAD_PROFILES = 'hat/vector/LOAD_PROFILES';
+export const LOAD_HABITATS = 'hat/vector/LOAD_HABITATS';
 export const FETCH_ACTION = 'hat/vector/FETCH_ACTION';
 
 
@@ -29,6 +31,15 @@ export const loadEndemicVillages = payload => ({
     type: LOAD_ENDEMIC_VILLAGES,
     payload,
 });
+export const loadProfiles = payload => ({
+    type: LOAD_PROFILES,
+    payload,
+});
+export const loadHabitats = payload => ({
+    type: LOAD_HABITATS,
+    payload,
+});
+
 
 export const loadPaginatedSites = (datas, params) => ({
     type: LOAD_PAGINATED_SITES,
@@ -59,6 +70,8 @@ export const vectorActions = {
     loadPaginatedTargets,
     loadNonEndemicVillages,
     loadEndemicVillages,
+    loadProfiles,
+    loadHabitats,
 };
 
 export const vectorInitialState = {
@@ -82,6 +95,8 @@ export const vectorInitialState = {
         count: 0,
         pages: 0,
     },
+    profiles: [],
+    habitats: [],
 };
 
 export const vectorReducer = (state = vectorInitialState, action = {}) => {
@@ -101,6 +116,14 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
         case LOAD_NON_ENDEMIC_VILLAGES: {
             const nonEndemicVillages = action.payload;
             return { ...state, nonEndemicVillages };
+        }
+        case LOAD_PROFILES: {
+            const profiles = action.payload;
+            return { ...state, profiles };
+        }
+        case LOAD_HABITATS: {
+            const habitats = action.payload;
+            return { ...state, habitats };
         }
 
         case LOAD_PAGINATED_SITES: {

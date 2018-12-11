@@ -31,6 +31,7 @@ from .village_types import VillageTypeViewSet
 from .devices import DevicesViewSet
 from .tests_mapping import TestsMappingViewSet
 from .catches import CatchesViewSet
+from .habitats import HabitatsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -63,6 +64,7 @@ router.register(r"patientduplicates", PatientDuplicatesViewSet, base_name="patie
 router.register(r"villagetypes", VillageTypeViewSet, base_name="village_types")
 router.register(r"devices", DevicesViewSet, base_name="devices")
 router.register(r"testsmapping", TestsMappingViewSet, base_name="tests_mapping")
+router.register(r"habitats", HabitatsViewSet, base_name="habitats")
 
 
 urlpatterns = [url(r"^", include(router.urls))]

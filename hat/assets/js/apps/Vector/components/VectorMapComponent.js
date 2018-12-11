@@ -8,7 +8,7 @@ import {
     renderSitesPopup,
     renderTargetsPopup,
     renderVillagesPopup,
-} from '../utlls/vectorMapPopupContents';
+} from '../utlls/vectorMapUtils';
 import 'leaflet.markercluster'; // eslint-disable-line
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
 

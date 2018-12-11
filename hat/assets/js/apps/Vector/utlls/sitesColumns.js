@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React from 'react';
 
-const sitesColumns = formatMessage => (
+const sitesColumns = (formatMessage, messages) => (
     [
         {
             Header: formatMessage({
@@ -47,10 +47,31 @@ const sitesColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Utilisateur',
+                id: 'main.label.user',
+            }),
+            accessor: 'user__username',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.username
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Habitat',
                 id: 'main.label.habitat',
             }),
             accessor: 'habitat',
+            Cell: settings => (
+                <span>
+                    {
+                        formatMessage(messages[settings.original.habitat])
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({

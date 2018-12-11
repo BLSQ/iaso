@@ -460,12 +460,63 @@ const onlyDupes = () => (
     {
         name: 'only_dupes',
         urlKey: 'only_dupes',
-        allowEmptySearch: true,
-        showResetSearch: true,
-        displayResults: false,
         label: {
             id: 'main.label.onlyDupes',
             defaultMessage: 'Uniquement avec Doublons',
+        },
+        type: 'checkbox',
+    }
+);
+
+const users = usersList => (
+    {
+        name: 'userId',
+        urlKey: 'userId',
+        hideEmpty: true,
+        isMultiSelect: true,
+        isClearable: true,
+        options: usersList.map(p =>
+            ({ label: p.user__username, value: p.user__id })),
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'main.label.user',
+            defaultMessage: 'Utilisateurs',
+        },
+        type: 'select',
+    }
+);
+
+const habitats = (formatMessage, messages, habitatsList) => (
+    {
+        name: 'habitats',
+        urlKey: 'habitats',
+        hideEmpty: true,
+        isMultiSelect: true,
+        isClearable: true,
+        options: habitatsList.map(h =>
+            ({ label: formatMessage(messages[h[0]]), value: h[0] })),
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'main.label.habitats',
+            defaultMessage: 'Habitats (pièges uniquement)',
+        },
+        type: 'select',
+    }
+);
+
+const onlyReferenceSites = () => (
+    {
+        name: 'onlyReferenceSites',
+        urlKey: 'onlyReferenceSites',
+        label: {
+            id: 'main.label.onlyReferenceSites',
+            defaultMessage: 'Uniquement les pièges de références',
         },
         type: 'checkbox',
     }
@@ -490,4 +541,7 @@ export {
     villages,
     searchMotherName,
     onlyDupes,
+    users,
+    habitats,
+    onlyReferenceSites,
 };

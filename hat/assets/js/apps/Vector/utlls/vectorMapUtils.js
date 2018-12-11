@@ -1,8 +1,9 @@
 import moment from 'moment';
+import { defineMessages } from 'react-intl';
 
 export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
                 <h6>
-                    ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
+                    ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.site' })}:
                 </h6>
 
                 <table>
@@ -17,17 +18,9 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
-                            </td>
-                            <td>
-                                ${site.name}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
                                 ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}
                             </td>
-                            <td>
+                            <td class="${!site.zone ? 'align-center' : ''}">
                                 ${site.zone === '' ? '/' : site.zone}
                             </td>
                         </tr>
@@ -51,7 +44,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                             <td>
                                 ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
                             </td>
-                            <td>
+                            <td class="${!site.habitat ? 'align-center' : ''}">
                                 ${site.habitat === '' ? '/' : site.habitat}
                             </td>
                         </tr>
@@ -68,7 +61,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                                 ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}
                             </td>
                             <td>
-                                ${moment(site.first_survey_date).format('hh:mm YYYY-MM-DD')}
+                                ${moment(site.first_survey_date).format('hh:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>
@@ -131,25 +124,33 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}
+                                ${formatMessage({ defaultMessage: 'Utilisateur', id: 'vector.labels.user' })}
                             </td>
                             <td>
-                                ${moment(target.date_time).format('hh:mm YYYY-MM-DD')}
+                                ${target.username}
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}
+                                ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}
                             </td>
                             <td>
+                                ${moment(target.date_time).format('hh:mm DD/MM/YYYY')}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="${!target.deployment ? 'align-center' : ''}">
+                                ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}
+                            </td>
+                            <td class="${!target.deployment ? 'align-center' : ''}">
                                 ${target.deployment ? target.deployment : '/'}
                             </td>
                         </tr>
                         <tr>
-                            <td>
+                        <td class="${!target.river ? 'align-center' : ''}">
                                 ${formatMessage({ defaultMessage: 'Rivière', id: 'vector.labels.river' })}
                             </td>
-                            <td>
+                            <td class="${!target.river ? 'align-center' : ''}">
                                 ${target.river ? target.river : '/'}
                             </td>
                         </tr>
@@ -230,3 +231,81 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                     </tbody>
                 </table>
             </section>`;
+
+export const MESSAGES = defineMessages({
+    map: {
+        defaultMessage: 'Carte',
+        id: 'details.label.map',
+    },
+    sites: {
+        defaultMessage: 'Pièges',
+        id: 'details.label.sites',
+    },
+    targets: {
+        defaultMessage: 'Ecrans',
+        id: 'details.label.targets',
+    },
+    unknown: {
+        defaultMessage: 'Inconnu',
+        id: 'vectors.label.unknown',
+    },
+    bush: {
+        defaultMessage: 'Buisson',
+        id: 'vectors.label.bush',
+    },
+    fish_pond: {
+        defaultMessage: 'Etang à poissons',
+        id: 'vectors.label.fish_pond',
+    },
+    farm: {
+        defaultMessage: 'Ferme',
+        id: 'vectors.label.farm',
+    },
+    forest: {
+        defaultMessage: 'Forêt',
+        id: 'vectors.label.forest',
+    },
+    lake: {
+        defaultMessage: 'Lac',
+        id: 'vectors.label.lake',
+    },
+    river: {
+        defaultMessage: 'Rivière',
+        id: 'vectors.label.river',
+    },
+    stream: {
+        defaultMessage: 'Ruisseau',
+        id: 'vectors.label.stream',
+    },
+    road: {
+        defaultMessage: 'Route',
+        id: 'vectors.label.road',
+    },
+});
+
+export const itemsToShow = params => [
+    {
+        id: 'sites',
+        defaultMessage: 'Pièges',
+        isActive: params.sites === 'true',
+        iconClass: 'map__option__icon--sites',
+    },
+    {
+        id: 'targets',
+        defaultMessage: 'Ecrans',
+        isActive: params.targets === 'true',
+        iconClass: 'map__option__icon--targets',
+    },
+    {
+        id: 'nonEndemicVillages',
+        defaultMessage: 'Villages non endémiques',
+        isActive: params.nonEndemicVillages === 'true',
+        iconClass: 'map__option__icon--villages',
+    },
+    {
+        id: 'endemicVillages',
+        defaultMessage: 'Villages endémiques',
+        isActive: params.endemicVillages === 'true',
+        iconClass: 'map__option__icon--villages-with-case',
+    },
+];

@@ -290,3 +290,9 @@ input.input--minimised {
     color: $mid-gray;
     margin-bottom: 6px;
 }
+.filter-checkbox {
+    label {
+        display: inline-block;
+        font-size: 12px;
+    }
+}

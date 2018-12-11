@@ -38,6 +38,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         limit = int(limit)
         page_offset = int(page_offset)
         institutionId = request.GET.get("institutionId", None)
+        as_list = request.GET.get("as_list", False)
 
         queryset = Profile.objects.all()
 
@@ -58,22 +59,25 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(qs_order)
 
-        paginator = Paginator(queryset, limit)
+        if not as_list:
+            paginator = Paginator(queryset, limit)
 
 
-        res = {"count": paginator.count}
-        if page_offset > paginator.num_pages:
-            page_offset = paginator.num_pages
-        page = paginator.page(page_offset)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
 
-        res["users"] = map(lambda x: x.as_dict(), page.object_list)
-        res["has_next"] = page.has_next()
-        res["has_previous"] = page.has_previous()
-        res["page"] = page_offset
-        res["pages"] = paginator.num_pages
-        res["limit"] = limit
+            res["users"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
 
-        return Response(res)
+            return Response(res)
+        else:
+            return Response(queryset.values('id', 'user__username', 'user__id'))
 
 
     def retrieve(self, request, pk):

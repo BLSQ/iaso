@@ -22,7 +22,12 @@ def ignore_patient_duplicate(patient_dupe, user):
         defaults={'algorithm': patient_dupe.algorithm, 'ignored_by': user}
     )
     if ignored_pair:
-        patient_dupe.delete()
+        # Delete the pair from all algorithms
+        PatientDuplicatesPair.objects\
+            .filter(
+                patient1_id=patient_dupe.patient1_id,
+                patient2_id=patient_dupe.patient2_id)\
+            .delete()
         return ignored_pair
 
 
@@ -48,7 +53,7 @@ def create_potential_duplicates_for_patient_range(low_id, high_id):
     This method will look for potential duplicates for a range of patient ids and store them if appropriate
     """
     count=0
-    for dupe in PatientDuplicatesView.objects.filter(patient1_id__gte=low_id, patient1_id__lt=high_id):
+    for dupe in PatientDuplicatesView.objects.filter(patient1_id__gte=low_id, patient1_id__lt=high_id).filter(F()):
         if dupe.patient1_id > dupe.patient2_id:  # we will have 3,5 and 5,3. Only add 5,3.
             dupe, dupe_created = PatientDuplicatesPair.objects.update_or_create(
                 patient1_id=dupe.patient1_id,

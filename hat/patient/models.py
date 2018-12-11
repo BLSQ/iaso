@@ -195,7 +195,7 @@ class PatientDuplicatesPair(models.Model):
             raise Exception("Patient1's id MUST always be greater than patient2's id")
 
     class Meta:
-        unique_together = (('patient1', 'patient2'),)
+        unique_together = (('patient1', 'patient2', 'algorithm'),)
         permissions = (
             ('reconcile_duplicates', 'Can reconcile duplicates'),
         )

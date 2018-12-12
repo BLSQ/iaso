@@ -1,16 +1,16 @@
-from rest_framework import viewsets
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
-from hat.vector_control.models import Site, Target
-from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-from django.http import StreamingHttpResponse
-from hat.geo.models import Province, ZS, AS
-from django.db.models import Q
 import csv
 
+from django.core.paginator import Paginator
+from django.db.models import Q, OuterRef, Exists
+from django.http import StreamingHttpResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
 
+from hat.geo.models import Province, ZS, AS
+from hat.vector_control.models import Target
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class TargetsViewSet(viewsets.ViewSet):
@@ -23,9 +23,7 @@ class TargetsViewSet(viewsets.ViewSet):
         'menupermissions.x_vectorcontrol'
     ]
 
-
     def list(self, request):
-
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         limit = request.GET.get("limit", None)
@@ -56,22 +54,22 @@ class TargetsViewSet(viewsets.ViewSet):
                 i = i + 1
             queryset = queryset.filter(p)
         if zs_ids:
-            zoneList = zs_ids.split(",")
-            zone = get_object_or_404(ZS, id=zoneList[0])
+            zone_list = zs_ids.split(",")
+            zone = get_object_or_404(ZS, id=zone_list[0])
             z = Q(location__contained=zone.geom)
             i = 1
-            while i < len(zoneList):
-                zone = get_object_or_404(ZS, id=zoneList[i])
+            while i < len(zone_list):
+                zone = get_object_or_404(ZS, id=zone_list[i])
                 z = z | Q(location__contained=zone.geom)
                 i = i + 1
             queryset = queryset.filter(z)
         if as_ids:
-            areaList = as_ids.split(",")
-            area = get_object_or_404(AS, id=areaList[0])
+            area_list = as_ids.split(",")
+            area = get_object_or_404(AS, id=area_list[0])
             a = Q(location__contained=area.geom)
             i = 1
-            while i < len(areaList):
-                area = get_object_or_404(AS, id=areaList[i])
+            while i < len(area_list):
+                area = get_object_or_404(AS, id=area_list[i])
                 a = a | Q(location__contained=area.geom)
                 i = i + 1
             queryset = queryset.filter(a)
@@ -129,7 +127,6 @@ class TargetsViewSet(viewsets.ViewSet):
             )
             response['Content-Disposition'] = 'attachment;filename=targets.csv'
             return response
-
 
     def retrieve(self, request, pk=None):
         target = get_object_or_404(Target, pk=pk)

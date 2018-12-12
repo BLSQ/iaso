@@ -11,6 +11,7 @@ import App from '../App';
 
 import VectorContainer from './VectorContainer';
 import GpxUpload from './pages/GpxUpload';
+import VectorSync from './pages/VectorSync';
 import { vectorReducer, vectorInitialState } from './redux/vectorReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
@@ -30,6 +31,10 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={VectorContainer}
+        />,
+        <Route
+            path="/sync"
+            component={VectorSync}
         />,
         <Route
             path="/upload"

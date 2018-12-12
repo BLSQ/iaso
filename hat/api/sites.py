@@ -12,7 +12,7 @@ from django.http import StreamingHttpResponse
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Exists
 import csv
 
 class SitesViewSet(viewsets.ViewSet):
@@ -69,15 +69,10 @@ class SitesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(is_reference=True)
 
         if province_ids:
-            provinceList = province_ids.split(",")
-            province = get_object_or_404(Province, id=provinceList[0])
-            p = Q(location__contained=province.geom)
-            i = 1
-            while i < len(provinceList):
-                province = get_object_or_404(Province, id=provinceList[i])
-                p = p | Q(location__contained=province.geom)
-                i = i + 1
-            queryset = queryset.filter(p)
+            province_list = province_ids.split(",")
+            prov_subquery = Province.objects.filter(id__in=province_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_prov=Exists(prov_subquery)).filter(in_prov=True)
         if zs_ids:
             zoneList = zs_ids.split(",")
             zone = get_object_or_404(ZS, id=zoneList[0])
@@ -139,6 +134,8 @@ class SitesViewSet(viewsets.ViewSet):
                             sdict.get("first_survey_date"),
                             sdict.get("name"),
                             sdict.get("zone"),
+                            sdict.get("latitude"),
+                            sdict.get("longitude"),
                             sdict.get("habitat"),
                             sdict.get("first_survey_date"),
                             sdict.get("count"),

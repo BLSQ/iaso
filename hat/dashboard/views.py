@@ -155,6 +155,11 @@ def get_menu(user, active_link):
                     "perms": "x_vectorcontrol"
                 },
                 {
+                    "name": "Synchronisation",
+                    "url_key": reverse("dashboard:vector_sync"),
+                    "perms": "x_vectorcontrol"
+                },
+                {
                     "name": "Import GPX",
                     "url_key": reverse("dashboard:vector_upload"),
                     "perms": "x_vectorcontrolupload"
@@ -440,6 +445,17 @@ def vector(request: HttpRequest) -> HttpResponse:
         return redirect('/dashboard/password')
     else:
         return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector"))})
+
+@login_required()
+@permission_required('menupermissions.x_vectorcontrolupload')
+@require_http_methods(['GET'])
+def vector_sync(request: HttpRequest) -> HttpResponse:
+    user = request.user
+
+    if user.profile.password_reset:
+        return redirect('/dashboard/password')
+    else:
+        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector_sync"))})
 
 @login_required()
 @permission_required('menupermissions.x_vectorcontrolupload')

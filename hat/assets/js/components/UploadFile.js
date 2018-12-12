@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl';
 
@@ -159,10 +158,7 @@ const MapStateToProps = state => ({
     load: state.load,
 });
 
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-});
+const MapDispatchToProps = () => ({});
 
 export default connect(MapStateToProps, MapDispatchToProps)(UploadfFleIntl);
 

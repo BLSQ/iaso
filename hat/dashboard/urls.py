@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^locator/list.*$', views.locator, name='locator_list'),
     url(r'^locator/case.*$', views.locator, name='locator'),
     url(r'^vector/map.*$', views.vector, name='vector'),
+    url(r'^vector/sync.*$', views.vector_sync, name='vector_sync'),
     url(r'^vector/upload.*$', views.vector_upload, name='vector_upload'),
     url(r'^quality-control/.*$', views.quality_control, name='quality-control'),
     url(r'^csvexport/(?P<planning_id>\d+)/$', views.csv_export, name='csv_export'),

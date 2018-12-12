@@ -30,6 +30,13 @@ const sitesColumns = (formatMessage, messages) => (
                 id: 'main.label.zone',
             }),
             accessor: 'zone',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.zone ? settings.original.zone : '/'
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({

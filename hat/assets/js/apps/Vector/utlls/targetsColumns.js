@@ -12,7 +12,7 @@ const targetsColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        moment(settings.original.date_time).format('DD/MM/YYYY HH:mm')
+                        settings.original.date_time ? moment(settings.original.date_time).format('DD/MM/YYYY HH:mm') : '/'
                     }
                 </span>
             ),
@@ -65,6 +65,13 @@ const targetsColumns = formatMessage => (
                 id: 'main.label.river',
             }),
             accessor: 'river',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.river ? settings.original.river : '/'
+                    }
+                </span>
+            ),
         },
     ]
 );

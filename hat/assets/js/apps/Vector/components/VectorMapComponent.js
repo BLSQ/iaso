@@ -115,7 +115,6 @@ class VectorMapComponent extends Component {
    * UPDATE STATE
    *************************************************************************** */
     updateSites() {
-        console.log('updateSites');
         const {
             sites,
             intl: {
@@ -155,7 +154,6 @@ class VectorMapComponent extends Component {
     }
 
     updateTargets() {
-        console.log('updateTargets');
         const {
             targets,
             intl: {
@@ -194,7 +192,6 @@ class VectorMapComponent extends Component {
         this.targetsGroup.addLayer(markersTargets);
     }
     updateNonEndemicVillages() {
-        console.log('updateNonEndemicVillages');
         const {
             nonEndemicVillages,
             intl: {
@@ -237,7 +234,6 @@ class VectorMapComponent extends Component {
         this.nonEndemicVillagesGroup.addLayer(markersNonEndemicVillages);
     }
     updateEndemicVillages() {
-        console.log('updateEndemicVillages');
         const {
             endemicVillages,
             intl: {

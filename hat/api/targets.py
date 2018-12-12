@@ -6,6 +6,8 @@ from hat.vector_control.models import Site, Target
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.http import StreamingHttpResponse
+from hat.geo.models import Province, ZS, AS
+from django.db.models import Q
 import csv
 
 
@@ -43,12 +45,36 @@ class TargetsViewSet(viewsets.ViewSet):
         if user_ids is not None:
             queryset = queryset.filter(gps_import__user_id__in=user_ids.split(","))
 
-        # if province_ids:
-        #     queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
-        # if zs_ids:
-        #     queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
-        # if as_ids:
-        #     queryset = queryset.filter(AS_id__in=as_ids.split(","))
+        if province_ids:
+            provinceList = province_ids.split(",")
+            province = get_object_or_404(Province, id=provinceList[0])
+            p = Q(location__contained=province.geom)
+            i = 1
+            while i < len(provinceList):
+                province = get_object_or_404(Province, id=provinceList[i])
+                p = p | Q(location__contained=province.geom)
+                i = i + 1
+            queryset = queryset.filter(p)
+        if zs_ids:
+            zoneList = zs_ids.split(",")
+            zone = get_object_or_404(ZS, id=zoneList[0])
+            z = Q(location__contained=zone.geom)
+            i = 1
+            while i < len(zoneList):
+                zone = get_object_or_404(ZS, id=zoneList[i])
+                z = z | Q(location__contained=zone.geom)
+                i = i + 1
+            queryset = queryset.filter(z)
+        if as_ids:
+            areaList = as_ids.split(",")
+            area = get_object_or_404(AS, id=areaList[0])
+            a = Q(location__contained=area.geom)
+            i = 1
+            while i < len(areaList):
+                area = get_object_or_404(AS, id=areaList[i])
+                a = a | Q(location__contained=area.geom)
+                i = i + 1
+            queryset = queryset.filter(a)
 
         if csv_format is None:
             if limit:
@@ -68,7 +94,7 @@ class TargetsViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(queryset.values('id', 'latitude', 'longitude'))
+                return Response(map(lambda x: x.as_location(), queryset))
         else:
             class Echo:
                 """An object that implements just the write method of the file-like

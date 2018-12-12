@@ -72,7 +72,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                                 ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}
                             </td>
                             <td class="${!site.zone ? 'align-center' : ''}">
-                                ${site.zone === '' ? '/' : site.zone}
+                                ${!site.zone || site.zone === '' ? '/' : site.zone}
                             </td>
                         </tr>
                         <tr>
@@ -96,15 +96,15 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                                 ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
                             </td>
                             <td class="${!site.habitat ? 'align-center' : ''}">
-                                ${site.habitat === '' ? '/' : formatMessage(MESSAGES[site.habitat])}
+                                ${!site.habitat || site.habitat === '' ? '/' : formatMessage(MESSAGES[site.habitat])}
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 ${formatMessage({ defaultMessage: 'Premier relevé', id: 'vector.labels.first_survey' })}
                             </td>
-                            <td>
-                                ${site.first_survey}
+                            <td class="${!site.first_survey ? 'align-center' : ''}">
+                                ${!site.first_survey ? '/' : site.first_survey}
                             </td>
                         </tr>
                         <tr>

@@ -68,7 +68,7 @@ const sitesColumns = (formatMessage, messages) => (
             Cell: settings => (
                 <span>
                     {
-                        formatMessage(messages[settings.original.habitat])
+                        settings.original.habitat ? formatMessage(messages[settings.original.habitat]) : '/'
                     }
                 </span>
             ),

@@ -3,6 +3,7 @@ from datetime import timezone
 import gpxpy
 
 from hat.vector_control.models import GpsImport, Target
+from django.contrib.gis.geos import Point
 
 
 def gpximport(filename, file=None, user=None):
@@ -24,8 +25,7 @@ def gpximport(filename, file=None, user=None):
 
     for wp in gpx.waypoints:
         Target.objects.get_or_create(
-            latitude=wp.latitude,
-            longitude=wp.longitude,
+            location=Point(x=wp.longitude, y=wp.latitude, srid=4326),
             altitude=wp.elevation,
             name=wp.name,
             deployment=None,

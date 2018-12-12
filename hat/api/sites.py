@@ -10,6 +10,9 @@ from hat.vector_control.models import Site
 from .authentication import CsrfExemptSessionAuthentication
 from django.http import StreamingHttpResponse
 from rest_framework.authentication import BasicAuthentication
+from django.contrib.gis.geos import Point
+from hat.geo.models import Province, ZS, AS
+from django.db.models import Q
 import csv
 
 class SitesViewSet(viewsets.ViewSet):
@@ -65,12 +68,36 @@ class SitesViewSet(viewsets.ViewSet):
         if only_reference_sites:
             queryset = queryset.filter(is_reference=True)
 
-        # if province_ids:
-        #     queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
-        # if zs_ids:
-        #     queryset = queryset.filter(AS__ZS_id__in=zs_ids.split(","))
-        # if as_ids:
-        #     queryset = queryset.filter(AS_id__in=as_ids.split(","))
+        if province_ids:
+            provinceList = province_ids.split(",")
+            province = get_object_or_404(Province, id=provinceList[0])
+            p = Q(location__contained=province.geom)
+            i = 1
+            while i < len(provinceList):
+                province = get_object_or_404(Province, id=provinceList[i])
+                p = p | Q(location__contained=province.geom)
+                i = i + 1
+            queryset = queryset.filter(p)
+        if zs_ids:
+            zoneList = zs_ids.split(",")
+            zone = get_object_or_404(ZS, id=zoneList[0])
+            z = Q(location__contained=zone.geom)
+            i = 1
+            while i < len(zoneList):
+                zone = get_object_or_404(ZS, id=zoneList[i])
+                z = z | Q(location__contained=zone.geom)
+                i = i + 1
+            queryset = queryset.filter(z)
+        if as_ids:
+            areaList = as_ids.split(",")
+            area = get_object_or_404(AS, id=areaList[0])
+            a = Q(location__contained=area.geom)
+            i = 1
+            while i < len(areaList):
+                area = get_object_or_404(AS, id=areaList[i])
+                a = a | Q(location__contained=area.geom)
+                i = i + 1
+            queryset = queryset.filter(a)
 
         if csv_format is None:
             if limit:
@@ -90,7 +117,7 @@ class SitesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(queryset.values('id', 'latitude', 'longitude'))
+                return Response(map(lambda x: x.as_location(), queryset))
         else:
                 class Echo:
                     """An object that implements just the write method of the file-like
@@ -112,8 +139,6 @@ class SitesViewSet(viewsets.ViewSet):
                             sdict.get("first_survey_date"),
                             sdict.get("name"),
                             sdict.get("zone"),
-                            sdict.get("latitude"),
-                            sdict.get("longitude"),
                             sdict.get("habitat"),
                             sdict.get("first_survey_date"),
                             sdict.get("count"),
@@ -139,9 +164,8 @@ class SitesViewSet(viewsets.ViewSet):
         for site in sites:
             new_site = Site()
             new_site.id = site.get('id', None)
+            new_site.name = site.get('name', None)
             new_site.zone = site.get('zone', None)
-            new_site.latitude = site.get('latitude', None)
-            new_site.longitude = site.get('longitude', None)
             new_site.altitude = site.get('altitude', None)
             new_site.accuracy = site.get('accuracy', None)
             new_site.habitat = site.get('habitat', None)
@@ -155,6 +179,12 @@ class SitesViewSet(viewsets.ViewSet):
                 newUser = get_object_or_404(User, pk=user_id)
                 new_site.user = newUser
             new_site.source = 'API'
+
+            latitude = site.get('latitude', None)
+            longitude = site.get('longitude', None)
+            if latitude and longitude:
+                new_site.location = Point(x=longitude, y=latitude, srid=4326)
+
             new_site.save()
             new_sites.append(new_site)
 

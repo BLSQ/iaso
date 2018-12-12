@@ -15,6 +15,7 @@ from hat.geo.models import Province, ZS, AS
 from django.db.models import Q, OuterRef, Exists
 import csv
 
+
 class SitesViewSet(viewsets.ViewSet):
     """
     Team API to allow create and retrieval of sites.
@@ -74,25 +75,15 @@ class SitesViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_prov=Exists(prov_subquery)).filter(in_prov=True)
         if zs_ids:
-            zoneList = zs_ids.split(",")
-            zone = get_object_or_404(ZS, id=zoneList[0])
-            z = Q(location__contained=zone.geom)
-            i = 1
-            while i < len(zoneList):
-                zone = get_object_or_404(ZS, id=zoneList[i])
-                z = z | Q(location__contained=zone.geom)
-                i = i + 1
-            queryset = queryset.filter(z)
+            zone_list = zs_ids.split(",")
+            zs_subquery = ZS.objects.filter(id__in=zone_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_zs=Exists(zs_subquery)).filter(in_zs=True)
         if as_ids:
-            areaList = as_ids.split(",")
-            area = get_object_or_404(AS, id=areaList[0])
-            a = Q(location__contained=area.geom)
-            i = 1
-            while i < len(areaList):
-                area = get_object_or_404(AS, id=areaList[i])
-                a = a | Q(location__contained=area.geom)
-                i = i + 1
-            queryset = queryset.filter(a)
+            area_list = as_ids.split(",")
+            as_subquery = AS.objects.filter(id__in=area_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
         if csv_format is None:
             if limit:

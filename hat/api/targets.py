@@ -50,24 +50,14 @@ class TargetsViewSet(viewsets.ViewSet):
             queryset = queryset.annotate(in_prov=Exists(prov_subquery)).filter(in_prov=True)
         if zs_ids:
             zone_list = zs_ids.split(",")
-            zone = get_object_or_404(ZS, id=zone_list[0])
-            z = Q(location__contained=zone.geom)
-            i = 1
-            while i < len(zone_list):
-                zone = get_object_or_404(ZS, id=zone_list[i])
-                z = z | Q(location__contained=zone.geom)
-                i = i + 1
-            queryset = queryset.filter(z)
+            zs_subquery = ZS.objects.filter(id__in=zone_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_zs=Exists(zs_subquery)).filter(in_zs=True)
         if as_ids:
             area_list = as_ids.split(",")
-            area = get_object_or_404(AS, id=area_list[0])
-            a = Q(location__contained=area.geom)
-            i = 1
-            while i < len(area_list):
-                area = get_object_or_404(AS, id=area_list[i])
-                a = a | Q(location__contained=area.geom)
-                i = i + 1
-            queryset = queryset.filter(a)
+            as_subquery = AS.objects.filter(id__in=area_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
         if csv_format is None:
             if limit:

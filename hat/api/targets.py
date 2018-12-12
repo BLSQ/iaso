@@ -44,15 +44,10 @@ class TargetsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(gps_import__user_id__in=user_ids.split(","))
 
         if province_ids:
-            provinceList = province_ids.split(",")
-            province = get_object_or_404(Province, id=provinceList[0])
-            p = Q(location__contained=province.geom)
-            i = 1
-            while i < len(provinceList):
-                province = get_object_or_404(Province, id=provinceList[i])
-                p = p | Q(location__contained=province.geom)
-                i = i + 1
-            queryset = queryset.filter(p)
+            province_list = province_ids.split(",")
+            prov_subquery = Province.objects.filter(id__in=province_list) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_prov=Exists(prov_subquery)).filter(in_prov=True)
         if zs_ids:
             zone_list = zs_ids.split(",")
             zone = get_object_or_404(ZS, id=zone_list[0])

@@ -18,19 +18,39 @@ class VectorSync extends React.Component {
         const { formatMessage } = this.props.intl;
         return (
             <section>
+                {
+                    loading &&
+                    <LoadingSpinner message={formatMessage({
+                        defaultMessage: 'Chargement en cours',
+                        id: 'microplanning.labels.loading',
+                    })}
+                    />
+                }
                 <div className="widget__container">
-                    {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
-                        })}
-                        />
-                    }
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="VectorSync.Title2" defaultMessage="Synchronisation des données" />
+                            <FormattedMessage id="VectorSync.title" defaultMessage="Synchronisation des données" />
                         </h2>
+                    </div>
+                </div>
+                <div className="widget__container">
+                    <div className="widget__header">
+                        <h4>
+                            <FormattedMessage id="VectorSync.title.site" defaultMessage="Pièges" />
+                        </h4>
+                    </div>
+                    <div className="widget__content">
+                        Coming soon
+                    </div>
+                </div>
+                <div className="widget__container">
+                    <div className="widget__header">
+                        <h4>
+                            <FormattedMessage id="VectorSync.title.targets" defaultMessage="Ecrans" />
+                        </h4>
+                    </div>
+                    <div className="widget__content">
+                        Coming soon
                     </div>
                 </div>
             </section>);

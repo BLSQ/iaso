@@ -26,51 +26,6 @@ import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
 
 const baseUrl = 'map';
 
-// TO REMOVE
-const request = require('superagent');
-
-
-const saveFakeSite = () => {
-    const traps = [
-        {
-            name: 'site 1',
-            count: 10,
-            total: 100,
-            latitude: -2.75019127,
-            longitude: 19.68598159,
-            user: 76,
-            first_survey_date: new Date(),
-        },
-        {
-            name: 'site 2',
-            count: 100,
-            total: 1000,
-            latitude: -5.04621636,
-            longitude: 19.32339097,
-            user: 76,
-            first_survey_date: new Date(),
-        },
-        {
-            name: 'site 3',
-            count: 100,
-            total: 1000,
-            latitude: -5.21638889,
-            longitude: 16.77569444,
-            user: 76,
-            first_survey_date: new Date(),
-        },
-    ];
-    request
-        .post('/api/sites/')
-        .set('Content-Type', 'application/json')
-        .send(traps)
-        .then(res => res.body)
-        .catch((err) => {
-            console.error(`Error While saving sites: ${err}`);
-        });
-};
-// TO REMOVE
-
 export class Vector extends Component {
     constructor(props) {
         super(props);
@@ -186,17 +141,6 @@ export class Vector extends Component {
         );
         return (
             <section className="vectors-container">
-                {/* {TO REMOVE} */}
-                {/* <div className="align-right">
-                    <button
-                        className="button--save margin"
-                        onClick={() => saveFakeSite()}
-                    >
-                        <i className="fa fa-upload" />
-                        <FormattedMessage id="cases.label.fake1" defaultMessage="Sites" />
-                    </button>
-                </div> */}
-                {/* {TO REMOVE} */}
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
@@ -207,8 +151,6 @@ export class Vector extends Component {
                 <div className="widget__container">
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="vector.title" defaultMessage="Vector control: " />
-                            {' '}
                             <PeriodSelectorComponent
                                 dateFrom={params.dateFrom}
                                 dateTo={params.dateTo}

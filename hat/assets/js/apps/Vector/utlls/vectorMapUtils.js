@@ -225,22 +225,6 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'As', id: 'vector.labels.as' })}:
-                            </td>
-                            <td>
-                                ${village.as}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Zs', id: 'vector.labels.zs' })}:
-                            </td>
-                            <td>
-                                ${village.zs}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
                                 ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
                             </td>
                             <td>

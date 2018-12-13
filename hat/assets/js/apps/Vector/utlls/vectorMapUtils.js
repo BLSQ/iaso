@@ -190,7 +190,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                             </td>
                         </tr>
                         <tr>
-                            <td class="${!target.deployment ? 'align-center' : ''}">
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}
                             </td>
                             <td class="${!target.deployment ? 'align-center' : ''}">
@@ -198,7 +198,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                             </td>
                         </tr>
                         <tr>
-                        <td class="${!target.river ? 'align-center' : ''}">
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Rivière', id: 'vector.labels.river' })}
                             </td>
                             <td class="${!target.river ? 'align-center' : ''}">

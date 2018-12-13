@@ -30,6 +30,7 @@ const targetsColumns = formatMessage => (
                 id: 'main.label.latitude',
             }),
             accessor: 'latitude',
+            sortable: false,
         },
         {
             Header: formatMessage({
@@ -37,6 +38,7 @@ const targetsColumns = formatMessage => (
                 id: 'main.label.longitude',
             }),
             accessor: 'longitude',
+            sortable: false,
         },
         {
             Header: formatMessage({

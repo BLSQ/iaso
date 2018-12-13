@@ -190,7 +190,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                             </td>
                         </tr>
                         <tr>
-                            <td class="${!target.deployment ? 'align-center' : ''}">
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}
                             </td>
                             <td class="${!target.deployment ? 'align-center' : ''}">
@@ -198,7 +198,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                             </td>
                         </tr>
                         <tr>
-                        <td class="${!target.river ? 'align-center' : ''}">
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Rivière', id: 'vector.labels.river' })}
                             </td>
                             <td class="${!target.river ? 'align-center' : ''}">
@@ -221,22 +221,6 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                             </td>
                             <td>
                                 ${village.name}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'As', id: 'vector.labels.as' })}:
-                            </td>
-                            <td>
-                                ${village.as}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Zs', id: 'vector.labels.zs' })}:
-                            </td>
-                            <td>
-                                ${village.zs}
                             </td>
                         </tr>
                         <tr>
@@ -277,6 +261,30 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                             </td>
                             <td>
                                 ${village.gps_source}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Province', id: 'vector.labels.province' })}
+                            </td>
+                            <td class="${!village.province ? 'align-center' : ''}">
+                                ${village.province ? village.province : '/'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.zone' })}
+                            </td>
+                            <td class="${!village.zs ? 'align-center' : ''}">
+                                ${village.zs ? village.zs : '/'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Aire', id: 'vector.labels.area' })}
+                            </td>
+                            <td class="${!village.as ? 'align-center' : ''}">
+                                ${village.as ? village.as : '/'}
                             </td>
                         </tr>
                     </tbody>

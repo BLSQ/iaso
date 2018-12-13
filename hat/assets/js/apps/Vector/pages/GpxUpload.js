@@ -34,7 +34,7 @@ class GpxUpload extends React.Component {
                         </h2>
                     </div>
                     <div className="widget__content">
-                        <UploadFile endPointUrl="/vector/gpx_upload/" accept=".gpx" />
+                        <UploadFile endPointUrl="/vector/gpx_upload/" accept=".gpx" inputName="gpx" />
                     </div>
                 </div>
             </section>);

@@ -77,9 +77,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         csvformat = request.GET.get("csv", None)  # default will be json
 
         queryset = (
-            PatientDuplicatesPair.objects.order_by(*orders)
+            PatientDuplicatesPair.objects.all()
         )
 
+        # conditions on the patient
         if search_name:
             queryset = queryset.filter(
                 Q(patient1__post_name__contains=search_name) | Q(patient2__post_name__contains=search_name)
@@ -98,22 +99,34 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 | Q(patient2__mothers_surname__contains=search_mother_name)
             )
 
-        if coordination_id:
-            coord_cases = CaseView.objects\
-                .filter(normalized_team__coordination_id__in=coordination_id.split(","))\
+        if province_ids and not zs_ids and not as_ids:
+            queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=province_ids.split(","))
+                                       | Q(patient2__origin_area__ZS__province_id__in=province_ids.split(",")))
+        else:
+            if zs_ids and not as_ids:
+                queryset = queryset.filter(Q(patient1__origin_area__ZS_id__in=zs_ids.split(","))
+                                           | Q(patient2__origin_area__ZS_id__in=zs_ids.split(",")))
+            else:
+                if as_ids:
+                    queryset = queryset.filter(Q(patient1__origin_area_id__in=as_ids.split(","))
+                                               | Q(patient2__origin_area_id__in=as_ids.split(",")))
+
+        if village_ids:
+            queryset = queryset.filter(Q(patient1__origin_village_id__in=village_ids.split(","))
+                                       | Q(patient2__origin_village_id__in=village_ids.split(",")))
+
+        # conditions on the Cases
+        if coordination_id or teams:
+            team_cases = CaseView.objects\
                 .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
                         | Q(normalized_patient_id=OuterRef('patient2_id')))
+            if coordination_id:
+                team_cases = team_cases.filter(normalized_team__coordination_id__in=coordination_id.split(","))
+            if teams:
+                team_cases = team_cases.filter(normalized_team_id__in=teams.split(","))
             queryset = queryset\
-                .annotate(teams_cases=Exists(coord_cases))\
+                .annotate(teams_cases=Exists(team_cases))\
                 .filter(teams_cases=True)
-
-        if test_types:
-            test_with_type_in = Test.objects.filter(Q(form__normalized_patient_id=OuterRef('patient1_id'))
-                                                    | Q(form__normalized_patient_id=OuterRef('patient2_id')))\
-                .filter(type__in=test_types.upper().split(","))
-            queryset = queryset \
-                .annotate(test_with_type_in=Exists(test_with_type_in)) \
-                .filter(test_with_type_in=True)
 
         if screening_result is not None:
             # setting this to false will provide patients that had no positive screening result at all
@@ -134,30 +147,14 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 .annotate(has_confirmed_case=Exists(confirmed_cases))\
                 .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
 
-        if province_ids and not zs_ids and not as_ids:
-            queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=province_ids.split(","))
-                                       | Q(patient2__origin_area__ZS__province_id__in=province_ids.split(",")))
-        else:
-            if zs_ids and not as_ids:
-                queryset = queryset.filter(Q(patient1__origin_area__ZS_id__in=zs_ids.split(","))
-                                           | Q(patient2__origin_area__ZS_id__in=zs_ids.split(",")))
-            else:
-                if as_ids:
-                    queryset = queryset.filter(Q(patient1__origin_area_id__in=as_ids.split(","))
-                                               | Q(patient2__origin_area_id__in=as_ids.split(",")))
-
-        if village_ids:
-            queryset = queryset.filter(Q(patient1__origin_village_id__in=village_ids.split(","))
-                                       | Q(patient2__origin_village_id__in=village_ids.split(",")))
-
-        if teams:
-            teams_cases = CaseView.objects\
-                .filter(normalized_team_id__in=teams.split(","))\
-                .filter(Q(normalized_patient_id=OuterRef('patient1_id'))
-                        | Q(normalized_patient_id=OuterRef('patient2_id')))
-            queryset = queryset\
-                .annotate(teams_cases=Exists(teams_cases))\
-                .filter(teams_cases=True)
+        # conditions on the Tests
+        if test_types:
+            test_with_type_in = Test.objects.filter(Q(form__normalized_patient_id=OuterRef('patient1_id'))
+                                                    | Q(form__normalized_patient_id=OuterRef('patient2_id')))\
+                .filter(type__in=test_types.upper().split(","))
+            queryset = queryset \
+                .annotate(test_with_type_in=Exists(test_with_type_in)) \
+                .filter(test_with_type_in=True)
 
         if algorithm:
             queryset = queryset.filter(algorithm=algorithm)
@@ -165,17 +162,11 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         if similarity:
             queryset = queryset.filter(similarity_score__lte=similarity)
 
-        cases_for_patient1 = Case.objects.filter(normalized_patient_id=OuterRef('patient1_id')).order_by('-id')
-        queryset = queryset.annotate(patient1_village=Subquery(cases_for_patient1.values('village')[:1]))\
-            .annotate(patient1_latest_case_id=Subquery(cases_for_patient1.values('id')[:1]))
-        cases_for_patient2 = Case.objects.filter(normalized_patient_id=OuterRef('patient2_id')).order_by('-id')
-        queryset = queryset.annotate(patient2_village=Subquery(cases_for_patient2.values('village')[:1])) \
-            .annotate(patient2_latest_case_id=Subquery(cases_for_patient2.values('id')[:1]))
-
         if csvformat is None:
+            res = {"count": queryset.count}
+            queryset = queryset.order_by(*orders)
             paginator = Paginator(queryset, limit)
 
-            res = {"count": paginator.count}
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
@@ -191,18 +182,18 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         else:
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="patientduplicatepairs.csv"'
+
             queryset = queryset.select_related('patient1', 'patient2')
 
             writer = csv.writer(response)
             writer.writerow(
                 ['ID candidat duplicat', 'Score de similarité',
                  'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
-                 'Année naissance patient 1', 'Village patient 1', 'Détails patient 1',
+                 'Année naissance patient 1', 'Village patient 1',
                  'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
-                 'Année naissance patient 2', 'Village patient 2', 'Détails patient 2',
+                 'Année naissance patient 2', 'Village patient 2',
                  'Même patient ? (O/N)',
                  ])
-            mid = time.time()
             for dupe in queryset:
                 writer.writerow([
                     dupe.id,
@@ -214,8 +205,6 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                     dupe.patient1.mothers_surname,
                     dupe.patient1.year_of_birth,
                     dupe.patient1_village,
-                    request.build_absolute_uri(
-                        reverse('cases:cases_details', kwargs={'doc_id': dupe.patient1_latest_case_id})),
                     dupe.patient2_id,
                     dupe.patient2.first_name,
                     dupe.patient2.last_name,
@@ -223,8 +212,6 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                     dupe.patient2.mothers_surname,
                     dupe.patient2.year_of_birth,
                     dupe.patient2_village,
-                    request.build_absolute_uri(
-                        reverse('cases:cases_details', kwargs={'doc_id': dupe.patient2_latest_case_id})),
                     ''
                 ])
 

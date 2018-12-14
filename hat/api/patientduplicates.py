@@ -163,7 +163,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(similarity_score__lte=similarity)
 
         if csvformat is None:
-            res = {"count": queryset.count}
+            res = {"count": queryset.count()}
             queryset = queryset.order_by(*orders)
             paginator = Paginator(queryset, limit)
 

@@ -26,6 +26,32 @@ import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
 
 const baseUrl = 'map';
 
+// TO REMOVE
+const request = require('superagent');
+
+
+const saveFakeCatch = () => {
+    const traps = [
+        {
+            site_id: 18,
+            male_count: 10,
+            female_count: 50,
+            unknown_count: 50,
+            latitude: -2.75019127,
+            longitude: 19.68598159,
+        },
+    ];
+    request
+        .post('/api/catches/')
+        .set('Content-Type', 'application/json')
+        .send(traps)
+        .then(res => res.body)
+        .catch((err) => {
+            console.error(`Error While saving sites: ${err}`);
+        });
+};
+// TO REMOVE
+
 export class Vector extends Component {
     constructor(props) {
         super(props);
@@ -148,6 +174,17 @@ export class Vector extends Component {
                     })}
                     />
                 }
+                {/* {TO REMOVE} */}
+                <div className="align-right">
+                    <button
+                        className="button--save margin"
+                        onClick={() => saveFakeCatch()}
+                    >
+                        <i className="fa fa-upload" />
+                        <FormattedMessage id="cases.label.fake1" defaultMessage="Catches" />
+                    </button>
+                </div>
+                {/* {TO REMOVE} */}
                 <div className="widget__container">
                     <div className="widget__header">
                         <h2 className="widget__heading">

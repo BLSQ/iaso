@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.gis.db.models.fields import PointField
 from django.db import models
+from django.db.models import Count
 import uuid
 import json
 
@@ -61,6 +62,10 @@ class Site(models.Model):
     }
 
     def as_dict(self):
+        first_catch_date = None
+        catches_count = self.catch_set.count()
+        if catches_count > 0:
+            first_catch_date = self.catch_set.order_by('setup_date').first().setup_date
         return {
             'id': self.id,
             'name': self.name,
@@ -73,7 +78,9 @@ class Site(models.Model):
             'username': self.user.username,
             'is_reference': self.is_reference,
             'latitude': self.location.y,
-            'longitude': self.location.x
+            'longitude': self.location.x,
+            'catches_count': catches_count,
+            'first_catch_date': first_catch_date
         }
 
 

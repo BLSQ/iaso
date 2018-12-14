@@ -84,14 +84,14 @@ const sitesColumns = (formatMessage, messages) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Décompte',
-                id: 'main.label.count',
+                defaultMessage: 'Nombre de pièges',
+                id: 'main.label.catches_count',
             }),
-            accessor: 'count',
+            accessor: 'catches_count',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Total',
+                defaultMessage: 'Captures totales',
                 id: 'main.label.total',
             }),
             accessor: 'total',

@@ -59,6 +59,7 @@ class SitesViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         queryset = Site.objects.all().order_by(*orders)
+
         if from_date is not None:
             queryset = queryset.filter(first_survey_date__date__gte=from_date)
         if to_date is not None:

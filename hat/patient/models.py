@@ -70,11 +70,11 @@ class Patient(models.Model):
         similar_patients = []
         for pair in PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id)):
             if pair.patient1_id != self.id:
-                duplicatePatient = pair.patient1.as_dict()
+                duplicate_patient = pair.patient1.as_dict()
             else:
-                duplicatePatient = pair.patient2.as_dict()
-            duplicatePatient['duplicateId'] = pair.id
-            similar_patients.append(duplicatePatient)
+                duplicate_patient = pair.patient2.as_dict()
+            duplicate_patient['duplicateId'] = pair.id
+            similar_patients.append(duplicate_patient)
         AS = None
         ZS = None
         province = None

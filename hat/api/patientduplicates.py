@@ -189,9 +189,9 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             writer.writerow(
                 ['ID candidat duplicat', 'Score de similarité',
                  'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
-                 'Année naissance patient 1', 'Village patient 1',
+                 'Année naissance patient 1', 'AS patient 1', 'Village patient 1',
                  'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
-                 'Année naissance patient 2', 'Village patient 2',
+                 'Année naissance patient 2', 'AS patient 2', 'Village patient 2',
                  'Même patient ? (O/N)',
                  ])
             for dupe in queryset:
@@ -204,14 +204,16 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                     dupe.patient1.post_name,
                     dupe.patient1.mothers_surname,
                     dupe.patient1.year_of_birth,
-                    dupe.patient1_village,
+                    dupe.patient1.origin_area.name if dupe.patient1.origin_area else dupe.patient1.origin_raw_AS,
+                    dupe.patient1.origin_village.name if dupe.patient1.origin_village else dupe.patient1.origin_raw_village,
                     dupe.patient2_id,
                     dupe.patient2.first_name,
                     dupe.patient2.last_name,
                     dupe.patient2.post_name,
                     dupe.patient2.mothers_surname,
                     dupe.patient2.year_of_birth,
-                    dupe.patient2_village,
+                    dupe.patient2.origin_area.name if dupe.patient2.origin_area else dupe.patient2.origin_raw_AS,
+                    dupe.patient2.origin_village.name if dupe.patient2.origin_village else dupe.patient2.origin_raw_village,
                     ''
                 ])
 

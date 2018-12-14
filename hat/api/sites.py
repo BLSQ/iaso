@@ -13,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
 from django.db.models import Q, OuterRef, Exists
+import json
 import csv
 
 
@@ -147,11 +148,10 @@ class SitesViewSet(viewsets.ViewSet):
         return Response(site.as_dict())
 
     def create(self, request):
-        sites = request.data
+        sites = json.loads(request.body)
         new_sites = []
         for site in sites:
             new_site = Site()
-            new_site.id = site.get('id', None)
             new_site.name = site.get('name', None)
             new_site.zone = site.get('zone', None)
             new_site.altitude = site.get('altitude', None)
@@ -162,10 +162,8 @@ class SitesViewSet(viewsets.ViewSet):
             new_site.first_survey_date = site.get('first_survey_date', None)
             new_site.count = site.get('count', 0)
             new_site.total = site.get('total', 0)
-            user_id = site.get('user', None)
-            if user_id:
-                newUser = get_object_or_404(User, pk=user_id)
-                new_site.user = newUser
+
+            new_site.user = request.user
             new_site.source = 'API'
 
             latitude = site.get('latitude', None)

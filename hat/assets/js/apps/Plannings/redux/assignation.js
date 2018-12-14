@@ -11,13 +11,16 @@ export const showAssignations = assignations => ({
     payload: assignations,
 });
 
-export const fetchAssignations = (params, dispatch) => {
+export const fetchAssignations = (params, dispatch, withTestsCount = false) => {
     dispatch(loadActions.startLoading());
     const teamId = params.team_id;
     const planningId = params.planning_id;
-    const url = `/api/assignations/?${planningId ?
+    let url = `/api/assignations/?${planningId ?
         `&planning_id=${planningId}` : ''}${teamId ?
         `&team_id=${teamId}` : ''}&show_case_count=true`;
+    if (withTestsCount) {
+        url += '&show_tests_count=true';
+    }
     req
         .get(url)
         .then((result) => {
@@ -34,15 +37,19 @@ export const fetchAssignations = (params, dispatch) => {
 };
 
 
-export const updateAssignation = (index, month, assignationId, dispatch) => {
+export const updateAssignation = (index, month, assignationId, dispatch, withTestsCount = false) => {
+    const data = {
+        index,
+        month,
+    };
+    if (withTestsCount) {
+        data.show_tests_count = true;
+    }
     dispatch(loadActions.startLoading());
     req
         .patch(`/api/assignations/${assignationId}/`)
         .set('Content-Type', 'application/json')
-        .send({
-            index,
-            month,
-        })
+        .send(data)
         .then((result) => {
             dispatch(loadActions.successLoadingNoData());
             dispatch(showAssignations(result.body));

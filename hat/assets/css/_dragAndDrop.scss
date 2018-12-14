@@ -78,16 +78,32 @@ $secondary-color: #868486;
             box-sizing: border-box;
             height: 100%;
         }
+        .visited-village {
+            background-color: transparent;
+            color: $green;
+            width: auto;
+            padding: 5px 0 0 0;
+            width: 100%;
+            span {
+                display: inline;
+                position: relative;
+                top: -1px;
+                background-color: transparent;
+                padding: 0 0 0 8px;
+            }
+        }
         i {
-            background-color: white;
-            color: #D2D2D2;
-            display: inline-block;
-            width: 25px;
-            position: absolute;
-            right: 0;
-            top: 6px;
-            padding-top: 6px;
-            text-align: center;
+            &.fa-bars{
+                background-color: white;
+                color: #D2D2D2;
+                display: inline-block;
+                width: 25px;
+                position: absolute;
+                right: 0;
+                top: 6px;
+                padding-top: 6px;
+                text-align: center;
+            }
         }
     }
 }

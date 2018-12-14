@@ -44,6 +44,7 @@ const formatAssignations = (assignations) => {
         latitude: a.latitude,
         longitude: a.longitude,
         case_count: a.case_count,
+        tests_count: a.tests_count,
     }));
     return tempAssignations;
 };

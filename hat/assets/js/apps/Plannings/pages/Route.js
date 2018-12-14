@@ -212,10 +212,10 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     redirect: params => dispatch(push(createUrl(params, 'routes'))),
-    fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch)),
+    fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch, true)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchTeams: () => dispatch(teamActions.fetchTeams(dispatch)),
-    updateAssignation: (index, month, assignationId) => dispatch(assignationActions.updateAssignation(index, month, assignationId, dispatch)),
+    updateAssignation: (index, month, assignationId) => dispatch(assignationActions.updateAssignation(index, month, assignationId, dispatch, true)),
     getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });

@@ -131,6 +131,13 @@ class RouteSchedule extends Component {
                                                         >
                                                             <span>
                                                                 {index + 1} - {a.name} ({formatThousand(a.population)})
+                                                                {
+                                                                    a.tests_count > 0 &&
+                                                                    <span className="visited-village">
+                                                                        <i className="fa fa-check-circle" aria-hidden="true" />
+                                                                        <FormattedMessage id="microplanning.route.village-visited" defaultMessage="village visité" />
+                                                                    </span>
+                                                                }
                                                             </span>
                                                             <i className="fa fa-bars" aria-hidden="true" />
                                                         </li>

@@ -7,6 +7,8 @@ from django.db.models import Q
 from hat.planning.models import Assignation, WorkZone
 from hat.users.models import Team
 from hat.geo.models import Village
+from hat.patient.models import Test
+from hat.planning.models import Planning
 
 
 from .authentication import CsrfExemptSessionAuthentication
@@ -48,6 +50,7 @@ class AssignationViewSet(viewsets.ViewSet):
         workzone_id = request.GET.get('workzone_id', None)
         team_id = request.GET.get('team_id', None)
         show_case_count = request.GET.get('show_case_count', False)
+        show_tests_count = request.GET.get('show_tests_count', False)
 
         assignations = Assignation.objects
         if coordination_id:
@@ -63,8 +66,15 @@ class AssignationViewSet(viewsets.ViewSet):
 
         assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('index')
 
+        village_ids = map(lambda ass: ass.village_id, assignations)
+        if show_tests_count:
+            current_planning = get_object_or_404(Planning, pk=planning_id)
+            tests = Test.objects.all().filter(village_id__in=village_ids)\
+                .filter(date__year=current_planning.year)
+            if team_id:
+                tests = tests.filter(team_id=team_id)
+
         if show_case_count:
-            village_ids = map(lambda ass: ass.village_id, assignations)
             villages = Village.objects.filter(id__in=village_ids)
             year = timezone.now().year
             years_array = range(year-5, year)
@@ -78,9 +88,12 @@ class AssignationViewSet(viewsets.ViewSet):
         res = []
         for assignation in assignations:
             assignation_dict = assignation.as_dict()
+            if show_tests_count:
+                assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
             if show_case_count:
                 assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
             res.append(assignation_dict)
+
 
         return Response(res)
 
@@ -90,6 +103,7 @@ class AssignationViewSet(viewsets.ViewSet):
 
         index = request.data.get('index', assignation.index)
         month = request.data.get('month', None)
+        show_tests_count = request.data.get('show_tests_count', None)
 
         assignation.month = month
 
@@ -102,9 +116,20 @@ class AssignationViewSet(viewsets.ViewSet):
             a.index = idx
             a.save()
 
+        village_ids = map(lambda ass: ass.village_id, new_list)
+        print ('show_tests_count', show_tests_count)
+        if show_tests_count:
+            print (assignation.as_dict())
+            current_planning = get_object_or_404(Planning, pk=assignation.planning.id)
+            tests = Test.objects.all().filter(village_id__in=village_ids)\
+                .filter(date__year=current_planning.year)\
+                .filter(team_id=assignation.team.id)
         res = []
         for assignation in new_list:
-            res.append(assignation.as_dict())
+            assignation_dict = assignation.as_dict()
+            if show_tests_count:
+                assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
+            res.append(assignation_dict)
 
         return Response(res)
 

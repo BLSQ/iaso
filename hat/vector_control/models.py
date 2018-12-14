@@ -29,6 +29,7 @@ HABITAT_CHOICES = (
     ("stream", "Ruisseau")
 )
 
+
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
     zone = models.TextField(null=True)
@@ -38,8 +39,8 @@ class Site(models.Model):
     description = models.CharField(max_length=255, null=True)
     first_survey = models.CharField(max_length=255, null=True)
     first_survey_date = models.DateTimeField(null=True)
-    count = models.IntegerField()
-    total = models.IntegerField()
+    count = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')

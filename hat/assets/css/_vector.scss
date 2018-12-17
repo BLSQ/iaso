@@ -1,4 +1,9 @@
 .custom-popup-container {
+    h6 {
+        button {
+            float: right;
+        }
+    }
     >div {
         font-weight: bold;
         >span {
@@ -11,6 +16,9 @@
 }
 
 .vectors-container {
+    .leaflet-popup-content-wrapper {
+        padding-top: 15px;
+    }
     .map__filters {
         width: 50%;
     }

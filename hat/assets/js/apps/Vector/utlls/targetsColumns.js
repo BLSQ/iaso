@@ -1,7 +1,8 @@
 import React from 'react';
 import moment from 'moment';
+import { FormattedMessage } from 'react-intl';
 
-const targetsColumns = formatMessage => (
+const targetsColumns = (formatMessage, element) => (
     [
         {
             Header: formatMessage({
@@ -73,6 +74,25 @@ const targetsColumns = formatMessage => (
                         settings.original.river ? settings.original.river : '/'
                     }
                 </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Actions',
+                id: 'main.actions',
+            }),
+            sortable: false,
+            resizable: false,
+            Cell: settings => (
+                <section>
+                    <button
+                        className="button--edit--tiny"
+                        onClick={() => element.editItem('target', settings.original)}
+                    >
+                        <i className="fa fa-pencil-square-o" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                    </button>
+                </section>
             ),
         },
     ]

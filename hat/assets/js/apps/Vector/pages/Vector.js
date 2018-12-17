@@ -23,6 +23,8 @@ import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
+import EditSiteComponent from '../components/EditSiteComponent';
+import EditTargetComponent from '../components/EditTargetComponent';
 
 const baseUrl = 'map';
 
@@ -62,8 +64,12 @@ export class Vector extends Component {
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: props.params.tab || baseUrl,
-            sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES),
-            targetsColumns: targetsColumns(props.intl.formatMessage),
+            sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES, this),
+            targetsColumns: targetsColumns(props.intl.formatMessage, this),
+            showEditSiteModale: false,
+            siteEdited: null,
+            showEditTargetModale: false,
+            targetEdited: null,
         };
     }
 
@@ -127,6 +133,25 @@ export class Vector extends Component {
     }
 
 
+    editItem(type, data = undefined) {
+        if (type === 'site') {
+            this.setState({
+                showEditSiteModale: true,
+                showEditTargetModale: false,
+                siteEdited: data,
+            });
+        }
+
+        if (type === 'target') {
+            this.setState({
+                showEditSiteModale: false,
+                showEditTargetModale: true,
+                targetEdited: data,
+            });
+        }
+    }
+
+
     render() {
         const {
             map: {
@@ -167,6 +192,28 @@ export class Vector extends Component {
         );
         return (
             <section className="vectors-container">
+                {
+                    this.state.showEditSiteModale &&
+                    <EditSiteComponent
+                        showModale={this.state.showEditSiteModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showEditSiteModale: !this.state.showEditSiteModale,
+                            })}
+                        site={this.state.siteEdited}
+                    />
+                }
+                {
+                    this.state.showEditTargetModale &&
+                    <EditTargetComponent
+                        showModale={this.state.showEditTargetModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showEditTargetModale: !this.state.showEditTargetModale,
+                            })}
+                        target={this.state.targetEdited}
+                    />
+                }
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
@@ -251,6 +298,7 @@ export class Vector extends Component {
                                 nonEndemicVillages={nonEndemicVillages || {}}
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => selectMarker(itemId, key)}
+                                editItem={(type, data) => this.editItem(type, data)}
                             />
                         </div>
                     </div>

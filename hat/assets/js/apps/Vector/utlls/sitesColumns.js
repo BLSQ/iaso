@@ -1,7 +1,8 @@
 import moment from 'moment';
 import React from 'react';
+import { FormattedMessage } from 'react-intl';
 
-const sitesColumns = (formatMessage, messages) => (
+const sitesColumns = (formatMessage, messages, element) => (
     [
         {
             Header: formatMessage({
@@ -95,6 +96,25 @@ const sitesColumns = (formatMessage, messages) => (
                 id: 'main.label.total',
             }),
             accessor: 'total',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Actions',
+                id: 'main.actions',
+            }),
+            sortable: false,
+            resizable: false,
+            Cell: settings => (
+                <section>
+                    <button
+                        className="button--edit--tiny"
+                        onClick={() => element.editItem('site', settings.original)}
+                    >
+                        <i className="fa fa-pencil-square-o" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                    </button>
+                </section>
+            ),
         },
     ]
 );

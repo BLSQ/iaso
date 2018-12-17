@@ -13,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
 from django.db.models import Q, OuterRef, Exists
+import json
 import csv
 
 
@@ -58,6 +59,7 @@ class SitesViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         queryset = Site.objects.all().order_by(*orders)
+
         if from_date is not None:
             queryset = queryset.filter(first_survey_date__date__gte=from_date)
         if to_date is not None:
@@ -150,22 +152,19 @@ class SitesViewSet(viewsets.ViewSet):
         sites = request.data
         new_sites = []
         for site in sites:
-            new_site = Site()
-            new_site.id = site.get('id', None)
+            uuid = site.get('uuid', None)
+            new_site, created = Site.objects.get_or_create(uuid=uuid)
             new_site.name = site.get('name', None)
             new_site.zone = site.get('zone', None)
-            new_site.altitude = site.get('altitude', None)
-            new_site.accuracy = site.get('accuracy', None)
             new_site.habitat = site.get('habitat', None)
             new_site.description = site.get('description', None)
             new_site.first_survey = site.get('first_survey', None)
             new_site.first_survey_date = site.get('first_survey_date', None)
+            new_site.uuid = site.get('uuid', None)
             new_site.count = site.get('count', 0)
             new_site.total = site.get('total', 0)
-            user_id = site.get('user', None)
-            if user_id:
-                newUser = get_object_or_404(User, pk=user_id)
-                new_site.user = newUser
+
+            new_site.user = request.user
             new_site.source = 'API'
 
             latitude = site.get('latitude', None)
@@ -175,7 +174,6 @@ class SitesViewSet(viewsets.ViewSet):
 
             new_site.save()
             new_sites.append(new_site)
-
 
         return Response([site.as_dict() for site in new_sites])
 

@@ -101,10 +101,10 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Premier relevé', id: 'vector.labels.first_survey' })}
+                                ${formatMessage({ defaultMessage: 'Nombre de pièges', id: 'vector.labels.catches_count' })}
                             </td>
-                            <td class="${!site.first_survey ? 'align-center' : ''}">
-                                ${!site.first_survey ? '/' : site.first_survey}
+                            <td>
+                                ${site.catches_count}
                             </td>
                         </tr>
                         <tr>
@@ -117,15 +117,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Compte', id: 'vector.labels.count' })}
-                            </td>
-                            <td>
-                                ${site.count}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Total', id: 'vector.labels.total' })}
+                                ${formatMessage({ defaultMessage: 'Captures totales', id: 'vector.labels.total' })}
                             </td>
                             <td>
                                 ${site.total}

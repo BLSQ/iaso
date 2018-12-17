@@ -19,7 +19,8 @@ import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-    const defaultPath = `/map/dateFrom/${dateFrom}/dateTo/${dateTo}/sites/true/tab/map`;
+    const defaultMapPath = `/map/dateFrom/${dateFrom}/dateTo/${dateTo}/sites/true/tab/map`;
+    const defaulSyncPath = '/sync/tab/sites';
     const routes = [
         <Route
             path={'/map/dateFrom/:dateFrom/dateTo/:dateTo(/sites/:sites)' +
@@ -33,14 +34,18 @@ export default function vectorApp(appConfig, element, baseUrl) {
             component={VectorContainer}
         />,
         <Route
-            path="/sync"
+            path={'/sync/tab/:tab' +
+            '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
+            '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
+            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)'}
             component={VectorSync}
         />,
         <Route
             path="/upload"
             component={GpxUpload}
         />,
-        <Redirect path="*" to={defaultPath} />,
+        <Redirect path="/map" to={defaultMapPath} />,
+        <Redirect path="/sync" to={defaulSyncPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

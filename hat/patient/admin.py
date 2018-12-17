@@ -9,7 +9,7 @@ class PatientAdmin(admin.ModelAdmin):
 
 class TestAdmin(admin.ModelAdmin):
     search_fields = ('validator',)
-    raw_id_fields = ('village', 'form')
+    raw_id_fields = ('village', 'form', 'traveller_area', 'image', 'video')
 
 
 admin.site.register(Patient, PatientAdmin)

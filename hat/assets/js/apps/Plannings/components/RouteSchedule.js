@@ -135,7 +135,7 @@ class RouteSchedule extends Component {
                                                                     a.tests_count > 0 &&
                                                                     <span className="visited-village">
                                                                         <i className="fa fa-check-circle" aria-hidden="true" />
-                                                                        <FormattedMessage id="microplanning.route.village-visited" defaultMessage="village visité" />
+                                                                        <span>{a.tests_count}<FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) effectué(s)" /></span>
                                                                     </span>
                                                                 }
                                                             </span>

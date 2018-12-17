@@ -69,7 +69,7 @@ class AssignationViewSet(viewsets.ViewSet):
         village_ids = map(lambda ass: ass.village_id, assignations)
         if show_tests_count:
             current_planning = get_object_or_404(Planning, pk=planning_id)
-            tests = Test.objects.all().filter(village_id__in=village_ids)\
+            tests = Test.objects.filter(village_id__in=village_ids)\
                 .filter(date__year=current_planning.year)
             if team_id:
                 tests = tests.filter(team_id=team_id)

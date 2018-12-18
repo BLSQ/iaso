@@ -144,6 +144,7 @@ class VectorContainer extends Component {
             }
         }
     }
+
     saveSite(site) {
         this.setState({
             siteEdited: site,
@@ -156,6 +157,7 @@ class VectorContainer extends Component {
             fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
         });
     }
+
     saveTarget(target) {
         this.setState({
             targetEdited: target,

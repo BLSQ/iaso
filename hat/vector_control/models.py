@@ -80,24 +80,21 @@ class Site(models.Model):
 
 class Catch(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
-    operation = models.TextField(null=True)
     setup_date = models.DateTimeField(null=True)
     collect_date = models.DateTimeField(null=True)
-    in_out = models.TextField(null=True)
     male_count = models.IntegerField(default=0, null=True)
     female_count = models.IntegerField(default=0, null=True)
     unknown_count = models.IntegerField(default=0, null=True)
     remarks = models.TextField(default="")
-    distance_to_targets = models.DecimalField(null=True, decimal_places=3, max_digits=10)
-    near_intervention = models.CharField(max_length=100)
-    elev_change = models.IntegerField(null=True)
-    trap_elev = models.IntegerField(null=True)
-    target_elev = models.IntegerField(null=True)
-    elev_diff = models.IntegerField(null=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
-    location = PointField(srid=4326, null=True)
+    startLocation = PointField(srid=4326, null=True)
+    endLocation = PointField(srid=4326, null=True)
+    startAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    startAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    endAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    endAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
 
     def __str__(self):
         return "%s - %s - %s" % (self.site, self.operation, self.collect_date)
@@ -108,6 +105,7 @@ class Catch(models.Model):
         'latitude': self.location.y,
         'longitude': self.location.x
     }
+
     def as_dict(self):
         return {
         'id': self.id,
@@ -116,12 +114,10 @@ class Catch(models.Model):
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
         'source': self.source,
-        'near_intervention': self.near_intervention,
         'latitude': self.location.y,
         'longitude': self.location.x
     }
 
-#ID	NAME	Deployment	FullName	GPS	Lat	Long	Altitude	DateTimeS	Date	River
 class GpsImport(models.Model):
     filename = models.TextField()
     file_date_time = models.DateTimeField(null=True)
@@ -139,8 +135,25 @@ class GpsImport(models.Model):
             'file_date_time': self.file_date_time,
             'creator': self.creator,
             'user': self.user.username,
-            'created_at': self.created_at,
+            'created_at': self.created_at
         }
+
+
+class APIImport(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+
+    def __str__(self):
+        return "%s - %s " % (self.id, self.filename)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'user': self.user,
+            'created_at': self.created_at
+        }
+
+
 
 
 class Target(models.Model):

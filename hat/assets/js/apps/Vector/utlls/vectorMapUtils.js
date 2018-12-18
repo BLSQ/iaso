@@ -218,6 +218,14 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
+                                ${formatMessage({ defaultMessage: 'Description', id: 'vector.labels.description' })}:
+                            </td>
+                            <td>
+                                ${village.description}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
                             </td>
                             <td>

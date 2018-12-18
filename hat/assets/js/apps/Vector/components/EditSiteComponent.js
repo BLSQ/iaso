@@ -79,6 +79,23 @@ class EditSiteComponent extends Component {
                         </div>
                         <div>
                             <label
+                                htmlFor={`description-${site.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.description"
+                                    defaultMessage="Description"
+                                />:
+                            </label>
+                            <textarea
+                                name="description"
+                                id={`description-${site.id}`}
+                                value={site.description}
+                                onChange={event => this.updateSiteField('description', event.currentTarget.value)}
+                            />
+                        </div>
+                        <div>
+                            <label
                                 htmlFor={`habitat-${site.id}`}
                                 className="filter__container__select__label"
                             >

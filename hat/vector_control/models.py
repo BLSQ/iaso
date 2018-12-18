@@ -64,6 +64,7 @@ class Site(models.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'description': self.description,
             'habitat': self.habitat,
             'created_at': self.created_at,
             'username': self.user.username,

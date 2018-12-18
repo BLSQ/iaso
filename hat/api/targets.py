@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 
 from hat.geo.models import Province, ZS, AS
-from hat.vector_control.models import Target
+from hat.vector_control.models import Target, GpsImport
 from .authentication import CsrfExemptSessionAuthentication
 
 
@@ -123,14 +123,12 @@ class TargetsViewSet(viewsets.ViewSet):
         new_target = get_object_or_404(Target, pk=pk)
         new_target.name = request.data.get('name', '')
         new_target.river = request.data.get('river', '')
-        new_target.deployment = request.data.get('deployment', '')
         new_target.ignore = request.data.get('ignore', False)
         username = request.data.get('username', None)
         if username:
-            user = get_object_or_404(User, username=username)
-            new_target.username = user.username
-        else:
-            new_target.username = None
+            gps_import = get_object_or_404(GpsImport, pk=new_target.gps_import.id)
+            gps_import.user = get_object_or_404(User, username=username)
+            gps_import.save()
         new_target.save()
         return Response(new_target.as_dict())
 

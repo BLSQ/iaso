@@ -174,14 +174,13 @@ class SitesViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         new_site = get_object_or_404(Site, pk=pk)
         new_site.name = request.data.get('name', '')
+        new_site.description = request.data.get('description', '')
         new_site.habitat = request.data.get('habitat', 'unknown')
         new_site.is_reference = request.data.get('is_reference', False)
         new_site.ignore = request.data.get('ignore', False)
         username = request.data.get('username', None)
+        new_site.user = None
         if username:
-            user = get_object_or_404(User, username=username)
-            new_site.username = user.username
-        else:
-            new_site.username = None
+            new_site.user = get_object_or_404(User, username=username)
         new_site.save()
         return Response(new_site.as_dict())

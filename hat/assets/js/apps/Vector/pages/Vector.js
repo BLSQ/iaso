@@ -63,13 +63,13 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
-            currentTab: props.params.tab || baseUrl,
+            currentTab: props.params.tab,
             sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES, this),
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
             showEditSiteModale: false,
-            siteEdited: null,
             showEditTargetModale: false,
-            targetEdited: null,
+            siteEdited: props.siteEdited,
+            targetEdited: props.targetEdited,
         };
     }
 
@@ -81,6 +81,9 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
+            currentTab: newProps.params.tab,
+            siteEdited: newProps.siteEdited,
+            targetEdited: newProps.targetEdited,
         };
         if (newProps.params.sites) {
             newState.sites = newProps.vectors.sites;
@@ -174,6 +177,8 @@ export class Vector extends Component {
             reduxTargetsPage,
             profiles,
             habitats,
+            saveSite,
+            saveTarget,
         } = this.props;
         const {
             currentTab,
@@ -201,6 +206,9 @@ export class Vector extends Component {
                                 showEditSiteModale: !this.state.showEditSiteModale,
                             })}
                         site={this.state.siteEdited}
+                        habitats={habitats}
+                        saveSite={site => saveSite(site)}
+                        profiles={profiles}
                     />
                 }
                 {
@@ -212,6 +220,8 @@ export class Vector extends Component {
                                 showEditTargetModale: !this.state.showEditTargetModale,
                             })}
                         target={this.state.targetEdited}
+                        profiles={profiles}
+                        saveTarget={target => saveTarget(target)}
                     />
                 }
                 {
@@ -367,6 +377,10 @@ export class Vector extends Component {
         );
     }
 }
+Vector.defaultProps = {
+    siteEdited: undefined,
+    targetEdited: undefined,
+};
 
 Vector.propTypes = {
     selectMarker: PropTypes.func.isRequired,
@@ -383,6 +397,10 @@ Vector.propTypes = {
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
+    saveSite: PropTypes.func.isRequired,
+    saveTarget: PropTypes.func.isRequired,
+    siteEdited: PropTypes.object,
+    targetEdited: PropTypes.object,
 };
 
 const MapDispatchToProps = dispatch => ({

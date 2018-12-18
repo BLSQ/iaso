@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+from django.contrib.auth.models import User
 
 from hat.geo.models import Province, ZS, AS
 from hat.vector_control.models import Target
@@ -117,5 +118,21 @@ class TargetsViewSet(viewsets.ViewSet):
         target = get_object_or_404(Target, pk=pk)
 
         return Response(target.as_dict())
+
+    def update(self, request, pk=None):
+        new_target = get_object_or_404(Target, pk=pk)
+        new_target.name = request.data.get('name', '')
+        new_target.river = request.data.get('river', '')
+        new_target.deployment = request.data.get('deployment', '')
+        new_target.ignore = request.data.get('ignore', False)
+        username = request.data.get('username', None)
+        if username:
+            user = get_object_or_404(User, username=username)
+            new_target.username = user.username
+        else:
+            new_target.username = None
+        new_target.save()
+        return Response(new_target.as_dict())
+
 
 

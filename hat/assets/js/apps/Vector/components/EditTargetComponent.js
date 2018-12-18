@@ -6,9 +6,9 @@ import ReactModal from 'react-modal';
 
 
 const MESSAGES = defineMessages({
-    'location-all': {
-        defaultMessage: 'All',
-        id: 'microplanning.labels.all',
+    none: {
+        defaultMessage: 'Aucun',
+        id: 'vector.labels.none',
     },
 });
 class EditTargetComponent extends Component {
@@ -33,10 +33,10 @@ class EditTargetComponent extends Component {
         });
     }
 
-    updateCoordinationField(key, value) {
-        const newTeam = Object.assign({}, this.state.coordination, { [key]: value });
+    updateTargetField(key, value) {
+        const newTarget = Object.assign({}, this.state.target, { [key]: value });
         this.setState({
-            coordination: newTeam,
+            target: newTarget,
             isChanged: true,
         });
     }
@@ -44,42 +44,163 @@ class EditTargetComponent extends Component {
 
     render() {
         const { formatMessage } = this.props.intl;
+        const { target } = this.state;
+        const {
+            profiles,
+            saveTarget,
+        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
             >
-                <section className="edit-modal">
-                    {
-                        this.state.target &&
+                <section className="edit-modal large">
+                    <section>
                         <div>
-                            {this.state.target.id}
-                            {this.state.target.name}
+                            <label
+                                htmlFor={`name-${target.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.name"
+                                    defaultMessage="Nom"
+                                />:
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                id={`name-${target.id}`}
+                                className={(!target.name || target.name === '') ? 'form-error' : ''}
+                                value={target.name}
+                                onChange={event => this.updateTargetField('name', event.currentTarget.value)}
+                            />
                         </div>
-                    }
-                    <div>
-                        {this.state.isChanged}
-                    </div>
+                        <div>
+                            <label
+                                htmlFor={`river-${target.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.river"
+                                    defaultMessage="Rivière"
+                                />:
+                            </label>
+                            <input
+                                type="text"
+                                name="river"
+                                id={`river-${target.id}`}
+                                value={target.river ? target.river : ''}
+                                onChange={event => this.updateTargetField('river', event.currentTarget.value)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                htmlFor={`deployment-${target.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.deployment"
+                                    defaultMessage="Déploiement"
+                                />:
+                            </label>
+                            <input
+                                type="text"
+                                name="deployment"
+                                id={`deployment-${target.id}`}
+                                value={target.deployment ? target.deployment : ''}
+                                onChange={event => this.updateTargetField('deployment', event.currentTarget.value)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                htmlFor={`usser-${target.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="vector.label.user"
+                                    defaultMessage="Utilisateur"
+                                />:
+                            </label>
+                            <Select
+                                multi={false}
+                                simpleValue
+                                autosize={false}
+                                name="user"
+                                value={target.username}
+                                placeholder={formatMessage(MESSAGES.none)}
+                                options={profiles.map(p =>
+                                    ({ label: p.user__username, value: p.user__username }))}
+                                onChange={username => this.updateTargetField('username', username)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="verctor.label.ignore"
+                                    defaultMessage="Ignorer"
+                                />:
+                            </label>
+                            <section className="check-box-container">
+                                <input
+                                    id={`ignore-${target.id}`}
+                                    type="radio"
+                                    name="ignore"
+                                    checked={target.ignore ? 'checked' : ''}
+                                    value={target.ignore}
+                                    onChange={() => this.updateTargetField('ignore', true)}
+                                />
+                                <label
+                                    htmlFor={`ignore-${target.id}`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.yes"
+                                        defaultMessage="Oui"
+                                    />
+                                </label>
+                                <input
+                                    id={`ignore-${target.id}-false`}
+                                    type="radio"
+                                    name="ignore"
+                                    checked={!target.ignore ? 'checked' : ''}
+                                    value={target.ignore}
+                                    onChange={() => this.updateTargetField('ignore', false)}
+                                />
+                                <label
+                                    htmlFor={`ignore-${target.id}-false`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.no"
+                                        defaultMessage="Non"
+                                    />
+                                </label>
+                            </section>
+                        </div>
+                    </section>
+
                     <div className="align-right">
                         <button
                             className="button"
                             onClick={() => this.props.toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
                         </button>
-                        {/* <button
-                        disabled={
-                            (this.state.coordination.name === '' ||
-                                (!this.state.isChanged && this.state.coordination.id !== 0))
-                        }
-                        className="button--save"
-                        onClick={() => this.props.saveCoordination(this.state.coordination)}
-                    >
-                        <i className="fa fa-save" />
-                        <FormattedMessage id="mangement.label.saveCoordination" defaultMessage="Sauvegarder la coordination" />
-                    </button> */}
+                        <button
+                            disabled={
+                                (target.name === '' ||
+                                    !this.state.isChanged)
+                            }
+                            className="button--save"
+                            onClick={() => saveTarget(target)}
+                        >
+                            <i className="fa fa-save" />
+                            <FormattedMessage id="vector.label.savetarget" defaultMessage="Sauvegarder l'écran" />
+                        </button>
                     </div>
                 </section>
             </ReactModal>
@@ -97,6 +218,8 @@ EditTargetComponent.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     target: PropTypes.object,
     intl: PropTypes.object.isRequired,
+    profiles: PropTypes.array.isRequired,
+    saveTarget: PropTypes.func.isRequired,
 };
 
 export default injectIntl(EditTargetComponent);

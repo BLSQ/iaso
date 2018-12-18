@@ -47,6 +47,7 @@ class Site(models.Model):
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
     is_reference = models.BooleanField(default=False)
     location = PointField(srid=4326, null=True)
+    ignore = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.zone, self.habitat)
@@ -77,6 +78,7 @@ class Site(models.Model):
             'total': self.total,
             'username': self.user.username,
             'is_reference': self.is_reference,
+            'ignore': self.ignore,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'catches_count': catches_count,
@@ -159,6 +161,7 @@ class Target(models.Model):
     river = models.TextField(null=True)
     gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
     location = PointField(srid=4326, null=True)
+    ignore = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.date_time)
@@ -180,5 +183,6 @@ class Target(models.Model):
             'altitude': self.altitude,
             'date_time': self.date_time,
             'river': self.river,
-            'username': self.gps_import.user.username
+            'username': self.gps_import.user.username,
+            'ignore': self.ignore,
         }

@@ -6,9 +6,9 @@ import ReactModal from 'react-modal';
 
 
 const MESSAGES = defineMessages({
-    'location-all': {
-        defaultMessage: 'All',
-        id: 'microplanning.labels.all',
+    none: {
+        defaultMessage: 'Aucun',
+        id: 'vector.labels.none',
     },
 });
 class EditSiteComponent extends Component {
@@ -33,10 +33,10 @@ class EditSiteComponent extends Component {
         });
     }
 
-    updateCoordinationField(key, value) {
-        const newTeam = Object.assign({}, this.state.coordination, { [key]: value });
+    updateSiteField(key, value) {
+        const newSite = Object.assign({}, this.state.site, { [key]: value });
         this.setState({
-            coordination: newTeam,
+            site: newSite,
             isChanged: true,
         });
     }
@@ -44,44 +44,214 @@ class EditSiteComponent extends Component {
 
     render() {
         const { formatMessage } = this.props.intl;
-        console.log(this.state.site);
+        const { site } = this.state;
+        const {
+            habitats,
+            profiles,
+            saveSite,
+        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
             >
-                <section className="edit-modal">
-                    {
-                        this.state.site &&
+                <section className="edit-modal large">
+                    <section>
                         <div>
-                            {this.state.site.id}
-                            {this.state.site.name}
+                            <label
+                                htmlFor={`name-${site.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.name"
+                                    defaultMessage="Nom"
+                                />:
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                id={`name-${site.id}`}
+                                className={(!site.name || site.name === '') ? 'form-error' : ''}
+                                value={site.name}
+                                onChange={event => this.updateSiteField('name', event.currentTarget.value)}
+                            />
                         </div>
-                    }
-                    <div>
+                        <div>
+                            <label
+                                htmlFor={`zone-${site.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.zone"
+                                    defaultMessage="Zone"
+                                />:
+                            </label>
+                            <input
+                                type="text"
+                                name="zone"
+                                id={`zone-${site.id}`}
+                                value={site.zone ? site.zone : ''}
+                                onChange={event => this.updateSiteField('zone', event.currentTarget.value)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                htmlFor={`habitat-${site.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="vector.label.habitat"
+                                    defaultMessage="Habitat"
+                                />:
+                            </label>
+                            <Select
+                                multi={false}
+                                simpleValue
+                                autosize={false}
+                                name="habitat"
+                                value={site.habitat}
+                                placeholder={formatMessage(MESSAGES.none)}
+                                options={habitats.map(h =>
+                                    ({ label: h[1], value: h[0] }))}
+                                onChange={habitat => this.updateSiteField('habitat', habitat)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                htmlFor={`usser-${site.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="vector.label.user"
+                                    defaultMessage="Utilisateur"
+                                />:
+                            </label>
+                            <Select
+                                multi={false}
+                                simpleValue
+                                autosize={false}
+                                name="user"
+                                value={site.username}
+                                placeholder={formatMessage(MESSAGES.none)}
+                                options={profiles.map(p =>
+                                    ({ label: p.user__username, value: p.user__username }))}
+                                onChange={username => this.updateSiteField('username', username)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="verctor.label.reference"
+                                    defaultMessage="Site de référence"
+                                />:
+                            </label>
+                            <section className="check-box-container">
+                                <input
+                                    id={`reference-${site.id}`}
+                                    type="radio"
+                                    name="reference"
+                                    checked={site.is_reference ? 'checked' : ''}
+                                    value={site.is_reference}
+                                    onChange={() => this.updateSiteField('is_reference', true)}
+                                />
+                                <label
+                                    htmlFor={`reference-${site.id}`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.yes"
+                                        defaultMessage="Oui"
+                                    />
+                                </label>
+                                <input
+                                    id={`reference-${site.id}-false`}
+                                    type="radio"
+                                    name="reference"
+                                    checked={!site.is_reference ? 'checked' : ''}
+                                    value={site.is_reference}
+                                    onChange={() => this.updateSiteField('is_reference', false)}
+                                />
+                                <label
+                                    htmlFor={`reference-${site.id}-false`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.no"
+                                        defaultMessage="Non"
+                                    />
+                                </label>
+                            </section>
+                        </div>
+                        <div>
+                            <label
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="verctor.label.ignore"
+                                    defaultMessage="Ignorer"
+                                />:
+                            </label>
+                            <section className="check-box-container">
+                                <input
+                                    id={`ignore-${site.id}`}
+                                    type="radio"
+                                    name="ignore"
+                                    checked={site.ignore ? 'checked' : ''}
+                                    value={site.ignore}
+                                    onChange={() => this.updateSiteField('ignore', true)}
+                                />
+                                <label
+                                    htmlFor={`ignore-${site.id}`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.yes"
+                                        defaultMessage="Oui"
+                                    />
+                                </label>
+                                <input
+                                    id={`ignore-${site.id}-false`}
+                                    type="radio"
+                                    name="ignore"
+                                    checked={!site.ignore ? 'checked' : ''}
+                                    value={site.ignore}
+                                    onChange={() => this.updateSiteField('ignore', false)}
+                                />
+                                <label
+                                    htmlFor={`ignore-${site.id}-false`}
+                                    className="checkbox-label"
+                                >
+                                    <FormattedMessage
+                                        id="verctor.label.no"
+                                        defaultMessage="Non"
+                                    />
+                                </label>
+                            </section>
+                        </div>
+                    </section>
 
-                        {this.state.isChanged}
-                    </div>
                     <div className="align-right">
                         <button
                             className="button"
                             onClick={() => this.props.toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
                         </button>
-                        {/* <button
+                        <button
                             disabled={
-                                (this.state.coordination.name === '' ||
-                                    (!this.state.isChanged && this.state.coordination.id !== 0))
+                                (site.name === '' ||
+                                    !this.state.isChanged)
                             }
                             className="button--save"
-                            onClick={() => this.props.saveCoordination(this.state.coordination)}
+                            onClick={() => saveSite(site)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveCoordination" defaultMessage="Sauvegarder la coordination" />
-                        </button> */}
+                            <FormattedMessage id="vector.label.savesite" defaultMessage="Sauvegarder le site" />
+                        </button>
                     </div>
                 </section>
             </ReactModal>
@@ -96,6 +266,9 @@ EditSiteComponent.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     site: PropTypes.object,
     intl: PropTypes.object.isRequired,
+    habitats: PropTypes.array.isRequired,
+    profiles: PropTypes.array.isRequired,
+    saveSite: PropTypes.func.isRequired,
 };
 
 export default injectIntl(EditSiteComponent);

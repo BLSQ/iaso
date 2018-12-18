@@ -62,7 +62,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                     data-id="${site.id}"
                     data-type="site"
                 >
-                        <span>${formatMessage({ defaultMessage: 'Editer', id: 'vector.labels.edit' })}</span>
+                <i class="fa fa-pencil-square-o"> </i>
                     </button>
                 </h6>
 
@@ -121,7 +121,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                                 ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}
                             </td>
                             <td>
-                                ${moment(site.first_survey_date).format('hh:mm DD/MM/YYYY')}
+                                ${moment(site.first_survey_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>
@@ -161,7 +161,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                         data-id="${target.id}"
                         data-type="target"
                     >
-                            <span>${formatMessage({ defaultMessage: 'Editer', id: 'vector.labels.edit' })}</span>
+                    <i class="fa fa-pencil-square-o"> </i>
                         </button>
                 </h6>
                 <table>
@@ -211,7 +211,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                                 ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}
                             </td>
                             <td>
-                                ${moment(target.date_time).format('hh:mm DD/MM/YYYY')}
+                                ${moment(target.date_time.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>

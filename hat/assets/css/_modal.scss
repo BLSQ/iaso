@@ -188,6 +188,12 @@
                 width: 190px;
                 flex-basis: 205px;
                 height: 40px;
+                &.checkbox-label {
+                    display: inline-block;
+                    height: auto;
+                    width: auto;
+                    margin: 8px $padding-unit/2 0 5px;
+                }
             }
         }
         .Select {
@@ -196,6 +202,13 @@
             margin-right: 0px;
             float: none;
             text-align: left;
+        }
+        .check-box-container {
+            flex-basis: calc(100% - 211px);
+            width: calc(100% - 211px);
+            margin-right: 0px;
+            float: none;
+            text-align: center;
         }
         &.extra {
             width: 900px;

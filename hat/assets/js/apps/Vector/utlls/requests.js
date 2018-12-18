@@ -1,6 +1,7 @@
 
 
 import { vectorActions } from '../redux/vectorReducer';
+import { loadActions } from '../../../redux/load';
 
 const req = require('superagent');
 
@@ -222,3 +223,29 @@ export const fetchHabitats = dispatch => req
     .catch((err) => {
         console.error('Error when fetching habitats', err);
     });
+
+
+export const saveSite = (dispatch, site) => {
+    dispatch(loadActions.startLoading());
+    return (req
+        .put(`/api/sites/${site.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(site)
+        .then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch(err => (console.error(`Error while saving site ${err}`))));
+};
+
+export const saveTarget = (dispatch, target) => {
+    console.log(target);
+    dispatch(loadActions.startLoading());
+    return (req
+        .put(`/api/targets/${target.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(target)
+        .then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch(err => (console.error(`Error while saving target ${err}`))));
+};

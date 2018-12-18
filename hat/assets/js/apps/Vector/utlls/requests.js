@@ -13,6 +13,7 @@ export const fetchSites = (dispatch, params) => {
         userId,
         habitats,
         onlyReferenceSites,
+        onlyIgnoredSites,
         province_id,
         zs_id,
         as_id,
@@ -26,6 +27,9 @@ export const fetchSites = (dispatch, params) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (onlyIgnoredSites) {
+        url += '&onlyIgnoredSites=True';
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -52,7 +56,7 @@ export const fetchTargets = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlyReferenceSites,
+        onlyIgnoredTargets,
         province_id,
         zs_id,
         as_id,
@@ -64,9 +68,6 @@ export const fetchTargets = (dispatch, params) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceSites) {
-        url += '&only_reference_sites=True';
-    }
     if (province_id) {
         url += `&province_id=${province_id}`;
     }
@@ -75,6 +76,9 @@ export const fetchTargets = (dispatch, params) => {
     }
     if (as_id) {
         url += `&as_id=${as_id}`;
+    }
+    if (onlyIgnoredTargets) {
+        url += '&onlyIgnoredTargets=True';
     }
     return req
         .get(url)
@@ -93,6 +97,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         userId,
         habitats,
         onlyReferenceSites,
+        onlyIgnoredSites,
         province_id,
         zs_id,
         as_id,
@@ -109,6 +114,9 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (onlyIgnoredSites) {
+        url += '&onlyIgnoredSites=True';
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -136,6 +144,7 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         userId,
         habitats,
         onlyReferenceSites,
+        onlyIgnoredTargets,
         province_id,
         zs_id,
         as_id,
@@ -152,6 +161,9 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     }
     if (onlyReferenceSites) {
         url += '&only_reference_sites=True';
+    }
+    if (onlyIgnoredTargets) {
+        url += '&onlyIgnoredTargets=True';
     }
     if (province_id) {
         url += `&province_id=${province_id}`;

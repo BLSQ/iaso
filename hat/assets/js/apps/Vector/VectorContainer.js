@@ -86,7 +86,9 @@ class VectorContainer extends Component {
                 hasChanged(this.props.params, newProps.params, 'dateTo');
             const userChanged = hasChanged(this.props.params, newProps.params, 'userId');
             const sitesFilterChanged = hasChanged(this.props.params, newProps.params, 'habitats') ||
-                hasChanged(this.props.params, newProps.params, 'onlyReferenceSites');
+            hasChanged(this.props.params, newProps.params, 'onlyReferenceSites') ||
+            hasChanged(this.props.params, newProps.params, 'onlyIgnoredSites');
+            const targetsFilterChanged = hasChanged(this.props.params, newProps.params, 'onlyIgnoredTargets');
             const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||
                 hasChanged(this.props.params, newProps.params, 'sitesPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderSites');
@@ -107,6 +109,7 @@ class VectorContainer extends Component {
             if ((dateChanged && newProps.params.targets) ||
                 (userChanged && newProps.params.targets) ||
                 (geoChanged && newProps.params.targets) ||
+                (targetsFilterChanged && newProps.params.targets) ||
                 (newProps.params.targets && !this.props.vectors.targets && newProps.params.tab === 'map')) {
                 promises.push(fetchTargets(dispatch, newProps.params));
             }
@@ -131,6 +134,7 @@ class VectorContainer extends Component {
             if (dateChanged ||
                 userChanged ||
                 geoChanged ||
+                targetsFilterChanged ||
                 ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets')) {
                 promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
             }

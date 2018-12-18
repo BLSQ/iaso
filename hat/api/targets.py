@@ -36,6 +36,7 @@ class TargetsViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         queryset = Target.objects.all().order_by(*orders)
+        only_igrored_targets = request.GET.get("onlyIgnoredTargets", False)
 
         if from_date is not None:
             queryset = queryset.filter(date_time__date__gte=from_date)
@@ -60,6 +61,10 @@ class TargetsViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
+        if only_igrored_targets:
+            queryset = queryset.filter(ignore=True)
+        else:
+            queryset = queryset.filter(ignore=False)
         if csv_format is None:
             if limit:
                 limit = int(limit)

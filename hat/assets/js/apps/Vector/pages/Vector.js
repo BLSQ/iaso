@@ -22,7 +22,7 @@ import sitesColumns from '../utlls/sitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
+import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 
@@ -162,6 +162,7 @@ export class Vector extends Component {
             endemicVillages,
         } = this.state;
         const filters = filtersVectors(formatMessage, MESSAGES, profiles, habitats);
+        const filters2 = filtersVectors2();
         const geoFilters = filtersVectorsGeo(
             provinces || [],
             zones || [],
@@ -233,6 +234,13 @@ export class Vector extends Component {
                                 params={this.props.params}
                                 baseUrl={baseUrl}
                                 filters={geoFilters}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={filters2}
                             />
                         </div>
                     </div>

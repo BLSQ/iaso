@@ -55,6 +55,7 @@ class SitesViewSet(viewsets.ViewSet):
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
         only_reference_sites = request.GET.get("only_reference_sites", False)
+        only_ignored_sites = request.GET.get("onlyIgnoredSites", False)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
@@ -70,6 +71,10 @@ class SitesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(habitat__in=habitats.split(","))
         if only_reference_sites:
             queryset = queryset.filter(is_reference=True)
+        if only_ignored_sites:
+            queryset = queryset.filter(ignore=True)
+        else:
+            queryset = queryset.filter(ignore=False)
 
         if province_ids:
             province_list = province_ids.split(",")

@@ -5,13 +5,22 @@ import {
     zones,
     aires,
     onlyReferenceSites,
+    onlyIgnoredSites,
+    onlyIgnoredTargets,
 } from '../../../utils/constants/filters';
 
 const filtersVectors = (formatMessage, messages, usersList, habitatsList) => (
     [
         users(usersList),
         habitats(formatMessage, messages, habitatsList),
+    ]
+);
+
+const filtersVectors2 = () => (
+    [
         onlyReferenceSites(),
+        onlyIgnoredSites(),
+        onlyIgnoredTargets(),
     ]
 );
 const filtersVectorsGeo = (
@@ -30,6 +39,7 @@ const filtersVectorsGeo = (
 
 export {
     filtersVectors,
+    filtersVectors2,
     filtersVectorsGeo,
 };
 

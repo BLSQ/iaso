@@ -522,6 +522,30 @@ const onlyReferenceSites = () => (
     }
 );
 
+const onlyIgnoredSites = () => (
+    {
+        name: 'onlyIgnoredSites',
+        urlKey: 'onlyIgnoredSites',
+        label: {
+            id: 'main.label.onlyIgnoredSites',
+            defaultMessage: 'Uniquement les sites ignorés',
+        },
+        type: 'checkbox',
+    }
+);
+
+const onlyIgnoredTargets = () => (
+    {
+        name: 'onlyIgnoredTargets',
+        urlKey: 'onlyIgnoredTargets',
+        label: {
+            id: 'main.label.onlyIgnoredTargets',
+            defaultMessage: 'Uniquement les écrans ignorés',
+        },
+        type: 'checkbox',
+    }
+);
+
 
 export {
     testType,
@@ -544,4 +568,6 @@ export {
     users,
     habitats,
     onlyReferenceSites,
+    onlyIgnoredSites,
+    onlyIgnoredTargets,
 };

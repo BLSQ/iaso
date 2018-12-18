@@ -11,6 +11,8 @@ import {
     fetchVillages,
     fetchProfiles,
     fetchHabitats,
+    saveSite,
+    saveTarget,
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
@@ -19,7 +21,10 @@ import { filterActions } from '../../redux/filtersRedux';
 class VectorContainer extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            siteEdited: undefined,
+            targetEdited: undefined,
+        };
     }
 
     componentDidMount() {
@@ -140,9 +145,41 @@ class VectorContainer extends Component {
         }
     }
 
+    saveSite(site) {
+        this.setState({
+            siteEdited: site,
+        });
+        const { params, dispatch } = this.props;
+        this.props.saveSiteRequest(site).then(() => {
+            if (params.tab === 'sites') {
+                fetchSites(dispatch, params);
+            }
+            fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+        });
+    }
+
+    saveTarget(target) {
+        this.setState({
+            targetEdited: target,
+        });
+        this.props.saveTargetRequest(target).then(() => {
+            const { params, dispatch } = this.props;
+            if (params.tab === 'targets') {
+                fetchTargets(dispatch, params);
+            }
+            fetchPaginatedTargets(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+        });
+    }
+
     render() {
         return (
-            <VectorElement params={this.props.params} />
+            <VectorElement
+                params={this.props.params}
+                saveSite={site => this.saveSite(site)}
+                saveTarget={target => this.saveTarget(target)}
+                siteEdited={this.state.siteEdited}
+                targetEdited={this.state.targetEdited}
+            />
         );
     }
 }
@@ -157,6 +194,8 @@ VectorContainer.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    saveSiteRequest: PropTypes.func.isRequired,
+    saveTargetRequest: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -171,6 +210,8 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: (provinceId, zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, false, removeLoading)),
     selectZone: (zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId, removeLoading)),
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
+    saveSiteRequest: site => saveSite(dispatch, site),
+    saveTargetRequest: target => saveTarget(dispatch, target),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(VectorContainer);

@@ -40,6 +40,7 @@ class VectorMapComponent extends Component {
                 area: false,
             },
             containers: {},
+            editedItem: undefined,
         };
     }
 
@@ -61,6 +62,22 @@ class VectorMapComponent extends Component {
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
+
+
+        this.map.on('popupopen', () => {
+            setTimeout(() => {
+                const editButton = document.getElementById('edit-button');
+                if (editButton) {
+                    editButton.addEventListener('click', () => {
+                        this.props.editItem(editButton.dataset.type, this.state.editedItem);
+                        this.map.closePopup();
+                    });
+                }
+            }, 300);
+        });
+        this.map.on('popupclose', () => {
+            this.setState({ editedItem: undefined });
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -137,6 +154,7 @@ class VectorMapComponent extends Component {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(site.id, 'sites')
                         .then((response) => {
+                            this.setState({ editedItem: response });
                             popUp.setContent(renderSitesPopup(response, formatMessage));
                         });
                 })
@@ -176,6 +194,7 @@ class VectorMapComponent extends Component {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(target.id, 'targets')
                         .then((response) => {
+                            this.setState({ editedItem: response });
                             popUp.setContent(renderTargetsPopup(response, formatMessage));
                         });
                 })
@@ -349,6 +368,7 @@ VectorMapComponent.propTypes = {
     endemicVillages: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
+    editItem: PropTypes.func.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

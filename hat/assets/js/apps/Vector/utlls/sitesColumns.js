@@ -1,18 +1,19 @@
 import moment from 'moment';
 import React from 'react';
+import { FormattedMessage } from 'react-intl';
 
-const sitesColumns = (formatMessage, messages) => (
+const sitesColumns = (formatMessage, messages, element) => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Première collecte',
-                id: 'main.label.first_survey_date',
+                defaultMessage: 'Date de création',
+                id: 'main.label.created_at',
             }),
-            accessor: 'first_survey_date',
+            accessor: 'created_at',
             Cell: settings => (
                 <span>
                     {
-                        moment(settings.original.first_survey_date).format('DD/MM/YYYY HH:mm')
+                        moment(settings.original.created_at).format('DD/MM/YYYY HH:mm')
                     }
                 </span>
             ),
@@ -23,20 +24,6 @@ const sitesColumns = (formatMessage, messages) => (
                 id: 'main.label.nom',
             }),
             accessor: 'name',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Zone',
-                id: 'main.label.zone',
-            }),
-            accessor: 'zone',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.zone ? settings.original.zone : '/'
-                    }
-                </span>
-            ),
         },
         {
             Header: formatMessage({
@@ -84,17 +71,22 @@ const sitesColumns = (formatMessage, messages) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nombre de pièges',
-                id: 'main.label.catches_count',
+                defaultMessage: 'Actions',
+                id: 'main.actions',
             }),
-            accessor: 'catches_count',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Captures totales',
-                id: 'main.label.total',
-            }),
-            accessor: 'total',
+            sortable: false,
+            resizable: false,
+            Cell: settings => (
+                <section>
+                    <button
+                        className="button--edit--tiny"
+                        onClick={() => element.editItem('site', settings.original)}
+                    >
+                        <i className="fa fa-pencil-square-o" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                    </button>
+                </section>
+            ),
         },
     ]
 );

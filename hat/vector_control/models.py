@@ -33,23 +33,22 @@ HABITAT_CHOICES = (
 
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
-    zone = models.TextField(null=True)
     altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     habitat = models.TextField(max_length=255, choices=HABITAT_CHOICES,  null=True, blank=True)
     description = models.CharField(max_length=255, null=True)
-    first_survey = models.CharField(max_length=255, null=True)
-    first_survey_date = models.DateTimeField(null=True)
-    count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     total = models.IntegerField(default=0)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
     is_reference = models.BooleanField(default=False)
     location = PointField(srid=4326, null=True)
+    ignore = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.id, self.zone, self.habitat)
+        return "%s - %s - %s" % (self.id, self.habitat)
 
     def as_location(self):
         geojson =  self.location.json
@@ -69,41 +68,33 @@ class Site(models.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'zone': self.zone,
             'habitat': self.habitat,
-            'first_survey': self.first_survey,
-            'first_survey_date': self.first_survey_date,
-            'count': self.count,
-            'total': self.total,
+            'created_at': self.created_at,
             'username': self.user.username,
             'is_reference': self.is_reference,
+            'ignore': self.ignore,
             'latitude': self.location.y,
             'longitude': self.location.x,
-            'catches_count': catches_count,
-            'first_catch_date': first_catch_date
         }
 
 
 class Catch(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
-    operation = models.TextField(null=True)
     setup_date = models.DateTimeField(null=True)
     collect_date = models.DateTimeField(null=True)
-    in_out = models.TextField(null=True)
     male_count = models.IntegerField(default=0, null=True)
     female_count = models.IntegerField(default=0, null=True)
     unknown_count = models.IntegerField(default=0, null=True)
     remarks = models.TextField(default="")
-    distance_to_targets = models.DecimalField(null=True, decimal_places=3, max_digits=10)
-    near_intervention = models.CharField(max_length=100)
-    elev_change = models.IntegerField(null=True)
-    trap_elev = models.IntegerField(null=True)
-    target_elev = models.IntegerField(null=True)
-    elev_diff = models.IntegerField(null=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
-    location = PointField(srid=4326, null=True)
+    startLocation = PointField(srid=4326, null=True)
+    endLocation = PointField(srid=4326, null=True)
+    startAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    startAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    endAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    endAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
 
     def __str__(self):
         return "%s - %s - %s" % (self.site, self.operation, self.collect_date)
@@ -114,6 +105,7 @@ class Catch(models.Model):
         'latitude': self.location.y,
         'longitude': self.location.x
     }
+
     def as_dict(self):
         return {
         'id': self.id,
@@ -122,12 +114,10 @@ class Catch(models.Model):
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
         'source': self.source,
-        'near_intervention': self.near_intervention,
         'latitude': self.location.y,
         'longitude': self.location.x
     }
 
-#ID	NAME	Deployment	FullName	GPS	Lat	Long	Altitude	DateTimeS	Date	River
 class GpsImport(models.Model):
     filename = models.TextField()
     file_date_time = models.DateTimeField(null=True)
@@ -145,8 +135,25 @@ class GpsImport(models.Model):
             'file_date_time': self.file_date_time,
             'creator': self.creator,
             'user': self.user.username,
-            'created_at': self.created_at,
+            'created_at': self.created_at
         }
+
+
+class APIImport(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+
+    def __str__(self):
+        return "%s - %s " % (self.id, self.filename)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'user': self.user,
+            'created_at': self.created_at
+        }
+
+
 
 
 class Target(models.Model):
@@ -159,6 +166,7 @@ class Target(models.Model):
     river = models.TextField(null=True)
     gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
     location = PointField(srid=4326, null=True)
+    ignore = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.date_time)
@@ -180,5 +188,6 @@ class Target(models.Model):
             'altitude': self.altitude,
             'date_time': self.date_time,
             'river': self.river,
-            'username': self.gps_import.user.username
+            'username': self.gps_import.user.username,
+            'ignore': self.ignore,
         }

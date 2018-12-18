@@ -23,34 +23,10 @@ import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectorsGeo } from '../constants/vectorFilters';
+import EditSiteComponent from '../components/EditSiteComponent';
+import EditTargetComponent from '../components/EditTargetComponent';
 
 const baseUrl = 'map';
-
-// TO REMOVE
-const request = require('superagent');
-
-
-const saveFakeCatch = () => {
-    const traps = [
-        {
-            site_id: 18,
-            male_count: 10,
-            female_count: 50,
-            unknown_count: 50,
-            latitude: -2.75019127,
-            longitude: 19.68598159,
-        },
-    ];
-    request
-        .post('/api/catches/')
-        .set('Content-Type', 'application/json')
-        .send(traps)
-        .then(res => res.body)
-        .catch((err) => {
-            console.error(`Error While saving sites: ${err}`);
-        });
-};
-// TO REMOVE
 
 export class Vector extends Component {
     constructor(props) {
@@ -61,9 +37,13 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
-            currentTab: props.params.tab || baseUrl,
-            sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES),
-            targetsColumns: targetsColumns(props.intl.formatMessage),
+            currentTab: props.params.tab,
+            sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES, this),
+            targetsColumns: targetsColumns(props.intl.formatMessage, this),
+            showEditSiteModale: false,
+            showEditTargetModale: false,
+            siteEdited: props.siteEdited,
+            targetEdited: props.targetEdited,
         };
     }
 
@@ -75,6 +55,9 @@ export class Vector extends Component {
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
+            currentTab: newProps.params.tab,
+            siteEdited: newProps.siteEdited,
+            targetEdited: newProps.targetEdited,
         };
         if (newProps.params.sites) {
             newState.sites = newProps.vectors.sites;
@@ -127,6 +110,25 @@ export class Vector extends Component {
     }
 
 
+    editItem(type, data = undefined) {
+        if (type === 'site') {
+            this.setState({
+                showEditSiteModale: true,
+                showEditTargetModale: false,
+                siteEdited: data,
+            });
+        }
+
+        if (type === 'target') {
+            this.setState({
+                showEditSiteModale: false,
+                showEditTargetModale: true,
+                targetEdited: data,
+            });
+        }
+    }
+
+
     render() {
         const {
             map: {
@@ -149,6 +151,8 @@ export class Vector extends Component {
             reduxTargetsPage,
             profiles,
             habitats,
+            saveSite,
+            saveTarget,
         } = this.props;
         const {
             currentTab,
@@ -168,23 +172,39 @@ export class Vector extends Component {
         return (
             <section className="vectors-container">
                 {
+                    this.state.showEditSiteModale &&
+                    <EditSiteComponent
+                        showModale={this.state.showEditSiteModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showEditSiteModale: !this.state.showEditSiteModale,
+                            })}
+                        site={this.state.siteEdited}
+                        habitats={habitats}
+                        saveSite={site => saveSite(site)}
+                        profiles={profiles}
+                    />
+                }
+                {
+                    this.state.showEditTargetModale &&
+                    <EditTargetComponent
+                        showModale={this.state.showEditTargetModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showEditTargetModale: !this.state.showEditTargetModale,
+                            })}
+                        target={this.state.targetEdited}
+                        profiles={profiles}
+                        saveTarget={target => saveTarget(target)}
+                    />
+                }
+                {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
                         id: 'microplanning.labels.loading',
                     })}
                     />
                 }
-                {/* {TO REMOVE} */}
-                <div className="align-right">
-                    <button
-                        className="button--save margin"
-                        onClick={() => saveFakeCatch()}
-                    >
-                        <i className="fa fa-upload" />
-                        <FormattedMessage id="cases.label.fake1" defaultMessage="Catches" />
-                    </button>
-                </div>
-                {/* {TO REMOVE} */}
                 <div className="widget__container">
                     <div className="widget__header">
                         <h2 className="widget__heading">
@@ -251,6 +271,7 @@ export class Vector extends Component {
                                 nonEndemicVillages={nonEndemicVillages || {}}
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => selectMarker(itemId, key)}
+                                editItem={(type, data) => this.editItem(type, data)}
                             />
                         </div>
                     </div>
@@ -260,7 +281,7 @@ export class Vector extends Component {
                         isSortable
                         showPagination
                         columns={this.state.sitesColumns}
-                        defaultSorted={[{ id: 'first_survey_date', desc: false }]}
+                        defaultSorted={[{ id: 'created_at', desc: false }]}
                         params={params}
                         onRowClicked={() => { }}
                         multiSort
@@ -319,6 +340,10 @@ export class Vector extends Component {
         );
     }
 }
+Vector.defaultProps = {
+    siteEdited: undefined,
+    targetEdited: undefined,
+};
 
 Vector.propTypes = {
     selectMarker: PropTypes.func.isRequired,
@@ -335,6 +360,10 @@ Vector.propTypes = {
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
+    saveSite: PropTypes.func.isRequired,
+    saveTarget: PropTypes.func.isRequired,
+    siteEdited: PropTypes.object,
+    targetEdited: PropTypes.object,
 };
 
 const MapDispatchToProps = dispatch => ({

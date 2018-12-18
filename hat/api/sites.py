@@ -51,7 +51,7 @@ class SitesViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
-        orders = request.GET.get("order", "first_survey_date").split(",")
+        orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
         only_reference_sites = request.GET.get("only_reference_sites", False)
@@ -61,9 +61,9 @@ class SitesViewSet(viewsets.ViewSet):
         queryset = Site.objects.all().order_by(*orders)
 
         if from_date is not None:
-            queryset = queryset.filter(first_survey_date__date__gte=from_date)
+            queryset = queryset.filter(created_at__date__gte=from_date)
         if to_date is not None:
-            queryset = queryset.filter(first_survey_date__date__lte=to_date)
+            queryset = queryset.filter(created_at__date__lte=to_date)
         if user_ids is not None:
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
@@ -117,22 +117,20 @@ class SitesViewSet(viewsets.ViewSet):
                         return value
 
                 def iter_items(queryset, pseudo_buffer):
-                    headers = ['ID', 'Date première collecte', 'Nom', 'Zone', 'Latitude', 'Longitude', 'Altitude', 'Habitat', 'Décompte', 'Total']
+                    headers = ['ID', 'Date de création', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Habitat', 'Description']
                     writer = csv.writer(pseudo_buffer)
                     yield writer.writerow(headers)
                     for site in queryset.iterator(chunk_size=5000):
                         sdict = site.as_dict()
                         row = [
                             sdict.get("id"),
-                            sdict.get("first_survey_date"),
+                            sdict.get("created_at"),
                             sdict.get("name"),
-                            sdict.get("zone"),
                             sdict.get("latitude"),
                             sdict.get("longitude"),
+                            sdict.get("altitude"),
                             sdict.get("habitat"),
-                            sdict.get("first_survey_date"),
-                            sdict.get("count"),
-                            sdict.get("total"),
+                            sdict.get("description"),
                         ]
                         yield writer.writerow(row)
 
@@ -155,14 +153,10 @@ class SitesViewSet(viewsets.ViewSet):
             uuid = site.get('uuid', None)
             new_site, created = Site.objects.get_or_create(uuid=uuid)
             new_site.name = site.get('name', None)
-            new_site.zone = site.get('zone', None)
             new_site.habitat = site.get('habitat', None)
             new_site.description = site.get('description', None)
-            new_site.first_survey = site.get('first_survey', None)
-            new_site.first_survey_date = site.get('first_survey_date', None)
+            new_site.created_at = site.get('created_at', None)
             new_site.uuid = site.get('uuid', None)
-            new_site.count = site.get('count', 0)
-            new_site.total = site.get('total', 0)
 
             new_site.user = request.user
             new_site.source = 'API'
@@ -177,4 +171,17 @@ class SitesViewSet(viewsets.ViewSet):
 
         return Response([site.as_dict() for site in new_sites])
 
-
+    def update(self, request, pk=None):
+        new_site = get_object_or_404(Site, pk=pk)
+        new_site.name = request.data.get('name', '')
+        new_site.habitat = request.data.get('habitat', 'unknown')
+        new_site.is_reference = request.data.get('is_reference', False)
+        new_site.ignore = request.data.get('ignore', False)
+        username = request.data.get('username', None)
+        if username:
+            user = get_object_or_404(User, username=username)
+            new_site.username = user.username
+        else:
+            new_site.username = None
+        new_site.save()
+        return Response(new_site.as_dict())

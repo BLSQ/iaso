@@ -64,23 +64,20 @@ class CatchesViewSet(viewsets.ViewSet):
         catchs = request.data
         new_catchs = []
         for catch in catchs:
-            male_count = catch.get('male_count', 0)
-            female_count = catch.get('female_count', 0)
-            unknown_count = catch.get('unknown_count', 0)
-            new_catch = Catch()
-            site_id = catch.get('site_id', None)
-            if site_id:
-                site = get_object_or_404(Site, id=site_id)
-                site.total = male_count + female_count + unknown_count + site.total
-                site.save()
-                new_catch.site = site
+            uuid = catch.get('uuid', None)
+            new_catch = Catch.objects.get_or_create(uuid=uuid)
+
+            site_uuid = catch.get('site_uuid', None)
+            site, created = Site.objects.get_or_create(uuid=site_uuid)
+
+            new_catch.site = site
             new_catch.operation = catch.get('operation', None)
             new_catch.setup_date = catch.get('setup_date', None)
             new_catch.collect_date = catch.get('collect_date', None)
             new_catch.in_out = catch.get('in_out', None)
-            new_catch.male_count = male_count
-            new_catch.female_count = female_count
-            new_catch.unknown_count = unknown_count
+            new_catch.male_count = catch.get('male_count', 0)
+            new_catch.female_count = catch.get('unknown_count', 0)
+            new_catch.unknown_count = catch.get('unknown_count', 0)
             new_catch.remarks = catch.get('remarks', '')
             new_catch.distance_to_targets = catch.get('distance_to_targets', None)
             new_catch.near_intervention = catch.get('near_intervention', '')
@@ -92,10 +89,8 @@ class CatchesViewSet(viewsets.ViewSet):
             longitude = catch.get('longitude', None)
             if latitude and longitude:
                 new_catch.location = Point(x=longitude, y=latitude, srid=4326)
-            user_id = catch.get('user', None)
-            if user_id:
-                newUser = get_object_or_404(User, pk=user_id)
-                new_catch.user = newUser
+
+            new_catch.user = request.user
             new_catch.source = 'API'
             new_catch.save()
             new_catchs.append(new_catch)

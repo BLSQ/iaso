@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { defineMessages } from 'react-intl';
+import React from 'react';
 
 export const MESSAGES = defineMessages({
     map: {
@@ -7,7 +8,7 @@ export const MESSAGES = defineMessages({
         id: 'details.label.map',
     },
     sites: {
-        defaultMessage: 'Pièges',
+        defaultMessage: 'Sites',
         id: 'details.label.sites',
     },
     targets: {
@@ -54,7 +55,15 @@ export const MESSAGES = defineMessages({
 
 export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
                 <h6>
-                    ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.site' })}:
+                    ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
+
+                    <button class="button--tiny"
+                    id="edit-button"
+                    data-id="${site.id}"
+                    data-type="site"
+                >
+                <i class="fa fa-pencil-square-o"> </i>
+                    </button>
                 </h6>
 
                 <table>
@@ -65,14 +74,6 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                             </td>
                             <td>
                                 ${site.name}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}
-                            </td>
-                            <td class="${!site.zone ? 'align-center' : ''}">
-                                ${!site.zone || site.zone === '' ? '/' : site.zone}
                             </td>
                         </tr>
                         <tr>
@@ -101,26 +102,19 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Nombre de pièges', id: 'vector.labels.catches_count' })}
+                                ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
                             </td>
                             <td>
-                                ${site.catches_count}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}
-                            </td>
-                            <td>
-                                ${moment(site.first_survey_date).format('hh:mm DD/MM/YYYY')}
+                                ${moment(site.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Captures totales', id: 'vector.labels.total' })}
+                                ${formatMessage({ defaultMessage: 'Site de référence', id: 'vector.labels.is_reference' })}
                             </td>
                             <td>
-                                ${site.total}
+                            ${site.is_reference ?
+        formatMessage({ defaultMessage: 'oui', id: 'vector.labels.yes' }) : formatMessage({ defaultMessage: 'non', id: 'vector.labels.yes' })}
                             </td>
                         </tr>
                     </tbody>
@@ -130,6 +124,13 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
 export const renderTargetsPopup = (target, formatMessage) => `<section class="custom-popup-container">
                 <h6>
                     ${formatMessage({ defaultMessage: 'Ecran', id: 'vector.labels.target' })}:
+                    <button class="button--tiny"
+                        id="edit-button"
+                        data-id="${target.id}"
+                        data-type="target"
+                    >
+                    <i class="fa fa-pencil-square-o"> </i>
+                        </button>
                 </h6>
                 <table>
                     <tbody>
@@ -178,7 +179,7 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                                 ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}
                             </td>
                             <td>
-                                ${moment(target.date_time).format('hh:mm DD/MM/YYYY')}
+                                ${moment(target.date_time.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>
@@ -286,7 +287,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
 export const itemsToShow = params => [
     {
         id: 'sites',
-        defaultMessage: 'Pièges',
+        defaultMessage: 'Sites',
         isActive: params.sites === 'true',
         iconClass: 'map__option__icon--sites',
     },

@@ -27,6 +27,13 @@ const sitesColumns = (formatMessage, messages, element) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Description',
+                id: 'main.label.description',
+            }),
+            accessor: 'description',
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Latitude',
                 id: 'main.label.latitude',
             }),

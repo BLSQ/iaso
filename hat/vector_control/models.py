@@ -33,14 +33,12 @@ HABITAT_CHOICES = (
 
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
-    zone = models.TextField(null=True)
     altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     habitat = models.TextField(max_length=255, choices=HABITAT_CHOICES,  null=True, blank=True)
     description = models.CharField(max_length=255, null=True)
-    first_survey = models.CharField(max_length=255, null=True)
-    first_survey_date = models.DateTimeField(null=True)
-    count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     total = models.IntegerField(default=0)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
@@ -50,7 +48,7 @@ class Site(models.Model):
     ignore = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.id, self.zone, self.habitat)
+        return "%s - %s - %s" % (self.id, self.habitat)
 
     def as_location(self):
         geojson =  self.location.json
@@ -70,19 +68,13 @@ class Site(models.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'zone': self.zone,
             'habitat': self.habitat,
-            'first_survey': self.first_survey,
-            'first_survey_date': self.first_survey_date,
-            'count': self.count,
-            'total': self.total,
+            'created_at': self.created_at,
             'username': self.user.username,
             'is_reference': self.is_reference,
             'ignore': self.ignore,
             'latitude': self.location.y,
             'longitude': self.location.x,
-            'catches_count': catches_count,
-            'first_catch_date': first_catch_date
         }
 
 

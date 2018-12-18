@@ -70,7 +70,7 @@ class VectorSync extends React.Component {
                             showPagination
                             endPointUrl="/api/sites?by_sync=True"
                             columns={this.state.sitesColumns}
-                            defaultSorted={[{ id: 'first_survey_date', desc: false }]}
+                            defaultSorted={[{ id: 'created_at', desc: false }]}
                             params={params}
                             onRowClicked={() => { }}
                             multiSort

@@ -4,7 +4,7 @@ from .models import Site, Catch, Target
 
 
 class SiteAdmin(admin.GeoModelAdmin):
-    date_hierarchy = 'first_survey_date'
+    date_hierarchy = 'created_at'
 
 
 admin.site.register(Site, SiteAdmin)

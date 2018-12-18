@@ -70,7 +70,7 @@ class VectorMapComponent extends Component {
                 if (editButton) {
                     editButton.addEventListener('click', () => {
                         this.props.editItem(editButton.dataset.type, this.state.editedItem);
-                        // this.map.closePopup();
+                        this.map.closePopup();
                     });
                 }
             }, 300);

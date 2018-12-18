@@ -17,14 +17,14 @@ class Command(BaseCommand):
             if count != 0:
                 site = Site()
                 site.id = line[0]
-                site.zone = line[1]
+                # site.zone = line[1]
                 site.latitude = line[3].replace(',', '.')
                 site.longitude = line[4].replace(',', '.')
                 site.habitat = line[5]
-                site.first_survey = line[6]
+                # site.first_survey = line[6]
                 site.first_survey_date = datetime.strptime(line[7], '%m/%d/%y')
-                site.count = line[8]
-                site.total = line[9]
+                # site.count = line[8]
+                # site.total = line[9]
                 site.save()
             count += 1
 

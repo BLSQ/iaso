@@ -79,24 +79,6 @@ class EditSiteComponent extends Component {
                         </div>
                         <div>
                             <label
-                                htmlFor={`zone-${site.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.zone"
-                                    defaultMessage="Zone"
-                                />:
-                            </label>
-                            <input
-                                type="text"
-                                name="zone"
-                                id={`zone-${site.id}`}
-                                value={site.zone ? site.zone : ''}
-                                onChange={event => this.updateSiteField('zone', event.currentTarget.value)}
-                            />
-                        </div>
-                        <div>
-                            <label
                                 htmlFor={`habitat-${site.id}`}
                                 className="filter__container__select__label"
                             >

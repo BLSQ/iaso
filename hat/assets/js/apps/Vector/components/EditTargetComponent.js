@@ -96,24 +96,6 @@ class EditTargetComponent extends Component {
                         </div>
                         <div>
                             <label
-                                htmlFor={`deployment-${target.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.deployment"
-                                    defaultMessage="Déploiement"
-                                />:
-                            </label>
-                            <input
-                                type="text"
-                                name="deployment"
-                                id={`deployment-${target.id}`}
-                                value={target.deployment ? target.deployment : ''}
-                                onChange={event => this.updateTargetField('deployment', event.currentTarget.value)}
-                            />
-                        </div>
-                        <div>
-                            <label
                                 htmlFor={`usser-${target.id}`}
                                 className="filter__container__select__label"
                             >

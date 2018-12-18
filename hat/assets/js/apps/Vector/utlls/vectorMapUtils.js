@@ -78,14 +78,6 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.Zone' })}
-                            </td>
-                            <td class="${!site.zone ? 'align-center' : ''}">
-                                ${!site.zone || site.zone === '' ? '/' : site.zone}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
                                 ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
                             </td>
                             <td>
@@ -110,39 +102,15 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Premier relevé', id: 'vector.labels.first_survey' })}
+                                ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
                             </td>
-                            <td class="${!site.first_survey ? 'align-center' : ''}">
-                                ${!site.first_survey ? '/' : site.first_survey}
+                            <td>
+                                ${moment(site.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Date du premier relevé', id: 'vector.labels.first_survey_date' })}
-                            </td>
-                            <td>
-                                ${moment(site.first_survey_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Compte', id: 'vector.labels.count' })}
-                            </td>
-                            <td>
-                                ${site.count}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Total', id: 'vector.labels.total' })}
-                            </td>
-                            <td>
-                                ${site.total}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Site de référence', id: 'vector.labels.total' })}
+                                ${formatMessage({ defaultMessage: 'Site de référence', id: 'vector.labels.is_reference' })}
                             </td>
                             <td>
                             ${site.is_reference ?

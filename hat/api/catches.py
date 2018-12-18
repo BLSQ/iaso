@@ -69,11 +69,6 @@ class CatchesViewSet(viewsets.ViewSet):
             unknown_count = catch.get('unknown_count', 0)
             new_catch = Catch()
             site_id = catch.get('site_id', None)
-            if site_id:
-                site = get_object_or_404(Site, id=site_id)
-                site.total = male_count + female_count + unknown_count + site.total
-                site.save()
-                new_catch.site = site
             new_catch.operation = catch.get('operation', None)
             new_catch.setup_date = catch.get('setup_date', None)
             new_catch.collect_date = catch.get('collect_date', None)

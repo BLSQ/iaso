@@ -106,6 +106,7 @@ class RouteMap extends Component {
                     pane: 'custom-pane-markers',
                     className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                 })
+                    .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
                     .bindTooltip(`${index + 1}`, { permanent: true });
                 villageCircle.addTo(this.villageGroup);
 
@@ -143,8 +144,8 @@ class RouteMap extends Component {
     }
 
     updateTooltipSmall(item) {
-        if (item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label;
+        if (item && item.name) {
+            this.state.containers.tooltipSmall.innerHTML = item.name;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }

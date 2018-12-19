@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from hat.cases.models import CaseView, Case, RES_POSITIVE, RES_POSITIVE_POSITIVE_POSITIVE, RES_POSITIVE_POSITIVE, RES_NEGATIVE, RES_ABSENT, RES_MISSING, RES_UNREAD, RES_UNUSED, testResultString
 from hat.audit.models import log_modification, CASE_API
@@ -8,8 +8,9 @@ from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
 from django.db.models import Q
-import csv
 from copy import copy
+
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -65,7 +66,8 @@ class CasesViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
-        csv_format = request.GET.get("csv", None)  # default will be json
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
         located = request.GET.get("located", 'all')
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
@@ -198,7 +200,7 @@ class CasesViewSet(viewsets.ViewSet):
                 if test_type == "pl":
                     queryset = queryset.filter(test_pl__isnull=False)
 
-        if csv_format is None:
+        if csv_format is None and xlsx_format is None:
 
             paginator = Paginator(queryset, limit)
 
@@ -216,24 +218,16 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            class Echo:
-                """An object that implements just the write method of the file-like
-                interface.
-                """
 
-                def write(self, value):
-                    """Write the value by returning it, instead of storing in a buffer."""
-                    return value
-
-            def iter_items(queryset, pseudo_buffer):
-                headers = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
+            columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
                 'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sex', 'Age', 'CATT', 'RDT',
                 'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction Noeud Lymph.', 'Sang frais', 'MAECT', 'PL']
-                writer = csv.writer(pseudo_buffer)
-                yield writer.writerow(headers)
-                for case in queryset.iterator(chunk_size=5000):
-                    cdict = case.as_dict()
-                    row = [
+
+            filename = 'cases'
+
+            def get_row(case):
+                cdict = case.as_dict()
+                return [
                         cdict["id"],
                         cdict["normalized_team_name"],
                         cdict["normalized_year"],
@@ -258,13 +252,19 @@ class CasesViewSet(viewsets.ViewSet):
                         testResultString(case.test_maect),
                         testResultString(case.test_pl)
                     ]
-                    yield writer.writerow(row)
-
-            response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo())),
-                content_type='text/csv',
-            )
-            response['Content-Disposition'] = 'attachment;filename=cases.csv'
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Cas', columns, queryset, get_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type='text/csv',
+                )
+                filename = filename + '.csv'
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
             return response
 
     def retrieve(self, request, pk=None):

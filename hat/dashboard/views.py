@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.urls import reverse
@@ -15,10 +15,15 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils.translation import ugettext as _
-import csv
+
 import json
 
 from hat.cases.models import CaseView
+
+
+import xlsxwriter
+import io
+import csv
 
 
 def get_last_years(numberOfYears):
@@ -291,6 +296,60 @@ def plannings_routes(request: HttpRequest) -> HttpResponse:
         return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:routes"))})
 
 
+columns = ['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
+                    'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']
+
+def get_planning_export_row (assignation):
+    team = assignation.team
+    village = assignation.village
+    if team.UM:
+        type = "UM"
+    else:
+        type = "MUM"
+    return [team.name,
+            team.coordination.name,
+            team.capacity,
+            type,
+            village.name,
+            village.latitude,
+            village.longitude,
+            village.population,
+            village.AS.name,
+            village.AS.ZS.name,
+            village.AS.ZS.province.name,
+            village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017], confirmed_case=True).count()
+            ]
+
+@login_required()
+@permission_required('menupermissions.x_plannings_microplanning')
+@require_http_methods(['GET'])
+def xlsx_export(request: HttpRequest, planning_id) -> HttpResponse:
+    planning = get_object_or_404(Planning, pk=planning_id)
+
+    assignations = Assignation.objects.filter(planning=planning).order_by('team__name', 'village__population')
+
+    output = io.BytesIO()
+    wb = xlsxwriter.Workbook(output, {'constant_memory': True})
+    ws = wb.add_worksheet('Plannings')
+
+    bold = wb.add_format({'bold': True})
+    row_num = 1
+
+    ws.write_row('A' +str(row_num), columns, bold)
+
+    for assignation in assignations:
+        row_num += 1
+        ws.write_row('A' +str(row_num), get_planning_export_row(assignation))
+    wb.close()
+
+    output.seek(0)
+    filename = 'plannings.xlsx'
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return response
 
 @login_required()
 @permission_required('menupermissions.x_plannings_microplanning')
@@ -304,29 +363,8 @@ def csv_export(request: HttpRequest, planning_id) -> HttpResponse:
     planning = get_object_or_404(Planning, pk=planning_id)
 
     assignations = Assignation.objects.filter(planning=planning).order_by('team__name', 'village__population')
-    writer.writerow(['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
-                     'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas'])
     for assignation in assignations:
-
-        team = assignation.team
-        village = assignation.village
-        if team.UM:
-            type = "UM"
-        else:
-            type = "MUM"
-        writer.writerow([team.name,
-                         team.coordination.name,
-                         team.capacity,
-                         type,
-                         village.name,
-                         village.latitude,
-                         village.longitude,
-                         village.population,
-                         village.AS.name,
-                         village.AS.ZS.name,
-                         village.AS.ZS.province.name,
-                         village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017], confirmed_case=True).count()
-                         ])
+        writer.writerow(get_planning_export_row(assignation))
 
     return response
 

@@ -94,6 +94,14 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
+                                ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
+                            </td>
+                            <td class="${!site.altitude ? 'align-center' : ''}">
+                                ${site.altitude ? site.altitude : '/'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
                             </td>
                             <td class="${!site.habitat ? 'align-center' : ''}">

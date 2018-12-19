@@ -13,6 +13,7 @@ import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
 
 const newUser = {
@@ -74,7 +75,7 @@ class ManagementVillages extends React.Component {
         });
     }
 
-    getEndpointUrl(forCsv = false) {
+    getEndpointUrl(toExport = false, exportType = 'csv') {
         let newEndPointUrl = '/api/villages/?is_erased=False';
         const {
             params,
@@ -93,9 +94,9 @@ class ManagementVillages extends React.Component {
             as_list: true,
         };
 
-        if (forCsv) {
+        if (toExport) {
             delete urlParams.as_list;
-            urlParams.csv = true;
+            urlParams[exportType] = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -257,15 +258,10 @@ class ManagementVillages extends React.Component {
                             isUpdated={isUpdated}
                         />
                         <div className="widget__content align-right border-top">
-                            <button
-                                className="button margin"
-                                onClick={() => {
-                                    window.location.href = this.getEndpointUrl(true);
-                                }}
-                            >
-                                <i className="fa fa-download" />
-                                <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
-                            </button>
+                            <DownloadButtonsComponent
+                                csvUrl={this.getEndpointUrl(true, 'csv')}
+                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                            />
                             <button
                                 className="button--add"
                                 onClick={() => this.props.selectVillage(newUser)}

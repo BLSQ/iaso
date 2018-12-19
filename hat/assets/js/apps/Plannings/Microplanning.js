@@ -36,6 +36,7 @@ import {
     MapSelectionSummary,
     TeamSelectionTool,
 } from './components';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 
 let timerMsg;
 
@@ -441,14 +442,15 @@ export class Microplanning extends Component {
                                     <div className="map__selection__bottom">
                                         {/* actions */}
                                         {this.renderSaveTeamButton()}
-                                        <button className="button--print middle" onClick={() => this.activateFullscreenHandler()}>
+                                        <button className="button--tiny middle" onClick={() => this.activateFullscreenHandler()}>
                                             <i className="fa fa-print" />
                                             <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
                                         </button>
-                                        <button className="button--print" onClick={() => window.open(`/dashboard/csvexport/${this.props.params.planning_id}/`, '_self')}>
-                                            <i className="fa fa-file-excel-o" />
-                                            <FormattedMessage id="microplanning.label.csv" defaultMessage="Télécharger en Excel" />
-                                        </button>
+                                        <DownloadButtonsComponent
+                                            csvUrl={`/dashboard/csvexport/${this.props.params.planning_id}/`}
+                                            xlsxUrl={`/dashboard/xlsxexport/${this.props.params.planning_id}/`}
+                                            smallButtons
+                                        />
                                     </div>
 
                                 </div>

@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 from django.core.paginator import Paginator
 
 from .authentication import CsrfExemptSessionAuthentication
@@ -12,7 +12,7 @@ from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.audit.models import log_modification, VILLAGE_API
-import csv
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -73,6 +73,7 @@ class VillageViewSet(viewsets.ViewSet):
         population = request.GET.get("population", None)
         is_erased = request.GET.get("is_erased", False)
         csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
         village_sources = request.GET.get("village_source", None)
 
         queryset = Village.objects.all()
@@ -185,56 +186,51 @@ class VillageViewSet(viewsets.ViewSet):
                 res["limit"] = limit
             return Response(res)
         else:
-            if csv_format:
-                class Echo:
-                    """An object that implements just the write method of the file-like
-                    interface.
-                    """
-
-                    def write(self, value):
-                        """Write the value by returning it, instead of storing in a buffer."""
-                        return value
-
-                def iter_items(queryset, pseudo_buffer):
-                    headers = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude', 'Latitude', 'Officiel', 'Source', 'Source Gps']
-                    writer = csv.writer(pseudo_buffer)
-                    yield writer.writerow(headers)
-                    for village in queryset.iterator(chunk_size=5000):
-                        row = [
-                            village.get("id"),
-                            village.get("name"),
-                            village.get("population"),
-                            village.get("nr_positive_cases"),
-                            village.get("AS__ZS__province__name"),
-                            village.get("AS__ZS__name"),
-                            village.get("AS__name"),
-                            village.get("longitude"),
-                            village.get("latitude"),
-                            village.get("village_type"),
-                            village.get("village_source"),
-                            village.get("gps_source")
+            if csv_format or xlsx_format:
+                filename = 'villages'
+                columns = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude', 'Latitude', 'Officiel', 'Source', 'Source Gps']
+                def get_row(village):
+                    return [
+                            village.id,
+                            village.name,
+                            village.population,
+                            village.nr_positive_cases,
+                            village.AS.ZS.province.name,
+                            village.AS.ZS.name,
+                            village.AS.name,
+                            village.longitude,
+                            village.latitude,
+                            village.village_type,
+                            village.village_source,
+                            village.gps_source
                         ]
-                        yield writer.writerow(row)
+                if xlsx_format:
+                    filename = filename + '.xlsx'
+                    response = HttpResponse(
+                        generate_xlsx('Villages', columns, queryset, get_row),
+                        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    )
+                if csv_format:
+                    response = StreamingHttpResponse(
+                        streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                        content_type='text/csv',
+                    )
+                    filename = filename + '.csv'
 
-                queryset = queryset.select_related("AS__ZS__province")
-                queryset = queryset.order_by(*orders)
-                values = values + ("AS__name",
-                    "AS__ZS__name",
-                    "AS__ZS__province__name",
-                    "population_source",
-                    "population_year",
-                    "village_type",
-                    "village_source",
-                    "gps_source")
-                queryset = queryset.values(*values)
-                response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo())),
-                    content_type='text/csv',
-                )
-                response['Content-Disposition'] = 'attachment;filename=villages.csv'
+                    queryset = queryset.select_related("AS__ZS__province")
+                    queryset = queryset.order_by(*orders)
+                    values = values + ("AS__name",
+                        "AS__ZS__name",
+                        "AS__ZS__province__name",
+                        "population_source",
+                        "population_year",
+                        "village_type",
+                        "village_source",
+                        "gps_source")
+                    queryset = queryset.values(*values)
+                response['Content-Disposition'] = 'attachment; filename=%s' % filename
                 response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
                 return response
-
             else:
                 if limit:
                     res = res[: int(limit)]

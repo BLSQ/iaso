@@ -14,6 +14,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
 import { patientsActions } from '../redux/patients';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 export const urls = [];
 
@@ -58,7 +59,7 @@ class Patients extends Component {
         }
     }
 
-    getEndpointUrl(forCsv) {
+    getEndpointUrl(toExport, exportType = 'csv') {
         let url = '/api/patients/?';
         const {
             params,
@@ -80,8 +81,8 @@ class Patients extends Component {
             delete urlParams.patient_id;
         }
 
-        if (forCsv) {
-            urlParams.csv = true;
+        if (toExport) {
+            urlParams[exportType] = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -199,15 +200,10 @@ class Patients extends Component {
                         reduxPage={reduxPage}
                     />
                     <div className="align-right">
-                        <button
-                            className="button--save margin"
-                            onClick={() => {
-                                window.location.href = this.getEndpointUrl(true);
-                            }}
-                        >
-                            <i className="fa fa-download" />
-                            <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
-                        </button>
+                        <DownloadButtonsComponent
+                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        />
                     </div>
                 </div>
             </section>

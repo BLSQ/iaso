@@ -1,9 +1,8 @@
-import csv
 import time
 
 from django.core.paginator import Paginator
 from django.db.models import Subquery, OuterRef, Exists, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import viewsets, status
@@ -15,6 +14,7 @@ from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_dupli
 from hat.patient.models import PatientDuplicatesPair, Test
 from .authentication import CsrfExemptSessionAuthentication
 
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 class PatientDuplicatesViewSet(viewsets.ViewSet):
     """
@@ -74,7 +74,8 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
 
-        csvformat = request.GET.get("csv", None)  # default will be json
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
 
         queryset = (
             PatientDuplicatesPair.objects.all()
@@ -162,7 +163,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         if similarity:
             queryset = queryset.filter(similarity_score__lte=similarity)
 
-        if csvformat is None:
+        if csv_format is None and xlsx_format is None:
             res = {"count": queryset.count()}
             queryset = queryset.order_by(*orders)
             paginator = Paginator(queryset, limit)
@@ -180,44 +181,54 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="patientduplicatepairs.csv"'
+            columns = ['ID candidat duplicat', 'Score de similarité',
+                'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
+                'Année naissance patient 1', 'AS patient 1', 'Village patient 1',
+                'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
+                'Année naissance patient 2', 'AS patient 2', 'Village patient 2',
+                'Même patient ? (O/N)',
+                ]
 
-            queryset = queryset.select_related('patient1', 'patient2')
+            filename = 'patientduplicatepairs'
 
-            writer = csv.writer(response)
-            writer.writerow(
-                ['ID candidat duplicat', 'Score de similarité',
-                 'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
-                 'Année naissance patient 1', 'AS patient 1', 'Village patient 1',
-                 'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
-                 'Année naissance patient 2', 'AS patient 2', 'Village patient 2',
-                 'Même patient ? (O/N)',
-                 ])
-            for dupe in queryset:
-                writer.writerow([
-                    dupe.id,
-                    dupe.similarity_score,
-                    dupe.patient1_id,
-                    dupe.patient1.first_name,
-                    dupe.patient1.last_name,
-                    dupe.patient1.post_name,
-                    dupe.patient1.mothers_surname,
-                    dupe.patient1.year_of_birth,
-                    dupe.patient1.origin_area.name if dupe.patient1.origin_area else dupe.patient1.origin_raw_AS,
-                    dupe.patient1.origin_village.name if dupe.patient1.origin_village else dupe.patient1.origin_raw_village,
-                    dupe.patient2_id,
-                    dupe.patient2.first_name,
-                    dupe.patient2.last_name,
-                    dupe.patient2.post_name,
-                    dupe.patient2.mothers_surname,
-                    dupe.patient2.year_of_birth,
-                    dupe.patient2.origin_area.name if dupe.patient2.origin_area else dupe.patient2.origin_raw_AS,
-                    dupe.patient2.origin_village.name if dupe.patient2.origin_village else dupe.patient2.origin_raw_village,
-                    ''
-                ])
+            def get_row(dupe):
+                return [
+                        dupe.id,
+                        dupe.similarity_score,
+                        dupe.patient1_id,
+                        dupe.patient1.first_name,
+                        dupe.patient1.last_name,
+                        dupe.patient1.post_name,
+                        dupe.patient1.mothers_surname,
+                        dupe.patient1.year_of_birth,
+                        dupe.patient1.origin_area.name if dupe.patient1.origin_area else dupe.patient1.origin_raw_AS,
+                        dupe.patient1.origin_village.name if dupe.patient1.origin_village else dupe.patient1.origin_raw_village,
+                        dupe.patient2_id,
+                        dupe.patient2.first_name,
+                        dupe.patient2.last_name,
+                        dupe.patient2.post_name,
+                        dupe.patient2.mothers_surname,
+                        dupe.patient2.year_of_birth,
+                        dupe.patient2.origin_area.name if dupe.patient2.origin_area else dupe.patient2.origin_raw_AS,
+                        dupe.patient2.origin_village.name if dupe.patient2.origin_village else dupe.patient2.origin_raw_village,
+                        ''
+                    ]
 
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Doublons', columns, queryset, get_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type='text/csv',
+                )
+                filename = filename + '.csv'
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
             return response
+
 
     def retrieve(self, request, pk=None):
         patient_dupe = get_object_or_404(PatientDuplicatesPair, pk=pk)

@@ -50,6 +50,13 @@ const sitesColumns = (formatMessage, messages, element) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Altitude',
+                id: 'main.label.altitude',
+            }),
+            accessor: 'altitude',
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Utilisateur',
                 id: 'main.label.user',
             }),

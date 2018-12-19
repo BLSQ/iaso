@@ -671,13 +671,20 @@ path.map-marker {
 
 .map__selection__bottom {
     border-top: 1px solid $gray;
-    padding: $padding-unit/6;
+    padding: $padding-unit/6 $padding-unit/6 $padding-unit $padding-unit/6;
     text-align: center;
     button {
         max-width: 170px;
         &.middle {
             margin-right: 10px;
         }
+    }
+    .button--tiny {
+        margin: 0 10px 0 0 !important;
+        padding: 0.75em 1em;
+    }
+    .button--save {
+        margin-right: $padding-unit / 2;
     }
     >div {
         text-align: right;

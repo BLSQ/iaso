@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 from hat.vector_control.models import Site, APIImport
 from .authentication import CsrfExemptSessionAuthentication
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
@@ -16,7 +16,7 @@ from django.db.models import OuterRef, Exists
 
 import csv
 import json
-
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 class SitesViewSet(viewsets.ViewSet):
     """
@@ -52,6 +52,7 @@ class SitesViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
@@ -93,7 +94,7 @@ class SitesViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
-        if csv_format is None:
+        if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -113,39 +114,43 @@ class SitesViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-                class Echo:
-                    """An object that implements just the write method of the file-like
-                    interface.
-                    """
+            columns = ['ID', 'Date de création', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Habitat', 'Description', 'Référence', 'Utilisateur']
+            filename = 'sites'
 
-                    def write(self, value):
-                        """Write the value by returning it, instead of storing in a buffer."""
-                        return value
-
-                def iter_items(queryset, pseudo_buffer):
-                    headers = ['ID', 'Date de création', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Habitat', 'Description']
-                    writer = csv.writer(pseudo_buffer)
-                    yield writer.writerow(headers)
-                    for site in queryset.iterator(chunk_size=5000):
-                        sdict = site.as_dict()
-                        row = [
+            def get_row(site):
+                sdict = site.as_dict()
+                referenceText = "Non"
+                if sdict["is_reference"]:
+                    referenceText = "Oui"
+                habitatText = "Inconnu"
+                if sdict["habitat"]:
+                    habitatText = site.get_habitat_display()
+                return [
                             sdict.get("id"),
-                            sdict.get("created_at"),
+                            site.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                             sdict.get("name"),
                             sdict.get("latitude"),
                             sdict.get("longitude"),
                             sdict.get("altitude"),
-                            sdict.get("habitat"),
+                            habitatText,
                             sdict.get("description"),
+                            referenceText,
+                            sdict["username"],
                         ]
-                        yield writer.writerow(row)
-
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Sites', columns, queryset, get_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo())),
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
                     content_type='text/csv',
                 )
-                response['Content-Disposition'] = 'attachment;filename=sites.csv'
-                return response
+                filename = filename + '.csv'
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
+            return response
 
     def retrieve(self, request, pk=None):
         site = get_object_or_404(Site, pk=pk)

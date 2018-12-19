@@ -105,6 +105,8 @@ class Site(models.Model):
             'ignore': self.ignore,
             'latitude': self.location.y,
             'longitude': self.location.x,
+            'altitude': self.altitude,
+            'description': self.description,
         }
 
 

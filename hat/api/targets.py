@@ -1,8 +1,6 @@
-import csv
-
 from django.core.paginator import Paginator
 from django.db.models import Q, OuterRef, Exists
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
@@ -12,6 +10,7 @@ from django.contrib.auth.models import User
 from hat.geo.models import Province, ZS, AS
 from hat.vector_control.models import Target, GpsImport
 from .authentication import CsrfExemptSessionAuthentication
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 
 class TargetsViewSet(viewsets.ViewSet):
@@ -30,6 +29,7 @@ class TargetsViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
         orders = request.GET.get("order", "date_time").split(",")
         user_ids = request.GET.get("userId", None)
         province_ids = request.GET.get("province_id", None)
@@ -65,7 +65,7 @@ class TargetsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(ignore=True)
         else:
             queryset = queryset.filter(ignore=False)
-        if csv_format is None:
+        if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -85,38 +85,34 @@ class TargetsViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            class Echo:
-                """An object that implements just the write method of the file-like
-                interface.
-                """
+            columns =  ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
+            filename = 'targets'
 
-                def write(self, value):
-                    """Write the value by returning it, instead of storing in a buffer."""
-                    return value
-
-            def iter_items(queryset, pseudo_buffer):
-                headers = ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
-                writer = csv.writer(pseudo_buffer)
-                yield writer.writerow(headers)
-                for target in queryset.iterator(chunk_size=5000):
-                    tdict = target.as_dict()
-                    row = [
-                        tdict.get("id"),
-                        tdict.get("date_time"),
-                        tdict.get("name"),
-                        tdict.get("latitude"),
-                        tdict.get("longitude"),
-                        tdict.get("altitude"),
-                        tdict.get("deployment"),
-                        tdict.get("river"),
-                    ]
-                    yield writer.writerow(row)
-
-            response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo())),
-                content_type='text/csv',
-            )
-            response['Content-Disposition'] = 'attachment;filename=targets.csv'
+            def get_row(target):
+                tdict = target.as_dict()
+                return [
+                            tdict.get("id"),
+                            target.date_time.strftime("%Y-%m-%d %H:%M:%S"),
+                            tdict.get("name"),
+                            tdict.get("latitude"),
+                            tdict.get("longitude"),
+                            tdict.get("altitude"),
+                            tdict.get("deployment"),
+                            tdict.get("river"),
+                        ]
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Ecrans', columns, queryset, get_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
+                filename = filename + '.csv'
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type='text/csv',
+                )
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
             return response
 
     def retrieve(self, request, pk=None):

@@ -12,6 +12,7 @@ import casesListColumns from '../constants/casesListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from '../constants/filtersSelect';
 
 export const urls = [];
@@ -65,7 +66,7 @@ class Cases extends Component {
             this.props.selectVillage(newProps.params.village_id);
         }
     }
-    getEndpointUrl(forCsv) {
+    getEndpointUrl(toExport = false, exportType = 'csv') {
         let url = '/api/cases/?';
         const {
             params,
@@ -80,8 +81,8 @@ class Cases extends Component {
             delete urlParams.workzone_id;
         }
 
-        if (forCsv) {
-            urlParams.csv = true;
+        if (toExport) {
+            urlParams[exportType] = true;
         }
         if (urlParams.order) {
             delete urlParams.order;
@@ -194,15 +195,10 @@ class Cases extends Component {
                         multiSort
                     />
                     <div className="align-right">
-                        <button
-                            className="button--save margin"
-                            onClick={() => {
-                                window.location.href = this.getEndpointUrl(true);
-                            }}
-                        >
-                            <i className="fa fa-download" />
-                            <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
-                        </button>
+                        <DownloadButtonsComponent
+                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        />
                     </div>
                 </div>
             </section>

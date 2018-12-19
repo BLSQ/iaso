@@ -9,6 +9,7 @@ import { filterActions } from '../../../redux/filtersRedux';
 
 import duplicateListColumns from '../constants/duplicateListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersPatients, filtersPatientsDuplicates, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
@@ -55,7 +56,7 @@ class PatientsDuplicates extends Component {
         }
     }
 
-    getEndpointUrl(forCsv) {
+    getEndpointUrl(toExport, exportType = 'cv') {
         let url = '/api/patientduplicates/?full=true';
         const {
             params,
@@ -85,8 +86,8 @@ class PatientsDuplicates extends Component {
             delete urlParams.duplicate_id;
         }
 
-        if (forCsv) {
-            urlParams.csv = true;
+        if (toExport) {
+            urlParams[exportType] = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -197,15 +198,10 @@ class PatientsDuplicates extends Component {
                         multiSort
                     />
                     <div className="align-right">
-                        <button
-                            className="button--save margin"
-                            onClick={() => {
-                                window.location.href = this.getEndpointUrl(true);
-                            }}
-                        >
-                            <i className="fa fa-download" />
-                            <FormattedMessage id="cases.label.download" defaultMessage="Télécharger" />
-                        </button>
+                        <DownloadButtonsComponent
+                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        />
                     </div>
                 </div>
             </section>

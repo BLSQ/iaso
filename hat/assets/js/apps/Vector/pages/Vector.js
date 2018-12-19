@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl, getRequest } from '../../../utils/fetchData';
@@ -25,6 +25,7 @@ import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 const baseUrl = 'map';
 
@@ -75,16 +76,48 @@ export class Vector extends Component {
         this.setState(newState);
     }
 
-    getDownloadUrl(key) {
+    getDownloadUrl(key, exportFormat = 'csv') {
         const {
             params: {
                 dateFrom,
                 dateTo,
                 orderSites,
                 orderTargets,
+                userId,
+                habitats,
+                onlyReferenceSites,
+                onlyIgnoredSites,
+                onlyIgnoredTargets,
+                province_id,
+                zs_id,
+                as_id,
             },
         } = this.props;
-        let url = `/api/${key}?from=${dateFrom}&to=${dateTo}&csv=True`;
+        let url = `/api/${key}?from=${dateFrom}&to=${dateTo}&${exportFormat}=True`;
+        if (userId) {
+            url += `&userId=${userId}`;
+        }
+        if (habitats) {
+            url += `&habitats=${habitats}`;
+        }
+        if (onlyReferenceSites) {
+            url += '&only_reference_sites=True';
+        }
+        if (onlyIgnoredSites) {
+            url += '&onlyIgnoredTargets=True';
+        }
+        if (onlyIgnoredTargets) {
+            url += '&onlyIgnoredTargets=True';
+        }
+        if (province_id) {
+            url += `&province_id=${province_id}`;
+        }
+        if (zs_id) {
+            url += `&zs_id=${zs_id}`;
+        }
+        if (as_id) {
+            url += `&as_id=${as_id}`;
+        }
         if ((key === 'targets') && orderTargets) {
             url += `&order=${orderTargets}`;
         }
@@ -303,15 +336,10 @@ export class Vector extends Component {
                         canSelect={false}
                     />
                     <div className="align-right">
-                        <button
-                            className="button--save margin"
-                            onClick={() => {
-                                window.location.href = this.getDownloadUrl('sites');
-                            }}
-                        >
-                            <i className="fa fa-download" />
-                            <FormattedMessage id="main.label.download" defaultMessage="Télécharger" />
-                        </button>
+                        <DownloadButtonsComponent
+                            csvUrl={this.getDownloadUrl('sites', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('sites', 'xlsx')}
+                        />
                     </div>
                 </div>
                 <div className={`widget__container ${currentTab === 'targets' ? '' : 'hidden'}`}>
@@ -333,15 +361,10 @@ export class Vector extends Component {
                         canSelect={false}
                     />
                     <div className="align-right">
-                        <button
-                            className="button--save margin"
-                            onClick={() => {
-                                window.location.href = this.getDownloadUrl('targets');
-                            }}
-                        >
-                            <i className="fa fa-download" />
-                            <FormattedMessage id="main.label.download" defaultMessage="Télécharger" />
-                        </button>
+                        <DownloadButtonsComponent
+                            csvUrl={this.getDownloadUrl('targets', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('targets', 'xlsx')}
+                        />
                     </div>
                 </div>
             </section>

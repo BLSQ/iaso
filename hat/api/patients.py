@@ -1,8 +1,6 @@
-import csv
-
 from django.core.paginator import Paginator
 from django.db.models import Q, OuterRef, Exists
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
@@ -11,6 +9,7 @@ from rest_framework.response import Response
 from hat.cases.models import CaseView, RES_POSITIVE
 from hat.patient.models import Patient, Test, PatientDuplicatesPair
 from .authentication import CsrfExemptSessionAuthentication
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -50,7 +49,8 @@ class PatientsViewSet(viewsets.ViewSet):
         confirmation_result = request.GET.get("confirmation_result", None)
         only_dupes = request.GET.get("only_dupes", None)
 
-        csvformat = request.GET.get("csv", None)  # default will be json
+        csv_format = request.GET.get("csv", None)  # default will be json
+        xlsx_format = request.GET.get("xlsx", None)
 
         queryset = (
             Patient.objects.order_by(*orders)
@@ -144,7 +144,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 Q(mothers_surname__contains=search_mother_name)
             )
 
-        if csvformat is None:
+        if csv_format is None and xlsx_format is None:
             paginator = Paginator(queryset, limit)
 
             res = {"count": paginator.count}
@@ -161,28 +161,37 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="patients.csv"'
+            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village']
+            filename = 'patients'
 
-            writer = csv.writer(response)
-
-            writer.writerow(['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village'])
-            for patient in queryset:
+            def get_row(patient):
                 pdict = patient.as_dict()
-
-                writer.writerow([
-                    pdict["id"],
-                    pdict["last_name"],
-                    pdict["post_name"],
-                    pdict["first_name"],
-                    pdict["sex"],
-                    pdict["age"],
-                    pdict["mothers_surname"],
-                    pdict["province"],
-                    pdict["ZS"],
-                    pdict["AS"],
-                    pdict["village"]
-                ])
+                return [
+                        pdict["id"],
+                        pdict["last_name"],
+                        pdict["post_name"],
+                        pdict["first_name"],
+                        pdict["sex"],
+                        pdict["age"],
+                        pdict["mothers_surname"],
+                        pdict["province"],
+                        pdict["ZS"],
+                        pdict["AS"],
+                        pdict["village"]
+                ]
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Patients', columns, queryset, get_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
+                filename = filename + '.csv'
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type='text/csv',
+                )
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
             return response
 
     def retrieve(self, request, pk=None):

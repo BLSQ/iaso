@@ -36,6 +36,9 @@ jsonschema==2.6.0
 simpledbf==0.2.6
 xlrd==1.0.0
 
+# exporting tools
+xlsxwriter==1.1.2
+
 # Documentation
 Sphinx==1.5.4
 

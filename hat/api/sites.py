@@ -166,8 +166,8 @@ class SitesViewSet(viewsets.ViewSet):
             if latitude and longitude:
                 new_site.location = Point(x=longitude, y=latitude, srid=4326)
 
-            new_site.save()
-            new_sites.append(new_site)
+                new_site.save()
+                new_sites.append(new_site)
 
         return Response([site.as_dict() for site in new_sites])
 

@@ -48,7 +48,7 @@ class Site(models.Model):
     ignore = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.id, self.habitat)
+        return "%s - %s - %s" % (self.id, self.habitat, self.location)
 
     def as_location(self):
         geojson =  self.location.json
@@ -61,10 +61,6 @@ class Site(models.Model):
     }
 
     def as_dict(self):
-        first_catch_date = None
-        catches_count = self.catch_set.count()
-        if catches_count > 0:
-            first_catch_date = self.catch_set.order_by('setup_date').first().setup_date
         return {
             'id': self.id,
             'name': self.name,
@@ -89,21 +85,18 @@ class Catch(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
-    startLocation = PointField(srid=4326, null=True)
-    endLocation = PointField(srid=4326, null=True)
-    startAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    startAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    endAltitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    endAccuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-
-    def __str__(self):
-        return "%s - %s - %s" % (self.site, self.operation, self.collect_date)
+    start_location = PointField(srid=4326, null=True)
+    end_location = PointField(srid=4326, null=True)
+    start_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    start_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    end_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
 
     def as_location(self):
         return {
         'id': self.id,
-        'latitude': self.location.y,
-        'longitude': self.location.x
+        'latitude': self.end_location.y,
+        'longitude': self.end_location.x
     }
 
     def as_dict(self):
@@ -113,10 +106,9 @@ class Catch(models.Model):
         'male_count': self.male_count,
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
-        'source': self.source,
-        'latitude': self.location.y,
-        'longitude': self.location.x
+        'source': self.source
     }
+
 
 class GpsImport(models.Model):
     filename = models.TextField()
@@ -154,8 +146,6 @@ class APIImport(models.Model):
         }
 
 
-
-
 class Target(models.Model):
     name = models.TextField(null=True)
     deployment = models.IntegerField(null=True)
@@ -173,10 +163,10 @@ class Target(models.Model):
 
     def as_location(self):
         return {
-        'id': self.id,
-        'latitude': self.location.y,
-        'longitude': self.location.x
-    }
+            'id': self.id,
+            'latitude': self.location.y,
+            'longitude': self.location.x
+        }
 
     def as_dict(self):
         return {

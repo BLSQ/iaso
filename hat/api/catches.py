@@ -1,11 +1,18 @@
 from rest_framework import viewsets
-from django.contrib.auth.models import User
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.vector_control.models import Site, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
+from datetime import datetime
+from django.utils import timezone
+
+
+def timestamp_to_utc_datetime(timestamp):
+    dt = datetime.fromtimestamp(int(timestamp/1000))
+    new_datetime = timezone.make_aware(dt, timezone.utc)
+    return new_datetime
 
 
 class CatchesViewSet(viewsets.ViewSet):
@@ -64,37 +71,45 @@ class CatchesViewSet(viewsets.ViewSet):
         catchs = request.data
         new_catchs = []
         for catch in catchs:
+            print("catch", catch)
             uuid = catch.get('uuid', None)
-            new_catch = Catch.objects.get_or_create(uuid=uuid)
-
+            existing_catches = Catch.objects.filter(uuid=uuid)
+            if existing_catches:
+                new_catch = existing_catches[0]
+            else:
+                new_catch = Catch()
+            new_catch.uuid = uuid
             site_uuid = catch.get('site_uuid', None)
             site, created = Site.objects.get_or_create(uuid=site_uuid)
 
             new_catch.site = site
-            new_catch.operation = catch.get('operation', None)
-            new_catch.setup_date = catch.get('setup_date', None)
-            new_catch.collect_date = catch.get('collect_date', None)
-            new_catch.in_out = catch.get('in_out', None)
+
+            start_time = catch.get('startTime', None)
+            if start_time:
+                new_catch.setup_date = timestamp_to_utc_datetime(int(start_time))
+
+            end_time = catch.get('endTime', None)
+            if end_time:
+                new_catch.collect_date = timestamp_to_utc_datetime(int(end_time))
+
             new_catch.male_count = catch.get('male_count', 0)
             new_catch.female_count = catch.get('unknown_count', 0)
             new_catch.unknown_count = catch.get('unknown_count', 0)
             new_catch.remarks = catch.get('remarks', '')
-            new_catch.distance_to_targets = catch.get('distance_to_targets', None)
-            new_catch.near_intervention = catch.get('near_intervention', '')
-            new_catch.elev_change = catch.get('elev_change', None)
-            new_catch.trap_elev = catch.get('trap_elev', None)
-            new_catch.target_elev = catch.get('target_elev', None)
-            new_catch.elev_diff = catch.get('elev_diff', None)
-            latitude = catch.get('latitude', None)
-            longitude = catch.get('longitude', None)
-            if latitude and longitude:
-                new_catch.location = Point(x=longitude, y=latitude, srid=4326)
+            start_latitude = catch.get('startLatitude', None)
+            start_longitude = catch.get('startLongitude', None)
+            if start_latitude and start_longitude:
+                new_catch.start_location = Point(x=start_longitude, y=start_latitude, srid=4326)
+
+            end_latitude = catch.get('endLatitude', None)
+            end_longitude = catch.get('endLongitude', None)
+            if end_latitude and end_longitude:
+                new_catch.end_location = Point(x=end_longitude, y=end_latitude, srid=4326)
 
             new_catch.user = request.user
             new_catch.source = 'API'
             new_catch.save()
             new_catchs.append(new_catch)
-
 
         return Response([catch.as_dict() for catch in new_catchs])
 

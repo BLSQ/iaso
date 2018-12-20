@@ -1,6 +1,6 @@
 from django.contrib.gis import admin
 
-from .models import Site, Catch, Target
+from .models import Site, Catch, Target, GpsImport, APIImport
 
 
 class SiteAdmin(admin.GeoModelAdmin):
@@ -23,3 +23,8 @@ class TargetAdmin(admin.GeoModelAdmin):
 
 
 admin.site.register(Target, TargetAdmin)
+
+
+admin.site.register(GpsImport)
+
+admin.site.register(APIImport)

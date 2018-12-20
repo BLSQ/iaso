@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Count
 import uuid
 import json
+from django.contrib.postgres.fields import JSONField
 
 # Create your models here.
 #Site	Zone	Zone.Abb	LAT	LONG	Habitat	FirstSurvey	FirstSurveyDate	Count	Total	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
@@ -30,6 +31,37 @@ HABITAT_CHOICES = (
     ("stream", "Ruisseau")
 )
 
+IMPORT_TYPE = (
+    ("site", "Site"),
+    ("catch", "Catch")
+)
+
+
+class APIImport(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+    import_type = models.TextField(max_length=25, choices=IMPORT_TYPE,  null=True, blank=True)
+    json_body = JSONField()
+
+    def __str__(self):
+        return "%s - %s - %s - %s" % (self.id, self.user, self.import_type, self.created_at)
+
+    def as_dict(self):
+        res = {
+            'id': self.id,
+            'user': self.user,
+            'created_at': self.created_at,
+            'type': self.import_type
+        }
+
+        if self.import_type == 'site' :
+            site_count = self.site_set.count()
+            res['site_count'] = site_count
+
+        elif self.import_type == 'catch' > 0:
+            catch_count = self.catch_set.count()
+            res['catch_count'] = catch_count
+
 
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
@@ -46,6 +78,7 @@ class Site(models.Model):
     is_reference = models.BooleanField(default=False)
     location = PointField(srid=4326, null=True)
     ignore = models.BooleanField(default=False)
+    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.habitat, self.location)
@@ -92,6 +125,7 @@ class Catch(models.Model):
     start_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
     def as_location(self):
         return {
@@ -128,21 +162,6 @@ class GpsImport(models.Model):
             'file_date_time': self.file_date_time,
             'creator': self.creator,
             'user': self.user.username,
-            'created_at': self.created_at
-        }
-
-
-class APIImport(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
-
-    def __str__(self):
-        return "%s - %s " % (self.id, self.filename)
-
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'user': self.user,
             'created_at': self.created_at
         }
 

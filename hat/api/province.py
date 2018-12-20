@@ -12,7 +12,8 @@ class ProvinceViewSet(viewsets.ViewSet):
     """
     permission_required = [
         'menupermissions.x_management_users',
-        'menupermissions.x_locator'
+        'menupermissions.x_locator',
+        'menupermissions.x_vectorcontrol'
     ]
 
     @cache_control(max_age=24 * 60 * 60, public=True)

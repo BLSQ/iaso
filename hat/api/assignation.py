@@ -89,18 +89,55 @@ class AssignationViewSet(viewsets.ViewSet):
             villages = villages.annotate(nr_positive_cases=nr_positive_cases)
             endemic_dict = {village.id:village.nr_positive_cases for village in villages}
 
-                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
-                
         if csv_format is None and xlsx_format is None:
             res = []
             for assignation in assignations:
                 assignation_dict = assignation.as_dict()
-                if show_case_count:
-                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
                 if show_tests_count:
                     assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
+                if show_case_count:
+                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
                 res.append(assignation_dict)
+
             return Response(res)
+        else:
+            columns = ['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
+                    'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']
+            filename = "plannings"
+            def get_planning_export_row (assignation):
+                team = assignation.team
+                village = assignation.village
+                if team.UM:
+                    type = "UM"
+                else:
+                    type = "MUM"
+                return [team.name,
+                        team.coordination.name,
+                        team.capacity,
+                        type,
+                        village.name,
+                        village.latitude,
+                        village.longitude,
+                        village.population,
+                        village.AS.name,
+                        village.AS.ZS.name,
+                        village.AS.ZS.province.name,
+                        village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017], confirmed_case=True).count()
+                    ]
+            if xlsx_format:
+                filename = filename + '.xlsx'
+                response = HttpResponse(
+                    generate_xlsx('Plannings', columns, assignations, get_planning_export_row),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(assignations, Echo(), columns, get_planning_export_row)),
+                    content_type='text/csv',
+                )
+                filename = filename + '.csv'
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename
+            return response
 
     def partial_update(self, request, pk):
 

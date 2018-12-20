@@ -117,7 +117,6 @@ class AssignationViewSet(viewsets.ViewSet):
             a.save()
 
         village_ids = map(lambda ass: ass.village_id, new_list)
-        print ('show_tests_count', show_tests_count)
         if show_tests_count:
             print (assignation.as_dict())
             current_planning = get_object_or_404(Planning, pk=assignation.planning.id)

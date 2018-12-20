@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.http import StreamingHttpResponse, HttpResponse
 from django.utils import timezone
 from django.db.models import Count
 from django.db.models import Q
@@ -9,6 +10,7 @@ from hat.users.models import Team
 from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.planning.models import Planning
+from .export_utils import  Echo, generate_xlsx, iter_items
 
 
 from .authentication import CsrfExemptSessionAuthentication
@@ -51,6 +53,8 @@ class AssignationViewSet(viewsets.ViewSet):
         team_id = request.GET.get('team_id', None)
         show_case_count = request.GET.get('show_case_count', False)
         show_tests_count = request.GET.get('show_tests_count', False)
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
 
         assignations = Assignation.objects
         if coordination_id:
@@ -85,17 +89,18 @@ class AssignationViewSet(viewsets.ViewSet):
             villages = villages.annotate(nr_positive_cases=nr_positive_cases)
             endemic_dict = {village.id:village.nr_positive_cases for village in villages}
 
-        res = []
-        for assignation in assignations:
-            assignation_dict = assignation.as_dict()
-            if show_tests_count:
-                assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
-            if show_case_count:
-                assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
-            res.append(assignation_dict)
-
-
-        return Response(res)
+                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
+                
+        if csv_format is None and xlsx_format is None:
+            res = []
+            for assignation in assignations:
+                assignation_dict = assignation.as_dict()
+                if show_case_count:
+                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
+                if show_tests_count:
+                    assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
+                res.append(assignation_dict)
+            return Response(res)
 
     def partial_update(self, request, pk):
 

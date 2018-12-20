@@ -671,7 +671,7 @@ path.map-marker {
 
 .map__selection__bottom {
     border-top: 1px solid $gray;
-    padding: $padding-unit/6 $padding-unit/6 $padding-unit $padding-unit/6;
+    padding: 15px $padding-unit/6 15px $padding-unit/6;
     text-align: center;
     button {
         max-width: 170px;
@@ -684,12 +684,10 @@ path.map-marker {
         padding: 0.75em 1em;
     }
     .button--save {
-        margin-right: $padding-unit / 2;
+        margin-bottom: 15px;
     }
     >div {
-        text-align: right;
-        margin-bottom: 15px;
-        padding-right: 5px;
+        text-align: center;
     }
 }
 

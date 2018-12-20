@@ -106,6 +106,25 @@ export class Microplanning extends Component {
         }
     }
 
+    getDownloadUrl(exportType) {
+        let url = '/api/assignations/?';
+
+        const urlParams = Object.assign({}, this.props.params, { [exportType]: true });
+
+        if (urlParams.years) {
+            delete urlParams.years;
+        }
+
+        Object.keys(urlParams).forEach((key) => {
+            const value = urlParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
+        });
+        return url;
+    }
+
+
     removeSavingMsg() {
         if (timerMsg) {
             clearTimeout(timerMsg);
@@ -188,7 +207,6 @@ export class Microplanning extends Component {
             </div>
         );
     }
-
 
     render() {
         const { formatMessage } = this.props.intl;
@@ -447,8 +465,8 @@ export class Microplanning extends Component {
                                             <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
                                         </button>
                                         <DownloadButtonsComponent
-                                            csvUrl={`/dashboard/csvexport/${this.props.params.planning_id}/`}
-                                            xlsxUrl={`/dashboard/xlsxexport/${this.props.params.planning_id}/`}
+                                            csvUrl={this.getDownloadUrl('csv')}
+                                            xlsxUrl={this.getDownloadUrl('xlsx')}
                                             smallButtons
                                         />
                                     </div>

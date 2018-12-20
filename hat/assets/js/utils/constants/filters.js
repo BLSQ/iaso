@@ -516,7 +516,7 @@ const onlyReferenceSites = () => (
         urlKey: 'onlyReferenceSites',
         label: {
             id: 'main.label.onlyReferenceSites',
-            defaultMessage: 'Uniquement les pièges de références',
+            defaultMessage: 'Sites de références',
         },
         type: 'checkbox',
     }
@@ -528,7 +528,7 @@ const onlyIgnoredSites = () => (
         urlKey: 'onlyIgnoredSites',
         label: {
             id: 'main.label.onlyIgnoredSites',
-            defaultMessage: 'Uniquement les sites ignorés',
+            defaultMessage: 'Sites ignorés',
         },
         type: 'checkbox',
     }
@@ -540,7 +540,7 @@ const onlyIgnoredTargets = () => (
         urlKey: 'onlyIgnoredTargets',
         label: {
             id: 'main.label.onlyIgnoredTargets',
-            defaultMessage: 'Uniquement les écrans ignorés',
+            defaultMessage: 'Ecrans ignorés',
         },
         type: 'checkbox',
     }

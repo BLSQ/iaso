@@ -152,5 +152,8 @@
     "microplanning.tooltip.cases": "Cas THA confirmés dans la dernière année",
     "microplanning.tooltip.village.type.official": "Z.S.",
     "microplanning.tooltip.village.type.other": "non-Z.S.",
-    "microplanning.tooltip.village.type.unknown": "visible du satellite"
+    "microplanning.tooltip.village.type.unknown": "visible du satellite",
+    "main.label.onlyReferenceSites": "Sites de références",
+    "main.label.onlyIgnoredTargets": "Ecrans ignorés",
+    "main.label.onlyIgnoredSites": "Sites ignorés"
 }

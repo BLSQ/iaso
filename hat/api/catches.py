@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from hat.vector_control.models import Site, Catch
+from hat.vector_control.models import Site, Catch, APIImport
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from datetime import datetime
 from django.utils import timezone
-
+import json
 
 def timestamp_to_utc_datetime(timestamp):
     dt = datetime.fromtimestamp(int(timestamp/1000))
@@ -68,25 +68,38 @@ class CatchesViewSet(viewsets.ViewSet):
         return Response(target.as_dict())
 
     def create(self, request):
-        catchs = request.data
+        catches = request.data
         new_catchs = []
-        for catch in catchs:
-            print("catch", catch)
+        api_import = APIImport()
+        api_import.user = request.user
+        api_import.import_type = 'catch'
+        api_import.json_body =catches
+        api_import.save()
+        for catch in catches:
             uuid = catch.get('uuid', None)
             existing_catches = Catch.objects.filter(uuid=uuid)
+
             if existing_catches:
                 new_catch = existing_catches[0]
+                created = False
             else:
                 new_catch = Catch()
-            new_catch.uuid = uuid
-            site_uuid = catch.get('site_uuid', None)
-            site, created = Site.objects.get_or_create(uuid=site_uuid)
+                created = True
+            if created:
+                new_catch.uuid = uuid
+                site_uuid = catch.get('site_uuid', None)
+                site, created = Site.objects.get_or_create(uuid=site_uuid)
 
-            new_catch.site = site
-
-            start_time = catch.get('startTime', None)
-            if start_time:
-                new_catch.setup_date = timestamp_to_utc_datetime(int(start_time))
+                new_catch.site = site
+                new_catch.api_import = api_import
+                start_time = catch.get('startTime', None)
+                if start_time:
+                    new_catch.setup_date = timestamp_to_utc_datetime(int(start_time))
+                start_latitude = catch.get('startLatitude', None)
+                start_longitude = catch.get('startLongitude', None)
+                if start_latitude and start_longitude:
+                    new_catch.start_location = Point(x=start_longitude, y=start_latitude, srid=4326)
+                new_catch.user = request.user
 
             end_time = catch.get('endTime', None)
             if end_time:
@@ -96,17 +109,12 @@ class CatchesViewSet(viewsets.ViewSet):
             new_catch.female_count = catch.get('unknown_count', 0)
             new_catch.unknown_count = catch.get('unknown_count', 0)
             new_catch.remarks = catch.get('remarks', '')
-            start_latitude = catch.get('startLatitude', None)
-            start_longitude = catch.get('startLongitude', None)
-            if start_latitude and start_longitude:
-                new_catch.start_location = Point(x=start_longitude, y=start_latitude, srid=4326)
 
             end_latitude = catch.get('endLatitude', None)
             end_longitude = catch.get('endLongitude', None)
             if end_latitude and end_longitude:
                 new_catch.end_location = Point(x=end_longitude, y=end_latitude, srid=4326)
 
-            new_catch.user = request.user
             new_catch.source = 'API'
             new_catch.save()
             new_catchs.append(new_catch)

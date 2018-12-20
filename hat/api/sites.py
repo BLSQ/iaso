@@ -6,15 +6,16 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 
-from hat.vector_control.models import Site
+from hat.vector_control.models import Site, APIImport
 from .authentication import CsrfExemptSessionAuthentication
 from django.http import StreamingHttpResponse
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
-from django.db.models import Q, OuterRef, Exists
-import json
+from django.db.models import OuterRef, Exists
+
 import csv
+import json
 
 
 class SitesViewSet(viewsets.ViewSet):
@@ -154,25 +155,30 @@ class SitesViewSet(viewsets.ViewSet):
     def create(self, request):
         sites = request.data
         new_sites = []
+        api_import = APIImport()
+        api_import.user = request.user
+        api_import.import_type = 'site'
+        api_import.json_body = sites
+        api_import.save()
         for site in sites:
             uuid = site.get('uuid', None)
             new_site, created = Site.objects.get_or_create(uuid=uuid)
             new_site.name = site.get('name', None)
             new_site.habitat = site.get('habitat', None)
             new_site.description = site.get('description', None)
-            new_site.created_at = site.get('created_at', None)
-            new_site.uuid = site.get('uuid', None)
+            if created:
+                new_site.created_at = site.get('created_at', None)
+                new_site.uuid = site.get('uuid', None)
 
-            new_site.user = request.user
-            new_site.source = 'API'
-
-            latitude = site.get('latitude', None)
-            longitude = site.get('longitude', None)
-            if latitude and longitude:
-                new_site.location = Point(x=longitude, y=latitude, srid=4326)
-
-                new_site.save()
+                new_site.user = request.user
+                new_site.source = 'API'
+                new_site.api_import = api_import
+                latitude = site.get('latitude', None)
+                longitude = site.get('longitude', None)
+                if latitude and longitude:
+                    new_site.location = Point(x=longitude, y=latitude, srid=4326)
                 new_sites.append(new_site)
+            new_site.save()
 
         return Response([site.as_dict() for site in new_sites])
 

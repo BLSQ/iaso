@@ -78,6 +78,38 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
+                                ${formatMessage({ defaultMessage: 'Pièges', id: 'vector.labels.catchs' })}
+                            </td>
+                            <td>
+                                ${site.catchs_count}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
+                            </td>
+                            <td>
+                                ${site.catchs_count_male || '0'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
+                            </td>
+                            <td>
+                                ${site.catchs_count_female || '0'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
+                            </td>
+                            <td>
+                                ${site.catchs_count_unknown || '0'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
                             </td>
                             <td>
@@ -104,8 +136,8 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                             <td>
                                 ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
                             </td>
-                            <td class="${!site.habitat ? 'align-center' : ''}">
-                                ${!site.habitat || site.habitat === '' ? '/' : formatMessage(MESSAGES[site.habitat])}
+                            <td>
+                                ${!site.habitat || site.habitat === '' ? formatMessage(MESSAGES.unknown) : formatMessage(MESSAGES[site.habitat])}
                             </td>
                         </tr>
                         <tr>

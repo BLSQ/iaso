@@ -2,17 +2,19 @@ from rest_framework import viewsets
 
 from rest_framework.response import Response
 
+
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
+from django.db import models
 
-from hat.vector_control.models import Site, APIImport
+from hat.vector_control.models import Site, APIImport, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
-from django.db.models import OuterRef, Exists
+from django.db.models import OuterRef, Exists, Count, Sum, Case, When, Value
 
 import csv
 import json
@@ -94,17 +96,39 @@ class SitesViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
+        queryset = queryset.annotate(catchs_count=Count('catch'))
+        queryset = queryset.annotate(catchs_count_male=Sum('catch__male_count'))
+        queryset = queryset.annotate(catchs_count_female=Sum('catch__female_count'))
+        queryset = queryset.annotate(catchs_count_unknown=Sum('catch__unknown_count'))
+
+
         if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
-                paginator = Paginator(queryset, limit)
+                values = ("id",
+                    "name",
+                    "description",
+                    "habitat",
+                    "created_at",
+                    "user__username",
+                    "is_reference",
+                    "ignore",
+                    "altitude",
+                    "description",
+                    "latitude",
+                    "longitude",
+                    "catchs_count",
+                    "catchs_count_male",
+                    "catchs_count_female",
+                    "catchs_count_unknown")
+                paginator = Paginator(queryset.values(*values), limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["list"] = map(lambda x: x.as_dict(), page.object_list)
+                res["list"] = page.object_list
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -114,7 +138,20 @@ class SitesViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            columns = ['ID', 'Date de création', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Habitat', 'Description', 'Référence', 'Utilisateur']
+            columns = ['ID',
+            'Date de création',
+            'Nom',
+            'Nombre de pièges',
+            'Males',
+            'Femelles',
+            'Inconnus',
+            'Latitude',
+            'Longitude',
+            'Altitude',
+            'Habitat',
+            'Description',
+            'Référence',
+            'Utilisateur']
             filename = 'sites'
 
             def get_row(site):
@@ -125,10 +162,23 @@ class SitesViewSet(viewsets.ViewSet):
                 habitatText = "Inconnu"
                 if sdict["habitat"]:
                     habitatText = site.get_habitat_display()
+
+                catchs_count_male = 0
+                catchs_count_female = 0
+                catchs_count_unknown = 0
+                if site.catchs_count > 0:
+                    catchs_count_male = site.catchs_count_male
+                    catchs_count_female = site.catchs_count_female
+                    catchs_count_unknown = site.catchs_count_unknown
+
                 return [
                             sdict.get("id"),
                             site.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                             sdict.get("name"),
+                            site.catchs_count,
+                            catchs_count_male,
+                            catchs_count_female,
+                            catchs_count_unknown,
                             sdict.get("latitude"),
                             sdict.get("longitude"),
                             sdict.get("altitude"),
@@ -154,8 +204,13 @@ class SitesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         site = get_object_or_404(Site, pk=pk)
-
-        return Response(site.as_dict())
+        site_dict = site.as_dict()
+        catchs = Catch.objects.filter(site__id=pk)
+        site_dict['catchs_count'] = catchs.count()
+        site_dict['catchs_count_male'] = catchs.aggregate(Sum('male_count'))['male_count__sum']
+        site_dict['catchs_count_female'] = catchs.aggregate(Sum('female_count'))['female_count__sum']
+        site_dict['catchs_count_unknown'] = catchs.aggregate(Sum('unknown_count'))['unknown_count__sum']
+        return Response(site_dict)
 
     def create(self, request):
         sites = request.data

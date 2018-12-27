@@ -80,18 +80,17 @@ class Site(models.Model):
     location = PointField(srid=4326, null=True)
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.habitat, self.location)
 
     def as_location(self):
-        geojson =  self.location.json
-        coordinates = json.loads(geojson).get('coordinates')
-
         return {
         'id': self.id,
-        'latitude': coordinates[1],
-        'longitude': coordinates[0]
+            'latitude': self.latitude,
+            'longitude': self.longitude,
     }
 
     def as_dict(self):
@@ -104,11 +103,18 @@ class Site(models.Model):
             'username': self.user.username,
             'is_reference': self.is_reference,
             'ignore': self.ignore,
-            'latitude': self.location.y,
-            'longitude': self.location.x,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
             'altitude': self.altitude,
             'description': self.description,
         }
+    def save(self, *args, **kwargs):
+        if getattr(self, 'location', True):
+            geojson =  self.location.json
+            coordinates = json.loads(geojson).get('coordinates')
+            self.latitude = coordinates[1]
+            self.longitude = coordinates[0]
+        super(Site, self).save(*args, **kwargs)
 
 
 class Catch(models.Model):

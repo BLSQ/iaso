@@ -13,9 +13,9 @@ def generate_xlsx(sheet_name, columns, queryset, get_row):
 
     ws.write_row('A' +str(row_num), columns, bold)
 
-    for site in queryset:
+    for item in queryset:
         row_num += 1
-        ws.write_row('A' +str(row_num), get_row(site))
+        ws.write_row('A' +str(row_num), get_row(item))
     wb.close()
 
     output.seek(0)

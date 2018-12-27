@@ -27,6 +27,55 @@ const sitesColumns = (formatMessage, messages, element) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Pièges',
+                id: 'main.label.catchs',
+            }),
+            accessor: 'catchs_count',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Mâles',
+                id: 'main.label.catchs_count_male',
+            }),
+            accessor: 'catchs_count_male',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.catchs_count_male ? settings.original.catchs_count_male : '0'
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Femelles',
+                id: 'main.label.catchs_count_female',
+            }),
+            accessor: 'catchs_count_female',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.catchs_count_female ? settings.original.catchs_count_female : '0'
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Inconnus',
+                id: 'main.label.catchs_count_unknown',
+            }),
+            accessor: 'catchs_count_unknown',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.catchs_count_unknown ? settings.original.catchs_count_unknown : '0'
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Description',
                 id: 'main.label.description',
             }),
@@ -61,13 +110,6 @@ const sitesColumns = (formatMessage, messages, element) => (
                 id: 'main.label.user',
             }),
             accessor: 'user__username',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.username
-                    }
-                </span>
-            ),
         },
         {
             Header: formatMessage({
@@ -78,7 +120,9 @@ const sitesColumns = (formatMessage, messages, element) => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.habitat ? formatMessage(messages[settings.original.habitat]) : '/'
+                        settings.original.habitat ?
+                            formatMessage(messages[settings.original.habitat]) :
+                            formatMessage(messages.unknown)
                     }
                 </span>
             ),

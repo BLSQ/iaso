@@ -30,7 +30,7 @@ td {
   overflow: hidden;
   border-bottom: 1px solid $light-gray;
   background: $background-highlight-gray;
-
+  position: relative;
 }
 
 td.error, span.error {

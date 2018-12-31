@@ -150,7 +150,13 @@ class Catch(models.Model):
         'male_count': self.male_count,
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
-        'source': self.source
+        'source': self.source,
+        'latitude': self.end_location.y,
+        'longitude': self.end_location.x,
+        'username': self.user.username,
+        'remarks': self.remarks,
+        'collect_date': self.collect_date,
+        'setup_date': self.setup_date,
     }
 
 

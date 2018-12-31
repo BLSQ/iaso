@@ -57,12 +57,13 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                 <h6>
                     ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
 
-                    <button class="button--tiny"
-                    id="edit-button"
-                    data-id="${site.id}"
-                    data-type="site"
-                >
-                <i class="fa fa-pencil-square-o"> </i>
+                    <button
+                        class="button--tiny"
+                        id="edit-button"
+                        data-id="${site.id}"
+                        data-type="site"
+                    >
+                        <i class="fa fa-pencil-square-o"> </i>
                     </button>
                 </h6>
 
@@ -82,6 +83,11 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                             </td>
                             <td>
                                 ${site.catchs_count}
+                                ${site.catchs_count > 0 ?
+        `<button class="button--tiny" id="catchs-button" data-id="${site.id}" data-type="catchs"><i class="fa fa-eye"> </i></button>`
+        : ''
+}
+
                             </td>
                         </tr>
                         <tr>

@@ -3,7 +3,9 @@
  */
 
 export const UNKNOWN = 'hat/microplanning/leaflet/action/UNKNWON';
-export const BASE_LAYER_CHANGE = 'hat/microplanning/leaflet/base-layer/CHANGE';
+export const BASE_LAYER_CHANGE = 'hat/vector/leaflet/base-layer/CHANGE';
+export const BASE_CATCHS_LAYER_CHANGE = 'hat/vector/leaflet/base-layer-catchs/CHANGE';
+
 
 export const mapLayerTypes = {
     legend: 1,
@@ -19,11 +21,11 @@ export const mapBaseLayers = [
     'arcgis-topo',
 ];
 
-export const changeLayer = (layerType, payload) => {
+export const changeLayer = (layerType, payload, isCatchs = false) => {
     switch (layerType) {
         case mapLayerTypes.baseLayer:
             return {
-                type: BASE_LAYER_CHANGE,
+                type: isCatchs ? BASE_CATCHS_LAYER_CHANGE : BASE_LAYER_CHANGE,
                 payload,
             };
 
@@ -38,6 +40,7 @@ export const mapActions = {
 
 export const mapInitialState = {
     baseLayer: 'arcgis-topo',
+    baseCatchLayer: 'arcgis-satellite',
 };
 
 export const mapReducer = (state = mapInitialState, action = {}) => {
@@ -49,6 +52,15 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
                 return state;
             }
             return { ...state, baseLayer };
+        }
+
+        case BASE_CATCHS_LAYER_CHANGE: {
+            const baseCatchLayer = action.payload;
+
+            if (mapBaseLayers.indexOf(baseCatchLayer) === -1) {
+                return state;
+            }
+            return { ...state, baseCatchLayer };
         }
 
         default:

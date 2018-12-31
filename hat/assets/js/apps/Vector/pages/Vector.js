@@ -24,6 +24,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
+import ShowCatchsComponent from '../components/ShowCatchsComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
@@ -43,6 +44,7 @@ export class Vector extends Component {
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
             showEditSiteModale: false,
             showEditTargetModale: false,
+            showCatchsModale: false,
             siteEdited: props.siteEdited,
             targetEdited: props.targetEdited,
         };
@@ -57,8 +59,8 @@ export class Vector extends Component {
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: newProps.params.tab,
-            siteEdited: newProps.siteEdited,
-            targetEdited: newProps.targetEdited,
+            siteEdited: newProps.siteEdited || this.state.siteEdited,
+            targetEdited: newProps.targetEdited || this.state.targetEdited,
         };
         if (newProps.params.sites) {
             newState.sites = newProps.vectors.sites;
@@ -147,6 +149,7 @@ export class Vector extends Component {
         if (type === 'site') {
             this.setState({
                 showEditSiteModale: true,
+                showCatchsModale: false,
                 showEditTargetModale: false,
                 siteEdited: data,
             });
@@ -155,10 +158,21 @@ export class Vector extends Component {
         if (type === 'target') {
             this.setState({
                 showEditSiteModale: false,
+                showCatchsModale: false,
                 showEditTargetModale: true,
                 targetEdited: data,
             });
         }
+    }
+
+
+    displayCatchs(data = undefined) {
+        this.setState({
+            showCatchsModale: true,
+            showEditSiteModale: false,
+            showEditTargetModale: false,
+            siteEdited: data,
+        });
     }
 
 
@@ -205,6 +219,17 @@ export class Vector extends Component {
         );
         return (
             <section className="vectors-container">
+                {
+                    this.state.showCatchsModale &&
+                    <ShowCatchsComponent
+                        showModale={this.state.showCatchsModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showCatchsModale: !this.state.showCatchsModale,
+                            })}
+                        site={this.state.siteEdited}
+                    />
+                }
                 {
                     this.state.showEditSiteModale &&
                     <EditSiteComponent
@@ -313,6 +338,7 @@ export class Vector extends Component {
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => selectMarker(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
+                                displayCatchs={data => this.displayCatchs(data)}
                             />
                         </div>
                     </div>

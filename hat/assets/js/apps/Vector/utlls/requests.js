@@ -250,7 +250,6 @@ export const saveSite = (dispatch, site) => {
 };
 
 export const saveTarget = (dispatch, target) => {
-    console.log(target);
     dispatch(loadActions.startLoading());
     return (req
         .put(`/api/targets/${target.id}/`)

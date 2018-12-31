@@ -13,7 +13,6 @@ import { getZsName, clone } from '../../../utils';
 import shapeUrls from '../../../utils/constants/shapesUrls';
 
 import {
-    updateBaseLayer,
     includeControlsInMap,
     onResizeMap,
     defaultFitToBound,
@@ -21,6 +20,27 @@ import {
 } from '../../../utils/mapUtils';
 
 let exportControl;
+const tileOptions = { keepBuffer: 4 };
+const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
+const BASE_LAYERS = {
+    blank: L.tileLayer(''),
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
+    'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
+    'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
+    'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
+};
+
+
+const updateBaseLayer = (currentMap, baseLayer) => {
+    Object.keys(BASE_LAYERS).forEach((key) => {
+        const layer = BASE_LAYERS[key];
+        if (key === baseLayer) {
+            layer.addTo(currentMap);
+        } else if (currentMap.hasLayer(layer)) {
+            currentMap.removeLayer(layer);
+        }
+    });
+};
 
 const MapDatas = (coordination, workzone, teamGeoScope) => {
     const tempCoordinations = coordination;

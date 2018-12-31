@@ -210,6 +210,7 @@ class SitesViewSet(viewsets.ViewSet):
         site_dict['catchs_count_male'] = catchs.aggregate(Sum('male_count'))['male_count__sum']
         site_dict['catchs_count_female'] = catchs.aggregate(Sum('female_count'))['female_count__sum']
         site_dict['catchs_count_unknown'] = catchs.aggregate(Sum('unknown_count'))['unknown_count__sum']
+        site_dict['catchs'] = map(lambda x: x.as_dict(), catchs)
         return Response(site_dict)
 
     def create(self, request):

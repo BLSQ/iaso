@@ -23,8 +23,8 @@
     overflow: visible !important;
     .widget__header {
         padding-top: 0;
-        margin-left: -$padding-unit / 2;
-        width: calc(100% + #{$padding-unit});
+        margin-left: -20px;
+        width: calc(100% + 40px);
         margin-bottom: $padding-unit / 2;
     }
     &.with-tabs {
@@ -231,6 +231,7 @@
         }
         &.extra {
             width: 900px;
+            max-width: 100%;
         }
     }
     .filters-container {

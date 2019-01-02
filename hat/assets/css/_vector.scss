@@ -12,6 +12,9 @@
     }
     table {
         margin-top: 10px;
+        td {
+            white-space: nowrap;
+        }
     }
 }
 

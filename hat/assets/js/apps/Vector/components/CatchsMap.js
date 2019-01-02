@@ -11,6 +11,10 @@ import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import geoUtils from '../../../utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
+import {
+    renderCatchsPopup,
+    renderSitesPopup,
+} from '../utlls/vectorMapUtils';
 
 import {
     MESSAGES,
@@ -118,7 +122,12 @@ class CatchsMap extends Component {
 *************************************************************************** */
 
     updateCatchs() {
-        const { site } = this.props;
+        const {
+            site,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         this.catchsGroup.clearLayers();
         this.siteGroup.clearLayers();
         const siteCircle = L.circle([site.latitude, site.longitude], {
@@ -129,8 +138,21 @@ class CatchsMap extends Component {
             pane: 'custom-pane-markers',
         })
             .addTo(this.siteGroup)
-            .on('click', () => {
-                console.log('pop up');
+            .on('click', (event) => {
+                const popUp = event.target.getPopup();
+                popUp.setContent(renderSitesPopup(site, formatMessage, false));
+            })
+            .bindPopup()
+            .on('mouseover', () => {
+                const lat = site.latitude;
+                const lng = site.longitude;
+                const item = {
+                    label: `${formatMessage(MESSAGES.site)} ${site.name} `,
+                };
+                this.updateTooltipSmall(item, lat, lng);
+            })
+            .on('mouseout', () => {
+                this.updateTooltipSmall();
             });
         if (site.catchs) {
             site.catchs.map((catchItem) => {
@@ -142,8 +164,21 @@ class CatchsMap extends Component {
                     pane: 'custom-pane-markers',
                 })
                     .addTo(this.catchsGroup)
-                    .on('click', () => {
-                        console.log('pop up');
+                    .on('click', (event) => {
+                        const popUp = event.target.getPopup();
+                        popUp.setContent(renderCatchsPopup(catchItem, formatMessage));
+                    })
+                    .bindPopup()
+                    .on('mouseover', () => {
+                        const lat = catchItem.latitude;
+                        const lng = catchItem.longitude;
+                        const item = {
+                            label: `${formatMessage(MESSAGES.catch)}-${catchItem.id} `,
+                        };
+                        this.updateTooltipSmall(item, lat, lng);
+                    })
+                    .on('mouseout', () => {
+                        this.updateTooltipSmall();
                     });
 
                 return true;

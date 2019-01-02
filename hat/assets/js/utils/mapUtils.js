@@ -45,6 +45,14 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Population endémique',
         id: 'locator.label.endemic-population',
     },
+    catch: {
+        defaultMessage: 'Piège',
+        id: 'locator.label.catch',
+    },
+    site: {
+        defaultMessage: 'Site',
+        id: 'locator.label.site',
+    },
 });
 
 export const onResizeMap = (width, height, exportControl, currentMap, filename) => {

@@ -368,7 +368,6 @@ $color in $types {
             background: yellow;
         }
     }
-
     &--site {
         width: 12px;
         height: 12px;
@@ -1102,8 +1101,7 @@ button {
     }
 }
 
-.village-map-container,
-.catchs-map-container {
+.village-map-container {
     .map-container {
         height: 450px;
     }
@@ -1113,9 +1111,43 @@ button {
         }
     }
 }
+
 .catchs-map-container {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
+    .map-container {
+        height: 600px;
+    }
+    .map-parent-container {
+        >div:not(.map-container) {
+            height: 600px !important;
+        }
+    }
+}
+
+@media (max-height: 950px) {
+    .catchs-map-container {
+        .map-container {
+            height: 550px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 550px !important;
+            }
+        }
+    }
+}
+@media (max-height: 880px) {
+    .catchs-map-container {
+        .map-container {
+            height: 450px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 450px !important;
+            }
+        }
+    }
 }
 
 .vector-map {

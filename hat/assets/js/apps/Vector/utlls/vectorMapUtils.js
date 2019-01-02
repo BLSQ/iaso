@@ -1,6 +1,5 @@
 import moment from 'moment';
 import { defineMessages } from 'react-intl';
-import React from 'react';
 
 export const MESSAGES = defineMessages({
     map: {
@@ -53,18 +52,33 @@ export const MESSAGES = defineMessages({
     },
 });
 
-export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
+const editSiteButton = siteId => `<button
+    class="button--tiny"
+    id="edit-button"
+    data-id="${siteId}"
+    data-type="site"
+    >
+    <i class="fa fa-pencil-square-o"> </i>
+    </button>`;
+
+const editCatchButton = (siteId, withAction) => {
+    if (withAction) {
+        return `<button
+        class="button--tiny"
+        id="catchs-button"
+        data-id="${siteId}"
+        data-type="catchs"
+        >
+        <i class="fa fa-eye"> </i>
+        </button>`;
+    }
+    return '';
+};
+
+export const renderSitesPopup = (site, formatMessage, withActions = true) => `<section class="custom-popup-container">
                 <h6>
                     ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
-
-                    <button
-                        class="button--tiny"
-                        id="edit-button"
-                        data-id="${site.id}"
-                        data-type="site"
-                    >
-                        <i class="fa fa-pencil-square-o"> </i>
-                    </button>
+                    ${withActions ? editSiteButton(site.id) : ''}
                 </h6>
 
                 <table>
@@ -83,10 +97,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                             </td>
                             <td>
                                 ${site.catchs_count}
-                                ${site.catchs_count > 0 ?
-        `<button class="button--tiny" id="catchs-button" data-id="${site.id}" data-type="catchs"><i class="fa fa-eye"> </i></button>`
-        : ''
-}
+                                ${site.catchs_count > 0 ? editCatchButton(site.id, withActions) : ''}
 
                             </td>
                         </tr>
@@ -337,6 +348,97 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                     </tbody>
                 </table>
             </section>`;
+
+
+export const renderCatchsPopup = (catchItem, formatMessage) => `<section class="custom-popup-container">
+            <h6>
+                ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.catch' })}:
+            </h6>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Dernière collecte', id: 'vector.labels.collect_date' })}
+                        </td>
+                        <td>
+                            ${moment(catchItem.collect_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
+                        </td>
+                        <td>
+                            ${moment(catchItem.setup_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
+                        </td>
+                        <td>
+                            ${catchItem.male_count || '0'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
+                        </td>
+                        <td>
+                            ${catchItem.female_count || '0'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
+                        </td>
+                        <td>
+                            ${catchItem.unknown_count || '0'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Source', id: 'vector.labels.source' })}
+                        </td>
+                        <td class="${!catchItem.source ? 'align-center' : ''}">
+                            ${catchItem.source || '/'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
+                        </td>
+                        <td>
+                            ${catchItem.latitude}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
+                        </td>
+                        <td>
+                            ${catchItem.longitude}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Utilisateur', id: 'vector.labels.user' })}
+                        </td>
+                        <td>
+                            ${catchItem.username}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Remarques', id: 'vector.labels.remarks' })}
+                        </td>
+                        <td>
+                            ${catchItem.remarks}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>`;
 
 export const itemsToShow = params => [
     {

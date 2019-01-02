@@ -1149,6 +1149,18 @@ button {
         }
     }
 }
+@media (max-height: 750px) {
+    .catchs-map-container {
+        .map-container {
+            height: 400px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 400px !important;
+            }
+        }
+    }
+}
 
 .vector-map {
     .map-container {

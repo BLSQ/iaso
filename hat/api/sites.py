@@ -106,29 +106,14 @@ class SitesViewSet(viewsets.ViewSet):
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
-                values = ("id",
-                    "name",
-                    "description",
-                    "habitat",
-                    "created_at",
-                    "user__username",
-                    "is_reference",
-                    "ignore",
-                    "altitude",
-                    "description",
-                    "latitude",
-                    "longitude",
-                    "catchs_count",
-                    "catchs_count_male",
-                    "catchs_count_female",
-                    "catchs_count_unknown")
-                paginator = Paginator(queryset.values(*values), limit)
+
+                paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["list"] = page.object_list
+                res["list"] = map(lambda x: x.as_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

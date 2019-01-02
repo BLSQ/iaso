@@ -109,7 +109,7 @@ const sitesColumns = (formatMessage, messages, element) => (
                 defaultMessage: 'Utilisateur',
                 id: 'main.label.user',
             }),
-            accessor: 'user__username',
+            accessor: 'user',
         },
         {
             Header: formatMessage({

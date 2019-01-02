@@ -1,17 +1,10 @@
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.gis.db.models.fields import PointField
 from django.db import models
-from django.db.models import Count
 import uuid
 import json
 from django.contrib.postgres.fields import JSONField
 
-# Create your models here.
-#Site	Zone	Zone.Abb	LAT	LONG	Habitat	FirstSurvey	FirstSurveyDate	Count	Total	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
-
-#Site	Zone	Zone.Abb	LAT	LONG	Habitat	FirstSurvey	FirstSurveyDate	Count	Total
-#Site	Operation	DATE_.SETUP	DATE_.COLLECT	In_Out	Males	Females	Unknown	Remarks	distToTargets	NearIntervention	elevChange	trapElev	targetElev	elevDiff
 from django.db.models import CASCADE
 
 SOURCE_CHOICES = (
@@ -80,8 +73,7 @@ class Site(models.Model):
     location = PointField(srid=4326, null=True)
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.habitat, self.location)
@@ -89,12 +81,12 @@ class Site(models.Model):
     def as_location(self):
         return {
         'id': self.id,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
+            'latitude': self.location.y,
+            'longitude': self.location.x,
     }
 
     def as_dict(self):
-        return {
+        res = {
             'id': self.id,
             'name': self.name,
             'description': self.description,
@@ -103,19 +95,19 @@ class Site(models.Model):
             'username': self.user.username,
             'is_reference': self.is_reference,
             'ignore': self.ignore,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
+            'latitude': self.location.y,
+            'longitude': self.location.x,
             'altitude': self.altitude,
             'description': self.description,
+            'user': self.user.username
         }
-    def save(self, *args, **kwargs):
-        if getattr(self, 'location', True):
-            geojson =  self.location.json
-            coordinates = json.loads(geojson).get('coordinates')
-            self.latitude = coordinates[1]
-            self.longitude = coordinates[0]
-        super(Site, self).save(*args, **kwargs)
 
+        count_fields = ['catchs_count', 'catchs_count_male', 'catchs_count_female', 'catchs_count_unknown']
+        for field in count_fields:
+            if hasattr(self, field):
+                res[field] = getattr(self, field)
+
+        return res
 
 class Catch(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
@@ -135,6 +127,9 @@ class Catch(models.Model):
     end_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
+
+    class Meta:
+        verbose_name_plural = "catches"
 
     def as_location(self):
         return {

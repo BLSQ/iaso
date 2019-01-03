@@ -15,6 +15,11 @@ const filtersVectors = (formatMessage, messages, usersList, habitatsList) => (
         habitats(formatMessage, messages, habitatsList),
     ]
 );
+const filtersVectorsSync = usersList => (
+    [
+        users(usersList),
+    ]
+);
 
 const filtersVectors2 = () => (
     [
@@ -41,5 +46,6 @@ export {
     filtersVectors,
     filtersVectors2,
     filtersVectorsGeo,
+    filtersVectorsSync,
 };
 

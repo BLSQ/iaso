@@ -43,6 +43,8 @@ $filter-container-height: 2rem;
 $select-width: 120px;
 .date-select-container {
     display: inline-block;
+    position: relative;
+    z-index: 100;
     .button--save--tiny {
         height: 33px;
         font-size: 13px;
@@ -285,14 +287,25 @@ input.input--minimised {
         margin-bottom: 0;
     }
 }
+
 .filter-item-subtitle {
     font-weight: bold;
     color: $mid-gray;
     margin-bottom: 6px;
+    font-size: 12px;
 }
+
 .filter-checkbox {
     label {
         display: inline-block;
         font-size: 12px;
     }
+}
+
+.filter-inline {
+    display: inline-block !important;
+    margin-left: $padding-unit;
+    min-width: 200px;
+    position: relative top;
+    top: 5px;
 }

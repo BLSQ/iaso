@@ -21,6 +21,7 @@ def gpximport(filename, file=None, user=None):
         file_date_time=gpx.time.replace(tzinfo=timezone.utc),
         creator=gpx.creator,
         user=user,
+        count=len(gpx.waypoints)
     )
 
     for wp in gpx.waypoints:

@@ -90,6 +90,10 @@ $directions: left right top bottom;
     padding-bottom: 0 !important;
 }
 
+.no-padding {
+    padding: 0 !important;
+}
+
 .align-right {
     text-align: right;
 }
@@ -103,6 +107,14 @@ $directions: left right top bottom;
     .middle-margin-element {
         margin: 0 5%;
     }
+}
+
+.display-flex {
+    display: flex ! important;
+}
+
+.float-right {
+    float: right;
 }
 
 .large-text {
@@ -130,6 +142,7 @@ $directions: left right top bottom;
 .border-top {
     border-top: 1px solid $gray;
 }
+
 .border-bottom {
     border-bottom: 1px solid $gray;
 }
@@ -224,7 +237,7 @@ $directions: left right top bottom;
 
 .stars {
     color: $yellow;
-    & > span {
+    &>span {
         color: $gray;
         font-size: 12px;
         display: inline-block;

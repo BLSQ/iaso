@@ -49,18 +49,19 @@ class APIImport(models.Model):
     def as_dict(self):
         res = {
             'id': self.id,
-            'user': self.user,
+            'user': self.user.username,
             'created_at': self.created_at,
             'type': self.import_type
         }
 
-        if self.import_type == 'site' :
+        if self.import_type == 'site':
             site_count = self.site_set.count()
             res['site_count'] = site_count
 
-        elif self.import_type == 'catch' > 0:
+        elif self.import_type == 'catch':
             catch_count = self.catch_set.count()
             res['catch_count'] = catch_count
+        return res
 
 
 class Site(models.Model):
@@ -153,18 +154,23 @@ class GpsImport(models.Model):
     creator = models.TextField(null=True, blank=True)  # This usually holds the model of GPS that created the file.
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+    count =  models.IntegerField(default=0, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s " % (self.id, self.filename)
 
     def as_dict(self):
+        username = None
+        if self.user:
+            username = self.user.username
         return {
             'id': self.id,
             'filename': self.filename,
             'file_date_time': self.file_date_time,
             'creator': self.creator,
-            'user': self.user.username,
-            'created_at': self.created_at
+            'user': username,
+            'created_at': self.created_at,
+            'count': self.count
         }
 
 

@@ -139,7 +139,7 @@ class CustomTableComponent extends React.Component {
                 this.props.onDataLoaded(data, parseInt(data.count, 10), data.pages);
             }
             let { showPagination } = this.props;
-            if (data.count) {
+            if (data.count || data.count === 0) {
                 showPagination = this.props.showPagination && (data.count > settings.pageSize);
             }
             if (!data.pages) {
@@ -203,9 +203,12 @@ class CustomTableComponent extends React.Component {
 
     render() {
         const data = this.state.reduxDatas ? this.state.reduxDatas : this.state.data;
-        const currentPageSize = this.state.showPagination ||
+        let currentPageSize = this.state.showPagination ||
             (!this.state.showPagination && data.length === 0)
             ? this.state.pageSize : data.length;
+        if (data.length === 0) {
+            currentPageSize = 2;
+        }
         return (
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section

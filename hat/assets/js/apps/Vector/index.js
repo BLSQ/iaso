@@ -20,7 +20,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
     const defaultMapPath = `/map/dateFrom/${dateFrom}/dateTo/${dateTo}/sites/true/tab/map`;
-    const defaulSyncPath = '/sync/tab/sites';
+    const defaulSyncPath = `/sync/dateFrom/${dateFrom}/dateTo/${dateTo}/tab/sites`;
     const routes = [
         <Route
             path={'/map/dateFrom/:dateFrom/dateTo/:dateTo(/sites/:sites)' +
@@ -35,10 +35,10 @@ export default function vectorApp(appConfig, element, baseUrl) {
             component={VectorContainer}
         />,
         <Route
-            path={'/sync/tab/:tab' +
+            path={'/sync/dateFrom/:dateFrom/dateTo/:dateTo/tab/:tab' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
-            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)'}
+            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)'}
             component={VectorSync}
         />,
         <Route

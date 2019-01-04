@@ -12,7 +12,7 @@ import L from 'leaflet';
 import geoUtils from '../../../utils/geo';
 import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
 import {
-    renderCatchsPopup,
+    renderCatchesPopup,
     renderSitesPopup,
 } from '../utlls/vectorMapUtils';
 
@@ -50,7 +50,7 @@ const updateBaseLayer = (currentMap, baseLayer) => {
 };
 
 let exportControl;
-class CatchsMap extends Component {
+class CatchesMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -66,13 +66,13 @@ class CatchsMap extends Component {
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
-        this.catchsGroup = new L.FeatureGroup();
+        this.catchesGroup = new L.FeatureGroup();
         this.siteGroup = new L.FeatureGroup();
-        this.map.addLayer(this.catchsGroup);
+        this.map.addLayer(this.catchesGroup);
         this.map.addLayer(this.siteGroup);
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
-        this.updateCatchs();
+        this.updateCatches();
         this.fitToBounds();
     }
 
@@ -86,7 +86,7 @@ class CatchsMap extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
             if (hasChanged(prevProps, this.props, 'site')) {
-                this.updateCatchs();
+                this.updateCatches();
             }
         });
     }
@@ -121,14 +121,14 @@ class CatchsMap extends Component {
 * UPDATE STATE
 *************************************************************************** */
 
-    updateCatchs() {
+    updateCatches() {
         const {
             site,
             intl: {
                 formatMessage,
             },
         } = this.props;
-        this.catchsGroup.clearLayers();
+        this.catchesGroup.clearLayers();
         this.siteGroup.clearLayers();
         const siteCircle = L.circle([site.latitude, site.longitude], {
             color: siteColor,
@@ -154,8 +154,8 @@ class CatchsMap extends Component {
             .on('mouseout', () => {
                 this.updateTooltipSmall();
             });
-        if (site.catchs) {
-            site.catchs.map((catchItem) => {
+        if (site.catches) {
+            site.catches.map((catchItem) => {
                 const catchCircle = L.circle([catchItem.latitude, catchItem.longitude], {
                     color: catchesColor,
                     fillColor: catchesColor,
@@ -163,10 +163,10 @@ class CatchsMap extends Component {
                     radius: 100,
                     pane: 'custom-pane-markers',
                 })
-                    .addTo(this.catchsGroup)
+                    .addTo(this.catchesGroup)
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
-                        popUp.setContent(renderCatchsPopup(catchItem, formatMessage));
+                        popUp.setContent(renderCatchesPopup(catchItem, formatMessage));
                     })
                     .bindPopup()
                     .on('mouseover', () => {
@@ -203,7 +203,7 @@ class CatchsMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.catchsGroup.getBounds(), 15);
+        defaultFitToBound(map, this.catchesGroup.getBounds(), 15);
     }
 
     /*
@@ -247,11 +247,11 @@ class CatchsMap extends Component {
     }
 }
 
-CatchsMap.propTypes = {
+CatchesMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     site: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
 };
 
-export default injectIntl(CatchsMap);
+export default injectIntl(CatchesMap);

@@ -67,16 +67,16 @@ class VectorMapComponent extends Component {
         this.map.on('popupopen', () => {
             setTimeout(() => {
                 const editButton = document.getElementById('edit-button');
-                const catchsButton = document.getElementById('catchs-button');
+                const catchesButton = document.getElementById('catches-button');
                 if (editButton) {
                     editButton.addEventListener('click', () => {
                         this.props.editItem(editButton.dataset.type, this.state.editedItem);
                         this.map.closePopup();
                     });
                 }
-                if (catchsButton) {
-                    catchsButton.addEventListener('click', () => {
-                        this.props.displayCatchs(this.state.editedItem);
+                if (catchesButton) {
+                    catchesButton.addEventListener('click', () => {
+                        this.props.displayCatches(this.state.editedItem);
                     });
                 }
             }, 300);
@@ -375,7 +375,7 @@ VectorMapComponent.propTypes = {
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
     editItem: PropTypes.func.isRequired,
-    displayCatchs: PropTypes.func.isRequired,
+    displayCatches: PropTypes.func.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

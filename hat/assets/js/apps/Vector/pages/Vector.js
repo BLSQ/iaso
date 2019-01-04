@@ -24,7 +24,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
-import ShowCatchsComponent from '../components/ShowCatchsComponent';
+import ShowCatchesComponent from '../components/ShowCatchesComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
@@ -44,7 +44,7 @@ export class Vector extends Component {
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
             showEditSiteModale: false,
             showEditTargetModale: false,
-            showCatchsModale: false,
+            showCatchesModale: false,
             siteEdited: props.siteEdited,
             targetEdited: props.targetEdited,
         };
@@ -149,7 +149,7 @@ export class Vector extends Component {
         if (type === 'site') {
             this.setState({
                 showEditSiteModale: true,
-                showCatchsModale: false,
+                showCatchesModale: false,
                 showEditTargetModale: false,
                 siteEdited: data,
             });
@@ -158,7 +158,7 @@ export class Vector extends Component {
         if (type === 'target') {
             this.setState({
                 showEditSiteModale: false,
-                showCatchsModale: false,
+                showCatchesModale: false,
                 showEditTargetModale: true,
                 targetEdited: data,
             });
@@ -166,9 +166,9 @@ export class Vector extends Component {
     }
 
 
-    displayCatchs(data = undefined, fetchDetails = false) {
+    displayCatches(data = undefined, fetchDetails = false) {
         const newState = {
-            showCatchsModale: true,
+            showCatchesModale: true,
             showEditSiteModale: false,
             showEditTargetModale: false,
             siteEdited: data,
@@ -182,7 +182,6 @@ export class Vector extends Component {
             });
         }
     }
-
 
     render() {
         const {
@@ -228,12 +227,12 @@ export class Vector extends Component {
         return (
             <section className="vectors-container">
                 {
-                    this.state.showCatchsModale &&
-                    <ShowCatchsComponent
-                        showModale={this.state.showCatchsModale}
+                    this.state.showCatchesModale &&
+                    <ShowCatchesComponent
+                        showModale={this.state.showCatchesModale}
                         toggleModal={() =>
                             this.setState({
-                                showCatchsModale: !this.state.showCatchsModale,
+                                showCatchesModale: !this.state.showCatchesModale,
                             })}
                         site={this.state.siteEdited}
                     />
@@ -345,7 +344,7 @@ export class Vector extends Component {
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => getSiteDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
-                                displayCatchs={data => this.displayCatchs(data)}
+                                displayCatches={data => this.displayCatches(data)}
                             />
                         </div>
                     </div>

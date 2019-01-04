@@ -65,9 +65,9 @@ const editCatchButton = (siteId, withAction) => {
     if (withAction) {
         return `<button
         class="button--tiny"
-        id="catchs-button"
+        id="catches-button"
         data-id="${siteId}"
-        data-type="catchs"
+        data-type="catches"
         >
         <i class="fa fa-eye"> </i>
         </button>`;
@@ -93,11 +93,11 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Pièges', id: 'vector.labels.catchs' })}
+                                ${formatMessage({ defaultMessage: 'Pièges', id: 'vector.labels.catches' })}
                             </td>
                             <td>
-                                ${site.catchs_count}
-                                ${site.catchs_count > 0 ? editCatchButton(site.id, withActions) : ''}
+                                ${site.catches_count}
+                                ${site.catches_count > 0 ? editCatchButton(site.id, withActions) : ''}
 
                             </td>
                         </tr>
@@ -106,7 +106,7 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                                 ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
                             </td>
                             <td>
-                                ${site.catchs_count_male || '0'}
+                                ${site.catches_count_male || '0'}
                             </td>
                         </tr>
                         <tr>
@@ -114,7 +114,7 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                                 ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
                             </td>
                             <td>
-                                ${site.catchs_count_female || '0'}
+                                ${site.catches_count_female || '0'}
                             </td>
                         </tr>
                         <tr>
@@ -122,7 +122,7 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                                 ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
                             </td>
                             <td>
-                                ${site.catchs_count_unknown || '0'}
+                                ${site.catches_count_unknown || '0'}
                             </td>
                         </tr>
                         <tr>
@@ -350,7 +350,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
             </section>`;
 
 
-export const renderCatchsPopup = (catchItem, formatMessage) => `<section class="custom-popup-container">
+export const renderCatchesPopup = (catchItem, formatMessage) => `<section class="custom-popup-container">
             <h6>
                 ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.catch' })}:
             </h6>
@@ -418,6 +418,14 @@ export const renderCatchsPopup = (catchItem, formatMessage) => `<section class="
                         </td>
                         <td>
                             ${catchItem.longitude}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
+                        </td>
+                        <td class="${!catchItem.catchItem ? 'align-center' : ''}">
+                            ${catchItem.altitude ? catchItem.altitude : '/'}
                         </td>
                     </tr>
                     <tr>

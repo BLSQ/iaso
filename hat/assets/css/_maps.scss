@@ -314,7 +314,7 @@ $color in $types {
     &--villages-with-case,
     &--sites,
     &--site,
-    &--catchs,
+    &--catches,
     &--targets {
         border: none;
         background: transparent;
@@ -374,7 +374,7 @@ $color in $types {
         border: 2px solid yellow;
         background: rgba(yellow, 0.5);
     }
-    &--catchs {
+    &--catches {
         width: 12px;
         height: 12px;
         border: 2px solid orange;
@@ -1013,7 +1013,7 @@ button {
 .route-map,
 .split-map,
 .village-map-container,
-.catchs-map-container,
+.catches-map-container,
 .vector-map,
 .geo-scope-map {
     .map-container {
@@ -1112,7 +1112,7 @@ button {
     }
 }
 
-.catchs-map-container {
+.catches-map-container {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
     .map-container {
@@ -1126,7 +1126,7 @@ button {
 }
 
 @media (max-height: 950px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 550px;
         }
@@ -1138,7 +1138,7 @@ button {
     }
 }
 @media (max-height: 880px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 450px;
         }
@@ -1150,7 +1150,7 @@ button {
     }
 }
 @media (max-height: 750px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 400px;
         }

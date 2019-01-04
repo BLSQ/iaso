@@ -104,7 +104,7 @@ class Site(models.Model):
             'source': self.source
         }
 
-        count_fields = ['catchs_count', 'catchs_count_male', 'catchs_count_female', 'catchs_count_unknown']
+        count_fields = ['catches_count', 'catches_count_male', 'catches_count_female', 'catches_count_unknown']
         for field in count_fields:
             if hasattr(self, field):
                 res[field] = getattr(self, field)
@@ -162,9 +162,9 @@ class Catch(models.Model):
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
         'source': self.source,
-        'latitude': latitude,
         'longitude': longitude,
         'altitude': altitude,
+        'latitude': latitude,
         'username': self.user.username,
         'remarks': self.remarks,
         'collect_date': self.collect_date,

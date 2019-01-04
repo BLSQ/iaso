@@ -69,7 +69,7 @@ class CatchesViewSet(viewsets.ViewSet):
 
     def create(self, request):
         catches = request.data
-        new_catchs = []
+        new_catches = []
         api_import = APIImport()
         api_import.user = request.user
         api_import.import_type = 'catch'
@@ -108,6 +108,7 @@ class CatchesViewSet(viewsets.ViewSet):
             new_catch.male_count = catch.get('male_count', 0)
             new_catch.female_count = catch.get('unknown_count', 0)
             new_catch.unknown_count = catch.get('unknown_count', 0)
+            new_catch.accuracy = catch.get('accuracy', None)
             new_catch.remarks = catch.get('remarks', '')
 
             end_latitude = catch.get('endLatitude', None)
@@ -117,8 +118,8 @@ class CatchesViewSet(viewsets.ViewSet):
 
             new_catch.source = 'API'
             new_catch.save()
-            new_catchs.append(new_catch)
+            new_catches.append(new_catch)
 
-        return Response([catch.as_dict() for catch in new_catchs])
+        return Response([catch.as_dict() for catch in new_catches])
 
 

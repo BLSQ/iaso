@@ -27,22 +27,6 @@ const targetsColumns = (formatMessage, element) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Latitude',
-                id: 'main.label.latitude',
-            }),
-            accessor: 'latitude',
-            sortable: false,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Longitude',
-                id: 'main.label.longitude',
-            }),
-            accessor: 'longitude',
-            sortable: false,
-        },
-        {
-            Header: formatMessage({
                 defaultMessage: 'Utilisateur',
                 id: 'main.label.user',
             }),
@@ -54,13 +38,6 @@ const targetsColumns = (formatMessage, element) => (
                     }
                 </span>
             ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Altitude',
-                id: 'main.label.altitude',
-            }),
-            accessor: 'altitude',
         },
         {
             Header: formatMessage({

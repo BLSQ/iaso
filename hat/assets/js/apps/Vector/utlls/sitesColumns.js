@@ -6,10 +6,11 @@ const sitesColumns = (formatMessage, messages, element) => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Date de création',
+                defaultMessage: 'Création',
                 id: 'main.label.created_at',
             }),
             accessor: 'created_at',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -20,95 +21,56 @@ const sitesColumns = (formatMessage, messages, element) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Name',
-                id: 'main.label.nom',
+                defaultMessage: 'Nom',
+                id: 'main.label.name',
             }),
+            className: 'small',
             accessor: 'name',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Pièges',
+                defaultMessage: 'Déploiements',
                 id: 'main.label.catchs',
             }),
+            className: 'small',
             accessor: 'catchs_count',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Mâles',
-                id: 'main.label.catchs_count_male',
+                defaultMessage: 'Mouches',
+                id: 'main.label.catchs_count_total',
             }),
-            accessor: 'catchs_count_male',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.catchs_count_male ? settings.original.catchs_count_male : '0'
-                    }
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Femelles',
-                id: 'main.label.catchs_count_female',
-            }),
-            accessor: 'catchs_count_female',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.catchs_count_female ? settings.original.catchs_count_female : '0'
-                    }
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Inconnus',
-                id: 'main.label.catchs_count_unknown',
-            }),
-            accessor: 'catchs_count_unknown',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.catchs_count_unknown ? settings.original.catchs_count_unknown : '0'
-                    }
-                </span>
-            ),
+            accessor: 'catchs_count_total',
+            className: 'small',
+            Cell: (settings) => {
+                const site = settings.original;
+                let total = 0;
+                if (site.catchs_count_male) {
+                    total += site.catchs_count_male;
+                }
+                if (site.catchs_count_female) {
+                    total += site.catchs_count_female;
+                }
+                if (site.catchs_count_unknown) {
+                    total += site.catchs_count_male;
+                }
+                return <span>{total}</span>;
+            },
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Description',
                 id: 'main.label.description',
             }),
+            className: 'small',
             accessor: 'description',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Latitude',
-                id: 'main.label.latitude',
-            }),
-            accessor: 'latitude',
-            sortable: false,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Longitude',
-                id: 'main.label.longitude',
-            }),
-            accessor: 'longitude',
-            sortable: false,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Altitude',
-                id: 'main.label.altitude',
-            }),
-            accessor: 'altitude',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Utilisateur',
                 id: 'main.label.user',
             }),
+            className: 'small',
             accessor: 'user',
         },
         {
@@ -116,6 +78,7 @@ const sitesColumns = (formatMessage, messages, element) => (
                 defaultMessage: 'Habitat',
                 id: 'main.label.habitat',
             }),
+            className: 'small',
             accessor: 'habitat',
             Cell: settings => (
                 <span>
@@ -134,14 +97,25 @@ const sitesColumns = (formatMessage, messages, element) => (
             }),
             sortable: false,
             resizable: false,
+            width: 220,
             Cell: settings => (
                 <section>
+                    {
+                        settings.original.catchs_count > 0 &&
+                        <button
+                            className="button--edit--tiny margin-right"
+                            onClick={() => element.displayCatchs(settings.original, true)}
+                        >
+                            <i className="fa fa-eye" />
+                            <FormattedMessage id="main.label.catchs" defaultMessage="Déploiements" />
+                        </button>
+                    }
                     <button
                         className="button--edit--tiny"
                         onClick={() => element.editItem('site', settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
-                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                        <FormattedMessage id="main.label.detail" defaultMessage="Détails" />
                     </button>
                 </section>
             ),

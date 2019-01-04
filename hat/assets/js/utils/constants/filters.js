@@ -504,7 +504,7 @@ const habitats = (formatMessage, messages, habitatsList) => (
         },
         label: {
             id: 'main.label.habitats',
-            defaultMessage: 'Habitats (pièges uniquement)',
+            defaultMessage: 'Habitats (sites uniquement)',
         },
         type: 'select',
     }

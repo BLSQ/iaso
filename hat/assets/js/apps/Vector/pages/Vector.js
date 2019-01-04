@@ -166,13 +166,21 @@ export class Vector extends Component {
     }
 
 
-    displayCatchs(data = undefined) {
-        this.setState({
+    displayCatchs(data = undefined, fetchDetails = false) {
+        const newState = {
             showCatchsModale: true,
             showEditSiteModale: false,
             showEditTargetModale: false,
             siteEdited: data,
-        });
+        };
+        if (!fetchDetails) {
+            this.setState(newState);
+        } else {
+            this.props.getSiteDetail(data.id, 'sites').then((res) => {
+                newState.siteEdited = res;
+                this.setState(newState);
+            });
+        }
     }
 
 
@@ -192,7 +200,7 @@ export class Vector extends Component {
             params,
             getShape,
             changeLayer,
-            selectMarker,
+            getSiteDetail,
             redirectTo,
             reduxSitesPage,
             reduxTargetsPage,
@@ -241,7 +249,6 @@ export class Vector extends Component {
                         site={this.state.siteEdited}
                         habitats={habitats}
                         saveSite={site => saveSite(site)}
-                        profiles={profiles}
                     />
                 }
                 {
@@ -336,7 +343,7 @@ export class Vector extends Component {
                                 endemicVillages={endemicVillages || {}}
                                 nonEndemicVillages={nonEndemicVillages || {}}
                                 getShape={type => getShape(type)}
-                                selectMarker={(itemId, key) => selectMarker(itemId, key)}
+                                selectMarker={(itemId, key) => getSiteDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
                                 displayCatchs={data => this.displayCatchs(data)}
                             />
@@ -403,7 +410,7 @@ Vector.defaultProps = {
 };
 
 Vector.propTypes = {
-    selectMarker: PropTypes.func.isRequired,
+    getSiteDetail: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
@@ -426,7 +433,7 @@ Vector.propTypes = {
 const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     getShape: url => getRequest(url, dispatch, null, false),
-    selectMarker: (itemId, key) => getRequest(`/api/${key}/${itemId}`, dispatch),
+    getSiteDetail: (itemId, key) => getRequest(`/api/${key}/${itemId}`, dispatch),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });
 

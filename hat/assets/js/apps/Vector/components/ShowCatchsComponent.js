@@ -45,7 +45,7 @@ class ShowCatchsComponent extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.catchs.title" defaultMessage="Pièges sur le site" />:
+                    <FormattedMessage id="vector.modale.catchs.title" defaultMessage="Déploiements sur le site" />:
                     {' '}{site.name}
                 </div>
                 <section className="edit-modal large extra">
@@ -66,7 +66,7 @@ class ShowCatchsComponent extends Component {
                                     </li>
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--catchs" />
-                                        <FormattedMessage id="vector.modale.catchs.legend.catchs" defaultMessage="Pièges" />
+                                        <FormattedMessage id="vector.modale.catchs.legend.catchs" defaultMessage="Déploiements" />
                                     </li>
                                 </ul>
                             </div>

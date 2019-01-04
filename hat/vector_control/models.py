@@ -99,7 +99,9 @@ class Site(models.Model):
             'longitude': self.location.x,
             'altitude': self.altitude,
             'description': self.description,
-            'user': self.user.username
+            'user': self.user.username,
+            'accuracy': self.accuracy,
+            'source': self.source
         }
 
         count_fields = ['catchs_count', 'catchs_count_male', 'catchs_count_female', 'catchs_count_unknown']

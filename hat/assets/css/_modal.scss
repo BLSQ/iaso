@@ -55,24 +55,53 @@
             }
         }
     }
-    .half-container, .third-container{
+    .half-container,
+    .third-container {
         display: flex;
-        > div {
+        >div {
             box-sizing: border-box;
             padding-right: $padding-unit / 2;
             flex-basis: 50%;
             display: block !important;
             text-align: right;
-            > div{
+            >div {
                 margin-bottom: 10px;
+                &.flex-container {
+                    label {
+                        flex-basis: 34%;
+                    }
+                    &.read {
+                        label {
+                            padding-top: 2px !important;
+                            height: 30px;
+                            &+div {
+                                height: 30px;
+                                padding-top: 11px;
+                            }
+                        }
+                    }
+                }
                 label {
                     width: 25% !important;
-                    &.select-label {
+                    &.select-label,
+                    &.textarea-label {
                         top: -6px;
+                        flex-basis: 35%;
                         position: relative;
+                        padding-top: 0 !important;
                     }
                     &.filter__container__select__label {
                         padding-top: 3px;
+                    }
+                    &.select-label {
+                        top: -11px;
+                    }
+                    &+div {
+                        width: 64%;
+                        font-size: 14px;
+                        display: inline-block;
+                        text-align: left;
+                        top: 0px;
                     }
                 }
                 input {
@@ -81,20 +110,38 @@
                     display: inline-block;
                 }
                 .Select {
-                    width: 65%;
+                    width: 64%;
                     font-size: 12px;
                     display: inline-block;
                 }
+                textarea {
+                    width: 61%;
+                    max-width: 61%;
+                    font-size: 12px;
+                    display: inline-block;
+                }
+                .check-box-container {
+                    width: 61%;
+                    max-width: 61%;
+                    font-size: 12px;
+                    display: inline-block;
+                    input {
+                        width: auto;
+                    }
+                    label {
+                        width: 25px !important;
+                    }
+                }
             }
         }
-        .filter-item > div.Select {
+        .filter-item>div.Select {
             width: 65%;
             font-size: 12px;
         }
     }
-    .half-container{
-        > div {
-            > div{
+    .half-container {
+        >div {
+            >div {
                 label {
                     width: 30% !important;
                 }
@@ -200,7 +247,8 @@
         input[type=password] {
             height: 20px;
         }
-        >section>div, >section>section>div {
+        >section>div,
+        >section>section>div {
             display: flex;
             margin-bottom: 10px;
             label {
@@ -254,7 +302,7 @@
                 font-size: 16px;
                 font-weight: normal;
             }
-            &.filter-item-subtitle  {
+            &.filter-item-subtitle {
                 font-size: 14px;
                 font-weight: normal;
                 &:after {

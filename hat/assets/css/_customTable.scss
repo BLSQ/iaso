@@ -23,6 +23,8 @@ body {
             padding: 10px;
             &.small {
                 font-size: 12px;
+                position: relative;
+                top: 5px;
             }
         }
         .rt-thead .rt-th,

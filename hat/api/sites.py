@@ -63,7 +63,7 @@ class SitesViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
-        queryset = Site.objects.all().order_by(*orders)
+        queryset = Site.objects.all()
 
         if from_date is not None:
             queryset = queryset.filter(created_at__date__gte=from_date)
@@ -101,6 +101,8 @@ class SitesViewSet(viewsets.ViewSet):
         queryset = queryset.annotate(catchs_count_female=Sum('catch__female_count'))
         queryset = queryset.annotate(catchs_count_unknown=Sum('catch__unknown_count'))
 
+        queryset = queryset.annotate(catchs_count_total=Sum('catch__unknown_count') + Sum('catch__male_count') + Sum('catch__female_count'))
+        queryset = queryset.order_by(*orders)
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -126,7 +128,7 @@ class SitesViewSet(viewsets.ViewSet):
             columns = ['ID',
             'Date de création',
             'Nom',
-            'Nombre de pièges',
+            'Nombre de déploiements',
             'Males',
             'Femelles',
             'Inconnus',
@@ -235,9 +237,5 @@ class SitesViewSet(viewsets.ViewSet):
         new_site.habitat = request.data.get('habitat', 'unknown')
         new_site.is_reference = request.data.get('is_reference', False)
         new_site.ignore = request.data.get('ignore', False)
-        username = request.data.get('username', None)
-        new_site.user = None
-        if username:
-            new_site.user = get_object_or_404(User, username=username)
         new_site.save()
         return Response(new_site.as_dict())

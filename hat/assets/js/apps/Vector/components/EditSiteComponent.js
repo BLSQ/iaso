@@ -48,7 +48,6 @@ class EditSiteComponent extends Component {
         const { site } = this.state;
         const {
             habitats,
-            profiles,
             saveSite,
         } = this.props;
         return (
@@ -375,7 +374,6 @@ EditSiteComponent.propTypes = {
     site: PropTypes.object,
     intl: PropTypes.object.isRequired,
     habitats: PropTypes.array.isRequired,
-    profiles: PropTypes.array.isRequired,
     saveSite: PropTypes.func.isRequired,
 };
 

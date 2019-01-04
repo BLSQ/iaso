@@ -70,16 +70,6 @@
                     label {
                         flex-basis: 34%;
                     }
-                    &.read {
-                        label {
-                            padding-top: 2px !important;
-                            height: 30px;
-                            &+div {
-                                height: 30px;
-                                padding-top: 11px;
-                            }
-                        }
-                    }
                 }
                 label {
                     width: 25% !important;

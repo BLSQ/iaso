@@ -213,6 +213,7 @@ class SitesViewSet(viewsets.ViewSet):
             new_site, created = Site.objects.get_or_create(uuid=uuid)
             new_site.name = site.get('name', None)
             new_site.habitat = site.get('habitat', None)
+            new_site.accuracy = site.get('accuracy', None)
             new_site.description = site.get('description', None)
             if created:
                 new_site.created_at = site.get('created_at', None)
@@ -223,8 +224,10 @@ class SitesViewSet(viewsets.ViewSet):
                 new_site.api_import = api_import
                 latitude = site.get('latitude', None)
                 longitude = site.get('longitude', None)
+                altitude = site.get('altitude', 0)
+                print (altitude)
                 if latitude and longitude:
-                    new_site.location = Point(x=longitude, y=latitude, srid=4326)
+                    new_site.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 new_sites.append(new_site)
             new_site.save()
 

@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.db import models
 import uuid
-import json
 from django.contrib.postgres.fields import JSONField
 
 from django.db.models import CASCADE
@@ -111,6 +110,7 @@ class Site(models.Model):
 
         return res
 
+
 class Catch(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     setup_date = models.DateTimeField(null=True)
@@ -134,13 +134,23 @@ class Catch(models.Model):
         verbose_name_plural = "catches"
 
     def as_location(self):
+        latitude = None
+        longitude = None
+        if self.end_location:
+            latitude = self.end_location.y
+            longitude = self.end_location.x
         return {
         'id': self.id,
-        'latitude': self.end_location.y,
-        'longitude': self.end_location.x
+        'latitude': latitude,
+        'longitude': longitude
     }
 
     def as_dict(self):
+        latitude = None
+        longitude = None
+        if self.end_location:
+            latitude = self.end_location.y
+            longitude = self.end_location.x
         return {
         'id': self.id,
         'site': self.site.id,
@@ -148,8 +158,8 @@ class Catch(models.Model):
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
         'source': self.source,
-        'latitude': self.end_location.y,
-        'longitude': self.end_location.x,
+        'latitude': latitude,
+        'longitude': longitude,
         'username': self.user.username,
         'remarks': self.remarks,
         'collect_date': self.collect_date,

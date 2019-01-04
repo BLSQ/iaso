@@ -1,4 +1,5 @@
 import ntpath
+import re
 
 import dateutil
 from django.core.exceptions import MultipleObjectsReturned
@@ -17,53 +18,61 @@ This file provides the tools to identify patients and tests from Case data
 def name_normalize(name):
     if name is None:
         return None
+    stripped_name = name.strip()
+    stripped_name = re.sub(r"\s{2,}", " ", stripped_name)
 
-    return name.strip()
+    return stripped_name
 
 
-def get_or_create_patient(case: Case, origin_area, origin_village):
-    first_name = name_normalize(case.prename)
-    last_name = name_normalize(case.lastname)
-    post_name = name_normalize(case.name)
-    mothers_surname = name_normalize(case.mothers_surname)
+def get_or_create_patient_from_case(case: Case, origin_area, origin_village):
+    if case.age is not None:
+        age = case.age
+    else:
+        if case.year_of_birth is not None and case.entry_date is not None \
+                and case.year_of_birth <= case.entry_date.year:
+            age = case.entry_date.year - int(case.year_of_birth)
+        else:
+            age = None
+
+    return get_or_create_patient(case.prename, case.lastname, case.name, case.mothers_surname, case.sex,
+                                 case.year_of_birth, origin_area, origin_village, case.ZS, case.AS, case.village, age)
+
+
+def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex, year_of_birth,
+                          origin_area, origin_village, origin_raw_zs, origin_raw_as, origin_raw_village, age):
+    first_name = name_normalize(first_name)
+    last_name = name_normalize(last_name)
+    post_name = name_normalize(post_name)
+    mothers_surname = name_normalize(mothers_surname)
 
     patient_search_params = dict(
         post_name=post_name,
         first_name=first_name,
         last_name=last_name,
         mothers_surname=mothers_surname,
-        sex=case.sex,
-        year_of_birth=case.year_of_birth,
+        sex=sex,
+        year_of_birth=year_of_birth,
     )
 
     if origin_area:
         patient_search_params['origin_area'] = origin_area
     else:
-        patient_search_params['origin_raw_AS'] = case.AS
-        patient_search_params['origin_raw_ZS'] = case.ZS
+        patient_search_params['origin_raw_AS'] = origin_raw_as
+        patient_search_params['origin_raw_ZS'] = origin_raw_zs
 
     if origin_village:
         patient_search_params['origin_village'] = origin_village
     else:
-        patient_search_params['origin_raw_village'] = case.village
+        patient_search_params['origin_raw_village'] = origin_raw_village
 
     # This should normally return only one result. In case of MultipleObjectsReturned, we want this to fail.
     try:
-        patient, patient_created = Patient.objects.get_or_create(**patient_search_params)
+        patient, patient_created = Patient.objects.get_or_create(**patient_search_params, defaults={'age': age})
     except MultipleObjectsReturned as exc:
         print("multiple patients found")
         for p in Patient.objects.filter(**patient_search_params):
             print(f"[{p.id}] {p.first_name} {p.last_name} {p.post_name} (m: {p.mothers_surname}) in {p.origin_village}")
         raise exc
-
-    if patient_created:
-        if case.age is not None:
-            patient.age = case.age
-        else:
-            if case.year_of_birth is not None and case.entry_date is not None \
-                    and case.year_of_birth <= case.entry_date.year:
-                patient.age = case.entry_date.year - int(case.year_of_birth)
-        patient.save()
 
     return patient, patient_created
 

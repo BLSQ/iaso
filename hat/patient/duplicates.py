@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 
 from hat.audit.models import log_modification, PATIENT_API
 from hat.cases.models import Case
@@ -12,6 +12,22 @@ def merge_patient_duplicate(patient_dupe, merge_from, merge_to, user):
     Case.objects.filter(normalized_patient=merge_from).update(normalized_patient=merge_to)
     merge_from.delete()
     patient_dupe.delete()
+    return merge_to
+
+
+@transaction.atomic
+def merge_patient(merge_from, merge_to, user):
+    if merge_from.id == merge_to.id:
+        return merge_to
+
+    log_modification(merge_from, merge_to, PATIENT_API, user)
+    # update Case to link to that patient
+    Case.objects.filter(normalized_patient=merge_from).update(normalized_patient=merge_to)
+    # remove potential duplicates and ignores
+    PatientDuplicatesPair.objects.filter(Q(patient1=merge_from) | Q(patient2=merge_from)).delete()
+    PatientIgnoredPair.objects.filter(Q(patient1=merge_from) | Q(patient2=merge_from)).delete()
+    # Then delete the merged patient
+    merge_from.delete()
     return merge_to
 
 

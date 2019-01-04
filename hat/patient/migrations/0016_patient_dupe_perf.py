@@ -8,7 +8,7 @@ with open(os.path.join(current_dir, 'views', 'patient_matching_invert.sql'), 'r'
     query_patient_matching_invert = f.read()
 with open(os.path.join(current_dir, 'views', 'patient_matching_namesim.sql'), 'r') as f:
     query_patient_matching_namesim = f.read()
-with open(os.path.join(current_dir, 'views', 'patient_matching_all.sql'), 'r') as f:
+with open(os.path.join(current_dir, 'views', 'patient_matching_all_namesim.sql'), 'r') as f:
     query_patient_matching_all = f.read()
 
 

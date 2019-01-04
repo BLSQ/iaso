@@ -25,7 +25,7 @@ from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE
 from hat.patient.duplicates import create_potential_duplicates_for_patient
-from hat.patient.identify import get_or_create_patient, create_test_data
+from hat.patient.identify import get_or_create_patient_from_case, create_test_data
 from hat.patient.models import Test
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
@@ -303,7 +303,7 @@ def create_cases(df: DataFrame) -> None:
         if normalized_village:
             case.normalized_village = normalized_village
 
-        if row['participant_member_type'] and row['participant_member_type'] == 'traveller':
+        if 'participant_member_type' in row.index and row['participant_member_type'] == 'traveller':
             patient_as, patient_village = normalize_location(
                 row['participant_origin_zone'],
                 row['participant_origin_area'],
@@ -313,7 +313,7 @@ def create_cases(df: DataFrame) -> None:
             patient_as = normalized_AS
             patient_village = normalized_village
 
-        patient, patient_created = get_or_create_patient(case, patient_as, patient_village)
+        patient, patient_created = get_or_create_patient_from_case(case, patient_as, patient_village)
         case.normalized_patient = patient
         case.normalized_team = get_case_team(case)
 

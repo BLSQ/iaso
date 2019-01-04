@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from hat.cases.models import Case
-from hat.patient.identify import get_or_create_patient, create_test_data
+from hat.patient.identify import get_or_create_patient_from_case, create_test_data
 
 
 class Command(BaseCommand):
@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
             try:
                 # Normalize the patient data
-                patient, patient_created = get_or_create_patient(case)
+                patient, patient_created = get_or_create_patient_from_case(case)
                 if patient_created:
                     patient_created_count += 1
                     if options['verbose'] or patient_created_count % 100 == 0:

@@ -626,7 +626,6 @@ const ManagementDetailsWithIntl = injectIntl(ManagementDetails);
 
 ManagementDetails.defaultProps = {
     currentDetail: undefined,
-    currentTeam: undefined,
 };
 
 ManagementDetails.propTypes = {

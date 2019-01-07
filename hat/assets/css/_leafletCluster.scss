@@ -51,7 +51,7 @@
 }
 
 .marker-cluster-sites {
-    background-color: rgba(yellow, 0.6);
+    background-color: rgba(orange, 0.6);
     z-index: 1000000 !important;
     div {
         background-color: yellow;
@@ -71,7 +71,7 @@
 }
 
 .marker-cluster-villages-with-cases {
-    background-color: rgba(red, 0.6);
+    background-color: rgba(red, 0.6) !important;
     div {
         background-color: red;
     }

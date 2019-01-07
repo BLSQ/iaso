@@ -95,16 +95,16 @@ class VectorMapComponent extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'nonEndemicVillages') || this.props.withCluster !== prevProps.withCluster) {
-                this.updateNonEndemicVillages();
+            if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
+                this.updateVillages(false);
             }
-            if (hasChanged(prevProps, this.props, 'endemicVillages') || this.props.withCluster !== prevProps.withCluster) {
-                this.updateEndemicVillages();
+            if (hasChanged(prevProps, this.props, 'endemicVillages')) {
+                this.updateVillages(true);
             }
             if (hasChanged(prevProps, this.props, 'sites') || this.props.withCluster !== prevProps.withCluster) {
                 this.updateSites();
             }
-            if (hasChanged(prevProps, this.props, 'targets') || this.props.withCluster !== prevProps.withCluster) {
+            if (hasChanged(prevProps, this.props, 'targets')) {
                 this.updateTargets();
             }
         });
@@ -153,24 +153,11 @@ class VectorMapComponent extends Component {
         });
         this.sitesGroup.clearLayers();
 
-        const color = 'yellow';
         sites.map((site) => {
-            let siteMarker;
-            if (withCluster) {
-                siteMarker = L.marker(
-                    [site.latitude, site.longitude],
-                    { icon: renderDivIcon('1', 'sites small', 30) },
-                );
-            } else {
-                siteMarker = L.circle([site.latitude, site.longitude], {
-                    color,
-                    fillColor: color,
-                    fillOpacity: 0.5,
-                    radius: 500,
-                    className: 'sites small',
-                    pane: 'custom-pane-markers',
-                });
-            }
+            const siteMarker = L.marker(
+                [site.latitude, site.longitude],
+                { icon: renderDivIcon(withCluster ? '1' : '', 'sites small', 30) },
+            );
             siteMarker.on('click', (event) => {
                 const popUp = event.target.getPopup();
                 this.props.selectMarker(site.id, 'sites')
@@ -200,7 +187,6 @@ class VectorMapComponent extends Component {
     updateTargets() {
         const {
             targets,
-            withCluster,
             intl: {
                 formatMessage,
             },
@@ -212,25 +198,11 @@ class VectorMapComponent extends Component {
 
         this.targetsGroup.clearLayers();
 
-        const color = 'blue';
         targets.map((target) => {
-            let targetMarker;
-            if (withCluster) {
-                targetMarker = L.marker(
-                    [target.latitude, target.longitude],
-                    { icon: renderDivIcon('1', 'targets small', 30) },
-                );
-            } else {
-                targetMarker = L.circle([target.latitude, target.longitude], {
-                    color,
-                    fillColor: color,
-                    fillOpacity: 0.5,
-                    radius: 500,
-                    className: 'sites small',
-                    pane: 'custom-pane-markers',
-                });
-            }
-            targetMarker
+            markersTargets.addLayer(L.marker(
+                [target.latitude, target.longitude],
+                { icon: renderDivIcon('1', 'targets small', 30) },
+            )
                 .on('click', (event) => {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(target.id, 'targets')
@@ -245,121 +217,44 @@ class VectorMapComponent extends Component {
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
                 })
-                .bindPopup();
-
-            if (withCluster) {
-                markersTargets.addLayer(targetMarker);
-            } else {
-                targetMarker.addTo(this.targetsGroup);
-            }
+                .bindPopup());
             return true;
         });
 
         this.targetsGroup.addLayer(markersTargets);
     }
-    updateNonEndemicVillages() {
+    updateVillages(isEndemic) {
         const {
-            withCluster,
             nonEndemicVillages,
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
-        const markersNonEndemicVillages = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
-        });
-
-        this.nonEndemicVillagesGroup.clearLayers();
-
-        const color = 'green';
-        Object.keys(nonEndemicVillages).forEach((key) => {
-            const village = nonEndemicVillages[key];
-            if (village) {
-                let newMarker;
-                if (withCluster) {
-                    newMarker = L.marker(
-                        [village.latitude, village.longitude],
-                        { icon: renderDivIcon('1', 'villages small', 30) },
-                    );
-                } else {
-                    newMarker = L.circle([village.latitude, village.longitude], {
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.5,
-                        radius: 500,
-                        className: 'sites small',
-                        pane: 'custom-pane-markers',
-                    });
-                }
-                newMarker.on('click', (event) => {
-                    const popUp = event.target.getPopup();
-                    this.props.selectMarker(village.id, 'villages')
-                        .then((response) => {
-                            response.nr_positive_cases = village.nr_positive_cases;
-                            popUp.setContent(renderVillagesPopup(response, formatMessage, false));
-                        });
-                })
-                    .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
-                    })
-                    .on('mouseout', () => {
-                        this.updateTooltipSmall();
-                    })
-                    .bindPopup();
-                if (withCluster) {
-                    markersNonEndemicVillages.addLayer(newMarker);
-                } else {
-                    newMarker.addTo(this.villageGroup);
-                }
-            }
-            return true;
-        });
-        this.nonEndemicVillagesGroup.addLayer(markersNonEndemicVillages);
-    }
-    updateEndemicVillages() {
-        const {
             endemicVillages,
-            withCluster,
             intl: {
                 formatMessage,
             },
         } = this.props;
-        const markersVillagesWithCases = L.markerClusterGroup({
+        const villages = isEndemic ? endemicVillages : nonEndemicVillages;
+        const group = isEndemic ? this.endemicVillagesGroup : this.nonEndemicVillagesGroup;
+        const markersVillages = L.markerClusterGroup({
             maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), isEndemic ? 'villages-with-cases' : 'villages', 40),
         });
 
-        this.endemicVillagesGroup.clearLayers();
+        group.clearLayers();
 
-        const color = 'red';
-        Object.keys(endemicVillages).forEach((key) => {
-            const village = endemicVillages[key];
+        Object.keys(villages).forEach((key) => {
+            const village = villages[key];
             if (village) {
-                let newMarker;
-                if (withCluster) {
-                    newMarker = L.marker(
-                        [village.latitude, village.longitude],
-                        { icon: renderDivIcon('1', 'villages-with-cases small', 30) },
-                    );
-                } else {
-                    newMarker = L.circle([village.latitude, village.longitude], {
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.5,
-                        radius: 500,
-                        className: 'sites small',
-                        pane: 'custom-pane-markers',
-                    });
-                }
-                newMarker.on('click', (event) => {
-                    const popUp = event.target.getPopup();
-                    this.props.selectMarker(village.id, 'villages')
-                        .then((response) => {
-                            response.nr_positive_cases = village.nr_positive_cases;
-                            popUp.setContent(renderVillagesPopup(response, formatMessage, true));
-                        });
-                })
+                const newMarker = L.marker(
+                    [village.latitude, village.longitude],
+                    { icon: renderDivIcon('1', isEndemic ? 'villages-with-cases small' : 'villages small', 30) },
+                )
+                    .on('click', (event) => {
+                        const popUp = event.target.getPopup();
+                        this.props.selectMarker(village.id, 'villages')
+                            .then((response) => {
+                                response.nr_positive_cases = village.nr_positive_cases;
+                                popUp.setContent(renderVillagesPopup(response, formatMessage, false));
+                            });
+                    })
                     .on('mouseover', () => {
                         this.updateTooltipSmall(village);
                     })
@@ -367,16 +262,11 @@ class VectorMapComponent extends Component {
                         this.updateTooltipSmall();
                     })
                     .bindPopup();
-
-                if (withCluster) {
-                    markersVillagesWithCases.addLayer(newMarker);
-                } else {
-                    newMarker.addTo(this.villageGroup);
-                }
+                markersVillages.addLayer(newMarker);
             }
             return true;
         });
-        this.endemicVillagesGroup.addLayer(markersVillagesWithCases);
+        group.addLayer(markersVillages);
     }
 
     updateTooltipSmall(item) {

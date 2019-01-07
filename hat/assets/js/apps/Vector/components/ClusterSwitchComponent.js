@@ -4,12 +4,12 @@ import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 
 const MESSAGES = defineMessages({
     withCluster: {
-        id: 'vactor.map.withCluster',
-        defaultMessage: 'Avec regroupement',
+        id: 'vactor.map.with',
+        defaultMessage: 'Avec',
     },
     withOutCluster: {
-        id: 'vactor.map.withOutCluster',
-        defaultMessage: 'Sans regroupement',
+        id: 'vactor.map.without',
+        defaultMessage: 'Sans',
     },
 });
 
@@ -19,7 +19,7 @@ class ClusterSwitchComponent extends Component {
         return (
             <div className="map__option">
                 <span className="map__option__header">
-                    <FormattedMessage id="microplanning.label.layers" defaultMessage="Map layers" />
+                    <FormattedMessage id="vector.label.clusterToggle.title" defaultMessage="Regroupement des sites" />
                 </span>
                 <ul className="map__option__list">
                     <li

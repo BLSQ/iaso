@@ -15,6 +15,7 @@ import {
 } from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
+import ClusterSwitchComponent from '../components/ClusterSwitchComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -187,6 +188,7 @@ export class Vector extends Component {
         const {
             map: {
                 baseLayer,
+                withCluster,
             },
             intl: {
                 formatMessage,
@@ -199,6 +201,7 @@ export class Vector extends Component {
             params,
             getShape,
             changeLayer,
+            changeCluster,
             getSiteDetail,
             redirectTo,
             reduxSitesPage,
@@ -333,6 +336,12 @@ export class Vector extends Component {
                                     change={(type, key) => changeLayer(type, key)}
                                 />
                             </div>
+                            <div className="margin-top">
+                                <ClusterSwitchComponent
+                                    withCluster={withCluster}
+                                    change={withCl => changeCluster(withCl)}
+                                />
+                            </div>
                         </div>
                         <div className="split-map big">
                             <VectorMapComponent
@@ -345,6 +354,7 @@ export class Vector extends Component {
                                 selectMarker={(itemId, key) => getSiteDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
                                 displayCatches={data => this.displayCatches(data)}
+                                withCluster={withCluster}
                             />
                         </div>
                     </div>
@@ -417,6 +427,7 @@ Vector.propTypes = {
     getShape: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
+    changeCluster: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     reduxSitesPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
@@ -434,6 +445,7 @@ const MapDispatchToProps = dispatch => ({
     getShape: url => getRequest(url, dispatch, null, false),
     getSiteDetail: (itemId, key) => getRequest(`/api/${key}/${itemId}`, dispatch),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
+    changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
 });
 
 const MapStateToProps = state => ({

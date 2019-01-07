@@ -95,16 +95,16 @@ class VectorMapComponent extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
+            if (hasChanged(prevProps, this.props, 'nonEndemicVillages') || this.props.withCluster !== prevProps.withCluster) {
                 this.updateNonEndemicVillages();
             }
-            if (hasChanged(prevProps, this.props, 'endemicVillages')) {
+            if (hasChanged(prevProps, this.props, 'endemicVillages') || this.props.withCluster !== prevProps.withCluster) {
                 this.updateEndemicVillages();
             }
-            if (hasChanged(prevProps, this.props, 'sites')) {
+            if (hasChanged(prevProps, this.props, 'sites') || this.props.withCluster !== prevProps.withCluster) {
                 this.updateSites();
             }
-            if (hasChanged(prevProps, this.props, 'targets')) {
+            if (hasChanged(prevProps, this.props, 'targets') || this.props.withCluster !== prevProps.withCluster) {
                 this.updateTargets();
             }
         });
@@ -131,6 +131,7 @@ class VectorMapComponent extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-selected');
+        map.createPane('custom-pane-markers');
         this.map = map;
     }
 
@@ -143,6 +144,7 @@ class VectorMapComponent extends Component {
             intl: {
                 formatMessage,
             },
+            withCluster,
         } = this.props;
 
         const markersSites = L.markerClusterGroup({
@@ -151,26 +153,44 @@ class VectorMapComponent extends Component {
         });
         this.sitesGroup.clearLayers();
 
+        const color = 'yellow';
         sites.map((site) => {
-            markersSites.addLayer(L.marker(
-                [site.latitude, site.longitude],
-                { icon: renderDivIcon('1', 'sites small', 30) },
-            )
-                .on('click', (event) => {
-                    const popUp = event.target.getPopup();
-                    this.props.selectMarker(site.id, 'sites')
-                        .then((response) => {
-                            this.setState({ editedItem: response });
-                            popUp.setContent(renderSitesPopup(response, formatMessage));
-                        });
-                })
+            let siteMarker;
+            if (withCluster) {
+                siteMarker = L.marker(
+                    [site.latitude, site.longitude],
+                    { icon: renderDivIcon('1', 'sites small', 30) },
+                );
+            } else {
+                siteMarker = L.circle([site.latitude, site.longitude], {
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.5,
+                    radius: 500,
+                    className: 'sites small',
+                    pane: 'custom-pane-markers',
+                });
+            }
+            siteMarker.on('click', (event) => {
+                const popUp = event.target.getPopup();
+                this.props.selectMarker(site.id, 'sites')
+                    .then((response) => {
+                        this.setState({ editedItem: response });
+                        popUp.setContent(renderSitesPopup(response, formatMessage));
+                    });
+            })
                 .on('mouseover', () => {
                     this.updateTooltipSmall(site);
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
                 })
-                .bindPopup());
+                .bindPopup();
+            if (withCluster) {
+                markersSites.addLayer(siteMarker);
+            } else {
+                siteMarker.addTo(this.sitesGroup);
+            }
 
             return true;
         });
@@ -180,6 +200,7 @@ class VectorMapComponent extends Component {
     updateTargets() {
         const {
             targets,
+            withCluster,
             intl: {
                 formatMessage,
             },
@@ -191,11 +212,25 @@ class VectorMapComponent extends Component {
 
         this.targetsGroup.clearLayers();
 
+        const color = 'blue';
         targets.map((target) => {
-            markersTargets.addLayer(L.marker(
-                [target.latitude, target.longitude],
-                { icon: renderDivIcon('1', 'targets small', 30) },
-            )
+            let targetMarker;
+            if (withCluster) {
+                targetMarker = L.marker(
+                    [target.latitude, target.longitude],
+                    { icon: renderDivIcon('1', 'targets small', 30) },
+                );
+            } else {
+                targetMarker = L.circle([target.latitude, target.longitude], {
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.5,
+                    radius: 500,
+                    className: 'sites small',
+                    pane: 'custom-pane-markers',
+                });
+            }
+            targetMarker
                 .on('click', (event) => {
                     const popUp = event.target.getPopup();
                     this.props.selectMarker(target.id, 'targets')
@@ -210,7 +245,13 @@ class VectorMapComponent extends Component {
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
                 })
-                .bindPopup());
+                .bindPopup();
+
+            if (withCluster) {
+                markersTargets.addLayer(targetMarker);
+            } else {
+                targetMarker.addTo(this.targetsGroup);
+            }
             return true;
         });
 
@@ -218,6 +259,7 @@ class VectorMapComponent extends Component {
     }
     updateNonEndemicVillages() {
         const {
+            withCluster,
             nonEndemicVillages,
             intl: {
                 formatMessage,
@@ -230,21 +272,34 @@ class VectorMapComponent extends Component {
 
         this.nonEndemicVillagesGroup.clearLayers();
 
+        const color = 'green';
         Object.keys(nonEndemicVillages).forEach((key) => {
             const village = nonEndemicVillages[key];
             if (village) {
-                const newMarker = L.marker(
-                    [village.latitude, village.longitude],
-                    { icon: renderDivIcon('1', 'villages small', 30) },
-                )
-                    .on('click', (event) => {
-                        const popUp = event.target.getPopup();
-                        this.props.selectMarker(village.id, 'villages')
-                            .then((response) => {
-                                response.nr_positive_cases = village.nr_positive_cases;
-                                popUp.setContent(renderVillagesPopup(response, formatMessage, false));
-                            });
-                    })
+                let newMarker;
+                if (withCluster) {
+                    newMarker = L.marker(
+                        [village.latitude, village.longitude],
+                        { icon: renderDivIcon('1', 'villages small', 30) },
+                    );
+                } else {
+                    newMarker = L.circle([village.latitude, village.longitude], {
+                        color,
+                        fillColor: color,
+                        fillOpacity: 0.5,
+                        radius: 500,
+                        className: 'sites small',
+                        pane: 'custom-pane-markers',
+                    });
+                }
+                newMarker.on('click', (event) => {
+                    const popUp = event.target.getPopup();
+                    this.props.selectMarker(village.id, 'villages')
+                        .then((response) => {
+                            response.nr_positive_cases = village.nr_positive_cases;
+                            popUp.setContent(renderVillagesPopup(response, formatMessage, false));
+                        });
+                })
                     .on('mouseover', () => {
                         this.updateTooltipSmall(village);
                     })
@@ -252,7 +307,11 @@ class VectorMapComponent extends Component {
                         this.updateTooltipSmall();
                     })
                     .bindPopup();
-                markersNonEndemicVillages.addLayer(newMarker);
+                if (withCluster) {
+                    markersNonEndemicVillages.addLayer(newMarker);
+                } else {
+                    newMarker.addTo(this.villageGroup);
+                }
             }
             return true;
         });
@@ -261,6 +320,7 @@ class VectorMapComponent extends Component {
     updateEndemicVillages() {
         const {
             endemicVillages,
+            withCluster,
             intl: {
                 formatMessage,
             },
@@ -272,21 +332,34 @@ class VectorMapComponent extends Component {
 
         this.endemicVillagesGroup.clearLayers();
 
+        const color = 'red';
         Object.keys(endemicVillages).forEach((key) => {
             const village = endemicVillages[key];
             if (village) {
-                const newMarker = L.marker(
-                    [village.latitude, village.longitude],
-                    { icon: renderDivIcon('1', 'villages-with-cases small', 30) },
-                )
-                    .on('click', (event) => {
-                        const popUp = event.target.getPopup();
-                        this.props.selectMarker(village.id, 'villages')
-                            .then((response) => {
-                                response.nr_positive_cases = village.nr_positive_cases;
-                                popUp.setContent(renderVillagesPopup(response, formatMessage, true));
-                            });
-                    })
+                let newMarker;
+                if (withCluster) {
+                    newMarker = L.marker(
+                        [village.latitude, village.longitude],
+                        { icon: renderDivIcon('1', 'villages-with-cases small', 30) },
+                    );
+                } else {
+                    newMarker = L.circle([village.latitude, village.longitude], {
+                        color,
+                        fillColor: color,
+                        fillOpacity: 0.5,
+                        radius: 500,
+                        className: 'sites small',
+                        pane: 'custom-pane-markers',
+                    });
+                }
+                newMarker.on('click', (event) => {
+                    const popUp = event.target.getPopup();
+                    this.props.selectMarker(village.id, 'villages')
+                        .then((response) => {
+                            response.nr_positive_cases = village.nr_positive_cases;
+                            popUp.setContent(renderVillagesPopup(response, formatMessage, true));
+                        });
+                })
                     .on('mouseover', () => {
                         this.updateTooltipSmall(village);
                     })
@@ -295,7 +368,11 @@ class VectorMapComponent extends Component {
                     })
                     .bindPopup();
 
-                markersVillagesWithCases.addLayer(newMarker);
+                if (withCluster) {
+                    markersVillagesWithCases.addLayer(newMarker);
+                } else {
+                    newMarker.addTo(this.villageGroup);
+                }
             }
             return true;
         });
@@ -362,9 +439,6 @@ class VectorMapComponent extends Component {
     }
 }
 
-VectorMapComponent.defaultProps = {
-};
-
 VectorMapComponent.propTypes = {
     selectMarker: PropTypes.func.isRequired,
     baseLayer: PropTypes.string.isRequired,
@@ -376,6 +450,7 @@ VectorMapComponent.propTypes = {
     getShape: PropTypes.func.isRequired,
     editItem: PropTypes.func.isRequired,
     displayCatches: PropTypes.func.isRequired,
+    withCluster: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

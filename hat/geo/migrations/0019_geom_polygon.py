@@ -63,27 +63,27 @@ class Migration(migrations.Migration):
         # we're using the `using foo as (select....) select * from foo` notation
         # And from there, we exclude the surfaces smaller than 0.0000005. This number is slightly larger than the
         # biggest junk shape and much smaller than the smallest useful shape.
-        migrations.RunSQL(
-            sql="with split_as as (select id, name, (st_dump(geom)).path as path, (st_dump(geom)).geom as geom, "
-                "st_area((st_dump(geom)).geom) as area from old_geo_as) "
-                "update geo_as a set geom=(st_dump(old.geom)).geom::geometry(Polygon, 4326),"
-                "simplified_geom=st_simplifypreservetopology("
-                "(st_dump(old.geom)).geom::geometry(Polygon, 4326), 0.0001) "
-                "from split_as old where a.id=old.id and area>0.0000005",
-            reverse_sql=""),
-        migrations.RunSQL(
-            sql="update geo_zs z set geom=za.geom, simplified_geom=za.simplified_geom, geom_source='ucla' "
-                "from (select a.\"ZS_id\" as zs_id, st_makepolygon(st_exteriorring(st_union(a.geom))) as geom, "
-                "st_makepolygon(st_exteriorring(st_union(a.simplified_geom))) as simplified_geom "
-                " from geo_as a "
-                "where a.geom_source='ucla' "
-                "group by a.\"ZS_id\") za "
-                "where za.zs_id=z.id",
-            reverse_sql=""),
-        migrations.RunSQL(sql="update geo_province p set geom=(st_dump(old.geom)).geom::geometry(Polygon, 4326),"
-                              "simplified_geom=st_simplifypreservetopology("
-                              "(st_dump(old.geom)).geom::geometry(Polygon, 4326), 0.0001) "
-                              "from old_geo_province old where p.id=old.id",
-                          reverse_sql=""),
+        # migrations.RunSQL(
+        #     sql="with split_as as (select id, name, (st_dump(geom)).path as path, (st_dump(geom)).geom as geom, "
+        #         "st_area((st_dump(geom)).geom) as area from old_geo_as) "
+        #         "update geo_as a set geom=old.geom::geometry(Polygon, 4326),"
+        #         "simplified_geom=st_simplifypreservetopology("
+        #         "(st_dump(old.geom)).geom::geometry(Polygon, 4326), 0.0001) "
+        #         "from split_as old where a.id=old.id and area>0.0000005",
+        #     reverse_sql=""),
+        # migrations.RunSQL(
+        #     sql="update geo_zs z set geom=za.geom, simplified_geom=za.simplified_geom, geom_source='ucla' "
+        #         "from (select a.\"ZS_id\" as zs_id, st_makepolygon(st_exteriorring(st_union(a.geom))) as geom, "
+        #         "st_makepolygon(st_exteriorring(st_union(a.simplified_geom))) as simplified_geom "
+        #         " from geo_as a "
+        #         "where a.geom_source='ucla' "
+        #         "group by a.\"ZS_id\") za "
+        #         "where za.zs_id=z.id",
+        #     reverse_sql=""),
+        # migrations.RunSQL(sql="update geo_province p set geom=(st_dump(old.geom)).geom::geometry(Polygon, 4326),"
+        #                       "simplified_geom=st_simplifypreservetopology("
+        #                       "(st_dump(old.geom)).geom::geometry(Polygon, 4326), 0.0001) "
+        #                       "from old_geo_province old where p.id=old.id",
+        #                   reverse_sql=""),
 
     ]

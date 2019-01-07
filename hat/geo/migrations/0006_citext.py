@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.fields
 import django.contrib.postgres.fields.citext
+from django.contrib.postgres.operations import CITextExtension
 from django.db import migrations
 
 
@@ -11,8 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(sql='CREATE EXTENSION IF NOT EXISTS citext;',
-                          reverse_sql='DROP EXTENSION IF EXISTS citext RESTRICT;'),
+        CITextExtension(),
         migrations.AlterField(
             model_name='village',
             name='aliases',

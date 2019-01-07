@@ -85,7 +85,6 @@ class Site(models.Model):
     }
 
     def as_dict(self):
-        print (self.location)
         res = {
             'id': self.id,
             'name': self.name,

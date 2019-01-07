@@ -225,7 +225,6 @@ class SitesViewSet(viewsets.ViewSet):
                 latitude = site.get('latitude', None)
                 longitude = site.get('longitude', None)
                 altitude = site.get('altitude', 0)
-                print (altitude)
                 if latitude and longitude:
                     new_site.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 new_sites.append(new_site)

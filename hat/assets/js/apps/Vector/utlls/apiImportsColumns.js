@@ -56,7 +56,7 @@ const apiImportsColumns = formatMessage => (
                             {`${settings.original.catch_count} `}
                             {formatMessage({
                                 defaultMessage: 'nouveau(x) piège(s)',
-                                id: 'vector.sync.label.newCatchs',
+                                id: 'vector.sync.label.newCatches',
                             })}
                         </span>
                     }

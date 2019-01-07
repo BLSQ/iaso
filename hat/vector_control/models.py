@@ -58,7 +58,6 @@ class APIImport(models.Model):
 
 class Site(models.Model):
     name = models.CharField(max_length=50, null=True)
-    altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     habitat = models.TextField(max_length=255, choices=HABITAT_CHOICES,  null=True, blank=True)
     description = models.CharField(max_length=255, null=True)
@@ -69,7 +68,7 @@ class Site(models.Model):
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
     is_reference = models.BooleanField(default=False)
-    location = PointField(srid=4326, null=True)
+    location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
@@ -82,6 +81,7 @@ class Site(models.Model):
         'id': self.id,
             'latitude': self.location.y,
             'longitude': self.location.x,
+            'altitude': self.location.z,
     }
 
     def as_dict(self):
@@ -96,14 +96,14 @@ class Site(models.Model):
             'ignore': self.ignore,
             'latitude': self.location.y,
             'longitude': self.location.x,
-            'altitude': self.altitude,
+            'altitude': self.location.z,
             'description': self.description,
             'user': self.user.username,
             'accuracy': self.accuracy,
             'source': self.source
         }
 
-        count_fields = ['catchs_count', 'catchs_count_male', 'catchs_count_female', 'catchs_count_unknown']
+        count_fields = ['catches_count', 'catches_count_male', 'catches_count_female', 'catches_count_unknown']
         for field in count_fields:
             if hasattr(self, field):
                 res[field] = getattr(self, field)
@@ -122,11 +122,9 @@ class Catch(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default='excel')
-    start_location = PointField(srid=4326, null=True)
-    end_location = PointField(srid=4326, null=True)
-    start_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    start_location = PointField(srid=4326, null=True, dim=3)
+    end_location = PointField(srid=4326, null=True, dim=3)
     start_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    end_altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
@@ -136,21 +134,26 @@ class Catch(models.Model):
     def as_location(self):
         latitude = None
         longitude = None
+        altitude = None
         if self.end_location:
             latitude = self.end_location.y
             longitude = self.end_location.x
+            altitude = self.end_location.z
         return {
         'id': self.id,
         'latitude': latitude,
-        'longitude': longitude
+        'longitude': longitude,
+        'altitude': altitude
     }
 
     def as_dict(self):
         latitude = None
         longitude = None
+        altitude = None
         if self.end_location:
             latitude = self.end_location.y
             longitude = self.end_location.x
+            altitude = self.end_location.z
         return {
         'id': self.id,
         'site': self.site.id,
@@ -158,8 +161,9 @@ class Catch(models.Model):
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
         'source': self.source,
-        'latitude': latitude,
         'longitude': longitude,
+        'altitude': altitude,
+        'latitude': latitude,
         'username': self.user.username,
         'remarks': self.remarks,
         'collect_date': self.collect_date,
@@ -198,7 +202,6 @@ class Target(models.Model):
     deployment = models.IntegerField(null=True)
     full_name = models.TextField(null=True)
     gps = models.CharField(max_length=100)
-    altitude = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     date_time = models.DateTimeField(null=True)
     river = models.TextField(null=True)
     gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
@@ -222,7 +225,6 @@ class Target(models.Model):
             'latitude': self.location.y,
             'longitude': self.location.x,
             'deployment': self.deployment,
-            'altitude': self.altitude,
             'date_time': self.date_time,
             'river': self.river,
             'username': self.gps_import.user.username,

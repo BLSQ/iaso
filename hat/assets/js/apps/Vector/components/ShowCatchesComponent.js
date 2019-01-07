@@ -4,12 +4,12 @@ import { connect } from 'react-redux';
 import ReactModal from 'react-modal';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import LayersComponent from '../../../components/LayersComponent';
-import CatchsMap from './CatchsMap';
+import CatchesMap from './CatchesMap';
 import { getRequest } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
 
 
-class ShowCatchsComponent extends Component {
+class ShowCatchesComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -45,7 +45,7 @@ class ShowCatchsComponent extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.catchs.title" defaultMessage="Déploiements sur le site" />:
+                    <FormattedMessage id="vector.modale.catches.title" defaultMessage="Déploiements sur le site" />:
                     {' '}{site.name}
                 </div>
                 <section className="edit-modal large extra">
@@ -62,17 +62,17 @@ class ShowCatchsComponent extends Component {
                                 <ul className="map__option__list legend">
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--site" />
-                                        <FormattedMessage id="vector.modale.catchs.legend.site" defaultMessage="Site" />
+                                        <FormattedMessage id="vector.modale.catches.legend.site" defaultMessage="Site" />
                                     </li>
                                     <li className="map__option__list__item">
-                                        <i className="map__option__icon--catchs" />
-                                        <FormattedMessage id="vector.modale.catchs.legend.catchs" defaultMessage="Déploiements" />
+                                        <i className="map__option__icon--catches" />
+                                        <FormattedMessage id="vector.modale.catches.legend.catches" defaultMessage="Déploiements" />
                                     </li>
                                 </ul>
                             </div>
                         </div>
-                        <div className="catchs-map-container">
-                            <CatchsMap
+                        <div className="catches-map-container">
+                            <CatchesMap
                                 baseLayer={baseCatchLayer}
                                 site={site}
                                 getShape={type => this.props.getShape(type)}
@@ -94,10 +94,10 @@ class ShowCatchsComponent extends Component {
         );
     }
 }
-ShowCatchsComponent.defaultProps = {
+ShowCatchesComponent.defaultProps = {
     site: {},
 };
-ShowCatchsComponent.propTypes = {
+ShowCatchesComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
@@ -117,4 +117,4 @@ const MapStateToProps = state => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(ShowCatchsComponent);
+export default connect(MapStateToProps, MapDispatchToProps)(ShowCatchesComponent);

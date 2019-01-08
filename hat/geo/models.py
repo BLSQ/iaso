@@ -173,25 +173,25 @@ class Village(models.Model):
 
     def as_dict(self):
         return {
-        "name": self.name,
-        "id": self.id,
-        "longitude": self.longitude,
-        "latitude": self.latitude,
-        "population": self.population,
-        "population_source": self.population_source,
-        "population_year": self.population_year,
-        "AS_id": self.AS_id,
-        "AS_name": self.AS.name,
-        "ZS_id": self.AS.ZS_id,
-        "ZS_name": self.AS.ZS.name,
-        "province_id": self.AS.ZS.province_id,
-        "province_name": self.AS.ZS.province.name,
-        "village_type": self.village_type,
-        "village_official": self.village_official,
-        "village_source": self.village_source,
-        "gps_source": self.gps_source,
-        "is_erased": self.is_erased,
-    }
+            "name": self.name,
+            "id": self.id,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
+            "population": self.population,
+            "population_source": self.population_source,
+            "population_year": self.population_year,
+            "AS_id": self.AS_id,
+            "AS_name": self.AS.name,
+            "ZS_id": self.AS.ZS_id,
+            "ZS_name": self.AS.ZS.name,
+            "province_id": self.AS.ZS.province_id,
+            "province_name": self.AS.ZS.province.name,
+            "village_type": self.village_type,
+            "village_official": self.village_official,
+            "village_source": self.village_source,
+            "gps_source": self.gps_source,
+            "is_erased": self.is_erased,
+        }
 
 
 class ZSASMappingImport(models.Model):

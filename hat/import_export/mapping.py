@@ -530,7 +530,7 @@ MAPPING: List[JsonType] = [
                 "field": ("T_CARDS", "D_DATE"),
             },
             "mobile": {
-                "field": ("main", "dateModified",),
+                "field": ("main", "dateCreated",),
             }
         },
     },
@@ -551,7 +551,7 @@ MAPPING: List[JsonType] = [
                 "field": ("T_CARDS", "F_TIMESTAMP"),
             },
             "mobile": {
-                "field": ("main", "dateCreated",),
+                "field": ("main", "dateModified",),
             }
         }
     },

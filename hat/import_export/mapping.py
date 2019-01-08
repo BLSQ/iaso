@@ -289,11 +289,13 @@ def mobile_get_year(x: Optional[str]) -> Optional[int]:
     """
     if pandas.isnull(x):
         return None
-    match = mobile_year_re.match(x)
-    if match:
-        return cast(int, match.group(1))
-    else:
-        return None
+    if type(x) == int:
+        return x
+    if type(x) == str:
+        match = mobile_year_re.match(x)
+        if match:
+            return cast(int, match.group(1))
+    return None
 
 
 def mobile_get_safe_int(x: Optional[str]) -> Optional[int]:

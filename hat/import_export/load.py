@@ -354,7 +354,7 @@ def update_cases(df: DataFrame) -> int:
             # The case location cannot change on mobile. Even if it does, a new location will produce a different
             # document_id and therefore a new document rather than an update. So we only need to worry about
             # patient_as changes
-            if row['participant_member_type'] and row['participant_member_type'] == 'traveller':
+            if 'participant_member_type' in row.index and row['participant_member_type'] == 'traveller':
                 patient_as, _ = normalize_location(
                     row['participant_origin_zone'],
                     row['participant_origin_area'],

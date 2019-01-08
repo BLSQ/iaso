@@ -239,6 +239,7 @@ export class Vector extends Component {
                                 showCatchesModale: !this.state.showCatchesModale,
                             })}
                         site={this.state.siteEdited}
+                        params={params}
                     />
                 }
                 {

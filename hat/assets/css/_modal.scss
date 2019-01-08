@@ -216,6 +216,12 @@
 
 .edit-modal {
     width: 445px;
+    .rt-table {
+        max-height: 400px;
+    }
+    .rt-tbody {
+        overflow: auto;
+    }
     .toggle-display-password {
         border-radius: 5px;
         outline: none;

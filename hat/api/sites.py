@@ -191,7 +191,7 @@ class SitesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         site = get_object_or_404(Site, pk=pk)
         site_dict = site.as_dict()
-        catches = Catch.objects.filter(site__id=pk)
+        catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
         site_dict['catches_count'] = catches.count()
         site_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
         site_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']

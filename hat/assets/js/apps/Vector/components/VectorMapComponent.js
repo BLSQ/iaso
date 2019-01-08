@@ -64,24 +64,6 @@ class VectorMapComponent extends Component {
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
 
-
-        this.map.on('popupopen', () => {
-            setTimeout(() => {
-                const editButton = document.getElementById('edit-button');
-                const catchesButton = document.getElementById('catches-button');
-                if (editButton) {
-                    editButton.addEventListener('click', () => {
-                        this.props.editItem(editButton.dataset.type, this.state.editedItem);
-                        this.map.closePopup();
-                    });
-                }
-                if (catchesButton) {
-                    catchesButton.addEventListener('click', () => {
-                        this.props.displayCatches(this.state.editedItem);
-                    });
-                }
-            }, 300);
-        });
         this.map.on('popupclose', () => {
             this.setState({ editedItem: undefined });
         });
@@ -186,6 +168,21 @@ class VectorMapComponent extends Component {
                 this.props.selectMarker(site.id, 'sites')
                     .then((response) => {
                         this.setState({ editedItem: response });
+                        setTimeout(() => {
+                            const editButton = document.getElementById('edit-button');
+                            const catchesButton = document.getElementById('catches-button');
+                            if (editButton) {
+                                editButton.addEventListener('click', () => {
+                                    this.props.editItem(editButton.dataset.type, this.state.editedItem);
+                                    this.map.closePopup();
+                                });
+                            }
+                            if (catchesButton) {
+                                catchesButton.addEventListener('click', () => {
+                                    this.props.displayCatches(this.state.editedItem);
+                                });
+                            }
+                        }, 500);
                         popUp.setContent(renderSitesPopup(response, formatMessage));
                     });
             })

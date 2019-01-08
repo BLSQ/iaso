@@ -81,11 +81,9 @@ class CatchesViewSet(viewsets.ViewSet):
 
             if existing_catches:
                 new_catch = existing_catches[0]
-                created = False
+
             else:
                 new_catch = Catch()
-                created = True
-            if created:
                 new_catch.uuid = uuid
                 site_uuid = catch.get('site_uuid', None)
                 site, created = Site.objects.get_or_create(uuid=site_uuid)
@@ -97,24 +95,29 @@ class CatchesViewSet(viewsets.ViewSet):
                     new_catch.setup_date = timestamp_to_utc_datetime(int(start_time))
                 start_latitude = catch.get('startLatitude', None)
                 start_longitude = catch.get('startLongitude', None)
-                if start_latitude and start_longitude:
-                    new_catch.start_location = Point(x=start_longitude, y=start_latitude, srid=4326)
+                start_altitude = catch.get('startAltitude', 0)
+                new_catch.start_accuracy = catch.get('startAccuracy', None)
                 new_catch.user = request.user
+
+                if start_latitude and start_longitude:
+                    new_catch.start_location = Point(x=start_longitude, y=start_latitude, z=start_altitude, srid=4326)
 
             end_time = catch.get('endTime', None)
             if end_time:
                 new_catch.collect_date = timestamp_to_utc_datetime(int(end_time))
 
-            new_catch.male_count = catch.get('male_count', 0)
-            new_catch.female_count = catch.get('unknown_count', 0)
-            new_catch.unknown_count = catch.get('unknown_count', 0)
+            new_catch.male_count = catch.get('maleCount', 0)
+            new_catch.female_count = catch.get('femaleCount', 0)
+            new_catch.unknown_count = catch.get('unknownCount', 0)
             new_catch.accuracy = catch.get('accuracy', None)
             new_catch.remarks = catch.get('remarks', '')
 
             end_latitude = catch.get('endLatitude', None)
             end_longitude = catch.get('endLongitude', None)
+            end_altitude = catch.get('endAltitude', 0)
+            new_catch.end_accuracy = catch.get('endAccuracy', None)
             if end_latitude and end_longitude:
-                new_catch.end_location = Point(x=end_longitude, y=end_latitude, srid=4326)
+                new_catch.end_location = Point(x=end_longitude, y=end_latitude, z=end_altitude, srid=4326)
 
             new_catch.source = 'API'
             new_catch.save()

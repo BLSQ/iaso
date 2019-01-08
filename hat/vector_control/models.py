@@ -85,6 +85,13 @@ class Site(models.Model):
     }
 
     def as_dict(self):
+        latitude = 0
+        longitude = 0
+        altitude = 0
+        if self.location:
+            latitude = self.location.y
+            longitude = self.location.x
+            altitude = self.location.z
         res = {
             'id': self.id,
             'name': self.name,
@@ -94,9 +101,9 @@ class Site(models.Model):
             'username': self.user.username,
             'is_reference': self.is_reference,
             'ignore': self.ignore,
-            'latitude': self.location.y,
-            'longitude': self.location.x,
-            'altitude': self.location.z,
+            'latitude': latitude,
+            'longitude': longitude,
+            'altitude': altitude,
             'description': self.description,
             'user': self.user.username,
             'accuracy': self.accuracy,
@@ -150,6 +157,9 @@ class Catch(models.Model):
         latitude = None
         longitude = None
         altitude = None
+        user_name = None
+        if self.user:
+            user_name = self.user.username
         if self.end_location:
             latitude = self.end_location.y
             longitude = self.end_location.x
@@ -164,7 +174,7 @@ class Catch(models.Model):
         'longitude': longitude,
         'altitude': altitude,
         'latitude': latitude,
-        'username': self.user.username,
+        'username': user_name,
         'remarks': self.remarks,
         'collect_date': self.collect_date,
         'setup_date': self.setup_date,

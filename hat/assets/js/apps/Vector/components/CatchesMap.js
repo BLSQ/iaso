@@ -35,8 +35,6 @@ const BASE_LAYERS = {
     'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
 };
 
-const siteColor = 'yellow';
-const catchesColor = 'orange';
 
 const updateBaseLayer = (currentMap, baseLayer) => {
     Object.keys(BASE_LAYERS).forEach((key) => {
@@ -48,6 +46,12 @@ const updateBaseLayer = (currentMap, baseLayer) => {
         }
     });
 };
+
+const renderDivIcon = (content, key, size) => L.divIcon({
+    html: `<div><span>${content}</span></div>`,
+    className: `marker-custom marker-${key}`,
+    iconSize: L.point(size, size),
+});
 
 let exportControl;
 class CatchesMap extends Component {
@@ -130,14 +134,11 @@ class CatchesMap extends Component {
         } = this.props;
         this.catchesGroup.clearLayers();
         this.siteGroup.clearLayers();
-        const siteCircle = L.circle([site.latitude, site.longitude], {
-            color: siteColor,
-            fillColor: siteColor,
-            fillOpacity: 0.5,
-            radius: 100,
-            pane: 'custom-pane-markers',
-        })
-            .addTo(this.siteGroup)
+        const siteCircle = L.marker(
+            [site.latitude, site.longitude],
+            { icon: renderDivIcon('', 'sites small', 30) },
+        );
+        siteCircle.addTo(this.siteGroup)
             .on('click', (event) => {
                 const popUp = event.target.getPopup();
                 popUp.setContent(renderSitesPopup(site, formatMessage, false));
@@ -156,14 +157,11 @@ class CatchesMap extends Component {
             });
         if (site.catches) {
             site.catches.map((catchItem) => {
-                const catchCircle = L.circle([catchItem.latitude, catchItem.longitude], {
-                    color: catchesColor,
-                    fillColor: catchesColor,
-                    fillOpacity: 0.5,
-                    radius: 100,
-                    pane: 'custom-pane-markers',
-                })
-                    .addTo(this.catchesGroup)
+                const catchCircle = L.marker(
+                    [catchItem.latitude, catchItem.longitude],
+                    { icon: renderDivIcon('', 'catches small', 30) },
+                );
+                catchCircle.addTo(this.catchesGroup)
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
                         popUp.setContent(renderCatchesPopup(catchItem, formatMessage));

@@ -272,12 +272,54 @@ $color in $types {
     height: 12px;
     border-radius: 50%;
     margin-left: 2px;
-    margin-right: 8px;
+    margin-right: 12px;
     background: white;
     border: 3px solid $light-gray;
 }
 
 .map__option__icon {
+    &--warning {
+        border-color: rgba(orange, 0.5);
+        position: relative;
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+    &--alert {
+        border-color: red;
+        position: relative;
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+    &--medium {
+        width: 18px;
+        height: 18px;
+        margin-left: -1px;
+        margin-right: 9px;
+    }
+    &--large {
+        width: 24px;
+        height: 24px;
+        margin-left: -4px;
+        margin-right: 6px;
+    }
     &--YES {
         border-color: $official;
         background: $official;
@@ -371,7 +413,7 @@ $color in $types {
     &--site {
         width: 12px;
         height: 12px;
-        border: 2px solid yellow;
+        border: 2px solid orange;
         background: rgba(yellow, 0.5);
     }
     &--catches {
@@ -1137,6 +1179,7 @@ button {
         }
     }
 }
+
 @media (max-height: 880px) {
     .catches-map-container {
         .map-container {
@@ -1149,6 +1192,7 @@ button {
         }
     }
 }
+
 @media (max-height: 750px) {
     .catches-map-container {
         .map-container {

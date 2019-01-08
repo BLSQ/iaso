@@ -16,6 +16,7 @@ import {
 
 import VectorMapComponent from '../components/VectorMapComponent';
 import ClusterSwitchComponent from '../components/ClusterSwitchComponent';
+import SitesLegendComponent from '../components/SitesLegendComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -342,6 +343,12 @@ export class Vector extends Component {
                                     change={withCl => changeCluster(withCl)}
                                 />
                             </div>
+                            {
+                                !withCluster &&
+                                <div className="margin-top">
+                                    <SitesLegendComponent />
+                                </div>
+                            }
                         </div>
                         <div className="split-map big">
                             <VectorMapComponent

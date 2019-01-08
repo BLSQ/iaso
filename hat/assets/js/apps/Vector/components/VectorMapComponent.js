@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
+import moment from 'moment';
 import L from 'leaflet';
 import {
     renderSitesPopup,
@@ -154,9 +155,31 @@ class VectorMapComponent extends Component {
         this.sitesGroup.clearLayers();
 
         sites.map((site) => {
+            let iconClass = 'small';
+            let iconSize = 30;
+            if (site.latest_catch && !withCluster) {
+                const totalFlies = site.latest_catch.male_count +
+                    site.latest_catch.female_count +
+                    site.latest_catch.unknown_count;
+                if ((totalFlies >= 10) && (totalFlies < 100)) {
+                    iconClass = 'medium';
+                    iconSize = 40;
+                }
+                if (totalFlies >= 100) {
+                    iconClass = 'large';
+                    iconSize = 50;
+                }
+                if ((site.latest_catch.collect_date &&
+                    moment(site.latest_catch.collect_date).isBefore(moment().subtract(6, 'months')))) {
+                    iconClass += ' warning';
+                }
+            }
+            if (!site.latest_catch && !withCluster) {
+                iconClass += ' alert';
+            }
             const siteMarker = L.marker(
                 [site.latitude, site.longitude],
-                { icon: renderDivIcon(withCluster ? '1' : '', 'sites small', 30) },
+                { icon: renderDivIcon(withCluster ? '' : '', `sites ${iconClass}`, iconSize) },
             );
             siteMarker.on('click', (event) => {
                 const popUp = event.target.getPopup();

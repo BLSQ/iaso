@@ -1,28 +1,75 @@
 [
   {
-    "model": "cases.location",
+    "model": "geo.province",
     "pk": 1,
     "fields": {
-      "ZS": "Mosango",
-      "AS": "Muluma",
-      "village": "Kisala-lupa",
-      "village_official": "YES",
-      "latitude": 4.3971,
-      "longitude": 13.9500,
-      "population": 10
+      "name": "Kwilu",
+      "source_ref": "BmKjwqc6BEw",
+      "source": "snis"
     }
   },
   {
-    "model": "cases.location",
-    "pk": 2,
+    "model": "geo.ZS",
+    "pk": 11,
     "fields": {
-      "ZS": "Mosango",
-      "AS": "Muwanda-koso",
-      "village": "Polongo",
+      "name": "Mosango",
+      "province_id": 1,
+      "source": "snis",
+      "source_ref": "JRaVxSGfJ9Z"
+    }
+  },
+  {
+    "model": "geo.AS",
+    "pk": 111,
+    "fields": {
+      "name": "Muluma",
+      "ZS_id": 11,
+      "source": "snis",
+      "source_ref": "UCOHNnN3tly"
+    }
+  },
+  {
+    "model": "geo.village",
+    "pk": 1111,
+    "fields": {
+      "name": "Kisala-lupa",
+      "AS_id": 111,
       "village_official": "YES",
-      "latitude": 4.3871,
-      "longitude": 15.9700,
-      "population": 5
+      "village_source": "ucla",
+      "population_year": 2016,
+      "population": 1004,
+      "village_type": "VILLAGE",
+      "latitude": -4.75555556,
+      "longitude": 18.05909722,
+      "gps_source": "PNLTHA-CTB"
+    }
+  },
+
+  {
+    "model": "geo.AS",
+    "pk": 112,
+    "fields": {
+      "name": "Muwanda-koso",
+      "ZS_id": 11,
+      "source": "snis",
+      "source_ref": "UCOHNnN3tly"
+    }
+  },
+  {
+    "model": "geo.village",
+    "pk": 1111,
+    "fields": {
+      "name": "Kisala-lupa",
+      "AS_id": 112,
+      "village_official": "YES",
+      "village_source": "ucla",
+      "population_source": "BCZ MOSANGO",
+      "population_year": 2016,
+      "population": 240,
+      "village_type": "PS",
+      "latitude": -4.81294012,
+      "longitude": 18.19395000,
+      "gps_source": "PNLTHA-CTB"
     }
   }
 ]

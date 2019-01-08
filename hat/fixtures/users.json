@@ -209,8 +209,7 @@
     "fields": {
       "user": [
         "root"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   },
   {
@@ -219,8 +218,7 @@
     "fields": {
       "user": [
         "admin"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   },
   {
@@ -229,8 +227,7 @@
     "fields": {
       "user": [
         "supervisor"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   },
   {
@@ -240,7 +237,7 @@
       "user": [
         "supervisor-mosango"
       ],
-      "restrict_to_zs": "Mosango, Yasa Bonga"
+      "ZS_scope": [11]
     }
   },
   {
@@ -249,8 +246,7 @@
     "fields": {
       "user": [
         "importer"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   },
   {
@@ -259,8 +255,7 @@
     "fields": {
       "user": [
         "full-exporter"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   },
   {
@@ -269,8 +264,7 @@
     "fields": {
       "user": [
         "anon-exporter"
-      ],
-      "restrict_to_zs": null
+      ]
     }
   }
 ]

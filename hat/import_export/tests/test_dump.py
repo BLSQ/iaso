@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.db import connection
 from django.test import TransactionTestCase
 import hat.cases.event_log as evl
@@ -5,6 +7,7 @@ from ..dump import dump_events, load_events_dump
 
 
 class EventsDumpTests(TransactionTestCase):
+    @skip("These dumps are not used anymore")
     def test_events_dump(self):
         NUM_EVENTS = 4
 

@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.core.management import call_command
 from django.test import TestCase
 from hat.cases.models import Case
@@ -8,6 +10,7 @@ from hat.cases.event_log import get_events, EventTable
 xlsx_file = 'testdata/reconciled_cases.xlsx'
 
 
+@skip("Obsolete")
 class ImportReconciledTests(TestCase):
     fixtures = ['cases']
 

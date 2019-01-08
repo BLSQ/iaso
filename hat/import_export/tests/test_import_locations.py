@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.test import TestCase
 from hat.cases.models import Location
 from ..import_locations import import_locations_file, import_locations_areas_file
@@ -7,6 +9,7 @@ dbf_areas = 'testdata/locations_areas.dbf'
 
 
 class ImportLocationsTests(TestCase):
+    @skip("Obsolete")
     def test_import_locations(self):
         r = import_locations_file('testdata', dbf_file)
 
@@ -26,6 +29,7 @@ class ImportLocationsTests(TestCase):
         self.assertEqual(r2['stats'].created, r['stats'].created)
         self.assertEqual(r2['stats'].deleted, 9)
 
+    @skip("Obsolete")
     def test_import_locations_areas(self):
         # first import locations list
         import_locations_file('testdata', dbf_file)

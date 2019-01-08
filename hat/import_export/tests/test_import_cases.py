@@ -1,4 +1,6 @@
 import datetime
+from unittest import skip
+
 from django.test import TestCase
 from hat.cases.event_log import get_events, get_event_of_type, EventTable
 from hat.cases.filters import ResultValues
@@ -37,6 +39,7 @@ class ImportCasesTests(TestCase):
         event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'pv')
 
+    @skip("Cannot decrypt file here")
     def test_import_backup(self):
         count = TEST_DATA['mobile_backup']['count']
         r = import_helper('backup', TEST_DATA['mobile_backup']['file'])
@@ -51,6 +54,7 @@ class ImportCasesTests(TestCase):
         event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'backup')
 
+    @skip("Cannot decrypt file here")
     def test_duplicate_merge_by_hash(self):
         # should import same person if it has been updated with a new result
         import_helper('backup-1', TEST_DATA['mobile_backup_duplicates_1']['file'])

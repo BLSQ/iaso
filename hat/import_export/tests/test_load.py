@@ -7,7 +7,7 @@ from hat.import_export.load import create_cases, update_cases
 
 
 class TestLoad(TestCase):
-    fixtures = ['users', 'devices']
+    fixtures = ['locations', 'users', 'devices']
 
     def test_create_cases(self):
         data_dict = {

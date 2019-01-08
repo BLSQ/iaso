@@ -27,7 +27,6 @@ from .extract import extract_file_data
 from .import_cases import import_cases_data
 from .import_reconciled import import_reconciled_file_unchecked
 from .import_synced import import_synced_docs
-from hat.cases.duplicates import merge_cases_by_ids
 from hat.cases.event_log import EventStats, EventTable
 
 logger = logging.getLogger(__name__)
@@ -77,9 +76,8 @@ def import_event(event: EventType) -> EventStats:
         stats = import_reconciled_file_unchecked(orgname, filename)
 
     elif table == EventTable.cases_merge:
-        documents = event['data']
-        merge_cases_by_ids(documents['older_id'], documents['younger_id'])
-        stats = EventStats(updated=1, deleted=1, created=0, total=0)
+        # Not used anymore
+        stats = EventStats(updated=0, deleted=0, created=0, total=0)
 
     elif table == EventTable.sync:
         device_id = event['name']

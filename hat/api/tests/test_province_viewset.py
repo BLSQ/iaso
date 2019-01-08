@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 
 class ProvinceTests(APITestCase):
-    fixtures = ['users', 'cases', 'locations', 'provinces']
+    fixtures = ['users', 'cases', 'provinces']
 
     def setUp(self):
         self.assertTrue(self.client.login(username='supervisor', password='supervisorsupervisor'))

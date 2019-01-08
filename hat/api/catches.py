@@ -7,12 +7,10 @@ from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from datetime import datetime
 from django.utils import timezone
-import json
+
 
 def timestamp_to_utc_datetime(timestamp):
-    dt = datetime.fromtimestamp(int(timestamp/1000))
-    new_datetime = timezone.make_aware(dt, timezone.utc)
-    return new_datetime
+    return datetime.fromtimestamp(int(timestamp/1000), timezone.utc)
 
 
 class CatchesViewSet(viewsets.ViewSet):

@@ -5,8 +5,7 @@ from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from django.contrib.auth.models import User
-from django.db import models
+
 
 from hat.vector_control.models import Site, APIImport, Catch
 from .authentication import CsrfExemptSessionAuthentication
@@ -15,10 +14,10 @@ from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
 from django.db.models import OuterRef, Exists, Count, Sum, Case, When, Value
+from .catches import timestamp_to_utc_datetime
 
-import csv
-import json
 from .export_utils import  Echo, generate_xlsx, iter_items
+
 
 class SitesViewSet(viewsets.ViewSet):
     """
@@ -211,12 +210,16 @@ class SitesViewSet(viewsets.ViewSet):
         for site in sites:
             uuid = site.get('uuid', None)
             new_site, created = Site.objects.get_or_create(uuid=uuid)
-            new_site.name = site.get('name', None)
-            new_site.habitat = site.get('habitat', None)
-            new_site.accuracy = site.get('accuracy', None)
-            new_site.description = site.get('description', None)
             if created:
-                new_site.created_at = site.get('created_at', None)
+                new_site.name = site.get('name', None)
+                new_site.habitat = site.get('habitat', None)
+                new_site.accuracy = site.get('accuracy', None)
+                new_site.description = site.get('description', None)
+                t = site.get('time', None)
+                if t:
+                    new_site.created_at = timestamp_to_utc_datetime(int(t))
+                else:
+                    new_site.created_at = site.get('created_at', None)
                 new_site.uuid = site.get('uuid', None)
 
                 new_site.user = request.user

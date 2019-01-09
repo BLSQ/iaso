@@ -27,7 +27,6 @@ const MESSAGES = defineMessages({
 
 class SitesLegendComponent extends Component {
     render() {
-        const { withCluster } = this.props;
         return (
             <div className="map__option">
                 <span className="map__option__header">

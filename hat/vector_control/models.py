@@ -139,9 +139,9 @@ class Catch(models.Model):
         verbose_name_plural = "catches"
 
     def as_location(self):
-        latitude = None
-        longitude = None
-        altitude = None
+        latitude = 0
+        longitude = 0
+        altitude = 0
         if self.end_location:
             latitude = self.end_location.y
             longitude = self.end_location.x
@@ -154,9 +154,9 @@ class Catch(models.Model):
     }
 
     def as_dict(self):
-        latitude = None
-        longitude = None
-        altitude = None
+        latitude = 0
+        longitude = 0
+        altitude = 0
         user_name = None
         if self.user:
             user_name = self.user.username

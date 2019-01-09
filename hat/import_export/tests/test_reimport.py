@@ -1,6 +1,6 @@
 from unittest import skip
 
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, tag
 
 from hat.cases.event_log import get_events
 from hat.cases.models import Case
@@ -9,7 +9,7 @@ from ..reimport import reimport
 
 
 class ReimportTests(TransactionTestCase):
-    @skip("Not working on dev workstations")
+    @tag("externaltools")
     def test_reimport(self):
         import_helper('historic.mdb', TEST_DATA['historic']['file'])
         import_helper('backup.enc', TEST_DATA['mobile_backup']['file'])

@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.test import override_settings
@@ -59,6 +61,7 @@ def http_error(token, client_id):
 
 
 @override_settings(GOOGLE_CLIENT_ID='test-client-id')
+@skip("OAuth has been abandoned, we might want to rewrite this with the current login/pwd")
 class SyncViewsTests(APITestCase):
     fixtures = ['mobile_users.json']
 

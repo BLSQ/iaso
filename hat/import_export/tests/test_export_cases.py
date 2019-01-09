@@ -1,12 +1,12 @@
 from unittest import skip
 
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, tag
 from ..export_csv import export_csv
 
 
 class ExportTests(TransactionTestCase):
 
-    @skip("Cannot run on dev machines")
+    @tag("externaltools")
     def test_export(self):
         def read_file(filename):
             with open(filename, 'r') as file:

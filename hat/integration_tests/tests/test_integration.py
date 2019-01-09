@@ -21,9 +21,9 @@ import datetime
 # Tell django which port to bind to, so it can be exposed for docker
 os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = '0.0.0.0:8081'
 
-# Meta things for saucelabs
-SAUCE_USERNAME = os.environ['SAUCE_USERNAME']
-SAUCE_ACCESS_KEY = os.environ['SAUCE_ACCESS_KEY']
+# Meta things for saucelabs (ignored for now)
+SAUCE_USERNAME = os.environ.get('SAUCE_USERNAME', '')
+SAUCE_ACCESS_KEY = os.environ.get('SAUCE_ACCESS_KEY', '')
 
 build = 'Sense HAT Dashboard - ' + \
         os.getenv(
@@ -50,7 +50,7 @@ if tunnel_id:
 # The tag is used to separate those tests from the 'normal' test run
 @tag('selenium')
 class SeleniumTestCase(LiveServerTestCase):
-    fixtures = ['users', 'cases']
+    fixtures = ['locations', 'users', 'cases']
 
     def setUp(self):
         super().setUp()

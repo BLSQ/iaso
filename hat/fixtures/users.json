@@ -77,6 +77,11 @@
           "import_locations",
           "cases",
           "location"
+        ],
+        [
+          "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
         ]
       ]
     }

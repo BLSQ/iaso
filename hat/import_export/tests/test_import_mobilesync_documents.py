@@ -1,0 +1,48 @@
+import json
+import os
+
+from django.test import TestCase
+from hat.cases.models import Case
+from hat.couchdb import api
+from hat.sync.models import DeviceDB
+from hat.sync.tests import clean_couch
+
+from ..import_synced import import_synced_devices
+
+with open(os.path.join(os.path.dirname(__file__), "regular_neg_rdt.json")) as f:
+    part_regular_neg_rdt = json.load(f)
+
+
+class ImportMobileSyncDocuments(TestCase):
+    def tearDown(self):
+        super().tearDown()
+        clean_couch()
+
+    # This test contains most of the general document assertions
+    def test_import_regular_neg_rdt(self):
+        device_db = DeviceDB(device_id=part_regular_neg_rdt['deviceId'])
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=part_regular_neg_rdt).json()
+        self.assertEqual(part_regular_neg_rdt['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        device_cases = Case.objects.filter(device_id=part_regular_neg_rdt['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+        self.assertEquals(case.year_of_birth, 1956)
+        self.assertEquals(case.test_set.count(), 1, "There should only be one test")
+        rdt_test = case.test_set.first()
+        self.assertEquals(rdt_test.type, "RDT")
+        self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
+        # document date is when the document was created, so the test time or even just before the first test
+        # entry date is when all the information was entered, so potentially much later (last modified)
+        self.assertGreaterEqual(case.entry_date, case.document_date)

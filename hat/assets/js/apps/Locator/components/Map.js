@@ -150,9 +150,10 @@ class Map extends Component {
 * ACTIONS
 *************************************************************************** */
 
+
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.villageGroup.getBounds(), 10);
+        defaultFitToBound(map, this.villageGroup.getBounds(), 13);
     }
 
     /*

@@ -32,7 +32,8 @@
     "model": "geo.village",
     "pk": 1111,
     "fields": {
-      "name": "Kisala-lupa",
+      "name": "Kisala",
+      "aliases": ["Kisala-lupa"],
       "AS_id": 111,
       "village_official": "YES",
       "village_source": "ucla",
@@ -57,9 +58,9 @@
   },
   {
     "model": "geo.village",
-    "pk": 1111,
+    "pk": 1121,
     "fields": {
-      "name": "Kisala-lupa",
+      "name": "Polongo",
       "AS_id": 112,
       "village_official": "YES",
       "village_source": "ucla",

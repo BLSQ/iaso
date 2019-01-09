@@ -14,6 +14,8 @@ with open(os.path.join(os.path.dirname(__file__), "regular_neg_rdt.json")) as f:
 
 
 class ImportMobileSyncDocuments(TestCase):
+    fixtures = ['locations', 'users']
+
     def tearDown(self):
         super().tearDown()
         clean_couch()
@@ -39,10 +41,21 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertEquals(case.year_of_birth, 1956)
+        # document date is when the document was created, so the test time or even just before the first test
+        # entry date is when all the information was entered, so potentially much later (last modified)
+        self.assertGreaterEqual(case.entry_date, case.document_date)
+
+        # Test
         self.assertEquals(case.test_set.count(), 1, "There should only be one test")
         rdt_test = case.test_set.first()
         self.assertEquals(rdt_test.type, "RDT")
         self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
-        # document date is when the document was created, so the test time or even just before the first test
-        # entry date is when all the information was entered, so potentially much later (last modified)
-        self.assertGreaterEqual(case.entry_date, case.document_date)
+        self.assertEquals(rdt_test.village.name, "Kisala")
+
+        # Patient
+        self.assertIsNotNone(case.normalized_patient)
+        self.assertEquals(case.normalized_patient.first_name, "Getting")
+        self.assertEquals(case.normalized_patient.last_name, "Richmond")
+        self.assertEquals(case.normalized_patient.post_name, "Fitch")
+        self.assertEquals(case.normalized_patient.year_of_birth, 1956)
+        self.assertEquals(case.normalized_patient.origin_village.name, "Kisala")

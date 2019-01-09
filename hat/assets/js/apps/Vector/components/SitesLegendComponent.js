@@ -16,11 +16,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '< 10 mouches à la dernière collecte',
     },
     medium: {
-        id: 'vactor.map.without',
+        id: 'vactor.map.medium',
         defaultMessage: '> 10 mouches à la dernière collecte',
     },
     large: {
-        id: 'vactor.map.without',
+        id: 'vactor.map.large',
         defaultMessage: '> 100 mouches à la dernière collecte',
     },
 });

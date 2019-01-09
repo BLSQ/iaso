@@ -228,6 +228,15 @@ class VectorMapComponent extends Component {
                     this.props.selectMarker(target.id, 'targets')
                         .then((response) => {
                             this.setState({ editedItem: response });
+                            setTimeout(() => {
+                                const editButton = document.getElementById('edit-button');
+                                if (editButton) {
+                                    editButton.addEventListener('click', () => {
+                                        this.props.editItem(editButton.dataset.type, this.state.editedItem);
+                                        this.map.closePopup();
+                                    });
+                                }
+                            }, 500);
                             popUp.setContent(renderTargetsPopup(response, formatMessage));
                         });
                 })

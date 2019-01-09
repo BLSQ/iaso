@@ -254,6 +254,11 @@ $color in $types {
     &.active {
         color: $active;
     }
+    &.initial-white-space {
+        span {
+            display: inline;
+        }
+    }
 }
 
 .map__option__action {

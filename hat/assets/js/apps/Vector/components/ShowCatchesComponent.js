@@ -2,19 +2,33 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ReactModal from 'react-modal';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import LayersComponent from '../../../components/LayersComponent';
 import CatchesMap from './CatchesMap';
 import { getRequest } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
+import TabsComponent from '../../../components/TabsComponent';
+import CustomTableComponent from '../../../components/CustomTableComponent';
+import catchesColumns from '../utlls/catchesColumns';
 
-
+const MESSAGES = defineMessages({
+    map: {
+        defaultMessage: 'Carte',
+        id: 'vector.catches.map',
+    },
+    list: {
+        defaultMessage: 'Liste',
+        id: 'vector.catches.list',
+    },
+});
 class ShowCatchesComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
             showModale: props.showModale,
             site: props.site,
+            currentTab: 'map',
+            catchesColumns: catchesColumns(props.intl.formatMessage, MESSAGES),
         };
     }
 
@@ -31,12 +45,19 @@ class ShowCatchesComponent extends Component {
 
 
     render() {
-        const { site } = this.state;
         const {
+            site,
+            currentTab,
+        } = this.state;
+        const {
+            params,
             map: {
                 baseCatchLayer,
             },
             changeLayer,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         return (
             <ReactModal
@@ -49,7 +70,17 @@ class ShowCatchesComponent extends Component {
                     {' '}{site.name}
                 </div>
                 <section className="edit-modal large extra">
-                    <div className="third-container small-filters">
+                    <TabsComponent
+                        selectTab={key => (this.setState({ currentTab: key }))}
+                        isRedirecting={false}
+                        currentTab={currentTab}
+                        tabs={[
+                            { label: formatMessage(MESSAGES.map), key: 'map' },
+                            { label: formatMessage(MESSAGES.list), key: 'list' },
+                        ]}
+                        defaultSelect={currentTab}
+                    />
+                    <div className={`${currentTab !== 'map' ? 'hidden-opacity' : ''} third-container small-filters`} >
                         <div>
                             <LayersComponent
                                 base={baseCatchLayer}
@@ -79,6 +110,28 @@ class ShowCatchesComponent extends Component {
                             />
                         </div>
                     </div>
+                    {
+                        currentTab === 'list' &&
+                        <section>
+                            <CustomTableComponent
+                                isSortable={false}
+                                showPagination={false}
+                                columns={this.state.catchesColumns}
+                                defaultSorted={[{ id: 'collect_date', desc: false }]}
+                                params={params}
+                                onRowClicked={() => { }}
+                                multiSort={false}
+                                reduxPage={{
+                                    list: site.catches,
+                                }}
+                                fetchDatas={false}
+                                defaultPath="map"
+                                canSelect={false}
+                                pageSize={100}
+                                disableHeaderFixed
+                            />
+                        </section>
+                    }
 
                     <div className="align-right">
                         <button
@@ -98,12 +151,14 @@ ShowCatchesComponent.defaultProps = {
     site: {},
 };
 ShowCatchesComponent.propTypes = {
+    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     site: PropTypes.object,
     getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -117,4 +172,4 @@ const MapStateToProps = state => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(ShowCatchesComponent);
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(ShowCatchesComponent));

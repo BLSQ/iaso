@@ -31,7 +31,6 @@ class VectorApiImportViewSet(viewsets.ViewSet):
         if to_date is not None:
             queryset = queryset.filter(created_at__date__lte=to_date)
         if user_ids is not None:
-            print ('user_ids', user_ids)
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         paginator = Paginator(queryset, limit)
 

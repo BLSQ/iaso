@@ -77,17 +77,26 @@ class Site(models.Model):
         return "%s - %s - %s" % (self.id, self.habitat, self.location)
 
     def as_location(self):
+        try:
+            latest_catch = Catch.objects.filter(site_id = self.id).order_by('-collect_date').last().as_dict()
+        except:
+            latest_catch = None
         return {
         'id': self.id,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'altitude': self.location.z,
+            'latest_catch': latest_catch
     }
 
     def as_dict(self):
         latitude = 0
         longitude = 0
         altitude = 0
+        try:
+            latest_catch = Catch.objects.filter(site_id = self.id).order_by('-collect_date').last().as_dict()
+        except:
+            latest_catch = None
         if self.location:
             latitude = self.location.y
             longitude = self.location.x
@@ -107,7 +116,8 @@ class Site(models.Model):
             'description': self.description,
             'user': self.user.username,
             'accuracy': self.accuracy,
-            'source': self.source
+            'source': self.source,
+            'latest_catch': latest_catch
         }
 
         count_fields = ['catches_count', 'catches_count_male', 'catches_count_female', 'catches_count_unknown']
@@ -143,9 +153,9 @@ class Catch(models.Model):
         longitude = 0
         altitude = 0
         if self.end_location:
-            latitude = self.end_location.y
-            longitude = self.end_location.x
-            altitude = self.end_location.z
+            latitude = self.start_location.y
+            longitude = self.start_location.x
+            altitude = self.start_location.z
         return {
         'id': self.id,
         'latitude': latitude,
@@ -161,9 +171,9 @@ class Catch(models.Model):
         if self.user:
             user_name = self.user.username
         if self.end_location:
-            latitude = self.end_location.y
-            longitude = self.end_location.x
-            altitude = self.end_location.z
+            latitude = self.start_location.y
+            longitude = self.start_location.x
+            altitude = self.start_location.z
         return {
         'id': self.id,
         'site': self.site.id,

@@ -155,7 +155,7 @@ class VectorContainer extends Component {
         });
         const { params, dispatch } = this.props;
         this.props.saveSiteRequest(site).then(() => {
-            if (params.tab === 'sites') {
+            if (params.sites) {
                 fetchSites(dispatch, params);
             }
             fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
@@ -168,7 +168,7 @@ class VectorContainer extends Component {
         });
         this.props.saveTargetRequest(target).then(() => {
             const { params, dispatch } = this.props;
-            if (params.tab === 'targets') {
+            if (params.tab) {
                 fetchTargets(dispatch, params);
             }
             fetchPaginatedTargets(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);

@@ -225,7 +225,7 @@ class Target(models.Model):
     date_time = models.DateTimeField(null=True)
     river = models.TextField(null=True)
     gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
-    location = PointField(srid=4326, null=True)
+    location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
 
     def __str__(self):

@@ -34,33 +34,33 @@ class SitesLegendComponent extends Component {
                 </span>
                 <ul className="map__option__list">
                     <li
-                        className="interactive map__option__list__item"
+                        className="interactive map__option__list__item initial-white-space"
                     >
                         <i className="map__option__icon--alert" />
                         <FormattedMessage {...MESSAGES.alert} />
                     </li>
                     <li
-                        className="interactive map__option__list__item"
+                        className="interactive map__option__list__item initial-white-space"
                     >
-                        <i className="map__option__icon--warning" />
+                        <i className="map__option__icon--warning float-left " />
                         <FormattedMessage {...MESSAGES.warning} />
                     </li>
                     <li
-                        className="interactive map__option__list__item"
+                        className="interactive map__option__list__item initial-white-space"
                     >
-                        <i className="map__option__icon" />
+                        <i className="map__option__icon float-left " />
                         <FormattedMessage {...MESSAGES.small} />
                     </li>
                     <li
-                        className="interactive map__option__list__item"
+                        className="interactive map__option__list__item initial-white-space"
                     >
-                        <i className="map__option__icon--medium" />
+                        <i className="map__option__icon--medium float-left " />
                         <FormattedMessage {...MESSAGES.medium} />
                     </li>
                     <li
-                        className="interactive map__option__list__item"
+                        className="interactive map__option__list__item initial-white-space"
                     >
-                        <i className="map__option__icon--large" />
+                        <i className="map__option__icon--large float-left " />
                         <FormattedMessage {...MESSAGES.large} />
                     </li>
                 </ul>

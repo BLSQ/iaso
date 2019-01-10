@@ -117,6 +117,10 @@ $directions: left right top bottom;
     float: right;
 }
 
+.float-left {
+    float: left;
+}
+
 .large-text {
     font-size: 0.9vw;
     line-height: 22px;
@@ -243,4 +247,8 @@ $directions: left right top bottom;
         display: inline-block;
         margin-left: 10px;
     }
+}
+
+.initial-white-space {
+    white-space: initial !important;
 }

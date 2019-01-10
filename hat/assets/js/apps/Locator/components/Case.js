@@ -87,7 +87,7 @@ class Case extends React.Component {
                             <th>
                                 <FormattedMessage id="locator.label.case-container.village" defaultMessage="Village" />
                             </th>
-                            <td>{this.props.case.village ? this.props.case.village : '--'}</td>
+                            <td>{this.props.case.location.village ? this.props.case.location.village : '--'}</td>
                         </tr>
                     </tbody>
                 </table>

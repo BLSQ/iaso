@@ -39,8 +39,23 @@
       <meta property="og:image" content="{% static 'images/pnltha-logo.png' %}"/>
       <meta property="og:url" content="https://www.trypelim.org" />
     {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
   </head>
   <body class="menu-close">
+      <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
+        <span>
+        {% blocktrans %}
+        Les données ne sont pas encore définitives et sujettes à modification
+        {% endblocktrans %}
+        <i class="fa fa-times"></i>
+        </span>
+      </div>
+      <script>
+        if (Cookies.get('banner-closed') === 'true') {
+          document.getElementById('banner--warning').classList.toggle('no-animation');
+          document.getElementById('banner--warning').classList.toggle('closed');
+        }
+      </script>
     {% if environment == 'staging' %}
       <div class="banner--stage-warning">
         <span>

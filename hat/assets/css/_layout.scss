@@ -17,7 +17,7 @@ article {
     padding-top: $banner-height;
 }
 
-.banner--stage-warning {
+.banner--stage-warning, #banner--warning {
     position: fixed;
     top: 0;
     left: 0;
@@ -32,9 +32,25 @@ article {
     text-align: center;
     font-weight: bold;
     -webkit-font-smoothing: antialiased;
+    -webkit-transition: top 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out;
     a {
         color: white;
     }
+    &.no-animation {
+        -webkit-transition: none;
+        transition: none;
+    }
+    &.closed {
+        top: - 50px;
+    }
+    i {
+        display: inline-block;
+        margin-left: 10px;
+    }
+}
+#banner--warning {
+    cursor: pointer;
 }
 
 /* margin classes */

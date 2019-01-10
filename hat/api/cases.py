@@ -142,18 +142,19 @@ class CasesViewSet(viewsets.ViewSet):
 
         if source:
             queryset = queryset.filter(source=source)
-        if search_name:
-            queryset = queryset.filter(
-                Q(name__icontains=search_name)
-            )
-        if search_prename:
-            queryset = queryset.filter(
-                Q(prename__icontains=search_prename)
-            )
-        if search_lastname:
-            queryset = queryset.filter(
-                Q(lastname__icontains=search_lastname)
-            )
+        if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if search_name:
+                queryset = queryset.filter(
+                    Q(name__icontains=search_name)
+                )
+            if search_prename:
+                queryset = queryset.filter(
+                    Q(prename__icontains=search_prename)
+                )
+            if search_lastname:
+                queryset = queryset.filter(
+                    Q(lastname__icontains=search_lastname)
+                )
 
         if screening_result is not None:
             if screening_result == 'true':

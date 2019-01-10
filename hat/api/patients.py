@@ -127,22 +127,23 @@ class PatientsViewSet(viewsets.ViewSet):
         if village_ids:
             queryset = queryset.filter(origin_village_id__in=village_ids.split(","))
 
-        if search_name:
-            queryset = queryset.filter(
-                Q(post_name__contains=search_name)
-            )
-        if search_prename:
-            queryset = queryset.filter(
-                Q(first_name__contains=search_prename)
-            )
-        if search_lastname:
-            queryset = queryset.filter(
-                Q(last_name__contains=search_lastname)
-            )
-        if search_mother_name:
-            queryset = queryset.filter(
-                Q(mothers_surname__contains=search_mother_name)
-            )
+        if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if search_name:
+                queryset = queryset.filter(
+                    Q(post_name__contains=search_name)
+                )
+            if search_prename:
+                queryset = queryset.filter(
+                    Q(first_name__contains=search_prename)
+                )
+            if search_lastname:
+                queryset = queryset.filter(
+                    Q(last_name__contains=search_lastname)
+                )
+            if search_mother_name:
+                queryset = queryset.filter(
+                    Q(mothers_surname__contains=search_mother_name)
+                )
 
         if csv_format is None and xlsx_format is None:
             paginator = Paginator(queryset, limit)

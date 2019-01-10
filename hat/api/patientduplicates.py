@@ -81,24 +81,25 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             PatientDuplicatesPair.objects.all()
         )
 
+        if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
         # conditions on the patient
-        if search_name:
-            queryset = queryset.filter(
-                Q(patient1__post_name__contains=search_name) | Q(patient2__post_name__contains=search_name)
-            )
-        if search_prename:
-            queryset = queryset.filter(
-                Q(patient1__first_name__contains=search_prename) | Q(patient2__first_name__contains=search_prename)
-            )
-        if search_lastname:
-            queryset = queryset.filter(
-                Q(patient1__last_name__contains=search_lastname) | Q(patient2__last_name__contains=search_lastname)
-            )
-        if search_mother_name:
-            queryset = queryset.filter(
-                Q(patient1__mothers_surname__contains=search_mother_name)
-                | Q(patient2__mothers_surname__contains=search_mother_name)
-            )
+            if search_name:
+                queryset = queryset.filter(
+                    Q(patient1__post_name__contains=search_name) | Q(patient2__post_name__contains=search_name)
+                )
+            if search_prename:
+                queryset = queryset.filter(
+                    Q(patient1__first_name__contains=search_prename) | Q(patient2__first_name__contains=search_prename)
+                )
+            if search_lastname:
+                queryset = queryset.filter(
+                    Q(patient1__last_name__contains=search_lastname) | Q(patient2__last_name__contains=search_lastname)
+                )
+            if search_mother_name:
+                queryset = queryset.filter(
+                    Q(patient1__mothers_surname__contains=search_mother_name)
+                    | Q(patient2__mothers_surname__contains=search_mother_name)
+                )
 
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=province_ids.split(","))

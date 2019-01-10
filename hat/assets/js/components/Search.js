@@ -30,23 +30,27 @@ class Search extends React.Component {
     }
 
     onSearch() {
-        this.setState({
-            isChanged: false,
-        });
-        if ((this.state.searchString !== '' && this.state.searchString.length > this.props.minCharCount) ||
-            this.props.allowEmptySearch) {
-            this.props.onSearch(this.state.searchString, this.state.limit);
-        } else {
-            this.props.resetSearch();
+        if (!this.props.disabled) {
+            this.setState({
+                isChanged: false,
+            });
+            if ((this.state.searchString !== '' && this.state.searchString.length > this.props.minCharCount) ||
+                this.props.allowEmptySearch) {
+                this.props.onSearch(this.state.searchString, this.state.limit);
+            } else {
+                this.props.resetSearch();
+            }
         }
     }
 
     onChange(value) {
-        this.setState({
-            searchString: value,
-            isChanged: true,
-        });
-        this.props.onChange(value);
+        if (!this.props.disabled) {
+            this.setState({
+                searchString: value,
+                isChanged: true,
+            });
+            this.props.onChange(value);
+        }
     }
 
     render() {
@@ -57,6 +61,7 @@ class Search extends React.Component {
             showLimit,
             displayResults,
             showResetSearch,
+            disabled,
         } = this.props;
         return (
             <div className="search-container">
@@ -64,6 +69,7 @@ class Search extends React.Component {
                     <input
                         type="text"
                         value={this.state.searchString}
+                        disabled={disabled}
                         placeholder={this.props.placeholderText}
                         onChange={event => this.onChange(event.target.value)}
                         onKeyPress={(event) => {
@@ -188,6 +194,7 @@ Search.defaultProps = {
     onChange: () => { },
     showResetSearch: false,
     resetOnUnmount: true,
+    disabled: false,
 };
 
 Search.propTypes = {
@@ -210,6 +217,7 @@ Search.propTypes = {
     showResetSearch: PropTypes.bool,
     resetOnUnmount: PropTypes.bool,
     onChange: PropTypes.func,
+    disabled: PropTypes.bool,
 };
 
 export default Search;

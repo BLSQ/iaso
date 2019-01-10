@@ -8,6 +8,12 @@ import Search from './Search';
 
 import { createUrl } from '../utils/fetchData';
 
+const anonymisedFilterArray = [
+    'search_prename',
+    'search_name',
+    'search_lastname',
+    'search_mother_name',
+];
 
 class FiltersComponent extends React.Component {
     constructor(props) {
@@ -84,6 +90,10 @@ class FiltersComponent extends React.Component {
             <section>
                 {
                     filters.map((filter) => {
+                        let searchDisabled = false;
+                        if (anonymisedFilterArray.indexOf(filter.name) !== -1 && window.anonymised) {
+                            searchDisabled = true;
+                        }
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
                                 <div key={filter.name}>
@@ -123,6 +133,7 @@ class FiltersComponent extends React.Component {
                                                 searchString={params[filter.urlKey]}
                                                 resetOnUnmount={false}
                                                 onChange={value => this.onSearchChange(value, filter.urlKey)}
+                                                disabled={searchDisabled}
                                             />
                                         }
 

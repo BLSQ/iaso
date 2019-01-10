@@ -23,6 +23,7 @@ LOCATOR = _("Locator")
 VECTOR_CONTROL = _("Vector control")
 VECTOR_CONTROL_UPLOAD = _("Vector control import Gpx")
 QUALITY_CONTROL = _("Quality control")
+ANONYMOUS_VIEW = _("Anounymous view")
 
 
 class CustomPermissionSupport(models.Model):
@@ -53,5 +54,6 @@ class CustomPermissionSupport(models.Model):
             ('x_locator', LOCATOR),
             ('x_vectorcontrol', VECTOR_CONTROL),
             ('x_vectorcontrolupload', VECTOR_CONTROL_UPLOAD),
-            ('x_qualitycontrol', QUALITY_CONTROL)
+            ('x_qualitycontrol', QUALITY_CONTROL),
+            ('x_anonymous', ANONYMOUS_VIEW)
         )

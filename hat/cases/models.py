@@ -451,7 +451,7 @@ class Case(CaseAbstract):
                 }
             },
 
-            'patient': self.normalized_patient.as_dict(),
+            'patient': self.normalized_patient.as_dict(True),
             'hat_id': self.hat_id,
             'hat_document_id': self.document_id,
 

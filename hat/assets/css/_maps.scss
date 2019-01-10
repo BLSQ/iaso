@@ -272,12 +272,54 @@ $color in $types {
     height: 12px;
     border-radius: 50%;
     margin-left: 2px;
-    margin-right: 8px;
+    margin-right: 12px;
     background: white;
     border: 3px solid $light-gray;
 }
 
 .map__option__icon {
+    &--warning {
+        border-color: rgba(orange, 0.5);
+        position: relative;
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+    &--alert {
+        border-color: red;
+        position: relative;
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+    &--medium {
+        width: 18px;
+        height: 18px;
+        margin-left: -1px;
+        margin-right: 9px;
+    }
+    &--large {
+        width: 24px;
+        height: 24px;
+        margin-left: -4px;
+        margin-right: 6px;
+    }
     &--YES {
         border-color: $official;
         background: $official;
@@ -314,7 +356,7 @@ $color in $types {
     &--villages-with-case,
     &--sites,
     &--site,
-    &--catchs,
+    &--catches,
     &--targets {
         border: none;
         background: transparent;
@@ -371,10 +413,10 @@ $color in $types {
     &--site {
         width: 12px;
         height: 12px;
-        border: 2px solid yellow;
+        border: 2px solid orange;
         background: rgba(yellow, 0.5);
     }
-    &--catchs {
+    &--catches {
         width: 12px;
         height: 12px;
         border: 2px solid orange;
@@ -1013,7 +1055,7 @@ button {
 .route-map,
 .split-map,
 .village-map-container,
-.catchs-map-container,
+.catches-map-container,
 .vector-map,
 .geo-scope-map {
     .map-container {
@@ -1112,7 +1154,7 @@ button {
     }
 }
 
-.catchs-map-container {
+.catches-map-container {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
     .map-container {
@@ -1126,7 +1168,7 @@ button {
 }
 
 @media (max-height: 950px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 550px;
         }
@@ -1137,8 +1179,9 @@ button {
         }
     }
 }
+
 @media (max-height: 880px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 450px;
         }
@@ -1149,8 +1192,9 @@ button {
         }
     }
 }
+
 @media (max-height: 750px) {
-    .catchs-map-container {
+    .catches-map-container {
         .map-container {
             height: 400px;
         }

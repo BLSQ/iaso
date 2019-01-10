@@ -65,7 +65,7 @@ class CustomTableComponent extends React.Component {
             }, newProps.endPointUrl);
         }
 
-        if (newProps.reduxPage.list) {
+        if (newProps.reduxPage.list && newProps.reduxPage.params) {
             const pageSize = newProps.reduxPage.params[newProps.pageSizeKey] || parseInt(newProps.pageSize, 10);
             let { showPagination } = newProps.reduxPage;
             if (newProps.reduxPage.count) {

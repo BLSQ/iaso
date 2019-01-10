@@ -50,15 +50,37 @@
     }
 }
 
-.marker-cluster-sites {
-    background-color: rgba(yellow, 0.6);
+.marker-cluster-sites, .marker-sites {
+    background-color: rgba(orange, 0.6);
     z-index: 1000000 !important;
     div {
         background-color: yellow;
     }
+    &.warning {
+        div {
+            background-color: orange;
+        }
+    }
+    &.alert {
+        background-color: rgba(red, 1);
+        div {
+            background-color: orange;
+        }
+    }
+}
+.marker-sites {
+    z-index: 2000000 !important;
 }
 
-.marker-cluster {
+.marker-catches {
+    background-color: rgba(orange, 0.6);
+    z-index: 1000000 !important;
+    div {
+        background-color: orange;
+    }
+}
+
+.marker-cluster, .marker-custom {
     &.small {
         div {
             height: 20px;
@@ -68,10 +90,22 @@
             }
         }
     }
+    &.medium {
+        div {
+            height: 30px;
+            width: 30px;
+        }
+    }
+    &.large {
+        div {
+            height: 40px;
+            width: 40px;
+        }
+    }
 }
 
 .marker-cluster-villages-with-cases {
-    background-color: rgba(red, 0.6);
+    background-color: rgba(red, 0.6) !important;
     div {
         background-color: red;
     }
@@ -108,18 +142,18 @@
     background-color: rgb(241, 128, 23);
 }
 
-.marker-cluster {
+.marker-cluster, .marker-custom {
     background-clip: padding-box;
-    border-radius: 20px;
+    border-radius: 100%;
 }
 
-.marker-cluster div {
+.marker-cluster div, .marker-custom div {
     width: 30px;
     height: 30px;
     margin-left: 5px;
     margin-top: 5px;
     text-align: center;
-    border-radius: 15px;
+    border-radius: 100%;
     font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 

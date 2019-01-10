@@ -293,14 +293,14 @@ class EditSiteComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.catchs"
+                                                id="vector.label.catches"
                                                 defaultMessage="Déploiements"
                                             />
                                         </th>
-                                        <td>{site.catchs_count}</td>
+                                        <td>{site.catches_count}</td>
                                     </tr>
                                     {
-                                        site.catchs_count > 0 &&
+                                        site.catches_count > 0 &&
                                         <tr>
                                             <th>
                                                 <FormattedMessage
@@ -308,11 +308,11 @@ class EditSiteComponent extends Component {
                                                     defaultMessage="Males"
                                                 />
                                             </th>
-                                            <td>{site.catchs_count_male}</td>
+                                            <td>{site.catches_count_male}</td>
                                         </tr>
                                     }
                                     {
-                                        site.catchs_count > 0 &&
+                                        site.catches_count > 0 &&
                                         <tr>
                                             <th>
                                                 <FormattedMessage
@@ -320,11 +320,11 @@ class EditSiteComponent extends Component {
                                                     defaultMessage="Femelles"
                                                 />
                                             </th>
-                                            <td>{site.catchs_count_female}</td>
+                                            <td>{site.catches_count_female}</td>
                                         </tr>
                                     }
                                     {
-                                        site.catchs_count > 0 &&
+                                        site.catches_count > 0 &&
                                         <tr>
                                             <th>
                                                 <FormattedMessage
@@ -332,7 +332,7 @@ class EditSiteComponent extends Component {
                                                     defaultMessage="Inconnus"
                                                 />
                                             </th>
-                                            <td>{site.catchs_count_unknown}</td>
+                                            <td>{site.catches_count_unknown}</td>
                                         </tr>
                                     }
                                 </tbody>

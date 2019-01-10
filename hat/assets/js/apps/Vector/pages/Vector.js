@@ -15,6 +15,8 @@ import {
 } from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
+import ClusterSwitchComponent from '../components/ClusterSwitchComponent';
+import SitesLegendComponent from '../components/SitesLegendComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -24,7 +26,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
-import ShowCatchsComponent from '../components/ShowCatchsComponent';
+import ShowCatchesComponent from '../components/ShowCatchesComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
@@ -44,7 +46,7 @@ export class Vector extends Component {
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
             showEditSiteModale: false,
             showEditTargetModale: false,
-            showCatchsModale: false,
+            showCatchesModale: false,
             siteEdited: props.siteEdited,
             targetEdited: props.targetEdited,
         };
@@ -149,7 +151,7 @@ export class Vector extends Component {
         if (type === 'site') {
             this.setState({
                 showEditSiteModale: true,
-                showCatchsModale: false,
+                showCatchesModale: false,
                 showEditTargetModale: false,
                 siteEdited: data,
             });
@@ -158,7 +160,7 @@ export class Vector extends Component {
         if (type === 'target') {
             this.setState({
                 showEditSiteModale: false,
-                showCatchsModale: false,
+                showCatchesModale: false,
                 showEditTargetModale: true,
                 targetEdited: data,
             });
@@ -166,9 +168,9 @@ export class Vector extends Component {
     }
 
 
-    displayCatchs(data = undefined, fetchDetails = false) {
+    displayCatches(data = undefined, fetchDetails = false) {
         const newState = {
-            showCatchsModale: true,
+            showCatchesModale: true,
             showEditSiteModale: false,
             showEditTargetModale: false,
             siteEdited: data,
@@ -183,11 +185,11 @@ export class Vector extends Component {
         }
     }
 
-
     render() {
         const {
             map: {
                 baseLayer,
+                withCluster,
             },
             intl: {
                 formatMessage,
@@ -200,6 +202,7 @@ export class Vector extends Component {
             params,
             getShape,
             changeLayer,
+            changeCluster,
             getSiteDetail,
             redirectTo,
             reduxSitesPage,
@@ -228,14 +231,15 @@ export class Vector extends Component {
         return (
             <section className="vectors-container">
                 {
-                    this.state.showCatchsModale &&
-                    <ShowCatchsComponent
-                        showModale={this.state.showCatchsModale}
+                    this.state.showCatchesModale &&
+                    <ShowCatchesComponent
+                        showModale={this.state.showCatchesModale}
                         toggleModal={() =>
                             this.setState({
-                                showCatchsModale: !this.state.showCatchsModale,
+                                showCatchesModale: !this.state.showCatchesModale,
                             })}
                         site={this.state.siteEdited}
+                        params={params}
                     />
                 }
                 {
@@ -334,6 +338,18 @@ export class Vector extends Component {
                                     change={(type, key) => changeLayer(type, key)}
                                 />
                             </div>
+                            <div className="margin-top">
+                                <ClusterSwitchComponent
+                                    withCluster={withCluster}
+                                    change={withCl => changeCluster(withCl)}
+                                />
+                            </div>
+                            {
+                                !withCluster &&
+                                <div className="margin-top">
+                                    <SitesLegendComponent />
+                                </div>
+                            }
                         </div>
                         <div className="split-map big">
                             <VectorMapComponent
@@ -345,7 +361,8 @@ export class Vector extends Component {
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => getSiteDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
-                                displayCatchs={data => this.displayCatchs(data)}
+                                displayCatches={data => this.displayCatches(data)}
+                                withCluster={withCluster}
                             />
                         </div>
                     </div>
@@ -418,6 +435,7 @@ Vector.propTypes = {
     getShape: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
+    changeCluster: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     reduxSitesPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
@@ -435,6 +453,7 @@ const MapDispatchToProps = dispatch => ({
     getShape: url => getRequest(url, dispatch, null, false),
     getSiteDetail: (itemId, key) => getRequest(`/api/${key}/${itemId}`, dispatch),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
+    changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
 });
 
 const MapStateToProps = state => ({

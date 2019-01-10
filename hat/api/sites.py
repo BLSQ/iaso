@@ -5,8 +5,7 @@ from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from django.contrib.auth.models import User
-from django.db import models
+
 
 from hat.vector_control.models import Site, APIImport, Catch
 from .authentication import CsrfExemptSessionAuthentication
@@ -15,10 +14,10 @@ from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
 from hat.geo.models import Province, ZS, AS
 from django.db.models import OuterRef, Exists, Count, Sum, Case, When, Value
+from .catches import timestamp_to_utc_datetime
 
-import csv
-import json
 from .export_utils import  Echo, generate_xlsx, iter_items
+
 
 class SitesViewSet(viewsets.ViewSet):
     """
@@ -96,12 +95,12 @@ class SitesViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
-        queryset = queryset.annotate(catchs_count=Count('catch'))
-        queryset = queryset.annotate(catchs_count_male=Sum('catch__male_count'))
-        queryset = queryset.annotate(catchs_count_female=Sum('catch__female_count'))
-        queryset = queryset.annotate(catchs_count_unknown=Sum('catch__unknown_count'))
+        queryset = queryset.annotate(catches_count=Count('catch'))
+        queryset = queryset.annotate(catches_count_male=Sum('catch__male_count'))
+        queryset = queryset.annotate(catches_count_female=Sum('catch__female_count'))
+        queryset = queryset.annotate(catches_count_unknown=Sum('catch__unknown_count'))
 
-        queryset = queryset.annotate(catchs_count_total=Sum('catch__unknown_count') + Sum('catch__male_count') + Sum('catch__female_count'))
+        queryset = queryset.annotate(catches_count_total=Sum('catch__unknown_count') + Sum('catch__male_count') + Sum('catch__female_count'))
         queryset = queryset.order_by(*orders)
 
         if csv_format is None and xlsx_format is None:
@@ -150,22 +149,22 @@ class SitesViewSet(viewsets.ViewSet):
                 if sdict["habitat"]:
                     habitatText = site.get_habitat_display()
 
-                catchs_count_male = 0
-                catchs_count_female = 0
-                catchs_count_unknown = 0
-                if site.catchs_count > 0:
-                    catchs_count_male = site.catchs_count_male
-                    catchs_count_female = site.catchs_count_female
-                    catchs_count_unknown = site.catchs_count_unknown
+                catches_count_male = 0
+                catches_count_female = 0
+                catches_count_unknown = 0
+                if site.catches_count > 0:
+                    catches_count_male = site.catches_count_male
+                    catches_count_female = site.catches_count_female
+                    catches_count_unknown = site.catches_count_unknown
 
                 return [
                             sdict.get("id"),
                             site.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                             sdict.get("name"),
-                            site.catchs_count,
-                            catchs_count_male,
-                            catchs_count_female,
-                            catchs_count_unknown,
+                            site.catches_count,
+                            catches_count_male,
+                            catches_count_female,
+                            catches_count_unknown,
                             sdict.get("latitude"),
                             sdict.get("longitude"),
                             sdict.get("altitude"),
@@ -192,12 +191,12 @@ class SitesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         site = get_object_or_404(Site, pk=pk)
         site_dict = site.as_dict()
-        catchs = Catch.objects.filter(site__id=pk)
-        site_dict['catchs_count'] = catchs.count()
-        site_dict['catchs_count_male'] = catchs.aggregate(Sum('male_count'))['male_count__sum']
-        site_dict['catchs_count_female'] = catchs.aggregate(Sum('female_count'))['female_count__sum']
-        site_dict['catchs_count_unknown'] = catchs.aggregate(Sum('unknown_count'))['unknown_count__sum']
-        site_dict['catchs'] = map(lambda x: x.as_dict(), catchs)
+        catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
+        site_dict['catches_count'] = catches.count()
+        site_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
+        site_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']
+        site_dict['catches_count_unknown'] = catches.aggregate(Sum('unknown_count'))['unknown_count__sum']
+        site_dict['catches'] = map(lambda x: x.as_dict(), catches)
         return Response(site_dict)
 
     def create(self, request):
@@ -211,11 +210,16 @@ class SitesViewSet(viewsets.ViewSet):
         for site in sites:
             uuid = site.get('uuid', None)
             new_site, created = Site.objects.get_or_create(uuid=uuid)
-            new_site.name = site.get('name', None)
-            new_site.habitat = site.get('habitat', None)
-            new_site.description = site.get('description', None)
             if created:
-                new_site.created_at = site.get('created_at', None)
+                new_site.name = site.get('name', None)
+                new_site.habitat = site.get('habitat', None)
+                new_site.accuracy = site.get('accuracy', None)
+                new_site.description = site.get('description', None)
+                t = site.get('time', None)
+                if t:
+                    new_site.created_at = timestamp_to_utc_datetime(int(t))
+                else:
+                    new_site.created_at = site.get('created_at', None)
                 new_site.uuid = site.get('uuid', None)
 
                 new_site.user = request.user
@@ -223,8 +227,9 @@ class SitesViewSet(viewsets.ViewSet):
                 new_site.api_import = api_import
                 latitude = site.get('latitude', None)
                 longitude = site.get('longitude', None)
+                altitude = site.get('altitude', 0)
                 if latitude and longitude:
-                    new_site.location = Point(x=longitude, y=latitude, srid=4326)
+                    new_site.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 new_sites.append(new_site)
             new_site.save()
 

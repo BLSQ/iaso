@@ -30,29 +30,29 @@ const sitesColumns = (formatMessage, messages, element) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Déploiements',
-                id: 'main.label.catchs',
+                id: 'main.label.catches',
             }),
             className: 'small',
-            accessor: 'catchs_count',
+            accessor: 'catches_count',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Mouches',
-                id: 'main.label.catchs_count_total',
+                id: 'main.label.catches_count_total',
             }),
-            accessor: 'catchs_count_total',
+            accessor: 'catches_count_total',
             className: 'small',
             Cell: (settings) => {
                 const site = settings.original;
                 let total = 0;
-                if (site.catchs_count_male) {
-                    total += site.catchs_count_male;
+                if (site.catches_count_male) {
+                    total += site.catches_count_male;
                 }
-                if (site.catchs_count_female) {
-                    total += site.catchs_count_female;
+                if (site.catches_count_female) {
+                    total += site.catches_count_female;
                 }
-                if (site.catchs_count_unknown) {
-                    total += site.catchs_count_male;
+                if (site.catches_count_unknown) {
+                    total += site.catches_count_male;
                 }
                 return <span>{total}</span>;
             },
@@ -101,13 +101,13 @@ const sitesColumns = (formatMessage, messages, element) => (
             Cell: settings => (
                 <section>
                     {
-                        settings.original.catchs_count > 0 &&
+                        settings.original.catches_count > 0 &&
                         <button
                             className="button--edit--tiny margin-right"
-                            onClick={() => element.displayCatchs(settings.original, true)}
+                            onClick={() => element.displayCatches(settings.original, true)}
                         >
                             <i className="fa fa-eye" />
-                            <FormattedMessage id="main.label.catchs" defaultMessage="Déploiements" />
+                            <FormattedMessage id="main.label.catches" defaultMessage="Déploiements" />
                         </button>
                     }
                     <button

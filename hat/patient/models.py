@@ -6,6 +6,9 @@ from hat.cases.models import Case
 from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
 from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
+from hat.users.middleware import get_current_user
+
 
 
 class Patient(models.Model):
@@ -36,6 +39,8 @@ class Patient(models.Model):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
     def as_dict(self):
+        user = get_current_user()
+        is_anonymised = user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
         AS = None
         ZS = None
         province = None
@@ -48,12 +53,12 @@ class Patient(models.Model):
             village = self.origin_village.name
         return {
             "id": self.id,
-            "post_name": self.post_name,
-            "last_name": self.last_name,
-            "first_name": self.first_name,
+            "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "age": self.age,
-            "mothers_surname": self.mothers_surname,
+            "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "province": province,
             "ZS": ZS,
             "AS": AS,
@@ -61,6 +66,8 @@ class Patient(models.Model):
         }
 
     def as_full_dict(self):
+        user = get_current_user()
+        is_anonymised = user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
         cases = []
         tests = []
         for case in self.case_set.all():
@@ -88,13 +95,13 @@ class Patient(models.Model):
 
         return {
             "id": self.id,
-            "post_name": self.post_name,
-            "last_name": self.last_name,
-            "first_name": self.first_name,
+            "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "age": self.age,
             "year_of_birth": self.year_of_birth,
-            "mothers_surname": self.mothers_surname,
+            "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "origin_area": self.origin_area.as_dict() if self.origin_area else None,
             "cases": cases,
             "tests": tests,

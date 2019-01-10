@@ -21,7 +21,7 @@ input[type="date"] {
         box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
     }
     &:disabled{
-        background-color: $gray;
+        background-color: $gray !important;
         opacity: 0.8;
     }
     &.form-error {

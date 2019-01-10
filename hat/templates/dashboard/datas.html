@@ -19,6 +19,10 @@
   {% render_bundle 'common' %}
   {% render_bundle 'datas' %}
   <script>
+    window.anonymised = false;
+    {% if perms.menupermissions.x_anonymous and not user.is_superuser %}
+      window.anonymised = true;
+    {% endif %}
     HAT.datas.default(
       {},
       document.getElementById('app'),

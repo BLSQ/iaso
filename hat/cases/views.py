@@ -15,6 +15,7 @@ from hat.import_export.mapping import ANON_EXPORT_FIELDS, FULL_EXPORT_FIELDS
 from hat.patient.models import Test, Patient
 from .forms import CaseForm
 from ..sync.models import ImageUpload, VideoUpload, DeviceDB
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
 
 logger = logging.getLogger('views.py')
 
@@ -45,6 +46,11 @@ def cases_details(request: HttpRequest, doc_id: str = None) -> HttpResponse:
         fields = sorted(FULL_EXPORT_FIELDS)
     else:
         fields = sorted(ANON_EXPORT_FIELDS)
+    if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
+        case.prename = ANONYMOUS_PLACEHOLDER
+        case.lastname = ANONYMOUS_PLACEHOLDER
+        case.name = ANONYMOUS_PLACEHOLDER
+        case.mothers_surname = ANONYMOUS_PLACEHOLDER
 
     return render(request, 'cases/cases/detail.html', {
         'back_link': back_link,

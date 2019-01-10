@@ -60,3 +60,5 @@ def queryset_iterator(queryset, chunk_size=1000):
             pk = row.id
             yield row
         gc.collect()
+
+ANONYMOUS_PLACEHOLDER = "•••••••••••"

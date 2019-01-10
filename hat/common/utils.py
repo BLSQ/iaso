@@ -61,4 +61,4 @@ def queryset_iterator(queryset, chunk_size=1000):
             yield row
         gc.collect()
 
-ANONYMOUS_PLACEHOLDER = "XXXXXX"
+ANONYMOUS_PLACEHOLDER = "•••••••••••"

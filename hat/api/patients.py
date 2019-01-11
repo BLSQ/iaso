@@ -162,6 +162,8 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
+            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village']
             filename = 'patients'
 

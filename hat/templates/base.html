@@ -43,15 +43,20 @@
   </head>
   <body class="menu-close">
       <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
-        <span>
         <i class="fa fa-warning"></i>
+        <span>
         {% blocktrans %}
-        Les données ne sont pas encore définitives et sujettes à modification
+        Ce site Web est un système d'aide à la décision du Programme National de Lutte contre la maladie du sommeil (PNLTHA) qui est en construction jusqu'en mai 2019. Certaines interfaces ne sont pas définitives et les données n'ont pas été complètement validées par le PNLTHA. Par conséquent, l'utilisation est restreinte à des fins de démonstration et aucune conclusion ou interpretation ne peut être tirée ou disséminé
         {% endblocktrans %}
-        <i class="fa fa-times"></i>
         </span>
+        <i class="fa fa-warning second"></i>
+        <i class="fa fa-times"></i>
       </div>
       <script>
+        window.anonymised = false;
+        {% if perms.menupermissions.x_anonymous and not user.is_superuser %}
+          window.anonymised = true;
+        {% endif %}
         if (Cookies.get('banner-closed') === 'true') {
           document.getElementById('banner--warning').classList.toggle('no-animation');
           document.getElementById('banner--warning').classList.toggle('closed');

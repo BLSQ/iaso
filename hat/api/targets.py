@@ -85,6 +85,8 @@ class TargetsViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
+            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             columns =  ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
             filename = 'targets'
 

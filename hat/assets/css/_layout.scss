@@ -43,11 +43,7 @@ article {
         transition: none;
     }
     &.closed {
-        top: - 80px;
-    }
-    i {
-        display: inline-block;
-        margin-left: 10px;
+        top: - 100%;
     }
 }
 
@@ -56,8 +52,21 @@ article {
     font-size: $font-size-l;
     padding: 10px $padding-unit;
     height: auto;
+    line-height: $font-size-l;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    i {
+        display: inline-block;
+        margin-left: 10px;
+    }
+    span {
+        display: inline-block;
+        max-width: 80%;
+        text-align: justify;
+    }
     .fa-warning {
-        margin: 0 10px 0 0;
+        margin: 0 15px 0 0;
         color: red;
         position: relative;
         &:after {
@@ -71,6 +80,14 @@ article {
             height: 13px;
             z-index: -1;
         }
+        &.second {
+            margin: 0 0 0 15px;
+        }
+    }
+    .fa-times {
+        position: absolute;
+        right: $padding-unit / 2;
+        top: $padding-unit / 2;
     }
 }
 

@@ -8,6 +8,9 @@ class downloadComponent extends Component {
             xlsxUrl,
             smallButtons,
         } = this.props;
+        if (window.anonymised) {
+            return null;
+        }
         return (
             <span>
                 <button

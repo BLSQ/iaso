@@ -42,6 +42,8 @@
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
   </head>
   <body class="menu-close">
+
+    {% if user.is_authenticated %}
       <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
         <i class="fa fa-warning"></i>
         <span>
@@ -62,6 +64,7 @@
           document.getElementById('banner--warning').classList.toggle('closed');
         }
       </script>
+    {% endif %}
     {% if environment == 'staging' %}
       <div class="banner--stage-warning">
         <span>

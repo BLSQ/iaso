@@ -39,8 +39,10 @@ def cases_details(request: HttpRequest, doc_id: str = None) -> HttpResponse:
         except DeviceDB.DoesNotExist:
             pass
 
-    images = ImageUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
-    videos = VideoUpload.objects.filter(hat_id=case.hat_id).order_by("-upload_date")
+    images = ImageUpload.objects.filter(id__in=case_tests.distinct("image_id").values_list("image_id", flat=True))\
+        .order_by("-upload_date")
+    videos = VideoUpload.objects.filter(id__in=case_tests.distinct("video_id").values_list("video_id", flat=True))\
+        .order_by("-upload_date")
 
     if request.user.has_perm('cases.view_full'):
         fields = sorted(FULL_EXPORT_FIELDS)

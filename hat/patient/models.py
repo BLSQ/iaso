@@ -1,9 +1,11 @@
+from django.contrib.gis.db import models as gis_models
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, CASCADE, TextField
 from django.contrib.postgres import fields as contrib
 
 from hat.cases.models import Case
-from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES, GPS_SRID
 from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
@@ -31,6 +33,10 @@ class Patient(models.Model):
     origin_raw_village = models.TextField(null=True, blank=True, db_index=True)
     origin_raw_AS = models.TextField(null=True, blank=True, db_index=True)
     origin_raw_ZS = models.TextField(null=True, blank=True, db_index=True)
+    dead = models.BooleanField(default=False)
+    death_date = models.DateField(null=True, blank=True)
+    death_device = models.ForeignKey("sync.DeviceDB", null=True, blank=True, on_delete=CASCADE)
+    death_location = gis_models.PointField(srid=GPS_SRID, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -158,6 +164,101 @@ class Test(models.Model):
                 res['group_id'] = self.video.participant_uuid
 
         return res
+
+
+class Treatment(models.Model):
+    MED_NONE = 'none'
+    MED_PENTAMIDINE = 'pentamidine'
+    MED_MELARSOPROL = 'melarsoprol'
+    MED_EFLORNITHINE = 'eflornithine'
+    MED_NECT = 'nect'
+    MED_FEXINIDAZOLE = 'fexinidazole'
+    MED_OXABOROLE = 'oxaborole'
+    MED_CHOICES = (
+        (MED_NONE, 'Aucun'),
+        (MED_PENTAMIDINE, 'Pentamidine'),
+        (MED_MELARSOPROL, 'Melarsoprol'),
+        (MED_EFLORNITHINE, 'Eflornithine'),
+        (MED_NECT, 'NECT'),
+        (MED_FEXINIDAZOLE, 'Fexinidazole'),
+        (MED_OXABOROLE, 'Oxaborole')
+    )
+
+    ISSUE_VOMITING = 'vomiting'
+    ISSUE_DIARRHEA = 'diarrhea'
+    ISSUE_DISORIENTATION = 'desorientation' # typo in document
+    ISSUE_OBNUBILATION = 'obnubilation'
+    ISSUE_BEHAVIOUR = 'behaviour'
+    ISSUE_COMA = 'coma'
+    ISSUE_NEURO = 'neuro'
+    ISSUE_CONVULSION = 'convulsion'
+    ISSUE_SEPTICEMY = 'septicemy'
+    ISSUE_ACUTE_RESPIRATORY_FAILURE = 'acute respiratory failure'
+    ISSUE_CHOICES=(
+        (ISSUE_VOMITING, 'vomiting'),
+        (ISSUE_DIARRHEA, 'diarrhea'),
+        (ISSUE_DISORIENTATION, 'desorientation'),  # typo in document
+        (ISSUE_OBNUBILATION, 'obnubilation'),
+        (ISSUE_BEHAVIOUR, 'behaviour'),
+        (ISSUE_COMA, 'coma'),
+        (ISSUE_NEURO, 'neuro'),
+        (ISSUE_CONVULSION, 'convulsion'),
+        (ISSUE_SEPTICEMY, 'septicemy'),
+        (ISSUE_ACUTE_RESPIRATORY_FAILURE, 'acute respiratory failure'),
+    )
+
+    INCOMPLETE_REASON_OUTOFSTOCK = 'outofstock'
+    INCOMPLETE_REASON_ABANDON = 'abandon'
+    INCOMPLETE_REASON_DEATH = 'death'
+    INCOMPLETE_REASON_PATIENTINCAPACITY = 'patientincapacity'
+    INCOMPLETE_REASON_CHOICES = (
+        ('outofstock', 'rupture de stock'),
+        ('abandon', 'abandon'),
+        ('death', 'décès'),
+        ('patientincapacity', 'incapacité du patient')
+    )
+
+    DEATH_MOMENT_BEFORE = 'before'
+    DEATH_MOMENT_DURING = 'during'
+    DEATH_MOMENT_AFTER = 'after'
+    DEATH_MOMENT_CHOICES = (
+        ('before', 'Avant traitement'),
+        ('during', 'Pendant traitement'),
+        ('after', 'Après traitement')
+    )
+    patient = models.ForeignKey(to=Patient, on_delete=CASCADE)
+    index = models.IntegerField()
+    medicine = models.TextField(choices=MED_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    entry_date = models.DateTimeField(null=True, blank=True)
+    adverse_effects = models.NullBooleanField()
+    dead = models.NullBooleanField()
+    lost = models.NullBooleanField()
+    success = models.NullBooleanField()
+    complete = models.NullBooleanField()
+    event = models.NullBooleanField()
+    issues = ArrayField(
+        TextField(max_length=255, blank=True, choices=ISSUE_CHOICES),
+        null=True,
+        blank=True,
+    )
+    location = gis_models.PointField(srid=GPS_SRID, null=True)
+    incomplete_reasons = ArrayField(
+        TextField(max_length=255, blank=True, choices=INCOMPLETE_REASON_CHOICES),
+        null=True,
+        blank=True,
+    )
+    device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE)
+    death_moment = models.TextField(null=True, blank=True, choices=DEATH_MOMENT_CHOICES)
+
+    def __str__(self):
+        return f"{self.id} {self.index} {self.medicine}"
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+        }
 
 
 class TestGroup(models.Model):

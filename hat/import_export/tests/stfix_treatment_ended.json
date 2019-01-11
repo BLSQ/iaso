@@ -1,6 +1,6 @@
 {
    "_id": "participant-09d7581525ae42a18960debb63d927b9",
-   "_rev": "9-a7d4174e52dbcba81e3de905efd7ac54",
+   "_rev": "10-25e70d7576c9f6335eaaf987366b7d62",
    "person": {
        "forename": "Louis",
        "postname": "XVI",
@@ -87,23 +87,31 @@
                "startDate": "2019/01/04",
                "medicine": "melarsoprol",
                "issues": [
+                   "vomiting"
                ],
                "incompleteReasons": [
+                   "abandon"
                ],
-               "dead": "none",
+               "dead": "no",
                "creationTime": "2019-01-09T16:30:16.967Z",
-               "testTime": "2019-01-09T16:30:16.967Z",
-               "device": "f7651cad79052ac6",
+               "testTime": "2019-01-10T13:30:39.204Z",
+               "device": "stfix-treatment-started",
                "position": {
                    "accuracy": 10.17199993133545,
                    "latitude": 50.8367296,
                    "longitude": 4.4009192,
                    "timestamp": 1547051417000
-               }
+               },
+               "adverseEffects": "no",
+               "event": "none",
+               "lost": "no",
+               "success": "none",
+               "endDate": "2019/01/10",
+               "complete": "no"
            }
        ]
    },
    "dateCreated": "2019-01-09T16:29:02.247Z",
-   "dateModified": "2019-01-09T16:30:16.982Z",
+   "dateModified": "2019-01-10T13:30:39.232Z",
    "deviceId": "stfix-treatment-started"
 }

@@ -17,7 +17,8 @@ article {
     padding-top: $banner-height;
 }
 
-.banner--stage-warning, #banner--warning {
+.banner--stage-warning,
+#banner--warning {
     position: fixed;
     top: 0;
     left: 0;
@@ -42,15 +43,35 @@ article {
         transition: none;
     }
     &.closed {
-        top: - 50px;
+        top: - 80px;
     }
     i {
         display: inline-block;
         margin-left: 10px;
     }
 }
+
 #banner--warning {
     cursor: pointer;
+    font-size: $font-size-l;
+    padding: 10px $padding-unit;
+    height: auto;
+    .fa-warning {
+        margin: 0 10px 0 0;
+        color: red;
+        position: relative;
+        &:after {
+            display: block;
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background-color: white;
+            width: 7px;
+            height: 13px;
+            z-index: -1;
+        }
+    }
 }
 
 /* margin classes */

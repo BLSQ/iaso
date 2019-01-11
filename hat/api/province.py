@@ -20,6 +20,8 @@ class ProvinceViewSet(viewsets.ViewSet):
     def list(self, request):
         as_geo_json = request.GET.get("geojson", None)
         provinces = Province.objects.all()
+        if not request.user.profile.province_scope.count() == 0:
+            provinces = provinces.filter(id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
         if as_geo_json:
             res = json.loads(serialize('geojson', provinces, geometry_field='simplified_geom', fields=('name', 'pk',)))
             return Response(res)
@@ -28,4 +30,11 @@ class ProvinceViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         province = get_object_or_404(Province, pk=pk)
-        return Response(province.as_dict())
+        isAuthorized = request.user.profile.province_scope.count() == 0
+        if province.id in request.user.profile.province_scope.all().values_list('pk', flat=True):
+            isAuthorized = True
+
+        if isAuthorized:
+            return Response(province.as_dict())
+        else:
+            return Response('Unauthorized', status=401)

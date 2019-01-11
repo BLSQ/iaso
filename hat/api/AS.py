@@ -39,6 +39,12 @@ class ASViewSet(viewsets.ViewSet):
         as_geo_json = request.GET.get("geojson", None)
 
         queryset = AS.objects.all()
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.AS_scope.count() == 0:
+            queryset = queryset.filter(id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
         if zs_ids:
             queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
 
@@ -52,7 +58,14 @@ class ASViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)
-        return Response(aire.as_dict())
+        isAuthorized = request.user.profile.AS_scope.count() == 0
+        if aire.id in request.user.profile.AS_scope.all().values_list('pk', flat=True):
+            isAuthorized = True
+
+        if isAuthorized:
+            return Response(aire.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 
     def update(self, request, pk=None):
         planning_id = request.data.get("planning_id", None)
@@ -64,15 +77,17 @@ class ASViewSet(viewsets.ViewSet):
 
         for as_id in pk.split(','):
             area = get_object_or_404(AS, id=as_id)
-            if delete:
-                TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
-            else:
-                TeamActionZone.objects.filter(area=area, planning=planning).delete()
-                taz = TeamActionZone()
-                taz.team = team
-                taz.area = area
-                taz.planning = planning
-                taz.save()
+
+            if area.id in request.user.profile.AS_scope.all().values_list('pk', flat=True) or request.user.profile.AS_scope.count() == 0:
+                if delete:
+                    TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
+                else:
+                    TeamActionZone.objects.filter(area=area, planning=planning).delete()
+                    taz = TeamActionZone()
+                    taz.team = team
+                    taz.area = area
+                    taz.planning = planning
+                    taz.save()
 
         return Response(area.as_dict())
 

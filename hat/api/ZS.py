@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from hat.geo.models import ZS
 from django.core.serializers import serialize
+from hat.users.models import Profile
 
 
 class ZSViewSet(viewsets.ViewSet):
@@ -36,6 +37,10 @@ class ZSViewSet(viewsets.ViewSet):
         as_geo_json = request.GET.get("geojson", None)
 
         queryset = ZS.objects.all()
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
         if province_ids:
             queryset=queryset.filter(province_id__in=province_ids.split(','))
 
@@ -49,4 +54,11 @@ class ZSViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)
-        return Response(zs.as_dict())
+        isAuthorized = request.user.profile.ZS_scope.count() == 0
+        if zs.id in request.user.profile.ZS_scope.all().values_list('pk', flat=True):
+            isAuthorized = True
+
+        if isAuthorized:
+            return Response(zs.as_dict())
+        else:
+            return Response('Unauthorized', status=401)

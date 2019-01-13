@@ -44,7 +44,7 @@
   <body class="menu-close">
 
     {% if user.is_authenticated %}
-      <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
+      <!--<div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
         <i class="fa fa-warning"></i>
         <span>
         {% blocktrans %}
@@ -53,7 +53,7 @@
         </span>
         <i class="fa fa-warning second"></i>
         <i class="fa fa-times"></i>
-      </div>
+      </div>-->
       <script>
         window.anonymised = false;
         {% if perms.menupermissions.x_anonymous and not user.is_superuser %}
@@ -70,7 +70,7 @@
         <span>
         {% blocktrans %}
         This is the staging site, which is for testing purposes only. Data may be periodically deleted.
-        Access main site at: <a href="https://sense-hat.eocng.org">sense-hat.eocng.org</a>
+        Access main site at: <a href="https://www.trypelim.org">www.trypelim.org</a>
         {% endblocktrans %}
         </span>
       </div>

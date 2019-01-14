@@ -81,7 +81,7 @@ class PatientCasesTests extends React.Component {
                                             t.image && t.type === 'CATT' &&
                                             <tr>
                                                 <th>
-                                                    <FormattedMessage id="patientsCasesTests.image" defaultMessage="Index photo" />
+                                                    <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Index photo" />
                                                 </th>
                                                 <td>
                                                     {t.index}

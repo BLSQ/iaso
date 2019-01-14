@@ -58,6 +58,7 @@ class Patient(models.Model):
             "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "age": self.age,
+            "year_of_birth": self.year_of_birth,
             "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "province": province,
             "ZS": ZS,

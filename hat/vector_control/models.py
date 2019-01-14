@@ -101,20 +101,23 @@ class Site(models.Model):
             latitude = self.location.y
             longitude = self.location.x
             altitude = self.location.z
+        username = None
+        if self.user:
+            username = self.user.username
         res = {
             'id': self.id,
             'name': self.name,
             'description': self.description,
             'habitat': self.habitat,
             'created_at': self.created_at,
-            'username': self.user.username,
+            'username': username,
             'is_reference': self.is_reference,
             'ignore': self.ignore,
             'latitude': latitude,
             'longitude': longitude,
             'altitude': altitude,
             'description': self.description,
-            'user': self.user.username,
+            'user': username,
             'accuracy': self.accuracy,
             'source': self.source,
             'latest_catch': latest_catch
@@ -239,6 +242,9 @@ class Target(models.Model):
         }
 
     def as_dict(self):
+        username = None
+        if self.gps_import:
+            username = self.gps_import.user.username
         return {
             'id': self.id,
             'name': self.name,
@@ -247,6 +253,6 @@ class Target(models.Model):
             'deployment': self.deployment,
             'date_time': self.date_time,
             'river': self.river,
-            'username': self.gps_import.user.username,
+            'username': username,
             'ignore': self.ignore,
         }

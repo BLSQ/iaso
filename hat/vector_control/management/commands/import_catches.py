@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Import catches from csv'
 
     def handle(self, *args, **options):
-        f = open('hat/vector/data/traps/Catches-Table 1.csv', 'rt')
+        f = open('hat/vector_control/data/traps/Catches-Table 1.csv', 'rt')
 
         traps = csv.reader(f, delimiter=';')
         count = 0
@@ -24,7 +24,7 @@ class Command(BaseCommand):
             #print(line)
             if count != 0:
                 try:
-                    site = Site.objects.get(id=line[0])
+                    site = Site.objects.get(name=line[0])
                 except:
                     print("site not found", line[0])
                     site = None
@@ -39,13 +39,13 @@ class Command(BaseCommand):
                     catch.female_count = c(line[6])
                     catch.unknown_count = c(line[7])
                     catch.remarks = line[8]
-                    distance_s = None
 
                     if line[9] and line[9]!='':
                         distance_s = line[9].replace(',', '.')
                     else:
                         distance_s = 0
-
+                    catch.start_location = site.location
+                    catch.end_location = site.location
                     catch.distance_to_targets = c(distance_s)
                     catch.near_intervention = line[10]
                     catch.elev_change = c(line[11])

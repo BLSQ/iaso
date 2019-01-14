@@ -1,14 +1,17 @@
 from django.core.management.base import BaseCommand
-from hat.vector_control.models import Site
+from hat.vector_control.models import Site, HABITAT_CHOICES
 import csv
 from datetime import datetime
+from django.contrib.gis.geos import Point
+
+habitats = [x[0] for x in HABITAT_CHOICES]
 
 
 class Command(BaseCommand):
     help = 'Import traps from csv'
 
     def handle(self, *args, **options):
-        f = open('hat/vector/data/traps/Traps-Table 1.csv', 'rt')
+        f = open('hat/vector_control/data/traps/Traps-Table 1.csv', 'rt')
 
         traps = csv.reader(f, delimiter=';')
         count = 0
@@ -16,20 +19,19 @@ class Command(BaseCommand):
             print(line)
             if count != 0:
                 site = Site()
-                site.id = line[0]
+                site.name = line[0]
                 # site.zone = line[1]
-                site.latitude = line[3].replace(',', '.')
-                site.longitude = line[4].replace(',', '.')
-                site.habitat = line[5]
+                latitude = line[3].replace(',', '.')
+                longitude = line[4].replace(',', '.')
+                site.location = Point(x=float(longitude), y=float(latitude), z=0, srid=4326)
+                habitat = line[5].lower()
+                if habitat not in habitats:
+                    habitat = 'unknown'
+                site.habitat = habitat
                 # site.first_survey = line[6]
-                site.first_survey_date = datetime.strptime(line[7], '%m/%d/%y')
+                site.created_at = datetime.strptime(line[7], '%m/%d/%y')
                 # site.count = line[8]
-                # site.total = line[9]
+                site.total = line[9]
                 site.save()
             count += 1
-
-
-
-
-
 

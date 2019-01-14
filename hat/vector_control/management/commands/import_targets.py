@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from hat.vector_control.models import Target
 import csv
 from datetime import datetime
-
+from django.contrib.gis.geos import Point
 
 class Command(BaseCommand):
     help = 'Import targets from csv'
@@ -10,7 +10,7 @@ class Command(BaseCommand):
     #1;A0001;1;1A0001;A;-4,764186;17,914579;365,7;2015-07-27T08:12:43Z;7/27/15;Lukula
 
     def handle(self, *args, **options):
-        f = open('hat/vector/data/targets/Targets_Aug_2017_Compiled-Table 1.csv', 'rt')
+        f = open('hat/vector_control/data/targets/Targets_Aug_2017_Compiled-Table 1.csv', 'rt')
 
         targets = csv.reader(f, delimiter=';')
         count = 0
@@ -18,14 +18,16 @@ class Command(BaseCommand):
             print(line)
             if count != 0:
                 target = Target()
-                target.id = line[0]
+                #target.uuid = line[0]
                 target.name = line[1]
                 target.deployment = line[2]
                 target.full_name = line[3]
                 target.gps = line[4]
-                target.latitude = line[5].replace(',', '.')
-                target.longitude = line[6].replace(',', '.')
-                target.altitude = line[7].replace(',', '.')
+                latitude = line[5].replace(',', '.')
+                longitude = line[6].replace(',', '.')
+                altitude = line[7].replace(',', '.')
+                #print(latitude, longitude, altitude, type(latitude), type(longitude), type(altitude))
+                target.location = Point(x=float(longitude), y=float(latitude), z=float(altitude), srid=4326)
                 target.date_time = line[8]
                 target.river = line[10]
                 target.save()

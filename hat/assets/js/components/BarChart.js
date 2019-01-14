@@ -53,7 +53,7 @@ class BarChart extends Component {
             .attr('class', 'axis axis--x')
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(x)
-                .tickFormat(value => moment(value).format('MMM YYYY')));
+                .tickFormat(value => moment(value).utc().format('MMM YYYY')));
 
         g.append('g')
             .attr('class', 'axis axis--y')
@@ -71,7 +71,7 @@ class BarChart extends Component {
             .append('text')
             .attr('class', 'period-label')
             .attr('transform', () => `translate(${x.bandwidth() / 2}, -30)`)
-            .text(d => moment(d.date).format('MMM YYYY'));
+            .text(d => moment(d.date).utc().format('MMM YYYY'));
 
         periodContainer
             .append('line')

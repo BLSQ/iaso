@@ -228,7 +228,7 @@ class MacroMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.coordinationGroup.getBounds(), 13);
+        defaultFitToBound(map, this.zonesGroup.getBounds(), 13);
     }
 
     /*

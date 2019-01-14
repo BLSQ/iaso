@@ -17,20 +17,23 @@ class Command(BaseCommand):
         for line in targets:
             print(line)
             if count != 0:
-                target = Target()
-                #target.uuid = line[0]
-                target.name = line[1]
-                target.deployment = line[2]
-                target.full_name = line[3]
-                target.gps = line[4]
-                latitude = line[5].replace(',', '.')
-                longitude = line[6].replace(',', '.')
-                altitude = line[7].replace(',', '.')
-                #print(latitude, longitude, altitude, type(latitude), type(longitude), type(altitude))
-                target.location = Point(x=float(longitude), y=float(latitude), z=float(altitude), srid=4326)
-                target.date_time = line[8]
-                target.river = line[10]
-                target.save()
+                try:
+                    target = Target()
+                    #target.uuid = line[0]
+                    target.name = line[1]
+                    target.deployment = line[2]
+                    target.full_name = line[3]
+                    target.gps = line[4]
+                    latitude = line[5].replace(',', '.')
+                    longitude = line[6].replace(',', '.')
+                    altitude = line[7].replace(',', '.')
+                    #print(latitude, longitude, altitude, type(latitude), type(longitude), type(altitude))
+                    target.location = Point(x=float(longitude), y=float(latitude), z=float(altitude), srid=4326)
+                    target.date_time = line[8]
+                    target.river = line[10]
+                    target.save()
+                except:
+                    pass
             count += 1
 
 

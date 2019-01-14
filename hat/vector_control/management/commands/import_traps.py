@@ -18,20 +18,23 @@ class Command(BaseCommand):
         for line in traps:
             print(line)
             if count != 0:
-                site = Site()
-                site.name = line[0]
-                # site.zone = line[1]
-                latitude = line[3].replace(',', '.')
-                longitude = line[4].replace(',', '.')
-                site.location = Point(x=float(longitude), y=float(latitude), z=0, srid=4326)
-                habitat = line[5].lower()
-                if habitat not in habitats:
-                    habitat = 'unknown'
-                site.habitat = habitat
-                # site.first_survey = line[6]
-                site.created_at = datetime.strptime(line[7], '%m/%d/%y')
-                # site.count = line[8]
-                site.total = line[9]
-                site.save()
+                try:
+                    site = Site()
+                    site.name = line[0].strip()
+                    # site.zone = line[1]
+                    latitude = line[3].replace(',', '.')
+                    longitude = line[4].replace(',', '.')
+                    site.location = Point(x=float(longitude), y=float(latitude), z=0, srid=4326)
+                    habitat = line[5].lower()
+                    if habitat not in habitats:
+                        habitat = 'unknown'
+                    site.habitat = habitat
+                    # site.first_survey = line[6]
+                    site.created_at = datetime.strptime(line[7], '%m/%d/%y')
+                    # site.count = line[8]
+                    site.total = line[9]
+                    site.save()
+                except:
+                    pass
             count += 1
 

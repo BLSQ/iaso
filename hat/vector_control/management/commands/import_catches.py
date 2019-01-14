@@ -24,7 +24,7 @@ class Command(BaseCommand):
             #print(line)
             if count != 0:
                 try:
-                    site = Site.objects.get(name=line[0])
+                    site = Site.objects.get(name=line[0].strip())
                 except:
                     print("site not found", line[0])
                     site = None

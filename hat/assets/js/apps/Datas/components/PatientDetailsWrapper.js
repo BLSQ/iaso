@@ -12,23 +12,39 @@ class PatientDetailsWrapper extends React.Component {
             patient, duplicatePatient, testsMapping, isInline, showInfosTitle,
         } = this.props;
         return (
-            <div className={isInline ? 'widget__content--quarter' : 'not-inline'} >
-                <PatientInfos patient={patient} duplicatePatient={duplicatePatient} showTitle={showInfosTitle} />
+            <div className={isInline ? 'widget__content' : 'not-inline'} >
+                <div className="patient-detail">
+                    <PatientInfos patient={patient} duplicatePatient={duplicatePatient} showTitle={showInfosTitle} />
+                </div>
                 {
                     patient.cases &&
-                    <div className={`${isInline ? 'three-quarter' : ''}`}>
-                        <h2 className={`widget__heading padding-bottom${!isInline ? ' padding-top' : ''}`}>
+                    <div>
+                        <h2 className="widget__heading padding-bottom">
                             <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Tests effectués" />:
                         </h2>
-                        {
-                            patient.cases.map((c, index) => (
-                                <div className={`${isInline ? 'widget__content--tier ' : ''}split-bottom`} key={c.id}>
-                                    <PatientCasesInfos currentCase={c} similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined} />
-                                    <PatientCasesLocation currentCase={c} similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined} />
-                                    <PatientCasesTests tests={c.tests} testsMapping={testsMapping} similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined} />
-                                </div>
-                            ))
-                        }
+                        <ul className="cases-list">
+                            {
+                                patient.cases.map((c, index) => (
+                                    <li key={c.id}>
+                                        <div className="case-id">
+                                            <span>Hat ID</span>: {c.hat_id}
+                                        </div>
+                                        <div className={isInline ? 'widget__content--half perfect-fill ' : ''}>
+                                            <PatientCasesInfos currentCase={c} similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined} />
+                                            <PatientCasesLocation currentCase={c} similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined} />
+                                        </div>
+                                        <div className="tests-list">
+                                            <PatientCasesTests
+                                                tests={c.tests}
+                                                testsMapping={testsMapping}
+                                                similarCase={duplicatePatient && duplicatePatient.cases.length > 0 ? duplicatePatient.cases[index] : undefined}
+                                                isInline={isInline}
+                                            />
+                                        </div>
+                                    </li>
+                                ))
+                            }
+                        </ul>
                     </div>
                 }
             </div>

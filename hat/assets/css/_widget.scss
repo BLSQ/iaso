@@ -135,6 +135,14 @@
     &>div {
         @extend %half-item;
     }
+    &.perfect-fill {
+        &>div {
+            padding-right: $padding-unit / 2 !important;
+        }
+        > :last-child {
+            padding-left: $padding-unit / 2 !important;
+        }
+    }
 }
 %quarter-item {
     flex-basis: 25%;

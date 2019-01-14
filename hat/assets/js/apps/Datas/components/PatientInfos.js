@@ -7,7 +7,7 @@ class PatientInfos extends React.Component {
         const { patient, duplicatePatient, showTitle } = this.props;
         const { formatMessage } = this.props.intl;
         return (
-            <div className="patient-infos-container no-padding-right">
+            <div className="patient-infos-container no-padding-right padding-bottom">
                 <table>
                     {
                         showTitle &&
@@ -83,7 +83,7 @@ class PatientInfos extends React.Component {
                                 <FormattedMessage id="patientsinfos.age" defaultMessage="Age" />
                             </th>
                             <td className={`${duplicatePatient && (duplicatePatient.age !== patient.age) ? 'error' : ''}`}>
-                                {patient.age ? patient.age : '--'}
+                                {patient.age ? patient.age : '--'} ({patient.year_of_birth ? patient.year_of_birth : '--'})
                             </td>
                         </tr>
                         <tr>

@@ -1,30 +1,21 @@
 .patient-infos-container {
+    width: 100%;
     table {
         margin-bottom: $padding-unit/2;
-        &:last-child {
-            margin-bottom: 0;
-        }
     }
 }
 
-.not-inline {
-    .patient-infos-container {
-        width: 100%;
-        table {
-            margin-bottom: $padding-unit/2;
-            &:last-child {
-                margin-bottom: $padding-unit/2;
-            }
-        }
-    }
+.patient-detail {
+    width: calc(50% - #{$padding-unit / 2});
 }
+
 
 .duplicate-infos {
     strong {
         display: inline-block;
     }
     li {
-        & > span {
+        &>span {
             display: inline-block;
             min-width: 100px;
             &.error {
@@ -34,5 +25,50 @@
                 padding: 0;
             }
         }
+    }
+}
+
+.cases-list {
+    padding-left: 20px;
+
+    @media (min-width: 1100px) {
+        .tests-list > div {
+            > :nth-child(odd) {
+                width: 50%;
+                float: left;
+                padding-right: $padding-unit / 2 !important;
+            }
+            > :nth-child(even) {
+                width: 50%;
+                float: right;
+                padding-left: $padding-unit / 2 !important;
+                & + div {
+                    clear: both;
+                }
+            }
+        }
+    }
+}
+.not-inline {
+    .patient-detail {
+        width: 100%;
+    }
+    .cases-list {
+        padding-left: 0;
+        list-style: none;
+        .tests-list > div {
+            > :nth-child(odd), > :nth-child(even) {
+                width: 100% !important;
+                float: none !important;
+                padding: 0 !important;
+            }
+        }
+    }
+}
+
+.case-id {
+    margin-bottom: $padding-unit / 2;
+    span {
+        font-weight: bold;
     }
 }

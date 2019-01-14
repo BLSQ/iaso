@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
+import VideoComponent from '../../../components/VideoComponent';
 
 class PatientCasesTests extends React.Component {
     render() {
@@ -15,56 +16,97 @@ class PatientCasesTests extends React.Component {
                             similarTest = similarCase.tests[index];
                         }
                         return (
-                            <table key={t.id}>
-                                <thead className="custom-head">
-                                    <tr>
-                                        <th colSpan="2">
-                                            {
-                                                t.type && (t.type === 'CATT' || t.type === 'RDT') &&
-                                                <strong><FormattedMessage id="patientsCasesTests.screening" defaultMessage="Dépistage" /></strong>
-                                            }
-                                            {
-                                                t.type && (t.type !== 'CATT' && t.type !== 'RDT') &&
-                                                <strong><FormattedMessage id="patientsCasesTests.confirmation" defaultMessage="Confirmation" /></strong>
-                                            }
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="patientsCasesTests.type" defaultMessage="Type de test" />
-                                        </th>
-                                        <td className={`${similarTest && (similarTest.type !== t.type) ? 'error' : ''}`}>
-                                            {t.type ? t.type : '--'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="patientsCasesTests.date" defaultMessage="Date" />
-                                        </th>
-                                        <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('DD-MM-YYYY') !== moment(t.date).format('DD-MM-YYYY')) ? 'error' : ''}`}>
-                                            {t.date ? moment(t.date).format('DD-MM-YYYY') : '--'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="patientsCasesTests.hour" defaultMessage="Heure" />
-                                        </th>
-                                        <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('HH:mm') !== moment(t.date).format('HH:mm')) ? 'error' : ''}`}>
-                                            {t.date ? moment(t.date).format('HH:mm') : '--'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
-                                        </th>
-                                        <td className={`${similarTest && (similarTest.result !== t.result) ? 'error' : ''}`}>
-                                            {t.result && testsMapping[t.result] ? testsMapping[t.result] : ''}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div key={t.id}>
+                                <table>
+                                    <thead className="custom-head">
+                                        <tr>
+                                            <th colSpan="2">
+                                                {
+                                                    t.type && (t.type === 'CATT' || t.type === 'RDT') &&
+                                                    <strong><FormattedMessage id="patientsCasesTests.screening" defaultMessage="Dépistage" /></strong>
+                                                }
+                                                {
+                                                    t.type && (t.type !== 'CATT' && t.type !== 'RDT') &&
+                                                    <strong><FormattedMessage id="patientsCasesTests.confirmation" defaultMessage="Confirmation" /></strong>
+                                                }
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>
+                                                <FormattedMessage id="patientsCasesTests.type" defaultMessage="Type de test" />
+                                            </th>
+                                            <td className={`${similarTest && (similarTest.type !== t.type) ? 'error' : ''}`}>
+                                                {t.type ? t.type : '--'}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <FormattedMessage id="patientsCasesTests.date" defaultMessage="Date" />
+                                            </th>
+                                            <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('DD-MM-YYYY') !== moment(t.date).format('DD-MM-YYYY')) ? 'error' : ''}`}>
+                                                {t.date ? moment(t.date).format('DD-MM-YYYY') : '--'}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <FormattedMessage id="patientsCasesTests.hour" defaultMessage="Heure" />
+                                            </th>
+                                            <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('HH:mm') !== moment(t.date).format('HH:mm')) ? 'error' : ''}`}>
+                                                {t.date ? moment(t.date).format('HH:mm') : '--'}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
+                                            </th>
+                                            <td className={`${similarTest && (similarTest.result !== t.result) ? 'error' : ''}`}>
+                                                {t.result && testsMapping[t.result] ? testsMapping[t.result] : ''}
+                                            </td>
+                                        </tr>
+
+                                        {
+                                            t.image &&
+                                            <tr>
+                                                <th>
+                                                    <FormattedMessage id="patientsCasesTests.image" defaultMessage="Photo" />
+                                                </th>
+                                                <td>
+                                                    <img src={t.image} alt="" />
+                                                </td>
+                                            </tr>
+                                        }
+                                        {
+                                            t.image && t.type === 'CATT' &&
+                                            <tr>
+                                                <th>
+                                                    <FormattedMessage id="patientsCasesTests.image" defaultMessage="Index photo" />
+                                                </th>
+                                                <td>
+                                                    {t.index}
+                                                </td>
+                                            </tr>
+                                        }
+                                        {
+                                            t.video &&
+                                            <tr>
+                                                <th>
+                                                    <FormattedMessage id="patientsCasesTests.video" defaultMessage="Vidéo" />
+                                                </th>
+                                                <td>
+                                                    <VideoComponent videoItem={
+                                                        {
+                                                            video: t.video,
+                                                        }
+                                                    }
+                                                    />
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         );
                     })
                 }

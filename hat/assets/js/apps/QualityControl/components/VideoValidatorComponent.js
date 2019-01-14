@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import VideoComponent from './VideoComponent';
+import VideoComponent from '../../../components/VideoComponent';
 import VideoFormComponent from './VideoFormComponent';
 
 

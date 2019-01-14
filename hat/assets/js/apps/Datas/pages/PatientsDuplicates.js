@@ -150,7 +150,7 @@ class PatientsDuplicates extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="datas.duplicates.header.title" defaultMessage="Doublons" /></h2>
                     </div>
 
                     <div className="widget__content--quarter">

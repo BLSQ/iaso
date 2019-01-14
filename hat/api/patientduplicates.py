@@ -101,6 +101,19 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                     | Q(patient2__mothers_surname__contains=search_mother_name)
                 )
 
+        if not request.user.profile.province_scope.count() == 0:
+            user_province_list = request.user.profile.province_scope.all().values_list('pk', flat=True)
+            queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=user_province_list)
+                                       | Q(patient2__origin_area__ZS__province_id__in=user_province_list))
+        if not request.user.profile.ZS_scope.count() == 0:
+            user_zs_list = request.user.profile.ZS_scope.all().values_list('pk', flat=True)
+            queryset = queryset.filter(Q(patient1__origin_area__ZS_id__in=user_zs_list)
+                                       | Q(patient2__origin_area__ZS_id__in=user_zs_list))
+        if not request.user.profile.AS_scope.count() == 0:
+            user_as_list = request.user.profile.AS_scope.all().values_list('pk', flat=True)
+            queryset = queryset.filter(Q(patient1__origin_area_id__in=user_as_list)
+                                       | Q(patient2__origin_area_id__in=user_as_list))
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=province_ids.split(","))
                                        | Q(patient2__origin_area__ZS__province_id__in=province_ids.split(",")))
@@ -112,6 +125,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 if as_ids:
                     queryset = queryset.filter(Q(patient1__origin_area_id__in=as_ids.split(","))
                                                | Q(patient2__origin_area_id__in=as_ids.split(",")))
+ 
 
         if village_ids:
             queryset = queryset.filter(Q(patient1__origin_village_id__in=village_ids.split(","))

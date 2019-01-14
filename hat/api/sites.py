@@ -79,6 +79,19 @@ class SitesViewSet(viewsets.ViewSet):
         else:
             queryset = queryset.filter(ignore=False)
 
+        if not request.user.profile.province_scope.count() == 0:
+            user_prov_subquery = Province.objects.filter(id__in=request.user.profile.province_scope.all().values_list('pk', flat=True)) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_prov=Exists(user_prov_subquery)).filter(in_user_prov=True)
+        if not request.user.profile.ZS_scope.count() == 0:
+            user_zs_subquery = ZS.objects.filter(id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True)) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_zs=Exists(user_zs_subquery)).filter(in_user_zs=True)
+        if not request.user.profile.AS_scope.count() == 0:
+            user_as_subquery = AS.objects.filter(id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True)) \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_as=Exists(user_as_subquery)).filter(in_user_as=True)
+
         if province_ids:
             province_list = province_ids.split(",")
             prov_subquery = Province.objects.filter(id__in=province_list) \

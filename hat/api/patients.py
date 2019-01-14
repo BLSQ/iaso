@@ -150,6 +150,14 @@ class PatientsViewSet(viewsets.ViewSet):
         if dead is not None:
             queryset = queryset.filter(dead=(dead.lower() == "true"))
 
+
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(origin_area__ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(origin_area__ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.AS_scope.count() == 0:
+            queryset = queryset.filter(origin_area_id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
         else:

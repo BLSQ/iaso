@@ -82,6 +82,13 @@ class VillageViewSet(viewsets.ViewSet):
             queryset = queryset.filter(name__icontains=search)
             values = values + ("AS__ZS__name", "AS__ZS__id", "AS__ZS__province__name", "AS__ZS__province__id")
 
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(AS__ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(AS__ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.AS_scope.count() == 0:
+            queryset = queryset.filter(AS_id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
+
         if province_ids:
             queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
         if zs_ids:

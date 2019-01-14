@@ -121,6 +121,13 @@ class CasesViewSet(viewsets.ViewSet):
         if coordination_ids:
             queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
 
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(normalized_AS__ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(normalized_AS__ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+        if not request.user.profile.AS_scope.count() == 0:
+            queryset = queryset.filter(normalized_AS_id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
         else:
@@ -129,6 +136,7 @@ class CasesViewSet(viewsets.ViewSet):
             else:
                 if as_ids:
                     queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
+ 
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:

@@ -2,8 +2,10 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from hat.quality.models import Test
 from hat.constants import CATT, RDT, PG
-from hat.users.models import Team
+from hat.users.models import Team, Coordination
 
+from django.shortcuts import get_object_or_404
+from hat.api.coordination import isUserCorrdinationAuthorized
 
 class QCCheckStatsViewSet(viewsets.ViewSet):
     """
@@ -23,6 +25,10 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
 
         teams = Team.objects.all()
         if coordination_id:
+            coordination = get_object_or_404(Coordination, pk=coordination_id)
+            isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
+            if not isAuthorized:
+                return Response('Unauthorized', status=401)
             teams = teams.filter(coordination_id=coordination_id)
 
         if team_type:

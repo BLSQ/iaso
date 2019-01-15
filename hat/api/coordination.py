@@ -14,6 +14,16 @@ from collections import defaultdict
 from hat.dashboard.views import get_last_years
 from hat.users.models import get_user_geo_list
 
+def isUserCorrdinationAuthorized(coordination, user):
+    isAuthorized = user.profile.ZS_scope.count() == 0 and user.profile.province_scope.count() == 0
+    for zone in coordination.ZS.all():
+        user_zs_list = get_user_geo_list(user, 'ZS_scope')
+        if zone.province.id in get_user_geo_list(user, 'province_scope') and len(user_zs_list) == 0:
+            isAuthorized = True
+        if zone.id in user_zs_list:
+            isAuthorized = True
+    return isAuthorized
+
 class CoordinationViewSet(viewsets.ViewSet):
     """
     Api to list all coordinations,  retrieve information about just one, or update the assignations for a coordination.
@@ -53,13 +63,7 @@ class CoordinationViewSet(viewsets.ViewSet):
         endemic_population = request.GET.get("endemic_population", None)
         years = request.GET.get("years", get_last_years(5))
         workzone_id = request.GET.get('workzone_id', None)
-
-        isAuthorized = request.user.profile.ZS_scope.count() == 0 and request.user.profile.province_scope.count() == 0
-        for zone in coordination.ZS.all():
-            if zone.province.id in get_user_geo_list(request.user, 'province_scope'):
-                isAuthorized = True
-            if zone.id in get_user_geo_list(request.user, 'ZS_scope'):
-                isAuthorized = True
+        isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
         if not isAuthorized:
             return Response('Unauthorized', status=401)
         else:
@@ -124,7 +128,6 @@ class CoordinationViewSet(viewsets.ViewSet):
                 assignation_list = teams_dict[team_id]
                 ordered = optimize_path(assignation_list)
                 for index, obj in enumerate(ordered):
-
                     Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
                     assignation = Assignation()
                     assignation.planning = planning
@@ -151,12 +154,7 @@ class CoordinationViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         coordination = get_object_or_404(Coordination, pk=pk)
-        isAuthorized = request.user.profile.ZS_scope.count() == 0 and request.user.profile.province_scope.count() == 0
-        for zone in coordination.ZS.all():
-            if zone.province.id in get_user_geo_list(request.user, 'province_scope'):
-                isAuthorized = True
-            if zone.id in get_user_geo_list(request.user, 'ZS_scope'):
-                isAuthorized = True
+        isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
         if not isAuthorized:
             return Response('Unauthorized', status=401)
         else:

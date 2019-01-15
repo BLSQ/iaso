@@ -3,6 +3,8 @@ from ..geo.models import Village, AS
 from ..users.models import Coordination, Team
 from django.db.models import Sum
 import random
+from hat.users.middleware import get_current_user
+from hat.users.models import get_user_geo_list
 
 
 class Planning(models.Model):
@@ -143,8 +145,18 @@ class WorkZone(models.Model):
             'planning_name': self.planning.name,
             'coordination_name': self.coordination.name
         }
+
         if withAreas:
-            as_list = [area.as_dict() for area in self.AS.all()]
+            user = get_current_user()
+            areas =  self.AS.all()
+            if not user.profile.province_scope.count() == 0:
+                areas = areas.filter(ZS__province_id__in=get_user_geo_list(user, 'province_scope')).distinct()
+            if not user.profile.ZS_scope.count() == 0:
+                areas = areas.filter(ZS__id__in=get_user_geo_list(user, 'ZS_scope')).distinct()
+            if not user.profile.AS_scope.count() == 0:
+                areas = areas.filter(id__in=get_user_geo_list(user, 'AS_scope')).distinct()
+
+            as_list = [area.as_dict() for area in areas]
             res['as_list'] = as_list
 
         if hasattr(self, 'population_endemic_villages'):

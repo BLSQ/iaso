@@ -9,6 +9,8 @@ from hat.geo.models import AS, Village
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from hat.api.coordination import isUserCorrdinationAuthorized
+from hat.users.models import get_user_geo_list, isAuthorisedUser
 
 
 class WorkZoneViewSet(viewsets.ViewSet):
@@ -72,7 +74,18 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if planning_id:
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
+            coordination = get_object_or_404(Coordination, pk=coordination_id)
+            if not isUserCorrdinationAuthorized(coordination, request.user):
+                return Response('Unauthorized', status=401)
             queryset = queryset.filter(coordination_id=coordination_id,)
+
+        if not request.user.profile.province_scope.count() == 0:
+            queryset = queryset.filter(AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+        if not request.user.profile.ZS_scope.count() == 0:
+            queryset = queryset.filter(AS__ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+        if not request.user.profile.AS_scope.count() == 0:
+            queryset = queryset.filter(AS__id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+
         workzones = list(queryset.order_by(qs_order))
 
         if years:
@@ -93,21 +106,29 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
-        return Response(work_zone.as_dict())
+        isAuthorized = False
+        for area in work_zone.AS.all():
+            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if isAuthorized:
+            return Response(work_zone.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 
     def create(self, request):
         name = request.data.get("name", None)
         planning_id = request.data.get("planning", None)
         coordination_id = request.data.get("coordination", None)
         teams_ids = request.data.get("teams", None)
-
+        if coordination_id:
+            coordination = get_object_or_404(Coordination, pk=coordination_id)
+            if not isUserCorrdinationAuthorized(coordination, request.user):
+                return Response('Unauthorized', status=401)
         work_zone = WorkZone()
         work_zone.name = name
         work_zone.planning_id = planning_id
         work_zone.coordination_id = coordination_id
         work_zone.save()
         if teams_ids:
-
             for team_id in teams_ids:
                 other_work_zones = WorkZone.objects.filter(teams__id=team_id, planning_id=work_zone.planning_id)
                 for wz in other_work_zones:
@@ -118,8 +139,15 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
-        work_zone.delete()
-        return Response("ok")
+        isAuthorized = False
+        for area in work_zone.AS.all():
+            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if isAuthorized:
+            work_zone.delete()
+            return Response("ok")
+        else:
+            return Response('Unauthorized', status=401)
+
 
     def partial_update(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
@@ -130,20 +158,27 @@ class WorkZoneViewSet(viewsets.ViewSet):
         name = request.data.get("name", None)
         color = request.data.get("color", None)
 
+        isAuthorized = False
+        for area in work_zone.AS.all():
+            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if not isAuthorized:
+            return Response('Unauthorized', status=401)
         areas = set(areas)
         if zones:
             zone_areas_ids = [t[0] for t in AS.objects.filter(ZS__in=zones).values_list("id")]
             areas = areas.union(zone_areas_ids)
 
         for area_id in areas:
-            if action == "add":
-                other_work_zones = WorkZone.objects.filter(AS__id=area_id, planning_id=work_zone.planning_id)
-                for wz in other_work_zones:
-                    wz.AS.remove(area_id)  # this should never loop more than once
-                work_zone.AS.add(area_id)
+            user_as_ids = get_user_geo_list(request.user, 'AS_scope')
+            if area_id in user_as_ids:
+                if action == "add":
+                    other_work_zones = WorkZone.objects.filter(AS__id=area_id, planning_id=work_zone.planning_id)
+                    for wz in other_work_zones:
+                        wz.AS.remove(area_id)  # this should never loop more than once
+                    work_zone.AS.add(area_id)
 
-            elif action == "delete":
-                work_zone.AS.remove(area_id)
+                elif action == "delete":
+                    work_zone.AS.remove(area_id)
 
         if teams:
             for team_id in teams:
@@ -204,6 +239,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
         work_zone.name = request.data.get('name', '')
         planning_id = request.data.get('planning_id', '')
         coordination_id = request.data.get('coordination_id', '')
+        if coordination_id:
+            coordination = get_object_or_404(Coordination, pk=coordination_id)
+            if not isUserCorrdinationAuthorized(coordination, request.user):
+                return Response('Unauthorized', status=401)
 
         new_planning = get_object_or_404(Planning, pk=planning_id)
         work_zone.planning = new_planning

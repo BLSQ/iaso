@@ -13,6 +13,7 @@ from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.audit.models import log_modification, VILLAGE_API
 from .export_utils import  Echo, generate_xlsx, iter_items
+from hat.users.models import get_user_geo_list, isAuthorisedUser
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -83,11 +84,11 @@ class VillageViewSet(viewsets.ViewSet):
             values = values + ("AS__ZS__name", "AS__ZS__id", "AS__ZS__province__name", "AS__ZS__province__id")
 
         if not request.user.profile.province_scope.count() == 0:
-            queryset = queryset.filter(AS__ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if not request.user.profile.ZS_scope.count() == 0:
-            queryset = queryset.filter(AS__ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
         if not request.user.profile.AS_scope.count() == 0:
-            queryset = queryset.filter(AS_id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
         if province_ids:
             queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
@@ -248,60 +249,68 @@ class VillageViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)
+        isAuthorized = isAuthorisedUser(request.user, village.ZS.province.id, village.ZS.id, village.AS.id)
+        if isAuthorized:
+            res = {
+                "name": village.name,
+                "province": village.AS.ZS.province.name,
+                "former_province": village.AS.ZS.province.old_name,
+                "zs": village.AS.ZS.name,
+                "zs_id": village.AS.ZS.id,
+                "as": village.AS.name,
+                "as_id": village.AS.id,
+                "type": village.village_official,
+                "latitude": village.latitude,
+                "longitude": village.longitude,
+                "gps_source": village.gps_source,
+                "population": village.population,
+                "population_year": village.population_year,
+                "population_source": village.population_source,
+            }
+            planning_id = request.GET.get("planning_id", None)
+            if planning_id:
+                assignations = Assignation.objects.filter(planning_id=planning_id, village=village)
+                if assignations.exists():
+                    team = assignations[0].team
+                    res["team"] = {
+                        "id": team.id,
+                        "name": team.name,
+                        "coordination": {"id": team.coordination_id, "name": team.coordination.name},
+                    }
+                else:
+                    res["team"] = None
+            return Response(res)
+        else:
+            return Response('Unauthorized', status=401)
 
-        res = {
-            "name": village.name,
-            "province": village.AS.ZS.province.name,
-            "former_province": village.AS.ZS.province.old_name,
-            "zs": village.AS.ZS.name,
-            "zs_id": village.AS.ZS.id,
-            "as": village.AS.name,
-            "as_id": village.AS.id,
-            "type": village.village_official,
-            "latitude": village.latitude,
-            "longitude": village.longitude,
-            "gps_source": village.gps_source,
-            "population": village.population,
-            "population_year": village.population_year,
-            "population_source": village.population_source,
-        }
-        planning_id = request.GET.get("planning_id", None)
-        if planning_id:
-            assignations = Assignation.objects.filter(planning_id=planning_id, village=village)
-            if assignations.exists():
-                team = assignations[0].team
-                res["team"] = {
-                    "id": team.id,
-                    "name": team.name,
-                    "coordination": {"id": team.coordination_id, "name": team.coordination.name},
-                }
-            else:
-                res["team"] = None
-        return Response(res)
 
     def partial_update(self, request, pk=None):
         village = get_object_or_404(Village, id=pk)
-        original_village = copy(village)
-        village.name = request.data.get('name', '')
-        village.population = request.data.get('population', 0)
-        village.population_source = request.data.get('population_source', '')
-        village.population_year = request.data.get('population_year', 0)
-        village.village_official = request.data.get('village_official', None)
-        village.latitude = request.data.get('latitude', 0)
-        village.longitude = request.data.get('longitude', 0)
-        village.is_erased = request.data.get('is_erased', False)
-        village.village_type = request.data.get('village_type', '')
-        village.village_source = request.data.get('village_source', None)
-        village.gps_source = request.data.get('gps_source', '')
-        AS_id = request.data.get('AS_id', None)
+        isAuthorized = isAuthorisedUser(request.user, village.ZS.province.id, village.ZS.id, village.AS.id)
+        if isAuthorized:
+            original_village = copy(village)
+            village.name = request.data.get('name', '')
+            village.population = request.data.get('population', 0)
+            village.population_source = request.data.get('population_source', '')
+            village.population_year = request.data.get('population_year', 0)
+            village.village_official = request.data.get('village_official', None)
+            village.latitude = request.data.get('latitude', 0)
+            village.longitude = request.data.get('longitude', 0)
+            village.is_erased = request.data.get('is_erased', False)
+            village.village_type = request.data.get('village_type', '')
+            village.village_source = request.data.get('village_source', None)
+            village.gps_source = request.data.get('gps_source', '')
+            AS_id = request.data.get('AS_id', None)
 
-        if AS_id:
-            newAs = get_object_or_404(AS, pk=AS_id)
-            village.AS = newAs
+            if AS_id:
+                newAs = get_object_or_404(AS, pk=AS_id)
+                village.AS = newAs
 
-        village.save()
-        log_modification(original_village, village, VILLAGE_API, request.user)
-        return Response(village.as_dict())
+            village.save()
+            log_modification(original_village, village, VILLAGE_API, request.user)
+            return Response(village.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 
     def create(self, request):
         name = request.data.get("name", None)
@@ -327,9 +336,14 @@ class VillageViewSet(viewsets.ViewSet):
         village.village_type = village_type
         village.village_source = village_source
         village.gps_source = gps_source
+        isAuthorized = True
         if AS_id:
             newAs = get_object_or_404(AS, pk=AS_id)
+            isAuthorized = isAuthorisedUser(request.user, newAs.ZS.province.id, newAs.ZS.id, newAs.id)
             village.AS = newAs
-        village.save()
-        log_modification(None, village, VILLAGE_API, request.user)
-        return Response(village.as_dict())
+        if isAuthorized:
+            village.save()
+            log_modification(None, village, VILLAGE_API, request.user)
+            return Response(village.as_dict())
+        else:
+            return Response('Unauthorized', status=401)

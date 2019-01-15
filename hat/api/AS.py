@@ -11,6 +11,7 @@ from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.serializers import serialize
 from hat.planning.models import TeamActionZone
+from hat.users.models import get_user_geo_list
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -40,11 +41,11 @@ class ASViewSet(viewsets.ViewSet):
 
         queryset = AS.objects.all()
         if not request.user.profile.province_scope.count() == 0:
-            queryset = queryset.filter(ZS__province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if not request.user.profile.ZS_scope.count() == 0:
-            queryset = queryset.filter(ZS_id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
         if not request.user.profile.AS_scope.count() == 0:
-            queryset = queryset.filter(id__in=request.user.profile.AS_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
         if zs_ids:
             queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
 
@@ -58,9 +59,19 @@ class ASViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)
-        isAuthorized = request.user.profile.AS_scope.count() == 0
-        if aire.id in request.user.profile.AS_scope.all().values_list('pk', flat=True):
-            isAuthorized = True
+        user_as_ids = get_user_geo_list(request.user, 'AS_scope')
+        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
+        province_ids = get_user_geo_list(request.user, 'province_scope')
+        isAuthorized = len(user_as_ids) == 0 and \
+            len(user_zs_ids) == 0  and \
+            len(province_ids) == 0
+        if not isAuthorized:
+            if (aire.ZS.province.id in province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+                isAuthorized = True
+            if (aire.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
+                isAuthorized = True
+            if aire.id in user_as_ids:
+                isAuthorized = True
 
         if isAuthorized:
             return Response(aire.as_dict())
@@ -74,11 +85,25 @@ class ASViewSet(viewsets.ViewSet):
 
         team = get_object_or_404(Team, id=team_id)
         planning = get_object_or_404(Planning, id=planning_id)
+        user_as_ids = get_user_geo_list(request.user, 'AS_scope')
+        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
+        province_ids = get_user_geo_list(request.user, 'province_scope')
+        isAuthorized = len(user_as_ids) == 0 and \
+            len(user_zs_ids) == 0  and \
+            len(province_ids) == 0
 
         for as_id in pk.split(','):
             area = get_object_or_404(AS, id=as_id)
 
-            if area.id in request.user.profile.AS_scope.all().values_list('pk', flat=True) or request.user.profile.AS_scope.count() == 0:
+            if not isAuthorized:
+                if (area.ZS.province.id in province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+                    isAuthorized = True
+                if (area.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
+                    isAuthorized = True
+                if area.id in user_as_ids:
+                    isAuthorized = True
+
+            if isAuthorized:
                 if delete:
                     TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
                 else:

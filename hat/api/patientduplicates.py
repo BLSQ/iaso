@@ -15,6 +15,7 @@ from hat.patient.models import PatientDuplicatesPair, Test
 from .authentication import CsrfExemptSessionAuthentication
 
 from .export_utils import  Echo, generate_xlsx, iter_items
+from hat.users.models import get_user_geo_list, isAuthorisedUser
 
 class PatientDuplicatesViewSet(viewsets.ViewSet):
     """
@@ -102,15 +103,15 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 )
 
         if not request.user.profile.province_scope.count() == 0:
-            user_province_list = request.user.profile.province_scope.all().values_list('pk', flat=True)
+            user_province_list = get_user_geo_list(request.user, 'province_scope').distinct()
             queryset = queryset.filter(Q(patient1__origin_area__ZS__province_id__in=user_province_list)
                                        | Q(patient2__origin_area__ZS__province_id__in=user_province_list))
         if not request.user.profile.ZS_scope.count() == 0:
-            user_zs_list = request.user.profile.ZS_scope.all().values_list('pk', flat=True)
+            user_zs_list = get_user_geo_list(request.user, 'ZS_scope').distinct()
             queryset = queryset.filter(Q(patient1__origin_area__ZS_id__in=user_zs_list)
                                        | Q(patient2__origin_area__ZS_id__in=user_zs_list))
         if not request.user.profile.AS_scope.count() == 0:
-            user_as_list = request.user.profile.AS_scope.all().values_list('pk', flat=True)
+            user_as_list = get_user_geo_list(request.user, 'AS_scope').distinct()
             queryset = queryset.filter(Q(patient1__origin_area_id__in=user_as_list)
                                        | Q(patient2__origin_area_id__in=user_as_list))
 
@@ -249,28 +250,49 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         patient_dupe = get_object_or_404(PatientDuplicatesPair, pk=pk)
-        return Response(patient_dupe.as_dict())
+        isAuthorized = ((not  patient_dupe.patient1.origin_area) or isAuthorisedUser(request.user,
+            patient_dupe.patient1.origin_area.ZS.province.id,
+            patient_dupe.patient1.origin_area.ZS.id,
+            patient_dupe.patient1.origin_area.id)) and ((not  patient_dupe.patient2.origin_area) or isAuthorisedUser(request.user,
+            patient_dupe.patient2.origin_area.ZS.province.id,
+            patient_dupe.patient2.origin_area.ZS.id,
+            patient_dupe.patient2.origin_area.id))
+        if isAuthorized:
+            return Response(patient_dupe.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 
     def update(self, request, pk=None):
         patient_dupe = get_object_or_404(PatientDuplicatesPair, pk=pk)
-        merge = request.data.get("merge", None)
-        ignore = request.data.get("ignore", None)
+        isAuthorized = ((not  patient_dupe.patient1.origin_area) or isAuthorisedUser(request.user,
+            patient_dupe.patient1.origin_area.ZS.province.id,
+            patient_dupe.patient1.origin_area.ZS.id,
+            patient_dupe.patient1.origin_area.id)) and ((not  patient_dupe.patient2.origin_area) or isAuthorisedUser(request.user,
+            patient_dupe.patient2.origin_area.ZS.province.id,
+            patient_dupe.patient2.origin_area.ZS.id,
+            patient_dupe.patient2.origin_area.id))
+        if isAuthorized:
+            merge = request.data.get("merge", None)
+            ignore = request.data.get("ignore", None)
 
-        if merge:
-            # Determine direction of merge p1=>p2 or p1<=p2
-            if merge == patient_dupe.patient1_id:
-                merge_to = patient_dupe.patient1
-                merge_from = patient_dupe.patient2
-            elif merge == patient_dupe.patient2_id:
-                merge_to = patient_dupe.patient2
-                merge_from = patient_dupe.patient1
-            else:
-                return Response("merge field should be the ID of either patient 1 or patient 2",
-                                status=status.HTTP_400_BAD_REQUEST)
-            result = merge_patient_duplicate(patient_dupe, merge_from, merge_to, request.user)
+            if merge:
+                # Determine direction of merge p1=>p2 or p1<=p2
+                if merge == patient_dupe.patient1_id:
+                    merge_to = patient_dupe.patient1
+                    merge_from = patient_dupe.patient2
+                elif merge == patient_dupe.patient2_id:
+                    merge_to = patient_dupe.patient2
+                    merge_from = patient_dupe.patient1
+                else:
+                    return Response("merge field should be the ID of either patient 1 or patient 2",
+                                    status=status.HTTP_400_BAD_REQUEST)
+                result = merge_patient_duplicate(patient_dupe, merge_from, merge_to, request.user)
 
-            return Response(result.as_dict(), status.HTTP_200_OK)
+                return Response(result.as_dict(), status.HTTP_200_OK)
 
-        if ignore:
-            ignored_pair = ignore_patient_duplicate(patient_dupe, request.user)
-            return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)
+            if ignore:
+                ignored_pair = ignore_patient_duplicate(patient_dupe, request.user)
+                return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)
+        else:
+            return Response('Unauthorized', status=401)
+

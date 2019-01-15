@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from hat.geo.models import ZS
 from django.core.serializers import serialize
 from hat.users.models import Profile
+from hat.users.models import get_user_geo_list
 
 
 class ZSViewSet(viewsets.ViewSet):
@@ -38,9 +39,9 @@ class ZSViewSet(viewsets.ViewSet):
 
         queryset = ZS.objects.all()
         if not request.user.profile.province_scope.count() == 0:
-            queryset = queryset.filter(province_id__in=request.user.profile.province_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if not request.user.profile.ZS_scope.count() == 0:
-            queryset = queryset.filter(id__in=request.user.profile.ZS_scope.all().values_list('pk', flat=True))
+            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
         if province_ids:
             queryset=queryset.filter(province_id__in=province_ids.split(','))
 
@@ -54,10 +55,15 @@ class ZSViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)
-        isAuthorized = request.user.profile.ZS_scope.count() == 0
-        if zs.id in request.user.profile.ZS_scope.all().values_list('pk', flat=True):
-            isAuthorized = True
-
+        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
+        user_province_ids = get_user_geo_list(request.user, 'province_scope')
+        isAuthorized = len(user_zs_ids) == 0  and \
+            len(user_province_ids) == 0
+        if not isAuthorized:
+            if (zs.province.id in user_province_ids) and len(user_zs_ids) == 0:
+                isAuthorized = True
+            if (zs.id in user_zs_ids):
+                isAuthorized = True
         if isAuthorized:
             return Response(zs.as_dict())
         else:

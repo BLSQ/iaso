@@ -7,8 +7,30 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
 from hat.geo.models import AS, ZS, Province
+from hat.users.middleware import get_current_user
+
 
 from django.contrib.auth.models import Permission
+
+def get_user_geo_list(user, key):
+    return getattr(user.profile, key).all().values_list('pk', flat=True)
+
+def isAuthorisedUser(user, province_id, zone_id, area_id):
+    user_as_ids = get_user_geo_list(user, 'AS_scope')
+    user_zs_ids = get_user_geo_list(user, 'ZS_scope')
+    user_province_ids = get_user_geo_list(user, 'province_scope')
+    isAuthorized = len(user_as_ids) == 0 and \
+        len(user_zs_ids) == 0  and \
+        len(user_province_ids) == 0
+    if not isAuthorized:
+        if (province_id in user_province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+            isAuthorized = True
+        if (zone_id in user_zs_ids) and len(user_as_ids) == 0:
+            isAuthorized = True
+        if area_id in user_as_ids:
+            isAuthorized = True
+    return isAuthorized
+
 
 
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
@@ -32,10 +54,16 @@ class Coordination(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def as_dict(self):
+        zs_query = self.ZS.order_by("name")
+        user = get_current_user()
+        if not user.profile.province_scope.count() == 0:
+            zs_query = zs_query.filter(province__id__in=user.profile.province_scope.all().values_list('pk', flat=True)).distinct()
+        if not user.profile.ZS_scope.count() == 0:
+            zs_query = zs_query.filter(id__in=user.profile.ZS_scope.all().values_list('pk', flat=True)).distinct()
         return {
             'name': self.name,
             'teams': map(lambda x: x.as_dict(),  self.team_set.order_by("name")),
-            'zs': map(lambda x: x.as_dict(),  self.ZS.order_by("name")),
+            'zs': map(lambda x: x.as_dict(), zs_query),
             'id': self.id,
             'created_at': self.created_at
         }

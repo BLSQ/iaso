@@ -1,5 +1,9 @@
+import json
+
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.serializers import geojson
 from django.contrib.postgres.fields import ArrayField
+from django.core.serializers import serialize
 from django.db import models
 from django.db.models import Q, CASCADE, TextField
 from django.contrib.postgres import fields as contrib
@@ -70,6 +74,9 @@ class Patient(models.Model):
             "ZS": ZS,
             "AS": AS,
             "village": village,
+            "dead": self.dead,
+            "death_date": self.death_date,
+            "treatment_count": self.treatment_set.count(),
         }
 
     def as_full_dict(self):
@@ -100,6 +107,18 @@ class Patient(models.Model):
         if self.origin_village:
             village = self.origin_village.name
 
+        if self.dead:
+            death = {
+                "dead": self.dead,
+                "death_date": self.death_date,
+                "location": json.loads(self.death_location.geojson),
+                "device": self.death_device.as_dict() if self.death_device else None,
+            }
+        else:
+            death = {
+                "dead": self.dead
+            }
+
         return {
             "id": self.id,
             "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
@@ -116,7 +135,9 @@ class Patient(models.Model):
             "province": province,
             "ZS": ZS,
             "AS": AS,
-            "village": village
+            "village": village,
+            "death": death,
+            "treatments": [t.as_dict() for t in self.treatment_set.all()]
         }
 
 
@@ -258,6 +279,22 @@ class Treatment(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
+            "patient_id": self.patient_id,
+            "index": self.index,
+            "medicine": self.medicine,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "entry_date": self.entry_date,
+            "adverse_effects": self.adverse_effects,
+            "issues": self.issues,
+            "event": self.event,
+            "incomplete_reasons": self.incomplete_reasons,
+            "location": json.loads(self.location.geojson),
+            "device": self.device.as_dict() if self.device else None,
+            "death_moment": self.death_moment,
+            "complete": self.complete,
+            "success": self.success,
+            "lost": self.lost,
         }
 
 

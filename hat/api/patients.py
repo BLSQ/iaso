@@ -63,7 +63,6 @@ class PatientsViewSet(viewsets.ViewSet):
                 .annotate(has_dupes=Exists(dupes))\
                 .filter(has_dupes=True)
 
-
         if date_from or date_to:
             test_with_date_in_range = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))
             if date_from:
@@ -164,7 +163,8 @@ class PatientsViewSet(viewsets.ViewSet):
         else:
             if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
-            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village']
+            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
+                       'Aire', 'Village']
             filename = 'patients'
 
             def get_row(patient):

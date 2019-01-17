@@ -356,19 +356,17 @@ def update_cases(df: DataFrame) -> int:
         if cases.count() > 0:
             num_updated += 1
             case = cases[0]
-            json_document_id = None
-            treatments = []
+            ignored_columns = {}
             for index, value in enumerate(row):
                 column_name = df.columns[index]
-                if not pandas.isnull(value) and value != '':
-                    if column_name == 'treatments':
-                        treatments = value
-                    elif column_name == 'json_document_id':
-                        # This needs to be delayed until case is saved and received an ID
-                        json_document_id = value
+                if not numpy.all(pandas.isnull(value)) and value != '':
+                    if column_name in CASE_IGNORE:
+                        ignored_columns[column_name] = value
                     else:
-                        if column_name not in CASE_IGNORE:
-                            setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+                        setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+
+            json_document_id = ignored_columns.get("json_document_id", None)
+            treatments = ignored_columns.get("treatments", [])
 
             # The case location cannot change on mobile. Even if it does, a new location will produce a different
             # document_id and therefore a new document rather than an update. So we only need to worry about

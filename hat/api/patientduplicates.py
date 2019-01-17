@@ -193,9 +193,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
-            columns = ['ID candidat duplicat', 'Score de similarité',
+            columns = [
+                'ID candidat duplicat', 'Score de similarité',
                 'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
                 'Année naissance patient 1', 'AS patient 1', 'Village patient 1',
                 'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',

@@ -20,10 +20,10 @@
    "participant": {
        "memberType": "resident",
        "screeningLocation": {
-           "province": "38",
-           "zone": "728",
-           "area": "12385",
-           "village": "37436",
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
            "ptr": "1976"
        },
        "hatId": "RIFIGEM1956W",

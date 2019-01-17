@@ -13,6 +13,7 @@ should also be switched to the same SQL sentences.
 import logging
 
 import dateutil
+import numpy
 import pandas
 from django.db import transaction
 from django.db.models import Q
@@ -23,9 +24,10 @@ from hat.cases.models import Case, Location
 from hat.common.utils import is_int
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
-from hat.import_export.mapping import CASE_IGNORE
+from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_gps, mobile_get_location_from_coordinates, \
+    mobile_get_date
 from hat.patient.duplicates import create_potential_duplicates_for_patient
-from hat.patient.identify import get_or_create_patient_from_case, create_test_data
+from hat.patient.identify import get_or_create_patient_from_case, create_test_data, create_or_udpate_treatments
 from hat.patient.models import Test
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
@@ -67,7 +69,7 @@ def load_cases_into_db(df: DataFrame) -> EventStats:
     # + drop rows that are exactly the same, since duplicate_ids
     # and duplicate_in_new_data might overlap
     duplicates = pandasconcat([duplicates_in_db, duplicates_in_new_data], axis=0) \
-        .drop_duplicates()
+        .drop_duplicates(df.columns.difference(CASE_IGNORE))
 
     df['version_number'] = 0
     create_cases(df)
@@ -181,7 +183,6 @@ def parse_date(d):
         raise
 
 
-
 db_type_mapping = {
     'IntegerField': int,
     'PositiveSmallIntegerField': int,
@@ -196,6 +197,10 @@ db_type_mapping = {
 
 def convert_to_db_type(table, column, value):
     db_type = table._meta.get_field(column).get_internal_type()
+    if column == 'death_location':
+        print("foo")
+    if "Point" in db_type:
+        print("bar")
     return db_type_mapping.get(db_type, lambda x: x)(value)
 
 
@@ -284,17 +289,17 @@ def normalize_location(case_zone, case_area, case_village, device_id=None, latit
 def create_cases(df: DataFrame) -> None:
     for _, row in df.iterrows():
         case = Case()
-        json_document_id = None
+        ignored_columns = {}
         for index, value in enumerate(row):
             column_name = df.columns[index]
-            if not pandas.isnull(value) and value != '':
-                if column_name == 'json_document_id':
-                    # This needs to be delayed until case is saved and received an ID
-                    json_document_id = value
+            if not numpy.all(pandas.isnull(value)) and value != '':
+                if column_name in CASE_IGNORE:
+                    ignored_columns[column_name] = value
                 else:
-                    if column_name not in CASE_IGNORE:
-                        setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+                    setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
+        json_document_id = ignored_columns.get("json_document_id", None)
+        treatments = ignored_columns.get("treatments", [])
         # Determine the test and patient location
         (normalized_AS, normalized_village) = normalize_location(case.ZS, case.AS, case.village,
                                                                  case.device_id, case.latitude, case.longitude)
@@ -313,7 +318,16 @@ def create_cases(df: DataFrame) -> None:
             patient_as = normalized_AS
             patient_village = normalized_village
 
-        patient, patient_created = get_or_create_patient_from_case(case, patient_as, patient_village)
+        patient, patient_created = get_or_create_patient_from_case(
+            case, patient_as, patient_village,
+            dead=ignored_columns.get('dead', False),
+            death_date=mobile_get_date(ignored_columns.get('death_date', None)),
+            death_device=ignored_columns.get('death_device', None),
+            death_location=mobile_get_location_from_coordinates(
+                ignored_columns.get('death_position_longitude', None),
+                ignored_columns.get('death_position_latitude', None)
+            )
+        )
         case.normalized_patient = patient
         case.normalized_team = get_case_team(case)
 
@@ -326,6 +340,8 @@ def create_cases(df: DataFrame) -> None:
             doc.save()
 
         create_test_data(case, patient_as, row)
+
+        create_or_udpate_treatments(patient, treatments, case.device_id)
 
         # Check potential patient duplicates
         if patient_created:
@@ -341,10 +357,13 @@ def update_cases(df: DataFrame) -> int:
             num_updated += 1
             case = cases[0]
             json_document_id = None
+            treatments = []
             for index, value in enumerate(row):
                 column_name = df.columns[index]
                 if not pandas.isnull(value) and value != '':
-                    if column_name == 'json_document_id':
+                    if column_name == 'treatments':
+                        treatments = value
+                    elif column_name == 'json_document_id':
                         # This needs to be delayed until case is saved and received an ID
                         json_document_id = value
                     else:
@@ -375,6 +394,8 @@ def update_cases(df: DataFrame) -> int:
                 doc.save()
 
             create_test_data(case, patient_as, row)
+
+            create_or_udpate_treatments(case.normalized_patient, treatments, case.device_id)
 
     return num_updated
 

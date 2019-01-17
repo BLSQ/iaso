@@ -153,10 +153,12 @@ from functools import reduce
 from typing import List, Optional, cast
 
 import pandas
+from django.contrib.gis.geos import Point
 from pandas import DataFrame, Series
 
 from hat.cases.filters import ResultValues
 from hat.common.typing import JsonType
+from hat.constants import GPS_SRID
 from .utils import capitalize
 
 
@@ -330,6 +332,49 @@ def mobile_get_age(table: DataFrame, field: str) -> int:
     return age_years + age_months
 
 
+mobile_get_data_regex = re.compile(r"^(\d{4})\D(\d{2})\D(\d{2})")  # yyyy-mm-dd where the separator is any non-digit chr
+
+
+def mobile_get_date(x):
+    if x is None:
+        return None
+    matcher = mobile_get_data_regex.match(x)
+    if matcher:
+        return "{}-{}-{}".format(matcher.group(1), matcher.group(2), matcher.group(3))
+    else:
+        return None
+
+
+def mobile_get_null_boolean(x):
+    if x is None:
+        return None
+    elif x == "none":
+        return None
+    elif type(x) == str:
+        return x.lower() == "true" or x.lower() == "yes"
+    elif type(x) == bool:
+        return x
+    elif type(x) == int:
+        return bool(x)
+    else:
+        return None
+
+
+def mobile_get_location_from_gps(gps):
+    # We might also reject if "accuracy" is too bad
+    if gps is not None and "latitude" in gps and "longitude" in gps:
+        return Point((gps['longitude'], gps['latitude']), srid=GPS_SRID)
+    else:
+        return None
+
+
+def mobile_get_location_from_coordinates(longitude=None, latitude=None):
+    if longitude is None or latitude is None:
+        return None
+    else:
+        return Point(longitude, latitude, srid=GPS_SRID)
+
+
 ################################################################################
 # Pharmacovigilance transform helper functions
 ################################################################################
@@ -450,8 +495,8 @@ def pv_get_followup_test_result(main_table: DataFrame,
 
 def reduce_test_result(a: Optional[int], b: Optional[int]) -> Optional[int]:
     # Values can be positive, negative, missing and absent or null.
-    # We have to handle null explicitely
-    # to not accidentially have this return null in favor of missing.
+    # We have to handle null explicitly
+    # to not accidentally have this return null in favor of missing.
     if pandas.isnull(b):
         return a
     if pandas.isnull(a):
@@ -676,6 +721,7 @@ MAPPING: List[JsonType] = [
     },
     {
         "field": "json_document_id",
+        "case_ignore": True,
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
             "mobile": {
@@ -1638,6 +1684,66 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pg.testTime")
+            },
+        },
+    },
+    {
+        "field": "treatments",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.treatments")
+            },
+        },
+    },
+    {
+        "field": "dead",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "death.dead")
+            },
+        },
+    },
+    {
+        "field": "death_date",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "death.deathDate")
+            },
+        },
+    },
+    {
+        "field": "death_device",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "death.device")
+            },
+        },
+    },
+    {
+        "field": "death_position_latitude",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "death.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "death_position_longitude",
+        "case_ignore": True,
+        "export_levels": [],
+        "sources": {
+            "mobile": {
+                "field": ("main", "death.position.longitude")
             },
         },
     },

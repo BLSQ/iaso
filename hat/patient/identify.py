@@ -1,5 +1,6 @@
 import ntpath
 import re
+from collections import defaultdict
 
 import dateutil
 from django.core.exceptions import MultipleObjectsReturned
@@ -7,8 +8,9 @@ from django.db.models import Q
 
 from hat.cases.models import Case
 from hat.constants import CATT, RDT, CTCWOO, MAECT, PG, PL
-from hat.patient.models import Test, Patient
-from hat.sync.models import ImageUpload, VideoUpload
+from hat.import_export.mapping import mobile_get_date, mobile_get_null_boolean, mobile_get_location_from_gps
+from hat.patient.models import Test, Patient, Treatment
+from hat.sync.models import ImageUpload, VideoUpload, DeviceDB
 
 """
 This file provides the tools to identify patients and tests from Case data
@@ -24,7 +26,8 @@ def name_normalize(name):
     return stripped_name
 
 
-def get_or_create_patient_from_case(case: Case, origin_area, origin_village):
+def get_or_create_patient_from_case(case: Case, origin_area, origin_village,
+                                    dead=False, death_date=None, death_device=None, death_location=None):
     if case.age is not None:
         age = case.age
     else:
@@ -33,13 +36,20 @@ def get_or_create_patient_from_case(case: Case, origin_area, origin_village):
             age = case.entry_date.year - int(case.year_of_birth)
         else:
             age = None
+    if death_device and type(death_device) == str:
+        death_device_db = DeviceDB.objects.get(device_id=death_device)  # Let it fail if the device is unknown
+    else:
+        death_device_db = death_device
 
     return get_or_create_patient(case.prename, case.lastname, case.name, case.mothers_surname, case.sex,
-                                 case.year_of_birth, origin_area, origin_village, case.ZS, case.AS, case.village, age)
+                                 case.year_of_birth, origin_area, origin_village, case.ZS, case.AS, case.village, age,
+                                 dead=dead, death_date=death_date, death_device=death_device_db,
+                                 death_location=death_location)
 
 
 def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex, year_of_birth,
-                          origin_area, origin_village, origin_raw_zs, origin_raw_as, origin_raw_village, age):
+                          origin_area, origin_village, origin_raw_zs, origin_raw_as, origin_raw_village, age,
+                          dead=None, death_date=None, death_device=None, death_location=None):
     first_name = name_normalize(first_name)
     last_name = name_normalize(last_name)
     post_name = name_normalize(post_name)
@@ -67,7 +77,17 @@ def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex
 
     # This should normally return only one result. In case of MultipleObjectsReturned, we want this to fail.
     try:
-        patient, patient_created = Patient.objects.get_or_create(**patient_search_params, defaults={'age': age})
+        # TODO use update or create ?
+        patient, patient_created = Patient.objects.get_or_create(
+            **patient_search_params,
+            defaults={
+                "age": age,
+                "dead": dead,
+                "death_date": death_date,
+                "death_device": death_device,
+                "death_location": death_location,
+            }
+        )
     except MultipleObjectsReturned as exc:
         print("multiple patients found")
         for p in Patient.objects.filter(**patient_search_params):
@@ -218,6 +238,31 @@ def find_tests_by_video(filepath, test_type, include_already_linked=False):
         tests = tests.filter(video__isnull=True)
 
     return tests
+
+
+def create_or_udpate_treatments(patient, treatments, device_id):
+    for i, dict_treatment in enumerate(treatments):
+        treatment = defaultdict(lambda: None, dict_treatment)  # most elements are optional, avoid get()-frenzy
+        Treatment.objects.update_or_create(
+            patient=patient,
+            index=i,
+            defaults={
+                'start_date': mobile_get_date(treatment['startDate']),
+                'end_date': mobile_get_date(treatment['endDate']),
+                'entry_date': treatment['testTime'],
+                'medicine': treatment['medicine'],
+                'lost': mobile_get_null_boolean(treatment['lost']),
+                'dead': mobile_get_null_boolean(treatment['dead']),
+                'complete': mobile_get_null_boolean(treatment['complete']),
+                'adverse_effects': mobile_get_null_boolean(treatment['adverseEffects']),
+                'success': mobile_get_null_boolean(treatment['success']),
+                'event': mobile_get_null_boolean(treatment['event']),
+                'device': DeviceDB.objects.get(device_id=device_id),
+                'location': mobile_get_location_from_gps(treatment['position']),
+                'issues': treatment.get('issues', []),
+                'incomplete_reasons': treatment.get('incompleteReasons', []),
+            }
+        )
 
 
 # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format

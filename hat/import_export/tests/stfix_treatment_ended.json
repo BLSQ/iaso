@@ -1,0 +1,117 @@
+{
+   "_id": "participant-09d7581525ae42a18960debb63d927b9",
+   "_rev": "10-25e70d7576c9f6335eaaf987366b7d62",
+   "person": {
+       "forename": "Louis",
+       "postname": "XVI",
+       "surname": "de France",
+       "birthYear": "1933",
+       "noBirthYear": false,
+       "gender": "Male",
+       "mothersSurname": "de Saxe",
+       "location": {
+           "origin": "selfPresenting",
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       }
+   },
+   "type": "participant",
+   "participant": {
+       "screeningLocation": {
+           "origin": "selfPresenting",
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       },
+       "hatId": "DEXVLOM1933D",
+       "screenings": {
+           "catt": {
+           },
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-01-09T16:29:09.935Z",
+               "position": {
+                   "accuracy": 10.380000114440918,
+                   "latitude": 50.8367368,
+                   "longitude": 4.4009197,
+                   "timestamp": 1547051350000
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-01-09T16:29:07.881Z",
+               "shouldAskMediaForPositive": true,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": true
+           },
+           "ctcwoo": {
+               "result": "positive",
+               "creationTime": "2019-01-09T16:29:21.867Z",
+               "testTime": "2019-01-09T16:29:23.582Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 10.170000076293945,
+                   "latitude": 50.8367405,
+                   "longitude": 4.4009259,
+                   "timestamp": 1547051364000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pl": {
+               "result": "positive",
+               "creationTime": "2019-01-09T16:29:34.087Z",
+               "testTime": "2019-01-09T16:29:47.364Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 10.1850004196167,
+                   "latitude": 50.8367359,
+                   "longitude": 4.4009168,
+                   "timestamp": 1547051388000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false,
+               "whiteCount": "333"
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 10.446000099182129,
+           "latitude": 50.8367295,
+           "longitude": 4.4009106,
+           "timestamp": 1547051343000
+       },
+       "treatments": [
+           {
+               "startDate": "2019/01/04",
+               "medicine": "melarsoprol",
+               "issues": [
+                   "vomiting"
+               ],
+               "incompleteReasons": [
+                   "abandon"
+               ],
+               "dead": "no",
+               "creationTime": "2019-01-09T16:30:16.967Z",
+               "testTime": "2019-01-10T13:30:39.204Z",
+               "device": "stfix-treatment-started",
+               "position": {
+                   "accuracy": 10.17199993133545,
+                   "latitude": 50.8367296,
+                   "longitude": 4.4009192,
+                   "timestamp": 1547051417000
+               },
+               "adverseEffects": "no",
+               "event": "none",
+               "lost": "no",
+               "success": "none",
+               "endDate": "2019/01/10",
+               "complete": "no"
+           }
+       ]
+   },
+   "dateCreated": "2019-01-09T16:29:02.247Z",
+   "dateModified": "2019-01-10T13:30:39.232Z",
+   "deviceId": "stfix-treatment-started"
+}

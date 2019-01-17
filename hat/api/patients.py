@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.db.models import Q, OuterRef, Exists
+from django.db.models import Q, OuterRef, Exists, Count
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -7,17 +7,35 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, RES_POSITIVE
-from hat.patient.models import Patient, Test, PatientDuplicatesPair
+from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from .authentication import CsrfExemptSessionAuthentication
-from .export_utils import  Echo, generate_xlsx, iter_items
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class PatientsViewSet(viewsets.ViewSet):
     """
-    Api to list all cases,  retrieve information about just one.
+    Api to list all cases, retrieve information about just one.
 
     Example:
         /api/patients/?limit=50&page=1&geo_search=zo
+
+    The allowed search fields are:
+    village_id, province_id, zs_id, as_id: list of location ids to include in the search
+    teams: list of teams to include. Only applies to normalized teams, not the mobile_unit text field
+    coordination_id: list of coordinations to include
+    date_from, date_to: date range for patient TESTS to consider
+    search_name, search_prename, search_lastname, search_mother_name: patient search fields, partial & case insensitive
+    test_type: list of test types to include
+    screening_result, confirmation_result: include only patients having had this result
+    only_dupes: only provide patients that have potential duplicates
+    treatment_medicine: search patients that have had this medicine administered to them
+    with_treatment: only include patient that have treatment information
+    dead: if specified, only include patients with the corresponding death information. This is NOT looking at treatment
+    data, only the patient status as reported in the app.
+
+    csv_format: return data in CSV format. This will be streamed and therefore support large data sets
+    xlsx_format: return data in MS Excel format. This will be fully generated server-side first and might timeout
+    on large data sets.
 
     """
 
@@ -48,6 +66,9 @@ class PatientsViewSet(viewsets.ViewSet):
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
         only_dupes = request.GET.get("only_dupes", None)
+        treatment_medicine = request.GET.get("treatment_medicine", None)
+        with_treatment = request.GET.get("with_treatment", None)
+        dead = request.GET.get("dead", None)
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -62,7 +83,6 @@ class PatientsViewSet(viewsets.ViewSet):
             queryset = queryset\
                 .annotate(has_dupes=Exists(dupes))\
                 .filter(has_dupes=True)
-
 
         if date_from or date_to:
             test_with_date_in_range = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))
@@ -115,6 +135,21 @@ class PatientsViewSet(viewsets.ViewSet):
                 .annotate(has_confirmed_case=Exists(confirmed_cases))\
                 .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
 
+        if treatment_medicine is not None:
+            treatment_meds = Treatment.objects\
+                .filter(medicine=treatment_medicine)\
+                .filter(patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(has_treatment_med=Exists(treatment_meds))\
+                .filter(has_treatment_med=True)
+
+        queryset = queryset.annotate(nb_of_treatments=Count("treatment"))
+        if with_treatment is not None:
+            queryset = queryset.filter(nb_of_treatments__gt=0)
+
+        if dead is not None:
+            queryset = queryset.filter(dead=(dead.lower() == "true"))
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
         else:
@@ -164,7 +199,8 @@ class PatientsViewSet(viewsets.ViewSet):
         else:
             if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
-            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone', 'Aire', 'Village']
+            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
+                       'Aire', 'Village', 'Dead']
             filename = 'patients'
 
             def get_row(patient):
@@ -180,7 +216,8 @@ class PatientsViewSet(viewsets.ViewSet):
                         pdict["province"],
                         pdict["ZS"],
                         pdict["AS"],
-                        pdict["village"]
+                        pdict["village"],
+                        pdict["dead"],
                 ]
             if xlsx_format:
                 filename = filename + '.xlsx'

@@ -1,0 +1,221 @@
+{
+   "_id": "participant-c42977d",
+   "_rev": "16-77f6053694b1c0957d24ba6d5c25eea6",
+   "person": {
+       "forename": "Dexia",
+       "postname": "Héros",
+       "surname": "Clay",
+       "birthYear": "",
+       "noBirthYear": true,
+       "gender": "Female",
+       "mothersSurname": "Belfius",
+       "location": {
+           "origin": "mobileUnit",
+           "province": "1",
+           "zone": "11",
+           "area": "112",
+           "village": "1121"
+       }
+   },
+   "type": "participant",
+   "participant": {
+       "screeningLocation": {
+           "origin": "mobileUnit",
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       },
+       "hatId": "CLHEDEFXXXXB",
+       "screenings": {
+           "catt": {
+           },
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-01-11T16:46:12.881Z",
+               "position": {
+                   "accuracy": 8.206000328063965,
+                   "latitude": 50.8370068,
+                   "longitude": 4.4009003,
+                   "timestamp": 1547225174000
+               },
+               "device": "stfix_treat_dead",
+               "creationTime": "2019-01-11T16:46:10.943Z",
+               "shouldAskMediaForPositive": true,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": true
+           },
+           "maect": {
+               "result": "positive",
+               "creationTime": "2019-01-11T16:46:26.809Z",
+               "testTime": "2019-01-11T16:46:27.989Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 10.70199966430664,
+                   "latitude": 50.8370581,
+                   "longitude": 4.4009061,
+                   "timestamp": 1547225189000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pl": {
+               "result": "positive",
+               "creationTime": "2019-01-11T16:46:35.969Z",
+               "testTime": "2019-01-11T16:46:45.614Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 12.699999809265137,
+                   "latitude": 50.8370594,
+                   "longitude": 4.4009392,
+                   "timestamp": 1547225206000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false,
+               "whiteCount": "150"
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 8.6899995803833,
+           "latitude": 50.8369896,
+           "longitude": 4.4009031,
+           "timestamp": 1547225170000
+       },
+       "treatments": [
+           {
+               "startDate": "2019/01/01",
+               "medicine": "pentamidine",
+               "issues": [
+                   "behaviour",
+                   "neuro",
+                   "convulsion",
+                   "acute respiratory failure",
+                   "septicemy",
+                   "vomiting",
+                   "diarrhea",
+                   "obnubilation",
+                   "desorientation",
+                   "coma"
+               ],
+               "incompleteReasons": [
+                   "patientincapacity",
+                   "abandon",
+                   "outofstock"
+               ],
+               "dead": "no",
+               "creationTime": "2019-01-11T16:47:03.196Z",
+               "testTime": "2019-01-11T16:47:32.700Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 30.69300079345703,
+                   "latitude": 50.8370511,
+                   "longitude": 4.4009401,
+                   "timestamp": 1547225224000
+               },
+               "adverseEffects": "no",
+               "event": "none",
+               "lost": "no",
+               "success": "none",
+               "endDate": "2019/01/02",
+               "complete": "no"
+           },
+           {
+               "startDate": "2019/01/02",
+               "medicine": "eflornithine",
+               "issues": [
+               ],
+               "incompleteReasons": [
+               ],
+               "dead": "none",
+               "creationTime": "2019-01-11T16:48:05.102Z",
+               "testTime": "2019-01-11T16:48:05.102Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 9.890999794006348,
+                   "latitude": 50.8367467,
+                   "longitude": 4.4009257,
+                   "timestamp": 1547225286000
+               }
+           },
+           {
+               "startDate": "2019/01/02",
+               "medicine": "nect",
+               "issues": [
+               ],
+               "incompleteReasons": [
+               ],
+               "dead": "none",
+               "creationTime": "2019-01-11T16:48:18.401Z",
+               "testTime": "2019-01-11T16:48:18.401Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 9.621999740600586,
+                   "latitude": 50.8367423,
+                   "longitude": 4.4009256,
+                   "timestamp": 1547225299000
+               }
+           },
+           {
+               "startDate": "2019/01/02",
+               "medicine": "fexinidazole",
+               "issues": [
+               ],
+               "incompleteReasons": [
+               ],
+               "dead": "none",
+               "creationTime": "2019-01-11T16:48:30.171Z",
+               "testTime": "2019-01-11T16:48:30.171Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 10.229999542236328,
+                   "latitude": 50.8367315,
+                   "longitude": 4.4009252,
+                   "timestamp": 1547225310005
+               }
+           },
+           {
+               "startDate": "2019/01/02",
+               "medicine": "acoziborole",
+               "issues": [
+               ],
+               "incompleteReasons": [
+                   "death"
+               ],
+               "dead": "no",
+               "creationTime": "2019-01-11T16:48:42.314Z",
+               "testTime": "2019-01-11T16:52:16.818Z",
+               "device": "stfix_treat_dead",
+               "position": {
+                   "accuracy": 10.013999938964844,
+                   "latitude": 50.8367358,
+                   "longitude": 4.4009272,
+                   "timestamp": 1547225323000
+               },
+               "adverseEffects": "no",
+               "event": "none",
+               "lost": "no",
+               "success": "none",
+               "complete": "no",
+               "endDate": "2019/01/10"
+           }
+       ]
+   },
+   "dateCreated": "2019-01-11T16:46:08.837Z",
+   "dateModified": "2019-01-11T16:54:46.363Z",
+   "deviceId": "stfix_treat_dead",
+   "death": {
+       "deathDate": "2019/01/03",
+       "dead": true,
+       "errorOnDate": false,
+       "creationTime": "2019-01-11T16:54:46.361Z",
+       "updateTime": "2019-01-11T16:54:46.361Z",
+       "device": "stfix_treat_dead",
+       "position": {
+           "accuracy": 10.390000343322754,
+           "latitude": 53.8367285,
+           "longitude": 33.4009249,
+           "timestamp": 1547225687000
+       }
+   }
+}

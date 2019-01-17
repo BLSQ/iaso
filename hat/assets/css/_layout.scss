@@ -239,7 +239,11 @@ $directions: left right top bottom;
 }
 
 .margin-bottom {
-    margin-bottom: $padding-unit/2;
+    margin-bottom: $padding-unit/2 !important;
+}
+
+.big-margin-bottom {
+    margin-bottom: $padding-unit !important;
 }
 
 .margin-top {

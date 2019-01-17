@@ -138,9 +138,11 @@
     &.perfect-fill {
         &>div {
             padding-right: $padding-unit / 2 !important;
+            padding-bottom: 0;
         }
         > :last-child {
             padding-left: $padding-unit / 2 !important;
+            padding-right: 0 !important;
         }
     }
 }

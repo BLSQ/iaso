@@ -14,19 +14,20 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from '../constants/filtersSelect';
+import { casesActions } from '../redux/cases';
 
 export const urls = [];
 
 
-const selectCase = (caseItem, event) => {
-    let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
-    if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
-        url = `/dashboard/locator/case_id/${caseItem.id}`;
-        window.open(url, '_blank');
-    } else {
-        window.location.href = url;
-    }
-};
+// const selectCase = (caseItem, event) => {
+//     let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
+//     if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
+//         url = `/dashboard/locator/case_id/${caseItem.id}`;
+//         window.open(url, '_blank');
+//     } else {
+//         window.location.href = url;
+//     }
+// };
 
 class Cases extends Component {
     constructor(props) {
@@ -97,6 +98,21 @@ class Cases extends Component {
         return url;
     }
 
+    selectCase(caseItem, event) {
+        if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
+            window.open(`/dashboard/locator/case_id/${caseItem.id}`, '_blank');
+        } else {
+            const { params } = this.props;
+
+            const newParams = {
+                patient_id: caseItem.patient.id,
+                case_id: caseItem.id,
+                ...params,
+            };
+
+            this.props.redirectTo('tests/detail', newParams);
+        }
+    }
     render() {
         const { formatMessage } = this.props.intl;
         const {
@@ -109,6 +125,9 @@ class Cases extends Component {
                 villages,
                 workzones,
             },
+            reduxPage,
+            params,
+            setCasesList,
         } = this.props;
         const filters1 = filtersCases(formatMessage, defineMessages);
         const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
@@ -191,8 +210,10 @@ class Cases extends Component {
                         params={this.props.params}
                         defaultPath="tests"
                         dataKey="cases"
-                        onRowClicked={(caseItem, state, event) => selectCase(caseItem, event)}
+                        onRowClicked={(caseItem, state, event) => this.selectCase(caseItem, event)}
                         multiSort
+                        onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
+                        reduxPage={reduxPage}
                     />
                     <div className="align-right">
                         <DownloadButtonsComponent
@@ -205,6 +226,9 @@ class Cases extends Component {
         );
     }
 }
+Cases.defaultProps = {
+    reduxPage: undefined,
+};
 
 Cases.propTypes = {
     load: PropTypes.object.isRequired,
@@ -220,11 +244,14 @@ Cases.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    reduxPage: PropTypes.object,
+    setCasesList: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     filters: state.testsFilters,
+    reduxPage: state.cases.casesPage,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -238,6 +265,7 @@ const MapDispatchToProps = dispatch => ({
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    setCasesList: (patientList, showPagination, params, count, pages) => dispatch(casesActions.setCasesList(patientList, showPagination, params, count, pages)),
 });
 
 const CasesWithIntl = injectIntl(Cases);

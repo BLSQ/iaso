@@ -10,6 +10,7 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { patientsReducer, patientsInitialState } from './redux/patients';
+import { casesReducer, casesInitialState } from './redux/cases';
 
 import CasesPage from './pages/Cases';
 import PatientsPage from './pages/Patients';
@@ -31,6 +32,14 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
             '(/located/:located)(/test_type/:test_type)'}
             component={CasesPage}
+        />,
+        <Route
+            path={'/tests/detail/patient_id/:patient_id/case_id/:case_id/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
+            '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
+            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
+            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
+            '(/located/:located)(/test_type/:test_type)'}
+            component={PatientDetailPage}
         />,
         <Route
             path={'/register/list/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)' +
@@ -55,7 +64,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             component={PatientsDuplicates}
         />,
         <Route
-            path={'/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2/duplicate_id/:duplicate_id/order/:order/pageSize/:pageSize' +
+            path={'/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2/duplicate_id/:duplicate_id/(order/:order)(/pageSize/:pageSize)' +
             '/page/:page(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
             '(/village_id/:village_id)(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
@@ -77,11 +86,13 @@ export default function datasApp(appConfig, element, baseUrl) {
         testsFilters: filtersInitialState,
         patientsFilters: filtersInitialState,
         patients: patientsInitialState,
+        cases: casesInitialState,
     }, {
         load: loadReducer,
         testsFilters: filtersReducer,
         patientsFilters: filtersReducer,
         patients: patientsReducer,
+        cases: casesReducer,
     }, [
         routerMiddleware(history),
     ]);

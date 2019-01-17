@@ -1,14 +1,10 @@
 .patient-infos-container {
     width: 100%;
-    table {
-        margin-bottom: $padding-unit/2;
-    }
 }
 
 .patient-detail {
     width: calc(50% - #{$padding-unit / 2});
 }
-
 
 .duplicate-infos {
     strong {
@@ -29,10 +25,42 @@
 }
 
 .cases-list {
-    padding-left: 20px;
-
+    list-style: none;
+    li {
+        margin-top: $padding-unit * 2;
+        position: relative;
+        &:after {
+            width: calc(100% + #{$padding-unit * 2});
+            background-color: $gray;
+            height: 1px;
+            left: -$padding-unit;
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -$padding-unit;
+        }
+        &:first-child {
+            margin-top: 0;
+        }
+        &:last-child {
+            &:after {
+                display: none;
+            }
+        }
+    }
+    table {
+        margin-bottom: $padding-unit;
+    }
+    .tests-list>div {
+        > :last-child,
+        > :nth-last-child(2) {
+            table {
+                margin-bottom: 0 !important;
+            }
+        }
+    }
     @media (min-width: 1100px) {
-        .tests-list > div {
+        .tests-list>div {
             > :nth-child(odd) {
                 width: 50%;
                 float: left;
@@ -42,13 +70,14 @@
                 width: 50%;
                 float: right;
                 padding-left: $padding-unit / 2 !important;
-                & + div {
+                &+div {
                     clear: both;
                 }
             }
         }
     }
 }
+
 .not-inline {
     .patient-detail {
         width: 100%;
@@ -56,11 +85,17 @@
     .cases-list {
         padding-left: 0;
         list-style: none;
-        .tests-list > div {
-            > :nth-child(odd), > :nth-child(even) {
+        .tests-list>div {
+            > :nth-child(odd),
+            > :nth-child(even) {
                 width: 100% !important;
                 float: none !important;
                 padding: 0 !important;
+            }
+            > :nth-last-child(2) {
+                table {
+                    margin-bottom: $padding-unit !important;
+                }
             }
         }
     }

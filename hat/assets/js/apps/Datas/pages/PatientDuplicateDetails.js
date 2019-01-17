@@ -54,6 +54,7 @@ class PatientDuplicateDetails extends React.Component {
                 formatMessage,
             },
             testsMapping,
+            params,
         } = this.props;
         const { patient, duplicatePatient } = this.state;
         return (
@@ -125,6 +126,7 @@ class PatientDuplicateDetails extends React.Component {
                                     testsMapping={testsMapping}
                                     isInline={false}
                                     showInfosTitle={false}
+                                    params={params}
                                 />
                             </div>
                         }
@@ -140,6 +142,7 @@ class PatientDuplicateDetails extends React.Component {
                                     testsMapping={testsMapping}
                                     isInline={false}
                                     showInfosTitle={false}
+                                    params={params}
                                 />
                             </div>
                         }

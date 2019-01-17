@@ -32,11 +32,13 @@ class PatientDetails extends React.Component {
         const tempParams = {
             ...params,
         };
+        const baseUrl = params.case_id ? 'tests' : 'register/list';
         delete tempParams.patient_id;
+        delete tempParams.case_id;
         this.setState({
             patient: null,
         });
-        this.props.redirectTo('register/list', {
+        this.props.redirectTo(baseUrl, {
             ...tempParams,
         });
     }
@@ -46,6 +48,9 @@ class PatientDetails extends React.Component {
             patient_id: id1,
             patient_id_2: id2,
             duplicate_id: duplicateId,
+            order: 'id',
+            pageSize: 50,
+            page: 1,
         };
         this.props.redirectTo('register/duplicates/detail', {
             ...params,
@@ -59,6 +64,7 @@ class PatientDetails extends React.Component {
                 formatMessage,
             },
             testsMapping,
+            params,
         } = this.props;
         const { patient } = this.state;
         return (
@@ -70,7 +76,7 @@ class PatientDetails extends React.Component {
                     })}
                     />
                 }
-                <div className="widget__container ">
+                <div className="widget__container big-margin-bottom">
                     <div className="widget__header with-button">
                         <button
                             className="button--back"
@@ -92,11 +98,15 @@ class PatientDetails extends React.Component {
                             </button>
                         }
                     </div>
-                    {
-                        patient && patient.id &&
-                        <PatientDetailsWrapper patient={patient} testsMapping={testsMapping} />
-                    }
                 </div>
+                {
+                    patient && patient.id &&
+                    <PatientDetailsWrapper
+                        patient={patient}
+                        testsMapping={testsMapping}
+                        params={params}
+                    />
+                }
             </section>);
     }
 }

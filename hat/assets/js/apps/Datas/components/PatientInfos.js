@@ -4,27 +4,17 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 class PatientInfos extends React.Component {
     render() {
-        const { patient, duplicatePatient, showTitle } = this.props;
+        const { patient, duplicatePatient } = this.props;
         const { formatMessage } = this.props.intl;
         return (
-            <div className="patient-infos-container no-padding-right padding-bottom">
-                <table>
-                    {
-                        showTitle &&
-                        <thead className="custom-head">
-                            <tr>
-                                <th colSpan="2">
-                                    <strong><FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Patient" /></strong>
-                                </th>
-                            </tr>
-                        </thead>
-                    }
+            <div className={`patient-infos-container no-padding-right ${duplicatePatient ? 'padding-bottom' : ''}`}>
+                <table className={duplicatePatient ? 'margin-bottom' : ''}>
                     <tbody>
                         <tr>
                             <th>
                                 <FormattedMessage id="patientsinfos.last_name" defaultMessage="Nom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.last_name !== patient.last_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.last_name.toLowerCase() !== patient.last_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.last_name ? patient.last_name : '--'}
                             </td>
                         </tr>
@@ -32,7 +22,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.post_name" defaultMessage="Postnom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.post_name !== patient.post_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.post_name.toLowerCase() !== patient.post_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.post_name ? patient.post_name : '--'}
                             </td>
                         </tr>
@@ -40,7 +30,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.first_name" defaultMessage="Prénom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.first_name !== patient.first_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.first_name.toLowerCase() !== patient.first_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.first_name ? patient.first_name : '--'}
                             </td>
                         </tr>
@@ -48,7 +38,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.mothers_surname" defaultMessage="Nom de la mère" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.mothers_surname !== patient.mothers_surname) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.mothers_surname.toLowerCase() !== patient.mothers_surname.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.mothers_surname ? patient.mothers_surname : '--'}
                             </td>
                         </tr>
@@ -83,7 +73,7 @@ class PatientInfos extends React.Component {
                                 <FormattedMessage id="patientsinfos.age" defaultMessage="Age" />
                             </th>
                             <td className={`${duplicatePatient && (duplicatePatient.age !== patient.age) ? 'error' : ''}`}>
-                                {patient.age ? patient.age : '--'} ({patient.year_of_birth ? patient.year_of_birth : '--'})
+                                {patient.age ? patient.age : '--'} {patient.year_of_birth ? `(${patient.year_of_birth})` : ''}
                             </td>
                         </tr>
                         <tr>
@@ -127,14 +117,12 @@ class PatientInfos extends React.Component {
 
 PatientInfos.defaultProps = {
     duplicatePatient: undefined,
-    showTitle: true,
 };
 
 PatientInfos.propTypes = {
     patient: PropTypes.object.isRequired,
     duplicatePatient: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    showTitle: PropTypes.bool,
 };
 
 const PatientInfosWithIntl = injectIntl(PatientInfos);

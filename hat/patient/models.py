@@ -274,7 +274,7 @@ class Treatment(models.Model):
     death_moment = models.TextField(null=True, blank=True, choices=DEATH_MOMENT_CHOICES)
 
     def __str__(self):
-        return f"{self.id} {self.index} {self.medicine}"
+        return f"id={self.id} patient=[{self.patient}] {self.index} {self.medicine} {self.start_date}→{self.end_date}"
 
     def as_dict(self):
         return {

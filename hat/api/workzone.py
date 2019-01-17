@@ -9,8 +9,8 @@ from hat.geo.models import AS, Village
 from hat.users.models import Team, Coordination
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
-from hat.api.coordination import isUserCorrdinationAuthorized
-from hat.users.models import get_user_geo_list, isAuthorisedUser
+from hat.api.coordination import is_user_coordination_authorized
+from hat.users.models import get_user_geo_list, is_authorized_user
 
 
 class WorkZoneViewSet(viewsets.ViewSet):
@@ -75,15 +75,15 @@ class WorkZoneViewSet(viewsets.ViewSet):
             queryset = queryset.filter(planning_id=planning_id,)
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            if not isUserCorrdinationAuthorized(coordination, request.user):
+            if not is_user_coordination_authorized(coordination, request.user):
                 return Response('Unauthorized', status=401)
             queryset = queryset.filter(coordination_id=coordination_id,)
 
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(AS__ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        if not request.user.profile.AS_scope.count() == 0:
+        if request.user.profile.AS_scope.count() != 0:
             queryset = queryset.filter(AS__id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
         workzones = list(queryset.order_by(qs_order))
@@ -106,10 +106,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
-        isAuthorized = False
+        is_authorized = False
         for area in work_zone.AS.all():
-            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
-        if isAuthorized:
+            is_authorized = is_authorized_user(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if is_authorized:
             return Response(work_zone.as_dict())
         else:
             return Response('Unauthorized', status=401)
@@ -121,7 +121,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         teams_ids = request.data.get("teams", None)
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            if not isUserCorrdinationAuthorized(coordination, request.user):
+            if not is_user_coordination_authorized(coordination, request.user):
                 return Response('Unauthorized', status=401)
         work_zone = WorkZone()
         work_zone.name = name
@@ -139,10 +139,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
-        isAuthorized = False
+        is_authorized = False
         for area in work_zone.AS.all():
-            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
-        if isAuthorized:
+            is_authorized = is_authorized_user(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if is_authorized:
             work_zone.delete()
             return Response("ok")
         else:
@@ -158,10 +158,10 @@ class WorkZoneViewSet(viewsets.ViewSet):
         name = request.data.get("name", None)
         color = request.data.get("color", None)
 
-        isAuthorized = False
+        is_authorized = False
         for area in work_zone.AS.all():
-            isAuthorized = isAuthorisedUser(request.user, area.ZS.province.id, area.ZS.id, area.id)
-        if not isAuthorized:
+            is_authorized = is_authorized_user(request.user, area.ZS.province.id, area.ZS.id, area.id)
+        if not is_authorized:
             return Response('Unauthorized', status=401)
         areas = set(areas)
         if zones:
@@ -241,7 +241,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         coordination_id = request.data.get('coordination_id', '')
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            if not isUserCorrdinationAuthorized(coordination, request.user):
+            if not is_user_coordination_authorized(coordination, request.user):
                 return Response('Unauthorized', status=401)
 
         new_planning = get_object_or_404(Planning, pk=planning_id)

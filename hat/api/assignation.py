@@ -11,7 +11,7 @@ from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.planning.models import Planning
 from .export_utils import  Echo, generate_xlsx, iter_items
-from hat.api.coordination import isUserCorrdinationAuthorized
+from hat.api.coordination import is_user_coordination_authorized
 
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -58,17 +58,17 @@ class AssignationViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
 
         assignations = Assignation.objects
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             assignations = assignations.filter(village__AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             assignations = assignations.filter(village__AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        if not request.user.profile.AS_scope.count() == 0:
+        if request.user.profile.AS_scope.count() != 0:
             assignations = assignations.filter(village__AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
-            if not isAuthorized:
+            is_authorized = is_user_coordination_authorized(coordination, request.user)
+            if not is_authorized:
                 return Response('Unauthorized', status=401)
             teams = Team.objects.filter(coordination_id=coordination_id)
             assignations = assignations.filter(team__in=teams)
@@ -164,11 +164,11 @@ class AssignationViewSet(viewsets.ViewSet):
         assignation.month = month
 
         assignation_list = Assignation.objects.filter(team=assignation.team, planning=assignation.planning).order_by('index')
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             assignation_list = assignation_list.filter(village__AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             assignation_list = assignation_list.filter(village__AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        if not request.user.profile.AS_scope.count() == 0:
+        if request.user.profile.AS_scope.count() != 0:
             assignation_list = assignation_list.filter(village__AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
 

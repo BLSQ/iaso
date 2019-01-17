@@ -38,12 +38,12 @@ class ZSViewSet(viewsets.ViewSet):
         as_geo_json = request.GET.get("geojson", None)
 
         queryset = ZS.objects.all()
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
         if province_ids:
-            queryset=queryset.filter(province_id__in=province_ids.split(','))
+            queryset = queryset.filter(province_id__in=province_ids.split(','))
 
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False)
@@ -57,14 +57,14 @@ class ZSViewSet(viewsets.ViewSet):
         zs = get_object_or_404(ZS, pk=pk)
         user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
         user_province_ids = get_user_geo_list(request.user, 'province_scope')
-        isAuthorized = len(user_zs_ids) == 0  and \
+        is_authorized = len(user_zs_ids) == 0 and \
             len(user_province_ids) == 0
-        if not isAuthorized:
+        if not is_authorized:
             if (zs.province.id in user_province_ids) and len(user_zs_ids) == 0:
-                isAuthorized = True
-            if (zs.id in user_zs_ids):
-                isAuthorized = True
-        if isAuthorized:
+                is_authorized = True
+            if zs.id in user_zs_ids:
+                is_authorized = True
+        if is_authorized:
             return Response(zs.as_dict())
         else:
             return Response('Unauthorized', status=401)

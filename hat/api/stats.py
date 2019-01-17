@@ -13,7 +13,7 @@ from django.db.models import Count
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from hat.users.models import get_user_geo_list, Coordination
-from hat.api.coordination import isUserCorrdinationAuthorized
+from hat.api.coordination import is_user_coordination_authorized
 
 
 class StatsViewSet(viewsets.ViewSet):
@@ -35,18 +35,18 @@ class StatsViewSet(viewsets.ViewSet):
         coordination_id = request.GET.get("coordination_id", None)
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            if not isUserCorrdinationAuthorized(coordination, request.user):
+            if not is_user_coordination_authorized(coordination, request.user):
                 return Response('Unauthorized', status=401)
 
         cases = CaseView.objects.filter(normalized_date__gte=from_date, normalized_date__lte=to_date)
 
         if coordination_id:
             cases = cases.filter(normalized_team__coordination__id=coordination_id)
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             cases = cases.filter(normalized_AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             cases = cases.filter(normalized_AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        if not request.user.profile.AS_scope.count() == 0:
+        if request.user.profile.AS_scope.count() != 0:
             cases = cases.filter(normalized_AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
         if province_id:

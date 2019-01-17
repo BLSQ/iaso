@@ -11,7 +11,7 @@ from django.db.models import Q
 from copy import copy
 
 from .export_utils import  Echo, generate_xlsx, iter_items
-from hat.users.models import get_user_geo_list, isAuthorisedUser
+from hat.users.models import get_user_geo_list, is_authorized_user
 
 class CasesViewSet(viewsets.ViewSet):
     """
@@ -121,11 +121,11 @@ class CasesViewSet(viewsets.ViewSet):
         if coordination_ids:
             queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
 
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(normalized_AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        if not request.user.profile.AS_scope.count() == 0:
+        if request.user.profile.AS_scope.count() != 0:
             queryset = queryset.filter(normalized_AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
         if province_ids and not zs_ids and not as_ids:
@@ -280,17 +280,17 @@ class CasesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         full = request.GET.get('full')
         case = get_object_or_404(Case, pk=pk)
-        isAuthorized = isAuthorisedUser(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
-        if isAuthorized:
+        is_authorized = is_authorized_user(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
+        if is_authorized:
             return Response(case.as_dict(full is not None))
         else:
             return Response('Unauthorized', status=401)
 
     def partial_update(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
-        isAuthorized = isAuthorisedUser(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id )
+        is_authorized = is_authorized_user(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
 
-        if isAuthorized:
+        if is_authorized:
             original_copy = copy(case)
             village_id = request.data.get("village_id", None)
             not_found = request.data.get("not_found", None)

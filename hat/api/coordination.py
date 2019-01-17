@@ -14,19 +14,21 @@ from collections import defaultdict
 from hat.dashboard.views import get_last_years
 from hat.users.models import get_user_geo_list
 
-def isUserCorrdinationAuthorized(coordination, user):
-    isAuthorized = user.profile.ZS_scope.count() == 0 and user.profile.province_scope.count() == 0
+
+def is_user_coordination_authorized(coordination, user):
+    is_authorized = user.profile.ZS_scope.count() == 0 and user.profile.province_scope.count() == 0
     for zone in coordination.ZS.all():
         user_zs_list = get_user_geo_list(user, 'ZS_scope')
         if zone.province.id in get_user_geo_list(user, 'province_scope') and len(user_zs_list) == 0:
-            isAuthorized = True
+            is_authorized = True
         if zone.id in user_zs_list:
-            isAuthorized = True
-    return isAuthorized
+            is_authorized = True
+    return is_authorized
+
 
 class CoordinationViewSet(viewsets.ViewSet):
     """
-    Api to list all coordinations,  retrieve information about just one, or update the assignations for a coordination.
+    Api to list all coordinations, retrieve information about just one, or update the assignations for a coordination.
     """
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
@@ -41,9 +43,9 @@ class CoordinationViewSet(viewsets.ViewSet):
     def list(self, request):
         order = request.GET.get("order", None)
         queryset = Coordination.objects.all()
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
 
         res = map(lambda x: x.as_dict(), queryset)
@@ -63,8 +65,8 @@ class CoordinationViewSet(viewsets.ViewSet):
         endemic_population = request.GET.get("endemic_population", None)
         years = request.GET.get("years", get_last_years(5))
         workzone_id = request.GET.get('workzone_id', None)
-        isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
-        if not isAuthorized:
+        is_authorized = is_user_coordination_authorized(coordination, request.user)
+        if not is_authorized:
             return Response('Unauthorized', status=401)
         else:
 
@@ -154,8 +156,8 @@ class CoordinationViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         coordination = get_object_or_404(Coordination, pk=pk)
-        isAuthorized = isUserCorrdinationAuthorized(coordination, request.user)
-        if not isAuthorized:
+        is_authorized = is_user_coordination_authorized(coordination, request.user)
+        if not is_authorized:
             return Response('Unauthorized', status=401)
         else:
             coordination.delete()

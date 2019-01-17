@@ -10,7 +10,7 @@ from hat.geo.models import Village
 
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
-from hat.api.coordination import isUserCorrdinationAuthorized
+from hat.api.coordination import is_user_coordination_authorized
 from hat.users.models import get_user_geo_list
 
 
@@ -60,7 +60,7 @@ class TeamViewSet(viewsets.ViewSet):
         queryset = Team.objects.all()
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
-            if not isUserCorrdinationAuthorized(coordination, request.user):
+            if not is_user_coordination_authorized(coordination, request.user):
                 return Response('Unauthorized', status=401)
             queryset = queryset.filter(coordination_id=coordination_id)
         if workzone_id:
@@ -68,9 +68,9 @@ class TeamViewSet(viewsets.ViewSet):
         if team_type:
             queryset = queryset.filter(UM=(team_type == 'UM'))
 
-        if not request.user.profile.province_scope.count() == 0:
+        if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(coordination__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
-        if not request.user.profile.ZS_scope.count() == 0:
+        if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(coordination__ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
 
 
@@ -85,7 +85,7 @@ class TeamViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         team = get_object_or_404(Team, pk=pk)
         coordination = get_object_or_404(Coordination, pk=team.coordination.id)
-        if not isUserCorrdinationAuthorized(coordination, request.user):
+        if not is_user_coordination_authorized(coordination, request.user):
             return Response('Unauthorized', status=401)
         else:
             planning_id = request.GET.get("planning_id", None)

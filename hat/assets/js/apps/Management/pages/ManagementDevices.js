@@ -22,7 +22,7 @@ const MESSAGES = defineMessages({
         id: 'teamsdevices.labels.all',
     },
     loading: {
-        defaultMessage: 'Loading',
+        defaultMessage: 'Chargement en cours',
         id: 'teamsdevices.labels.loading',
     },
 });

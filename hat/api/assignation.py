@@ -68,7 +68,7 @@ class AssignationViewSet(viewsets.ViewSet):
         if team_id:
             assignations = assignations.filter(team__id=team_id)
 
-        assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('index')
+        assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('team__name')
 
         village_ids = map(lambda ass: ass.village_id, assignations)
         if show_tests_count:

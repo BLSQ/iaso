@@ -164,10 +164,10 @@ class VillageViewSet(viewsets.ViewSet):
         if results == "negative":
             res = res.filter(nr_positive_cases=0)
 
+        queryset = queryset.select_related("AS__ZS__province")
         if as_list:
             if page_offset:
                 page_offset = int(page_offset)
-                queryset = queryset.select_related("AS__ZS__province")
                 queryset = queryset.order_by(*orders)
                 values = values + (
                     "AS_id",
@@ -226,20 +226,6 @@ class VillageViewSet(viewsets.ViewSet):
                     )
                 if csv_format:
                     filename = filename + '.csv'
-
-                    queryset = queryset.select_related("AS__ZS__province")
-                    queryset = queryset.order_by(*orders)
-                    values = values + (
-                        "AS__name",
-                        "AS__ZS__name",
-                        "AS__ZS__province__name",
-                        "population_source",
-                        "population_year",
-                        "village_type",
-                        "village_source",
-                        "gps_source")
-                    queryset = queryset.values(*values)
-
                     response = StreamingHttpResponse(
                         streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
                         content_type='text/csv',
@@ -289,7 +275,6 @@ class VillageViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response('Unauthorized', status=401)
-
 
     def partial_update(self, request, pk=None):
         village = get_object_or_404(Village, id=pk)

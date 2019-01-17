@@ -1,3 +1,4 @@
+import collections
 from typing import Optional
 import pandas
 import re
@@ -121,3 +122,13 @@ def write_file_base64(filename: str, b64str: str) -> None:
     ''' Decode a base64 encoded string and write it to a file '''
     with open(filename, 'wb') as file:
         file.write(b64decode(b64str))
+
+
+def replace_in_dict_recursive(obj, key, val):
+    if isinstance(obj, collections.Mapping):
+        return {k: replace_in_dict_recursive(val if k == key else v, key, val)
+                for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [i for i in obj]
+    else:
+        return obj

@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from hat.cases.models import Case, RES_POSITIVE
 from hat.couchdb import api
+from hat.import_export.utils import replace_in_dict_recursive
 from hat.sync.models import DeviceDB
 from hat.sync.tests import clean_couch
 from ..import_synced import import_synced_devices
@@ -20,18 +21,8 @@ def load_document(filename):
         document['_id'] = str(uuid.uuid4())  # Avoid updates in couch
         document['deviceId'] = device_db_name
         # update the device_id everywhere in the document
-        document = replace(document, "device", device_db_name)
+        document = replace_in_dict_recursive(document, "device", device_db_name)
         return document, device_db
-
-
-def replace(obj, key, val):
-    if isinstance(obj, collections.Mapping):
-        return {k: replace(val if k == key else v, key, val)
-                for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [i for i in obj]
-    else:
-        return obj
 
 
 class ImportMobileSyncDocuments(TestCase):

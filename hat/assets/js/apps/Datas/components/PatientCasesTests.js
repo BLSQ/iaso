@@ -5,7 +5,9 @@ import PatientTestComponent from './PatientTestComponent';
 
 class PatientCasesTests extends React.Component {
     render() {
-        const { tests, testsMapping, similarCase } = this.props;
+        const {
+            tests, testsMapping, similarCase, currentCase,
+        } = this.props;
         if (!tests || tests.length === 0) {
             return null;
         }
@@ -23,6 +25,7 @@ class PatientCasesTests extends React.Component {
                                     test={t}
                                     similarTest={similarTest}
                                     testsMapping={testsMapping}
+                                    currentCase={currentCase}
                                 />
                             </div>
                         );
@@ -36,6 +39,7 @@ class PatientCasesTests extends React.Component {
 
 PatientCasesTests.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
     tests: [],
 };
 
@@ -44,6 +48,7 @@ PatientCasesTests.propTypes = {
     tests: PropTypes.array,
     testsMapping: PropTypes.object.isRequired,
     similarCase: PropTypes.object,
+    currentCase: PropTypes.object,
 };
 
 const PatientCasesTestsWithIntl = injectIntl(PatientCasesTests);

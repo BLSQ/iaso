@@ -107,6 +107,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     <tr key={t.id}>
                                                         <td>
                                                             <PatientTestComponent
+                                                                currentCase={caseItem}
                                                                 test={t}
                                                                 similarTest={similarTest}
                                                                 testsMapping={testsMapping}
@@ -114,6 +115,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                         </td>
                                                         <td>
                                                             <PatientTestComponent
+                                                                currentCase={caseItem}
                                                                 test={similarTest}
                                                                 similarTest={t}
                                                                 testsMapping={testsMapping}
@@ -132,6 +134,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                             <td />
                                                             <td>
                                                                 <PatientTestComponent
+                                                                    currentCase={caseItem}
                                                                     test={similarTest}
                                                                     similarTest={undefined}
                                                                     testsMapping={testsMapping}
@@ -192,7 +195,12 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     <tr key={t.id}>
                                                         <td />
                                                         <td>
-                                                            <PatientTestComponent test={t} similarTest={null} testsMapping={testsMapping} />
+                                                            <PatientTestComponent
+                                                                test={t}
+                                                                similarTest={null}
+                                                                testsMapping={testsMapping}
+                                                                currentCase={similarCase}
+                                                            />
                                                         </td>
                                                     </tr>
                                                 ))

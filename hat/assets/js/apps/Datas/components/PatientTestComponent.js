@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 import VideoComponent from '../../../components/VideoComponent';
 
-class PatientCasesTests extends React.Component {
+class PatientTestComponent extends React.Component {
     render() {
-        const { test, similarTest, testsMapping } = this.props;
+        const {
+            test, similarTest, testsMapping, currentCase,
+        } = this.props;
         if (!test) {
             return null;
         }
@@ -27,6 +29,14 @@ class PatientCasesTests extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <th>
+                            ID
+                        </th>
+                        <td>
+                            {test.id}
+                        </td>
+                    </tr>
                     <tr>
                         <th>
                             <FormattedMessage id="patientsCasesTests.type" defaultMessage="Type de test" />
@@ -61,13 +71,30 @@ class PatientCasesTests extends React.Component {
                     </tr>
 
                     {
-                        test.image &&
+                        test.type && (test.type === 'CATT' || test.type === 'RDT') &&
                         <tr>
                             <th>
                                 <FormattedMessage id="patientsCasesTests.image" defaultMessage="Photo" />
                             </th>
-                            <td>
-                                <img src={test.image} alt="" />
+                            <td className={(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''}>
+                                {
+                                    !test.image_filename && !test.image &&
+                                    <span>
+                                        <i className="fa fa-camera small-padding-right" />
+                                        <FormattedMessage id="patientsCasesTests.notDoneFem" defaultMessage="Non prise" />
+                                    </span>
+                                }
+                                {
+                                    test.image_filename && !test.image &&
+                                    <span>
+                                        <i className="fa fa-upload small-padding-right" />
+                                        <FormattedMessage id="patientsCasesTests.notUploadedFem" defaultMessage="Non transmise" />
+                                    </span>
+                                }
+                                {
+                                    test.image &&
+                                    <img src={test.image} alt="" />
+                                }
                             </td>
                         </tr>
                     }
@@ -77,24 +104,133 @@ class PatientCasesTests extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Index photo" />
                             </th>
-                            <td>
-                                {test.index}
+                            <td className={!test.index ? 'error-text' : ''}>
+                                {test.index ? test.index : <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />}
                             </td>
                         </tr>
                     }
                     {
-                        test.video &&
+                        test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
                         <tr>
                             <th>
                                 <FormattedMessage id="patientsCasesTests.video" defaultMessage="Vidéo" />
                             </th>
-                            <td>
-                                <VideoComponent videoItem={
-                                    {
-                                        video: test.video,
-                                    }
+                            <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
+                                {
+                                    !test.video_filename && !test.video &&
+                                    <span>
+                                        <i className="fa fa-video-camera small-padding-right" />
+                                        <FormattedMessage id="patientsCasesTests.notDoneFem" defaultMessage="Non prise" />
+                                    </span>
                                 }
-                                />
+                                {
+                                    test.video_filename && !test.video &&
+                                    <span>
+                                        <i className="fa fa-upload small-padding-right" />
+                                        <FormattedMessage id="patientsCasesTests.notUploadedFem" defaultMessage="Non transmise" />
+                                    </span>
+                                }
+                                {
+                                    test.video &&
+                                    <VideoComponent videoItem={
+                                        {
+                                            video: test.video,
+                                        }
+                                    }
+                                    />
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'CATT' &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.cattSessiontype" defaultMessage="Type de session" />
+                            </th>
+                            <td className={!currentCase.test_catt_session_type ? 'error-text' : ''}>
+                                {
+                                    currentCase.test_catt_session_type &&
+                                    <span>
+                                        {
+                                            currentCase.test_catt_session_type === 'doorToDoor' &&
+                                            <FormattedMessage id="patientsCasesTests.cattSessiontype.doorToDoor" defaultMessage="Porte à porte" />
+                                        }
+                                        {
+                                            (currentCase.test_catt_session_type === 'onTheSpot' || currentCase.test_catt_session_type === 'onSite') &&
+                                            <FormattedMessage id="patientsCasesTests.cattSessiontype.onSite" defaultMessage="Sur site" />
+                                        }
+                                    </span>
+                                }
+                                {
+                                    !currentCase.test_catt_session_type &&
+                                    <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'PL' &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumine" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_albumine ? currentCase.test_pl_albumine : '--'
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'PL' &&
+                        <tr>
+                            <th>
+                                <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="Globules blancs/mm&sup3;" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'PL' &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'PL' &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.test_pl_trypanosome" defaultMessage="Trypanosome" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_trypanosome ? currentCase.test_pl_trypanosome : '--'
+                                }
+                            </td>
+                        </tr>
+                    }
+                    {
+                        test.type === 'PL' &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.test_pl_comments" defaultMessage="Commentaires" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
+                                }
                             </td>
                         </tr>
                     }
@@ -105,18 +241,20 @@ class PatientCasesTests extends React.Component {
 }
 
 
-PatientCasesTests.defaultProps = {
+PatientTestComponent.defaultProps = {
     similarTest: undefined,
     test: undefined,
+    currentCase: undefined,
 };
 
 
-PatientCasesTests.propTypes = {
+PatientTestComponent.propTypes = {
     test: PropTypes.object,
     testsMapping: PropTypes.object.isRequired,
     similarTest: PropTypes.object,
+    currentCase: PropTypes.object,
 };
 
-const PatientCasesTestsWithIntl = injectIntl(PatientCasesTests);
+const PatientTestComponentWithIntl = injectIntl(PatientTestComponent);
 
-export default PatientCasesTestsWithIntl;
+export default PatientTestComponentWithIntl;

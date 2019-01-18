@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Patient, Test, TestGroup
+from .models import Patient, Test, TestGroup, Treatment
 
 
 class PatientAdmin(admin.ModelAdmin):

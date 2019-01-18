@@ -93,9 +93,9 @@ const casesListColumns = formatMessage => (
                 id: 'main.label.localisation',
             }),
             Cell: settings => (
-                <section className={`table-row-action ${!settings.original.normalized_village_id ? 'not-located' : ''}`}>
+                <section className={`table-row-action ${!settings.original.location.normalized.village ? 'not-located' : ''}`}>
                     {
-                        !settings.original.normalized_village_id &&
+                        !settings.original.location.normalized.village &&
                         <button
                             className="button--tiny margin-right"
                         >
@@ -107,7 +107,7 @@ const casesListColumns = formatMessage => (
                         </button>
                     }
                     {
-                        settings.original.normalized_village_id &&
+                        settings.original.location.normalized.village &&
                         <i className="fa fa-check green-icon" />
                     }
                 </section>

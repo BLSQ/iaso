@@ -49,10 +49,10 @@
         }
         &.selected-case {
             padding: $padding-unit;
-            border: 1px solid red;
+            border: 1px solid green;
             border-radius: 5px;
             .case-id {
-                color: red;
+                color: green;
             }
         }
     }

@@ -50,17 +50,27 @@ class PatientInfos extends React.Component {
 
                                 {
                                     patient.sex === 'female' &&
-                                    formatMessage({
-                                        defaultMessage: 'Femme',
-                                        id: 'main.label.female',
-                                    })
+                                    <span>
+                                        <i className="fa fa-female" /> {' - '}
+                                        {
+                                            formatMessage({
+                                                defaultMessage: 'Femme',
+                                                id: 'main.label.female',
+                                            })
+                                        }
+                                    </span>
                                 }
                                 {
                                     patient.sex === 'male' &&
-                                    formatMessage({
-                                        defaultMessage: 'Homme',
-                                        id: 'main.label.male',
-                                    })
+                                    <span>
+                                        <i className="fa fa-male" /> {' - '}
+                                        {
+                                            formatMessage({
+                                                defaultMessage: 'Homme',
+                                                id: 'main.label.male',
+                                            })
+                                        }
+                                    </span>
                                 }
                                 {
                                     patient.sex !== 'male' && patient.sex !== 'female' &&

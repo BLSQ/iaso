@@ -18,17 +18,6 @@ import { casesActions } from '../redux/cases';
 
 export const urls = [];
 
-
-// const selectCase = (caseItem, event) => {
-//     let url = `/cases/cases/${caseItem.id}?back=${window.location.href}`;
-//     if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
-//         url = `/dashboard/locator/case_id/${caseItem.id}`;
-//         window.open(url, '_blank');
-//     } else {
-//         window.location.href = url;
-//     }
-// };
-
 class Cases extends Component {
     constructor(props) {
         super(props);

@@ -29,8 +29,8 @@ class PatientDetailsWrapper extends React.Component {
                     patient.cases &&
                     <div className="widget__container" >
                         <div className="widget__header">
-                            <h2 className="padding-bottom widget__heading">
-                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Tests effectués" />:
+                            <h2 className="widget__heading">
+                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Test(s) effectué(s)" />:
                             </h2>
                         </div>
                         <div className="widget__content">
@@ -52,6 +52,7 @@ class PatientDetailsWrapper extends React.Component {
                                                 <PatientCasesTests
                                                     tests={c.tests}
                                                     testsMapping={testsMapping}
+                                                    currentCase={c}
                                                 />
                                             </div>
                                         </li>

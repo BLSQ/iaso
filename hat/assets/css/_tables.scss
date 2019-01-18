@@ -2,7 +2,24 @@ table {
     width: 100%;
     margin: 0;
     .custom-head {
-        border-bottom: 1px solid $mid-mid-gray;
+        th {
+            position: relative;
+            &:after {
+                height: 1px;
+                left: 0;
+                bottom: -1px;
+                width: 100%;
+                content: '';
+                background-color: $mid-mid-gray;
+                position: absolute;
+                z-index: 10;
+            }
+        }
+        button {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+        }
     }
     &.no-style {
         border: none;
@@ -16,6 +33,10 @@ table {
             padding: 0;
             margin: 0;
         }
+    }
+    &.error-table {
+        border: 1px solid red !important;
+        border-collapse: separate;
     }
 }
 
@@ -62,6 +83,12 @@ span.error {
     background: $red;
     color: white;
     padding: 10px;
+}
+
+td.error-text,
+span.error-text {
+    background: transparent;
+    color: red;
 }
 
 td.warning,
@@ -233,6 +260,7 @@ tr:first-child td {
         margin-bottom: $padding-unit/2 !important;
     }
 }
+
 .duplicate-page section:last-child {
     .tests {
         margin-bottom: 0 !important;

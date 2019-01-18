@@ -7,8 +7,8 @@ class PatientInfos extends React.Component {
         const { patient, duplicatePatient } = this.props;
         const { formatMessage } = this.props.intl;
         return (
-            <div className={`patient-infos-container no-padding-right ${duplicatePatient ? 'padding-bottom' : ''}`}>
-                <table className={duplicatePatient ? 'margin-bottom' : ''}>
+            <div className="patient-infos-container no-padding-right">
+                <table>
                     <tbody>
                         <tr>
                             <th>

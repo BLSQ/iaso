@@ -7,7 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { patientsActions } from '../redux/patients';
-import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
+import DuplicatePatientDetailsWrapper from '../components/DuplicatePatientDetailsWrapper';
 
 
 class PatientDuplicateDetails extends React.Component {
@@ -113,40 +113,18 @@ class PatientDuplicateDetails extends React.Component {
                             </button>
                         </div>
                     }
-                    <div className="widget__content--half with-separation border-top">
+                    <div className="widget__content border-top">
                         {
                             patient && patient.id &&
-                            <div>
-                                <h2 className="widget__heading padding-bottom">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> A:
-                                </h2>
-                                <PatientDetailsWrapper
-                                    patient={patient}
-                                    duplicatePatient={duplicatePatient}
-                                    testsMapping={testsMapping}
-                                    isInline={false}
-                                    showInfosTitle={false}
-                                    params={params}
-                                />
-                            </div>
-                        }
-                        {
                             duplicatePatient && duplicatePatient.id &&
-                            <div>
-                                <h2 className="widget__heading padding-bottom">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> B:
-                                </h2>
-                                <PatientDetailsWrapper
-                                    patient={duplicatePatient}
-                                    duplicatePatient={patient}
-                                    testsMapping={testsMapping}
-                                    isInline={false}
-                                    showInfosTitle={false}
-                                    params={params}
-                                />
-                            </div>
+                            <DuplicatePatientDetailsWrapper
+                                patient={patient}
+                                duplicatePatient={duplicatePatient}
+                                testsMapping={testsMapping}
+                                isInline={false}
+                                params={params}
+                            />
                         }
-
                     </div>
                 </div>
             </section>);

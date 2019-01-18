@@ -5,6 +5,9 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 class PatientCasesLocation extends React.Component {
     render() {
         const { currentCase, similarCase } = this.props;
+        if (!currentCase) {
+            return null;
+        }
         return (
             <div className="patient-infos-container no-padding-left no-padding-top">
 
@@ -105,11 +108,12 @@ class PatientCasesLocation extends React.Component {
 
 PatientCasesLocation.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
 };
 
 
 PatientCasesLocation.propTypes = {
-    currentCase: PropTypes.object.isRequired,
+    currentCase: PropTypes.object,
     similarCase: PropTypes.object,
 };
 

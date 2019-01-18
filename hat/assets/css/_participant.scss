@@ -47,6 +47,14 @@
                 display: none;
             }
         }
+        &.selected-case {
+            padding: $padding-unit;
+            border: 1px solid red;
+            border-radius: 5px;
+            .case-id {
+                color: red;
+            }
+        }
     }
     table {
         margin-bottom: $padding-unit;
@@ -76,22 +84,9 @@
             }
         }
     }
-}
-
-.not-inline {
-    .patient-detail {
-        width: 100%;
-    }
-    .cases-list {
-        padding-left: 0;
-        list-style: none;
+    @media (max-width: 1100px) {
         .tests-list>div {
-            > :nth-child(odd),
-            > :nth-child(even) {
-                width: 100% !important;
-                float: none !important;
-                padding: 0 !important;
-            }
+            > :last-child,
             > :nth-last-child(2) {
                 table {
                     margin-bottom: $padding-unit !important;
@@ -100,6 +95,7 @@
         }
     }
 }
+
 
 .case-id {
     margin-bottom: $padding-unit / 2;

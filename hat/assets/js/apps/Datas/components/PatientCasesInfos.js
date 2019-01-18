@@ -43,6 +43,9 @@ const getTeamName = (currentCase) => {
 class PatientCasesInfo extends React.Component {
     render() {
         const { currentCase, similarCase } = this.props;
+        if (!currentCase) {
+            return null;
+        }
         const { formatMessage } = this.props.intl;
         const teamName = getTeamName(currentCase);
         let duplicateTeamName = teamName;
@@ -121,10 +124,11 @@ class PatientCasesInfo extends React.Component {
 
 PatientCasesInfo.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
 };
 
 PatientCasesInfo.propTypes = {
-    currentCase: PropTypes.object.isRequired,
+    currentCase: PropTypes.object,
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
 };

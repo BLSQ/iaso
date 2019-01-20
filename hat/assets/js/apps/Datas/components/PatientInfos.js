@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import moment from 'moment';
 
 class PatientInfos extends React.Component {
     render() {
@@ -75,6 +76,24 @@ class PatientInfos extends React.Component {
                                 {
                                     patient.sex !== 'male' && patient.sex !== 'female' &&
                                     '--'
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsinfos.death" defaultMessage="Décès" />
+                            </th>
+                            <td className={`${duplicatePatient && (duplicatePatient.death.dead !== patient.death.dead) ?
+                                'error' : ''} ${patient.death.dead ? 'error-text' : ''}`}
+                            >
+                                {
+                                    patient.death.dead ?
+                                        <span>
+                                            <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
+                                            {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
+                                        </span>
+
+                                        : '--'
                                 }
                             </td>
                         </tr>

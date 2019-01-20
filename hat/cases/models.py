@@ -471,6 +471,7 @@ class Case(CaseAbstract):
             'test_pl_lcr': self.test_pl_lcr,
             'test_pl_trypanosome': self.test_pl_trypanosome,
             'test_pl_comments': self.test_pl_comments,
+            'circumstances_dp': self.circumstances_dp,
         }
 
         if full and self.test_set:

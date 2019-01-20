@@ -55,7 +55,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.name',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.last_name !== settings.original.patient2.last_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.last_name !== settings.original.patient2.last_name ? 'error-text' : ''}`}>
                             {settings.original.patient1.last_name}
                         </span>
                     </li>
@@ -66,7 +66,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.post_nom',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.post_name !== settings.original.patient2.post_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.post_name !== settings.original.patient2.post_name ? 'error-text' : ''}`}>
                             {settings.original.patient1.post_name}
                         </span>
                     </li>
@@ -77,7 +77,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.first_name',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.first_name !== settings.original.patient2.first_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.first_name !== settings.original.patient2.first_name ? 'error-text' : ''}`}>
                             {settings.original.patient1.first_name}
                         </span>
                     </li>
@@ -88,7 +88,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.mothers_surname',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.mothers_surname !== settings.original.patient2.mothers_surname ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.mothers_surname !== settings.original.patient2.mothers_surname ? 'error-text' : ''}`}>
                             {settings.original.patient1.mothers_surname}
                         </span>
                     </li>
@@ -99,7 +99,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.age',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error-text' : ''}`}>
                             {settings.original.patient1.age}
                         </span>
                     </li>
@@ -110,7 +110,7 @@ const duplicateListColumns = formatMessage => (
                                 id: 'duplicate.label.sex',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error-text' : ''}`}>
                             {
                                 settings.original.patient1.sex === 'female' &&
                                 formatMessage({
@@ -144,32 +144,32 @@ const duplicateListColumns = formatMessage => (
             Cell: settings => (
                 <ul className="align-left duplicate-infos">
                     <li>
-                        <span className={`${settings.original.patient1.last_name !== settings.original.patient2.last_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.last_name !== settings.original.patient2.last_name ? 'error-text' : ''}`}>
                             {settings.original.patient2.last_name}
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.post_name !== settings.original.patient2.post_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.post_name !== settings.original.patient2.post_name ? 'error-text' : ''}`}>
                             {settings.original.patient2.post_name}
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.first_name !== settings.original.patient2.first_name ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.first_name !== settings.original.patient2.first_name ? 'error-text' : ''}`}>
                             {settings.original.patient2.first_name}
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.mothers_surname !== settings.original.patient2.mothers_surname ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.mothers_surname !== settings.original.patient2.mothers_surname ? 'error-text' : ''}`}>
                             {settings.original.patient2.mothers_surname}
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error-text' : ''}`}>
                             {settings.original.patient2.age}
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error' : ''}`}>
+                        <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error-text' : ''}`}>
                             {
                                 settings.original.patient2.sex === 'female' &&
                                 formatMessage({

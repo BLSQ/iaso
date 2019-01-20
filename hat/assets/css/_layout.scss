@@ -318,3 +318,13 @@ $directions: left right top bottom;
 .initial-white-space {
     white-space: initial !important;
 }
+.error-text {
+    background: transparent;
+    color: red;
+}
+
+
+.success-text {
+    background: transparent;
+    color: green;
+}

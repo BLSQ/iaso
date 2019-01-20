@@ -24,7 +24,7 @@
     }
 }
 
-.cases-list {
+.cases-list, {
     list-style: none;
     li {
         margin-top: $padding-unit * 2;
@@ -96,10 +96,58 @@
     }
 }
 
-
-.case-id {
+.case-id,
+.treatment-id {
     margin-bottom: $padding-unit / 2;
     span {
         font-weight: bold;
+    }
+}
+.treatments-list {
+    list-style: none;
+    &:after {
+        content:'';
+        clear: both;
+        display: block;
+    }
+    li {
+        box-sizing: border-box;
+        &:last-child,
+        &:nth-last-child(2) {
+            table {
+                margin-bottom: 0 !important;
+            }
+        }
+        table {
+            td {
+                width: 80%;
+            }
+        }
+    }
+}
+
+@media (min-width: 1100px) {
+    .treatments-list li {
+        &:nth-child(odd) {
+            width: 50%;
+            float: left;
+            padding-right: $padding-unit / 2 !important;
+        }
+        &:nth-child(even) {
+            width: 50%;
+            float: right;
+            padding-left: $padding-unit / 2 !important;
+        }
+    }
+}
+
+@media (max-width: 1100px) {
+    .treatments-list li {
+        &:last-child,
+        &:nth-last-child(2) {
+            table {
+                margin-bottom: $padding-unit !important;
+            }
+        }
     }
 }

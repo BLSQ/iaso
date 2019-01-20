@@ -5,6 +5,7 @@ import PatientInfos from '../components/PatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
 import PatientCasesLocation from '../components/PatientCasesLocation';
 import PatientCasesTests from '../components/PatientCasesTests';
+import TreatmentComponent from '../components/TreatmentComponent';
 
 class PatientDetailsWrapper extends React.Component {
     render() {
@@ -30,7 +31,7 @@ class PatientDetailsWrapper extends React.Component {
                     <div className="widget__container" >
                         <div className="widget__header">
                             <h2 className="widget__heading">
-                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Test(s) effectué(s)" />:
+                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Test(s)" />:
                             </h2>
                         </div>
                         <div className="widget__content">
@@ -55,6 +56,31 @@ class PatientDetailsWrapper extends React.Component {
                                                     currentCase={c}
                                                 />
                                             </div>
+                                        </li>
+                                    ))
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+                {
+                    patient.treatments.length > 0 &&
+                    <div className="widget__container" >
+                        <div className="widget__header">
+                            <h2 className="widget__heading">
+                                <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
+                            </h2>
+                        </div>
+                        <div className="widget__content">
+                            <ul className="treatments-list">
+                                {
+                                    patient.treatments.map(t => (
+                                        <li
+                                            key={t.id}
+                                        >
+                                            <TreatmentComponent
+                                                treatment={t}
+                                            />
                                         </li>
                                     ))
                                 }

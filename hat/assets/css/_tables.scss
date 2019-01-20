@@ -80,8 +80,8 @@ td {
 
 td.error,
 span.error {
-    background: $red;
-    color: white;
+    background: $red !important;
+    color: white !important;
     padding: 10px;
 }
 

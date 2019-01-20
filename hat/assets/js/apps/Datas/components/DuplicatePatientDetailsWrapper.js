@@ -158,7 +158,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                         if (!patient.cases[similarCaseIndex]) {
                             return (
                                 <section key={similarCase.id}>
-                                    <table className="no-style duplicate-table">
+                                    <table className="no-style duplicate-table tests">
                                         <thead>
                                             <tr>
                                                 <td className="empty" />

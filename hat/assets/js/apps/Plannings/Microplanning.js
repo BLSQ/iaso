@@ -27,6 +27,8 @@ import geoUtils from '../../utils/geo';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { villageSelectionLegend } from './constants/microplanningLegends';
+import ClusterSwitchComponent from '../../components/ClusterSwitchComponent';
+
 import {
     Map,
     MapLayers,
@@ -61,18 +63,21 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Couverture géographique',
         id: 'microplanning.labels.geoScope',
     },
+    cluster_title: {
+        defaultMessage: 'Regroupement des villages',
+        id: 'microplanning.labels.cluster_title',
+    },
 });
 
 export class Microplanning extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // selectedLocation: null,
-            // isVillageListEdited: false,
             isSelectionModified: false,
             errorOnSave: undefined,
             currentTab: 'villageSelection',
         };
+        props.changeCluster(props.params.with_cluster === 'true');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -181,6 +186,14 @@ export class Microplanning extends Component {
         this.props.activateFullscreen();
     }
 
+    changeCluster(withCluster) {
+        this.props.changeCluster(withCluster);
+        this.props.redirect({
+            ...this.props.params,
+            with_cluster: withCluster ? 'true' : 'false',
+        });
+    }
+
     renderSaveTeamButton() {
         if (!this.props.params.coordination_id && !this.props.params.team_id) {
             return null;
@@ -207,6 +220,7 @@ export class Microplanning extends Component {
             </div>
         );
     }
+
 
     render() {
         const { formatMessage } = this.props.intl;
@@ -280,8 +294,10 @@ export class Microplanning extends Component {
 
         // map
         const {
-            baseLayer, legend, fullscreen,
-        } = this.props.map;
+            map: {
+                baseLayer, legend, fullscreen, withCluster,
+            },
+        } = this.props;
         const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`;
         const selectHighlightBuffer = () => {
             const inBuffer = geoUtils.villagesInHighlightBuffer(
@@ -351,9 +367,9 @@ export class Microplanning extends Component {
                     />
                 }
                 <div className={`widget__container ${this.state.currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
-                    <div className="widget__header">
+                    <div className="widget__header--quarter">
                         {/* Map legend */}
-                        <div className="map__header--legend">
+                        <div>
                             <MapLegend
                                 items={this.props.params.team_id ? villageSelectionLegend : shortVillageSelectionLegend}
                             />
@@ -389,13 +405,18 @@ export class Microplanning extends Component {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Map layers */}
-                        <div className="map__header--layers">
+                        <div>
                             <MapLayers
                                 base={baseLayer}
                                 change={(type, key) => this.props.changeLayer(type, key)}
                                 teamId={this.props.params.team_id}
+                            />
+                        </div>
+                        <div>
+                            <ClusterSwitchComponent
+                                withCluster={withCluster}
+                                change={withCl => this.changeCluster(withCl)}
+                                message={formatMessage(MESSAGES.cluster_title)}
                             />
                         </div>
                     </div>
@@ -497,6 +518,7 @@ export class Microplanning extends Component {
                                     getShape={type => this.props.getShape(type)}
                                     selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
                                     workzoneId={this.props.params.workzone_id}
+                                    withCluster={withCluster}
                                 />
                             }
                         </div>
@@ -544,6 +566,7 @@ Microplanning.propTypes = {
     isTest: PropTypes.bool,
     isAssignationLoading: PropTypes.bool.isRequired,
     chageSelectionModified: PropTypes.func.isRequired,
+    changeCluster: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
@@ -562,6 +585,7 @@ const MapDispatchToProps = dispatch => ({
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: url => getRequest(url, dispatch, null, false),
     chageSelectionModified: isSelectionModified => dispatch(selectionActions.chageSelectionModified(isSelectionModified)),
+    changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
 });
 
 const MapStateToProps = state => ({

@@ -15,7 +15,7 @@ import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
 
 import geoUtils from '../../../utils/geo';
 import MapTooltip from './MapTooltip';
-
+import 'leaflet.markercluster'; // eslint-disable-line
 import {
     MESSAGES,
     onResizeMap,
@@ -26,6 +26,13 @@ import {
 } from '../../../utils/mapUtils';
 
 const radius = 400;
+
+const renderDivIcon = (content, key, size) => L.divIcon({
+    html: `<div><span>${content}</span></div>`,
+    className: `marker-cluster marker-cluster-${key}`,
+    iconSize: L.point(size, size),
+});
+
 
 const getChoosenMarkerRadius = (map) => {
     const currentZoom = map.getZoom();
@@ -58,14 +65,6 @@ class Map extends Component {
                 // where to plot ALL villages
                 // split in different groups based on type and use
                 markersGroups: {
-                    group: new L.FeatureGroup(),
-                    YES: new L.FeatureGroup(),
-                    NO: new L.FeatureGroup(),
-                    OTHER: new L.FeatureGroup(),
-                    NA: new L.FeatureGroup(),
-                },
-
-                shadowsGroups: {
                     group: new L.FeatureGroup(),
                     YES: new L.FeatureGroup(),
                     NO: new L.FeatureGroup(),
@@ -115,8 +114,9 @@ class Map extends Component {
 
             // only call if legend or items changed
             if (!containSameItems(prevProps, this.props, 'items') ||
-            !containSameItems(prevProps, this.props, 'selectedItems') ||
-            hasChanged(prevProps, this.props, 'assignationsMap')
+                !containSameItems(prevProps, this.props, 'selectedItems') ||
+                hasChanged(prevProps, this.props, 'assignationsMap' ||
+                    this.props.withCluster !== prevProps.withCluster)
             ) {
                 this.updateItems(true);
             } else if (hasChanged(prevProps, this.props, 'legend')) {
@@ -185,7 +185,6 @@ class Map extends Component {
         const { map, layers } = this.state;
         map.addLayer(layers.selectedGroup);
         map.addLayer(layers.markersGroups.group);
-        map.addLayer(layers.shadowsGroups.group);
         map.addLayer(layers.highlightBufferGroup);
 
         //
@@ -245,78 +244,114 @@ class Map extends Component {
    * UPDATE STATE
    *************************************************************************** */
     updateItems(force) {
-        const { legend, items, assignationsMap } = this.props;
+        const {
+            legend,
+            items,
+            assignationsMap,
+            withCluster,
+        } = this.props;
         const { layers } = this.state;
-        const { markersGroups, shadowsGroups } = layers;
-
+        const { markersGroups } = layers;
+        // console.log('updateItems');
         // plot indicated villages (active in legend)
         Object.keys(legend).forEach((key) => {
             const markers = markersGroups[key];
-            const shadows = shadowsGroups[key];
             if (force) {
                 markers.clearLayers();
-                shadows.clearLayers();
             }
             if (legend[key]) {
                 // include layers in group
                 if (!markersGroups.group.hasLayer(markers)) {
                     markersGroups.group.addLayer(markers);
-                    shadowsGroups.group.addLayer(shadows);
                 }
-
-                // this.fitToBounds();
+                let markersVillages;
+                let markersVillagesWithCases;
+                if (withCluster) {
+                    markersVillages = L.markerClusterGroup({
+                        maxClusterRadius: 50,
+                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
+                    });
+                    markersVillagesWithCases = L.markerClusterGroup({
+                        maxClusterRadius: 50,
+                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
+                    });
+                }
                 // check if the layer has markers
                 if (markers.getLayers().length === 0) {
                     items
                         .forEach((item) => {
+                            const isEndemic = item._class === 'highlight';
+                            let marker;
+                            let className = '';
                             const teamId = assignationsMap[`${item.id}`];
-                            let className;
-
-                            className = String.raw`map-marker ${item._class}`;
                             if (teamId) {
-                                if (parseInt(teamId, 10) === parseInt(this.props.teamId, 10)) {
-                                    className += ' assignedToCurrentTeam';
+                                if (this.props.teamId) {
+                                    if (parseInt(teamId, 10) === parseInt(this.props.teamId, 10)) {
+                                        className += 'assignedToCurrentTeam ';
+                                    } else {
+                                        className += 'assignedToOtherTeam ';
+                                    }
                                 } else {
-                                    className += ' assignedToOtherTeam';
+                                    className += 'selected ';
                                 }
                             }
-
-                            const options = {
-                                className,
-                                pane: String.raw`custom-pane-${item._pane}`,
-                                radius,
-                            };
-
-                            const marker = L.circle(item._latlon, options);
+                            if (withCluster) {
+                                className += isEndemic ? 'villages-with-cases small' : 'villages small';
+                                marker = L.marker(
+                                    [item.latitude, item.longitude],
+                                    { icon: renderDivIcon('', className, 30) },
+                                );
+                                if (teamId) {
+                                    markers.addLayer(marker);
+                                } else if (!isEndemic) {
+                                    markersVillages.addLayer(marker);
+                                } else {
+                                    markersVillagesWithCases.addLayer(marker);
+                                }
+                            } else {
+                                className += String.raw`map-marker ${item._class}`;
+                                const options = {
+                                    className,
+                                    pane: String.raw`custom-pane-${item._pane}`,
+                                    radius,
+                                };
+                                marker = L.circle(item._latlon, options);
+                                markers.addLayer(marker);
+                            }
                             this.addLayerEvents(marker, item);
-                            markers.addLayer(marker);
                         });
+
+                    if (withCluster) {
+                        markers.addLayer(markersVillagesWithCases);
+                        markers.addLayer(markersVillages);
+                    }
                 }
             } else if (markersGroups.group.hasLayer(markers)) {
                 // remove layers from group
                 markersGroups.group.removeLayer(markers);
-                shadowsGroups.group.removeLayer(shadows);
             }
         });
+        this.updateSelectedItems();
     }
 
     updateSelectedItems() {
-        const { selectedItems } = this.props;
+        // console.log('updateSelectedItems');
+        const { selectedItems, withCluster } = this.props;
         const { selectedGroup } = this.state.layers;
 
-        selectedGroup.clearLayers();
-
-        selectedItems.forEach((item) => {
-            const options = {
-                className: 'map-marker selected',
-                pane: 'custom-pane-selected',
-                radius,
-            };
-
-            const marker = L.circle(item._latlon, options);
-            this.addLayerEvents(marker, { ...item, selected: true });
-            selectedGroup.addLayer(marker);
-        });
+        // selectedGroup.clearLayers();
+        // if (!withCluster) {
+        //     selectedItems.forEach((item) => {
+        //         const options = {
+        //             className: 'map-marker selected',
+        //             pane: 'custom-pane-selected',
+        //             radius,
+        //         };
+        //         const marker = L.circle(item._latlon, options);
+        //         this.addLayerEvents(marker, { ...item, selected: true });
+        //         selectedGroup.addLayer(marker);
+        //     });
+        // }
     }
 
     updateHighlightBuffer() {
@@ -450,7 +485,7 @@ class Map extends Component {
 
     fitToBounds() {
         const { map, layers, defaultBounds } = this.state;
-        const { selectedGroup, shadowsGroups, markersGroups } = layers;
+        const { selectedGroup, markersGroups } = layers;
         // maximum zoom allowed to fit to relevant markers
         const MAX_ZOOM = 13;
 
@@ -467,10 +502,8 @@ class Map extends Component {
         setTimeout(() => {
             if (selectedGroup.getBounds().isValid()) {
                 map.fitBounds(selectedGroup.getBounds(), { maxZoom: MAX_ZOOM });
-            } else if (shadowsGroups.group.getBounds().isValid()) {
-                map.fitBounds(shadowsGroups.group.getBounds(), { maxZoom: MAX_ZOOM });
             } else if (markersGroups.group.hasLayer(markersGroups.YES) &&
-markersGroups.YES.getBounds().isValid()) {
+                markersGroups.YES.getBounds().isValid()) {
                 map.fitBounds(markersGroups.YES.getBounds(), { maxZoom: MAX_ZOOM });
             } else if (defaultBounds) {
                 map.fitBounds(defaultBounds, { maxZoom: MAX_ZOOM });
@@ -548,6 +581,7 @@ Map.defaultProps = {
     assignations: [],
     teamId: '',
     workzoneId: '',
+    withCluster: false,
 };
 
 Map.propTypes = {
@@ -570,7 +604,7 @@ Map.propTypes = {
     planningId: PropTypes.string,
     selectItems: PropTypes.func.isRequired,
     workzoneId: PropTypes.string,
-
+    withCluster: PropTypes.bool,
 };
 
 export default injectIntl(Map);

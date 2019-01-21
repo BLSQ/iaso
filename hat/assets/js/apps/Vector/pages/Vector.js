@@ -15,7 +15,7 @@ import {
 } from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
-import ClusterSwitchComponent from '../components/ClusterSwitchComponent';
+import ClusterSwitchComponent from '../../../components/ClusterSwitchComponent';
 import SitesLegendComponent from '../components/SitesLegendComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
@@ -342,6 +342,7 @@ export class Vector extends Component {
                                 <ClusterSwitchComponent
                                     withCluster={withCluster}
                                     change={withCl => changeCluster(withCl)}
+                                    message={formatMessage(MESSAGES.cluster_title)}
                                 />
                             </div>
                             {

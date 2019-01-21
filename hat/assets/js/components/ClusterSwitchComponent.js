@@ -15,11 +15,11 @@ const MESSAGES = defineMessages({
 
 class ClusterSwitchComponent extends Component {
     render() {
-        const { withCluster, change } = this.props;
+        const { withCluster, change, message } = this.props;
         return (
             <div className="map__option">
                 <span className="map__option__header">
-                    <FormattedMessage id="vector.label.clusterToggle.title" defaultMessage="Regroupement des sites" />
+                    {message}
                 </span>
                 <ul className="map__option__list">
                     <li
@@ -45,6 +45,7 @@ class ClusterSwitchComponent extends Component {
 ClusterSwitchComponent.propTypes = {
     withCluster: PropTypes.bool.isRequired,
     change: PropTypes.func.isRequired,
+    message: PropTypes.string.isRequired,
 };
 
 export default injectIntl(ClusterSwitchComponent);

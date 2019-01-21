@@ -132,7 +132,9 @@ export class MicroplanningContainer extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        this.loadFullData(newProps.params);
+        if (newProps.params.with_cluster === this.props.params.with_cluster) {
+            this.loadFullData(newProps.params);
+        }
     }
 
     getAdditionalSelectData(params = this.props.params) {

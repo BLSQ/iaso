@@ -50,6 +50,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Route',
         id: 'vectors.label.road',
     },
+    cluster_title: {
+        defaultMessage: 'Regroupement des sites',
+        id: 'vectors.labels.cluster_title',
+    },
 });
 
 const editSiteButton = siteId => `<button

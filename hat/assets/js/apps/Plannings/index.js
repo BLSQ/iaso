@@ -23,10 +23,11 @@ import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
 export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
     const years = [1, 2, 3].map(i => currentYear - i);
-    const defaultPath = `macro/years/${years.join(',')}`;
+    const defaultPathMicro = `/micro/years/${years.join(',')}/with_cluster/true`;
+    const defaultPathMacro = `/macro/years/${years.join(',')}`;
     const routes = [
         <Route
-            path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
+            path="micro/years/:years/with_cluster/:with_cluster(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
             component={MicroplanningContainerPage}
         />,
         <Route
@@ -37,7 +38,9 @@ export default function microplanningApp(element, baseUrl) {
             path="macro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
             component={MacroplanningPage}
         />,
-        <Redirect path="*" to={defaultPath} />,
+        <Redirect path="/micro" to={defaultPathMicro} />,
+        <Redirect path="/routes" to={defaultPathMacro} />,
+        <Redirect path="/macro" to={defaultPathMacro} />,
     ];
 
     let history = useRouterHistory(createHistory)({

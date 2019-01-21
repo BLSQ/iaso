@@ -50,7 +50,8 @@
     }
 }
 
-.marker-cluster-sites, .marker-sites {
+.marker-cluster-sites,
+.marker-sites {
     background-color: rgba(orange, 0.6);
     z-index: 1000000 !important;
     div {
@@ -68,6 +69,7 @@
         }
     }
 }
+
 .marker-sites {
     z-index: 2000000 !important;
 }
@@ -80,7 +82,8 @@
     }
 }
 
-.marker-cluster, .marker-custom {
+.marker-cluster,
+.marker-custom {
     &.small {
         div {
             height: 20px;
@@ -104,17 +107,55 @@
     }
 }
 
-.marker-cluster-villages-with-cases {
-    background-color: rgba(red, 0.6) !important;
+.marker-cluster-villages-with-cases,
+.marker-cluster.villages-with-cases {
+    background-color: red !important;
+    &.marker-cluster-assignedToCurrentTeam,
+    &.marker-cluster-selected {
+        background-color: yellow !important;
+    }
+    &.marker-cluster-assignedToOtherTeam {
+        background-color: blue !important;
+    }
     div {
         background-color: red;
+    }
+}
+
+.marker-cluster-assignedToOtherTeam {
+    z-index: 600 !important;
+    background-color: blue !important;
+    &.villages-with-cases {
+        div {
+            background-color: red;
+        }
+    }
+    &.villages {
+        div {
+            background-color: $green;
+        }
+    }
+}
+
+.marker-cluster-assignedToCurrentTeam,
+.marker-cluster-selected {
+    z-index: 601 !important;
+    background-color: yellow !important;
+    &.villages {
+        div {
+            background-color: $green;
+        }
+    }
+    &.villages-with-cases {
+        div {
+            background-color: red;
+        }
     }
 }
 
 .marker-cluster-large div {
     background-color: rgba(241, 128, 23, 0.6);
 }
-
 
 /* IE 6-8 fallback colors */
 
@@ -142,12 +183,14 @@
     background-color: rgb(241, 128, 23);
 }
 
-.marker-cluster, .marker-custom {
+.marker-cluster,
+.marker-custom {
     background-clip: padding-box;
     border-radius: 100%;
 }
 
-.marker-cluster div, .marker-custom div {
+.marker-cluster div,
+.marker-custom div {
     width: 30px;
     height: 30px;
     margin-left: 5px;

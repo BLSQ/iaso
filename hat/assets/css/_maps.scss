@@ -83,24 +83,12 @@ $color in $types {
     }
 }
 
-[class*="map__header"] {
-    display: flex;
-    padding: 0 5px;
-}
-
-.map__header--legend {
-    flex-basis: 30%;
-}
 
 .map__header--filters {
-    flex-basis: 33%;
     position: relative;
     z-index: 1000;
 }
 
-.map__header--layers {
-    flex-basis: 20%;
-}
 
 .map-container {
     background: $background-highlight-gray;
@@ -617,6 +605,12 @@ path.map-marker {
     @include marker($gray);
     &.YES {
         @include marker($official);
+        &.assignedToOtherTeam {
+            @include marker($official, $stroke-color: blue);
+        }
+        &.assignedToCurrentTeam {
+            @include marker($official, $stroke-color: $selected);
+        }
     }
     &.NO {
         @include marker($notofficial);
@@ -627,10 +621,19 @@ path.map-marker {
     &.NA {
         @include marker($unknown);
     }
+    &.selected, &.assignedToCurrentTeam {
+        @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
+        &:hover {
+            fill-opacity: 0;
+        }
+    }
     &.highlight {
         @include marker($highlight);
         &.assignedToOtherTeam {
             @include marker($highlight, $stroke-color: blue);
+        }
+        &.assignedToCurrentTeam {
+            @include marker($highlight, $stroke-color: $selected);
         }
     }
     &.geoScope {
@@ -638,12 +641,6 @@ path.map-marker {
     }
     &.outOfScope {
         @include marker($outsideGeoloc);
-    }
-    &.selected {
-        @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
-        &:hover {
-            fill-opacity: 0;
-        }
     }
     &.assignedToOtherTeam {
         @include marker($green, $stroke-color: blue);
@@ -1044,6 +1041,9 @@ button {
     &.leaflet-custom-pane-shapes-pane {
         z-index: 200;
     }
+    &.leaflet-custom-pane-selected {
+        z-index: 200;
+    }
 }
 
 .map-parent-container {
@@ -1233,4 +1233,8 @@ button {
 
 .leaflet-tooltip.see-trough {
     opacity: 0.7 !important;
+}
+
+.leaflet-custom-pane-chosen-pane {
+    z-index: 603;
 }

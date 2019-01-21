@@ -8,6 +8,7 @@ export const BASE_LAYER_CHANGE = 'hat/microplanning/leaflet/base-layer/CHANGE';
 export const FULLSCREEN_ACTIVATE = 'hat/microplanning/leaftlet/fullscreen/ACTIVATE';
 export const FULLSCREEN_DEACTIVATE = 'hat/microplanning/leaftlet/fullscreen/DEACTIVATE';
 export const LEAFLET_MAP = 'hat/microplanning/leaflet/MAP';
+export const CLUSTER_CHANGE = 'hat/microplanning/leaflet/CLUSTER_CHANGE';
 
 export const mapLayerTypes = {
     legend: 1,
@@ -65,6 +66,10 @@ export const setLeafletMap = map => ({
     payload: map,
 });
 
+export const changeCluster = payload => ({
+    type: CLUSTER_CHANGE,
+    payload,
+});
 export const mapActions = {
     activateFullscreen,
     changeBaseLayer,
@@ -72,6 +77,7 @@ export const mapActions = {
     deactivateFullscreen,
     setLeafletMap,
     toggleLegend,
+    changeCluster,
 };
 
 export const mapInitialState = {
@@ -80,6 +86,7 @@ export const mapInitialState = {
     },
     baseLayer: 'osm',
     fullscreen: false,
+    withCluster: true,
 };
 
 export const mapReducer = (state = mapInitialState, action = {}) => {
@@ -111,6 +118,11 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
 
         case LEAFLET_MAP:
             return { ...state, leafletMap: action.payload };
+
+        case CLUSTER_CHANGE: {
+            const withCluster = action.payload;
+            return { ...state, withCluster };
+        }
 
         default:
             return state;

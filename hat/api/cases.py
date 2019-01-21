@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -12,6 +12,7 @@ from copy import copy
 
 from .export_utils import  Echo, generate_xlsx, iter_items
 from hat.users.models import get_user_geo_list, is_authorized_user
+
 
 class CasesViewSet(viewsets.ViewSet):
     """
@@ -79,6 +80,9 @@ class CasesViewSet(viewsets.ViewSet):
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
 
+        if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
+            return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
+        
         if located == 'all':
             queryset = CaseView.objects.order_by(*orders)
 

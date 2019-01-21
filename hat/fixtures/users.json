@@ -130,6 +130,117 @@
           "import_locations",
           "cases",
           "location"
+        ],
+        [
+          "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "supervisor-kwilu",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-27T09:32:59.863Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ],
+        [
+          "import",
+          "cases",
+          "case"
+        ],
+        [
+          "import_reconciled",
+          "cases",
+          "case"
+        ],
+        [
+          "view",
+          "cases",
+          "case"
+        ],
+        [
+          "import_locations",
+          "cases",
+          "location"
+        ],
+        [
+          "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "supervisor-muluma",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-27T09:32:59.863Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ],
+        [
+          "import",
+          "cases",
+          "case"
+        ],
+        [
+          "import_reconciled",
+          "cases",
+          "case"
+        ],
+        [
+          "view",
+          "cases",
+          "case"
+        ],
+        [
+          "import_locations",
+          "cases",
+          "location"
+        ],
+        [
+          "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
         ]
       ]
     }
@@ -270,6 +381,26 @@
       "user": [
         "anon-exporter"
       ]
+    }
+  },
+    {
+    "model": "users.profile",
+    "pk": 8,
+    "fields": {
+      "user": [
+        "supervisor-kwilu"
+      ],
+      "province_scope": [1]
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 9,
+    "fields": {
+      "user": [
+        "supervisor-muluma"
+      ],
+      "AS_scope": [111]
     }
   }
 ]

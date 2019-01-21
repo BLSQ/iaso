@@ -4,9 +4,8 @@ from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from hat.geo.models import ZS
+from hat.geo.models import ZS, AS
 from django.core.serializers import serialize
-from hat.users.models import Profile
 from hat.users.models import get_user_geo_list
 
 
@@ -39,9 +38,12 @@ class ZSViewSet(viewsets.ViewSet):
 
         queryset = ZS.objects.all()
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(province_id__in=get_user_geo_list(request.user, 'province_scope'))
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope'))
+        if request.user.profile.AS_scope.count() != 0:
+            zs_from_as = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).values_list("ZS_id", flat=True).distinct()
+            queryset = queryset.filter(id__in=zs_from_as)
         if province_ids:
             queryset = queryset.filter(province_id__in=province_ids.split(','))
 
@@ -56,13 +58,17 @@ class ZSViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)
         user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
+        user_as_zs_ids = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope'))\
+            .values_list("ZS_id", flat=True).distinct()
         user_province_ids = get_user_geo_list(request.user, 'province_scope')
-        is_authorized = len(user_zs_ids) == 0 and \
+        is_authorized = len(user_as_zs_ids) == 0 and len(user_zs_ids) == 0 and \
             len(user_province_ids) == 0
         if not is_authorized:
-            if (zs.province.id in user_province_ids) and len(user_zs_ids) == 0:
+            if (zs.province.id in user_province_ids) and len(user_zs_ids) == 0 and len(user_as_zs_ids) == 0:
                 is_authorized = True
             if zs.id in user_zs_ids:
+                is_authorized = True
+            if zs.id in user_as_zs_ids:
                 is_authorized = True
         if is_authorized:
             return Response(zs.as_dict())

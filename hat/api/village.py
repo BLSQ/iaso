@@ -242,7 +242,7 @@ class VillageViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)
-        is_authorized = is_authorized_user(request.user, village.ZS.province.id, village.ZS.id, village.AS.id)
+        is_authorized = is_authorized_user(request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id)
         if is_authorized:
             res = {
                 "name": village.name,

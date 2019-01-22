@@ -77,13 +77,21 @@ export class Microplanning extends Component {
             errorOnSave: undefined,
             currentTab: 'villageSelection',
         };
-        props.changeCluster(props.params.with_cluster === 'true');
+        if (props.params.workzone_id) {
+            this.props.changeCluster(false);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         // if we add a team, reset highlight buffer size
         if (nextProps.params.team_id && !this.props.params.team_id) {
             this.props.changeHighlightBufferSize(0);
+        }
+        if (nextProps.params.workzone_id && !this.props.params.workzone_id) {
+            this.props.changeCluster(false);
+        }
+        if (!nextProps.params.workzone_id && this.props.params.workzone_id) {
+            this.props.changeCluster(true);
         }
         this.setState({
             isSelectionModified: nextProps.selection.isSelectionModified || false,
@@ -184,14 +192,6 @@ export class Microplanning extends Component {
             planningMap.focus();
         }
         this.props.activateFullscreen();
-    }
-
-    changeCluster(withCluster) {
-        this.props.changeCluster(withCluster);
-        this.props.redirect({
-            ...this.props.params,
-            with_cluster: withCluster ? 'true' : 'false',
-        });
     }
 
     renderSaveTeamButton() {
@@ -319,6 +319,12 @@ export class Microplanning extends Component {
         }
         const shortVillageSelectionLegend = villageSelectionLegend.slice();
         shortVillageSelectionLegend.pop();
+        let mapLegendItems = villageSelectionLegend.slice(0, 2);
+        if (this.props.params.team_id) {
+            mapLegendItems = villageSelectionLegend;
+        } else if (this.props.params.workzone_id) {
+            mapLegendItems = shortVillageSelectionLegend;
+        }
         return (
             <div
                 tabIndex={0}
@@ -367,11 +373,11 @@ export class Microplanning extends Component {
                     />
                 }
                 <div className={`widget__container ${this.state.currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
-                    <div className="widget__header--quarter">
+                    <div className="widget__header--tier">
                         {/* Map legend */}
                         <div>
                             <MapLegend
-                                items={this.props.params.team_id ? villageSelectionLegend : shortVillageSelectionLegend}
+                                items={mapLegendItems}
                             />
                         </div>
 
@@ -410,13 +416,6 @@ export class Microplanning extends Component {
                                 base={baseLayer}
                                 change={(type, key) => this.props.changeLayer(type, key)}
                                 teamId={this.props.params.team_id}
-                            />
-                        </div>
-                        <div>
-                            <ClusterSwitchComponent
-                                withCluster={withCluster}
-                                change={withCl => this.changeCluster(withCl)}
-                                message={formatMessage(MESSAGES.cluster_title)}
                             />
                         </div>
                     </div>

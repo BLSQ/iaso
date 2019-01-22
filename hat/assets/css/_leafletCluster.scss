@@ -109,52 +109,54 @@
 
 .marker-cluster-villages-with-cases,
 .marker-cluster.villages-with-cases {
-    background-color: red !important;
-    &.marker-cluster-assignedToCurrentTeam,
-    &.marker-cluster-selected {
-        background-color: yellow !important;
-    }
-    &.marker-cluster-assignedToOtherTeam {
-        background-color: blue !important;
-    }
+    background-color: rgba(red, 0.4) !important;
+    color: white;
+    z-index: 599 !important;
     div {
         background-color: red;
     }
 }
 
-.marker-cluster-assignedToOtherTeam {
-    z-index: 600 !important;
-    background-color: blue !important;
-    &.villages-with-cases {
-        div {
-            background-color: red;
-        }
-    }
-    &.villages {
-        div {
-            background-color: $green;
-        }
-    }
-}
-
-.marker-cluster-assignedToCurrentTeam,
-.marker-cluster-selected {
-    z-index: 601 !important;
-    background-color: yellow !important;
-    &.villages {
-        div {
-            background-color: $green;
-        }
-    }
-    &.villages-with-cases {
-        div {
-            background-color: red;
-        }
-    }
-}
-
 .marker-cluster-large div {
     background-color: rgba(241, 128, 23, 0.6);
+}
+
+.marker-cluster.marker-cluster-chosen {
+    z-index: 602 !important;
+    border: 2px solid $active;
+    position: relative;
+    >div {
+        -webkit-animation-name: chosen-marker-cluster-animation;
+        -webkit-animation-duration: 0.5s;
+        -webkit-animation-iteration-count: infinite;
+        -webkit-animation-direction: alternate;
+        animation-name: chosen-marker-cluster-animation;
+        animation-duration: 0.5s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        background-color: rgba($active, 0.4) !important;
+        position: absolute;
+        margin: 0 ! important;
+        left: -2px;
+        top: -2px;
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@keyframes chosen-marker-cluster-animation {
+    0% {
+        left: -2px;
+        top: -2px;
+        width: 30px;
+        height: 30px;
+    }
+    100% {
+        left: -12px;
+        top: -12px;
+        width: 50px;
+        height: 50px;
+    }
 }
 
 /* IE 6-8 fallback colors */

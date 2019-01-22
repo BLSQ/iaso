@@ -17,7 +17,7 @@
     }
 }
 
-.widget__header, .widget__header--quarter {
+.widget__header, .widget__header--tier {
     display: flex;
     align-items: space-between;
     border-bottom: 1px solid $gray;
@@ -159,7 +159,7 @@
     }
 }
 
-.widget__content--quarter ,.widget__header--quarter{
+.widget__content--quarter{
     display: flex;
     &>div {
         @extend %quarter-item;
@@ -169,7 +169,7 @@
     }
 }
 
-.widget__content--tier {
+.widget__content--tier ,.widget__header--tier {
     display: flex;
     &>div {
         flex-basis: 33%;

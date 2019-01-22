@@ -622,7 +622,7 @@ path.map-marker {
         @include marker($unknown);
     }
     &.selected, &.assignedToCurrentTeam {
-        @include marker($stroke-color: $selected, $fill-opacity: 0, $stroke-opacity: 1);
+        @include marker($stroke-color: $selected !important, $fill-opacity: 0, $stroke-opacity: 1);
         &:hover {
             fill-opacity: 0;
         }
@@ -641,6 +641,9 @@ path.map-marker {
     }
     &.outOfScope {
         @include marker($outsideGeoloc);
+    }
+    &.assignedToCurrentTeam {
+        filter: drop-shadow( 5px 2px 5px #000 );
     }
     &.assignedToOtherTeam {
         @include marker($green, $stroke-color: blue);
@@ -669,7 +672,7 @@ path.map-marker {
     &.chosen {
         @include marker($active, $fill-opacity: 0.5, $stroke-width: 0);
         -webkit-animation-name: chosen-marker-animation;
-        -webkit-animation-duration: 4s;
+        -webkit-animation-duration: 1s;
         -webkit-animation-iteration-count: infinite;
         /* Safari 4.0 - 8.0 */
         animation-name: chosen-marker-animation;

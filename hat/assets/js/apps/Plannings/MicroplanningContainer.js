@@ -174,7 +174,7 @@ export class MicroplanningContainer extends Component {
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
             fetchUrls(urls(params.workzone_id), params, oldParams, dispatch).then(() => {
-                if (params.planning_id) {
+                if (params.planning_id && params.workzone_id) {
                     this.getAdditionalSelectData(params);
                 }
             });

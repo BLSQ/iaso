@@ -33,7 +33,6 @@ const renderDivIcon = (content, key, size) => L.divIcon({
     iconSize: L.point(size, size),
 });
 
-
 const getChoosenMarkerRadius = (map) => {
     const currentZoom = map.getZoom();
     const zoomMaxLevel = 13;
@@ -55,12 +54,12 @@ class Map extends Component {
             },
             map: null, // this is the leaflet object that represents the map
             containers: {},
-
+            needFitToBound: false,
             layers: {
                 // where to plot the selected markers
                 selectedGroup: new L.FeatureGroup(),
-                highlightBufferGroup: new L.FeatureGroup(),
                 chosenMarker: null, // marker used to bold the chosen item
+                chosenMarkerCluster: null,
 
                 // where to plot ALL villages
                 // split in different groups based on type and use
@@ -106,6 +105,13 @@ class Map extends Component {
         };
 
         map.whenReady(() => {
+            if ((Object.keys(prevProps.assignationsMap).length !== Object.keys(this.props.assignationsMap).length) ||
+                hasChanged(prevProps, this.props, 'workzoneId') ||
+                (hasChanged(prevProps, this.props, 'items') && this.props.workzoneId)) {
+                this.setState({
+                    needFitToBound: true,
+                });
+            }
             // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.state.map, this.props.baseLayer);
@@ -123,11 +129,6 @@ class Map extends Component {
                 this.updateItems();
             }
 
-            // only call if the number of selected items changed
-            if (!containSameItems(prevProps, this.props, 'selectedItems')) {
-                this.updateSelectedItems();
-            }
-
             // only call if fullscreen option changed
             if (hasChanged(prevProps, this.props, 'fullscreen')) {
                 this.updateFullscreenMode();
@@ -136,7 +137,6 @@ class Map extends Component {
             if (hasChanged(prevProps, this.props, 'chosenItem')) {
                 this.updateTooltipLarge(this.props.chosenItem);
             }
-            this.updateHighlightBuffer();
         });
     }
 
@@ -185,7 +185,6 @@ class Map extends Component {
         const { map, layers } = this.state;
         map.addLayer(layers.selectedGroup);
         map.addLayer(layers.markersGroups.group);
-        map.addLayer(layers.highlightBufferGroup);
 
         //
         // plot the ALL boundaries
@@ -204,12 +203,18 @@ class Map extends Component {
         });
 
         // create marker for the chosen item
+
+        const chosenMarkerCluster = L.marker(
+            map.getCenter(),
+            { icon: renderDivIcon('', 'chosen', 30) },
+        );
         const chosenMarker = L.circle(map.getCenter(), {
             className: 'map-marker chosen',
             pane: 'custom-pane-chosen',
             radius: 0,
         });
         layers.chosenMarker = chosenMarker;
+        layers.chosenMarkerCluster = chosenMarkerCluster;
 
         geoUtils.getShape('province', this, shapes, shapeOptions, zooms, map).then((shape) => {
             this.state.defaultBounds = shape.getBounds();
@@ -249,10 +254,12 @@ class Map extends Component {
             items,
             assignationsMap,
             withCluster,
+            workzoneId,
         } = this.props;
         const { layers } = this.state;
         const { markersGroups } = layers;
-        // console.log('updateItems');
+        const { selectedGroup } = this.state.layers;
+        selectedGroup.clearLayers();
         // plot indicated villages (active in legend)
         Object.keys(legend).forEach((key) => {
             const markers = markersGroups[key];
@@ -268,12 +275,12 @@ class Map extends Component {
                 let markersVillagesWithCases;
                 if (withCluster) {
                     markersVillages = L.markerClusterGroup({
-                        maxClusterRadius: 50,
-                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages', 40),
+                        maxClusterRadius: 35,
+                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages small', 30),
                     });
                     markersVillagesWithCases = L.markerClusterGroup({
-                        maxClusterRadius: 50,
-                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases', 40),
+                        maxClusterRadius: 35,
+                        iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'villages-with-cases small', 30),
                     });
                 }
                 // check if the layer has markers
@@ -283,32 +290,31 @@ class Map extends Component {
                             const isEndemic = item._class === 'highlight';
                             let marker;
                             let className = '';
-                            const teamId = assignationsMap[`${item.id}`];
-                            if (teamId) {
-                                if (this.props.teamId) {
-                                    if (parseInt(teamId, 10) === parseInt(this.props.teamId, 10)) {
-                                        className += 'assignedToCurrentTeam ';
-                                    } else {
-                                        className += 'assignedToOtherTeam ';
-                                    }
-                                } else {
-                                    className += 'selected ';
-                                }
-                            }
+                            let teamId;
                             if (withCluster) {
                                 className += isEndemic ? 'villages-with-cases small' : 'villages small';
                                 marker = L.marker(
                                     [item.latitude, item.longitude],
                                     { icon: renderDivIcon('', className, 30) },
                                 );
-                                if (teamId) {
-                                    markers.addLayer(marker);
-                                } else if (!isEndemic) {
+                                if (!isEndemic) {
                                     markersVillages.addLayer(marker);
                                 } else {
                                     markersVillagesWithCases.addLayer(marker);
                                 }
                             } else {
+                                teamId = assignationsMap[`${item.id}`];
+                                if (teamId) {
+                                    if (this.props.teamId) {
+                                        if (parseInt(teamId, 10) === parseInt(this.props.teamId, 10)) {
+                                            className += 'assignedToCurrentTeam ';
+                                        } else {
+                                            className += 'assignedToOtherTeam ';
+                                        }
+                                    } else {
+                                        className += 'selected ';
+                                    }
+                                }
                                 className += String.raw`map-marker ${item._class}`;
                                 const options = {
                                     className,
@@ -316,9 +322,17 @@ class Map extends Component {
                                     radius,
                                 };
                                 marker = L.circle(item._latlon, options);
-                                markers.addLayer(marker);
+                                if (teamId) {
+                                    selectedGroup.addLayer(marker);
+                                } else {
+                                    markers.addLayer(marker);
+                                }
                             }
-                            this.addLayerEvents(marker, item);
+                            if (teamId) {
+                                this.addLayerEvents(marker, { ...item, selected: true });
+                            } else {
+                                this.addLayerEvents(marker, item);
+                            }
                         });
 
                     if (withCluster) {
@@ -331,52 +345,11 @@ class Map extends Component {
                 markersGroups.group.removeLayer(markers);
             }
         });
-        this.updateSelectedItems();
-    }
-
-    updateSelectedItems() {
-        // console.log('updateSelectedItems');
-        const { selectedItems, withCluster } = this.props;
-        const { selectedGroup } = this.state.layers;
-
-        // selectedGroup.clearLayers();
-        // if (!withCluster) {
-        //     selectedItems.forEach((item) => {
-        //         const options = {
-        //             className: 'map-marker selected',
-        //             pane: 'custom-pane-selected',
-        //             radius,
-        //         };
-        //         const marker = L.circle(item._latlon, options);
-        //         this.addLayerEvents(marker, { ...item, selected: true });
-        //         selectedGroup.addLayer(marker);
-        //     });
-        // }
-    }
-
-    updateHighlightBuffer() {
-        const { legend, highlightBufferSize } = this.props;
-        const { highlightBufferGroup } = this.state.layers;
-
-        highlightBufferGroup.clearLayers();
-        const bufferSize = highlightBufferSize * 1000;
-        // include buffer zone
-        if (highlightBufferSize > 0) {
-            const { items } = this.props;
-
-            const highlight = items.filter(item =>
-                legend[item.village_official] && item._isHighlight);
-
-            highlight.forEach((item) => {
-                const options = {
-                    className: 'map-marker highlight-buffer',
-                    pane: 'custom-pane-highlight-buffer',
-                    radius: radius + bufferSize,
-                };
-
-                const marker = L.circle(item._latlon, options);
-                highlightBufferGroup.addLayer(marker);
+        if (this.state.needFitToBound) {
+            this.setState({
+                needFitToBound: false,
             });
+            this.fitToBounds();
         }
     }
 
@@ -427,7 +400,8 @@ class Map extends Component {
     updateTooltipLarge(chosenItem) {
         const { map } = this.state;
         const { tooltipSmall, tooltipLarge } = this.state.containers;
-        const { chosenMarker } = this.state.layers;
+        const { chosenMarker, chosenMarkerCluster } = this.state.layers;
+        const { withCluster } = this.props;
         const {
             legend, items,
         } = this.props;
@@ -435,6 +409,9 @@ class Map extends Component {
         if (map.hasLayer(chosenMarker)) {
             chosenMarker.setRadius(0);
             map.removeLayer(chosenMarker);
+        }
+        if (map.hasLayer(chosenMarkerCluster)) {
+            map.removeLayer(chosenMarkerCluster);
         }
         if (!chosenItem) {
             this.closeTooltipLarge();
@@ -446,9 +423,14 @@ class Map extends Component {
         );
 
         if (item._latlon) {
-            map.addLayer(chosenMarker);
-            chosenMarker.setRadius(getChoosenMarkerRadius(map));
-            chosenMarker.setLatLng(item._latlon);
+            if (!withCluster) {
+                map.addLayer(chosenMarker);
+                chosenMarker.setRadius(getChoosenMarkerRadius(map));
+                chosenMarker.setLatLng(item._latlon);
+            } else {
+                map.addLayer(chosenMarkerCluster);
+                chosenMarkerCluster.setLatLng(item._latlon);
+            }
             map.panTo(item._latlon);
         }
 
@@ -511,7 +493,7 @@ class Map extends Component {
                 map.setView(geoUtils.center, geoUtils.zoom);
             }
             map.invalidateSize();
-        }, 1);
+        }, 200);
     }
 
     /* ***************************************************************************

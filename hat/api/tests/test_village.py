@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 
 
 class VillageTest(APITestCase):
-    fixtures = ['locations', 'users', 'cases', 'provinces']
+    fixtures = ['locations', 'users', 'patients', 'patients', 'cases', 'provinces']
     expected_kisala = {
             "name": "Kisala",
             "province": "Kwilu",

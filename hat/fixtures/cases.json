@@ -12,7 +12,10 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "male",
-      "age": 10
+      "age": 10,
+      "normalized_patient_id": 101,
+      "normalized_AS_id": 111,
+      "normalized_village_id": 1111
     }
   },
   {
@@ -29,7 +32,10 @@
       "longitude": 15.9700,
       "sex": "male",
       "test_maect": 1,
-      "test_rdt": 2
+      "test_rdt": 2,
+      "normalized_patient_id": 102,
+      "normalized_AS_id": 151,
+      "normalized_village_id": 1511
     }
   },
   {
@@ -45,7 +51,10 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "male",
-      "test_rdt": 1
+      "test_rdt": 1,
+      "normalized_patient_id": 103,
+      "normalized_AS_id": 111,
+      "normalized_village_id": 1111
     }
   },
   {
@@ -61,7 +70,10 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "female",
-      "test_catt": 2
+      "test_catt": 2,
+      "normalized_patient_id": 104,
+      "normalized_AS_id": 112,
+      "normalized_village_id": 1121
     }
   },
   {
@@ -77,7 +89,10 @@
       "latitude": 4.3871,
       "longitude": 15.9700,
       "sex": "female",
-      "test_maect": 2
+      "test_maect": 2,
+      "normalized_patient_id": 105,
+      "normalized_AS_id": 211,
+      "normalized_village_id": 2111
     }
   },
   {
@@ -94,7 +109,10 @@
       "longitude": "15.9700",
       "sex": "female",
       "test_ge": 2,
-      "test_pl_result": "stage1"
+      "test_pl_result": "stage1",
+      "normalized_patient_id": 101,
+      "normalized_AS_id": 111,
+      "normalized_village_id": 1111
     }
   }
 ]

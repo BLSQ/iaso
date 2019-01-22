@@ -82,7 +82,7 @@ class CasesViewSet(viewsets.ViewSet):
 
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
-        
+
         if located == 'all':
             queryset = CaseView.objects.order_by(*orders)
 
@@ -222,7 +222,7 @@ class CasesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["cases"] = map(lambda x: x.as_dict(), page.object_list)
+            res["cases"] = list(map(lambda x: x.as_dict(), page.object_list))  # just the map breaks the tests
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

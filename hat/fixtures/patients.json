@@ -1,0 +1,87 @@
+[
+  {
+    "model": "patient.patient",
+    "pk": 101,
+    "fields": {
+      "first_name": "Henri IV",
+      "last_name": "de Bourbon",
+      "post_name": "de France",
+      "mothers_surname": "d'Albret",
+      "sex": "male",
+      "age": 98,
+      "year_of_birth": 1921,
+      "origin_area_id": 111,
+      "origin_village_id": 1111,
+      "created_at": "2016-01-01T00:00:00Z",
+      "updated_at": "2016-01-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.patient",
+    "pk": 102,
+    "fields": {
+      "first_name": "Marie",
+      "last_name": "de Medicis",
+      "post_name": "de France",
+      "mothers_surname": "d'Autriche",
+      "sex": "female",
+      "age": 95,
+      "year_of_birth": 1923,
+      "origin_area_id": 112,
+      "origin_village_id": 1121,
+      "created_at": "2016-01-01T00:00:00Z",
+      "updated_at": "2016-01-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.patient",
+    "pk": 103,
+    "fields": {
+      "first_name": "Louis XIII",
+      "last_name": "de France",
+      "post_name": "Xx",
+      "mothers_surname": "de Medicis",
+      "sex": "male",
+      "age": 65,
+      "year_of_birth": 1954,
+      "origin_area_id": 111,
+      "origin_village_id": 1111,
+      "created_at": "2016-01-01T00:00:00Z",
+      "updated_at": "2016-01-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.patient",
+    "pk": 104,
+    "fields": {
+      "first_name": "Ana María Mauricia",
+      "last_name": "de Austria y Austria-Estiria",
+      "post_name": "Reine de France",
+      "mothers_surname": "d'Autriche-Styrie",
+      "sex": "female",
+      "age": 64,
+      "year_of_birth": 1955,
+      "origin_area_id": 211,
+      "origin_village_id": 2111,
+      "created_at": "2016-01-01T00:00:00Z",
+      "updated_at": "2016-01-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.patient",
+    "pk": 105,
+    "fields": {
+      "first_name": "Louis XIV",
+      "last_name": "de Bourbon",
+      "post_name": "de France",
+      "mothers_surname": "de Austria y Austria-Estiria",
+      "sex": "male",
+      "age": 43,
+      "year_of_birth": 1975,
+      "origin_area_id": 111,
+      "origin_village_id": 1111,
+      "created_at": "2016-01-01T00:00:00Z",
+      "updated_at": "2016-01-02T00:00:00Z"
+    }
+  }
+]

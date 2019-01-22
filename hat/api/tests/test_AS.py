@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 
 class ASTest(APITestCase):
-    fixtures = ['locations', 'users', 'cases', 'provinces']
+    fixtures = ['locations', 'users', 'patients', 'cases', 'provinces']
     expected_as = {
             'id': 111,
             'name': 'Muluma',

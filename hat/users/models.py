@@ -7,12 +7,35 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
 from hat.geo.models import AS, ZS, Province
+from hat.users.middleware import get_current_user
+
 
 from django.contrib.auth.models import Permission
 
 
+def get_user_geo_list(user, key):
+    return getattr(user.profile, key).values_list('pk', flat=True)
+
+
+def is_authorized_user(user, province_id, zone_id, area_id):
+    user_as_ids = get_user_geo_list(user, 'AS_scope')
+    user_zs_ids = get_user_geo_list(user, 'ZS_scope')
+    user_province_ids = get_user_geo_list(user, 'province_scope')
+    is_authorized = len(user_as_ids) == 0 and \
+        len(user_zs_ids) == 0 and \
+        len(user_province_ids) == 0
+    if not is_authorized:
+        if (province_id in user_province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+            is_authorized = True
+        if (zone_id in user_zs_ids) and len(user_as_ids) == 0:
+            is_authorized = True
+        if area_id in user_as_ids:
+            is_authorized = True
+    return is_authorized
+
+
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
-    # Disable signalhandler when model is created by `manage loaddata`.
+    # Disable signal handler when model is created by `manage loaddata`.
     # When loading fixtures, all models are already defined in the
     # fixtures file and we do not want the signal handler to create
     # another model, which would raise an IntegrityError.
@@ -32,10 +55,17 @@ class Coordination(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def as_dict(self):
+        zs_query = self.ZS.order_by("name")
+        user = get_current_user()
+        if user.profile.province_scope.count() != 0:
+            zs_query = zs_query.filter(province__id__in=user.profile.province_scope.all().values_list('pk', flat=True))\
+                .distinct()
+        if user.profile.ZS_scope.count() != 0:
+            zs_query = zs_query.filter(id__in=user.profile.ZS_scope.all().values_list('pk', flat=True)).distinct()
         return {
             'name': self.name,
             'teams': map(lambda x: x.as_dict(),  self.team_set.order_by("name")),
-            'zs': map(lambda x: x.as_dict(),  self.ZS.order_by("name")),
+            'zs': map(lambda x: x.as_dict(), zs_query),
             'id': self.id,
             'created_at': self.created_at
         }
@@ -111,13 +141,13 @@ class UserType(models.Model):
 
 
 class Profile(models.Model):
-    '''
+    """
     User profile.
 
     :ivar User user:           User reference.
     :ivar Team team:           User team.
     :ivar Institution institution:           User institution.
-    '''
+    """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # permissions will be handled by Django standard mechanisms based on the user permissions
@@ -175,6 +205,7 @@ class Profile(models.Model):
             "province": self.province_scope.all().values_list('id', flat=True),
             "passwordReset": self.password_reset
     }
+
 
 @receiver(post_save, sender=User)
 @disable_for_loaddata

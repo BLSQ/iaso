@@ -11,6 +11,7 @@ from hat.geo.models import Province, ZS, AS
 from hat.vector_control.models import Target, GpsImport
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import  Echo, generate_xlsx, iter_items
+from hat.users.models import get_user_geo_list, is_authorized_user
 
 
 class TargetsViewSet(viewsets.ViewSet):
@@ -44,6 +45,19 @@ class TargetsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(date_time__date__lte=to_date)
         if user_ids is not None:
             queryset = queryset.filter(gps_import__user_id__in=user_ids.split(","))
+
+        if request.user.profile.province_scope.count() != 0:
+            user_prov_subquery = Province.objects.filter(id__in=get_user_geo_list(request.user, 'province_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_prov=Exists(user_prov_subquery)).filter(in_user_prov=True)
+        if request.user.profile.ZS_scope.count() != 0:
+            user_zs_subquery = ZS.objects.filter(id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_zs=Exists(user_zs_subquery)).filter(in_user_zs=True)
+        if request.user.profile.AS_scope.count() != 0:
+            user_as_subquery = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_as=Exists(user_as_subquery)).filter(in_user_as=True)
 
         if province_ids:
             province_list = province_ids.split(",")
@@ -85,9 +99,9 @@ class TargetsViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
-            columns =  ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
+            columns = ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
             filename = 'targets'
 
             def get_row(target):
@@ -119,21 +133,36 @@ class TargetsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         target = get_object_or_404(Target, pk=pk)
-
-        return Response(target.as_dict())
+        province = Province.objects.filter(geom__contains=target.location)[0] if Province.objects.filter(geom__contains=target.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=target.location)[0] if ZS.objects.filter(geom__contains=target.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=target.location)[0] if AS.objects.filter(geom__contains=target.location).count() > 0 else None
+        is_authorized = (province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id)
+        if is_authorized:
+            return Response(target.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 
     def update(self, request, pk=None):
         new_target = get_object_or_404(Target, pk=pk)
-        new_target.name = request.data.get('name', '')
-        new_target.river = request.data.get('river', '')
-        new_target.ignore = request.data.get('ignore', False)
-        username = request.data.get('username', None)
-        if username:
-            gps_import = get_object_or_404(GpsImport, pk=new_target.gps_import.id)
-            gps_import.user = get_object_or_404(User, username=username)
-            gps_import.save()
-        new_target.save()
-        return Response(new_target.as_dict())
+
+        province = Province.objects.filter(geom__contains=new_target.location)[0]
+        zone = ZS.objects.filter(geom__contains=new_target.location)[0]
+        area = AS.objects.filter(geom__contains=new_target.location)[0]
+        is_authorized = (province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id)
+        if is_authorized:
+            new_target.name = request.data.get('name', '')
+            new_target.river = request.data.get('river', '')
+            new_target.ignore = request.data.get('ignore', False)
+            username = request.data.get('username', None)
+            if username:
+                gps_import = get_object_or_404(GpsImport, pk=new_target.gps_import.id)
+                gps_import.user = get_object_or_404(User, username=username)
+                gps_import.save()
+            new_target.save()
+            return Response(new_target.as_dict())
+
+        else:
+            return Response('Unauthorized', status=401)
 
 
 

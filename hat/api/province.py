@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from hat.geo.models import Province
 from django.core.serializers import serialize
 import json
+from hat.users.models import get_user_geo_list
 
 class ProvinceViewSet(viewsets.ViewSet):
     """
@@ -20,6 +21,8 @@ class ProvinceViewSet(viewsets.ViewSet):
     def list(self, request):
         as_geo_json = request.GET.get("geojson", None)
         provinces = Province.objects.all()
+        if request.user.profile.province_scope.count() != 0:
+            provinces = provinces.filter(id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if as_geo_json:
             res = json.loads(serialize('geojson', provinces, geometry_field='simplified_geom', fields=('name', 'pk',)))
             return Response(res)
@@ -28,4 +31,11 @@ class ProvinceViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         province = get_object_or_404(Province, pk=pk)
-        return Response(province.as_dict())
+        is_authorized = request.user.profile.province_scope.count() == 0
+        if province.id in get_user_geo_list(request.user, 'province_scope'):
+            is_authorized = True
+
+        if is_authorized:
+            return Response(province.as_dict())
+        else:
+            return Response('Unauthorized', status=401)

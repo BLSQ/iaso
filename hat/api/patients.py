@@ -10,6 +10,7 @@ from hat.cases.models import CaseView, RES_POSITIVE
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from hat.users.models import get_user_geo_list, is_authorized_user
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -150,6 +151,14 @@ class PatientsViewSet(viewsets.ViewSet):
         if dead is not None:
             queryset = queryset.filter(dead=(dead.lower() == "true"))
 
+
+        if request.user.profile.province_scope.count() != 0:
+            queryset = queryset.filter(origin_area__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+        if request.user.profile.ZS_scope.count() != 0:
+            queryset = queryset.filter(origin_area__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+        if request.user.profile.AS_scope.count() != 0:
+            queryset = queryset.filter(origin_area_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
         else:
@@ -236,4 +245,8 @@ class PatientsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(Patient, pk=pk)
-        return Response(patient.as_full_dict())
+        is_authorized = (not patient.origin_area) or is_authorized_user(request.user, patient.origin_area.ZS.province.id, patient.origin_area.ZS.id, patient.origin_area.id)
+        if is_authorized:
+            return Response(patient.as_full_dict())
+        else:
+            return Response('Unauthorized', status=401)

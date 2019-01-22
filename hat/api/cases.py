@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -11,6 +11,7 @@ from django.db.models import Q
 from copy import copy
 
 from .export_utils import  Echo, generate_xlsx, iter_items
+from hat.users.models import get_user_geo_list, is_authorized_user
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -79,6 +80,9 @@ class CasesViewSet(viewsets.ViewSet):
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
 
+        if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
+            return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
+
         if located == 'all':
             queryset = CaseView.objects.order_by(*orders)
 
@@ -121,6 +125,13 @@ class CasesViewSet(viewsets.ViewSet):
         if coordination_ids:
             queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
 
+        if request.user.profile.province_scope.count() != 0:
+            queryset = queryset.filter(normalized_AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+        if request.user.profile.ZS_scope.count() != 0:
+            queryset = queryset.filter(normalized_AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+        if request.user.profile.AS_scope.count() != 0:
+            queryset = queryset.filter(normalized_AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+
         if province_ids and not zs_ids and not as_ids:
             queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
         else:
@@ -129,6 +140,7 @@ class CasesViewSet(viewsets.ViewSet):
             else:
                 if as_ids:
                     queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
+ 
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:
@@ -210,7 +222,7 @@ class CasesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["cases"] = map(lambda x: x.as_dict(), page.object_list)
+            res["cases"] = list(map(lambda x: x.as_dict(), page.object_list))  # just the map breaks the tests
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -272,23 +284,32 @@ class CasesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         full = request.GET.get('full')
         case = get_object_or_404(Case, pk=pk)
-        return Response(case.as_dict(full is not None))
+        is_authorized = is_authorized_user(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
+        if is_authorized:
+            return Response(case.as_dict(full is not None))
+        else:
+            return Response('Unauthorized', status=401)
 
     def partial_update(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
-        original_copy = copy(case)
-        village_id = request.data.get("village_id", None)
-        not_found = request.data.get("not_found", None)
+        is_authorized = is_authorized_user(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
 
-        if village_id:
-            case.normalized_village_not_found = False
-            case.normalized_village_id = village_id
-            case.save()
-        elif not_found:
-            case.normalized_village_not_found = True
-            case.normalized_village_id = None
-            case.save()
+        if is_authorized:
+            original_copy = copy(case)
+            village_id = request.data.get("village_id", None)
+            not_found = request.data.get("not_found", None)
 
-        log_modification(original_copy, case, source=CASE_API, user=request.user)
+            if village_id:
+                case.normalized_village_not_found = False
+                case.normalized_village_id = village_id
+                case.save()
+            elif not_found:
+                case.normalized_village_not_found = True
+                case.normalized_village_id = None
+                case.save()
 
-        return Response(case.as_dict())
+            log_modification(original_copy, case, source=CASE_API, user=request.user)
+
+            return Response(case.as_dict())
+        else:
+            return Response('Unauthorized', status=401)

@@ -1,22 +1,18 @@
+from django.contrib.gis.geos import Point
+from django.core.paginator import Paginator
+from django.db.models import OuterRef, Exists, Count, Sum
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-
-from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
-
-
+from hat.geo.models import Province, ZS, AS
+from hat.users.models import get_user_geo_list, is_authorized_user
 from hat.vector_control.models import Site, APIImport, Catch
 from .authentication import CsrfExemptSessionAuthentication
-from django.http import StreamingHttpResponse, HttpResponse
-from rest_framework.authentication import BasicAuthentication
-from django.contrib.gis.geos import Point
-from hat.geo.models import Province, ZS, AS
-from django.db.models import OuterRef, Exists, Count, Sum, Case, When, Value
 from .catches import timestamp_to_utc_datetime
-
-from .export_utils import  Echo, generate_xlsx, iter_items
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class SitesViewSet(viewsets.ViewSet):
@@ -79,6 +75,19 @@ class SitesViewSet(viewsets.ViewSet):
         else:
             queryset = queryset.filter(ignore=False)
 
+        if request.user.profile.province_scope.count() != 0:
+            user_prov_subquery = Province.objects.filter(id__in=get_user_geo_list(request.user, 'province_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_prov=Exists(user_prov_subquery)).filter(in_user_prov=True)
+        if request.user.profile.ZS_scope.count() != 0:
+            user_zs_subquery = ZS.objects.filter(id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_zs=Exists(user_zs_subquery)).filter(in_user_zs=True)
+        if request.user.profile.AS_scope.count() != 0:
+            user_as_subquery = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).distinct() \
+                .filter(geom__contains=OuterRef("location"))
+            queryset = queryset.annotate(in_user_as=Exists(user_as_subquery)).filter(in_user_as=True)
+
         if province_ids:
             province_list = province_ids.split(",")
             prov_subquery = Province.objects.filter(id__in=province_list) \
@@ -124,22 +133,22 @@ class SitesViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = ['ID',
-            'Date de création',
-            'Nom',
-            'Nombre de déploiements',
-            'Males',
-            'Femelles',
-            'Inconnus',
-            'Latitude',
-            'Longitude',
-            'Altitude',
-            'Habitat',
-            'Description',
-            'Référence',
-            'Utilisateur']
+                       'Date de création',
+                       'Nom',
+                       'Nombre de déploiements',
+                       'Males',
+                       'Femelles',
+                       'Inconnus',
+                       'Latitude',
+                       'Longitude',
+                       'Altitude',
+                       'Habitat',
+                       'Description',
+                       'Référence',
+                       'Utilisateur']
             filename = 'sites'
 
             def get_row(site):
@@ -192,14 +201,25 @@ class SitesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         site = get_object_or_404(Site, pk=pk)
-        site_dict = site.as_dict()
-        catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
-        site_dict['catches_count'] = catches.count()
-        site_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
-        site_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']
-        site_dict['catches_count_unknown'] = catches.aggregate(Sum('unknown_count'))['unknown_count__sum']
-        site_dict['catches'] = map(lambda x: x.as_dict(), catches)
-        return Response(site_dict)
+        province = Province.objects.filter(geom__contains=site.location).first()\
+            if Province.objects.filter(geom__contains=site.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=site.location).first()\
+            if ZS.objects.filter(geom__contains=site.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=site.location).first()\
+            if AS.objects.filter(geom__contains=site.location).count() > 0 else None
+        is_authorized = province is not None and zone is not None and area is not None and is_authorized_user(
+            request.user, province.id, zone.id, area.id)
+        if is_authorized:
+            site_dict = site.as_dict()
+            catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
+            site_dict['catches_count'] = catches.count()
+            site_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
+            site_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']
+            site_dict['catches_count_unknown'] = catches.aggregate(Sum('unknown_count'))['unknown_count__sum']
+            site_dict['catches'] = map(lambda x: x.as_dict(), catches)
+            return Response(site_dict)
+        else:
+            return Response('Unauthorized', status=401)
 
     def create(self, request):
         sites = request.data
@@ -211,38 +231,65 @@ class SitesViewSet(viewsets.ViewSet):
         api_import.save()
         for site in sites:
             uuid = site.get('uuid', None)
-            new_site, created = Site.objects.get_or_create(uuid=uuid)
-            if created:
-                new_site.name = site.get('name', None)
-                new_site.habitat = site.get('habitat', None)
-                new_site.accuracy = site.get('accuracy', None)
-                new_site.description = site.get('description', None)
-                t = site.get('time', None)
-                if t:
-                    new_site.created_at = timestamp_to_utc_datetime(int(t))
-                else:
-                    new_site.created_at = site.get('created_at', None)
-                new_site.uuid = site.get('uuid', None)
+            latitude = site.get('latitude', None)
+            longitude = site.get('longitude', None)
+            altitude = site.get('altitude', 0)
+            site_location = None
+            if latitude and longitude:
+                site_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+                province = Province.objects.filter(geom__contains=site_location)[0]\
+                    if Province.objects.filter(geom__contains=site_location).count() > 0 else None
+                zone = ZS.objects.filter(geom__contains=site_location)[0]\
+                    if ZS.objects.filter(geom__contains=site_location).count() > 0 else None
+                area = AS.objects.filter(geom__contains=site_location)[0]\
+                    if AS.objects.filter(geom__contains=site_location).count() > 0 else None
+                is_authorized = province is not None and zone is not None and area is not None and is_authorized_user(
+                    request.user, province.id, zone.id, area.id)
+            else:
+                is_authorized = False
+            if is_authorized:
+                new_site, created = Site.objects.get_or_create(uuid=uuid)
+                if created:
+                    new_site.name = site.get('name', None)
+                    new_site.habitat = site.get('habitat', None)
+                    new_site.accuracy = site.get('accuracy', None)
+                    new_site.description = site.get('description', None)
+                    t = site.get('time', None)
+                    if t:
+                        new_site.created_at = timestamp_to_utc_datetime(int(t))
+                    else:
+                        new_site.created_at = site.get('created_at', None)
+                    new_site.uuid = site.get('uuid', None)
 
-                new_site.user = request.user
-                new_site.source = 'API'
-                new_site.api_import = api_import
-                latitude = site.get('latitude', None)
-                longitude = site.get('longitude', None)
-                altitude = site.get('altitude', 0)
-                if latitude and longitude:
-                    new_site.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-                new_sites.append(new_site)
-            new_site.save()
+                    new_site.user = request.user
+                    new_site.source = 'API'
+                    new_site.api_import = api_import
+                    if site_location:
+                        new_site.location = site_location
+
+                    new_sites.append(new_site)
+                new_site.save()
 
         return Response([site.as_dict() for site in new_sites])
 
     def update(self, request, pk=None):
         new_site = get_object_or_404(Site, pk=pk)
-        new_site.name = request.data.get('name', '')
-        new_site.description = request.data.get('description', '')
-        new_site.habitat = request.data.get('habitat', 'unknown')
-        new_site.is_reference = request.data.get('is_reference', False)
-        new_site.ignore = request.data.get('ignore', False)
-        new_site.save()
-        return Response(new_site.as_dict())
+        province = Province.objects.filter(geom__contains=new_site.location)[0]\
+            if Province.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=new_site.location)[0]\
+            if ZS.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=new_site.location)[0]\
+            if AS.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        is_authorized = (not province and not zone and not area) or is_authorized_user(request.user, province.id,
+                                                                                       zone.id, area.id)
+        if is_authorized:
+            new_site.name = request.data.get('name', '')
+            new_site.description = request.data.get('description', '')
+            new_site.habitat = request.data.get('habitat', 'unknown')
+            new_site.is_reference = request.data.get('is_reference', False)
+            new_site.ignore = request.data.get('ignore', False)
+            new_site.save()
+            return Response(new_site.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
+

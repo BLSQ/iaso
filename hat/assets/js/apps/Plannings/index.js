@@ -24,6 +24,7 @@ export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
     const years = [1, 2, 3].map(i => currentYear - i);
     const defaultPath = `/macro/years/${years.join(',')}`;
+    const defaultPathMicro = `/micro/years/${years.join(',')}`;
     const routes = [
         <Route
             path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
@@ -37,7 +38,9 @@ export default function microplanningApp(element, baseUrl) {
             path="macro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
             component={MacroplanningPage}
         />,
-        <Redirect path="*" to={defaultPath} />,
+        <Redirect path="/macro" to={defaultPath} />,
+        <Redirect path="/micro" to={defaultPathMicro} />,
+        <Redirect path="/routes" to={defaultPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

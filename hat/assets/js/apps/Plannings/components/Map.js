@@ -54,7 +54,6 @@ class Map extends Component {
             },
             map: null, // this is the leaflet object that represents the map
             containers: {},
-            needFitToBound: false,
             layers: {
                 // where to plot the selected markers
                 selectedGroup: new L.FeatureGroup(),
@@ -105,13 +104,6 @@ class Map extends Component {
         };
 
         map.whenReady(() => {
-            if ((Object.keys(prevProps.assignationsMap).length !== Object.keys(this.props.assignationsMap).length) ||
-                hasChanged(prevProps, this.props, 'workzoneId') ||
-                (hasChanged(prevProps, this.props, 'items') && this.props.workzoneId)) {
-                this.setState({
-                    needFitToBound: true,
-                });
-            }
             // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.state.map, this.props.baseLayer);
@@ -254,7 +246,6 @@ class Map extends Component {
             items,
             assignationsMap,
             withCluster,
-            workzoneId,
         } = this.props;
         const { layers } = this.state;
         const { markersGroups } = layers;
@@ -345,12 +336,6 @@ class Map extends Component {
                 markersGroups.group.removeLayer(markers);
             }
         });
-        if (this.state.needFitToBound) {
-            this.setState({
-                needFitToBound: false,
-            });
-            this.fitToBounds();
-        }
     }
 
     updateFullscreenMode() {

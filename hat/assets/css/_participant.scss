@@ -110,7 +110,7 @@
         clear: both;
         display: block;
     }
-    li {
+    > li {
         box-sizing: border-box;
         &:last-child,
         &:nth-last-child(2) {
@@ -119,6 +119,7 @@
             }
         }
         table {
+            margin-bottom: $padding-unit / 2 !important;
             td {
                 width: 80%;
             }
@@ -127,7 +128,7 @@
 }
 
 @media (min-width: 1100px) {
-    .treatments-list li {
+    .treatments-list > li {
         &:nth-child(odd) {
             width: 50%;
             float: left;
@@ -142,7 +143,7 @@
 }
 
 @media (max-width: 1100px) {
-    .treatments-list li {
+    .treatments-list > li {
         &:last-child,
         &:nth-last-child(2) {
             table {

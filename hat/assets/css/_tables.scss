@@ -76,6 +76,9 @@ td {
             position: relative !important;
         }
     }
+    ul {
+        padding-left: $padding-unit / 2;
+    }
 }
 
 td.error,

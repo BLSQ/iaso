@@ -55,10 +55,22 @@ class TreatmentComponent extends React.Component {
                         </th>
                         <td>
                             {
-                                treatment.issues.length > 0 ?
-                                    treatment.issues.map(i =>
-                                        (treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''))
-                                    : '--'
+                                treatment.issues.length > 0 &&
+                                <ul>
+                                    {
+                                        treatment.issues.map((i, index) =>
+                                            (
+                                                <li key={`${i}-${index}`}>
+                                                    {
+                                                        treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''
+                                                    }
+                                                </li>
+                                            ))
+                                    }
+                                </ul>
+                            }
+                            {
+                                treatment.issues.length === 0 && '--'
                             }
                         </td>
                     </tr>
@@ -79,10 +91,22 @@ class TreatmentComponent extends React.Component {
                         </th>
                         <td>
                             {
-                                treatment.incomplete_reasons.length > 0 ?
-                                    treatment.incomplete_reasons.map(r =>
-                                        (incompleteReasonsMessages[r] ? `${formatMessage(incompleteReasonsMessages[r])} ` : ''))
-                                    : '--'
+                                treatment.incomplete_reasons.length > 0 &&
+                                <ul>
+                                    {
+                                        treatment.incomplete_reasons.map((r, index) =>
+                                            (
+                                                <li key={`${r}-${index}`}>
+                                                    {
+                                                        incompleteReasonsMessages[r] ? `${formatMessage(incompleteReasonsMessages[r])} ` : ''
+                                                    }
+                                                </li>
+                                            ))
+                                    }
+                                </ul>
+                            }
+                            {
+                                treatment.incomplete_reasons.length === 0 && '--'
                             }
                         </td>
                     </tr>

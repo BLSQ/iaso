@@ -105,6 +105,8 @@
 }
 .treatments-list {
     list-style: none;
+    display: flex;
+    flex-flow: row wrap;
     &:after {
         content:'';
         clear: both;
@@ -112,6 +114,7 @@
     }
     > li {
         box-sizing: border-box;
+        flex-basis: 50%;
         &:last-child,
         &:nth-last-child(2) {
             table {

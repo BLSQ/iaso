@@ -234,12 +234,24 @@ $directions: left right top bottom;
     padding-top: $padding-unit/2;
 }
 
+.padding-right {
+    padding-right: $padding-unit/2;
+}
+
+.small-padding-right {
+    padding-right: $padding-unit/4;
+}
+
 .margin-right {
     margin-right: $padding-unit/2;
 }
 
 .margin-bottom {
-    margin-bottom: $padding-unit/2;
+    margin-bottom: $padding-unit/2 !important;
+}
+
+.big-margin-bottom {
+    margin-bottom: $padding-unit !important;
 }
 
 .margin-top {
@@ -305,4 +317,14 @@ $directions: left right top bottom;
 
 .initial-white-space {
     white-space: initial !important;
+}
+.error-text {
+    background: transparent;
+    color: red;
+}
+
+
+.success-text {
+    background: transparent;
+    color: green;
 }

@@ -2,28 +2,68 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
+const gotoLocator = case_id => window.open(`/dashboard/locator/case_id/${case_id}`, '_blank');
+
 class PatientCasesLocation extends React.Component {
     render() {
-        const { currentCase, similarCase } = this.props;
+        const {
+            currentCase,
+            similarCase,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        if (!currentCase) {
+            return null;
+        }
+        const isLocalised = currentCase.location.normalized && currentCase.location.normalized.as && currentCase.location.normalized.village;
         return (
             <div className="patient-infos-container no-padding-left no-padding-top">
 
-                <table key={currentCase.id}>
+                <table
+                    key={currentCase.id}
+                    className={!isLocalised ? 'error-table' : ''}
+                >
                     <thead className="custom-head">
-                        <tr>
+                        <tr
+                            className={!isLocalised ? 'error' : ''}
+                        >
                             <th colSpan="2">
-                                <strong><FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Localisation" /></strong>
+                                {
+                                    !isLocalised &&
+                                    <div>
+                                        <i className="fa fa-warning" /> {'  '}
+                                        <strong><FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Localisation non trouvée" /></strong>
+                                        <button
+                                            className="button--tiny"
+                                            onClick={() => gotoLocator(currentCase.id)}
+                                        >
+                                            <i className="fa fa-thumb-tack" />
+                                            {formatMessage({
+                                                defaultMessage: 'Localiser',
+                                                id: 'main.label.locateCase',
+                                            })}
+                                        </button>
+                                    </div>
+                                }
+                                {
+                                    isLocalised &&
+                                    <strong><FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Localisation" /></strong>
+                                }
+
                             </th>
                         </tr>
                     </thead>
                     {
-                        (!currentCase.location.normalized || !currentCase.location.normalized.village) &&
+                        !isLocalised &&
                         <tbody>
                             <tr>
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.province" defaultMessage="Province" />
                                 </th>
-                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.province !== currentCase.location.province) ? 'error' : ''}`}>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.province !== currentCase.location.province)
+                                    ? 'error' : ''} ${!currentCase.location || (currentCase.location && !currentCase.location.province) ? 'error-text' : ''}`}
+                                >
                                     {currentCase.location && currentCase.location.province ? currentCase.location.province : '--'}
                                 </td>
                             </tr>
@@ -31,7 +71,9 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.ZS" defaultMessage="Zone de santé" />
                                 </th>
-                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.ZS !== currentCase.location.ZS) ? 'error' : ''}`}>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.ZS !== currentCase.location.ZS) ?
+                                    'error' : ''} ${!currentCase.location || (currentCase.location && !currentCase.location.ZS) ? 'error-text' : ''}`}
+                                >
                                     {currentCase.location && currentCase.location.ZS ? currentCase.location.ZS : '--'}
                                 </td>
                             </tr>
@@ -39,7 +81,9 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.AS" defaultMessage="Aire de santé" />
                                 </th>
-                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.AS !== currentCase.location.AS) ? 'error' : ''}`}>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.AS !== currentCase.location.AS) ?
+                                    'error' : ''} ${!currentCase.location.normalized.as ? 'error-text' : ''}`}
+                                >
                                     {currentCase.location && currentCase.location.AS ? currentCase.location.AS : '--'}
                                 </td>
                             </tr>
@@ -47,20 +91,16 @@ class PatientCasesLocation extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Village" />
                                 </th>
-                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.village !== currentCase.location.village) ? 'error' : ''}`}>
+                                <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.village !== currentCase.location.village) ?
+                                    'error' : ''} ${!currentCase.location.normalized.village ? 'error-text' : ''}`}
+                                >
                                     {currentCase.location && currentCase.location.village ? currentCase.location.village : '--'}
-                                </td>
-                            </tr>
-                            <tr>
-                                <th />
-                                <td className="error">
-                                    <FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Non trouvé" />
                                 </td>
                             </tr>
                         </tbody>
                     }
                     {
-                        (currentCase.location.normalized && currentCase.location.normalized.village) &&
+                        isLocalised &&
                         <tbody>
                             <tr>
                                 <th>
@@ -105,12 +145,14 @@ class PatientCasesLocation extends React.Component {
 
 PatientCasesLocation.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
 };
 
 
 PatientCasesLocation.propTypes = {
-    currentCase: PropTypes.object.isRequired,
+    currentCase: PropTypes.object,
     similarCase: PropTypes.object,
+    intl: PropTypes.object.isRequired,
 };
 
 const PatientCasesInfoWithIntl = injectIntl(PatientCasesLocation);

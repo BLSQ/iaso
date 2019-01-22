@@ -35,7 +35,7 @@ const getTeamName = (currentCase) => {
         teamName = currentCase.team.normalized_team.name;
     }
     if (!currentCase.team.normalized_team && currentCase.mobile_unit) {
-        teamName = currentCase.mobile_unite;
+        teamName = currentCase.mobile_unit;
     }
     return teamName;
 };
@@ -43,6 +43,9 @@ const getTeamName = (currentCase) => {
 class PatientCasesInfo extends React.Component {
     render() {
         const { currentCase, similarCase } = this.props;
+        if (!currentCase) {
+            return null;
+        }
         const { formatMessage } = this.props.intl;
         const teamName = getTeamName(currentCase);
         let duplicateTeamName = teamName;
@@ -51,10 +54,21 @@ class PatientCasesInfo extends React.Component {
         }
         return (
             <div className="patient-infos-container no-padding-left no-padding-top">
-                <table key={currentCase.id}>
+                <table
+                    key={currentCase.id}
+                    className={!currentCase.team.normalized_team ? 'error-table' : ''}
+                >
                     <thead className="custom-head">
-                        <tr>
+                        <tr
+                            className={!currentCase.team.normalized_team ? 'error' : ''}
+                        >
                             <th colSpan="2">
+                                {
+                                    !currentCase.team.normalized_team &&
+                                    <span>
+                                        <i className="fa fa-warning" /> {'  '}
+                                    </span>
+                                }
                                 <strong><FormattedMessage id="patientsCases.tableTitle" defaultMessage="Informations" /></strong>
                             </th>
                         </tr>
@@ -64,8 +78,15 @@ class PatientCasesInfo extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsCases.team" defaultMessage="Equipe" />
                             </th>
-                            <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''}`}>
-                                {teamName}
+                            <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>
+                                {
+                                    !currentCase.team.normalized_team &&
+                                        <FormattedMessage id="patientsCasesInfos.teamNotFound" defaultMessage="Equipe non trouvée" />
+                                }
+                                {
+                                    currentCase.team.normalized_team &&
+                                    teamName
+                                }
                             </td>
                         </tr>
                         <tr>
@@ -111,6 +132,14 @@ class PatientCasesInfo extends React.Component {
                                 {currentCase.device ? currentCase.device.last_team : '--'}
                             </td>
                         </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCases.device.id" defaultMessage="Tablette id" />
+                            </th>
+                            <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.device_id !== currentCase.device.device_id) ? 'error' : ''}`}>
+                                {currentCase.device ? currentCase.device.device_id : '--'}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -121,10 +150,11 @@ class PatientCasesInfo extends React.Component {
 
 PatientCasesInfo.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
 };
 
 PatientCasesInfo.propTypes = {
-    currentCase: PropTypes.object.isRequired,
+    currentCase: PropTypes.object,
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
 };

@@ -464,7 +464,14 @@ class Case(CaseAbstract):
                 'mobile_unit': self.mobile_unit,
                 'normalized_team': self.normalized_team.as_dict() if self.normalized_team else None,
             },
-            'source': self.source
+            'source': self.source,
+            'test_catt_session_type': self.test_catt_session_type,
+            'test_pl_albumine': self.test_pl_albumine,
+            'test_pl_gb_mm3': self.test_pl_gb_mm3,
+            'test_pl_lcr': self.test_pl_lcr,
+            'test_pl_trypanosome': self.test_pl_trypanosome,
+            'test_pl_comments': self.test_pl_comments,
+            'circumstances_dp': self.circumstances_dp,
         }
 
         if full and self.test_set:

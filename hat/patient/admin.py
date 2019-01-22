@@ -12,6 +12,10 @@ class TestAdmin(admin.ModelAdmin):
     search_fields = ('validator',)
     raw_id_fields = ('village', 'form', 'traveller_area', 'image', 'video')
 
+class TreatmentAdmin(admin.ModelAdmin):
+    date_hierarchy = 'start_date'
+    raw_id_fields = ('patient',)
+
 
 class TreatmentAdmin(admin.ModelAdmin):
     raw_id_fields = ('patient',)
@@ -19,5 +23,6 @@ class TreatmentAdmin(admin.ModelAdmin):
 
 admin.site.register(Patient, PatientAdmin)
 admin.site.register(Test, TestAdmin)
+admin.site.register(Treatment, TreatmentAdmin)
 admin.site.register(TestGroup)
 admin.site.register(Treatment, TreatmentAdmin)

@@ -1,12 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
-import moment from 'moment';
-import VideoComponent from '../../../components/VideoComponent';
+import { injectIntl } from 'react-intl';
+import PatientTestComponent from './PatientTestComponent';
 
 class PatientCasesTests extends React.Component {
     render() {
-        const { tests, testsMapping, similarCase } = this.props;
+        const {
+            tests, testsMapping, similarCase, currentCase,
+        } = this.props;
+        if (!tests || tests.length === 0) {
+            return null;
+        }
         return (
             <div className="patient-infos-container no-padding-left no-padding-top no-padding-right test-container">
                 {
@@ -17,95 +21,12 @@ class PatientCasesTests extends React.Component {
                         }
                         return (
                             <div key={t.id}>
-                                <table>
-                                    <thead className="custom-head">
-                                        <tr>
-                                            <th colSpan="2">
-                                                {
-                                                    t.type && (t.type === 'CATT' || t.type === 'RDT') &&
-                                                    <strong><FormattedMessage id="patientsCasesTests.screening" defaultMessage="Dépistage" /></strong>
-                                                }
-                                                {
-                                                    t.type && (t.type !== 'CATT' && t.type !== 'RDT') &&
-                                                    <strong><FormattedMessage id="patientsCasesTests.confirmation" defaultMessage="Confirmation" /></strong>
-                                                }
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <th>
-                                                <FormattedMessage id="patientsCasesTests.type" defaultMessage="Type de test" />
-                                            </th>
-                                            <td className={`${similarTest && (similarTest.type !== t.type) ? 'error' : ''}`}>
-                                                {t.type ? t.type : '--'}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <FormattedMessage id="patientsCasesTests.date" defaultMessage="Date" />
-                                            </th>
-                                            <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('DD-MM-YYYY') !== moment(t.date).format('DD-MM-YYYY')) ? 'error' : ''}`}>
-                                                {t.date ? moment(t.date).format('DD-MM-YYYY') : '--'}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <FormattedMessage id="patientsCasesTests.hour" defaultMessage="Heure" />
-                                            </th>
-                                            <td className={`${t.date && similarTest && similarTest.date && (moment(similarTest.date).format('HH:mm') !== moment(t.date).format('HH:mm')) ? 'error' : ''}`}>
-                                                {t.date ? moment(t.date).format('HH:mm') : '--'}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
-                                            </th>
-                                            <td className={`${similarTest && (similarTest.result !== t.result) ? 'error' : ''}`}>
-                                                {t.result && testsMapping[t.result] ? testsMapping[t.result] : ''}
-                                            </td>
-                                        </tr>
-
-                                        {
-                                            t.image &&
-                                            <tr>
-                                                <th>
-                                                    <FormattedMessage id="patientsCasesTests.image" defaultMessage="Photo" />
-                                                </th>
-                                                <td>
-                                                    <img src={t.image} alt="" />
-                                                </td>
-                                            </tr>
-                                        }
-                                        {
-                                            t.image && t.type === 'CATT' &&
-                                            <tr>
-                                                <th>
-                                                    <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Index photo" />
-                                                </th>
-                                                <td>
-                                                    {t.index}
-                                                </td>
-                                            </tr>
-                                        }
-                                        {
-                                            t.video &&
-                                            <tr>
-                                                <th>
-                                                    <FormattedMessage id="patientsCasesTests.video" defaultMessage="Vidéo" />
-                                                </th>
-                                                <td>
-                                                    <VideoComponent videoItem={
-                                                        {
-                                                            video: t.video,
-                                                        }
-                                                    }
-                                                    />
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                <PatientTestComponent
+                                    test={t}
+                                    similarTest={similarTest}
+                                    testsMapping={testsMapping}
+                                    currentCase={currentCase}
+                                />
                             </div>
                         );
                     })
@@ -118,13 +39,16 @@ class PatientCasesTests extends React.Component {
 
 PatientCasesTests.defaultProps = {
     similarCase: undefined,
+    currentCase: undefined,
+    tests: [],
 };
 
 
 PatientCasesTests.propTypes = {
-    tests: PropTypes.array.isRequired,
+    tests: PropTypes.array,
     testsMapping: PropTypes.object.isRequired,
     similarCase: PropTypes.object,
+    currentCase: PropTypes.object,
 };
 
 const PatientCasesTestsWithIntl = injectIntl(PatientCasesTests);

@@ -1,30 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import moment from 'moment';
 
 class PatientInfos extends React.Component {
     render() {
-        const { patient, duplicatePatient, showTitle } = this.props;
+        const { patient, duplicatePatient } = this.props;
         const { formatMessage } = this.props.intl;
         return (
-            <div className="patient-infos-container no-padding-right padding-bottom">
+            <div className="patient-infos-container no-padding-right">
                 <table>
-                    {
-                        showTitle &&
-                        <thead className="custom-head">
-                            <tr>
-                                <th colSpan="2">
-                                    <strong><FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Patient" /></strong>
-                                </th>
-                            </tr>
-                        </thead>
-                    }
                     <tbody>
                         <tr>
                             <th>
                                 <FormattedMessage id="patientsinfos.last_name" defaultMessage="Nom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.last_name !== patient.last_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.last_name.toLowerCase() !== patient.last_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.last_name ? patient.last_name : '--'}
                             </td>
                         </tr>
@@ -32,7 +23,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.post_name" defaultMessage="Postnom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.post_name !== patient.post_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.post_name.toLowerCase() !== patient.post_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.post_name ? patient.post_name : '--'}
                             </td>
                         </tr>
@@ -40,7 +31,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.first_name" defaultMessage="Prénom" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.first_name !== patient.first_name) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.first_name.toLowerCase() !== patient.first_name.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.first_name ? patient.first_name : '--'}
                             </td>
                         </tr>
@@ -48,7 +39,7 @@ class PatientInfos extends React.Component {
                             <th>
                                 <FormattedMessage id="patientsinfos.mothers_surname" defaultMessage="Nom de la mère" />
                             </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.mothers_surname !== patient.mothers_surname) ? 'error' : ''}`}>
+                            <td className={`${duplicatePatient && (duplicatePatient.mothers_surname.toLowerCase() !== patient.mothers_surname.toLowerCase()) ? 'error' : ''}`}>
                                 {patient.mothers_surname ? patient.mothers_surname : '--'}
                             </td>
                         </tr>
@@ -60,17 +51,27 @@ class PatientInfos extends React.Component {
 
                                 {
                                     patient.sex === 'female' &&
-                                    formatMessage({
-                                        defaultMessage: 'Femme',
-                                        id: 'main.label.female',
-                                    })
+                                    <span>
+                                        <i className="fa fa-female" /> {' - '}
+                                        {
+                                            formatMessage({
+                                                defaultMessage: 'Femme',
+                                                id: 'main.label.female',
+                                            })
+                                        }
+                                    </span>
                                 }
                                 {
                                     patient.sex === 'male' &&
-                                    formatMessage({
-                                        defaultMessage: 'Homme',
-                                        id: 'main.label.male',
-                                    })
+                                    <span>
+                                        <i className="fa fa-male" /> {' - '}
+                                        {
+                                            formatMessage({
+                                                defaultMessage: 'Homme',
+                                                id: 'main.label.male',
+                                            })
+                                        }
+                                    </span>
                                 }
                                 {
                                     patient.sex !== 'male' && patient.sex !== 'female' &&
@@ -80,10 +81,28 @@ class PatientInfos extends React.Component {
                         </tr>
                         <tr>
                             <th>
+                                <FormattedMessage id="patientsinfos.death" defaultMessage="Décès" />
+                            </th>
+                            <td className={`${duplicatePatient && (duplicatePatient.death.dead !== patient.death.dead) ?
+                                'error' : ''} ${patient.death.dead ? 'error-text' : ''}`}
+                            >
+                                {
+                                    patient.death.dead ?
+                                        <span>
+                                            <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
+                                            {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
+                                        </span>
+
+                                        : '--'
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
                                 <FormattedMessage id="patientsinfos.age" defaultMessage="Age" />
                             </th>
                             <td className={`${duplicatePatient && (duplicatePatient.age !== patient.age) ? 'error' : ''}`}>
-                                {patient.age ? patient.age : '--'} ({patient.year_of_birth ? patient.year_of_birth : '--'})
+                                {patient.age ? patient.age : '--'} {patient.year_of_birth ? `(${patient.year_of_birth})` : ''}
                             </td>
                         </tr>
                         <tr>
@@ -127,14 +146,12 @@ class PatientInfos extends React.Component {
 
 PatientInfos.defaultProps = {
     duplicatePatient: undefined,
-    showTitle: true,
 };
 
 PatientInfos.propTypes = {
     patient: PropTypes.object.isRequired,
     duplicatePatient: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    showTitle: PropTypes.bool,
 };
 
 const PatientInfosWithIntl = injectIntl(PatientInfos);

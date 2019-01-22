@@ -8,9 +8,9 @@ from rest_framework.response import Response
 
 from hat.cases.models import CaseView, RES_POSITIVE
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
+from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
-from hat.users.models import get_user_geo_list, is_authorized_user
 
 
 class PatientsViewSet(viewsets.ViewSet):
@@ -77,6 +77,7 @@ class PatientsViewSet(viewsets.ViewSet):
         queryset = (
             Patient.objects.order_by(*orders)
         )
+        additional_fields = []
 
         if only_dupes:
             dupes = PatientDuplicatesPair.objects\
@@ -144,14 +145,15 @@ class PatientsViewSet(viewsets.ViewSet):
                 .annotate(has_treatment_med=Exists(treatment_meds))\
                 .filter(has_treatment_med=True)
 
-        queryset = queryset.annotate(nb_of_treatments=Count("treatment"))
+        queryset = queryset.annotate(treatment_count=Count("treatment"))
+        additional_fields.append("treatment_count")
         if with_treatment is not None:
-            queryset = queryset.filter(nb_of_treatments__gt=0)
+            queryset = queryset.filter(treatment_count__gt=0)
 
         if dead is not None:
             queryset = queryset.filter(dead=(dead.lower() == "true"))
 
-
+        # Scope
         if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(origin_area__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if request.user.profile.ZS_scope.count() != 0:
@@ -189,6 +191,14 @@ class PatientsViewSet(viewsets.ViewSet):
                     Q(mothers_surname__contains=search_mother_name)
                 )
 
+        # performance tweak for rendering of the patients
+        queryset = queryset.prefetch_related("origin_area")
+        queryset = queryset.prefetch_related("origin_area__ZS")
+        queryset = queryset.prefetch_related("origin_area__ZS__province")
+        queryset = queryset.prefetch_related("origin_village")
+        # Already optimized for Count in additional_fields
+        # queryset = queryset.prefetch_related("treatment_set")
+
         if csv_format is None and xlsx_format is None:
             paginator = Paginator(queryset, limit)
 
@@ -197,7 +207,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["patient"] = map(lambda x: x.as_dict(), page.object_list)
+            res["patient"] = list(map(lambda x: x.as_dict(additional_fields=additional_fields), page.object_list))
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -206,7 +216,7 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
                        'Aire', 'Village', 'Dead']

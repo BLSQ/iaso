@@ -197,10 +197,6 @@ db_type_mapping = {
 
 def convert_to_db_type(table, column, value):
     db_type = table._meta.get_field(column).get_internal_type()
-    if column == 'death_location':
-        print("foo")
-    if "Point" in db_type:
-        print("bar")
     return db_type_mapping.get(db_type, lambda x: x)(value)
 
 

@@ -16,7 +16,6 @@ from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.users.middleware import get_current_user
 
 
-
 class Patient(models.Model):
     post_name = contrib.CITextField("Postnom", null=True)
     last_name = contrib.CITextField("Nom de famille", null=True)
@@ -48,7 +47,7 @@ class Patient(models.Model):
     def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
-    def as_dict(self):
+    def as_dict(self, additional_fields=None):
         user = get_current_user()
         is_anonymised = user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
         AS = None
@@ -61,7 +60,7 @@ class Patient(models.Model):
         village = None
         if self.origin_village:
             village = self.origin_village.name
-        return {
+        result = {
             "id": self.id,
             "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
@@ -76,8 +75,15 @@ class Patient(models.Model):
             "village": village,
             "dead": self.dead,
             "death_date": self.death_date,
-            "treatment_count": self.treatment_set.count(),
         }
+
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    result[field] = getattr(self, field)
+
+        return result
 
     def as_full_dict(self):
         user = get_current_user()

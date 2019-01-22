@@ -104,6 +104,7 @@ class SitesViewSet(viewsets.ViewSet):
                 .filter(geom__contains=OuterRef("location"))
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
+        additional_fields = ['catches_count', 'catches_count_male', 'catches_count_female', 'catches_count_unknown']
         queryset = queryset.annotate(catches_count=Count('catch'))
         queryset = queryset.annotate(catches_count_male=Sum('catch__male_count'))
         queryset = queryset.annotate(catches_count_female=Sum('catch__female_count'))
@@ -123,7 +124,7 @@ class SitesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["list"] = map(lambda x: x.as_dict(), page.object_list)
+                res["list"] = map(lambda x: x.as_dict(additional_fields), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -152,7 +153,7 @@ class SitesViewSet(viewsets.ViewSet):
             filename = 'sites'
 
             def get_row(site):
-                sdict = site.as_dict()
+                sdict = site.as_dict(additional_fields)
                 referenceText = "Non"
                 if sdict["is_reference"]:
                     referenceText = "Oui"

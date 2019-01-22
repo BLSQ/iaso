@@ -72,7 +72,6 @@ class Site(models.Model):
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
-
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.habitat, self.location)
 
@@ -89,7 +88,7 @@ class Site(models.Model):
             'latest_catch': latest_catch
     }
 
-    def as_dict(self):
+    def as_dict(self, additional_fields=None):
         latitude = 0
         longitude = 0
         altitude = 0
@@ -116,17 +115,17 @@ class Site(models.Model):
             'latitude': latitude,
             'longitude': longitude,
             'altitude': altitude,
-            'description': self.description,
             'user': username,
             'accuracy': self.accuracy,
             'source': self.source,
             'latest_catch': latest_catch
         }
 
-        count_fields = ['catches_count', 'catches_count_male', 'catches_count_female', 'catches_count_unknown']
-        for field in count_fields:
-            if hasattr(self, field):
-                res[field] = getattr(self, field)
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    res[field] = getattr(self, field)
 
         return res
 

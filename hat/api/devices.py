@@ -1,16 +1,13 @@
-from rest_framework import viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
+from hat.constants import CATT, RDT, CTCWOO, MAECT, PL, PG
+from hat.patient.models import Test
 from hat.sync.models import DeviceDB
 from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-from hat.sync.models import DeviceDB
-from hat.patient.models import Test
-from django.db.models import Count, Q
-from hat.constants import CATT, RDT, CTCWOO, MAECT, PL, PG
 
 
 class DevicesViewSet(viewsets.ViewSet):
@@ -25,11 +22,14 @@ class DevicesViewSet(viewsets.ViewSet):
     ]
 
     def list(self, request):
-        devices = DeviceDB.objects.all()
+        devices = DeviceDB.objects.all()\
+            .prefetch_related("last_user")\
+            .prefetch_related("last_user__profile")\
+            .prefetch_related("last_user__profile__team")
         res = []
         for device in devices:
             # Add stats about pictures and videos
-            device_stats = Test.objects.all().select_related('form').filter(form__device_id=device.device_id) \
+            device_stats = Test.objects.all().select_related('form').filter(form__device_id=device.device_id)\
                 .aggregate(
                     count_total=Count('id'),
                     # count_catt=Count('id', filter=Q(type=CATT)),
@@ -68,6 +68,7 @@ class DevicesViewSet(viewsets.ViewSet):
             log_message = device.last_synced_log_message
             if not log_message:
                 log_message = ""
+
             device_dict = {
                 "last_synced_date": device.last_synced_date,
                 "last_synced_log_message": log_message,
@@ -101,7 +102,6 @@ class DevicesViewSet(viewsets.ViewSet):
             )
 
         return Response(res)
-
 
     def retrieve(self, request, pk=None):
         device = get_object_or_404(DeviceDB, pk=pk)

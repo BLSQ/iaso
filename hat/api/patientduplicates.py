@@ -200,10 +200,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            start_queries = len(connection.queries)
-            start_time = time()
             res["patientduplicatepairs"] = list(map(lambda x: x.as_dict(full), page.object_list))
-            print("Queries:", len(connection.queries)-start_queries, ", time:", time()-start_time)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

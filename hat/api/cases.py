@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView, Case, RES_POSITIVE, RES_POSITIVE_POSITIVE_POSITIVE, RES_POSITIVE_POSITIVE, RES_NEGATIVE, RES_ABSENT, RES_MISSING, RES_UNREAD, RES_UNUSED, testResultString
+from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.audit.models import log_modification, CASE_API
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -213,6 +213,21 @@ class CasesViewSet(viewsets.ViewSet):
                 if test_type == "pl":
                     queryset = queryset.filter(test_pl__isnull=False)
 
+        # Performance prefetch
+        queryset = queryset.prefetch_related("normalized_AS")
+        queryset = queryset.prefetch_related("normalized_AS__ZS")
+        queryset = queryset.prefetch_related("normalized_AS__ZS__province")
+        queryset = queryset.prefetch_related("normalized_village")
+        queryset = queryset.prefetch_related("normalized_village__AS")
+        queryset = queryset.prefetch_related("normalized_village__AS__ZS")
+        queryset = queryset.prefetch_related("normalized_village__AS__ZS__province")
+        queryset = queryset.prefetch_related("normalized_patient")
+        queryset = queryset.prefetch_related("normalized_patient__origin_area")
+        queryset = queryset.prefetch_related("normalized_patient__origin_area__ZS")
+        queryset = queryset.prefetch_related("normalized_patient__origin_area__ZS__province")
+        queryset = queryset.prefetch_related("normalized_patient__origin_village")
+        queryset = queryset.prefetch_related("normalized_team")
+
         if csv_format is None and xlsx_format is None:
 
             paginator = Paginator(queryset, limit)
@@ -231,7 +246,7 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
                 'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sex', 'Age', 'CATT', 'RDT',
@@ -272,12 +287,14 @@ class CasesViewSet(viewsets.ViewSet):
                     generate_xlsx('Cas', columns, queryset, get_row),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
-            if csv_format:
+            elif csv_format:
                 response = StreamingHttpResponse(
                     streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
                     content_type='text/csv',
                 )
                 filename = filename + '.csv'
+            else:
+                return Response('Invalid format parameter parameter', status=status.HTTP_400_BAD_REQUEST)
             response['Content-Disposition'] = 'attachment; filename=%s' % filename
             return response
 

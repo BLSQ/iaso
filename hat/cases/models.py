@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from django.db import models
+from django.db import models, connection
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
@@ -415,9 +415,15 @@ class Case(CaseAbstract):
             'normalized_village_not_found': self.normalized_village_not_found,
         }
         if self.normalized_AS:
-            ZS = self.normalized_AS.ZS.name
-            AS = self.normalized_AS.name
-            province = self.normalized_AS.ZS.province.name
+            if isinstance(self, CaseView):
+                ZS = self.normalized_zs_name
+                AS = self.normalized_as_name
+                province = self.normalized_province_name
+            else:
+                # It might be good to prefetch_related these fields
+                ZS = self.normalized_AS.ZS.name
+                AS = self.normalized_AS.name
+                province = self.normalized_AS.ZS.province.name
             normalized_as_dict["as"] = self.normalized_AS.as_dict()
         else:
             ZS = self.ZS
@@ -433,7 +439,7 @@ class Case(CaseAbstract):
         device = None
         try:
             if self.device_id:
-                device = DeviceDB.objects.get(device_id=self.device_id).as_dict()
+                device = DeviceDB.objects.get(device_id=self.device_id).as_dict(full=False)
         except DeviceDB.DoesNotExist:
             pass
 
@@ -462,7 +468,7 @@ class Case(CaseAbstract):
             'form_year': self.form_year,
             'team': {
                 'mobile_unit': self.mobile_unit,
-                'normalized_team': self.normalized_team.as_dict() if self.normalized_team else None,
+                'normalized_team': self.normalized_team.as_dict_without_as() if self.normalized_team else None,
             },
             'source': self.source,
             'test_catt_session_type': self.test_catt_session_type,

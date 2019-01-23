@@ -1,4 +1,7 @@
+from time import time
+
 from django.core.paginator import Paginator
+from django.db import connection
 from django.db.models import OuterRef, Exists, Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -175,6 +178,19 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         if similarity:
             queryset = queryset.filter(similarity_score__lte=similarity)
 
+        # When fully rendering, prefetch subobjects for performance
+        if full:
+            queryset = queryset.prefetch_related("patient1")
+            queryset = queryset.prefetch_related("patient2")
+            queryset = queryset.prefetch_related("patient1__origin_area")
+            queryset = queryset.prefetch_related("patient1__origin_area__ZS")
+            queryset = queryset.prefetch_related("patient1__origin_area__ZS__province")
+            queryset = queryset.prefetch_related("patient1__origin_village")
+            queryset = queryset.prefetch_related("patient2__origin_area")
+            queryset = queryset.prefetch_related("patient2__origin_area__ZS")
+            queryset = queryset.prefetch_related("patient2__origin_area__ZS__province")
+            queryset = queryset.prefetch_related("patient2__origin_village")
+
         if csv_format is None and xlsx_format is None:
             res = {"count": queryset.count()}
             queryset = queryset.order_by(*orders)
@@ -184,7 +200,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["patientduplicatepairs"] = map(lambda x: x.as_dict(full), page.object_list)
+            start_queries = len(connection.queries)
+            start_time = time()
+            res["patientduplicatepairs"] = list(map(lambda x: x.as_dict(full), page.object_list))
+            print("Queries:", len(connection.queries)-start_queries, ", time:", time()-start_time)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

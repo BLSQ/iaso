@@ -12,7 +12,12 @@ import registerListColumns from '../constants/registerListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersPatients, filtersPatients2, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
+import {
+    filtersPatients2,
+    filtersPatientsSearch,
+    filtersPatientsGeo,
+    filtersPatientsTreatments,
+} from '../constants/filtersSelect';
 import { patientsActions } from '../redux/patients';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
@@ -121,8 +126,7 @@ class Patients extends Component {
             params,
             reduxPage,
         } = this.props;
-        const filters1 = filtersPatients(formatMessage, defineMessages);
-        const filters2 = filtersPatients2(coordinations || [], teams || []);
+        const filters = filtersPatients2(formatMessage, defineMessages);
         const search = filtersPatientsSearch();
         const geo = filtersPatientsGeo(
             workzones,
@@ -132,6 +136,7 @@ class Patients extends Component {
             villages || [],
             this.props,
             baseUrl,
+            coordinations || [],
         );
         return (
             <section className="cases-list-container">
@@ -167,14 +172,14 @@ class Patients extends Component {
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={filters2}
+                                filters={filters}
                             />
                         </div>
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={filters1}
+                                filters={filtersPatientsTreatments(teams || [], formatMessage)}
                             />
                         </div>
                     </div>

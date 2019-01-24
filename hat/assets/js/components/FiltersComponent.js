@@ -148,7 +148,11 @@ class FiltersComponent extends React.Component {
                                                     type="checkbox"
                                                     name={`checkbox-${filter.urlKey}`}
                                                     className="list--normalized-as-checkbox"
-                                                    checked={this.props.params[filter.urlKey] === 'true' ? 'checked' : ''}
+                                                    checked={
+                                                        (this.props.params[filter.urlKey] === 'true') ||
+                                                        (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck])
+                                                            ? 'checked' : ''
+                                                    }
                                                     onChange={event => this.toggleCheckbox(event.target.checked, filter.urlKey)}
                                                 />
                                             </span>

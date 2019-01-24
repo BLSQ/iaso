@@ -1,5 +1,15 @@
-import { selectWorkZone, selectProvince, selectZone, selectArea } from '../selectGeo';
+import {
+    selectWorkZone,
+    selectProvince,
+    selectZone,
+    selectArea,
+} from '../selectGeo';
+import { treatmentsMedecineMessages } from '../../utils/constants/treatmentsMessages';
 
+const tempTreatmentsMedecineMessages = {
+    ...treatmentsMedecineMessages,
+};
+delete tempTreatmentsMedecineMessages.none;
 const MESSAGES = {
     positive: {
         defaultMessage: 'Positif',
@@ -546,6 +556,53 @@ const onlyIgnoredTargets = () => (
     }
 );
 
+const medecine = formatMessage => (
+    {
+        name: 'treatment_medicine',
+        urlKey: 'treatment_medicine',
+        hideEmpty: true,
+        isMultiSelect: false,
+        isClearable: true,
+        options: Object.keys(tempTreatmentsMedecineMessages).map(key =>
+            ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'main.label.medecine',
+            defaultMessage: 'Type de traitement',
+        },
+        type: 'select',
+    }
+);
+
+const onlyTreatedPatients = () => (
+    {
+        name: 'with_treatment',
+        urlKey: 'with_treatment',
+        label: {
+            id: 'main.label.onlyTreatedPatients',
+            defaultMessage: 'Avec traitement(s)',
+        },
+        type: 'checkbox',
+        conditionnalCheck: 'treatment_medicine',
+    }
+);
+
+const onlyDead = () => (
+    {
+        name: 'dead',
+        urlKey: 'dead',
+        label: {
+            id: 'main.label.onlyDead',
+            defaultMessage: 'Décédes',
+        },
+        type: 'checkbox',
+    }
+);
+
+
 export {
     testType,
     screeningResult,
@@ -569,4 +626,7 @@ export {
     onlyReferenceSites,
     onlyIgnoredSites,
     onlyIgnoredTargets,
+    medecine,
+    onlyTreatedPatients,
+    onlyDead,
 };

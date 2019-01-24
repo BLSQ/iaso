@@ -128,6 +128,10 @@ $directions: left right top bottom;
     }
 }
 
+.no-padding-bottom {
+    padding-bottom: 0 !important;
+}
+
 .no-padding-top {
     padding-top: 0 !important;
 }
@@ -138,10 +142,6 @@ $directions: left right top bottom;
 
 .no-padding-left {
     padding-left: 0 !important;
-}
-
-.no-padding-bottom {
-    padding-bottom: 0 !important;
 }
 
 .no-padding {
@@ -318,11 +318,11 @@ $directions: left right top bottom;
 .initial-white-space {
     white-space: initial !important;
 }
+
 .error-text {
     background: transparent;
     color: red;
 }
-
 
 .success-text {
     background: transparent;

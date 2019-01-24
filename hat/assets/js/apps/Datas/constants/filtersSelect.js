@@ -16,6 +16,9 @@ import {
     villages,
     searchMotherName,
     onlyDupes,
+    medecine,
+    onlyTreatedPatients,
+    onlyDead,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -79,13 +82,23 @@ const filtersPatients = (formatMessage, defineMessages) => (
 );
 
 const filtersPatients2 = (
-    coordinationsList,
-    teamsList,
+    formatMessage,
+    defineMessages,
 ) => (
     [
-        coordinations(coordinationsList),
-        teams(teamsList),
+        testType(formatMessage, defineMessages),
+        screeningResult(formatMessage, defineMessages),
+        confirmationResult(formatMessage, defineMessages),
         onlyDupes(),
+    ]
+);
+
+const filtersPatientsTreatments = (teamsList, formatMessage) => (
+    [
+        teams(teamsList),
+        medecine(formatMessage),
+        onlyTreatedPatients(),
+        onlyDead(),
     ]
 );
 
@@ -116,15 +129,21 @@ const filtersPatientsGeo = (
     villagesList,
     props,
     urlKey,
-) => (
+    coordinationsList = null,
+) => {
+    const geoFiltersArray =
     [
         workZones(workzonesList, props, urlKey),
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
         villages(villagesList),
-    ]
-);
+    ];
+    if (coordinationsList) {
+        geoFiltersArray.unshift(coordinations(coordinationsList));
+    }
+    return geoFiltersArray;
+};
 export {
     filtersCases,
     filtersCases2,
@@ -135,5 +154,6 @@ export {
     filtersPatientsSearch,
     filtersPatientsGeo,
     filtersPatientsDuplicates,
+    filtersPatientsTreatments,
 };
 

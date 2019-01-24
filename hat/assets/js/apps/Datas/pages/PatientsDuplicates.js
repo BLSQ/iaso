@@ -12,7 +12,12 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersPatients, filtersPatientsDuplicates, filtersPatientsSearch, filtersPatientsGeo } from '../constants/filtersSelect';
+import {
+    filtersPatients,
+    filtersPatientsDuplicates,
+    filtersPatientsSearch,
+    filtersPatientsGeo,
+} from '../constants/filtersSelect';
 
 
 const baseUrl = 'register/duplicates';

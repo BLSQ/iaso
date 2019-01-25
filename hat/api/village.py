@@ -1,4 +1,5 @@
 from copy import copy
+
 from django.db.models import Count
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -164,7 +165,9 @@ class VillageViewSet(viewsets.ViewSet):
         if results == "negative":
             res = res.filter(nr_positive_cases=0)
 
-        queryset = queryset.select_related("AS__ZS__province")
+        queryset = queryset.prefetch_related("AS")
+        queryset = queryset.prefetch_related("AS__ZS")
+        queryset = queryset.prefetch_related("AS__ZS__province")
         if as_list:
             if page_offset:
                 page_offset = int(page_offset)

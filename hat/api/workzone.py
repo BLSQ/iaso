@@ -1,16 +1,18 @@
 from collections import defaultdict
-from django.shortcuts import get_object_or_404
+
 from django.db.models import Sum
-from hat.planning.algo import optimize_path
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.response import Response
-from hat.planning.models import WorkZone, Planning, Assignation
-from hat.geo.models import AS, Village
-from hat.users.models import Team, Coordination
-from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
 from hat.api.coordination import is_user_coordination_authorized
+from hat.geo.models import AS, Village
+from hat.planning.algo import optimize_path
+from hat.planning.models import WorkZone, Planning, Assignation
+from hat.users.models import Team, Coordination
 from hat.users.models import get_user_geo_list, is_authorized_user
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class WorkZoneViewSet(viewsets.ViewSet):
@@ -59,16 +61,19 @@ class WorkZoneViewSet(viewsets.ViewSet):
         planning_id = request.GET.get("planning_id", None)
         coordination_id = request.GET.get("coordination_id", None)
         years = request.GET.get("years", None)
-        with_areas = request.GET.get("with_areas", True)
+        with_areas = request.GET.get("with_areas", 'True').lower() == 'true'
+        additional_fields = []
 
-        matchings = { 'coordination_name': 'coordination_id', 'planning_name': 'planning_id' }
+        matchings = {'coordination_name': 'coordination_id', 'planning_name': 'planning_id'}
         prefix = ''
         if order.startswith('-'):
                     order = order[1:]
                     prefix = '-'
         qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
-        queryset = WorkZone.objects.all().prefetch_related('AS__ZS__province')
+        queryset = WorkZone.objects.all()\
+            .prefetch_related('AS__ZS__province')\
+            .prefetch_related("teams")
         queryset = queryset.filter(planning__is_template=False,)
 
         if planning_id:
@@ -86,23 +91,31 @@ class WorkZoneViewSet(viewsets.ViewSet):
         if request.user.profile.AS_scope.count() != 0:
             queryset = queryset.filter(AS__id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
 
+        queryset = queryset.annotate(population_sum=Sum("AS__village__population"))
+        additional_fields.append("population_sum")
+
         workzones = list(queryset.order_by(qs_order))
 
         if years:
             years_array = years.split(",")
             wz_areas = AS.objects.filter(workzone__in=queryset).distinct('id')
-            endemic_villages_ids = Village.objects.filter(AS__in=wz_areas)\
-                .filter(caseview__confirmed_case=True, caseview__normalized_year__in=years_array).values('id')
-            endemic_wz_populations = Village.objects.filter(AS__in=wz_areas).filter(id__in=endemic_villages_ids)\
-                .values('AS__workzone__id').annotate(endemic_population=Sum('population'))
+            endemic_villages_ids = Village.objects\
+                .filter(AS__in=wz_areas)\
+                .filter(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)\
+                .values('id')
+            endemic_wz_populations = Village.objects\
+                .filter(AS__in=wz_areas)\
+                .filter(id__in=endemic_villages_ids)\
+                .values('AS__workzone__id')\
+                .annotate(endemic_population=Sum('population'))
 
+            additional_fields.append('population_endemic_villages')
             pop_dict = {obj["AS__workzone__id"]: obj["endemic_population"] for obj in endemic_wz_populations}
             for workzone in workzones:
                 workzone.population_endemic_villages = pop_dict.get(workzone.id, 0)
-        if with_areas == 'False':
-            return Response([workzone.as_dict(False) for workzone in workzones])
-        else:
-            return Response([workzone.as_dict() for workzone in workzones])
+
+        result = [workzone.as_dict(with_areas, additional_fields) for workzone in workzones]
+        return Response(result)
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)

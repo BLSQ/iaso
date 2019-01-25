@@ -6,12 +6,13 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import CaseView, RES_POSITIVE
+from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
 
+from hat.patient.utils import *
 
 class PatientsViewSet(viewsets.ViewSet):
     """
@@ -218,30 +219,35 @@ class PatientsViewSet(viewsets.ViewSet):
         else:
             if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
-            columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
-                       'Aire', 'Village', 'Dead']
-            filename = 'patients'
 
-            def get_row(patient):
-                pdict = patient.as_dict()
-                return [
-                        pdict["id"],
-                        pdict["last_name"],
-                        pdict["post_name"],
-                        pdict["first_name"],
-                        pdict["sex"],
-                        pdict["age"],
-                        pdict["mothers_surname"],
-                        pdict["province"],
-                        pdict["ZS"],
-                        pdict["AS"],
-                        pdict["village"],
-                        pdict["dead"],
-                ]
+            filename = 'patients'
             if xlsx_format:
                 filename = filename + '.xlsx'
+                queryset_treatments = Treatment.objects.filter(patient__in=queryset).order_by(*["patient_id", "index"])
+                queryset_tests = Test.objects.filter(form__normalized_patient__in=queryset).order_by("form__normalized_patient__id")
                 response = HttpResponse(
-                    generate_xlsx('Patients', columns, queryset, get_row),
+                    generate_xlsx(
+                        [
+                            'Patients',
+                            'Tests',
+                            'Traitements',
+                        ],[
+                            columns,
+                            columns_tests,
+                            columns_treatments,
+                        ],[
+                            queryset,
+                            queryset_tests,
+                            queryset_treatments,
+                        ], [
+                            get_row,
+                            get_row_tests,
+                            get_row_treatments,
+                        ], [
+                            False,
+                            True,
+                            False,
+                        ], request),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:

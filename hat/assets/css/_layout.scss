@@ -160,6 +160,7 @@ $directions: left right top bottom;
     text-align: center;
     .middle-margin-element {
         margin: 0 5%;
+        display: inline-block;
     }
 }
 
@@ -244,6 +245,10 @@ $directions: left right top bottom;
 
 .margin-right {
     margin-right: $padding-unit/2;
+}
+
+.margin-left {
+    margin-left: $padding-unit/2;
 }
 
 .margin-bottom {

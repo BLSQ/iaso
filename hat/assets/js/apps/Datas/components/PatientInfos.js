@@ -7,6 +7,7 @@ class PatientInfos extends React.Component {
     render() {
         const { patient, duplicatePatient } = this.props;
         const { formatMessage } = this.props.intl;
+        console.log(patient.village);
         return (
             <div className="patient-infos-container no-padding-right">
                 <table>

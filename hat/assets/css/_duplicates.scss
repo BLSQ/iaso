@@ -1,0 +1,49 @@
+.patient-infos-container {
+    table {
+        td {
+            width: 60%;
+        }
+    }
+}
+
+.test-container {
+    table {
+        td {
+            width: 80%;
+        }
+    }
+}
+
+.merge-container {
+    display: flex;
+}
+
+.duplicate-page {
+    flex-basis: 66%;
+}
+
+.result {
+    flex-basis: 34%;
+    padding-left: $padding-unit;
+    position: relative;
+    &:before {
+        height: calc(100% + #{$padding-unit * 2});
+        width: 1px;
+        display: block;
+        position: absolute;
+        top: -$padding-unit;
+        left: $padding-unit / 2;
+        background-color: $light-gray;
+        content: '';
+    }
+    h2 {
+        width: calc(100% - #{$padding-unit / 4});
+    }
+    tbody {
+        tr {
+            td {
+                padding-right: 0 !important;
+            }
+        }
+    }
+}

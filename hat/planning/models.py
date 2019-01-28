@@ -123,13 +123,17 @@ class WorkZone(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def as_dict(self, withAreas = True):
+    def as_dict(self, with_areas=True, additional_fields=None):
         total_capacity = 0
         for team in self.teams.all():
             total_capacity += team.capacity
 
         teams_list = [team.as_dict_without_as() for team in self.teams.all()]
-        total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(Sum('population'))['population__sum']
+
+        if hasattr(self, "population_sum"):
+            total_population = getattr(self, "population_sum")
+        else:
+            total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(Sum('population'))['population__sum']
         if total_population is None:
             total_population = 0  # to always output a number, and not null
 
@@ -146,21 +150,24 @@ class WorkZone(models.Model):
             'coordination_name': self.coordination.name
         }
 
-        if withAreas:
+        if with_areas:
             user = get_current_user()
-            areas =  self.AS.all()
+            areas = self.AS.all()
             if not user.profile.province_scope.count() == 0:
-                areas = areas.filter(ZS__province_id__in=get_user_geo_list(user, 'province_scope')).distinct()
+                areas = areas.filter(ZS__province_id__in=get_user_geo_list(user, 'province_scope'))
             if not user.profile.ZS_scope.count() == 0:
-                areas = areas.filter(ZS__id__in=get_user_geo_list(user, 'ZS_scope')).distinct()
+                areas = areas.filter(ZS__id__in=get_user_geo_list(user, 'ZS_scope'))
             if not user.profile.AS_scope.count() == 0:
-                areas = areas.filter(id__in=get_user_geo_list(user, 'AS_scope')).distinct()
+                areas = areas.filter(id__in=get_user_geo_list(user, 'AS_scope'))
 
             as_list = [area.as_dict() for area in areas]
             res['as_list'] = as_list
 
-        if hasattr(self, 'population_endemic_villages'):
-            res['population_endemic_villages'] = self.population_endemic_villages
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    res[field] = getattr(self, field)
 
         return res
 

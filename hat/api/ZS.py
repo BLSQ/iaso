@@ -4,6 +4,8 @@ from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+
+from hat.geo.geojson import geojson_queryset
 from hat.geo.models import ZS, AS
 from django.core.serializers import serialize
 from hat.users.models import get_user_geo_list
@@ -42,16 +44,16 @@ class ZSViewSet(viewsets.ViewSet):
         if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope'))
         if request.user.profile.AS_scope.count() != 0:
-            zs_from_as = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).values_list("ZS_id", flat=True).distinct()
+            zs_from_as = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope'))\
+                .values_list("ZS_id", flat=True).distinct()
             queryset = queryset.filter(id__in=zs_from_as)
         if province_ids:
             queryset = queryset.filter(province_id__in=province_ids.split(','))
 
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False)
-            serialized_zs = serialize('geojson', queryset, geometry_field='simplified_geom',
-                                      fields=('name', 'pk', 'province'))
-            return Response(json.loads(serialized_zs))
+            geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
+            return Response(geo_json)
         else:
             return Response(queryset.values('name', 'id', 'province_id').order_by('name'))
 

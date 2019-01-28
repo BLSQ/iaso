@@ -1,17 +1,16 @@
-import json
-
+from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from rest_framework import viewsets
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from hat.geo.models import AS
-from hat.users.models import Team
-from hat.planning.models import Planning
-from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
-from django.core.serializers import serialize
+from rest_framework.response import Response
+
+from hat.geo.geojson import geojson_queryset
+from hat.geo.models import AS
+from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
+from hat.users.models import Team
 from hat.users.models import get_user_geo_list
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -48,10 +47,10 @@ class ASViewSet(viewsets.ViewSet):
             queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
 
         if as_geo_json:
-            queryset = queryset.filter(geom__isnull=False)
-            serialized_as = serialize('geojson', queryset, geometry_field='simplified_geom',
-                                      fields=('name', 'pk', 'ZS',))
-            return Response(json.loads(serialized_as))
+            queryset = queryset.filter(simplified_geom__isnull=False)
+            geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'ZS'])
+
+            return Response(geo_json)
         else:
             return Response(queryset.values('name', 'id', 'ZS_id').order_by('name'))
 

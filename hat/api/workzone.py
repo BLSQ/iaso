@@ -161,7 +161,6 @@ class WorkZoneViewSet(viewsets.ViewSet):
         else:
             return Response('Unauthorized', status=401)
 
-
     def partial_update(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
         action = request.data.get("action", None)
@@ -183,7 +182,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
         for area_id in areas:
             user_as_ids = get_user_geo_list(request.user, 'AS_scope')
-            if area_id in user_as_ids:
+            if len(user_as_ids) == 0 or area_id in user_as_ids:
                 if action == "add":
                     other_work_zones = WorkZone.objects.filter(AS__id=area_id, planning_id=work_zone.planning_id)
                     for wz in other_work_zones:

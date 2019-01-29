@@ -43,6 +43,13 @@ class Search extends React.Component {
         }
     }
 
+    onBlur(value) {
+        if (this.props.searchString !== value) {
+            this.onChange(value);
+            this.onSearch();
+        }
+    }
+
     onChange(value) {
         if (!this.props.disabled) {
             this.setState({
@@ -72,6 +79,7 @@ class Search extends React.Component {
                         disabled={disabled}
                         placeholder={this.props.placeholderText}
                         onChange={event => this.onChange(event.target.value)}
+                        onBlur={event => this.onBlur(event.target.value)}
                         onKeyPress={(event) => {
                             if (event.which === 13 || event.keyCode === 13) {
                                 this.onSearch();

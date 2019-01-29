@@ -57,6 +57,7 @@ class Map extends Component {
             layers: {
                 // where to plot the selected markers
                 selectedGroup: new L.FeatureGroup(),
+                highlightBufferGroup: new L.FeatureGroup(),
                 chosenMarker: null, // marker used to bold the chosen item
                 chosenMarkerCluster: null,
 
@@ -129,6 +130,7 @@ class Map extends Component {
             if (hasChanged(prevProps, this.props, 'chosenItem')) {
                 this.updateTooltipLarge(this.props.chosenItem);
             }
+            this.updateHighlightBuffer();
         });
     }
 
@@ -177,6 +179,7 @@ class Map extends Component {
         const { map, layers } = this.state;
         map.addLayer(layers.selectedGroup);
         map.addLayer(layers.markersGroups.group);
+        map.addLayer(layers.highlightBufferGroup);
 
         //
         // plot the ALL boundaries
@@ -366,7 +369,31 @@ class Map extends Component {
         // resize map
         map.invalidateSize();
     }
+    updateHighlightBuffer() {
+        const { legend, highlightBufferSize } = this.props;
+        const { highlightBufferGroup } = this.state.layers;
 
+        highlightBufferGroup.clearLayers();
+        const bufferSize = highlightBufferSize * 1000;
+        // include buffer zone
+        if (highlightBufferSize > 0) {
+            const { items } = this.props;
+
+            const highlight = items.filter(item =>
+                legend[item.village_official] && item._isHighlight);
+
+            highlight.forEach((item) => {
+                const options = {
+                    className: 'map-marker highlight-buffer',
+                    pane: 'custom-pane-highlight-buffer',
+                    radius: radius + bufferSize,
+                };
+
+                const marker = L.circle(item._latlon, options);
+                highlightBufferGroup.addLayer(marker);
+            });
+        }
+    }
     updateTooltipSmall(item) {
         if (!this.props.chosenItem && item) {
             this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
@@ -540,7 +567,7 @@ Map.defaultProps = {
     fullscreen: false,
     items: [],
     selectedItems: [],
-    highlightBufferSize: PropTypes.number0,
+    highlightBufferSize: 0,
     chosenItem: undefined,
     areas: undefined,
     teams: [],

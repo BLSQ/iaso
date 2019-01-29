@@ -11,7 +11,7 @@ from hat.planning.algo import optimize_path
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
-from hat.dashboard.views import get_last_years
+from hat.dashboard.utils import get_last_years
 from hat.users.models import get_user_geo_list
 
 

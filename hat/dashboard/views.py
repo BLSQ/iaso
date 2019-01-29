@@ -15,196 +15,15 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils.translation import ugettext as _
+from .utils import is_user_authorized, get_menu
 
 import json
 
 from hat.cases.models import CaseView
 
-
 import xlsxwriter
 import io
 import csv
-
-
-def get_last_years(numberOfYears):
-    year = datetime.now().year
-    years = [str(year - i) for i in range(numberOfYears)]
-    return ','.join(years)
-
-
-def get_menu(user, active_link):
-    menu = []
-    menu_list = [
-        {
-            "name": "Accueil",
-            "url_key": reverse("dashboard:home"),
-            "items": [],
-            "perms": None
-        },
-        {
-            "name": "Statistiques",
-            "url_key": reverse("dashboard:stats"),
-            "items": [
-                {
-                    "name": "Graphes",
-                    "url_key": reverse("dashboard:stats"),
-                    "perms": "x_stats_graphs"
-                },
-                {
-                    "name": "Rapports",
-                    "url_key": reverse("dashboard:monthly_report"),
-                    "perms": "x_stats_reports"
-                }
-            ],
-            "perms": None
-        },
-        {
-            "name": "Données",
-            "url_key": reverse("dashboard:cases_list"),
-            "items": [
-                {
-                    "name": "Tests",
-                    "url_key": reverse("dashboard:cases_list"),
-                    "perms": "x_case_cases"
-                },
-                {
-                    "name": "Registre",
-                    "url_key": reverse("dashboard:register"),
-                    "perms": "x_case_cases"
-                },
-                {
-                    "name": "Doublons",
-                    "url_key": reverse("dashboard:register_duplicates"),
-                    "perms": "x_case_cases"
-                }
-            ],
-            "perms": None
-        },
-        {
-            "name": "Gestion",
-            "url_key": reverse("dashboard:management_devices"),
-            "items": [
-                {
-                    "name": "Appareils",
-                    "url_key": reverse("dashboard:management_devices"),
-                    "perms": "x_management_devices"
-                },
-                {
-                    "name": "Utilisateurs",
-                    "url_key": reverse("dashboard:management_user"),
-                    "perms": "x_management_users"
-                },
-                {
-                    "name": "Equipes",
-                    "url_key": reverse("dashboard:management_team"),
-                    "perms": "x_management_teams"
-                },
-                {
-                    "name": "Coordinations",
-                    "url_key": reverse("dashboard:management_coord"),
-                    "perms": "x_management_coordinations"
-                },
-                {
-                    "name": "Plannings",
-                    "url_key": reverse("dashboard:management_planning"),
-                    "perms": "x_management_plannings"
-                },
-                {
-                    "name": "Rayons d\'actions",
-                    "url_key": reverse("dashboard:management_workzone"),
-                    "perms": "x_management_workzones"
-                },
-                {
-                    "name": "Villages",
-                    "url_key": reverse("dashboard:management_village") + "/village_official/YES",
-                    "perms": "x_management_villages"
-                }
-            ],
-            "perms": None
-        },
-        {
-            "name": "Plannings",
-                    "url_key": reverse("dashboard:macro"),
-            "items": [
-                {
-                    "name": "Macroplanification",
-                    "url_key": reverse("dashboard:macro") +"/years/" + get_last_years(3),
-                    "perms": "x_plannings_macroplanning"
-                },
-                {
-                    "name": "Microplanification",
-                    "url_key": reverse("dashboard:micro")+"/years/" + get_last_years(3),
-                    "perms": "x_plannings_microplanning"
-                },
-                {
-                    "name": "Itinéraires",
-                    "url_key": reverse("dashboard:routes"),
-                    "perms": "x_plannings_routes"
-                }
-            ],
-            "perms": None
-        },
-        {
-            "name": "Locator",
-            "url_key": reverse("dashboard:locator_list"),
-            "items": [],
-            "perms": "x_locator",
-        },
-        {
-            "name": "Vector control",
-            "url_key": reverse("dashboard:vector"),
-            "items": [
-                {
-                    "name": "Carte",
-                    "url_key": reverse("dashboard:vector"),
-                    "perms": "x_vectorcontrol"
-                },
-                {
-                    "name": "Synchronisation",
-                    "url_key": reverse("dashboard:vector_sync"),
-                    "perms": "x_vectorcontrol"
-                },
-                {
-                    "name": "Import GPX",
-                    "url_key": reverse("dashboard:vector_upload"),
-                    "perms": "x_vectorcontrolupload"
-                },
-            ],
-            "perms": None
-        },
-        {
-            "name": "Contrôle de qualité",
-            "url_key": reverse("dashboard:quality-control"),
-            "items": [],
-            "perms": "x_qualitycontrol"
-        }
-    ]
-    for menu_item in menu_list:
-        sub_menu_items = menu_item.get("items")
-        add_menu = False
-        if not sub_menu_items:
-            if not menu_item.get("perms"):
-                add_menu = True
-            if menu_item.get("perms"):
-                if user.has_perm('menupermissions.' + menu_item.get("perms")):
-                    add_menu = True
-        else :
-            active_sub_menu_items = []
-            for sub_menu_item in sub_menu_items:
-                if not sub_menu_item.get("perms") or user.has_perm('menupermissions.' + sub_menu_item.get("perms")):
-                    if active_link in sub_menu_item["url_key"] :
-                        sub_menu_item["active"] = True
-                        menu_item["active"] = True
-                    active_sub_menu_items.append(sub_menu_item)
-            if active_sub_menu_items:
-                menu_item["items"] = active_sub_menu_items
-                add_menu = True
-        if add_menu:
-            if menu_item["url_key"] == active_link:
-                menu_item["active"] = True
-            menu.append(menu_item)
-    return menu
-
 
 @login_required()
 def change_password(request):
@@ -236,65 +55,44 @@ def home(request: HttpRequest) -> HttpResponse:
         else:
             return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
 
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_stats_reports')
 @require_http_methods(['GET'])
 def monthly_report(request: HttpRequest) -> HttpResponse:
     # Use the start of tomorrow as the maximum date to omit records with wrong future dates
 
-    user = request.user
+    return render(request, 'dashboard/monthly_report.html', {'menu': get_menu(request.user, reverse("dashboard:monthly_report"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/monthly_report.html', {'menu': get_menu(user, reverse("dashboard:monthly_report"))})
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_stats_graphs')
 @require_http_methods(['GET'])
 def stats(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:stats"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/stats.html', {'menu': get_menu(user, reverse("dashboard:stats"))})
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_plannings_microplanning')
 @require_http_methods(['GET'])
 def plannings_micro(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:micro"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:micro"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_plannings_macroplanning')
 @require_http_methods(['GET'])
 def plannings_macro(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:macro"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:macro"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_plannings_routes')
 @require_http_methods(['GET'])
 def plannings_routes(request: HttpRequest) -> HttpResponse:
-    user = request.user
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:routes"))})
+    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:routes"))})
 
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_devices')
 @require_http_methods(['GET'])
@@ -315,200 +113,123 @@ def device_management(request: HttpRequest) -> HttpResponse:
         'dates': [d.strftime('%Y-%m') for d in dates]
     })
 
-    user = request.user
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_devices"))})
+    return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_devices"))})
 
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_teams')
 @require_http_methods(['GET'])
 def teams_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_team"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_team"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_coordinations')
 @require_http_methods(['GET'])
 def coordinations_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_coord"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_coord"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_workzones')
 @require_http_methods(['GET'])
 def workzones_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_workzone"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_workzone"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_plannings')
 @require_http_methods(['GET'])
 def plannings_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_planning"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_planning"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_users')
 @require_http_methods(['GET'])
 def users_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_user"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_user"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_villages')
 @require_http_methods(['GET'])
 def villages_management(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_village"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:management_village"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_locator')
 @require_http_methods(['GET'])
 def locator(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:locator_list"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:locator_list"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_vectorcontrol')
 @require_http_methods(['GET'])
 def vector(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_vectorcontrolupload')
 @require_http_methods(['GET'])
 def vector_sync(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector_sync"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector_sync"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_vectorcontrolupload')
 @require_http_methods(['GET'])
 def vector_upload(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector_upload"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/vector.html', {'menu': get_menu(user, reverse("dashboard:vector_upload"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_qualitycontrol')
 @require_http_methods(['GET'])
 def quality_control(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(user, reverse("dashboard:quality-control"))})
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def cases_list(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:cases_list"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def cases_detail(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:cases_list"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:cases_list"))})
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def register(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def register_detail(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register"))})
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def register_duplicates(request: HttpRequest) -> HttpResponse:
-    user = request.user
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
 
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register_duplicates"))})
-
-
-
+@is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
-    user = request.user
-
-    if user.profile.password_reset:
-        return redirect('/dashboard/password')
-    else:
-        return render(request, 'dashboard/datas.html', {'menu': get_menu(user, reverse("dashboard:register_duplicates"))})
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})

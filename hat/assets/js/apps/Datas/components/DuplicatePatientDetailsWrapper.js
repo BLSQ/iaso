@@ -12,11 +12,49 @@ class DuplicatePatientDetailsWrapper extends React.Component {
             patient,
             duplicatePatient,
             testsMapping,
+            manualMerge,
+            mergeDuplicates,
+            params,
+            fixConflict,
+            conflicts,
         } = this.props;
         return (
             <section className="duplicate-page">
                 <table className={`no-style duplicate-table ${patient.cases.length > 0 || patient.cases.length < duplicatePatient.cases.length ? 'margin-bottom' : ''}`}>
                     <thead>
+                        {
+                            !manualMerge &&
+                            <tr>
+                                <td className="align-center padding-bottom">
+                                    <button
+                                        className="button"
+                                        onClick={() => mergeDuplicates(patient.id, params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage
+                                            id="patientsDuplicate.merge"
+                                            defaultMessage="Fusionner les patients dans {value}"
+                                            values={{
+                                                value: 'A',
+                                            }}
+                                        />
+                                    </button>
+                                </td>
+                                <td className="align-center padding-bottom">
+                                    <button
+                                        className="button"
+                                        onClick={() => mergeDuplicates(duplicatePatient.id, params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage
+                                            id="patientsDuplicate.merge"
+                                            defaultMessage="Fusionner les patients dans {value}"
+                                            values={{
+                                                value: 'B',
+                                            }}
+                                        />
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                         <tr>
                             <td>
                                 <h2 className="widget__heading">
@@ -33,10 +71,18 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <PatientInfos patient={patient} duplicatePatient={duplicatePatient} />
+                                <PatientInfos
+                                    patient={patient}
+                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    conflicts={conflicts}
+                                />
                             </td>
                             <td>
-                                <PatientInfos patient={duplicatePatient} duplicatePatient={patient} />
+                                <PatientInfos
+                                    patient={duplicatePatient}
+                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    conflicts={conflicts}
+                                />
                             </td>
                         </tr>
                     </tbody>
@@ -52,7 +98,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                             <td>
                                                 <h2 className="widget__heading">
                                                     <span className="case-id">
-                                                        <span>Hat ID</span>: {caseItem.hat_id} - <span>ID</span>: {caseItem.id}
+                                                        <span>Hat ID</span>: {caseItem.hat_id}
                                                     </span>
                                                 </h2>
                                             </td>
@@ -61,7 +107,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 <td>
                                                     <h2 className="widget__heading">
                                                         <span className="case-id">
-                                                            <span>Hat ID</span>: {similarCase.hat_id} - <span>ID</span>: {similarCase.id}
+                                                            <span>Hat ID</span>: {similarCase.hat_id}
                                                         </span>
                                                     </h2>
                                                 </td>
@@ -221,12 +267,18 @@ class DuplicatePatientDetailsWrapper extends React.Component {
 
 DuplicatePatientDetailsWrapper.defaultProps = {
     duplicatePatient: undefined,
+    manualMerge: false,
 };
 
 DuplicatePatientDetailsWrapper.propTypes = {
     patient: PropTypes.object.isRequired,
     duplicatePatient: PropTypes.object,
     testsMapping: PropTypes.object.isRequired,
+    manualMerge: PropTypes.bool,
+    mergeDuplicates: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
+    fixConflict: PropTypes.func.isRequired,
+    conflicts: PropTypes.array.isRequired,
 };
 
 const DuplicatePatientDetailsWrapperWithIntl = injectIntl(DuplicatePatientDetailsWrapper);

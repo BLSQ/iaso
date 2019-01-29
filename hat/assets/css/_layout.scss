@@ -158,10 +158,6 @@ $directions: left right top bottom;
 
 .align-center {
     text-align: center;
-    .middle-margin-element {
-        margin: 0 5%;
-        display: inline-block;
-    }
 }
 
 .display-flex {
@@ -228,7 +224,7 @@ $directions: left right top bottom;
 }
 
 .padding-bottom {
-    padding-bottom: $padding-unit/2;
+    padding-bottom: $padding-unit/2 !important;
 }
 
 .padding-top {
@@ -237,6 +233,10 @@ $directions: left right top bottom;
 
 .padding-right {
     padding-right: $padding-unit/2;
+}
+
+.big-padding-right {
+    padding-right: $padding-unit;
 }
 
 .small-padding-right {

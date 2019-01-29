@@ -76,6 +76,14 @@ class PatientCasesInfo extends React.Component {
                     <tbody>
                         <tr>
                             <th>
+                                ID
+                            </th>
+                            <td>
+                                {currentCase.id}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
                                 <FormattedMessage id="patientsCases.team" defaultMessage="Equipe" />
                             </th>
                             <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>

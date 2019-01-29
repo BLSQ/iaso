@@ -3,141 +3,147 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
+const MESSAGES = {
+    last_name: {
+        defaultMessage: 'Nom',
+        id: 'patientsinfos.last_name',
+    },
+    post_name: {
+        defaultMessage: 'Postnom',
+        id: 'patientsinfos.post_name',
+    },
+    first_name: {
+        defaultMessage: 'Prénom',
+        id: 'patientsinfos.first_name',
+    },
+    mothers_surname: {
+        defaultMessage: 'Nom de la mère',
+        id: 'patientsinfos.mothers_surname',
+    },
+    sex: {
+        defaultMessage: 'Sexe',
+        id: 'patientsinfos.sex',
+    },
+    death: {
+        defaultMessage: 'Décès',
+        id: 'patientsinfos.death',
+    },
+    age: {
+        defaultMessage: 'Age',
+        id: 'patientsinfos.age',
+    },
+    province: {
+        defaultMessage: 'Province d\'origine',
+        id: 'patientsinfos.province',
+    },
+    ZS: {
+        defaultMessage: 'Zone d\'origine',
+        id: 'patientsinfos.ZS',
+    },
+    AS: {
+        defaultMessage: 'Aire d\'origine',
+        id: 'patientsinfos.AS',
+    },
+    village: {
+        defaultMessage: 'Village d\'origine',
+        id: 'patientsinfos.village',
+    },
+};
+
 class PatientInfos extends React.Component {
     render() {
-        const { patient, duplicatePatient } = this.props;
+        const {
+            patient,
+            fixConflict,
+            conflicts,
+            isResult,
+        } = this.props;
         const { formatMessage } = this.props.intl;
-        console.log(patient.village);
+        const fieldPlaceholder = isResult ? '' : '--';
         return (
             <div className="patient-infos-container no-padding-right">
                 <table>
                     <tbody>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.last_name" defaultMessage="Nom" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.last_name.toLowerCase() !== patient.last_name.toLowerCase()) ? 'error' : ''}`}>
-                                {patient.last_name ? patient.last_name : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.post_name" defaultMessage="Postnom" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.post_name.toLowerCase() !== patient.post_name.toLowerCase()) ? 'error' : ''}`}>
-                                {patient.post_name ? patient.post_name : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.first_name" defaultMessage="Prénom" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.first_name.toLowerCase() !== patient.first_name.toLowerCase()) ? 'error' : ''}`}>
-                                {patient.first_name ? patient.first_name : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.mothers_surname" defaultMessage="Nom de la mère" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.mothers_surname.toLowerCase() !== patient.mothers_surname.toLowerCase()) ? 'error' : ''}`}>
-                                {patient.mothers_surname ? patient.mothers_surname : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.sex" defaultMessage="Sexe" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.sex !== patient.sex) ? 'error' : ''}`}>
-
-                                {
-                                    patient.sex === 'female' &&
-                                    <span>
-                                        <i className="fa fa-female" /> {' - '}
-                                        {
-                                            formatMessage({
-                                                defaultMessage: 'Femme',
-                                                id: 'main.label.female',
-                                            })
-                                        }
-                                    </span>
+                        {
+                            Object.keys(MESSAGES).map((key) => {
+                                let className;
+                                const hasConflict = conflicts.find(c => c.key === key && !c.value);
+                                if (!isResult) {
+                                    const solvedConflict = conflicts.find(c => c.key === key && c.value);
+                                    className = `${hasConflict ? 'error' : ''}`;
+                                    if (key === 'death') {
+                                        className += patient.death.dead ? ' error-text' : '';
+                                    }
+                                    if (solvedConflict) {
+                                        className += ` solved ${patient[key] === solvedConflict.value ? 'active' : ''}`;
+                                    }
+                                } else {
+                                    className = `${hasConflict ? 'warning-light' : ''}`;
                                 }
-                                {
-                                    patient.sex === 'male' &&
-                                    <span>
-                                        <i className="fa fa-male" /> {' - '}
-                                        {
-                                            formatMessage({
-                                                defaultMessage: 'Homme',
-                                                id: 'main.label.male',
-                                            })
-                                        }
-                                    </span>
-                                }
-                                {
-                                    patient.sex !== 'male' && patient.sex !== 'female' &&
-                                    '--'
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.death" defaultMessage="Décès" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.death.dead !== patient.death.dead) ?
-                                'error' : ''} ${patient.death.dead ? 'error-text' : ''}`}
-                            >
-                                {
-                                    patient.death.dead ?
-                                        <span>
-                                            <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
-                                            {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
-                                        </span>
-
-                                        : '--'
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.age" defaultMessage="Age" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.age !== patient.age) ? 'error' : ''}`}>
-                                {patient.age ? patient.age : '--'} {patient.year_of_birth ? `(${patient.year_of_birth})` : ''}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.province" defaultMessage="Province d'origine" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.province !== patient.province) ? 'error' : ''}`}>
-                                {patient.province ? patient.province : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.zone" defaultMessage="Zone d'origine" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.ZS !== patient.ZS) ? 'error' : ''}`}>
-                                {patient.ZS ? patient.ZS : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.area" defaultMessage="Aire d'origine" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.AS !== patient.AS) ? 'error' : ''}`}>
-                                {patient.AS ? patient.AS : '--'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="patientsinfos.village" defaultMessage="Village d'origine" />
-                            </th>
-                            <td className={`${duplicatePatient && (duplicatePatient.village !== patient.village) ? 'error' : ''}`}>
-                                {patient.village ? patient.village : '--'}
-                            </td>
-                        </tr>
+                                return (
+                                    <tr
+                                        key={key}
+                                        onClick={() => fixConflict(key, patient[key])}
+                                    >
+                                        <th>
+                                            {formatMessage(MESSAGES[key])}
+                                        </th>
+                                        <td className={className}>
+                                            {
+                                                key === 'sex' &&
+                                                <span>
+                                                    {
+                                                        patient.sex === 'female' &&
+                                                        <span>
+                                                            <i className="fa fa-female" /> {' - '}
+                                                            {
+                                                                formatMessage({
+                                                                    defaultMessage: 'Femme',
+                                                                    id: 'main.label.female',
+                                                                })
+                                                            }
+                                                        </span>
+                                                    }
+                                                    {
+                                                        patient.sex === 'male' &&
+                                                        <span>
+                                                            <i className="fa fa-male" /> {' - '}
+                                                            {
+                                                                formatMessage({
+                                                                    defaultMessage: 'Homme',
+                                                                    id: 'main.label.male',
+                                                                })
+                                                            }
+                                                        </span>
+                                                    }
+                                                    {
+                                                        patient.sex !== 'male' && patient.sex !== 'female' &&
+                                                        fieldPlaceholder
+                                                    }
+                                                </span>
+                                            }
+                                            {
+                                                key === 'death' &&
+                                                (
+                                                    patient.death.dead ?
+                                                        <span>
+                                                            <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
+                                                            {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
+                                                        </span>
+                                                        : fieldPlaceholder
+                                                )
+                                            }
+                                            {
+                                                ((key !== 'sex' && key !== 'death')) &&
+                                                    (
+                                                        patient[key] ? patient[key] : fieldPlaceholder
+                                                    )
+                                            }
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        }
                     </tbody>
                 </table>
             </div>
@@ -146,13 +152,17 @@ class PatientInfos extends React.Component {
 }
 
 PatientInfos.defaultProps = {
-    duplicatePatient: undefined,
+    fixConflict: () => { },
+    conflicts: [],
+    isResult: false,
 };
 
 PatientInfos.propTypes = {
     patient: PropTypes.object.isRequired,
-    duplicatePatient: PropTypes.object,
     intl: PropTypes.object.isRequired,
+    fixConflict: PropTypes.func,
+    conflicts: PropTypes.array,
+    isResult: PropTypes.bool,
 };
 
 const PatientInfosWithIntl = injectIntl(PatientInfos);

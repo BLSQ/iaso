@@ -48,6 +48,20 @@
             top: 10px;
         }
     }
+    .widget__header-button-container {
+        position: absolute;
+        right: $padding-unit;
+        top: 0;
+        width: 70%;
+        height: 100%;
+        text-align: right;
+        button {
+            position: relative !important;
+            right: auto !important;
+            top: $padding-unit / 3 !important;
+            left: auto !important;
+        }
+    }
 }
 
 .widget__footer {

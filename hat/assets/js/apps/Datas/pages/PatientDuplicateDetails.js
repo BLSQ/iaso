@@ -10,44 +10,6 @@ import { patientsActions } from '../redux/patients';
 import DuplicatePatientDetailsWrapper from '../components/DuplicatePatientDetailsWrapper';
 import MergedPatientDetailsWrapper from '../components/MergedPatientDetailsWrapper';
 
-const mergeDuplicates = (itemA, itemB) => {
-    const mergedItem = {};
-    if (itemA) {
-        Object.keys(itemA).map((key) => {
-            switch (typeof itemA[key]) {
-                case 'boolean':
-                case 'number':
-                    if (itemA[key] === itemB[key]) {
-                        mergedItem[key] = itemA[key];
-                    } else {
-                        mergedItem[key] = ' ';
-                    }
-                    break;
-                case 'string':
-                    if (itemA[key].toLowerCase() === itemB[key].toLowerCase()) {
-                        mergedItem[key] = itemA[key];
-                    } else {
-                        mergedItem[key] = ' ';
-                    }
-                    break;
-                case 'object':
-                    if (Array.isArray(itemA[key])) {
-                        mergedItem[key] = itemA[key].concat(itemB[key]);
-                    } else if (itemA[key] === null) {
-                        mergedItem[key] = ' ';
-                    } else {
-                        mergedItem[key] = mergeDuplicates(itemA[key], itemB[key]);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            return null;
-        });
-    }
-    delete mergedItem.similar_patients;
-    return mergedItem;
-};
 class PatientDuplicateDetails extends React.Component {
     constructor(props) {
         super(props);
@@ -56,6 +18,7 @@ class PatientDuplicateDetails extends React.Component {
             duplicatePatient: null,
             mergedPatient: null,
             manualMerge: false,
+            conflicts: [],
         };
     }
 
@@ -67,7 +30,9 @@ class PatientDuplicateDetails extends React.Component {
         this.setState({
             patient: nextProps.patient,
             duplicatePatient: nextProps.duplicatePatient,
-            mergedPatient: mergeDuplicates(nextProps.patient, nextProps.duplicatePatient),
+            mergedPatient: nextProps.mergedPatient,
+            conflicts: nextProps.conflicts,
+            manualMerge: nextProps.params.manual_merge === 'true',
         });
     }
 
@@ -79,6 +44,7 @@ class PatientDuplicateDetails extends React.Component {
         delete tempParams.patient_id;
         delete tempParams.patient_id_2;
         delete tempParams.duplicate_id;
+        delete tempParams.manual_merge;
         this.setState({
             patient: null,
             duplicatePatient: null,
@@ -89,10 +55,36 @@ class PatientDuplicateDetails extends React.Component {
     }
 
     toggleManualMerge() {
-        this.setState({
-            manualMerge: !this.state.manualMerge,
-            mergedPatient: mergeDuplicates(this.props.patient, this.props.duplicatePatient),
+        this.props.redirectTo('register/duplicates/detail', {
+            ...this.props.params,
+            manual_merge: !this.state.manualMerge,
         });
+    }
+
+    resetMergedPatient() {
+        const { dispatch } = this.props;
+        dispatch(patientsActions.getManualMergedPatient(this.props.patient, this.props.duplicatePatient));
+    }
+
+    fixConflict(key, value) {
+        const { dispatch } = this.props;
+        const tempMergedPatient = {
+            ...this.state.mergedPatient,
+        };
+        tempMergedPatient[key] = value;
+        const tempConflicts = [];
+        tempConflicts.splice(this.state.conflicts.indexOf(key), 1);
+        this.state.conflicts.map((c) => {
+            const conflict = {
+                ...c,
+            };
+            if (conflict.key === key) {
+                conflict.value = value;
+            }
+            tempConflicts.push(conflict);
+            return null;
+        });
+        dispatch(patientsActions.setManualMergedPatient(tempMergedPatient, tempConflicts));
     }
 
     render() {
@@ -102,13 +94,16 @@ class PatientDuplicateDetails extends React.Component {
                 formatMessage,
             },
             testsMapping,
+            params,
         } = this.props;
         const {
             patient,
             duplicatePatient,
             mergedPatient,
             manualMerge,
+            conflicts,
         } = this.state;
+        const conflictsNotSolved = conflicts.filter(c => c.value === undefined);
         return (
             <section>
                 {
@@ -129,83 +124,85 @@ class PatientDuplicateDetails extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage id="datas.patientsDuplicate.header.title" defaultMessage="Détail Doublon" />:
                         </h2>
-                        <button
-                            className="button--warning"
-                            onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
-                        >
-                            <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
-                        </button>
+                        <div className="widget__header-button-container">
+                            <button
+                                className="button margin-right"
+                                onClick={() => this.toggleManualMerge()}
+                            >
+                                {
+                                    !manualMerge &&
+                                    <FormattedMessage
+                                        id="patientsDuplicate.manualMerge"
+                                        defaultMessage="Fusionner manuelement"
+                                    />
+                                }
+                                {
+                                    manualMerge &&
+                                    <FormattedMessage
+                                        id="patientsDuplicate.autoMerge"
+                                        defaultMessage="Fusionner automatiquement"
+                                    />
+                                }
+                            </button>
+                            <button
+                                className="button"
+                                onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
+                            >
+                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
+                            </button>
+                        </div>
                     </div>
 
                     {
-                        patient && patient.id && duplicatePatient && duplicatePatient.id &&
-                        <div className="align-center widget__content">
+                        manualMerge &&
+                        <div className="align-right padding big-padding-right">
                             {
-                                !manualMerge &&
-                                <button
-                                    className="button"
-                                    onClick={() => this.props.mergeDuplicates(patient.id, this.props.params.duplicate_id, this)}
-                                >
-                                    <FormattedMessage
-                                        id="patientsDuplicate.merge"
-                                        defaultMessage="Fusionner les patients dans {value}"
-                                        values={{
-                                            value: 'A',
-                                        }}
-                                    />
-                                </button>
-                            }
-                            <div className="middle-margin-element">
-                                <button
-                                    className="button--warning"
-                                    onClick={() => this.toggleManualMerge()}
-                                >
+                                mergedPatient &&
+                                <div className="conflicts-count-container">
                                     {
-                                        !manualMerge &&
-                                        <FormattedMessage
-                                            id="patientsDuplicate.manualMerge"
-                                            defaultMessage="Fusionner manuelement"
-                                        />
+                                        conflictsNotSolved.length !== 0 &&
+                                        <span className="error-text">
+                                            {`${conflictsNotSolved.length} `}
+                                            <FormattedMessage
+                                                id="patientsDuplicate.conflicts"
+                                                defaultMessage="conflit(s) à fixer"
+                                            />
+                                        </span>
                                     }
                                     {
-                                        manualMerge &&
-                                        <FormattedMessage
-                                            id="patientsDuplicate.autoMerge"
-                                            defaultMessage="Fusionner automatiquement"
-                                        />
+                                        conflictsNotSolved.length === 0 &&
+                                        <span className="success-text">
+                                            <FormattedMessage
+                                                id="patientsDuplicate.conflictssolved"
+                                                defaultMessage="Tous les conflits sont réglés"
+                                            />
+                                        </span>
                                     }
-                                </button>
-                            </div>
-                            {
-                                !manualMerge &&
-                                <button
-                                    className="button"
-                                    onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this)}
-                                >
-                                    <FormattedMessage
-                                        id="patientsDuplicate.merge"
-                                        defaultMessage="Fusionner les patients dans {value}"
-                                        values={{
-                                            value: 'B',
-                                        }}
-                                    />
-                                </button>
+                                </div>
                             }
-                            {
-                                manualMerge &&
-                                <button
-                                    className="button--success float-right"
-                                    onClick={() => console.log('manual merge')}
-                                >
-                                    <FormattedMessage
-                                        id="patientsDuplicate.mergeManualButton"
-                                        defaultMessage="Valider"
-                                    />
-                                </button>
-                            }
+                            <button
+                                className="button margin-right"
+                                disabled={conflictsNotSolved.length === conflicts.length}
+                                onClick={() => this.resetMergedPatient()}
+                            >
+                                <FormattedMessage
+                                    id="patientsDuplicate.cancel"
+                                    defaultMessage="Annuler"
+                                />
+                            </button>
+                            <button
+                                className="button"
+                                disabled={conflictsNotSolved.length !== 0}
+                                onClick={() => console.log('manual merge')}
+                            >
+                                <FormattedMessage
+                                    id="patientsDuplicate.mergeManualButton"
+                                    defaultMessage="Valider"
+                                />
+                            </button>
                         </div>
                     }
-                    <div className={`widget__content border-top ${manualMerge ? ' merge-container' : ''}`}>
+                    <div className={`widget__content ${manualMerge ? ' merge-container border-top' : ''}`}>
                         {
                             patient && patient.id &&
                             duplicatePatient && duplicatePatient.id &&
@@ -213,6 +210,11 @@ class PatientDuplicateDetails extends React.Component {
                                 patient={patient}
                                 duplicatePatient={duplicatePatient}
                                 testsMapping={testsMapping}
+                                params={params}
+                                manualMerge={manualMerge}
+                                mergeDuplicates={(patientIdA, patientIdB) => this.props.mergeDuplicates(patientIdA, patientIdB)}
+                                fixConflict={(key, value) => this.fixConflict(key, value)}
+                                conflicts={conflicts}
                             />
                         }
                         {
@@ -223,6 +225,7 @@ class PatientDuplicateDetails extends React.Component {
                             <MergedPatientDetailsWrapper
                                 mergedPatient={mergedPatient}
                                 testsMapping={testsMapping}
+                                conflicts={conflicts}
                             />
                         }
                     </div>
@@ -230,6 +233,9 @@ class PatientDuplicateDetails extends React.Component {
             </section>);
     }
 }
+PatientDuplicateDetails.defaultProps = {
+    mergedPatient: null,
+};
 
 PatientDuplicateDetails.propTypes = {
     params: PropTypes.object.isRequired,
@@ -241,6 +247,9 @@ PatientDuplicateDetails.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     testsMapping: PropTypes.object.isRequired,
     mergeDuplicates: PropTypes.func.isRequired,
+    mergedPatient: PropTypes.object,
+    conflicts: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
@@ -250,6 +259,8 @@ const MapStateToProps = state => ({
     patient: state.patients.current,
     duplicatePatient: state.patients.duplicateCurrent,
     testsMapping: state.patients.testsMapping,
+    mergedPatient: state.patients.manualMergedPatient,
+    conflicts: state.patients.manualMergedConflicts,
 });
 
 const MapDispatchToProps = dispatch => ({

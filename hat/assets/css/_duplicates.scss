@@ -5,6 +5,35 @@
         }
     }
 }
+.duplicate-table .patient-infos-container {
+    table {
+        th {
+            width: 100px;
+        }
+        td {
+            width: auto;
+            &.solved{
+                color: red;
+                &:after {
+                    margin-left: 10px;
+                    display: inline-block;
+                    font: normal normal normal 14px/1 FontAwesome;
+                    font-size: inherit;
+                    text-rendering: auto;
+                    color: red;
+                    content: "\f00d";
+                }
+                &.active {
+                    color: green;
+                    &:after {
+                        color: green;
+                        content: "\f00c";
+                    }
+                }
+            }
+        }
+    }
+}
 
 .test-container {
     table {
@@ -37,13 +66,17 @@
         content: '';
     }
     h2 {
-        width: calc(100% - #{$padding-unit / 4});
+        width: 100% !important;
     }
     tbody {
         tr {
-            td {
+            td, td:first-child {
                 padding-right: 0 !important;
             }
         }
     }
+}
+.conflicts-count-container {
+    float: left;
+    padding: $padding-unit / 4 $padding-unit / 2 $padding-unit / 2 $padding-unit / 2;
 }

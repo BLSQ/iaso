@@ -88,7 +88,11 @@ span.error {
     padding: 10px;
 }
 
-td.error-text,
+td.error-text{
+    background: $background-highlight-gray;
+    color: red;
+}
+
 span.error-text {
     background: transparent;
     color: red;
@@ -98,6 +102,9 @@ td.warning,
 span.warning {
     background: $orange;
     color: white;
+}
+td.warning-light,{
+    background: $yellow;
 }
 
 td.ok,

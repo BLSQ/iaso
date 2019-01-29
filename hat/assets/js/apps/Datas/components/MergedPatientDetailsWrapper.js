@@ -11,6 +11,7 @@ class MergedPatientDetailsWrapper extends React.Component {
         const {
             mergedPatient,
             testsMapping,
+            conflicts,
         } = this.props;
         return (
             <section className="duplicate-page result">
@@ -27,7 +28,11 @@ class MergedPatientDetailsWrapper extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <PatientInfos patient={mergedPatient} />
+                                <PatientInfos
+                                    patient={mergedPatient}
+                                    conflicts={conflicts}
+                                    isResult
+                                />
                             </td>
                         </tr>
                     </tbody>
@@ -41,7 +46,7 @@ class MergedPatientDetailsWrapper extends React.Component {
                                         <td>
                                             <h2 className="widget__heading">
                                                 <span className="case-id">
-                                                    <span>Hat ID</span>: {caseItem.hat_id} - <span>ID</span>: {caseItem.id}
+                                                    <span>Hat ID</span>: {caseItem.hat_id}
                                                 </span>
                                             </h2>
                                         </td>
@@ -50,7 +55,9 @@ class MergedPatientDetailsWrapper extends React.Component {
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <PatientCasesInfos currentCase={caseItem} />
+                                            <PatientCasesInfos
+                                                currentCase={caseItem}
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -82,6 +89,7 @@ class MergedPatientDetailsWrapper extends React.Component {
 MergedPatientDetailsWrapper.propTypes = {
     mergedPatient: PropTypes.object.isRequired,
     testsMapping: PropTypes.object.isRequired,
+    conflicts: PropTypes.array.isRequired,
 };
 
 const DuplicatePatientDetailsWrapperWithIntl = injectIntl(MergedPatientDetailsWrapper);

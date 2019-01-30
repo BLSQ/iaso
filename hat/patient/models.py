@@ -1,9 +1,7 @@
 import json
 
 from django.contrib.gis.db import models as gis_models
-from django.contrib.gis.serializers import geojson
 from django.contrib.postgres.fields import ArrayField
-from django.core.serializers import serialize
 from django.db import models
 from django.db.models import Q, CASCADE, TextField
 from django.contrib.postgres import fields as contrib

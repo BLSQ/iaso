@@ -73,7 +73,7 @@ class Site(models.Model):
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.id, self.habitat, self.location)
+        return "%s - %s - %s" % (self.id, self.name, self.location)
 
     def as_location(self):
         try:

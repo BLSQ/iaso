@@ -2,12 +2,16 @@ import gc
 from typing import List, Any
 from uuid import uuid4
 from subprocess import run, PIPE, CalledProcessError
+
+import boto3
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
+from hat.settings import SNS_NOTIFICATION_TOPIC
+
 
 def run_cmd(cmd: List[str], **kwargs: Any) -> str:
-    '''Helper function to run an external command.'''
+    """Helper function to run an external command."""
     args = {
         'stdout': PIPE,
         'stderr': PIPE,
@@ -23,7 +27,7 @@ def run_cmd(cmd: List[str], **kwargs: Any) -> str:
 
 
 def create_shared_filename(suffix: str) -> str:
-    '''Create a unique filename in the shared directory with given suffix.'''
+    """Create a unique filename in the shared directory with given suffix."""
     return '{}/{}{}'.format(settings.SHARED_DIR, str(uuid4()), suffix)
 
 
@@ -60,5 +64,72 @@ def queryset_iterator(queryset, chunk_size=1000):
             pk = row.id
             yield row
         gc.collect()
+
+
+def sns_notify(message):
+    """
+    Send a notification to an AWS SNS topic.
+    The SNS topic arn is configured with an environment variable SNS_NOTIFICATION_TOPIC
+    On a developer workstation, define the env vars: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+    On beanstalk the credentials are automatically provided but the role needs to be allowed into the SNS policy like:
+    {
+    "Version": "2008-10-17",
+      "Id": "__default_policy_ID",
+      "Statement": [
+        {
+          "Sid": "__default_statement_ID",
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "*"
+          },
+          "Action": [
+            "SNS:Publish",
+            "SNS:RemovePermission",
+            "SNS:SetTopicAttributes",
+            "SNS:DeleteTopic",
+            "SNS:ListSubscriptionsByTopic",
+            "SNS:GetTopicAttributes",
+            "SNS:Receive",
+            "SNS:AddPermission",
+            "SNS:Subscribe"
+          ],
+          "Resource": "arn:aws:sns:eu-central-1:457634672864:backend-prod",
+          "Condition": {
+            "StringEquals": {
+              "AWS:SourceOwner": "457634672864"
+            }
+          }
+        },
+        {
+          "Sid": "AWSConfigSNSPolicy",
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "arn:aws:sts::457634672864:assumed-role/aws-elasticbeanstalk-ec2-role/i-043eeca9548142a48"
+          },
+          "Action": "SNS:Publish",
+          "Resource": "arn:aws:sns:eu-central-1:457634672864:backend-prod"
+        }
+      ]
+    }
+    :param message: Text message to be sent
+    :return: SNS response or None if AWS not configured
+    """
+
+    if SNS_NOTIFICATION_TOPIC:
+        try:
+            client = boto3.client('sns', region_name='eu-central-1')
+
+            response = client.publish(
+                TopicArn=SNS_NOTIFICATION_TOPIC,
+                Message=str(message)
+            )
+
+            return response
+        except Exception as exc:
+            print("Failed to notify over SNS", str(exc))
+            return None
+    else:
+        return None
+
 
 ANONYMOUS_PLACEHOLDER = "•••••••••••"

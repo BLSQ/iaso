@@ -15,6 +15,7 @@ import logging
 import dateutil
 import numpy
 import pandas
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Q
 from pandas import DataFrame, concat as pandasconcat
@@ -24,7 +25,7 @@ from hat.cases.models import Case, Location
 from hat.common.utils import is_int
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
-from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_gps, mobile_get_location_from_coordinates, \
+from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_coordinates, \
     mobile_get_date
 from hat.patient.duplicates import create_potential_duplicates_for_patient
 from hat.patient.identify import get_or_create_patient_from_case, create_test_data, create_or_udpate_treatments
@@ -277,6 +278,13 @@ def normalize_location(case_zone, case_area, case_village, device_id=None, latit
                         village.gps_source = 'case_geoloc'
                     village.save()
                     return village.AS, village
+            except MultipleObjectsReturned as exc:
+                print("Multiple villages found where only zero or one was expected. Village:",
+                      case_zone, case_area, case_village, "found",
+                      ", ".join([(x.id, x.name) for x in Village.objects.filter(Q(
+                          Q(AS_id=case_area) &
+                          Q(Q(name=case_village) | Q(aliases__contains=[case_village]))))]))
+                raise Exception(f"Multiple villages found where one expected {case_village}") from exc
             return db_as, None
     else:
         return get_single_as_and_village(case_zone, case_area, case_village)

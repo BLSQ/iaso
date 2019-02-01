@@ -11,7 +11,7 @@ columns_tests = ['Identifiant', 'ID Patient', 'Type', 'Index', 'Résultats', 'Eq
 columns_treatments = ['Identifiant', 'ID Patient', 'Index', 'Médicament', 'Date de début', 'Date de fin',
                         "Cause de l'incomplétude", 'Evenements indésirables', 'Complet', 'Succés', 'Perdu', 'ID Tablette', 'Utilisateur tablette', 'Equipe Tablette']
 
-def get_row(patient, request):
+def get_row(patient, request = None):
     pdict = patient.as_dict()
     dead = "--"
     if (pdict["dead"]):
@@ -51,7 +51,7 @@ def get_row(patient, request):
         treatments,
     ]
 
-def get_row_tests(test, request):
+def get_row_tests(test, request = None):
     caseItem = test.form
     return [
         test.id,
@@ -73,7 +73,7 @@ def get_row_tests(test, request):
         test.form.test_pl_comments if (test.form.test_pl_comments and test.type == 'PL') else '/'
     ]
 
-def get_row_treatments(treatment, request):
+def get_row_treatments(treatment, request = None):
     tdict = treatment.as_dict()
     return [
         tdict["id"],

@@ -95,12 +95,12 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Age',
-                                id: 'duplicate.label.age',
+                                defaultMessage: 'Année de naissance',
+                                id: 'duplicate.label.year_of_birth',
                             })}: `}
                         </strong>
-                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error-text' : ''}`}>
-                            {settings.original.patient1.age}
+                        <span className={`${settings.original.patient1.year_of_birth !== settings.original.patient2.year_of_birth ? 'error-text' : ''}`}>
+                            {settings.original.patient1.year_of_birth}
                         </span>
                     </li>
                     <li>
@@ -164,8 +164,8 @@ const duplicateListColumns = formatMessage => (
                         </span>
                     </li>
                     <li>
-                        <span className={`${settings.original.patient1.age !== settings.original.patient2.age ? 'error-text' : ''}`}>
-                            {settings.original.patient2.age}
+                        <span className={`${settings.original.patient1.year_of_birth !== settings.original.patient2.year_of_birth ? 'error-text' : ''}`}>
+                            {settings.original.patient2.year_of_birth}
                         </span>
                     </li>
                     <li>

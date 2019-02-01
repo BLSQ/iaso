@@ -214,7 +214,7 @@ class PatientDuplicateDetails extends React.Component {
                                 testsMapping={testsMapping}
                                 params={params}
                                 manualMerge={manualMerge}
-                                mergeDuplicates={(patientIdA, patientIdB) => this.props.mergeDuplicates(patientIdA, patientIdB)}
+                                mergeDuplicates={(patientIdA, patientIdB) => this.props.mergeDuplicates(patientIdA, patientIdB, this)}
                                 fixConflict={(key, value) => this.fixConflict(key, value)}
                                 conflicts={conflicts}
                             />
@@ -268,7 +268,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchDuplicatesDetails: (patientId, patientId2) => dispatch(patientsActions.fetchDuplicatesDetails(dispatch, patientId, patientId2)),
-    mergeDuplicates: (targetId, duplicateId, goBack, ignore = false) => dispatch(patientsActions.mergeDuplicates(dispatch, duplicateId, targetId, goBack, ignore)),
+    mergeDuplicates: (targetId, duplicateId, element, ignore = false) => dispatch(patientsActions.mergeDuplicates(dispatch, duplicateId, targetId, element, ignore)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

@@ -28,9 +28,9 @@ const MESSAGES = {
         defaultMessage: 'Décès',
         id: 'patientsinfos.death',
     },
-    age: {
-        defaultMessage: 'Age',
-        id: 'patientsinfos.age',
+    year_of_birth: {
+        defaultMessage: 'Année de naissance',
+        id: 'patientsinfos.year_of_birth',
     },
     province: {
         defaultMessage: 'Province d\'origine',
@@ -134,7 +134,27 @@ class PatientInfos extends React.Component {
                                                 )
                                             }
                                             {
-                                                ((key !== 'sex' && key !== 'death')) &&
+                                                key === 'death' &&
+                                                (
+                                                    patient.death.dead === false && fieldPlaceholder !== '--' ? '--' : ''
+                                                )
+                                            }
+                                            {
+                                                key === 'year_of_birth' &&
+                                                (
+                                                    patient.year_of_birth ?
+                                                        <span>
+                                                            {`${patient.year_of_birth} (${moment().format('YYYY') - patient.year_of_birth} ${
+                                                                formatMessage({
+                                                                    defaultMessage: 'ans',
+                                                                    id: 'patientsinfos.years',
+                                                                })})`}
+                                                        </span>
+                                                        : fieldPlaceholder
+                                                )
+                                            }
+                                            {
+                                                ((key !== 'sex' && key !== 'death' && key !== 'year_of_birth')) &&
                                                     (
                                                         patient[key] ? patient[key] : fieldPlaceholder
                                                     )

@@ -67,24 +67,26 @@ class PatientDuplicateDetails extends React.Component {
     }
 
     fixConflict(key, value) {
-        const { dispatch } = this.props;
-        const tempMergedPatient = {
-            ...this.state.mergedPatient,
-        };
-        tempMergedPatient[key] = value;
-        const tempConflicts = [];
-        tempConflicts.splice(this.state.conflicts.indexOf(key), 1);
-        this.state.conflicts.map((c) => {
-            const conflict = {
-                ...c,
+        if (value) {
+            const { dispatch } = this.props;
+            const tempMergedPatient = {
+                ...this.state.mergedPatient,
             };
-            if (conflict.key === key) {
-                conflict.value = value;
-            }
-            tempConflicts.push(conflict);
-            return null;
-        });
-        dispatch(patientsActions.setManualMergedPatient(tempMergedPatient, tempConflicts));
+            tempMergedPatient[key] = value;
+            const tempConflicts = [];
+            tempConflicts.splice(this.state.conflicts.indexOf(key), 1);
+            this.state.conflicts.map((c) => {
+                const conflict = {
+                    ...c,
+                };
+                if (conflict.key === key) {
+                    conflict.value = value;
+                }
+                tempConflicts.push(conflict);
+                return null;
+            });
+            dispatch(patientsActions.setManualMergedPatient(tempMergedPatient, tempConflicts));
+        }
     }
 
     render() {

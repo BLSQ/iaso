@@ -129,7 +129,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.last_user" defaultMessage="Utilisateur tablette" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.last_user !== currentCase.device.last_user) ? 'error' : ''}`}>
-                                {currentCase.device ? currentCase.device.last_user : '--'}
+                                {currentCase.device && currentCase.device.last_user ? currentCase.device.last_user : '--'}
                             </td>
                         </tr>
                         <tr>
@@ -137,7 +137,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.last_team" defaultMessage="Equipe tablette" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.last_team !== currentCase.device.last_team) ? 'error' : ''}`}>
-                                {currentCase.device ? currentCase.device.last_team : '--'}
+                                {currentCase.device && currentCase.device.last_team ? currentCase.device.last_team : '--'}
                             </td>
                         </tr>
                         <tr>
@@ -145,7 +145,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.id" defaultMessage="Tablette id" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.device_id !== currentCase.device.device_id) ? 'error' : ''}`}>
-                                {currentCase.device ? currentCase.device.device_id : '--'}
+                                {currentCase.device && currentCase.device.device_id ? currentCase.device.device_id : '--'}
                             </td>
                         </tr>
                     </tbody>

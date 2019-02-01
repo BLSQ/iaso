@@ -122,7 +122,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     similarCase={similarCase}
                                                 />
                                             </td>
-                                            <td>
+                                            <td className={similarCase ? '' : 'empty'}>
                                                 <PatientCasesInfos
                                                     currentCase={similarCase}
                                                     similarCase={caseItem}
@@ -136,7 +136,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     similarCase={similarCase}
                                                 />
                                             </td>
-                                            <td>
+                                            <td className={similarCase ? '' : 'empty'}>
                                                 <PatientCasesLocation
                                                     currentCase={similarCase}
                                                     similarCase={caseItem}
@@ -159,7 +159,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                 testsMapping={testsMapping}
                                                             />
                                                         </td>
-                                                        <td>
+                                                        <td className={similarTest ? '' : 'empty'}>
                                                             <PatientTestComponent
                                                                 currentCase={caseItem}
                                                                 test={similarTest}
@@ -177,7 +177,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 if (!caseItem.tests[similarIndex]) {
                                                     return (
                                                         <tr key={similarTest.id}>
-                                                            <td />
+                                                            <td className="empty" />
                                                             <td>
                                                                 <PatientTestComponent
                                                                     currentCase={caseItem}

@@ -70,7 +70,7 @@ class PatientInfos extends React.Component {
                                 const hasConflict = conflicts.find(c => c.key === key && !c.value);
                                 if (!isResult) {
                                     const solvedConflict = conflicts.find(c => c.key === key && c.value);
-                                    className = `${hasConflict ? 'error' : ''}`;
+                                    className = `${hasConflict ? 'error' : ''} ${hasConflict && patient[key] ? 'pointer' : ''} ${hasConflict && !patient[key] ? 'forbid-pointer' : ''}`;
                                     if (key === 'death') {
                                         className += patient.death.dead ? ' error-text' : '';
                                     }

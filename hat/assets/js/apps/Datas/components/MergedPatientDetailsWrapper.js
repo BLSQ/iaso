@@ -5,6 +5,7 @@ import PatientInfos from './PatientInfos';
 import PatientCasesInfos from './PatientCasesInfos';
 import PatientCasesLocation from './PatientCasesLocation';
 import PatientTestComponent from './PatientTestComponent';
+import TreatmentComponent from '../components/TreatmentComponent';
 
 class MergedPatientDetailsWrapper extends React.Component {
     render() {
@@ -79,6 +80,35 @@ class MergedPatientDetailsWrapper extends React.Component {
                             </table>
                         </section>
                     ))
+                }
+                {
+                    mergedPatient.treatments.length > 0 &&
+                    <section>
+                        <table className="no-style duplicate-table">
+                            <thead>
+                                <tr>
+                                    <td>
+                                        <h2 className="widget__heading">
+                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement" />:
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    mergedPatient.treatments.map(t => (
+                                        <tr key={`treatement${t.id}`}>
+                                            <td>
+                                                <TreatmentComponent
+                                                    treatment={t}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </section>
                 }
             </section>
         );

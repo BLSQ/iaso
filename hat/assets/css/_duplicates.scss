@@ -16,9 +16,9 @@
         table {
             td {
                 width: auto;
-                height: 20px !important;
-                &.error-text {
-                    height: 18px !important;
+                height: 18px !important;
+                &.error {
+                    height: 14px !important;
                 }
                 &.solved {
                     color: red;

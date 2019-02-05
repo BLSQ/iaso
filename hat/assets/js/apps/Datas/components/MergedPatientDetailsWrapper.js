@@ -89,7 +89,7 @@ class MergedPatientDetailsWrapper extends React.Component {
                                 <tr>
                                     <td>
                                         <h2 className="widget__heading">
-                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement" />:
+                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
                                         </h2>
                                     </td>
                                 </tr>

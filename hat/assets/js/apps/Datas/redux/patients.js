@@ -111,7 +111,13 @@ const fetchDuplicatesDetails = (dispatch, patientId, patientId2) => {
     });
 };
 
-const mergeDuplicates = (dispatch, duplicateId, targetId, element, ignore) => {
+const mergeDuplicates = (
+    dispatch,
+    duplicateId,
+    targetId,
+    element,
+    ignore,
+) => {
     dispatch(loadActions.startLoading());
     let data = {
         merge: targetId,
@@ -135,6 +141,18 @@ const mergeDuplicates = (dispatch, duplicateId, targetId, element, ignore) => {
     });
 };
 
+export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, element) => {
+    dispatch(loadActions.startLoading());
+    return (req
+        .put(`/api/patients/${patient.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(patient)
+        .then(() => {
+            dispatch(mergeDuplicates(dispatch, duplicateId, targetId, element));
+        })
+        .catch(err => (console.error(`Error while saving patient ${err}`))));
+};
+
 
 export const patientsActions = {
     loadCurrentDetail,
@@ -144,6 +162,7 @@ export const patientsActions = {
     mergeDuplicates,
     getManualMergedPatient,
     setManualMergedPatient,
+    saveAndMergePatient,
 };
 
 export const patientsInitialState = {

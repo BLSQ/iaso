@@ -105,11 +105,15 @@ class Patient(models.Model):
         province = None
         if self.origin_area:
             AS = self.origin_area.name
+            AS_id = self.origin_area.id
             ZS = self.origin_area.ZS.name
+            ZS_id = self.origin_area.ZS.id
             province = self.origin_area.ZS.province.name
+            province_id = self.origin_area.ZS.province.id
         village = None
         if self.origin_village:
             village = self.origin_village.name
+            village_id = self.origin_village.id
 
         if self.dead:
             death = {
@@ -129,7 +133,6 @@ class Patient(models.Model):
             "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
-            "age": self.age,
             "year_of_birth": self.year_of_birth,
             "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "origin_area": self.origin_area.as_dict() if self.origin_area else None,
@@ -139,7 +142,11 @@ class Patient(models.Model):
             "province": province,
             "ZS": ZS,
             "AS": AS,
+            "province_id": province_id,
+            "ZS_id": ZS_id,
+            "AS_id": AS_id,
             "village": village,
+            "village_id": village_id,
             "death": death,
             "treatments": [t.as_dict() for t in self.treatment_set.all()]
         }

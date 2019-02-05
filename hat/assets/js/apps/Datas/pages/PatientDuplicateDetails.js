@@ -67,7 +67,7 @@ class PatientDuplicateDetails extends React.Component {
     }
 
     fixConflict(key, value) {
-        if (value) {
+        if (value && this.state.manualMerge) {
             const { dispatch } = this.props;
             const tempMergedPatient = {
                 ...this.state.mergedPatient,
@@ -87,6 +87,14 @@ class PatientDuplicateDetails extends React.Component {
             });
             dispatch(patientsActions.setManualMergedPatient(tempMergedPatient, tempConflicts));
         }
+    }
+
+    manualMerge() {
+        const newPatient = {
+            ...this.state.mergedPatient,
+        };
+        newPatient.id = this.props.patient.id;
+        this.props.saveAndMergePatient(newPatient, this.props.patient.id, this.props.params.duplicate_id, this);
     }
 
     render() {
@@ -195,7 +203,7 @@ class PatientDuplicateDetails extends React.Component {
                             <button
                                 className="button"
                                 disabled={conflictsNotSolved.length !== 0}
-                                onClick={() => console.log('manual merge')}
+                                onClick={() => this.manualMerge()}
                             >
                                 <FormattedMessage
                                     id="patientsDuplicate.mergeManualButton"
@@ -252,6 +260,7 @@ PatientDuplicateDetails.propTypes = {
     mergedPatient: PropTypes.object,
     conflicts: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
+    saveAndMergePatient: PropTypes.func.isRequired,
 };
 
 const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
@@ -269,6 +278,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchDuplicatesDetails: (patientId, patientId2) => dispatch(patientsActions.fetchDuplicatesDetails(dispatch, patientId, patientId2)),
     mergeDuplicates: (targetId, duplicateId, element, ignore = false) => dispatch(patientsActions.mergeDuplicates(dispatch, duplicateId, targetId, element, ignore)),
+    saveAndMergePatient: (patient, targetId, duplicateId, element) => dispatch(patientsActions.saveAndMergePatient(dispatch, patient, duplicateId, targetId, element)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

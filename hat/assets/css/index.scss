@@ -43,6 +43,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "colorPicker";
 @import "participant";
 @import "fileUpload";
+@import "arrayField";
 
 body {
   background-color: $background-gray;

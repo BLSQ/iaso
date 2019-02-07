@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { deepEqual } from '../../../utils';
+import ArrayFieldInput from '../../../components/ArrayFieldInput';
 
 class VillageInfosComponent extends Component {
     constructor(props) {
@@ -21,19 +22,19 @@ class VillageInfosComponent extends Component {
         }
     }
 
-
     render() {
         const { formatMessage } = this.props.intl;
         const {
             updateVillageField,
             villageSources,
         } = this.props;
+        const { village } = this.state;
         return (
             <section className="half-container">
                 <div>
                     <div>
                         <label
-                            htmlFor={`name-${this.state.village.id}`}
+                            htmlFor={`name-${village.id}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -44,15 +45,32 @@ class VillageInfosComponent extends Component {
                         <input
                             type="text"
                             name="name"
-                            id={`name-${this.state.village.id}`}
-                            className={(!this.state.village.name || this.state.village.name === '') ? 'form-error' : ''}
-                            value={this.state.village.name}
+                            id={`name-${village.id}`}
+                            className={(!village.name || village.name === '') ? 'form-error' : ''}
+                            value={village.name}
                             onChange={event => updateVillageField('name', event.currentTarget.value)}
                         />
                     </div>
                     <div>
                         <label
-                            htmlFor={`name-${this.state.village.population}`}
+                            htmlFor={`aliases-${village.id}`}
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.aliases"
+                                defaultMessage="Alias"
+                            />:
+                        </label>
+                        <ArrayFieldInput
+                            fieldList={village.aliases}
+                            name={`aliases-${village.id}`}
+                            baseId={`alias-${village.id}`}
+                            updateList={list => updateVillageField('aliases', list)}
+                        />
+                    </div>
+                    <div>
+                        <label
+                            htmlFor={`name-${village.population}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -63,15 +81,15 @@ class VillageInfosComponent extends Component {
                         <input
                             type="text"
                             name="name"
-                            id={`name-${this.state.village.population}`}
-                            value={this.state.village.population ? this.state.village.population : 0}
+                            id={`name-${village.population}`}
+                            value={village.population ? village.population : 0}
                             onChange={event => updateVillageField('population', parseInt(event.currentTarget.value, 10))}
                         />
                     </div>
 
                     <div>
                         <label
-                            htmlFor={`name-${this.state.village.village_official}`}
+                            htmlFor={`name-${village.village_official}`}
                             className="filter__container__select__label select-label"
                         >
                             <FormattedMessage
@@ -84,8 +102,8 @@ class VillageInfosComponent extends Component {
                             clearable={false}
                             simpleValue
                             name="village_official"
-                            value={this.state.village.village_official}
-                            className={!this.state.village.village_official ? 'form-error' : ''}
+                            value={village.village_official}
+                            className={!village.village_official ? 'form-error' : ''}
                             placeholder="--"
                             options={[
                                 {
@@ -124,7 +142,7 @@ class VillageInfosComponent extends Component {
                 <div>
                     <div>
                         <label
-                            htmlFor={`village_type-${this.state.village.village_type}`}
+                            htmlFor={`village_type-${village.village_type}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -135,14 +153,14 @@ class VillageInfosComponent extends Component {
                         <input
                             type="text"
                             name="village_type"
-                            id={`village_type-${this.state.village.village_type}`}
-                            value={this.state.village.village_type ? this.state.village.village_type : ''}
+                            id={`village_type-${village.village_type}`}
+                            value={village.village_type ? village.village_type : ''}
                             onChange={event => updateVillageField('village_type', event.currentTarget.value)}
                         />
                     </div>
                     <div>
                         <label
-                            htmlFor={`village_source-${this.state.village.village_source}`}
+                            htmlFor={`village_source-${village.village_source}`}
                             className="filter__container__select__label  select-label"
                         >
                             <FormattedMessage
@@ -155,7 +173,7 @@ class VillageInfosComponent extends Component {
                             clearable
                             simpleValue
                             name="village_source"
-                            value={this.state.village.id === 0 ? 'manual' : this.state.village.village_source}
+                            value={village.id === 0 ? 'manual' : village.village_source}
                             placeholder="--"
                             options={villageSources.map(v => ({ label: v[1], value: v[0] }))}
                             onChange={value => updateVillageField('village_source', value)}
@@ -163,7 +181,7 @@ class VillageInfosComponent extends Component {
                     </div>
                     <div>
                         <label
-                            htmlFor={`gps_source-${this.state.village.gps_source}`}
+                            htmlFor={`gps_source-${village.gps_source}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -174,8 +192,8 @@ class VillageInfosComponent extends Component {
                         <input
                             type="text"
                             name="gps_source"
-                            id={`gps_source-${this.state.village.gps_source}`}
-                            value={this.state.village.gps_source ? this.state.village.gps_source : ''}
+                            id={`gps_source-${village.gps_source}`}
+                            value={village.gps_source ? village.gps_source : ''}
                             onChange={event => updateVillageField('gps_source', event.currentTarget.value)}
                         />
                     </div>

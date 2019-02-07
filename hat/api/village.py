@@ -173,6 +173,7 @@ class VillageViewSet(viewsets.ViewSet):
                 page_offset = int(page_offset)
                 queryset = queryset.order_by(*orders)
                 values = values + (
+                    "aliases",
                     "AS_id",
                     "AS__name",
                     "AS__ZS_id",
@@ -281,7 +282,7 @@ class VillageViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         village = get_object_or_404(Village, id=pk)
-        is_authorized = is_authorized_user(request.user, village.ZS.province.id, village.ZS.id, village.AS.id)
+        is_authorized = is_authorized_user(request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id)
         if is_authorized:
             original_village = copy(village)
             village.name = request.data.get('name', '')
@@ -295,6 +296,7 @@ class VillageViewSet(viewsets.ViewSet):
             village.village_type = request.data.get('village_type', '')
             village.village_source = request.data.get('village_source', None)
             village.gps_source = request.data.get('gps_source', '')
+            village.aliases = request.data.get('aliases', '')
             AS_id = request.data.get('AS_id', None)
 
             if AS_id:
@@ -319,6 +321,7 @@ class VillageViewSet(viewsets.ViewSet):
         village_type = request.data.get('village_type', '')
         village_source = request.data.get('village_source', None)
         gps_source = request.data.get('gps_source', '')
+        aliases = request.data.get('aliases', '')
 
         village = Village()
         village.name = name
@@ -331,6 +334,7 @@ class VillageViewSet(viewsets.ViewSet):
         village.village_type = village_type
         village.village_source = village_source
         village.gps_source = gps_source
+        village.aliases = aliases
         is_authorized = True
         if AS_id:
             newAs = get_object_or_404(AS, pk=AS_id)

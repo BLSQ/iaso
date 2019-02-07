@@ -174,3 +174,27 @@ export const getWorkZoneName = (workzoneId, workzones) => {
     }
     return '';
 };
+
+
+export const addPositionIndex = (array) => {
+    const tempArray = [];
+    if (array) {
+        array.forEach((e, index) => {
+            tempArray.push({
+                value: e,
+                position: index,
+            });
+        });
+    }
+    return tempArray;
+};
+
+export const removePositionIndex = (array) => {
+    const tempArray = [];
+    if (array) {
+        array.forEach((e) => {
+            tempArray.push(e.value);
+        });
+    }
+    return tempArray;
+};

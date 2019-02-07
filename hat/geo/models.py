@@ -191,6 +191,7 @@ class Village(models.Model):
             "village_source": self.village_source,
             "gps_source": self.gps_source,
             "is_erased": self.is_erased,
+            "aliases": self.aliases
         }
 
 

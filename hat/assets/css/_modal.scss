@@ -65,6 +65,7 @@
             display: block !important;
             text-align: right;
             >div {
+                clear: both;
                 margin-bottom: 10px;
                 &.flex-container {
                     label {
@@ -121,6 +122,9 @@
                     label {
                         width: 25px !important;
                     }
+                }
+                .array-field-container {
+                    float: right;
                 }
             }
         }

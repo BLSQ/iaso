@@ -45,9 +45,7 @@ class CatchesViewSet(viewsets.ViewSet):
         'menupermissions.x_vectorcontrol'
     ]
 
-
     def list(self, request):
-
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         queryset = Catch.objects.all()
@@ -61,9 +59,9 @@ class CatchesViewSet(viewsets.ViewSet):
         return Response(queryset.values('id', 'male_count', 'female_count', 'unknown_count', 'source'))
 
     def retrieve(self, request, pk=None):
-        target = get_object_or_404(Catch, pk=pk)
+        catch = get_object_or_404(Catch, pk=pk)
 
-        return Response(target.as_dict())
+        return Response(catch.as_dict())
 
     def create(self, request):
         catches = request.data
@@ -114,6 +112,7 @@ class CatchesViewSet(viewsets.ViewSet):
             end_longitude = catch.get('endLongitude', None)
             end_altitude = catch.get('endAltitude', 0)
             new_catch.end_accuracy = catch.get('endAccuracy', None)
+            new_catch.problem = catch.get('problem', None)
             if end_latitude and end_longitude:
                 new_catch.end_location = Point(x=end_longitude, y=end_latitude, z=end_altitude, srid=4326)
 

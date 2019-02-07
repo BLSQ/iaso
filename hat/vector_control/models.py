@@ -146,6 +146,7 @@ class Catch(models.Model):
     start_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
+    problem = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "catches"
@@ -190,6 +191,7 @@ class Catch(models.Model):
         'remarks': self.remarks,
         'collect_date': self.collect_date,
         'setup_date': self.setup_date,
+        'problem': self.problem
     }
 
 

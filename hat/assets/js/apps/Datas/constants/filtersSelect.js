@@ -95,10 +95,11 @@ const filtersPatients2 = (
     ]
 );
 
-const filtersPatientsTreatments = (teamsList, formatMessage) => (
+const filtersPatientsTreatments = (teamsList, formatMessage, defineMessages) => (
     [
         teams(teamsList),
         medecine(formatMessage),
+        testerType(formatMessage, defineMessages),
         onlyTreatedPatients(),
         onlyDead(),
     ]

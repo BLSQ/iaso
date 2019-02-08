@@ -11,6 +11,7 @@ from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from hat.sync.models import DeviceDB
 
 from hat.patient.utils import *
 
@@ -71,6 +72,7 @@ class PatientsViewSet(viewsets.ViewSet):
         treatment_medicine = request.GET.get("treatment_medicine", None)
         with_treatment = request.GET.get("with_treatment", None)
         dead = request.GET.get("dead", None)
+        tester_type = request.GET.get("tester_type", None)
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -173,6 +175,11 @@ class PatientsViewSet(viewsets.ViewSet):
 
         if village_ids:
             queryset = queryset.filter(origin_village_id__in=village_ids.split(","))
+
+        if tester_type:
+            devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
+            cases = Case.objects.filter(device_id__in=devices).values_list('pk', flat=True)
+            queryset = queryset.filter(case__in=cases)
 
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
             if search_name:

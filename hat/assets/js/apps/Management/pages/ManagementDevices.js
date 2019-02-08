@@ -96,14 +96,64 @@ export class ManagementDevices extends Component {
                             defaultMessage: 'Images',
                             id: 'teamsdevices.images',
                         }),
-                        accessor: 'count_pictures_with_filename', // maybe use count_linked_pictures ?
+                        accessor: 'count_pictures',
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Images uploadées',
+                            id: 'teamsdevices.uploaded_images',
+                        }),
+                        accessor: 'count_linked_pictures',
+                        Cell: (settings) => {
+                            const missingCount = (settings.original.count_pictures - settings.original.count_linked_pictures);
+                            return (
+                                <span className={missingCount > 0 ? 'error-text' : ''} >
+                                    {settings.original.count_linked_pictures}
+                                    {
+                                        missingCount > 0 &&
+                                        <span>
+                                            <br />
+                                            {missingCount} {formatMessage({
+                                                defaultMessage: 'manquantes',
+                                                id: 'teamsdevices.missing',
+                                            })}
+                                        </span>
+                                    }
+                                </span>
+                            );
+                        },
                     },
                     {
                         Header: formatMessage({
                             defaultMessage: 'Vidéos',
                             id: 'teamsdevices.vidéos',
                         }),
-                        accessor: 'count_video_with_filename', // maybe use count_video_with_linked_video ?
+                        accessor: 'count_video',
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Vidéos uploadées',
+                            id: 'teamsdevices.vidéos_uploaded',
+                        }),
+                        accessor: 'count_video_with_linked_video',
+                        Cell: (settings) => {
+                            const missingCount = (settings.original.count_video - settings.original.count_video_with_linked_video);
+                            return (
+                                <span className={missingCount > 0 ? 'error-text' : ''} >
+                                    {settings.original.count_video_with_linked_video}
+                                    {
+                                        missingCount > 0 &&
+                                        <span>
+                                            <br />
+                                            {missingCount} {formatMessage({
+                                                defaultMessage: 'manquantes',
+                                                id: 'teamsdevices.missing',
+                                            })}
+                                        </span>
+                                    }
+                                </span>
+                            );
+                        },
                     },
                     {
                         Header: formatMessage({

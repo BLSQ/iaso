@@ -44,8 +44,14 @@ class DevicesViewSet(viewsets.ViewSet):
                     #                                         image_id__isnull=False) & Q(type=RDT)),
                     count_linked_pictures=Count('id', filter=Q(image_filename__isnull=False) & Q(
                                             image_id__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
-                    count_pictures_with_filename=Count('id', filter=Q(image_filename__isnull=False)),
-                    count_video_with_filename=Count('id', filter=Q(video_filename__isnull=False)),
+                    count_pictures=Count('id', filter=Q(image__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
+                    count_video=Count('id', filter=Q(video__isnull=False) &
+                            Q(
+                                Q(type=CTCWOO) |
+                                Q(type=MAECT) |
+                                Q(type=PL) |
+                                Q(type=PG)
+                            )),
                     count_video_with_linked_video=Count(
                         'id',
                         filter=Q(video_filename__isnull=False) &

@@ -134,6 +134,7 @@ class UserModale extends Component {
             zones,
             areas,
             permissions,
+            testerTypes,
         } = this.props;
         return (
             <ReactModal
@@ -163,6 +164,7 @@ class UserModale extends Component {
                             user={this.state.user}
                             updatePassword={password => this.updatePassword(password)}
                             updateUserField={(key, value) => this.updateUserField(key, value)}
+                            testerTypes={testerTypes}
                         />
                     }
                     {
@@ -237,6 +239,7 @@ UserModale.propTypes = {
     saveData: PropTypes.func.isRequired,
     institutions: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
+    testerTypes: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     teams: PropTypes.array.isRequired,

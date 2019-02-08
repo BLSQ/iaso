@@ -10,7 +10,7 @@ const tempTreatmentsMedecineMessages = {
     ...treatmentsMedecineMessages,
 };
 delete tempTreatmentsMedecineMessages.none;
-const MESSAGES = {
+export const MESSAGES = {
     positive: {
         defaultMessage: 'Positif',
         id: 'main.label.postive',
@@ -54,6 +54,14 @@ const MESSAGES = {
     sf: {
         defaultMessage: 'Sang frais',
         id: 'main.label.sf',
+    },
+    screener: {
+        defaultMessage: 'Dépisteur',
+        id: 'main.label.screener',
+    },
+    confirmer: {
+        defaultMessage: 'Confirmateur',
+        id: 'main.label.confirmer',
     },
 };
 
@@ -602,6 +610,34 @@ const onlyDead = () => (
     }
 );
 
+const testerType = (formatMessage, defineMessages) => (
+    {
+        name: 'tester_type',
+        urlKey: 'tester_type',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'screener')),
+                value: 'screener',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'confirmer')),
+                value: 'confirmer',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'cases.label.tester_type',
+            defaultMessage: 'Type de testeur',
+        },
+        type: 'select',
+    }
+);
+
 
 export {
     testType,
@@ -629,4 +665,5 @@ export {
     medecine,
     onlyTreatedPatients,
     onlyDead,
+    testerType,
 };

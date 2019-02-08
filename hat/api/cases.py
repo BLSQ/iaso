@@ -4,6 +4,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.audit.models import log_modification, CASE_API
+from hat.sync.models import DeviceDB
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
@@ -79,6 +80,7 @@ class CasesViewSet(viewsets.ViewSet):
         coordination = request.GET.get("coordination", None)
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
+        tester_type = request.GET.get("tester_type", None)
 
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -212,6 +214,10 @@ class CasesViewSet(viewsets.ViewSet):
                     queryset = queryset.filter(test_maect__isnull=False)
                 if test_type == "pl":
                     queryset = queryset.filter(test_pl__isnull=False)
+
+        if tester_type:
+            devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
+            queryset = queryset.filter(device_id__in=devices)
 
         # Performance prefetch
         queryset = queryset.prefetch_related("normalized_AS")

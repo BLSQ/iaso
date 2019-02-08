@@ -30,7 +30,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
-            '(/located/:located)(/test_type/:test_type)'}
+            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)'}
             component={CasesPage}
         />,
         <Route
@@ -38,7 +38,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
-            '(/located/:located)(/test_type/:test_type)'}
+            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)'}
             component={PatientDetailPage}
         />,
         <Route

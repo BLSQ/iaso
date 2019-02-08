@@ -8,11 +8,16 @@ from django.dispatch import receiver
 from functools import wraps
 from hat.geo.models import AS, ZS, Province
 from hat.users.middleware import get_current_user
+from django.db.models import TextField
 
 
 from django.contrib.auth.models import Permission
 
 
+TESTER_TYPE_CHOICES = (
+    ('screener', 'Dépisteur'),
+    ('confirmer', 'Confirmateur'),
+)
 def get_user_geo_list(user, key):
     return getattr(user.profile, key).values_list('pk', flat=True)
 
@@ -149,6 +154,7 @@ class Profile(models.Model):
     :ivar Institution institution:           User institution.
     """
 
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # permissions will be handled by Django standard mechanisms based on the user permissions
     team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL)
@@ -162,6 +168,8 @@ class Profile(models.Model):
     password_reset = models.BooleanField(default=False)
 
     phone = models.TextField(null=True, blank=True)
+
+    tester_type = models.TextField("Type de tester", choices=TESTER_TYPE_CHOICES, null=True, blank=True)
 
     def full_name(self):
         name = ""
@@ -203,7 +211,8 @@ class Profile(models.Model):
             "AS": self.AS_scope.all().values_list('id', flat=True),
             "ZS": self.ZS_scope.all().values_list('id', flat=True),
             "province": self.province_scope.all().values_list('id', flat=True),
-            "passwordReset": self.password_reset
+            "passwordReset": self.password_reset,
+            "tester_type": self.tester_type,
     }
 
 

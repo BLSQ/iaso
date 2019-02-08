@@ -100,7 +100,7 @@ export class ManagementDevices extends Component {
                     },
                     {
                         Header: formatMessage({
-                            defaultMessage: 'Images uploadées',
+                            defaultMessage: 'Images importées',
                             id: 'teamsdevices.uploaded_images',
                         }),
                         accessor: 'count_linked_pictures',
@@ -132,7 +132,7 @@ export class ManagementDevices extends Component {
                     },
                     {
                         Header: formatMessage({
-                            defaultMessage: 'Vidéos uploadées',
+                            defaultMessage: 'Vidéos importées',
                             id: 'teamsdevices.vidéos_uploaded',
                         }),
                         accessor: 'count_video_with_linked_video',

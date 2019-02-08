@@ -1,45 +1,97 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import PatientInfos from '../components/PatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
 import PatientCasesLocation from '../components/PatientCasesLocation';
 import PatientCasesTests from '../components/PatientCasesTests';
 import TreatmentComponent from '../components/TreatmentComponent';
+import TabsComponent from '../../../components/TabsComponent';
+
+const MESSAGES = defineMessages({
+    infos: {
+        defaultMessage: 'Patient',
+        id: 'management.infos',
+    },
+    tests: {
+        defaultMessage: 'Tests',
+        id: 'management.geo',
+    },
+});
+
+Math.easeInOutQuad = (t, b, c, d) => {
+    let tempT = t;
+    tempT /= d / 2;
+    if (tempT < 1) return (c / 2) * tempT * (tempT + b);
+    tempT -= 1;
+    return (-c / 2) * (((tempT * (tempT - 2)) - 1) + b);
+};
+
+const scrollToCase = () => {
+    const to = document.getElementById('selected-case').getBoundingClientRect().top;
+    window.scroll(0, to);
+};
+
 
 class PatientDetailsWrapper extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentTab: 'infos',
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.params.case_id) {
+            setTimeout(() => {
+                scrollToCase();
+            }, 300);
+        }
+    }
+
     render() {
         const {
             patient,
             testsMapping,
             params,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
+        const {
+            currentTab,
+        } = this.state;
         return (
             <section>
-                <div className="widget__container" >
-                    <div className="widget__header" >
-                        <h2 className="widget__heading">
-                            <FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Patient" />:
-                        </h2>
+                <TabsComponent
+                    selectTab={key => (this.setState({ currentTab: key }))}
+                    params={params}
+                    defaultPath={params.case_id ? 'tests/detail' : 'register/detail'}
+                    tabs={[
+                        { label: formatMessage(MESSAGES.infos), key: 'infos' },
+                        { label: formatMessage(MESSAGES.tests), key: 'tests' },
+                    ]}
+                    defaultSelect={currentTab}
+                />
+                {
+                    currentTab === 'infos' &&
+                    <div className="widget__container" >
+                        <div className="widget__content patient-detail">
+                            <PatientInfos patient={patient} />
+                        </div>
                     </div>
-                    <div className="widget__content patient-detail">
-                        <PatientInfos patient={patient} />
-                    </div>
-                </div>
+                }
                 {
                     patient.cases &&
+                    currentTab === 'tests' &&
                     <div className="widget__container" >
-                        <div className="widget__header">
-                            <h2 className="widget__heading">
-                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Test(s)" />:
-                            </h2>
-                        </div>
                         <div className="widget__content">
                             <ul className="cases-list">
                                 {
                                     patient.cases.map(c => (
                                         <li
                                             key={c.id}
+                                            id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                             className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                         >
                                             <div className="case-id">
@@ -95,6 +147,7 @@ class PatientDetailsWrapper extends React.Component {
 
 
 PatientDetailsWrapper.propTypes = {
+    intl: PropTypes.object.isRequired,
     patient: PropTypes.object.isRequired,
     testsMapping: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,

@@ -35,6 +35,7 @@ class PatientDetails extends React.Component {
         const baseUrl = params.case_id ? 'tests' : 'register/list';
         delete tempParams.patient_id;
         delete tempParams.case_id;
+        delete tempParams.tab;
         this.setState({
             patient: null,
         });

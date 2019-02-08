@@ -79,13 +79,21 @@ export const updateCurrentUser = payload => ({
 });
 
 
-export const fetchProvinces = (dispatch) => {
+export const fetchProvinces = (dispatch, removeLoader = false) => {
     req
         .get('/api/provinces/')
         .then((result) => {
             dispatch(setProvinces(result.body));
+            if (removeLoader) {
+                dispatch(loadActions.successLoadingNoData());
+            }
         })
-        .catch(err => (console.error(`Error while fetching plannings ${err}`)));
+        .catch((err) => {
+            if (removeLoader) {
+                dispatch(loadActions.errorLoading(err));
+            }
+            console.error(`Error while fetching plannings ${err}`);
+        });
     return ({
         type: FETCH_ACTION_NO_UPDATE,
     });
@@ -210,7 +218,7 @@ export const updateUser = (dispatch, user) => {
         .send(user)
         .then(() => {
             dispatch(userUpdated(true));
-            dispatch(loadActions.successLoadingNoData());
+            dispatch(fetchProvinces(dispatch, true));
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));

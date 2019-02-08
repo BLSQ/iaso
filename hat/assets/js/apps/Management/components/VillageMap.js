@@ -257,7 +257,7 @@ class VillageMap extends Component {
         if (item) {
             if (item.ZS) {
                 const currentZS = this.props.geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === item.ZS)[0];
-                this.state.containers.tooltipSmall.innerHTML = `AS: ${item.name} - ZS: ${currentZS.properties.name}`;
+                this.state.containers.tooltipSmall.innerHTML = `AS: ${item.name} - ZS: ${currentZS ? currentZS.properties.name : '--'}`;
             } else {
                 this.state.containers.tooltipSmall.innerHTML = `${currentZoom <= zooms.zs ? 'Province' : 'ZS'}: ${item.name}`;
             }

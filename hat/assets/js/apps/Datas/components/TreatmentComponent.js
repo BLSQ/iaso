@@ -58,14 +58,24 @@ class TreatmentComponent extends React.Component {
                                 treatment.issues.length > 0 &&
                                 <ul>
                                     {
-                                        treatment.issues.map((i, index) =>
-                                            (
-                                                <li key={`${i}-${index}`}>
-                                                    {
-                                                        treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''
-                                                    }
-                                                </li>
-                                            ))
+                                        treatment.issues.map((i, index) => {
+                                            if (i !== 'other') {
+                                                return (
+                                                    <li key={`${i}-${index}`}>
+                                                        {
+                                                            treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''
+                                                        }
+                                                    </li>
+                                                );
+                                            }
+                                            return null;
+                                        })
+                                    }
+                                    {
+                                        treatment.otherIssues !== '' &&
+                                        <li>
+                                            {treatment.otherIssues}
+                                        </li>
                                     }
                                 </ul>
                             }

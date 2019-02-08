@@ -219,6 +219,7 @@ class Treatment(models.Model):
     ISSUE_CONVULSION = 'convulsion'
     ISSUE_SEPTICEMY = 'septicemy'
     ISSUE_ACUTE_RESPIRATORY_FAILURE = 'acute respiratory failure'
+    ISSUE_OTHERS = 'other'
     ISSUE_CHOICES=(
         (ISSUE_VOMITING, 'vomiting'),
         (ISSUE_DIARRHEA, 'diarrhea'),
@@ -230,6 +231,7 @@ class Treatment(models.Model):
         (ISSUE_CONVULSION, 'convulsion'),
         (ISSUE_SEPTICEMY, 'septicemy'),
         (ISSUE_ACUTE_RESPIRATORY_FAILURE, 'acute respiratory failure'),
+        (ISSUE_OTHERS, 'other'),
     )
 
     INCOMPLETE_REASON_OUTOFSTOCK = 'outofstock'
@@ -268,6 +270,7 @@ class Treatment(models.Model):
         null=True,
         blank=True,
     )
+    other_issues = models.TextField(null=True, blank=True)
     location = gis_models.PointField(srid=GPS_SRID, null=True)
     incomplete_reasons = ArrayField(
         TextField(max_length=255, blank=True, choices=INCOMPLETE_REASON_CHOICES),
@@ -291,6 +294,7 @@ class Treatment(models.Model):
             "entry_date": self.entry_date,
             "adverse_effects": self.adverse_effects,
             "issues": self.issues,
+            "otherIssues": self.other_issues,
             "event": self.event,
             "incomplete_reasons": self.incomplete_reasons,
             "location": json.loads(self.location.geojson),

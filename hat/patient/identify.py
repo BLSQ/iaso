@@ -260,7 +260,7 @@ def create_or_udpate_treatments(patient, treatments, device_id):
                 'device': DeviceDB.objects.get(device_id=device_id),
                 'location': mobile_get_location_from_gps(treatment['position']),
                 'issues': treatment.get('issues', []),
-                'otherIssues': treatment.get('otherIssues', ''),
+                'other_issues': treatment.get('otherIssues', ''),
                 'incomplete_reasons': treatment.get('incompleteReasons', []),
             }
         )

@@ -203,6 +203,8 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEqual(stfix_treatment_dead['_id'], p1['id'])
 
         response = import_synced_devices()
+        self.assertEquals(len(response), 1)
+        self.assertTrue('stats' in response[0])
         stats = response[0]['stats']
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
@@ -249,10 +251,11 @@ class ImportMobileSyncDocuments(TestCase):
         pentamidine = treatments.get(medicine="pentamidine")
         self.assertIsNotNone(pentamidine.location)
         self.assertEquals(pentamidine.index, 0)
-        self.assertEquals(len(pentamidine.issues), 10)
+        self.assertEquals(len(pentamidine.issues), 11)
         self.assertEquals(pentamidine.issues, ["behaviour", "neuro", "convulsion", "acute respiratory failure",
                                                "septicemy", "vomiting", "diarrhea", "obnubilation", "desorientation",
-                                               "coma"])
+                                               "coma", "other"])
+        self.assertEquals(pentamidine.other_issues, "Patient grew a third eye and started speaking Greek")
         self.assertEquals(len(pentamidine.incomplete_reasons), 3)
         self.assertEquals(pentamidine.incomplete_reasons, ["patientincapacity", "abandon", "outofstock"])
         self.assertFalse(pentamidine.dead)

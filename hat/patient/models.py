@@ -270,7 +270,7 @@ class Treatment(models.Model):
         null=True,
         blank=True,
     )
-    otherIssues = models.TextField(null=True, blank=True)
+    other_issues = models.TextField(null=True, blank=True)
     location = gis_models.PointField(srid=GPS_SRID, null=True)
     incomplete_reasons = ArrayField(
         TextField(max_length=255, blank=True, choices=INCOMPLETE_REASON_CHOICES),
@@ -294,7 +294,7 @@ class Treatment(models.Model):
             "entry_date": self.entry_date,
             "adverse_effects": self.adverse_effects,
             "issues": self.issues,
-            "otherIssues": self.otherIssues,
+            "otherIssues": self.other_issues,
             "event": self.event,
             "incomplete_reasons": self.incomplete_reasons,
             "location": json.loads(self.location.geojson),

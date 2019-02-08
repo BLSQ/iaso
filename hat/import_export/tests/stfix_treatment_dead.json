@@ -96,8 +96,10 @@
                    "diarrhea",
                    "obnubilation",
                    "desorientation",
-                   "coma"
+                   "coma",
+                   "other"
                ],
+               "otherIssues": "Patient grew a third eye and started speaking Greek",
                "incompleteReasons": [
                    "patientincapacity",
                    "abandon",

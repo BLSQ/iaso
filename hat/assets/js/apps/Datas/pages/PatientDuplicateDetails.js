@@ -143,7 +143,7 @@ class PatientDuplicateDetails extends React.Component {
                                     !manualMerge &&
                                     <FormattedMessage
                                         id="patientsDuplicate.manualMerge"
-                                        defaultMessage="Fusionner manuelement"
+                                        defaultMessage="Fusionner manuellement"
                                     />
                                 }
                                 {

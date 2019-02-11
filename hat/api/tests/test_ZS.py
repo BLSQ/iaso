@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 
 class ZSTest(APITestCase):
-    fixtures = ['locations', 'users', 'cases', 'provinces']
+    fixtures = ['locations', 'users', 'patients', 'cases', 'provinces']
     expected_zs = {'id': 11, 'name': 'Mosango', 'province_id': 1}
 
     ###

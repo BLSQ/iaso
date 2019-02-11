@@ -43,7 +43,7 @@ class PatientDetailsWrapper extends React.Component {
                                             className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                         >
                                             <div className="case-id">
-                                                <span>Hat ID</span>: {c.hat_id} - <span>ID</span>: {c.id}
+                                                <span>Hat ID</span>: {c.hat_id}
                                             </div>
                                             <div className="widget__content--half perfect-fill">
                                                 <PatientCasesInfos currentCase={c} />

@@ -44,6 +44,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "participant";
 @import "fileUpload";
 @import "arrayField";
+@import "duplicates";
 
 body {
   background-color: $background-gray;

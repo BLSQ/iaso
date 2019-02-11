@@ -158,9 +158,6 @@ $directions: left right top bottom;
 
 .align-center {
     text-align: center;
-    .middle-margin-element {
-        margin: 0 5%;
-    }
 }
 
 .display-flex {
@@ -227,7 +224,7 @@ $directions: left right top bottom;
 }
 
 .padding-bottom {
-    padding-bottom: $padding-unit/2;
+    padding-bottom: $padding-unit/2 !important;
 }
 
 .padding-top {
@@ -238,12 +235,20 @@ $directions: left right top bottom;
     padding-right: $padding-unit/2;
 }
 
+.big-padding-right {
+    padding-right: $padding-unit;
+}
+
 .small-padding-right {
     padding-right: $padding-unit/4;
 }
 
 .margin-right {
     margin-right: $padding-unit/2;
+}
+
+.margin-left {
+    margin-left: $padding-unit/2;
 }
 
 .margin-bottom {

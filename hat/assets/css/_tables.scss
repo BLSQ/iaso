@@ -37,6 +37,9 @@ table {
     &.error-table {
         border: 1px solid red !important;
         border-collapse: separate;
+        position: relative;
+        top: -1px;
+        margin-bottom: -1px;
     }
 }
 
@@ -88,7 +91,11 @@ span.error {
     padding: 10px;
 }
 
-td.error-text,
+td.error-text {
+    background: $background-highlight-gray;
+    color: red;
+}
+
 span.error-text {
     background: transparent;
     color: red;
@@ -98,6 +105,11 @@ td.warning,
 span.warning {
     background: $orange;
     color: white;
+}
+
+td.warning-light,
+    {
+    background: $yellow;
 }
 
 td.ok,
@@ -196,22 +208,6 @@ tr:first-child td {
     }
 }
 
-.patient-infos-container {
-    table {
-        td {
-            width: 60%;
-        }
-    }
-}
-
-.test-container {
-    table {
-        td {
-            width: 80%;
-        }
-    }
-}
-
 .duplicate-table {
     >tbody {
         >tr {
@@ -220,6 +216,7 @@ tr:first-child td {
                 width: 50%;
                 padding-bottom: $padding-unit / 4 !important;
                 padding-left: $padding-unit / 4 !important;
+                padding-right: 0;
                 &:first-child {
                     padding-left: 0 !important;
                     padding-right: $padding-unit / 4 !important;
@@ -253,14 +250,83 @@ tr:first-child td {
                 &:first-child {
                     h2 {
                         margin-left: 0 !important;
-                        margin-right: $padding-unit / 4 !important;
                     }
                 }
             }
         }
     }
+    $highlighted-tests-border-color: $light-gray;
+    @mixin highlighted-tests {
+        position: relative;
+        padding: 8px ! important;
+        left: $padding-unit / 4;
+        &:before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background: lighten($blue, 44%);
+            border: 1px solid $highlighted-tests-border-color;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            height: calc(100% - 1px);
+            width: calc(100% - #{$padding-unit / 4});
+        }
+        h2 {
+            position: relative;
+            margin: 0 !important;
+        }
+        > div, > table {
+            position: relative;
+            width: calc(100% - #{$padding-unit / 4}) !important;
+        }
+        &:first-child {
+            &:before {
+                width: calc(100% - #{$padding-unit / 4});
+            }
+            left: 0;
+        }
+    }
     &.tests {
         margin-bottom: $padding-unit/2 !important;
+        >thead{
+            >tr {
+                >td, >th {
+                    @include highlighted-tests;
+                    &:before {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
+        >tbody{
+            >tr {
+                >td {
+                    @include highlighted-tests;
+                    &:before {
+                        border-bottom: 1px solid lighten($blue, 44%);
+                        border-top: none;
+                        border-top-left-radius: 0px;
+                        border-top-right-radius: 0px;
+                    }
+                    &.empty {
+                        &:before {
+                            display: none;
+                        }
+                    }
+                }
+                &:last-child {
+                    >td {
+                        &:before {
+                            border-bottom: 1px solid $highlighted-tests-border-color;
+                            border-bottom-left-radius: 5px;
+                            border-bottom-right-radius: 5px;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

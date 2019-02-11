@@ -70,7 +70,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '/page/:page(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
             '(/village_id/:village_id)(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
-            '(/test_type/:test_type)'}
+            '(/test_type/:test_type)(/manual_merge/:manual_merge)'}
             component={PatientDuplicateDetails}
         />,
         <Redirect path="/register/list" to={defaultPathRegister} />,

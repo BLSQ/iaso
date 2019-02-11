@@ -82,6 +82,11 @@
           "x_locator",
           "menupermissions",
           "custompermissionsupport"
+        ],
+        [
+          "x_management_devices",
+          "menupermissions",
+          "custompermissionsupport"
         ]
       ]
     }

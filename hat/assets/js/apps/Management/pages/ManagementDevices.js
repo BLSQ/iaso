@@ -27,6 +27,28 @@ const MESSAGES = defineMessages({
     },
 });
 
+const renderCountCell = (count, formatMessage) => {
+    let daysClass = 'ok';
+    let daysString = count;
+    if (!count || count < 0) {
+        daysString = formatMessage({
+            defaultMessage: 'N/A',
+            id: 'teamsdevices.last_sync.none',
+        });
+    }
+    if (!count || count < 0 || count > 40) {
+        daysClass = 'error';
+    }
+    if (count && count > 20 && count < 40) {
+        daysClass = 'warning';
+    }
+    return (
+        <span className={daysClass}>
+            {daysString}
+        </span>
+    );
+};
+
 export class ManagementDevices extends Component {
     constructor(props) {
         super(props);
@@ -71,44 +93,26 @@ export class ManagementDevices extends Component {
                         }),
                         accessor: 'days_since_sync',
                         className: 'full-div',
-                        Cell: (settings) => {
-                            let daysClass = 'ok';
-                            let daysString = settings.original.days_since_sync;
-                            if (settings.original.days_since_sync < 0) {
-                                daysString = 'Jamais Synchronisé';
-                            }
-
-                            if (settings.original.days_since_sync > 40) {
-                                daysClass = 'error';
-                            }
-                            if (settings.original.days_since_sync > 20) {
-                                daysClass = 'warning';
-                            }
-                            return (
-                                <span className={daysClass}>
-                                    {daysString}
-                                </span>
-                            );
-                        },
+                        Cell: settings => renderCountCell(parseInt(settings.original.days_since_sync, 10), formatMessage),
                     },
                     {
                         Header: formatMessage({
                             defaultMessage: 'Images',
                             id: 'teamsdevices.images',
                         }),
-                        accessor: 'count_pictures',
+                        accessor: 'count_captured_pictures',
                     },
                     {
                         Header: formatMessage({
                             defaultMessage: 'Images importées',
                             id: 'teamsdevices.uploaded_images',
                         }),
-                        accessor: 'count_linked_pictures',
+                        accessor: 'count_uploaded_pictures',
                         Cell: (settings) => {
-                            const missingCount = (settings.original.count_pictures - settings.original.count_linked_pictures);
+                            const missingCount = (settings.original.count_captured_pictures - settings.original.count_uploaded_pictures);
                             return (
                                 <span className={missingCount > 0 ? 'error-text' : ''} >
-                                    {settings.original.count_linked_pictures}
+                                    {settings.original.count_uploaded_pictures}
                                     {
                                         missingCount > 0 &&
                                         <span>
@@ -120,6 +124,23 @@ export class ManagementDevices extends Component {
                                         </span>
                                     }
                                 </span>
+                            );
+                        },
+                    },
+                    {
+                        Header: formatMessage({
+                            defaultMessage: 'Jours passés (img)',
+                            id: 'teamsdevices.daysImgSync',
+                        }),
+                        accessor: 'latest_image_upload',
+                        className: 'full-div',
+                        Cell: (settings) => {
+                            let daysCount = -1;
+                            if (settings.original.latest_image_upload) {
+                                daysCount = moment().diff(settings.original.latest_image_upload, 'days');
+                            }
+                            return (
+                                renderCountCell(daysCount, formatMessage)
                             );
                         },
                     },
@@ -128,19 +149,19 @@ export class ManagementDevices extends Component {
                             defaultMessage: 'Vidéos',
                             id: 'teamsdevices.vidéos',
                         }),
-                        accessor: 'count_video',
+                        accessor: 'count_captured_video',
                     },
                     {
                         Header: formatMessage({
                             defaultMessage: 'Vidéos importées',
                             id: 'teamsdevices.vidéos_uploaded',
                         }),
-                        accessor: 'count_video_with_linked_video',
+                        accessor: 'count_uploaded_video',
                         Cell: (settings) => {
-                            const missingCount = (settings.original.count_video - settings.original.count_video_with_linked_video);
+                            const missingCount = (settings.original.count_captured_video - settings.original.count_uploaded_video);
                             return (
                                 <span className={missingCount > 0 ? 'error-text' : ''} >
-                                    {settings.original.count_video_with_linked_video}
+                                    {settings.original.count_uploaded_video}
                                     {
                                         missingCount > 0 &&
                                         <span>
@@ -157,11 +178,28 @@ export class ManagementDevices extends Component {
                     },
                     {
                         Header: formatMessage({
-                            defaultMessage: 'Total-Créé-Màj-Effacé',
-                            id: 'teamsdevices.sync_summary',
+                            defaultMessage: 'Jours passés (vidéo)',
+                            id: 'teamsdevices.daysVideoSync',
                         }),
-                        accessor: 'last_synced_log_message',
+                        accessor: 'latest_video_upload',
+                        className: 'full-div',
+                        Cell: (settings) => {
+                            let daysCount = -1;
+                            if (settings.original.latest_video_upload) {
+                                daysCount = moment().diff(settings.original.latest_video_upload, 'days');
+                            }
+                            return (
+                                renderCountCell(daysCount, formatMessage)
+                            );
+                        },
                     },
+                    // {
+                    //     Header: formatMessage({
+                    //         defaultMessage: 'Total-Créé-Màj-Effacé',
+                    //         id: 'teamsdevices.sync_summary',
+                    //     }),
+                    //     accessor: 'last_synced_log_message',
+                    // },
                 ],
         };
     }

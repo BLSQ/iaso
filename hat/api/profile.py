@@ -206,10 +206,12 @@ class ProfilesViewSet(viewsets.ViewSet):
                 permission = get_object_or_404(Permission, pk=permission_id)
                 user.user_permissions.add(permission)
         user.profile.save()
+        log_modification(None, user, PROFILE_API, request.user)
         return Response(user.profile.as_dict())
 
     def delete(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)
+        log_modification(profile.user, None, PROFILE_API, request.user)
         profile.delete()
         return Response("ok")
 

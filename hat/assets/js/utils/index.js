@@ -198,3 +198,11 @@ export const removePositionIndex = (array) => {
     }
     return tempArray;
 };
+
+export const scrollTo = (selectorId) => {
+    const toElement = document.getElementById(selectorId);
+    if (toElement) {
+        toElement.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+

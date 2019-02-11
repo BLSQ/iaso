@@ -97,6 +97,7 @@ class Cases extends Component {
                 patient_id: caseItem.patient.id,
                 case_id: caseItem.id,
                 ...params,
+                tab: 'tests',
             };
 
             this.props.redirectTo('tests/detail', newParams);

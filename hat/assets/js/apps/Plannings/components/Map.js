@@ -11,7 +11,7 @@ import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 
 import L from 'leaflet';
-import * as zoomBar from './leaflet/zoom-bar' // eslint-disable-line
+import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
 import geoUtils from '../../../utils/geo';
 import MapTooltip from './MapTooltip';

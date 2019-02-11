@@ -102,6 +102,7 @@ class PatientDetails extends React.Component {
                 </div>
                 {
                     patient && patient.id &&
+                    !loading &&
                     <PatientDetailsWrapper
                         patient={patient}
                         testsMapping={testsMapping}

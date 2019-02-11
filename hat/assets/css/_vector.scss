@@ -1,4 +1,11 @@
 .custom-popup-container {
+    .separator {
+        width: calc(100% + 16px);
+        background-color: $light-gray;
+        height: 1px;
+        display: block;
+        margin: 5px -8px;
+    }
     h6 {
         button {
             float: right;

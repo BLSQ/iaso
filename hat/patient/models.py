@@ -172,6 +172,7 @@ class Test(models.Model):
             "index": self.index,
             "result": self.result,
             "date": self.date,
+            "village": self.village.as_dict(),
         }
 
         if self.type in TYPES_WITH_IMAGES:

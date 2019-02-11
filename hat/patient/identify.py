@@ -1,6 +1,7 @@
 import ntpath
 import re
 from collections import defaultdict
+from datetime import timedelta
 
 import dateutil
 from django.core.exceptions import MultipleObjectsReturned
@@ -97,22 +98,41 @@ def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex
     return patient, patient_created
 
 
+def should_hide_screening(case, test_date):
+    if test_date is None:
+        return False
+    if type(test_date) == str:
+        test_date = dateutil.parser.parse(test_date)
+    other_test = Test.objects \
+        .filter(form__normalized_patient=case.normalized_patient) \
+        .filter(type__in=[CATT, RDT]) \
+        .filter(date__range=[test_date-timedelta(days=90), test_date+timedelta(days=1)])\
+        .exclude(form=case)  # don't find ourself
+    return other_test.count() > 0
+
+
 def create_test_data(case: Case, patient_area, raw):
     tests = []
     tests_created = 0
+
+    # CATT and RDT tests with confirmation tests and another screening tests within 90 days
+    # should be automatically hidden
     if case.test_catt is not None:
+        test_date = raw.get('test_catt_test_time', None)
         test, test_created = get_or_create_test(
             case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
             image=case.test_catt_picture_filename, traveller_area=patient_area,
-            test_date=raw.get('test_catt_test_time', None))
+            test_date=test_date, hidden=should_hide_screening(case, test_date))
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_rdt is not None:
+        test_date = raw.get('test_rdt_test_time', None)
+        hidden = should_hide_screening(case, test_date)
         test, test_created = get_or_create_test(
             case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename,
-            traveller_area=patient_area, test_date=raw.get('test_rdt_test_time', None))
+            traveller_area=patient_area, test_date=test_date, hidden=hidden)
         if test_created:
             tests_created += 1
         tests.append(test)
@@ -153,7 +173,7 @@ def create_test_data(case: Case, patient_area, raw):
 
 
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
-                       test_date=None):
+                       test_date=None, hidden=False):
     if test_date and str(test_date) != 'nan':  # nan can happen is some weird conditions
         test_date = dateutil.parser.parse(test_date)
     else:
@@ -165,7 +185,8 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
                                                         'image_filename': image,
                                                         'video_filename': video,
                                                         'traveller_area': traveller_area,
-                                                        'date': test_date})
+                                                        'date': test_date,
+                                                        'hidden': hidden})
 
     if test_created:
         test.result = result

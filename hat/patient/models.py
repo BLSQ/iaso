@@ -161,6 +161,7 @@ class Test(models.Model):
     video = models.ForeignKey(VideoUpload, blank=True, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
@@ -172,6 +173,7 @@ class Test(models.Model):
             "index": self.index,
             "result": self.result,
             "date": self.date,
+            "hidden": self.hidden,
         }
 
         if self.type in TYPES_WITH_IMAGES:

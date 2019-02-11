@@ -1,4 +1,4 @@
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
@@ -42,18 +42,25 @@ class DevicesViewSet(viewsets.ViewSet):
                     # count_rdt_with_linked_picture=Count('id',
                     #                                     filter=Q(image_filename__isnull=False) & Q(
                     #                                         image_id__isnull=False) & Q(type=RDT)),
-                    count_linked_pictures=Count('id', filter=Q(image_filename__isnull=False) & Q(
+                    count_uploaded_pictures=Count('id', filter=Q(image_filename__isnull=False) & Q(
                                             image_id__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
-                    count_pictures=Count('id', filter=Q(image__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
-                    count_video=Count('id', filter=Q(video__isnull=False) &
+                    count_captured_pictures=Count('id', filter=Q(image_filename__isnull=False)),
+                    latest_image_upload=Max('image__upload_date', filter=Q(image_filename__isnull=False) & Q(
+                                            image_id__isnull=False) & (Q(type=RDT) | Q(type=CATT))),
+                    count_captured_video=Count('id', filter=Q(video_filename__isnull=False)),
+                    count_uploaded_video=Count(
+                        'id',
+                        filter=Q(video_filename__isnull=False) &
+                            Q(video_id__isnull=False) &
                             Q(
                                 Q(type=CTCWOO) |
                                 Q(type=MAECT) |
                                 Q(type=PL) |
                                 Q(type=PG)
-                            )),
-                    count_video_with_linked_video=Count(
-                        'id',
+                            )
+                    ),
+                    latest_video_upload=Max(
+                        'video__upload_date',
                         filter=Q(video_filename__isnull=False) &
                             Q(video_id__isnull=False) &
                             Q(

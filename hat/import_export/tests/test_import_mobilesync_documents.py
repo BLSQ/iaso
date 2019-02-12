@@ -61,6 +61,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.type, "RDT")
         self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
         self.assertEquals(rdt_test.village.name, "Kisala")
+        self.assertEquals(rdt_test.device.id, device_db.id)
 
         # Patient
         self.assertIsNotNone(case.normalized_patient)
@@ -226,6 +227,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.result, RES_POSITIVE)
         self.assertEquals(ctcwoo_test.village.name, "Polongo")
         self.assertEquals(ctcwoo_test.result, RES_POSITIVE)
+        self.assertEquals(ctcwoo_test.device.id, device_db.id)
         self.assertEquals(pl_test.village.name, "Polongo")
         self.assertEquals(pl_test.result, RES_POSITIVE)
 

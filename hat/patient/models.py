@@ -169,6 +169,7 @@ class Test(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     hidden = models.BooleanField(default=False)
+    device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE, blank=True, null=True)
 
     def __str__(self):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
@@ -182,6 +183,7 @@ class Test(models.Model):
             "date": self.date,
             "village": self.village.as_dict(),
             "hidden": self.hidden,
+            "device": self.device_id,
         }
 
         if self.type in TYPES_WITH_IMAGES:

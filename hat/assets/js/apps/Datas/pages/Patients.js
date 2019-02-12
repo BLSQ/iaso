@@ -179,7 +179,7 @@ class Patients extends Component {
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={filtersPatientsTreatments(teams || [], formatMessage)}
+                                filters={filtersPatientsTreatments(teams || [], formatMessage, defineMessages)}
                             />
                         </div>
                     </div>

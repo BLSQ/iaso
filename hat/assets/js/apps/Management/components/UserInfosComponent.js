@@ -4,9 +4,10 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { deepEqual } from '../../../utils';
+import { MESSAGES } from '../../../utils/constants/filters';
 
 
-const MESSAGES = defineMessages({
+const LOCAL_MESSAGES = defineMessages({
     none: {
         defaultMessage: 'Aucune',
         id: 'management.none',
@@ -43,6 +44,7 @@ class UserInfosComponent extends Component {
             institutions,
             teams,
             password,
+            testerTypes,
         } = this.props;
         return (
             <section>
@@ -137,6 +139,26 @@ class UserInfosComponent extends Component {
                         onChange={event => this.props.updateUserField('email', event.currentTarget.value)}
                     />
                 </div>
+                <div>
+                    <label
+                        htmlFor="tester_type"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.tester_type"
+                            defaultMessage="Type de testeur"
+                        />:
+                    </label>
+                    <Select
+                        simpleValue
+                        name="tester_type"
+                        value={this.state.user.tester_type}
+                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
+                        options={testerTypes.map(t =>
+                            ({ label: formatMessage(MESSAGES[t[0]]), value: t[0] }))}
+                        onChange={testerType => this.props.updateUserField('tester_type', testerType)}
+                    />
+                </div>
                 <div className="relative">
                     <label
                         htmlFor="password"
@@ -191,7 +213,7 @@ class UserInfosComponent extends Component {
                         simpleValue
                         name="team_id"
                         value={this.state.user.team}
-                        placeholder={formatMessage(MESSAGES.none)}
+                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
                         options={teams.map(team =>
                             ({ label: team.name, value: team.id }))}
                         onChange={teamId => this.props.updateUserField('team', teamId)}
@@ -211,7 +233,7 @@ class UserInfosComponent extends Component {
                         simpleValue
                         name="institution_id"
                         value={this.state.user.institution ? this.state.user.institution.id : null}
-                        placeholder={formatMessage(MESSAGES.none)}
+                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
                         options={institutions.map(institution =>
                             ({ label: institution.name, value: institution.id }))}
                         onChange={institutionId => this.props.updateUserField('institution', { id: institutionId })}
@@ -247,6 +269,7 @@ UserInfosComponent.propTypes = {
     updateUserField: PropTypes.func.isRequired,
     updatePassword: PropTypes.func.isRequired,
     password: PropTypes.string.isRequired,
+    testerTypes: PropTypes.array.isRequired,
 };
 
 export default injectIntl(UserInfosComponent);

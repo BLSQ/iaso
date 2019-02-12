@@ -100,6 +100,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         zones = request.data.get('ZS', [])
         areas = request.data.get('AS', [])
         permissions = request.data.get('permissions', [])
+        tester_type = request.data.get('tester_type', None)
         if password:
             user.set_password(password)
         user.save()
@@ -148,6 +149,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             for permission_id in permissions:
                 permission = get_object_or_404(Permission, pk=permission_id)
                 user.user_permissions.add(permission)
+        if tester_type:
+            profile.tester_type = tester_type
 
         profile.password_reset = request.data.get('passwordReset', False)
 

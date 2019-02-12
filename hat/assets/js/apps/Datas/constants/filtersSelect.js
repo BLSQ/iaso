@@ -19,6 +19,7 @@ import {
     medecine,
     onlyTreatedPatients,
     onlyDead,
+    testerType,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -41,6 +42,7 @@ const filtersCases2 = (
         coordinations(coordinationsList),
         teams(teamsList),
         located(formatMessage, defineMessages),
+        testerType(formatMessage, defineMessages),
     ]
 );
 
@@ -93,10 +95,11 @@ const filtersPatients2 = (
     ]
 );
 
-const filtersPatientsTreatments = (teamsList, formatMessage) => (
+const filtersPatientsTreatments = (teamsList, formatMessage, defineMessages) => (
     [
         teams(teamsList),
         medecine(formatMessage),
+        testerType(formatMessage, defineMessages),
         onlyTreatedPatients(),
         onlyDead(),
     ]

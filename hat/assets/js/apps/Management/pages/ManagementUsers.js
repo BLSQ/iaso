@@ -37,6 +37,7 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.fetchTeams(dispatch));
         dispatch(userActions.fetchPermissions(dispatch));
         dispatch(userActions.fetchUserTypes(dispatch));
+        dispatch(userActions.fetchTesterTypes(dispatch));
         let tableUrl = baseApiUrl;
         if (props.params.search) {
             tableUrl += `search=${props.params.search}`;
@@ -171,6 +172,7 @@ class ManagementUsers extends React.Component {
         const {
             institutions,
             userTypes,
+            testerTypes,
             permissions,
             provinces,
             zones,
@@ -194,6 +196,7 @@ class ManagementUsers extends React.Component {
                         saveData={newData => this.saveData(newData)}
                         institutions={institutions}
                         userTypes={userTypes}
+                        testerTypes={testerTypes}
                         permissions={permissions}
                         provinces={provinces}
                         zones={zones}
@@ -325,6 +328,7 @@ ManagementUsers.propTypes = {
     isUpdated: PropTypes.bool.isRequired,
     institutions: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
+    testerTypes: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     teams: PropTypes.array.isRequired,
@@ -343,6 +347,7 @@ const MapStateToProps = state => ({
     load: state.load,
     institutions: state.users.institutions,
     userTypes: state.users.userTypes,
+    testerTypes: state.users.testerTypes,
     permissions: state.users.permissions,
     provinces: state.users.provinces,
     teams: state.users.teams,

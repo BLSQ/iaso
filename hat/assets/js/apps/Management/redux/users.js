@@ -6,6 +6,7 @@ export const SET_USERS = 'hat/management/users/SET_USERS';
 export const USER_UPDATED = 'hat/management/users/USER_UPDATED';
 export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
 export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
+export const SET_TESTER_TYPES = 'hat/management/users/SET_TESTER_TYPES';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
 export const SET_TEAMS = 'hat/management/users/SET_TEAMS';
@@ -30,6 +31,11 @@ export const setInstitutions = payload => ({
 
 export const setUserTypes = payload => ({
     type: SET_USER_TYPES,
+    payload,
+});
+
+export const setTesterTypes = payload => ({
+    type: SET_TESTER_TYPES,
     payload,
 });
 
@@ -187,13 +193,27 @@ export const fetchUserTypes = (dispatch) => {
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
-            console.error('Error when fetching institutions', err);
+            console.error('Error when fetching user types', err);
         });
     return ({
         type: FETCH_ACTION_NO_UPDATE,
     });
 };
 
+export const fetchTesterTypes = (dispatch) => {
+    req
+        .get('/api/testertypes/')
+        .then((result) => {
+            dispatch(setTesterTypes(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching tester types', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
 export const fetchTeams = (dispatch) => {
     req
         .get('/api/teams/')
@@ -274,6 +294,7 @@ export const usersInitialState = {
     list: [],
     institutions: [],
     userTypes: [],
+    testerTypes: [],
     permissions: [],
     provinces: [],
     zones: [],
@@ -297,6 +318,7 @@ export const userActions = {
     updateCurrentUser,
     fetchUserTypes,
     fetchTeams,
+    fetchTesterTypes,
 };
 
 
@@ -351,6 +373,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 userTypes,
+            };
+        }
+
+        case SET_TESTER_TYPES: {
+            const testerTypes = action.payload;
+            return {
+                ...state,
+                testerTypes,
             };
         }
 

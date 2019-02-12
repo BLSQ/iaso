@@ -439,7 +439,7 @@ class Case(CaseAbstract):
         device = None
         try:
             if self.device_id:
-                device = DeviceDB.objects.get(device_id=self.device_id).as_dict(full=False)
+                device = DeviceDB.objects.get(device_id=self.device_id).as_dict(full=True)
         except DeviceDB.DoesNotExist:
             pass
 

@@ -1,4 +1,3 @@
-import collections
 import json
 import os
 import uuid
@@ -62,6 +61,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.type, "RDT")
         self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
         self.assertEquals(rdt_test.village.name, "Kisala")
+        self.assertEquals(rdt_test.device.id, device_db.id)
 
         # Patient
         self.assertIsNotNone(case.normalized_patient)
@@ -227,6 +227,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.result, RES_POSITIVE)
         self.assertEquals(ctcwoo_test.village.name, "Polongo")
         self.assertEquals(ctcwoo_test.result, RES_POSITIVE)
+        self.assertEquals(ctcwoo_test.device.id, device_db.id)
         self.assertEquals(pl_test.village.name, "Polongo")
         self.assertEquals(pl_test.result, RES_POSITIVE)
 
@@ -304,3 +305,36 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertFalse(acoziborole.adverse_effects)
         self.assertEquals(str(acoziborole.start_date), "2019-01-02")
         self.assertEquals(str(acoziborole.end_date), "2019-01-10")
+
+    def test_import_screening(self):
+        regular_pos_rdt, device_db_scr = load_document("regular_pos_rdt.json")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db_scr.db_name, json=regular_pos_rdt).json()
+        self.assertEqual(regular_pos_rdt['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db_scr.refresh_from_db()
+
+        regular_confirmation_pl, device_db_conf = load_document("regular_confirmation_pl.json")
+        p1 = api.post(device_db_conf.db_name, json=regular_confirmation_pl).json()
+        self.assertEqual(regular_confirmation_pl['_id'], p1['id'])
+
+        response = import_synced_devices()
+        grand_total = sum([item['stats'].total for item in response])
+        self.assertEqual(grand_total, 1)
+
+        device_db_conf.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=regular_confirmation_pl['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        self.assertEquals(case.test_set.count(), 2, "There should only be 2 tests")
+        rdt_test = case.test_set.get(type="RDT")
+        pl_test = case.test_set.get(type="PL")
+        self.assertTrue(rdt_test.hidden)
+        self.assertFalse(pl_test.hidden)

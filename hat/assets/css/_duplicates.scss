@@ -1,0 +1,105 @@
+.patient-infos-container {
+    table {
+        td {
+            width: 60%;
+        }
+    }
+}
+
+.duplicate-table {
+    table {
+        th {
+            width: 100px;
+        }
+    }
+    .patient-infos-container {
+        table {
+            td {
+                width: auto;
+                height: 18px !important;
+                &.error {
+                    height: 14px !important;
+                }
+                &.solved {
+                    color: red;
+                    &:after {
+                        margin-left: 10px;
+                        display: inline-block;
+                        font: normal normal normal 14px/1 FontAwesome;
+                        font-size: inherit;
+                        text-rendering: auto;
+                        color: red;
+                        content: "\f00d";
+                    }
+                    &.active {
+                        color: green;
+                        &:after {
+                            color: green;
+                            content: "\f00c";
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.test-container {
+    table {
+        td {
+            width: 80%;
+        }
+    }
+}
+
+.merge-container {
+    display: flex;
+}
+
+.duplicate-page {
+    flex-basis: 66%;
+}
+
+.result {
+    flex-basis: 34%;
+    padding-left: $padding-unit;
+    position: relative;
+    &:before {
+        height: calc(100% + #{$padding-unit * 2});
+        width: 1px;
+        display: block;
+        position: absolute;
+        top: -$padding-unit;
+        left: $padding-unit / 2;
+        background-color: $light-gray;
+        content: '';
+    }
+    h2 {
+        width: 100% !important;
+    }
+    thead {
+        tr {
+            td {
+                &:before {
+                    width: calc(100% - 2px) !important;
+                }
+            }
+        }
+    }
+    tbody {
+        tr {
+            td,
+            td:first-child {
+                padding-right: 0 !important;
+                &:before {
+                    width: calc(100% - 2px) !important;
+                }
+            }
+        }
+    }
+}
+
+.conflicts-count-container {
+    float: left;
+    padding: $padding-unit / 4 $padding-unit / 2 $padding-unit / 2 $padding-unit / 2;
+}

@@ -10,7 +10,7 @@ import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 import geoUtils from '../../../utils/geo';
-import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
+import * as zoomBar from '../../../components/leaflet/zoom-bar';
 import {
     renderCatchesPopup,
     renderSitesPopup,

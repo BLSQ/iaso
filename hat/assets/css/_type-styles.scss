@@ -146,6 +146,14 @@ p {
   padding: 10px 0;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
+.forbid-pointer {
+  cursor: not-allowed;
+}
+
 .success {
   color: green;
   padding: 10px 0;

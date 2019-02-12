@@ -1,5 +1,4 @@
 import datetime
-from unittest import skip
 
 from django.test import TestCase, tag
 from hat.cases.event_log import get_events, get_event_of_type, EventTable

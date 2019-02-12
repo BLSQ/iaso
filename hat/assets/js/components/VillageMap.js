@@ -9,8 +9,7 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from '../../../components/leaflet/zoom-bar';
-import VillageTypesConstant from '../../../utils/constants/VillageTypesConstant';
+import * as zoomBar from './leaflet/zoom-bar';
 
 import {
     updateBaseLayer,
@@ -20,11 +19,11 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
-
+} from '../utils/mapUtils';
 
 let exportControl;
-class Map extends Component {
+
+class VillageMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -52,12 +51,11 @@ class Map extends Component {
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
 
         map.whenReady(() => {
-            // only call if base layer changed
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
 
-            if (hasChanged(prevProps, this.props, 'villages') || hasChanged(prevProps, this.props, 'selectedVillageId')) {
+            if (hasChanged(prevProps, this.props, 'villages')) {
                 this.updateVillages();
             }
         });
@@ -71,7 +69,7 @@ class Map extends Component {
 
     onResize(width, height) {
         const { map } = this;
-        exportControl = onResizeMap(width, height, exportControl, map, 'Locator');
+        exportControl = onResizeMap(width, height, exportControl, map, 'Liste Villages');
     }
 
     /*
@@ -92,53 +90,51 @@ class Map extends Component {
 ***************************************************************************
 * UPDATE STATE
 *************************************************************************** */
-
     updateVillages() {
         const { villages } = this.props;
         this.villageGroup.clearLayers();
         if (villages) {
-            villages.map((village) => {
-                let color = 'blue';
-                if (this.props.selectedVillageId && (village.id === this.props.selectedVillageId)) {
-                    color = '#FF3824';
-                } else {
-                    Object.entries(VillageTypesConstant).map((villageType) => {
-                        if (villageType[1].key === village.village_official) {
-                            const colorTemp = villageType[1].color;
-                            color = colorTemp;
-                        }
-                        return true;
+            villages.forEach((village) => {
+                if (village.latitude && village.longitude) {
+                    const color = this.props.isRed(village) ? 'red' : 'green';
+                    const villageCircle = L.circle([village.latitude, village.longitude], {
+                        color,
+                        fillColor: color,
+                        fillOpacity: 0.2,
+                        radius: 500,
+                        pane: 'custom-pane-markers',
                     });
-                }
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    color,
-                    fillColor: color,
-                    fillOpacity: 0.5,
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                })
-                    .addTo(this.villageGroup)
-                    .on('click', () => {
-                        this.props.selectVillage(village.id);
-                    })
-                    .on('mouseover', () => {
-                        const lat = village.latitude;
-                        const lng = village.longitude;
-                        this.updateTooltipSmall(village, lat, lng);
-                    })
-                    .on('mouseout', () => {
-                        this.updateTooltipSmall();
-                    });
+                    villageCircle.addTo(this.villageGroup)
+                        .on('click', (event) => {
+                            const popUp = event.target.getPopup();
+                            popUp.setContent(this.props.renderVillagePopUp(village, this.props.intl.formatMessage));
+                        })
+                        .on('mouseover', () => {
+                            this.updateTooltipSmall(village);
+                        })
+                        .on('mouseout', () => {
+                            this.updateTooltipSmall();
+                        })
+                        .bindPopup();
 
-                return true;
+
+                    const villageLabel = L.tooltip({
+                        permanent: true,
+                        direction: 'right',
+                        className: 'text see-trough',
+                    });
+                    villageLabel.setLatLng([village.latitude, village.longitude + 0.0045])
+                        .setContent(this.props.renderVillageLabel(village, this.props.intl.formatMessage))
+                        .addTo(this.villageGroup);
+                }
             });
             this.fitToBounds();
         }
     }
 
-    updateTooltipSmall(item, lat, lng) {
+    updateTooltipSmall(item) {
         if (item) {
-            this.state.containers.tooltipSmall.innerHTML = `${item.label ? item.label : item.name}${lat ? `, Lat: ${parseFloat(lat).toFixed(4)}` : ''}${lng ? `, Long: ${parseFloat(lng).toFixed(4)}` : ''}`;
+            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -149,7 +145,6 @@ class Map extends Component {
 ***************************************************************************
 * ACTIONS
 *************************************************************************** */
-
 
     fitToBounds() {
         const { map } = this;
@@ -170,9 +165,9 @@ class Map extends Component {
             contextmenu: (event) => {
                 L.DomEvent.stop(event);
             },
-            mousemove: (event) => {
+            mouseover: (event) => {
                 L.DomEvent.stop(event);
-                this.updateTooltipSmall(item, event.latlng.lat, event.latlng.lng);
+                this.updateTooltipSmall(item);
             },
             mouseout: (event) => {
                 L.DomEvent.stop(event);
@@ -196,18 +191,21 @@ class Map extends Component {
         );
     }
 }
-Map.defaultProps = {
-    selectedVillageId: null,
-    villages: {},
+VillageMap.defaultProps = {
+    villages: [],
+    renderVillagePopUp: () => {},
+    renderVillageLabel: () => {},
+    isRed: () => false,
 };
 
-Map.propTypes = {
+VillageMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     villages: PropTypes.array,
     intl: intlShape.isRequired,
-    selectVillage: PropTypes.func.isRequired,
-    selectedVillageId: PropTypes.number,
     getShape: PropTypes.func.isRequired,
+    renderVillagePopUp: PropTypes.func,
+    renderVillageLabel: PropTypes.func,
+    isRed: PropTypes.func,
 };
 
-export default injectIntl(Map);
+export default injectIntl(VillageMap);

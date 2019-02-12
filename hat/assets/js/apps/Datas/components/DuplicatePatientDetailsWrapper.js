@@ -5,6 +5,7 @@ import PatientInfos from './PatientInfos';
 import PatientCasesInfos from './PatientCasesInfos';
 import PatientCasesLocation from './PatientCasesLocation';
 import PatientTestComponent from './PatientTestComponent';
+import TreatmentComponent from '../components/TreatmentComponent';
 
 class DuplicatePatientDetailsWrapper extends React.Component {
     render() {
@@ -12,11 +13,49 @@ class DuplicatePatientDetailsWrapper extends React.Component {
             patient,
             duplicatePatient,
             testsMapping,
+            manualMerge,
+            mergeDuplicates,
+            params,
+            fixConflict,
+            conflicts,
         } = this.props;
         return (
             <section className="duplicate-page">
                 <table className={`no-style duplicate-table ${patient.cases.length > 0 || patient.cases.length < duplicatePatient.cases.length ? 'margin-bottom' : ''}`}>
                     <thead>
+                        {
+                            !manualMerge &&
+                            <tr>
+                                <td className="align-center padding-bottom">
+                                    <button
+                                        className="button"
+                                        onClick={() => mergeDuplicates(patient.id, params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage
+                                            id="patientsDuplicate.merge"
+                                            defaultMessage="Fusionner les patients dans {value}"
+                                            values={{
+                                                value: 'A',
+                                            }}
+                                        />
+                                    </button>
+                                </td>
+                                <td className="align-center padding-bottom">
+                                    <button
+                                        className="button"
+                                        onClick={() => mergeDuplicates(duplicatePatient.id, params.duplicate_id, this)}
+                                    >
+                                        <FormattedMessage
+                                            id="patientsDuplicate.merge"
+                                            defaultMessage="Fusionner les patients dans {value}"
+                                            values={{
+                                                value: 'B',
+                                            }}
+                                        />
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                         <tr>
                             <td>
                                 <h2 className="widget__heading">
@@ -33,10 +72,18 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <PatientInfos patient={patient} duplicatePatient={duplicatePatient} />
+                                <PatientInfos
+                                    patient={patient}
+                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    conflicts={conflicts}
+                                />
                             </td>
                             <td>
-                                <PatientInfos patient={duplicatePatient} duplicatePatient={patient} />
+                                <PatientInfos
+                                    patient={duplicatePatient}
+                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    conflicts={conflicts}
+                                />
                             </td>
                         </tr>
                     </tbody>
@@ -52,7 +99,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                             <td>
                                                 <h2 className="widget__heading">
                                                     <span className="case-id">
-                                                        <span>Hat ID</span>: {caseItem.hat_id} - <span>ID</span>: {caseItem.id}
+                                                        <span>Hat ID</span>: {caseItem.hat_id}
                                                     </span>
                                                 </h2>
                                             </td>
@@ -61,7 +108,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 <td>
                                                     <h2 className="widget__heading">
                                                         <span className="case-id">
-                                                            <span>Hat ID</span>: {similarCase.hat_id} - <span>ID</span>: {similarCase.id}
+                                                            <span>Hat ID</span>: {similarCase.hat_id}
                                                         </span>
                                                     </h2>
                                                 </td>
@@ -76,7 +123,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     similarCase={similarCase}
                                                 />
                                             </td>
-                                            <td>
+                                            <td className={similarCase ? '' : 'empty'}>
                                                 <PatientCasesInfos
                                                     currentCase={similarCase}
                                                     similarCase={caseItem}
@@ -90,7 +137,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     similarCase={similarCase}
                                                 />
                                             </td>
-                                            <td>
+                                            <td className={similarCase ? '' : 'empty'}>
                                                 <PatientCasesLocation
                                                     currentCase={similarCase}
                                                     similarCase={caseItem}
@@ -113,7 +160,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                 testsMapping={testsMapping}
                                                             />
                                                         </td>
-                                                        <td>
+                                                        <td className={similarTest ? '' : 'empty'}>
                                                             <PatientTestComponent
                                                                 currentCase={caseItem}
                                                                 test={similarTest}
@@ -131,7 +178,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 if (!caseItem.tests[similarIndex]) {
                                                     return (
                                                         <tr key={similarTest.id}>
-                                                            <td />
+                                                            <td className="empty" />
                                                             <td>
                                                                 <PatientTestComponent
                                                                     currentCase={caseItem}
@@ -213,6 +260,69 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                         return null;
                     })
                 }
+
+                {
+                    (patient.treatments.length > 0 || duplicatePatient.treatments.length > 0) &&
+                    <section>
+                        <table className="no-style duplicate-table">
+                            <thead>
+                                <tr>
+                                    <td>
+                                        <h2 className="widget__heading">
+                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
+                                        </h2>
+                                    </td>
+                                    <td>
+                                        <h2 className="widget__heading">
+                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    patient.treatments.map((t, tIndex) => {
+                                        const duplicateTreatments = duplicatePatient.treatments[tIndex];
+                                        return (
+                                            <tr key={`treatement${t.id}`}>
+                                                <td>
+                                                    <TreatmentComponent
+                                                        treatment={t}
+                                                    />
+                                                </td>
+                                                <td className={duplicateTreatments ? '' : 'empty'}>
+                                                    {
+                                                        duplicateTreatments &&
+                                                        <TreatmentComponent
+                                                            treatment={duplicateTreatments}
+                                                        />
+                                                    }
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                }
+                                {
+                                    duplicatePatient.treatments.map((t, tIndex) => {
+                                        if (!patient.treatments[tIndex]) {
+                                            return (
+                                                <tr key={`treatement${t.id}`}>
+                                                    <td className="empty" />
+                                                    <td>
+                                                        <TreatmentComponent
+                                                            treatment={t}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+                                        return null;
+                                    })
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                }
             </section>
         );
     }
@@ -221,12 +331,18 @@ class DuplicatePatientDetailsWrapper extends React.Component {
 
 DuplicatePatientDetailsWrapper.defaultProps = {
     duplicatePatient: undefined,
+    manualMerge: false,
 };
 
 DuplicatePatientDetailsWrapper.propTypes = {
     patient: PropTypes.object.isRequired,
     duplicatePatient: PropTypes.object,
     testsMapping: PropTypes.object.isRequired,
+    manualMerge: PropTypes.bool,
+    mergeDuplicates: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
+    fixConflict: PropTypes.func.isRequired,
+    conflicts: PropTypes.array.isRequired,
 };
 
 const DuplicatePatientDetailsWrapperWithIntl = injectIntl(DuplicatePatientDetailsWrapper);

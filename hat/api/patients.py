@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import Q, OuterRef, Exists, Count
 from django.http import HttpResponse, StreamingHttpResponse
@@ -6,14 +7,15 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
+from hat.cases.models import CaseView, Case, RES_POSITIVE
+from hat.geo.models import AS
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
+from hat.patient.utils import *
+from hat.sync.models import DeviceDB
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
-from hat.sync.models import DeviceDB
 
-from hat.patient.utils import *
 
 class PatientsViewSet(viewsets.ViewSet):
     """
@@ -273,3 +275,35 @@ class PatientsViewSet(viewsets.ViewSet):
             return Response(patient.as_full_dict())
         else:
             return Response('Unauthorized', status=401)
+
+    def update(self, request, pk=None):
+        new_patient = get_object_or_404(Patient, pk=pk)
+        is_authorized = (not new_patient.origin_area) or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id, new_patient.origin_area.ZS.id, new_patient.origin_area.id)
+        if is_authorized:
+            new_patient.post_name = request.data.get('post_name', '')
+            new_patient.last_name = request.data.get('last_name', '')
+            new_patient.first_name = request.data.get('first_name', '')
+            new_patient.sex = request.data.get('sex', '')
+            new_patient.year_of_birth = request.data.get('year_of_birth', '')
+            new_patient.mothers_surname = request.data.get('mothers_surname', '')
+
+            AS_id = request.data.get('AS_id', None)
+            if AS_id:
+                new_AS = get_object_or_404(AS, pk=AS_id)
+                new_patient.origin_area = new_AS
+
+            death = request.data.get('death', None)
+            if death:
+                new_patient.dead = death.get('dead')
+                if new_patient.dead:
+                    new_patient.death_date = death.get('death_date')
+                    device_id = death.get('device').get('device_id')
+                    device = get_object_or_404(DeviceDB, device_id=device_id)
+                    new_patient.death_device = device
+                    new_patient.death_location = Point(x=death.get('location').get('coordinates')[0], y=death.get('location').get('coordinates')[1], srid=4326)
+
+            new_patient.save()
+            return Response(new_patient.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
+

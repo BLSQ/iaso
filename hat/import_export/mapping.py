@@ -1627,6 +1627,8 @@ MAPPING: List[JsonType] = [
             },
         },
     },
+    #############
+    # Test times
     {
         "field": "test_catt_test_time",
         "case_ignore": True,
@@ -1684,6 +1686,68 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pg.testTime")
+            },
+        },
+    },
+    #################
+    # Test device IDs
+    {
+        "field": "test_catt_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.device")
+            },
+        },
+    },
+    {
+        "field": "test_rdt_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.device")
+            },
+        },
+    },
+    {
+        "field": "test_ctcwoo_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.device")
+            },
+        },
+    },
+    {
+        "field": "test_maect_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.device")
+            },
+        },
+    },
+    {
+        "field": "test_pl_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.device")
+            },
+        },
+    },
+    {
+        "field": "test_pg_test_device",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.device")
             },
         },
     },

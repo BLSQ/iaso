@@ -1,6 +1,7 @@
 
 import L from 'leaflet';
 import { defineMessages } from 'react-intl';
+import moment from 'moment';
 import geoUtils from './geo';
 
 export const genericMap = mapNode => L.map(mapNode, {
@@ -197,3 +198,57 @@ export const includeDefaultLayersInMap = (component) => {
     });
 };
 
+export const mapCasesToVillages = (cases) => {
+    const villages = [];
+    cases.forEach((c) => {
+        c.tests.forEach((t) => {
+            const tempT = {
+                ...t,
+            };
+            const village = {
+                ...t.village,
+            };
+            delete tempT.village;
+            village.tests = [tempT];
+            const villageExist = villages.find(v => v.id === village.id);
+            if (!villageExist) {
+                villages.push(village);
+            } else {
+                const tempTests = villageExist.tests.slice();
+                tempTests.push(tempT);
+                villageExist.tests = tempTests.sort((a, b) => {
+                    if (moment(a.date).isBefore(moment(b.date))) {
+                        return -1;
+                    }
+                    return 1;
+                });
+            }
+        });
+    });
+    return villages;
+};
+
+
+export const renderTestLabel = (village, formatMessage, testsMapping) => {
+    let message = `<section class="custom-popup-container">
+        <div>
+            ${formatMessage({ defaultMessage: 'Village', id: 'main.label.village' })}:
+            ${village.name}
+        </div>
+    `;
+    village.tests.forEach((t) => {
+        message += `
+        <span class="separator"></span>
+        <div>${t.type} - ${t.id}</div>
+        <div class="${parseInt(t.result, 10) > 1 ? 'error-text' : ''}">
+            ${formatMessage({ defaultMessage: 'Résultat', id: 'main.label.testResult' })}:
+            <span>${testsMapping[t.result]}</span>
+        </div>
+        <div>
+            ${formatMessage({ defaultMessage: 'Date', id: 'main.label.testDate' })}:
+            <span>${moment(t.date).format('DD-MM-YYYY HH:mm')}</span>
+        </div>`;
+    });
+    message += '</section>';
+    return message;
+};

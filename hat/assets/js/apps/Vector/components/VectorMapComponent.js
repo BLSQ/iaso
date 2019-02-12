@@ -11,7 +11,7 @@ import {
     renderVillagesPopup,
 } from '../utlls/vectorMapUtils';
 import 'leaflet.markercluster'; // eslint-disable-line
-import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar' // eslint-disable-line
+import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
 import {
     updateBaseLayer,

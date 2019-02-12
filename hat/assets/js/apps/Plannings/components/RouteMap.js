@@ -9,7 +9,7 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from '../../Plannings/components/leaflet/zoom-bar';
+import * as zoomBar from '../../../components/leaflet/zoom-bar';
 import { getMonthName } from '../utils/routeUtils';
 
 import {

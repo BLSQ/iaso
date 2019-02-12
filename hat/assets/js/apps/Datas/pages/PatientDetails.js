@@ -7,6 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { patientsActions } from '../redux/patients';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 
 class PatientDetails extends React.Component {
@@ -19,6 +20,7 @@ class PatientDetails extends React.Component {
 
     componentDidMount() {
         this.props.fetchDetails(this.props.params.patient_id);
+        this.props.fetchCurrentUserInfos();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -102,7 +104,6 @@ class PatientDetails extends React.Component {
                 </div>
                 {
                     patient && patient.id &&
-                    !loading &&
                     <PatientDetailsWrapper
                         patient={patient}
                         testsMapping={testsMapping}
@@ -124,6 +125,7 @@ PatientDetails.propTypes = {
     patient: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     testsMapping: PropTypes.object.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -137,6 +139,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchDetails: patientId => dispatch(patientsActions.fetchDetails(dispatch, patientId)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

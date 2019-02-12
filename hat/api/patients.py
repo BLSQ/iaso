@@ -286,8 +286,12 @@ class PatientsViewSet(viewsets.ViewSet):
             new_patient.last_name = request.data.get('last_name', '')
             new_patient.first_name = request.data.get('first_name', '')
             new_patient.sex = request.data.get('sex', '')
-            new_patient.year_of_birth = request.data.get('year_of_birth', '')
+            year_of_birth = request.data.get('year_of_birth', None)
             new_patient.mothers_surname = request.data.get('mothers_surname', '')
+            if year_of_birth:
+                new_patient.year_of_birth = year_of_birth
+            else:
+                new_patient.year_of_birth = None
 
             AS_id = request.data.get('AS_id', None)
             if AS_id:
@@ -299,13 +303,21 @@ class PatientsViewSet(viewsets.ViewSet):
                 new_patient.dead = death.get('dead')
                 if new_patient.dead:
                     new_patient.death_date = death.get('death_date')
-                    device_id = death.get('device').get('device_id')
-                    device = get_object_or_404(DeviceDB, device_id=device_id)
-                    new_patient.death_device = device
-                    new_patient.death_location = Point(x=death.get('location').get('coordinates')[0], y=death.get('location').get('coordinates')[1], srid=4326)
+                    device = death.get('device')
+                    if device:
+                        device_id = device.get('device_id')
+                        device = get_object_or_404(DeviceDB, device_id=device_id)
+                        new_patient.death_device = device
+                    location = death.get('location')
+                    if location:
+                        new_patient.death_location = Point(x=location.get('coordinates')[0], y=location.get('coordinates')[1], srid=4326)
+                else:
+                    new_patient.death_date = None
+                    new_patient.death_device = None
+                    new_patient.death_location = None
 
             new_patient.save()
-            return Response(new_patient.as_dict())
+            return Response(new_patient.as_full_dict())
         else:
             return Response('Unauthorized', status=401)
 

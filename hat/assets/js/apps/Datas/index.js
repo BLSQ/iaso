@@ -12,6 +12,7 @@ import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { patientsReducer, patientsInitialState } from './redux/patients';
 import { casesReducer, casesInitialState } from './redux/cases';
 import { mapReducer, mapInitialState } from '../../redux/mapReducer';
+import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 import CasesPage from './pages/Cases';
 import PatientsPage from './pages/Patients';
@@ -91,6 +92,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         patients: patientsInitialState,
         cases: casesInitialState,
         map: mapInitialState,
+        currentUser: currentUserInitialState,
     }, {
         load: loadReducer,
         testsFilters: filtersReducer,
@@ -98,6 +100,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         patients: patientsReducer,
         cases: casesReducer,
         map: mapReducer,
+        currentUser: currentUserReducer,
     }, [
         routerMiddleware(history),
     ]);

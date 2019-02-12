@@ -3,52 +3,8 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
-const MESSAGES = {
-    last_name: {
-        defaultMessage: 'Nom',
-        id: 'patientsinfos.last_name',
-    },
-    post_name: {
-        defaultMessage: 'Postnom',
-        id: 'patientsinfos.post_name',
-    },
-    first_name: {
-        defaultMessage: 'Prénom',
-        id: 'patientsinfos.first_name',
-    },
-    mothers_surname: {
-        defaultMessage: 'Nom de la mère',
-        id: 'patientsinfos.mothers_surname',
-    },
-    sex: {
-        defaultMessage: 'Sexe',
-        id: 'patientsinfos.sex',
-    },
-    death: {
-        defaultMessage: 'Décès',
-        id: 'patientsinfos.death',
-    },
-    year_of_birth: {
-        defaultMessage: 'Année de naissance',
-        id: 'patientsinfos.year_of_birth',
-    },
-    province: {
-        defaultMessage: 'Province d\'origine',
-        id: 'patientsinfos.province',
-    },
-    ZS: {
-        defaultMessage: 'Zone d\'origine',
-        id: 'patientsinfos.ZS',
-    },
-    AS: {
-        defaultMessage: 'Aire d\'origine',
-        id: 'patientsinfos.AS',
-    },
-    village: {
-        defaultMessage: 'Village d\'origine',
-        id: 'patientsinfos.village',
-    },
-};
+import patientInfosMessages from '../constants/patientInfosMessages';
+
 
 class PatientInfos extends React.Component {
     render() {
@@ -60,12 +16,13 @@ class PatientInfos extends React.Component {
         } = this.props;
         const { formatMessage } = this.props.intl;
         const fieldPlaceholder = isResult ? '' : '--';
+        const infoList = patientInfosMessages(formatMessage);
         return (
             <div className="patient-infos-container no-padding-right">
                 <table>
                     <tbody>
                         {
-                            Object.keys(MESSAGES).map((key) => {
+                            Object.keys(infoList).map((key) => {
                                 let className;
                                 const hasConflict = conflicts.find(c => c.key === key && !c.value);
                                 if (!isResult) {
@@ -86,7 +43,7 @@ class PatientInfos extends React.Component {
                                         onClick={() => fixConflict(key, patient[key])}
                                     >
                                         <th>
-                                            {formatMessage(MESSAGES[key])}
+                                            {formatMessage(infoList[key])}
                                         </th>
                                         <td className={className}>
                                             {

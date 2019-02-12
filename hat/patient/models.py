@@ -119,7 +119,7 @@ class Patient(models.Model):
             death = {
                 "dead": self.dead,
                 "death_date": self.death_date,
-                "location": json.loads(self.death_location.geojson),
+                "location": json.loads(self.death_location.geojson) if self.death_location else None,
                 "device": self.death_device.as_dict() if self.death_device else None,
             }
         else:
@@ -148,7 +148,8 @@ class Patient(models.Model):
             "village": village,
             "village_id": village_id,
             "death": death,
-            "treatments": [t.as_dict() for t in self.treatment_set.all()]
+            "treatments": [t.as_dict() for t in self.treatment_set.all()],
+            "death_date": self.death_date,
         }
 
 

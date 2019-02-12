@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import PatientInfos from '../components/PatientInfos';
+import EditPatientInfos from '../components/EditPatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
 import PatientCasesLocation from '../components/PatientCasesLocation';
 import PatientCasesTests from '../components/PatientCasesTests';
@@ -15,6 +16,7 @@ import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../../../redux/mapReducer';
 import { renderTestLabel } from '../../../utils/mapUtils';
 import { scrollTo } from '../../../utils';
+import { patientsActions } from '../redux/patients';
 
 const MESSAGES = defineMessages({
     infos: {
@@ -31,11 +33,24 @@ const MESSAGES = defineMessages({
     },
 });
 
+let timerSuccess;
+let timerError;
+
+const clearTimer = () => {
+    if (timerSuccess) {
+        clearTimeout(timerSuccess);
+    }
+    if (timerError) {
+        clearTimeout(timerError);
+    }
+};
+
 class PatientDetailsWrapper extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             currentTab: 'infos',
+            canEditPatientInfos: false,
         };
     }
 
@@ -54,6 +69,41 @@ class PatientDetailsWrapper extends React.Component {
         }
     }
 
+    componentWillReceiveProps(newProps) {
+        const {
+            currentUser,
+            permissions,
+        } = newProps;
+        if (currentUser.id && permissions.length > 0) {
+            const editionRight = permissions.find(p => p.codename === 'x_datas_patient_edition');
+            if ((currentUser.is_superuser ||
+                    currentUser.permissions.find(p => p === editionRight.id))) {
+                this.setState({
+                    canEditPatientInfos: true,
+                });
+            }
+        }
+        if (newProps.isUpdated) {
+            timerSuccess = setTimeout(() => {
+                newProps.setIsUpdated(false);
+            }, 10000);
+        }
+        if (newProps.hasError) {
+            timerSuccess = setTimeout(() => {
+                newProps.setHasError(false);
+            }, 10000);
+        }
+    }
+
+    componentWillUnmount() {
+        clearTimer();
+    }
+
+    savePatient(patient) {
+        clearTimer();
+        this.props.savePatient(patient);
+    }
+
     render() {
         const {
             patient,
@@ -68,9 +118,13 @@ class PatientDetailsWrapper extends React.Component {
                 villages,
                 baseLayer,
             },
+            savePatient,
+            hasError,
+            isUpdated,
         } = this.props;
         const {
             currentTab,
+            canEditPatientInfos,
         } = this.state;
         return (
             <section>
@@ -90,7 +144,19 @@ class PatientDetailsWrapper extends React.Component {
                     currentTab === 'infos' &&
                     <div className="widget__container" >
                         <div className="widget__content patient-detail">
-                            <PatientInfos patient={patient} />
+                            {
+                                canEditPatientInfos &&
+                                <EditPatientInfos
+                                    patient={patient}
+                                    savePatient={newPatient => savePatient(newPatient)}
+                                    hasError={hasError}
+                                    isUpdated={isUpdated}
+                                />
+                            }
+                            {
+                                !canEditPatientInfos &&
+                                <PatientInfos patient={patient} />
+                            }
                         </div>
                     </div>
                 }
@@ -210,10 +276,19 @@ PatientDetailsWrapper.propTypes = {
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
+    savePatient: PropTypes.func.isRequired,
+    isUpdated: PropTypes.bool.isRequired,
+    hasError: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     map: state.map,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
+    isUpdated: state.patients.isUpdated,
+    hasError: state.patients.hasError,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -221,6 +296,9 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     getShape: url => getRequest(url, dispatch, null, false),
+    savePatient: patient => dispatch(patientsActions.savePatient(dispatch, patient)),
+    setIsUpdated: value => dispatch(patientsActions.setIsUpdated(value)),
+    setHasError: value => dispatch(patientsActions.setErrorOnUpdated(value)),
 });
 const PatientDetailsWrapperWithIntl = injectIntl(PatientDetailsWrapper);
 

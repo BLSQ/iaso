@@ -1,5 +1,41 @@
 .patient-infos-container {
     width: 100%;
+    table {
+        tbody {
+            tr {
+                td {
+                    overflow: visible;
+                    input {
+                        box-sizing: border-box;
+                        background-color: white;
+                    }
+                    input[type='number'] {
+                        width: 80px;
+                        text-align: center;
+                    }
+                    input[type='text'] {
+                        width: 100%;
+                    }
+                    .react-datepicker-wrapper {
+                        border: 1px solid $light-gray;
+                        border-radius: 5px;
+                        position: relative;
+                        &:after {
+                            display: inline-block;
+                            font: normal normal normal 14px/1 FontAwesome;
+                            font-size: inherit;
+                            text-rendering: auto;
+                            -webkit-font-smoothing: antialiased;
+                            position: absolute;
+                            right: 10px;
+                            top: 7px;
+                            content: "\f073";
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 .patient-detail {
@@ -24,7 +60,7 @@
     }
 }
 
-.cases-list, {
+.cases-list {
     list-style: none;
     li {
         margin-top: $padding-unit * 2;
@@ -103,16 +139,17 @@
         font-weight: bold;
     }
 }
+
 .treatments-list {
     list-style: none;
     display: flex;
     flex-flow: row wrap;
     &:after {
-        content:'';
+        content: '';
         clear: both;
         display: block;
     }
-    > li {
+    >li {
         box-sizing: border-box;
         flex-basis: 50%;
         &:last-child,
@@ -131,7 +168,7 @@
 }
 
 @media (min-width: 1100px) {
-    .treatments-list > li {
+    .treatments-list>li {
         &:nth-child(odd) {
             width: 50%;
             float: left;
@@ -146,7 +183,7 @@
 }
 
 @media (max-width: 1100px) {
-    .treatments-list > li {
+    .treatments-list>li {
         &:last-child,
         &:nth-last-child(2) {
             table {

@@ -24,6 +24,7 @@ VECTOR_CONTROL = _("Vector control")
 VECTOR_CONTROL_UPLOAD = _("Vector control import Gpx")
 QUALITY_CONTROL = _("Quality control")
 ANONYMOUS_VIEW = _("Anounymous view")
+EDIT_PATIENT = _("Edition d'un patient")
 
 
 class CustomPermissionSupport(models.Model):
@@ -55,5 +56,6 @@ class CustomPermissionSupport(models.Model):
             ('x_vectorcontrol', VECTOR_CONTROL),
             ('x_vectorcontrolupload', VECTOR_CONTROL_UPLOAD),
             ('x_qualitycontrol', QUALITY_CONTROL),
-            ('x_anonymous', ANONYMOUS_VIEW)
+            ('x_anonymous', ANONYMOUS_VIEW),
+            ('x_datas_patient_edition', EDIT_PATIENT),
         )

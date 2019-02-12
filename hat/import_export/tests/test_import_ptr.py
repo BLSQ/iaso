@@ -4,7 +4,6 @@ import uuid
 
 from django.test import TestCase
 
-from hat.cases.models import Case, RES_POSITIVE
 from hat.couchdb import api
 from hat.geo.models import Village
 from hat.import_export.utils import replace_in_dict_recursive
@@ -72,3 +71,20 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEqual(villages.count(), 1)
         village = villages.first()
         self.assertIsNone(village.population)
+
+    def test_import_ptr_only(self):
+        ptr_create_village_ptr, device_db = load_document("ptr_alone.json")
+
+        # create documents in device db and sync
+        ptr = api.post(device_db.db_name, json=ptr_create_village_ptr).json()
+        self.assertEqual(ptr_create_village_ptr['_id'], ptr['id'])
+
+        response = import_synced_devices()
+        # stats = response[0]['stats']
+        # self.assertEqual(stats.total, 0)
+        device_db.refresh_from_db()
+
+        villages = Village.objects.filter(name="Ptr Sans Village").filter(AS_id=111)
+        self.assertEqual(villages.count(), 1)
+        village = villages.first()
+        self.assertEqual(village.population, 1984)

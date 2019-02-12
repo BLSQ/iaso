@@ -141,7 +141,7 @@ def import_synced_population(docs: JsonType, device_id: str):
         area = doc.get('area').get('id') if doc.get('area').get('id') else doc.get('area').get('name')
         village = doc.get('village').get('id') if doc.get('village').get('id') else doc.get('village').get('name')
 
-        (_, normalized_village) = normalize_location(zone, area, village)
+        (_, normalized_village) = normalize_location(zone, area, village, device_id)
 
         date_modified = dateutil.parser.parse(doc.get('dateModified'))
 

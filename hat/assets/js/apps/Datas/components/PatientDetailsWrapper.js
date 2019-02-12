@@ -85,46 +85,16 @@ class PatientDetailsWrapper extends React.Component {
                     ]}
                     defaultSelect={currentTab}
                 />
+
                 {
                     currentTab === 'infos' &&
                     <div className="widget__container" >
-                        <div className="widget__header">
-                            <h2 className="widget__heading">
-                                <FormattedMessage id="datas.doneTests.header.title" defaultMessage="Test(s)" />:
-                            </h2>
-                        </div>
-                        <div className="widget__content">
-                            <ul className="cases-list">
-                                {
-                                    patient.cases.map(c => (
-                                        <li
-                                            key={c.id}
-                                            className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
-                                        >
-                                            <div className="case-id">
-                                                <span>Hat ID</span>: {c.hat_id}
-                                            </div>
-                                            <div className="widget__content--half perfect-fill">
-                                                <PatientCasesInfos currentCase={c} />
-                                                <PatientCasesLocation currentCase={c} />
-                                            </div>
-                                            <div className="tests-list">
-                                                <PatientCasesTests
-                                                    tests={c.tests}
-                                                    testsMapping={testsMapping}
-                                                    currentCase={c}
-                                                />
-                                            </div>
-                                        </li>
-                                    ))
-                                }
-                            </ul>
-                        </div>
                         <div className="widget__content patient-detail">
                             <PatientInfos patient={patient} />
                         </div>
                     </div>
                 }
+
                 {
                     patient.cases &&
                     currentTab === 'tests' &&

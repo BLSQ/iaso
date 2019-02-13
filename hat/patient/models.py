@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.db.models import PointField
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, CASCADE, TextField
@@ -170,6 +171,7 @@ class Test(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     hidden = models.BooleanField(default=False)
     device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE, blank=True, null=True)
+    location = PointField(srid=4326, null=True)
 
     def __str__(self):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)

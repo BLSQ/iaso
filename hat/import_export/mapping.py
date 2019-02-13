@@ -1751,6 +1751,132 @@ MAPPING: List[JsonType] = [
             },
         },
     },
+    #################
+    # Test location
+    {
+        "field": "test_catt_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_catt_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "test_rdt_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_rdt_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.rdt.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "test_maect_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_maect_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.maect.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "test_ctcwoo_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_ctcwoo_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.ctcwoo.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "test_pl_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_pl_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pl.position.latitude")
+            },
+        },
+    },
+    {
+        "field": "test_pg_test_longitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.position.longitude")
+            },
+        },
+    },
+    {
+        "field": "test_pg_test_latitude",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.pg.position.latitude")
+            },
+        },
+    },
+
+
+    ##################
+    # Treatment/death
     {
         "field": "treatments",
         "case_ignore": True,

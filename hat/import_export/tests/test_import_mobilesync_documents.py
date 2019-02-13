@@ -62,6 +62,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
         self.assertEquals(rdt_test.village.name, "Kisala")
         self.assertEquals(rdt_test.device.id, device_db.id)
+        self.assertEquals(rdt_test.location, "SRID=4326;POINT (4.4009156 50.8367366)")
 
         # Patient
         self.assertIsNotNone(case.normalized_patient)
@@ -102,10 +103,13 @@ class ImportMobileSyncDocuments(TestCase):
         ctcwoo_test = case.test_set.filter(type="CTCWOO")[0]
         self.assertEquals(rdt_test.village.name, "Kisala")
         self.assertEquals(rdt_test.result, RES_POSITIVE)
+        self.assertEquals(rdt_test.location, "SRID=4326;POINT (4.4009197 50.8367368)")
         self.assertEquals(ctcwoo_test.village.name, "Kisala")
         self.assertEquals(ctcwoo_test.result, RES_POSITIVE)
+        self.assertEquals(ctcwoo_test.location, "SRID=4326;POINT (4.4009259 50.8367405)")
         self.assertEquals(pl_test.village.name, "Kisala")
         self.assertEquals(pl_test.result, RES_POSITIVE)
+        self.assertEquals(pl_test.location, "SRID=4326;POINT (4.4009168 50.8367359)")
         self.assertEquals(int(case.test_pl_gb_mm3), 333)
 
         # Patient

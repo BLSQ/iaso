@@ -1,5 +1,6 @@
-from django.db.models import Count, Min, Max
+from django.db.models import Count, Min, Max, TextField
 from django.db.models import Q
+from django.db.models.functions import Coalesce, Cast
 from pg_utils import DistinctSum
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
@@ -87,6 +88,7 @@ class TestStatsViewSet(viewsets.ViewSet):
         grouped_queryset = (
                 queryset
                 .values(*grouping_fields)
+                .annotate(village__name=Coalesce(Cast("village__name", TextField()), "form__village"))
                 .annotate(test_count=Count("id"))
                 .annotate(catt_count=Count("id", filter=Q(type=CATT)))
                 .annotate(rdt_count=Count("id", filter=Q(type=RDT)))

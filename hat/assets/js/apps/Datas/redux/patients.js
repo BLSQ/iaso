@@ -58,13 +58,11 @@ const fetchTestMapping = (dispatch) => {
 };
 
 const fetchDetails = (dispatch, patientId) => {
-    dispatch(loadActions.startLoading());
     dispatch(loadCurrentDetail({}));
     dispatch(fetchTestMapping(dispatch));
     req
         .get(`/api/patients/${patientId}`)
         .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
             dispatch(loadCurrentDetail(result.body));
         })
         .catch(err => (console.error(`Error while fetching detail ${err}`)));

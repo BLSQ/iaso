@@ -7,7 +7,9 @@ import DatePicker from 'react-datepicker';
 import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 
 import patientInfosMessages from '../constants/patientInfosMessages';
+import FiltersComponent from '../../../components/FiltersComponent';
 
+import filtersGeo from '../constants/geoFilters';
 
 class EditPatientInfos extends React.Component {
     constructor(props) {
@@ -27,6 +29,33 @@ class EditPatientInfos extends React.Component {
             newState.isModified = false;
         }
         this.setState(newState);
+    }
+
+    updatePatientGeoField(key, value) {
+        const { params, redirectTo, baseUrl } = this.props;
+        const newParams = {
+            ...params,
+        };
+        newParams[key] = value;
+        if (key === 'prov_id') {
+            this.updatePatientField('province_id', value);
+            delete newParams.ZS_id;
+            delete newParams.AS_id;
+            delete newParams.vil_id;
+        }
+        if (key === 'ZS_id') {
+            this.updatePatientField('ZS_id', value);
+            delete newParams.AS_id;
+            delete newParams.vil_id;
+        }
+        if (key === 'AS_id') {
+            this.updatePatientField('AS_id', value);
+            delete newParams.vil_id;
+        }
+        if (key === 'vil_id') {
+            this.updatePatientField('village_id', value);
+        }
+        redirectTo(baseUrl, newParams);
     }
 
     updatePatientField(key, value) {
@@ -69,8 +98,22 @@ class EditPatientInfos extends React.Component {
                 formatMessage,
             },
             savePatient,
+            params,
+            geoFilters: {
+                provinces,
+                zones,
+                areas,
+                villages,
+            },
         } = this.props;
         const infoList = patientInfosMessages(formatMessage);
+        const geo = filtersGeo(
+            provinces,
+            zones,
+            areas,
+            villages,
+            this,
+        );
         return (
             <div className="patient-infos-container no-padding-right">
                 <table>
@@ -150,6 +193,12 @@ class EditPatientInfos extends React.Component {
                         }
                     </tbody>
                 </table>
+
+                <FiltersComponent
+                    params={params}
+                    baseUrl={params.case_id ? 'tests/detail' : 'register/detail'}
+                    filters={geo}
+                />
                 <div className="align-right margin-top">
                     {
                         this.props.isUpdated &&
@@ -198,6 +247,10 @@ EditPatientInfos.propTypes = {
     savePatient: PropTypes.func.isRequired,
     hasError: PropTypes.bool.isRequired,
     isUpdated: PropTypes.bool.isRequired,
+    geoFilters: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
+    baseUrl: PropTypes.string.isRequired,
 };
 
 const EditPatientInfosWithIntl = injectIntl(EditPatientInfos);

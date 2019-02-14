@@ -28,10 +28,18 @@ class Modification(models.Model):
 
 def log_modification(v1, v2, source, user=None):
     modification = Modification()
-    modification.object_id = v1.id
-    modification.content_object = v2
+    modification.past_value = []
+    modification.new_value = []
+    if v1:
+        modification.object_id = v1.id
+        modification.past_value = json.loads(serializers.serialize("json", [v1]))
+    elif v2:
+        modification.object_id = v2.id
+    if v2:
+        modification.content_object = v2
+        modification.new_value = json.loads(serializers.serialize("json", [v2]))
+    elif v1:
+        modification.content_object = v1
     modification.source = source
-    modification.past_value = json.loads(serializers.serialize("json", [v1]))
-    modification.new_value = json.loads(serializers.serialize("json", [v2]))
     modification.user = user
     modification.save()

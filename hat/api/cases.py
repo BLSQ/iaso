@@ -81,6 +81,9 @@ class CasesViewSet(viewsets.ViewSet):
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
         tester_type = request.GET.get("tester_type", None)
+        device_ids = request.GET.get("device_id", None)
+        pictures = request.GET.get("pictures", None)
+        videos = request.GET.get("videos", None)
 
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -218,6 +221,25 @@ class CasesViewSet(viewsets.ViewSet):
         if tester_type:
             devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
             queryset = queryset.filter(device_id__in=devices)
+
+        if device_ids:
+            queryset = queryset.filter(device_id__in=device_ids.split(","))
+
+        if pictures:
+            print ('TODO')
+            # choices are:
+            #     with_pictures
+            #     with_pictures_uploaded
+            #     without_pictures_uploaded  => but with pictures
+            #     without_pictures
+        if videos:
+            print ('TODO')
+            # choices are:
+            #     with_videos
+            #     with_videos_uploaded
+            #     without_videos_uploaded  => but with videos
+            #     without_videos
+
 
         # Performance prefetch
         queryset = queryset.prefetch_related("normalized_AS")

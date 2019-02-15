@@ -63,6 +63,38 @@ export const MESSAGES = {
         defaultMessage: 'Confirmateur',
         id: 'main.label.confirmer',
     },
+    with_pictures: {
+        defaultMessage: 'Avec images',
+        id: 'main.label.with_pictures',
+    },
+    with_pictures_uploaded: {
+        defaultMessage: 'Avec images envoyées',
+        id: 'main.label.with_pictures_uploaded',
+    },
+    without_pictures_uploaded: {
+        defaultMessage: 'Avec images mais non envoyées',
+        id: 'main.label.without_pictures_uploaded',
+    },
+    with_videos: {
+        defaultMessage: 'Avec vidéos',
+        id: 'main.label.with_videos',
+    },
+    with_videos_uploaded: {
+        defaultMessage: 'Avec vidéos envoyées',
+        id: 'main.label.with_videos_uploaded',
+    },
+    without_videos_uploaded: {
+        defaultMessage: 'Avec vidéos mais non envoyées',
+        id: 'main.label.without_videos_uploaded',
+    },
+    without_pictures: {
+        defaultMessage: 'Sans images',
+        id: 'main.label.without_pictures',
+    },
+    without_videos: {
+        defaultMessage: 'Sans vidéos',
+        id: 'main.label.without_videos',
+    },
 };
 
 const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
@@ -650,6 +682,101 @@ const withTestDevices = () => (
     }
 );
 
+const device = devicesList => (
+    {
+        name: 'device_id',
+        urlKey: 'device_id',
+        isMultiSelect: true,
+        isClearable: true,
+        options: devicesList.map(d => ({
+            label: `${d.device_id} ${d.last_user ? ` (${d.last_user})` : ''} `,
+            value: d.device_id,
+        })),
+        placeholder: {
+            id: 'cases.label.all',
+            defaultMessage: 'Toutes',
+        },
+        label: {
+            id: 'main.label.devices',
+            defaultMessage: 'Tablette',
+        },
+        type: 'select',
+    }
+);
+
+const images = (formatMessage, defineMessages) => (
+    {
+        name: 'pictures',
+        urlKey: 'pictures',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'with_pictures')),
+                value: 'with_pictures',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'with_pictures_uploaded')),
+                value: 'with_pictures_uploaded',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'without_pictures_uploaded')),
+                value: 'without_pictures_uploaded',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'without_pictures')),
+                value: 'without_pictures',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'main.label.pictures',
+            defaultMessage: 'Images',
+        },
+        type: 'select',
+    }
+);
+
+
+const videos = (formatMessage, defineMessages) => (
+    {
+        name: 'videos',
+        urlKey: 'videos',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'with_videos')),
+                value: 'with_videos',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'with_videos_uploaded')),
+                value: 'with_videos_uploaded',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'without_videos_uploaded')),
+                value: 'without_videos_uploaded',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'without_videos')),
+                value: 'without_videos',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'main.label.videos',
+            defaultMessage: 'Vidéos',
+        },
+        type: 'select',
+    }
+);
+
 
 export {
     testType,
@@ -679,4 +806,7 @@ export {
     onlyDead,
     testerType,
     withTestDevices,
+    device,
+    images,
+    videos,
 };

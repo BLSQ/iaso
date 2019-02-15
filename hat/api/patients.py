@@ -75,6 +75,9 @@ class PatientsViewSet(viewsets.ViewSet):
         with_treatment = request.GET.get("with_treatment", None)
         dead = request.GET.get("dead", None)
         tester_type = request.GET.get("tester_type", None)
+        device_ids = request.GET.get("device_id", None)
+        pictures = request.GET.get("pictures", None)
+        videos = request.GET.get("videos", None)
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -182,6 +185,26 @@ class PatientsViewSet(viewsets.ViewSet):
             devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
             cases = Case.objects.filter(device_id__in=devices).values_list('pk', flat=True)
             queryset = queryset.filter(case__in=cases)
+
+        if device_ids:
+            cases = Case.objects.filter(device_id__in=device_ids.split(",")).values_list('pk', flat=True)
+            queryset = queryset.filter(case__in=cases)
+
+        if pictures:
+            print ('TODO')
+            # choices are:
+            #     with_pictures
+            #     with_pictures_uploaded
+            #     without_pictures_uploaded  => but with pictures
+            #     without_pictures
+        if videos:
+            print ('TODO')
+            # choices are:
+            #     with_videos
+            #     with_videos_uploaded
+            #     without_videos_uploaded  => but with videos
+            #     without_videos
+
 
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
             if search_name:

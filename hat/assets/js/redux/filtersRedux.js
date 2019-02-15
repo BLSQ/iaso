@@ -21,6 +21,7 @@ export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 export const LOAD_VILLAGE_SOURCE = 'hat/casesList/LOAD_VILLAGE_SOURCE';
 export const LOAD_WORKZONES = 'hat/casesList/LOAD_WORKZONES';
+export const LOAD_DEVICES = 'hat/casesList/LOAD_DEVICES';
 
 export const filtersInitialState = {
     provinceId: null,
@@ -35,6 +36,7 @@ export const filtersInitialState = {
     coordinations: [],
     villageSources: [],
     workzones: [],
+    devices: [],
 };
 
 const req = require('superagent');
@@ -295,9 +297,9 @@ export const fetchVillageSource = (dispatch) => {
     });
 };
 
-export const loadWorkZones = coordinations => ({
+export const loadWorkZones = workzones => ({
     type: LOAD_WORKZONES,
-    payload: coordinations,
+    payload: workzones,
 });
 
 export const fetchWorkZones = (dispatch) => {
@@ -307,6 +309,23 @@ export const fetchWorkZones = (dispatch) => {
             dispatch(loadWorkZones(result.body));
         })
         .catch(err => (console.error(`Error while fetching work zones ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+export const loadDevices = devices => ({
+    type: LOAD_DEVICES,
+    payload: devices,
+});
+
+export const fetchDevices = (dispatch) => {
+    req
+        .get('/api/devices?as_list=true')
+        .then((result) => {
+            dispatch(loadDevices(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching devices ${err}`)));
     return ({
         type: FETCH_ACTION,
     });
@@ -332,6 +351,7 @@ export const filterActions = {
     fetchCoordinations,
     fetchVillageSource,
     fetchWorkZones,
+    fetchDevices,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {
@@ -355,6 +375,13 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
             return {
                 ...state,
                 workzones,
+            };
+        }
+        case LOAD_DEVICES: {
+            const devices = action.payload;
+            return {
+                ...state,
+                devices,
             };
         }
         case FETCH_ACTION: {

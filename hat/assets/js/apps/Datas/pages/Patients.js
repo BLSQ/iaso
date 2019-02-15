@@ -39,6 +39,7 @@ class Patients extends Component {
             this.props.fetchTeams(),
             this.props.fetchCoordinations(),
             this.props.fetchWorkZones(),
+            this.props.fetchDevices(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
@@ -121,13 +122,14 @@ class Patients extends Component {
                 areas,
                 villages,
                 workzones,
+                devices,
             },
             setPatientList,
             params,
             reduxPage,
         } = this.props;
         const filters = filtersPatients2(formatMessage, defineMessages);
-        const search = filtersPatientsSearch();
+        const search = filtersPatientsSearch(devices);
         const geo = filtersPatientsGeo(
             workzones,
             provinces || [],
@@ -229,6 +231,7 @@ Patients.propTypes = {
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
     fetchWorkZones: PropTypes.func.isRequired,
+    fetchDevices: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -251,6 +254,7 @@ const MapDispatchToProps = dispatch => ({
     fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchWorkZones: () => dispatch(filterActions.fetchWorkZones(dispatch)),
+    fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),

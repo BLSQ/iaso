@@ -32,6 +32,7 @@ class Cases extends Component {
             this.props.fetchTeams(),
             this.props.fetchCoordinations(),
             this.props.fetchWorkZones(),
+            this.props.fetchDevices(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
@@ -114,14 +115,15 @@ class Cases extends Component {
                 areas,
                 villages,
                 workzones,
+                devices,
             },
             reduxPage,
             params,
             setCasesList,
         } = this.props;
-        const filters1 = filtersCases(formatMessage, defineMessages);
+        const filters1 = filtersCases(formatMessage, defineMessages, devices);
         const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
-        const search = filtersCasesSearch();
+        const search = filtersCasesSearch(formatMessage, defineMessages);
         const geo = filtersCasesGeo(
             workzones,
             provinces || [],
@@ -230,6 +232,7 @@ Cases.propTypes = {
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
     fetchWorkZones: PropTypes.func.isRequired,
+    fetchDevices: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -251,6 +254,7 @@ const MapDispatchToProps = dispatch => ({
     fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchWorkZones: () => dispatch(filterActions.fetchWorkZones(dispatch)),
+    fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),

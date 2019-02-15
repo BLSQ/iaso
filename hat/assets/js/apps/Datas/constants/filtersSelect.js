@@ -20,15 +20,19 @@ import {
     onlyTreatedPatients,
     onlyDead,
     testerType,
+    device,
+    images,
+    videos,
 } from '../../../utils/constants/filters';
 
 // CASES
-const filtersCases = (formatMessage, defineMessages) => (
+const filtersCases = (formatMessage, defineMessages, devices) => (
     [
         testType(formatMessage, defineMessages),
         screeningResult(formatMessage, defineMessages),
         confirmationResult(formatMessage, defineMessages),
         source(formatMessage, defineMessages),
+        device(devices),
     ]
 );
 
@@ -46,11 +50,13 @@ const filtersCases2 = (
     ]
 );
 
-const filtersCasesSearch = () => (
+const filtersCasesSearch = (formatMessage, defineMessages) => (
     [
         searchLastname(),
         searchName(),
         searchPrename(),
+        images(formatMessage, defineMessages),
+        videos(formatMessage, defineMessages),
     ]
 );
 
@@ -91,7 +97,8 @@ const filtersPatients2 = (
         testType(formatMessage, defineMessages),
         screeningResult(formatMessage, defineMessages),
         confirmationResult(formatMessage, defineMessages),
-        onlyDupes(),
+        images(formatMessage, defineMessages),
+        videos(formatMessage, defineMessages),
     ]
 );
 
@@ -102,6 +109,7 @@ const filtersPatientsTreatments = (teamsList, formatMessage, defineMessages) => 
         testerType(formatMessage, defineMessages),
         onlyTreatedPatients(),
         onlyDead(),
+        onlyDupes(),
     ]
 );
 
@@ -115,12 +123,13 @@ const filtersPatientsDuplicates = (
     ]
 );
 
-const filtersPatientsSearch = () => (
+const filtersPatientsSearch = devices => (
     [
         searchLastname(),
         searchName(),
         searchPrename(),
         searchMotherName(),
+        device(devices),
     ]
 );
 

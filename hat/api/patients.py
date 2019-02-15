@@ -8,7 +8,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, Case, RES_POSITIVE
-from hat.geo.models import AS
+from hat.geo.models import AS, Village
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.patient.utils import *
 from hat.sync.models import DeviceDB
@@ -297,6 +297,15 @@ class PatientsViewSet(viewsets.ViewSet):
             if AS_id:
                 new_AS = get_object_or_404(AS, pk=AS_id)
                 new_patient.origin_area = new_AS
+            else:
+                new_patient.origin_area = None
+
+            village_id = request.data.get('village_id', None)
+            if village_id:
+                new_village = get_object_or_404(Village, pk=village_id)
+                new_patient.origin_village = new_village
+            else:
+                new_patient.origin_village = None
 
             death = request.data.get('death', None)
             if death:

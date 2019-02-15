@@ -114,11 +114,11 @@ class PatientDetailsWrapper extends React.Component {
             }, 10000);
         }
         if (prov_id !== this.props.params.prov_id) {
-            this.props.selectProvince(prov_id);
+            this.props.selectProvince(prov_id, ZS_id, AS_id, vil_id);
         } else if (ZS_id !== this.props.params.ZS_id) {
-            this.props.selectZone(ZS_id);
+            this.props.selectZone(ZS_id, AS_id, vil_id);
         } else if (AS_id !== this.props.params.AS_id) {
-            this.props.selectArea(AS_id);
+            this.props.selectArea(AS_id, vil_id);
         } else if (vil_id !== this.props.params.vil_id) {
             this.props.selectVillage(vil_id);
         }

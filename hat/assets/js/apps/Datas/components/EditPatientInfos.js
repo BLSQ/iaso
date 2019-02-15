@@ -9,7 +9,19 @@ import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 import patientInfosMessages from '../constants/patientInfosMessages';
 import FiltersComponent from '../../../components/FiltersComponent';
 
-import filtersGeo from '../constants/geoFilters';
+import {
+    filtersProvinces,
+    filtersZones,
+    filtersAreas,
+    filtersVillage,
+} from '../constants/geoFilters';
+
+const MESSAGES = {
+    years: {
+        defaultMessage: 'ans',
+        id: 'main.label.years',
+    },
+};
 
 class EditPatientInfos extends React.Component {
     constructor(props) {
@@ -17,16 +29,31 @@ class EditPatientInfos extends React.Component {
         this.state = {
             patient: props.patient,
             isModified: false,
+            baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
         };
     }
 
     componentWillReceiveProps(newProps) {
+        const patient = {
+            ...newProps.patient,
+            province_id: newProps.params.prov_id,
+            ZS_id: newProps.params.ZS_id,
+            AS_id: newProps.params.AS_id,
+            village_id: newProps.params.vil_id,
+        };
+
         const newState = {
             ...this.state,
-            patient: newProps.patient,
+            patient,
         };
+
         if (newProps.isUpdated) {
             newState.isModified = false;
+        } else if ((newProps.params.prov_id !== this.props.params.prov_id) ||
+            (newProps.params.ZS_id !== this.props.params.ZS_id) ||
+            (newProps.params.AS_id !== this.props.params.AS_id) ||
+            (newProps.params.vil_id !== this.props.params.vil_id)) {
+            newState.isModified = true;
         }
         this.setState(newState);
     }
@@ -38,22 +65,16 @@ class EditPatientInfos extends React.Component {
         };
         newParams[key] = value;
         if (key === 'prov_id') {
-            this.updatePatientField('province_id', value);
             delete newParams.ZS_id;
             delete newParams.AS_id;
             delete newParams.vil_id;
         }
         if (key === 'ZS_id') {
-            this.updatePatientField('ZS_id', value);
             delete newParams.AS_id;
             delete newParams.vil_id;
         }
         if (key === 'AS_id') {
-            this.updatePatientField('AS_id', value);
             delete newParams.vil_id;
-        }
-        if (key === 'vil_id') {
-            this.updatePatientField('village_id', value);
         }
         redirectTo(baseUrl, newParams);
     }
@@ -82,16 +103,30 @@ class EditPatientInfos extends React.Component {
     }
 
     resetPatient() {
+        const {
+            patient,
+            params,
+            redirectTo,
+        } = this.props;
         this.setState({
-            patient: this.props.patient,
+            patient,
             isModified: false,
         });
+        const newParams = {
+            ...params,
+            prov_id: patient.province_id,
+            ZS_id: patient.ZS_id,
+            AS_id: patient.AS_id,
+            vil_id: patient.village_id,
+        };
+        redirectTo(this.state.baseUrl, newParams);
     }
 
     render() {
         const {
             patient,
             isModified,
+            baseUrl,
         } = this.state;
         const {
             intl: {
@@ -107,13 +142,6 @@ class EditPatientInfos extends React.Component {
             },
         } = this.props;
         const infoList = patientInfosMessages(formatMessage);
-        const geo = filtersGeo(
-            provinces,
-            zones,
-            areas,
-            villages,
-            this,
-        );
         return (
             <div className="patient-infos-container no-padding-right">
                 <table>
@@ -178,12 +206,44 @@ class EditPatientInfos extends React.Component {
                                                     />
                                                 }
                                                 {
-                                                    currentField.key === 'year_of_birth' &&
-                                                    <span>
+                                                    key === 'year_of_birth' &&
+                                                    <span className="years">
                                                         {
-                                                            moment().format('YYYY') - patient.year_of_birth
+                                                            ` ${moment().format('YYYY') - patient.year_of_birth} ${formatMessage(MESSAGES.years)}`
                                                         }
                                                     </span>
+                                                }
+                                                {
+                                                    key === 'province' &&
+                                                    <FiltersComponent
+                                                        params={params}
+                                                        baseUrl={baseUrl}
+                                                        filters={filtersProvinces(provinces, this)}
+                                                    />
+                                                }
+                                                {
+                                                    key === 'ZS' &&
+                                                    <FiltersComponent
+                                                        params={params}
+                                                        baseUrl={baseUrl}
+                                                        filters={filtersZones(zones, this)}
+                                                    />
+                                                }
+                                                {
+                                                    key === 'AS' &&
+                                                    <FiltersComponent
+                                                        params={params}
+                                                        baseUrl={baseUrl}
+                                                        filters={filtersAreas(areas, this)}
+                                                    />
+                                                }
+                                                {
+                                                    key === 'village' &&
+                                                    <FiltersComponent
+                                                        params={params}
+                                                        baseUrl={baseUrl}
+                                                        filters={filtersVillage(villages, this)}
+                                                    />
                                                 }
                                             </div>
                                         </td>
@@ -193,12 +253,6 @@ class EditPatientInfos extends React.Component {
                         }
                     </tbody>
                 </table>
-
-                <FiltersComponent
-                    params={params}
-                    baseUrl={params.case_id ? 'tests/detail' : 'register/detail'}
-                    filters={geo}
-                />
                 <div className="align-right margin-top">
                     {
                         this.props.isUpdated &&
@@ -224,7 +278,7 @@ class EditPatientInfos extends React.Component {
                     </button>
                     <button
                         className="button"
-                        disabled={!isModified}
+                        disabled={!isModified || !params.prov_id || !params.ZS_id || !params.AS_id}
                         onClick={() => savePatient(this.state.patient)}
                     >
                         <FormattedMessage

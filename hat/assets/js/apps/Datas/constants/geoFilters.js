@@ -1,8 +1,5 @@
-const filtersGeo = (
+export const filtersProvinces = (
     provinces,
-    zones,
-    areas,
-    villages,
     component,
 ) => (
     [
@@ -25,6 +22,14 @@ const filtersGeo = (
             type: 'select',
             callback: value => component.updatePatientGeoField('prov_id', value),
         },
+    ]
+);
+
+export const filtersZones = (
+    zones,
+    component,
+) => (
+    [
         {
             name: 'ZS_id',
             urlKey: 'ZS_id',
@@ -44,6 +49,14 @@ const filtersGeo = (
             type: 'select',
             callback: value => component.updatePatientGeoField('ZS_id', value),
         },
+    ]
+);
+
+export const filtersAreas = (
+    areas,
+    component,
+) => (
+    [
         {
             name: 'AS_id',
             urlKey: 'AS_id',
@@ -63,6 +76,14 @@ const filtersGeo = (
             type: 'select',
             callback: value => component.updatePatientGeoField('AS_id', value),
         },
+    ]
+);
+
+export const filtersVillage = (
+    villages,
+    component,
+) => (
+    [
         {
             name: 'vil_id',
             urlKey: 'vil_id',
@@ -84,6 +105,4 @@ const filtersGeo = (
         },
     ]
 );
-
-export default filtersGeo;
 

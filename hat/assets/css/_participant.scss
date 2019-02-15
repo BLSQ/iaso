@@ -32,6 +32,16 @@
                             content: "\f073";
                         }
                     }
+                    .filter-item {
+                        padding-bottom: 0;
+                        .filter-item-subtitle {
+                            display: none;
+                        }
+                    }
+                    .years {
+                        margin-left: 10px;
+                        display: inline-block;
+                    }
                 }
             }
         }

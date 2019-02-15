@@ -146,7 +146,7 @@ class Patient(models.Model):
             "ZS_id": ZS_id,
             "AS_id": AS_id,
             "village": village,
-            "village_id": village_id,
+            "village_id": village_id if village else None,
             "death": death,
             "treatments": [t.as_dict() for t in self.treatment_set.all()],
             "death_date": self.death_date,
@@ -182,7 +182,7 @@ class Test(models.Model):
             "index": self.index,
             "result": self.result,
             "date": self.date,
-            "village": self.village.as_dict(),
+            "village": self.village.as_dict() if self.village else None,
             "hidden": self.hidden,
             "device": self.device_id,
         }

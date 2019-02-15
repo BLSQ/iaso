@@ -80,7 +80,7 @@ class PatientInfos extends React.Component {
                                                 </span>
                                             }
                                             {
-                                                key === 'death' &&
+                                                key === 'death_date' &&
                                                 (
                                                     patient.death.dead ?
                                                         <span>
@@ -111,7 +111,7 @@ class PatientInfos extends React.Component {
                                                 )
                                             }
                                             {
-                                                ((key !== 'sex' && key !== 'death' && key !== 'year_of_birth')) &&
+                                                ((key !== 'sex' && key !== 'death_date' && key !== 'year_of_birth')) &&
                                                     (
                                                         patient[key] ? patient[key] : fieldPlaceholder
                                                     )

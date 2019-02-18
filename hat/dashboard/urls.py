@@ -8,7 +8,8 @@ urlpatterns = [
     # this app takes gives the rest parameters to redux router
     url(r'^home/.*$', views.home, name='home'),
     url(r'^monthly-report/.*$', views.monthly_report, name='monthly_report'),
-    url(r'^stats/.*$', views.stats, name='stats'),
+    url(r'^stats/epidemiology.*$', views.epidemiology, name='epidemiology'),
+    url(r'^stats/datas_monitoring.*$', views.datas_monitoring, name='datas_monitoring'),
     url(r'^plannings/micro.*$', views.plannings_micro, name='micro'),
     url(r'^plannings/macro.*$', views.plannings_macro, name='macro'),
     url(r'^plannings/routes.*$', views.plannings_routes, name='routes'),

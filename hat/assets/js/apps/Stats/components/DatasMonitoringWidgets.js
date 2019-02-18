@@ -5,11 +5,6 @@ import {
     injectIntl,
     defineMessages,
 } from 'react-intl';
-import ParticipationWidget from './widgets/ParticipationWidget';
-import RegisteredWidget from './widgets/RegisteredWidget';
-import ScreeningWidget from './widgets/ScreeningWidget';
-import ConfirmationWidget from './widgets/ConfirmationWidget';
-import StageWidget from './widgets/StageWidget';
 import EvolutionWidgets from './widgets/EvolutionWidgets';
 
 
@@ -24,15 +19,12 @@ const MESSAGES = defineMessages({
     },
 });
 
-class Widgets extends Component {
+class DatasMonitoringWidgets extends Component {
     render() {
         const { formatMessage } = this.props.intl;
         const data = this.props.data || [];
         return (
             <div data-qa="stats-data-loaded">
-                <ParticipationWidget coverage={data.coverage} timeseries={data.coverage.total_counts} />
-                <ScreeningWidget total={data.positiveScreeningRate} />
-                <ConfirmationWidget total={data.confirmationsRate} />
                 <EvolutionWidgets data={data.casecount} title={formatMessage(MESSAGES.caseCount)} />
                 <EvolutionWidgets data={data.unmatch} title={formatMessage(MESSAGES.unMatch)} />
             </div>
@@ -40,11 +32,11 @@ class Widgets extends Component {
     }
 }
 
-const WidgetsWithIntl = injectIntl(Widgets);
+const DatasMonitoringWidgetsWithIntl = injectIntl(DatasMonitoringWidgets);
 
-Widgets.propTypes = {
+DatasMonitoringWidgets.propTypes = {
     intl: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
 };
 
-export default WidgetsWithIntl;
+export default DatasMonitoringWidgetsWithIntl;

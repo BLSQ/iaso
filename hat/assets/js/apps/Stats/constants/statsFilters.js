@@ -1,3 +1,5 @@
+import { coordinations } from '../../../utils/constants/filters';
+
 const filtersGeo = (
     provinces,
     zones,
@@ -61,5 +63,15 @@ const filtersGeo = (
     ]
 );
 
-export default filtersGeo;
+const filtersCoordinations = coordinationsList => (
+    [
+        coordinations(coordinationsList),
+    ]
+);
+
+
+export {
+    filtersGeo,
+    filtersCoordinations,
+};
 

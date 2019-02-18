@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { curveLinear } from 'd3';
+import { FormattedMessage } from 'react-intl';
 import Visualization from '../Visualization';
 
-class UnmatchCasesWidgets extends Component {
+
+class EvolutionWidgets extends Component {
     render() {
         const { data } = this.props;
         const spec = {
@@ -24,7 +26,17 @@ class UnmatchCasesWidgets extends Component {
                 <div className="widget__content">
                     <section className="wrapper__column">
                         <div className="container__graph responsive">
-                            <Visualization data={data} spec={spec} convert="custom" />
+                            {
+                                data.length > 0 &&
+                                <Visualization data={data} spec={spec} convert="custom" />
+                            }
+                            {
+                                data.length === 0 &&
+                                <FormattedMessage
+                                    id="EvolutionWidgets.noResult"
+                                    defaultMessage="Aucune donnée à afficher"
+                                />
+                            }
                         </div>
                     </section>
                 </div>
@@ -32,9 +44,9 @@ class UnmatchCasesWidgets extends Component {
     }
 }
 
-UnmatchCasesWidgets.propTypes = {
+EvolutionWidgets.propTypes = {
     data: PropTypes.array.isRequired,
     title: PropTypes.string.isRequired,
 };
 
-export default UnmatchCasesWidgets;
+export default EvolutionWidgets;

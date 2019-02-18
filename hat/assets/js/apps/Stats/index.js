@@ -9,19 +9,26 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
-import StatsContainerComponent from './StatsContainer';
+import EpidemiologyPage from './EpidemiologyContainer';
+import DatasMonitoringPage from './DatasMonitoringContainer';
 import { filtersInitialState, filtersReducer } from '../../redux/filtersRedux';
 
 export default function statsApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-
+    const defaultPath = `epidemiology/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultPathMonitoring = `datas_monitoring/date_from/${dateFrom}/date_to/${dateTo}`;
     const routes = [
         <Route
-            path="charts(/source/:source)(/date_from/:date_from)(/date_to/:date_to)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/coordination_id/:coordination_id)"
-            component={StatsContainerComponent}
+            path="epidemiology/date_from/:date_from/date_to/:date_to(/source/:source)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/coordination_id/:coordination_id)"
+            component={EpidemiologyPage}
         />,
-        <Redirect path="*" to={`charts/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Route
+            path="datas_monitoring/date_from/:date_from/date_to/:date_to(/source/:source)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/coordination_id/:coordination_id)"
+            component={DatasMonitoringPage}
+        />,
+        <Redirect path="/epidemiology" to={defaultPath} />,
+        <Redirect path="/datas_monitoring" to={defaultPathMonitoring} />,
     ];
 
     let history = useRouterHistory(createHistory)({

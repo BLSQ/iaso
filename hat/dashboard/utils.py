@@ -31,11 +31,16 @@ def get_menu(user, active_link):
         },
         {
             "name": "Statistiques",
-            "url_key": reverse("dashboard:stats"),
+            "url_key": reverse("dashboard:epidemiology"),
             "items": [
                 {
-                    "name": "Graphes",
-                    "url_key": reverse("dashboard:stats"),
+                    "name": "Epidémiologie",
+                    "url_key": reverse("dashboard:epidemiology"),
+                    "perms": "x_stats_graphs"
+                },
+                {
+                    "name": "Monitorage de données",
+                    "url_key": reverse("dashboard:datas_monitoring"),
                     "perms": "x_stats_graphs"
                 },
                 {

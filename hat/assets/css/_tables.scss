@@ -277,7 +277,8 @@ tr:first-child td {
             position: relative;
             margin: 0 !important;
         }
-        > div, > table {
+        >div,
+        >table {
             position: relative;
             width: calc(100% - #{$padding-unit / 4}) !important;
         }
@@ -290,9 +291,10 @@ tr:first-child td {
     }
     &.tests {
         margin-bottom: $padding-unit/2 !important;
-        >thead{
+        >thead {
             >tr {
-                >td, >th {
+                >td,
+                >th {
                     @include highlighted-tests;
                     &:before {
                         border-bottom: none;
@@ -300,7 +302,7 @@ tr:first-child td {
                 }
             }
         }
-        >tbody{
+        >tbody {
             >tr {
                 >td {
                     @include highlighted-tests;
@@ -333,5 +335,24 @@ tr:first-child td {
 .duplicate-page section:last-child {
     .tests {
         margin-bottom: 0 !important;
+    }
+}
+
+.collapsable {
+    overflow: hidden !important;
+    max-height: 37px !important;
+    overflow: hidden !important;
+    -webkit-transition: max-height 0.3s ease-in;
+    -moz-transition: max-height 0.3s ease-in;
+    -o-transition: max-height 0.3s ease-in;
+    transition: max-height 0.3s ease-in;
+    thead {
+        cursor: pointer;
+    }
+    &.open {
+        max-height: 500px !important;
+    }
+    .chevron {
+        float: right;
     }
 }

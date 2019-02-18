@@ -190,10 +190,10 @@ class VillageMap extends Component {
                 );
                 const { village } = this.state;
                 if (event.sourceTarget.feature.properties.ZS && village && !map.dragging._enabled) {
-                    const zone = geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === event.sourceTarget.feature.properties.ZS)[0];
-                    const zsId = parseInt(zone.properties.pk, 10);
+                    const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
+                    const zsId = parseInt(zone.id, 10);
                     const provinceId = parseInt(zone.properties.province, 10);
-                    const asId = parseInt(event.sourceTarget.feature.properties.pk, 10);
+                    const asId = parseInt(event.sourceTarget.feature.id, 10);
                     this.props.updateVillageLocation({
                         AS__ZS_id: zsId,
                         AS__ZS__province_id: provinceId,
@@ -256,7 +256,7 @@ class VillageMap extends Component {
         const currentZoom = map.getZoom();
         if (item) {
             if (item.ZS) {
-                const currentZS = this.props.geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === item.ZS)[0];
+                const currentZS = this.props.geoJson.zs.features.find(z => z.id === item.ZS);
                 this.state.containers.tooltipSmall.innerHTML = `AS: ${item.name} - ZS: ${currentZS ? currentZS.properties.name : '--'}`;
             } else {
                 this.state.containers.tooltipSmall.innerHTML = `${currentZoom <= zooms.zs ? 'Province' : 'ZS'}: ${item.name}`;

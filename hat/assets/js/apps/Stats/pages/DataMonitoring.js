@@ -12,26 +12,26 @@ import {
 import MGStyles from 'metrics-graphics/dist/metricsgraphics.css'; // eslint-disable-line no-unused-vars
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
-import Widgets from '../components/DatasMonitoringWidgets';
+import Widgets from '../components/DataMonitoringWidgets';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersGeo, filtersCoordinations } from '../constants/statsFilters';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 
-const baseUrl = 'datas_monitoring';
+const baseUrl = 'data_monitoring';
 
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
-        id: 'DatasMonitoring.labels.all',
+        id: 'DataMonitoring.labels.all',
     },
     loading: {
         defaultMessage: 'Loading',
-        id: 'DatasMonitoring.labels.loading',
+        id: 'DataMonitoring.labels.loading',
     },
 });
 
-export class DatasMonitoring extends Component {
+export class DataMonitoring extends Component {
     componentDidMount() {
         const {
             params: {
@@ -108,7 +108,7 @@ export class DatasMonitoring extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="DatasMonitoring.title"
+                                id="DataMonitoring.title"
                                 defaultMessage="Monitorage de données"
                             />
                         </h2>
@@ -162,12 +162,11 @@ export class DatasMonitoring extends Component {
     }
 }
 
-DatasMonitoring.propTypes = {
+DataMonitoring.propTypes = {
     filters: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -189,7 +188,7 @@ const MapStateToProps = state => ({
     load: state.load,
 });
 
-const DatasMonitoringWithIntl = injectIntl(DatasMonitoring);
+const DataMonitoringWithIntl = injectIntl(DataMonitoring);
 
-export default connect(MapStateToProps, MapDispatchToProps)(DatasMonitoringWithIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(DataMonitoringWithIntl);
 

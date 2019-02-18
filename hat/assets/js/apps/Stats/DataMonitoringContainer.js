@@ -4,10 +4,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { clone, deepEqual } from '../../utils';
 import { fetchUrls } from '../../utils/fetchData';
-import DatasMonitoringComponent from './pages/DatasMonitoring';
-import { datasMonitoringUrls } from './constants/urls';
+import DataMonitoringComponent from './pages/DataMonitoring';
+import { dataMonitoringUrls } from './constants/urls';
 
-export class DatasMonitoringContainer extends Component {
+export class DataMonitoringContainer extends Component {
     constructor(props) {
         super(props);
         this.currentParams = '';
@@ -28,7 +28,7 @@ export class DatasMonitoringContainer extends Component {
         } = this.props;
         const oldParams = clone(this.currentParams);
         this.currentParams = clone(params);
-        fetchUrls(datasMonitoringUrls, params, oldParams, dispatch);
+        fetchUrls(dataMonitoringUrls, params, oldParams, dispatch);
     }
 
     render() {
@@ -36,11 +36,11 @@ export class DatasMonitoringContainer extends Component {
             params,
             load,
         } = this.props;
-        return <DatasMonitoringComponent params={params} load={load} />;
+        return <DataMonitoringComponent params={params} load={load} />;
     }
 }
 
-DatasMonitoringContainer.propTypes = {
+DataMonitoringContainer.propTypes = {
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -55,5 +55,5 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
 });
 
-const DatasMonitoringContainerWithIntl = injectIntl(DatasMonitoringContainer);
-export default connect(MapStateToProps, MapDispatchToProps)(DatasMonitoringContainerWithIntl);
+const DataMonitoringContainerWithIntl = injectIntl(DataMonitoringContainer);
+export default connect(MapStateToProps, MapDispatchToProps)(DataMonitoringContainerWithIntl);

@@ -19,7 +19,7 @@ const MESSAGES = defineMessages({
     },
 });
 
-class DatasMonitoringWidgets extends Component {
+class DataMonitoringWidgets extends Component {
     render() {
         const { formatMessage } = this.props.intl;
         const data = this.props.data || [];
@@ -32,11 +32,11 @@ class DatasMonitoringWidgets extends Component {
     }
 }
 
-const DatasMonitoringWidgetsWithIntl = injectIntl(DatasMonitoringWidgets);
+const DataMonitoringWidgetsWithIntl = injectIntl(DataMonitoringWidgets);
 
-DatasMonitoringWidgets.propTypes = {
+DataMonitoringWidgets.propTypes = {
     intl: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
 };
 
-export default DatasMonitoringWidgetsWithIntl;
+export default DataMonitoringWidgetsWithIntl;

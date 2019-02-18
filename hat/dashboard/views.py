@@ -75,8 +75,8 @@ def epidemiology(request: HttpRequest) -> HttpResponse:
 @login_required()
 @permission_required('menupermissions.x_stats_graphs')
 @require_http_methods(['GET'])
-def datas_monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:datas_monitoring"))})
+def data_monitoring(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:data_monitoring"))})
 
 @is_user_authorized
 @login_required()

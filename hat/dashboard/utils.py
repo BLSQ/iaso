@@ -40,7 +40,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Monitorage de données",
-                    "url_key": reverse("dashboard:datas_monitoring"),
+                    "url_key": reverse("dashboard:data_monitoring"),
                     "perms": "x_stats_graphs"
                 },
                 {

@@ -22,7 +22,7 @@ const epidemiologyUrls = [
     },
 ];
 
-const datasMonitoringUrls = [
+const dataMonitoringUrls = [
     {
         name: 'unmatch',
         url: '/api/metrics/unmatch/',
@@ -42,5 +42,5 @@ const datasMonitoringUrls = [
 
 export {
     epidemiologyUrls,
-    datasMonitoringUrls,
+    dataMonitoringUrls,
 };

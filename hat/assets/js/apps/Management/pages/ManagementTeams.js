@@ -14,6 +14,7 @@ import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { saveFull, deleteFull } from '../../../utils/saveData';
 import { teamsActions } from '../redux/teams';
 import { detailsActions } from '../redux/details';
+import managementTeamsColumns from '../constants/managementTeamsColumns';
 
 const baseApiUrl = '/api/teams/?';
 
@@ -38,83 +39,7 @@ class ManagementTeams extends React.Component {
             newUrl = `${newUrl}&coordination_id=${props.params.coordination_id}`;
         }
         this.state = {
-            tableColumns: [
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Nom',
-                        id: 'main.label.name',
-                    }),
-                    accessor: 'name',
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Capacité',
-                        id: 'main.label.capacity',
-                    }),
-                    accessor: 'capacity',
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Type',
-                        id: 'main.label.type',
-                    }),
-                    accessor: 'UM',
-                    Cell: settings => (
-                        <span>{settings.original.UM ? 'UM' : 'MUM'}</span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Coordination',
-                        id: 'main.label.coordination',
-                    }),
-                    accessor: 'coordination_id',
-                    Cell: (settings) => {
-                        if (this.state.coordinations.length > 0) {
-                            const coordName = this.state.coordinations.filter(c =>
-                                c.id === parseInt(settings.original.coordination_id, 10))[0].name;
-                            return (
-                                <span>{coordName}</span>
-                            );
-                        }
-                        return null;
-                    },
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Actions',
-                        id: 'main.actions',
-                    }),
-                    sortable: false,
-                    resizable: false,
-                    width: 250,
-                    Cell: settings => (
-                        <section>
-                            <button
-                                className="button--tiny margin-right"
-                                onClick={() => this.selectTeam(settings.original)}
-                            >
-                                <i className="fa fa-info-circle" />
-                                <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
-                            </button>
-                            <button
-                                className="button--edit--tiny margin-right"
-                                onClick={() => this.editTeam(settings.original)}
-                            >
-                                <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
-                            </button>
-                            <button
-                                className="button--delete--tiny"
-                                onClick={() => this.showDelete(settings.original)}
-                            >
-                                <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
-                            </button>
-                        </section>
-                    ),
-                },
-            ],
+            tableColumns: managementTeamsColumns(formatMessage, this),
             tableUrl: newUrl,
             coordinations: props.coordinations,
             showEditModale: false,
@@ -327,6 +252,7 @@ class ManagementTeams extends React.Component {
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="teams"
+                                canSelect={false}
                             />
                         }
                         <div className="widget__content align-right border-top">

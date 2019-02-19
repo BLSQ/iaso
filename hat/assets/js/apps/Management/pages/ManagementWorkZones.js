@@ -340,6 +340,7 @@ class ManagementWorkZones extends React.Component {
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="workzones"
+                                canSelect={false}
                             />
                         }
                         <div className="widget__content align-right border-top">

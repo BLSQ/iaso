@@ -600,40 +600,57 @@ path.map-layer {
         stroke-width: $stroke-width;
     }
 }
-
+$highlight-stroke : 1.5;
 path.map-marker {
     @include marker($gray);
     &.YES {
-        @include marker($official);
+        @include marker($official, $fill-opacity: 1, $stroke-color: black, $stroke-opacity: 1, $stroke-width: 0.2);
         &.assignedToOtherTeam {
-            @include marker($official, $stroke-color: blue);
+            @include marker($official, $stroke-color: blue, $fill-opacity: 1 !important);
+            stroke-opacity:  1 !important;
+            stroke-width: $highlight-stroke;
         }
         &.assignedToCurrentTeam {
-            @include marker($official, $stroke-color: $selected);
+            @include marker($official, $stroke-color: $selected, $fill-opacity: 1 !important);
+            stroke-opacity: 1 !important;
+            stroke-width: $highlight-stroke;
         }
     }
     &.NO {
-        @include marker($notofficial);
+        @include marker($notofficial, $fill-opacity: 1);
     }
     &.OTHER {
-        @include marker($other);
+        @include marker($other, $fill-opacity: 1);
     }
     &.NA {
-        @include marker($unknown);
+        @include marker($unknown, $fill-opacity: 1);
     }
     &.selected, &.assignedToCurrentTeam {
-        @include marker($stroke-color: $selected !important, $fill-opacity: 0, $stroke-opacity: 1);
-        &:hover {
-            fill-opacity: 0;
+        @include marker($stroke-color: $selected !important, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
+        &.YES {
+            fill: $official;
+        }
+        &.NO {
+            fill: $notofficial;
+        }
+        &.OTHER {
+            fill: $other;
+        }
+        &.NA {
+            fill: $unknown;
         }
     }
     &.highlight {
-        @include marker($highlight);
+        @include marker($highlight, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
         &.assignedToOtherTeam {
-            @include marker($highlight, $stroke-color: blue);
+            @include marker($highlight, $stroke-color: blue, $fill-opacity: 1 !important);
+            stroke-opacity:  1 !important;
+            stroke-width: $highlight-stroke;
         }
         &.assignedToCurrentTeam {
-            @include marker($highlight, $stroke-color: $selected);
+            @include marker($highlight, $stroke-color: $selected, $fill-opacity: 1 !important);
+            stroke-opacity:  1 !important;
+            stroke-width: $highlight-stroke;
         }
     }
     &.geoScope {
@@ -1240,4 +1257,13 @@ button {
 
 .leaflet-custom-pane-chosen-pane {
     z-index: 603;
+}
+
+$filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
+#planning-map {
+    .leaflet-custom-pane-markers-pane, .leaflet-custom-pane-highlight-pane {
+        svg {
+            filter: $filter;
+        }
+    }
 }

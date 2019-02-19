@@ -6,6 +6,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
+import * as d3 from 'd3';
 import { FormattedMessage, IntlProvider, injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
@@ -25,7 +26,7 @@ import {
     zooms,
 } from '../../../utils/mapUtils';
 
-const radius = 400;
+const radius = 600;
 
 const renderDivIcon = (content, key, size) => L.divIcon({
     html: `<div><span>${content}</span></div>`,
@@ -313,6 +314,7 @@ class Map extends Component {
                                 const options = {
                                     className,
                                     pane: String.raw`custom-pane-${item._pane}`,
+                                    icon: renderDivIcon('', className, 30),
                                     radius,
                                 };
                                 marker = L.circle(item._latlon, options);
@@ -556,7 +558,7 @@ class Map extends Component {
                         <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
                     }
                 </section>
-            </ReactResizeDetector>
+            </ReactResizeDetector >
         );
     }
 }

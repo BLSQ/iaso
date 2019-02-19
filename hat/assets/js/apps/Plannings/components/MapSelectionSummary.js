@@ -19,11 +19,11 @@ class MapSelectionSummary extends Component {
         }
 
         // calculate total villages population
-        const { assignationsMap } = this.props;
+        const { assignationsMap, capacity } = this.props;
         const assignedPopulation = data.filter(village =>
             assignationsMap[village.id]).reduce((prev, curr) => (prev + (curr.population || 0)), 0);
         const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0);
-
+        const displayWarning = parseInt(assignedPopulation, 10) > parseInt(capacity, 10);
         return (
             <div className="map__selection__summary">
                 <h4 className="map__selection__summary__heading">
@@ -32,6 +32,15 @@ class MapSelectionSummary extends Component {
                         defaultMessage="Votre sélection:"
                     />
                 </h4>
+                {
+                    displayWarning &&
+                    <div className="map__selection__summary__item error-text">
+                        <FormattedMessage
+                            id="microplanning.selected.warning"
+                            defaultMessage="Attention la capicté dépasse la population assignée"
+                        />
+                    </div>
+                }
                 <div className="map__selection__summary__item">
                     <FormattedMessage
                         id="microplanning.selected.number"
@@ -39,21 +48,14 @@ class MapSelectionSummary extends Component {
                     />
                     <span className="map__selection__summary__number">{data.length}</span>
                 </div>
-                <div className="map__selection__summary__item">
+                <div className={`map__selection__summary__item ${displayWarning ? 'error-text' : ''}`}>
                     <FormattedMessage
                         id="microplanning.selected.capacity"
                         defaultMessage="Capacité"
                     />
-                    <span className="map__selection__summary__number">{this.props.capacity}</span>
+                    <span className="map__selection__summary__number">{capacity}</span>
                 </div>
-                <div className="map__selection__summary__item tooltip--warning">
-                    <FormattedMessage
-                        id="microplanning.selected.population"
-                        defaultMessage="Population estimée"
-                    />
-                    <span className="map__selection__summary__number">{population}</span>
-                </div>
-                <div className="map__selection__summary__item tooltip--warning">
+                <div className={`map__selection__summary__item tooltip--warning ${displayWarning ? 'error-text' : ''}`}>
                     <FormattedMessage
                         id="microplanning.selected.assignedPopulation"
                         defaultMessage="Population assignée"
@@ -64,7 +66,7 @@ class MapSelectionSummary extends Component {
                             id="microplanning.selected.population.warning.1"
                             defaultMessage="Please note: population estimates may not be accurate."
                         />
-            &nbsp;
+                        &nbsp;
                         <FormattedMessage
                             id="microplanning.selected.population.warning.2"
                             defaultMessage="Only villages from Z.S. have population data."
@@ -75,6 +77,13 @@ class MapSelectionSummary extends Component {
                             defaultMessage="Population data included in shape files curated by UCLA and based on Villages from Z.S."
                         />
                     </div>
+                </div>
+                <div className="map__selection__summary__item tooltip--warning">
+                    <FormattedMessage
+                        id="microplanning.selected.population"
+                        defaultMessage="Population estimée"
+                    />
+                    <span className="map__selection__summary__number">{population}</span>
                 </div>
             </div>
         );

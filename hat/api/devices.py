@@ -129,3 +129,4 @@ class DevicesViewSet(viewsets.ViewSet):
         device.is_test = request.data.get("is_test", None)
         device.save()
         return Response(device.as_dict())
+

@@ -20,7 +20,7 @@ import BarChart from '../../../../components/BarChart';
 import testStatsSettings from '../../constants/testStatsSettings';
 import confirmationStatsSettings from '../../constants/confirmationStatsSettings';
 import LoadingSpinner from '../../../../components/loading-spinner';
-import managementDetailColumns from '../../constants/managementDetailColumns';
+import managementDetailColumns from './managementDetailColumns';
 import {
     MESSAGES,
     mapVillages,
@@ -137,6 +137,14 @@ export class ManagementDetails extends Component {
         this.props.saveDevice(newDevice);
     }
 
+    goBack() {
+        const { params } = this.props;
+        this.props.redirectTo('devices', {
+            order: params.deviceOrder,
+            with_tests_devices: params.with_tests_devices,
+        });
+    }
+
     render() {
         const { baseLayer } = this.props.map;
         const {
@@ -170,9 +178,7 @@ export class ManagementDetails extends Component {
                             <h2>
                                 <button
                                     className="button--back"
-                                    onClick={() => (this.props.redirectTo('devices', {
-                                        order: params.deviceOrder,
-                                    }))}
+                                    onClick={() => this.goBack()}
                                 >
                                     <i className="fa fa-arrow-left" />{' '}
                                 </button>
@@ -283,7 +289,7 @@ export class ManagementDetails extends Component {
                             defaultSorted={[{ id: 'date', desc: false }]}
                             params={this.props.params}
                             defaultPath="detail"
-                            onRowClicked={() => { }}
+                            canSelect={false}
                             multiSort
                             callBackWithDataKey={false}
                             onDataLoaded={result => this.onTableLoaded(result)}

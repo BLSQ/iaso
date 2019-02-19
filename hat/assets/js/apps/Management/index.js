@@ -24,6 +24,7 @@ import { detailsReducer, detailsInitialState } from './redux/details';
 import { userReducer, usersInitialState } from './redux/users';
 import { villageReducer, villagesInitialState } from './redux/villages';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
+import { devicesReducer, devicesInitialState } from './redux/devices';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -41,7 +42,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDevicesPage}
         />,
         <Route
-            path="/detail(/coordination_id/:coordination_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/deviceId/:deviceId)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
+            path="/detail(/deviceId/:deviceId)(/with_tests_devices/:with_tests_devices)(/coordination_id/:coordination_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
             component={ManagementDetailsPage}
         />,
         <Route
@@ -88,6 +89,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         villages: villagesInitialState,
         geoFilters: filtersInitialState,
         geoFiltersModale: filtersInitialState,
+        devices: devicesInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -100,6 +102,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         villages: villageReducer,
         geoFilters: filtersReducer,
         geoFiltersModale: filtersReducer,
+        devices: devicesReducer,
     }, [
         routerMiddleware(history),
     ]);

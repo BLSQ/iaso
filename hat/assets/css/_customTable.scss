@@ -24,6 +24,12 @@ body {
             &.small {
                 font-size: 12px;
             }
+            &.action-zone {
+                padding: 0;
+                align-items: center;
+                display: flex;
+                justify-content: center;
+            }
         }
         .rt-thead .rt-th,
         .rt-thead .rt-td {
@@ -72,6 +78,7 @@ body {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             border-left: 1px solid $gray;
+            width: 17px;
             &:before {
                 color: $blue;
                 content: "\f07e";

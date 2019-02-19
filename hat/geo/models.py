@@ -228,3 +228,27 @@ class PopulationData(models.Model):
 
     def __str__(self):
         return "%s - %s -%s -%s" % (self.village.name, self.population, self.source, self.type)
+
+
+class GeopodeSettlement(models.Model):
+    province_code = models.TextField(null=True, blank=True)
+    province_name = models.TextField(null=True, blank=True)
+    zone_code = models.TextField(null=True, blank=True)
+    zone_name = models.TextField(null=True, blank=True)
+    area_code = models.TextField(null=True, blank=True)
+    area_name = models.TextField(null=True, blank=True)
+    guid = models.TextField(null=True, blank=True)
+    name = models.TextField(null=True, blank=True)
+    type = models.TextField(null=True, blank=True)
+    lat = models.TextField(null=True, blank=True)
+    long = models.TextField(null=True, blank=True)
+    location = PointField(srid=4326, null=True)
+    pop_female = models.IntegerField(null=True, blank=True)
+    pop_male = models.IntegerField(null=True, blank=True)
+    pop_total = models.IntegerField(null=True, blank=True)
+    normalized_zone = models.ForeignKey(to=ZS, null=True, blank=True, on_delete=models.DO_NOTHING)
+    normalized_area = models.ForeignKey(to=AS, null=True, blank=True, on_delete=models.DO_NOTHING)
+    normalized_village = models.ForeignKey(to=Village, null=True, blank=True, on_delete=models.DO_NOTHING)
+
+    def __str__(self):
+        return str(id)

@@ -14,6 +14,8 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { detailsActions } from '../redux/details';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { withTestDevices } from '../../../utils/constants/filters';
 
 
 const MESSAGES = defineMessages({
@@ -204,6 +206,14 @@ export class ManagementDevices extends Component {
         };
     }
 
+    getEndpointUrl() {
+        let url = '/api/devices/?';
+        if (this.props.params.with_tests_devices) {
+            url += 'with_tests_devices=True';
+        }
+        return url;
+    }
+
     selectDevice(deviceItem) {
         const { dispatch } = this.props;
         const from = moment().startOf('year').format('YYYY-MM-DD');
@@ -245,13 +255,22 @@ export class ManagementDevices extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage id="teamsdevices.header.results" defaultMessage="Synchronisation des Appareils" />
+                            <div className="float-right">
+                                <FiltersComponent
+                                    params={this.props.params}
+                                    baseUrl="devices"
+                                    filters={[
+                                        withTestDevices(),
+                                    ]}
+                                />
+                            </div>
                         </h2>
                     </div>
                     <CustomTableComponent
                         selectable
                         isSortable
                         showPagination={false}
-                        endPointUrl="/api/devices/?"
+                        endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_synced_date', desc: false }]}
                         params={this.props.params}

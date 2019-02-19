@@ -172,16 +172,15 @@ class CustomTableComponent extends React.Component {
 
     onResize(width) {
         const currentTable = document.getElementById(this.state.tableId);
-        const currentTableBody = currentTable.getElementsByClassName('rt-tbody')[0];
         this.setState({
-            disableHeaderFixed: currentTableBody.clientWidth > width ? true : this.props.disableHeaderFixed,
-            isHeaderFixed: currentTableBody.clientWidth === width,
+            disableHeaderFixed: currentTable.clientWidth > width ? true : this.props.disableHeaderFixed,
+            isHeaderFixed: currentTable.clientWidth === width,
         });
         this.handleScroll();
         if (currentTable) {
             const header = currentTable.getElementsByClassName('-header')[0];
             if (header && width) {
-                header.setAttribute('style', `width:${currentTableBody.clientWidth - 2}px;`);
+                header.setAttribute('style', `width:${currentTable.clientWidth - 2}px;`);
             }
         }
     }

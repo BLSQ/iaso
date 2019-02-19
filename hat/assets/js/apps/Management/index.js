@@ -9,7 +9,7 @@ import { loadReducer } from '../../redux/load';
 import App from '../App';
 
 import ManagementDevicesPage from './pages/ManagementDevices';
-import ManagementDetailsPage from './pages/ManagementDetails';
+import ManagementDetailsPage from './pages/ManagementDetails/ManagementDetails';
 import ManagementTeamsPage from './pages/ManagementTeams';
 import ManagementCoordinationsPage from './pages/ManagementCoordinations';
 import ManagementWorkZones from './pages/ManagementWorkZones';
@@ -37,7 +37,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
 
     const routes = [
         <Route
-            path="/devices(/order/:order)"
+            path="/devices(/order/:order)(/with_tests_devices/:with_tests_devices)"
             component={ManagementDevicesPage}
         />,
         <Route

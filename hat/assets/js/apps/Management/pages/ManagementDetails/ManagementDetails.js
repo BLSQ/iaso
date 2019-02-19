@@ -5,138 +5,30 @@ import { push } from 'react-router-redux';
 import {
     FormattedMessage,
     injectIntl,
-    FormattedDate,
-    defineMessages,
 } from 'react-intl';
 
-import { detailsActions } from '../redux/details';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
-import { getRequest, createUrl } from '../../../utils/fetchData';
-import { formatThousand, getPercentage } from '../../../utils';
-import TabsComponent from '../../../components/TabsComponent';
-import LayersComponent from '../../../components/LayersComponent';
-import { mapActions } from '../redux/mapReducer';
-import { Map } from '../components';
-import BarChart from '../../../components/BarChart';
-import testStatsSettings from '../constants/testStatsSettings';
-import confirmationStatsSettings from '../constants/confirmationStatsSettings';
-import LoadingSpinner from '../../../components/loading-spinner';
+import { detailsActions } from '../../redux/details';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import PeriodSelectorComponent from '../../../../components/PeriodSelectorComponent';
+import { getRequest, createUrl } from '../../../../utils/fetchData';
+import { formatThousand } from '../../../../utils';
+import TabsComponent from '../../../../components/TabsComponent';
+import LayersComponent from '../../../../components/LayersComponent';
+import { mapActions } from '../../redux/mapReducer';
+import { Map } from '../../components';
+import BarChart from '../../../../components/BarChart';
+import testStatsSettings from '../../constants/testStatsSettings';
+import confirmationStatsSettings from '../../constants/confirmationStatsSettings';
+import LoadingSpinner from '../../../../components/loading-spinner';
+import managementDetailColumns from '../../constants/managementDetailColumns';
+import {
+    MESSAGES,
+    mapVillages,
+    renderTestPourcentage,
+    renderConfirmationPourcentage,
+} from './utils';
 
-
-const MESSAGES = defineMessages({
-    table: {
-        defaultMessage: 'Liste',
-        id: 'details.label.list',
-    },
-    map: {
-        defaultMessage: 'Carte',
-        id: 'details.label.map',
-    },
-    stats: {
-        defaultMessage: 'Statistiques',
-        id: 'details.label.stats',
-    },
-    testStatsTitle: {
-        defaultMessage: 'Dépistages',
-        id: 'details.title.testStatsTitle',
-    },
-    confirmationStatsTitle: {
-        defaultMessage: 'Confirmations',
-        id: 'details.title.confirmationStatsTitle',
-    },
-});
-
-const mapVillages = (allVillages) => {
-    const villages = [];
-    allVillages.map((village) => {
-        if (village.village__id && village.village__latitude && village.village__longitude) {
-            const tempVillage = {
-                latitude: village.village__latitude,
-                longitude: village.village__longitude,
-                name: village.village__name,
-                original: village,
-            };
-            villages.push(tempVillage);
-        }
-        return null;
-    });
-    return villages;
-};
-
-const renderTestPourcentage = (total) => {
-    const cattPercentage = getPercentage(total.total_catt, total.total_catt_positive);
-    const rdtPercentage = getPercentage(total.total_rdt, total.total_rdt_positive);
-    return (
-        <div className="align-right bold large-text">
-            {
-                total.total_catt !== 0 &&
-                <div className="padding-bottom">
-                    {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="test(s) CATT effectué(s)" />
-                </div>
-            }
-            {
-                total.total_catt === 0 &&
-                <div className="padding-bottom">
-                    <FormattedMessage id="details.label.noCATT" defaultMessage="Aucun test CATT" />
-                </div>
-            }
-            {
-                total.total_catt !== 0 &&
-                <div className="padding-bottom">
-                    {total.total_catt_positive} CATT <FormattedMessage id="details.label.cattPositive" defaultMessage="positif(s)" /> ({cattPercentage}%)
-                </div>
-            }
-            {
-                total.total_rdt !== 0 &&
-                <div className="padding-bottom">
-                    {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="test(s) RDT effectué(s)" />
-                </div>
-            }
-            {
-                total.total_rdt === 0 &&
-                <div>
-                    <FormattedMessage id="details.label.noRDT" defaultMessage="Aucun test RDT" />
-                </div>
-            }
-            {
-                total.total_rdt !== 0 &&
-                <div>
-                    {total.total_rdt_positive} RDT <FormattedMessage id="details.label.rdtPositive" defaultMessage="positif(s)" /> ({rdtPercentage}%)
-                </div>
-            }
-        </div>);
-};
-
-const renderConfirmationPourcentage = (total) => {
-    const confirmationPercentage = getPercentage(total.total_confirmation_tests, total.total_confirmation_tests_positive);
-    return (
-        <div className="align-right bold large-text">
-            <div className="padding-bottom">
-                {formatThousand(total.total_catt_positive + total.total_rdt_positive)} <FormattedMessage id="details.label.suspect" defaultMessage="test(s) suspects" />
-            </div>
-            {
-                total.total_confirmation_tests !== 0 &&
-                <div className="padding-bottom">
-                    {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="test(s) de confirmation" />
-                </div>
-            }
-            {
-                total.total_confirmation_tests === 0 &&
-                <div>
-                    <FormattedMessage id="details.label.noConfirmation" defaultMessage="Aucun test de confirmation" />
-                </div>
-            }
-            {
-                total.total_confirmation_tests !== 0 &&
-                <div>
-                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="positif(s)" /> ({confirmationPercentage}%)
-                </div>
-            }
-        </div>);
-};
 let tableTotal;
-
 
 export class ManagementDetails extends Component {
     constructor(props) {
@@ -160,158 +52,8 @@ export class ManagementDetails extends Component {
 
         this.state = {
             currentTab: 'table',
-            tableColumns:
-                [
-                    {
-                        Header: formatMessage({
-                            defaultMessage: 'Village',
-                            id: 'details.label.village',
-                        }),
-                        accessor: 'village__name',
-                        Footer: formatMessage({
-                            defaultMessage: 'TOTAL',
-                            id: 'details.label.total',
-                        }),
-                    },
-                    {
-                        Header: formatMessage({
-                            defaultMessage: 'Jour',
-                            id: 'details.label.day',
-                        }),
-                        accessor: 'date',
-                        Cell: settings => (<FormattedDate value={new Date(settings.original.date)} />),
-                    },
-                    {
-                        Header: formatMessage({
-                            defaultMessage: 'Dépistages',
-                            id: 'details.label.screenings',
-                        }),
-                        columns: [
-                            {
-                                Header: 'CATT',
-                                accessor: 'catt_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_catt : ''),
-                            },
-                            {
-                                Header: 'RDT',
-                                accessor: 'rdt_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_rdt : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'Positifs',
-                                    id: 'details.label.positive',
-                                }),
-                                accessor: 'positive_screening_test_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_catt_positive + tableTotal.total_rdt_positive : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'TOTAL',
-                                    id: 'details.label.total',
-                                }),
-                                accessor: 'screening_count',
-                                className: 'small',
-                                width: 120,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_catt + tableTotal.total_rdt : ''),
-                            },
-                        ],
-                    },
-                    {
-                        Header: formatMessage({
-                            defaultMessage: 'Confirmations',
-                            id: 'details.label.confirmations',
-                        }),
-                        columns: [
-                            {
-                                Header: 'PG',
-                                accessor: 'pg_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_pg : ''),
-                            },
-                            {
-                                Header: 'CTCWOO',
-                                accessor: 'ctcwoo_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_ctc : ''),
-                            },
-                            {
-                                Header: 'MAECT',
-                                accessor: 'maect_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_maect : ''),
-                            },
-                            {
-                                Header: 'PL',
-                                accessor: 'pl_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_pl : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'Positifs',
-                                    id: 'details.label.positive',
-                                }),
-                                accessor: 'positive_confirmation_test_count',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_confirmation_tests_positive : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'TOTAL',
-                                    id: 'details.label.total',
-                                }),
-                                accessor: 'confirmation_count',
-                                className: 'small',
-                                width: 120,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_confirmation_tests : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'Stade 1',
-                                    id: 'details.label.pl_count_stage1',
-                                }),
-                                accessor: 'pl_count_stage1',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_pl_stage1 : ''),
-                            },
-                            {
-                                Header: formatMessage({
-                                    defaultMessage: 'Stade 2',
-                                    id: 'details.label.pl_count_stage2',
-                                }),
-                                accessor: 'pl_count_stage2',
-                                className: 'small',
-                                width: 100,
-                                resizable: false,
-                                Footer: () => (tableTotal ? tableTotal.total_pl_stage2 : ''),
-                            },
-                        ],
-                    },
-                ],
+            tableColumns: managementDetailColumns(formatMessage, tableTotal),
+            isTest: false,
         };
     }
 
@@ -324,6 +66,7 @@ export class ManagementDetails extends Component {
             params: {
                 from,
                 to,
+                deviceId,
             },
             load: {
                 loading,
@@ -338,11 +81,20 @@ export class ManagementDetails extends Component {
             from !== this.props.params.from ||
             to !== this.props.params.to) && !loading);
         if (fetchVillagesYear) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'villageyear', !fetchVillagesMonth));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ?
+                'device_id' : 'team_id', currentDetail.device_id ?
+                currentDetail.device_id : currentDetail.id, from, to, 'villageyear', !fetchVillagesMonth));
         }
 
         if (fetchVillagesMonth) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ? 'device_id' : 'team_id', currentDetail.device_id ? currentDetail.device_id : currentDetail.id, from, to, 'month', true));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ?
+                'device_id' : 'team_id', currentDetail.device_id ?
+                currentDetail.device_id : currentDetail.id, from, to, 'month', true));
+        }
+        if (deviceId && currentDetail) {
+            this.setState({
+                isTest: currentDetail.is_test,
+            });
         }
     }
 
@@ -364,7 +116,9 @@ export class ManagementDetails extends Component {
                 to,
             },
         } = this.props;
-        let url = currentDetail.device_id ? `/api/teststats/?device_id=${currentDetail.device_id}&grouping=villageday` : `/api/teststats/?team_id=${currentDetail.id}&grouping=villageday`;
+        let url = currentDetail.device_id ?
+            `/api/teststats/?device_id=${currentDetail.device_id}&grouping=villageday` :
+            `/api/teststats/?team_id=${currentDetail.id}&grouping=villageday`;
         if (from) {
             url += `&from=${from}`;
         }
@@ -372,6 +126,15 @@ export class ManagementDetails extends Component {
             url += `&to=${to}`;
         }
         return url;
+    }
+
+    saveDeviceChanges() {
+        const { isTest } = this.state;
+        const newDevice = {
+            ...this.props.currentDetail,
+            is_test: isTest,
+        };
+        this.props.saveDevice(newDevice);
     }
 
     render() {
@@ -416,12 +179,39 @@ export class ManagementDetails extends Component {
 
                                 {
                                     currentDetail &&
-                                    <div>
+                                    <span>
                                         <FormattedMessage id="details.label.user" defaultMessage="Utilisateur" />:{` ${currentDetail.last_user}`}
                                         {' - '}
                                         <FormattedMessage id="details.label.team" defaultMessage="Equipe" />:{` ${currentDetail.last_team}`}
-                                    </div>
+                                    </span>
                                 }
+                                <div className="float-right">
+                                    <span className="filter-checkbox">
+                                        <label htmlFor="checkbox-is-test">
+                                            <FormattedMessage id="details.label.is_test" defaultMessage="Tablette de test" />:
+                                        </label>
+                                        <input
+                                            id="checkbox-is-test"
+                                            type="checkbox"
+                                            name="checkbox-is-test"
+                                            className="list--normalized-as-checkbox"
+                                            checked={
+                                                this.state.isTest ? 'checked' : ''
+                                            }
+                                            onChange={event => this.setState({ isTest: event.target.checked })}
+                                        />
+                                    </span>
+                                    <button
+                                        disabled={currentDetail.is_test === this.state.isTest}
+                                        onClick={() => this.saveDeviceChanges()}
+                                        className="button--save--tiny margin-left"
+                                    >
+                                        <FormattedMessage
+                                            id="details.label.save"
+                                            defaultMessage="Sauver"
+                                        />
+                                    </button>
+                                </div>
                             </h2>
                         </div>
                     }
@@ -642,6 +432,7 @@ ManagementDetails.propTypes = {
     map: PropTypes.object.isRequired,
     getShape: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
+    saveDevice: PropTypes.func.isRequired,
 };
 const MapStateToProps = state => ({
     config: state.config,
@@ -658,6 +449,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setVillages: villageList => dispatch(detailsActions.loadDetailsVillages(villageList)),
+    saveDevice: device => dispatch(detailsActions.saveDevice(dispatch, device)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     getShape: url => getRequest(url, dispatch, null, false),
 });

@@ -22,10 +22,13 @@ class DevicesViewSet(viewsets.ViewSet):
     ]
 
     def list(self, request):
+        with_tests_devices = request.GET.get("with_tests_devices", False)
         devices = DeviceDB.objects.all()\
             .prefetch_related("last_user")\
             .prefetch_related("last_user__profile")\
             .prefetch_related("last_user__profile__team")
+        if not with_tests_devices:
+            devices = devices.filter(is_test=False)
         res = []
         for device in devices:
             # Add stats about pictures and videos
@@ -119,4 +122,10 @@ class DevicesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         device = get_object_or_404(DeviceDB, pk=pk)
 
+        return Response(device.as_dict())
+
+    def partial_update(self, request, pk=None):
+        device = get_object_or_404(DeviceDB, pk=pk)
+        device.is_test = request.data.get("is_test", None)
+        device.save()
         return Response(device.as_dict())

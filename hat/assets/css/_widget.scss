@@ -98,6 +98,11 @@
 
 .widget__heading {
     font-size: $font-size-m;
+    .float-right {
+        .filter-item {
+            padding-bottom: 0;
+        }
+    }
 }
 
 .widget__toggle-view {

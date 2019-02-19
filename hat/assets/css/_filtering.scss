@@ -45,14 +45,6 @@ $select-width: 120px;
     display: inline-block;
     position: relative;
     z-index: 100;
-    .button--save--tiny {
-        height: 33px;
-        font-size: 13px;
-        outline: none;
-        box-shadow: none;
-        z-index: 10;
-        position: relative;
-    }
 }
 
 .filter__container__select {

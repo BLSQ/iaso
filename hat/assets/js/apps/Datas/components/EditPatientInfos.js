@@ -102,26 +102,6 @@ class EditPatientInfos extends React.Component {
         });
     }
 
-    resetPatient() {
-        const {
-            patient,
-            params,
-            redirectTo,
-        } = this.props;
-        this.setState({
-            patient,
-            isModified: false,
-        });
-        const newParams = {
-            ...params,
-            prov_id: patient.province_id,
-            ZS_id: patient.ZS_id,
-            AS_id: patient.AS_id,
-            vil_id: patient.village_id,
-        };
-        redirectTo(this.state.baseUrl, newParams);
-    }
-
     render() {
         const {
             patient,
@@ -140,6 +120,7 @@ class EditPatientInfos extends React.Component {
                 areas,
                 villages,
             },
+            closeEdit,
         } = this.props;
         const infoList = patientInfosMessages(formatMessage);
         return (
@@ -268,8 +249,7 @@ class EditPatientInfos extends React.Component {
                     }
                     <button
                         className="button margin-right"
-                        disabled={!isModified}
-                        onClick={() => this.resetPatient()}
+                        onClick={() => closeEdit()}
                     >
                         <FormattedMessage
                             id="patientInfos.cancel"
@@ -292,9 +272,6 @@ class EditPatientInfos extends React.Component {
     }
 }
 
-EditPatientInfos.defaultProps = {
-};
-
 EditPatientInfos.propTypes = {
     patient: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
@@ -305,6 +282,7 @@ EditPatientInfos.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     baseUrl: PropTypes.string.isRequired,
+    closeEdit: PropTypes.func.isRequired,
 };
 
 const EditPatientInfosWithIntl = injectIntl(EditPatientInfos);

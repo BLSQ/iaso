@@ -97,7 +97,7 @@ class PatientDetailsWrapper extends React.Component {
         if (currentUser.id && permissions.length > 0) {
             const editionRight = permissions.find(p => p.codename === 'x_datas_patient_edition');
             if ((currentUser.is_superuser ||
-                    currentUser.permissions.find(p => p === editionRight.id))) {
+                currentUser.permissions.find(p => p === editionRight.id))) {
                 this.setState({
                     canEditPatientInfos: true,
                 });
@@ -133,6 +133,12 @@ class PatientDetailsWrapper extends React.Component {
         this.props.savePatient(patient);
     }
 
+    toggleEdit() {
+        this.setState({
+            editEnabled: !this.state.editEnabled,
+        });
+    }
+
     render() {
         const {
             patient,
@@ -157,6 +163,7 @@ class PatientDetailsWrapper extends React.Component {
             currentTab,
             canEditPatientInfos,
             baseUrl,
+            editEnabled,
         } = this.state;
         return (
             <section>
@@ -178,6 +185,7 @@ class PatientDetailsWrapper extends React.Component {
                         <div className="widget__content patient-detail">
                             {
                                 canEditPatientInfos &&
+                                editEnabled &&
                                 <EditPatientInfos
                                     patient={patient}
                                     savePatient={newPatient => savePatient(newPatient)}
@@ -187,11 +195,27 @@ class PatientDetailsWrapper extends React.Component {
                                     params={params}
                                     redirectTo={redirectTo}
                                     baseUrl={baseUrl}
+                                    closeEdit={() => this.toggleEdit()}
                                 />
                             }
                             {
-                                !canEditPatientInfos &&
+                                (!canEditPatientInfos || (canEditPatientInfos && !editEnabled)) &&
                                 <PatientInfos patient={patient} />
+                            }
+                            {
+                                canEditPatientInfos &&
+                                !editEnabled &&
+                                <div className="align-right margin-top">
+                                    <button
+                                        className="button"
+                                        onClick={() => this.toggleEdit()}
+                                    >
+                                        <FormattedMessage
+                                            id="patientInfos.edit"
+                                            defaultMessage="Editer"
+                                        />
+                                    </button>
+                                </div>
                             }
                         </div>
                     </div>

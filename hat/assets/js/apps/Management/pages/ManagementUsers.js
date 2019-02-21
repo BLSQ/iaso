@@ -292,6 +292,7 @@ class ManagementUsers extends React.Component {
                             onDataLoaded={users => (this.props.setUsers(users))}
                             onDataUpdated={isUpdated => (this.props.userUpdated(isUpdated))}
                             isUpdated={this.props.isUpdated}
+                            canSelect={false}
                         />
                         <div className="widget__content align-right border-top">
                             <button

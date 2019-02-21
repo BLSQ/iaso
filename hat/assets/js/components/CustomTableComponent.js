@@ -181,7 +181,11 @@ class CustomTableComponent extends React.Component {
         if (currentTable) {
             const header = currentTable.getElementsByClassName('-header')[0];
             if (header && width) {
-                header.setAttribute('style', `width:${currentTableBody.clientWidth - 2}px;`);
+                if (currentTableBody.clientWidth <= width) {
+                    header.setAttribute('style', `width:${currentTable.clientWidth - 2}px;`);
+                } else {
+                    header.setAttribute('style', `width:${currentTableBody.clientWidth - 2}px;`);
+                }
             }
         }
     }

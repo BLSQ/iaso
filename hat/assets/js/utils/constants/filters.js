@@ -638,6 +638,18 @@ const testerType = (formatMessage, defineMessages) => (
     }
 );
 
+const withTestDevices = () => (
+    {
+        name: 'with_tests_devices',
+        urlKey: 'with_tests_devices',
+        label: {
+            id: 'main.label.with_tests_devices',
+            defaultMessage: 'Inclure les tablettes de test',
+        },
+        type: 'checkbox',
+    }
+);
+
 
 export {
     testType,
@@ -666,4 +678,5 @@ export {
     onlyTreatedPatients,
     onlyDead,
     testerType,
+    withTestDevices,
 };

@@ -256,6 +256,7 @@ class ManagementVillages extends React.Component {
                             onDataLoaded={villages => (this.props.setVillages(villages))}
                             onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
                             isUpdated={isUpdated}
+                            canSelect={false}
                         />
                         <div className="widget__content align-right border-top">
                             <DownloadButtonsComponent

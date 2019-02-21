@@ -36,6 +36,7 @@ class DeviceDB(models.Model):
     last_synced_date = models.DateTimeField(null=True)
     last_synced_seq = models.TextField(null=True, default=0)
     last_synced_log_message = models.TextField(null=True)
+    is_test = models.BooleanField(default=False)
 
     def get_team(self):
         """Returns the team of the last user of this device"""
@@ -73,6 +74,7 @@ class DeviceDB(models.Model):
                     last_team = self.last_user.profile.team.name
             result['last_user'] = last_user
             result['last_team'] = last_team
+            result['is_test'] = self.is_test
 
         return result
 

@@ -240,6 +240,7 @@ class ManagementCoordinations extends React.Component {
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}
                                 defaultPath="coordinations"
+                                canSelect={false}
                             />
                         }
                         <div className="widget__content align-right border-top">

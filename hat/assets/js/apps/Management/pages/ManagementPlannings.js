@@ -287,6 +287,7 @@ class ManagementPlannings extends React.Component {
                                 dataKey="datas"
                                 onDataLoaded={datas => this.setTemplatePermission(datas)}
                                 callBackWithDataKey={false}
+                                canSelect={false}
                             />
                         }
                         <div className="widget__content align-right border-top">

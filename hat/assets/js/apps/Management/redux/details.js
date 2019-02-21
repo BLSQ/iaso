@@ -52,6 +52,24 @@ export const fetchDetails = (dispatch, detailId, url) => {
     });
 };
 
+export const saveDevice = (dispatch, device) => {
+    dispatch(loadActions.startLoading());
+    req
+        .patch(`/api/devices/${device.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(device)
+        .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
+            dispatch(loadCurrentDetail(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when saving device', err);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
 
 export const fetchDetailsVillages = (
     dispatch,
@@ -100,6 +118,7 @@ export const detailsActions = {
     fetchDetailsVillages,
     resetDetails,
     loadDetailsVillages,
+    saveDevice,
 };
 
 export const detailsInitialState = {

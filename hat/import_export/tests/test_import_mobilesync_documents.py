@@ -15,7 +15,7 @@ from ..import_synced import import_synced_devices
 def load_document(filename):
     device_db_name = filename + str(uuid.uuid4())
     device_db = DeviceDB.objects.create(device_id=device_db_name)
-    with open(os.path.join(os.path.dirname(__file__), filename)) as f:
+    with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
         document = json.load(f)
         document['_id'] = str(uuid.uuid4())  # Avoid updates in couch
         document['deviceId'] = device_db_name

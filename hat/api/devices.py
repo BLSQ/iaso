@@ -95,6 +95,8 @@ class DevicesViewSet(viewsets.ViewSet):
                 "id": device.id,
                 **device_stats
             }
+            if with_tests_devices:
+                device_dict['is_test'] = device.is_test
 
             res.append(device_dict)
 
@@ -126,7 +128,9 @@ class DevicesViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         device = get_object_or_404(DeviceDB, pk=pk)
-        device.is_test = request.data.get("is_test", None)
+        is_test = request.data.get("is_test", None)
+        if is_test is not None:
+            device.is_test = is_test
         device.save()
         return Response(device.as_dict())
 

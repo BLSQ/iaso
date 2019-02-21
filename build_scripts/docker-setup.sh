@@ -49,10 +49,10 @@ for key in \
     DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
     FD3A5288F042B6850C66B31F09FE44734EB7990E \
   ; do \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --keyserver pgp.mit.edu                --recv-keys "$key" || \
-    gpg --keyserver keyserver.pgp.com          --recv-keys "$key" ; \
+    gpg --no-tty --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
+    gpg --no-tty --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+    gpg --no-tty --keyserver pgp.mit.edu                --recv-keys "$key" || \
+    gpg --no-tty --keyserver keyserver.pgp.com          --recv-keys "$key" ; \
   done
 
 curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz"

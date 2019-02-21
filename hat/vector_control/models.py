@@ -228,9 +228,21 @@ class Target(models.Model):
     gps = models.CharField(max_length=100)
     date_time = models.DateTimeField(null=True)
     river = models.TextField(null=True)
+    village = models.TextField(null=True)
+    uuid = models.TextField(null=True)
+    external_index = models.IntegerField(null=True)
     gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
+    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
     location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
+
+    # obj.put("uuid", target.uuid)
+    # obj.put("latitude", target.latitude)
+    # obj.put("longitude", target.longitude)
+    # obj.put("altitude", target.altitude)
+    # obj.put("accuracy", target.accuracy)
+    # obj.put("village", target.village)
+    # obj.put("index", target.index)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.date_time)
@@ -246,9 +258,12 @@ class Target(models.Model):
         username = None
         if self.gps_import:
             username = self.gps_import.user.username
+        name = self.name
+        if not name:
+            name = self.uuid
         return {
             'id': self.id,
-            'name': self.name,
+            'name': name,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'deployment': self.deployment,

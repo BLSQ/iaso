@@ -1,17 +1,18 @@
 from django.core.paginator import Paginator
-from django.db.models import Q, OuterRef, Exists
+from django.db.models import OuterRef, Exists
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-
+from .catches import timestamp_to_utc_datetime
 from hat.geo.models import Province, ZS, AS
-from hat.vector_control.models import Target, GpsImport
+from hat.vector_control.models import Target, GpsImport, APIImport
 from .authentication import CsrfExemptSessionAuthentication
-from .export_utils import  Echo, generate_xlsx, iter_items
+from .export_utils import Echo, generate_xlsx, iter_items
 from hat.users.models import get_user_geo_list, is_authorized_user
+from django.contrib.gis.geos import Point
 
 
 class TargetsViewSet(viewsets.ViewSet):
@@ -163,6 +164,49 @@ class TargetsViewSet(viewsets.ViewSet):
 
         else:
             return Response('Unauthorized', status=401)
+
+    def create(self, request):
+            targets = request.data
+
+            new_targets = []
+            api_import = APIImport()
+            api_import.user = request.user
+            api_import.import_type = 'targets'
+            api_import.json_body = targets
+            api_import.save()
+            for target in targets:
+                uuid = target.get('uuid', None)
+                latitude = target.get('latitude', None)
+                longitude = target.get('longitude', None)
+                altitude = target.get('altitude', 0)
+
+                target_location = None
+                if latitude and longitude:
+                    target_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+                new_target, created = Target.objects.get_or_create(uuid=uuid)
+                if created:
+                    new_target.village = target.get('village', None)
+                    new_target.external_index = target.get('index', None)
+                    new_target.accuracy = target.get('accuracy', None)
+
+                    t = target.get('time', None)
+                    if t:
+                        new_target.date_time = timestamp_to_utc_datetime(int(t))
+
+                    new_target.uuid = target.get('uuid', None)
+
+                    new_target.user = request.user
+                    new_target.source = 'API'
+                    new_target.api_import = api_import
+                    if target_location:
+                        new_target.location = target_location
+
+                    new_targets.append(new_target)
+                    new_target.save()
+                else:
+                    print("not created")
+
+            return Response([target.as_dict() for target in new_targets])
 
 
 

@@ -224,7 +224,7 @@ class SitesViewSet(viewsets.ViewSet):
 
     def create(self, request):
         sites = request.data
-        print("sites", sites)
+
         new_sites = []
         api_import = APIImport()
         api_import.user = request.user

@@ -1,9 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from .. import mdb
 
 mdb_file = 'testdata/HAT-Historical-Data-Forms-TEST-v1.mdb'
 
 
+@tag('externaltools')
 class MdbTests(TestCase):
     def test_get_schema(self):
         schema = mdb.get_schema(mdb_file)

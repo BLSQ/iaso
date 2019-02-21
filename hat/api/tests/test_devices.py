@@ -78,4 +78,4 @@ class DevicesTest(APITestCase):
         response = self.client.patch(url101, {'is_test': False}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['device_id'], 'device_1')
-        self.assertEqual(response.data['is_test'], True)
+        self.assertEqual(response.data['is_test'], False)

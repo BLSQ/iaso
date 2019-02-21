@@ -9,6 +9,7 @@ from . import TEST_DATA, import_helper
 
 
 class ImportCasesTests(TestCase):
+    @tag("externaltools")
     def test_import_historic(self):
         count = TEST_DATA['historic']['count']
         r = import_helper('historic', TEST_DATA['historic']['file'])
@@ -23,6 +24,7 @@ class ImportCasesTests(TestCase):
         event = get_event_of_type(EventTable.cases_file, event['id'])
         self.assertEqual(event['source_type'], 'historic')
 
+    @tag("externaltools")
     def test_import_pv(self):
         count = TEST_DATA['pv']['count']
         r = import_helper('pv', TEST_DATA['pv']['file'])

@@ -14,6 +14,7 @@ module.exports = {
   context: __dirname,
 
   entry: {
+    'home': './assets/js/apps/Home/index',
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': './assets/css/index.scss',
     'plannings': './assets/js/apps/Plannings/index',

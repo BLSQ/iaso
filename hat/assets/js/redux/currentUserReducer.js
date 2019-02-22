@@ -1,9 +1,9 @@
-/*
- * Includes the actions and state necessary to display the map view
- */
+
+import { loadActions } from './load';
 
 const SET_CURRENT_USER = 'hat/SET_CURRENT_USER';
 const SET_USER_PERMISSIONS = 'hat/SET_USER_PERMISSIONS';
+const SET_IS_CONNECTED = 'hat/SET_IS_CONNECTED';
 const FETCH_ACTION = 'hat/FETCH_ACTION';
 
 const req = require('superagent');
@@ -12,24 +12,37 @@ const setCurrentUser = user => ({
     type: SET_CURRENT_USER,
     payload: user,
 });
+
 const setUserPermissions = permissions => ({
     type: SET_USER_PERMISSIONS,
     payload: permissions,
 });
 
-const fetchCurrentUserInfos = (dispatch) => {
+const setIsConnected = isConnected => ({
+    type: SET_IS_CONNECTED,
+    payload: isConnected,
+});
+
+const fetchCurrentUserInfos = (dispatch, displayLoad = false) => {
+    if (displayLoad) dispatch(loadActions.startLoading());
     req
         .get('/api/permissions')
         .then((result) => {
             dispatch(setUserPermissions(result.body));
+            dispatch(setIsConnected(true));
             req
                 .get('/api/currentuser/')
                 .then((userResult) => {
+                    if (displayLoad) dispatch(loadActions.successLoadingNoData());
                     dispatch(setCurrentUser(userResult.body));
                 })
                 .catch(err => (console.error(`Error while fetching current user informations ${err}`)));
         })
-        .catch(err => (console.error(`Error while fetching current user permissions ${err}`)));
+        .catch((err) => {
+            dispatch(setIsConnected(false));
+            if (displayLoad) dispatch(loadActions.successLoadingNoData());
+            console.error(`Error while fetching current user permissions ${err}`);
+        });
     return ({
         type: FETCH_ACTION,
     });
@@ -43,6 +56,7 @@ export const currentUserActions = {
 export const currentUserInitialState = {
     user: {},
     permissions: [],
+    isConnected: undefined,
 };
 
 export const currentUserReducer = (state = currentUserInitialState, action = {}) => {
@@ -54,6 +68,10 @@ export const currentUserReducer = (state = currentUserInitialState, action = {})
         case SET_USER_PERMISSIONS: {
             const permissions = action.payload;
             return { ...state, permissions };
+        }
+        case SET_IS_CONNECTED: {
+            const isConnected = action.payload;
+            return { ...state, isConnected };
         }
 
         default:

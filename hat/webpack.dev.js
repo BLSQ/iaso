@@ -11,6 +11,11 @@ module.exports = {
   context: __dirname,
   entry: {
     // use same settings as in Prod
+    'home': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/Home/index'
+    ],
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,

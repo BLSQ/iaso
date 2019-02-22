@@ -104,6 +104,9 @@ class Patient(models.Model):
         AS = None
         ZS = None
         province = None
+        province_id = None
+        ZS_id = None
+        AS_id = None
         if self.origin_area:
             AS = self.origin_area.name
             AS_id = self.origin_area.id
@@ -112,6 +115,7 @@ class Patient(models.Model):
             province = self.origin_area.ZS.province.name
             province_id = self.origin_area.ZS.province.id
         village = None
+        village_id = None
         if self.origin_village:
             village = self.origin_village.name
             village_id = self.origin_village.id
@@ -178,6 +182,7 @@ class Test(models.Model):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
 
     def to_dict(self):
+
         res = {
             "id": self.id,
             "type": self.type,

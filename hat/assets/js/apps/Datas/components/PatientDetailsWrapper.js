@@ -153,7 +153,6 @@ class PatientDetailsWrapper extends React.Component {
                 villages,
                 baseLayer,
             },
-            savePatient,
             hasError,
             isUpdated,
             geoFilters,
@@ -188,7 +187,7 @@ class PatientDetailsWrapper extends React.Component {
                                 editEnabled &&
                                 <EditPatientInfos
                                     patient={patient}
-                                    savePatient={newPatient => savePatient(newPatient)}
+                                    savePatient={newPatient => this.savePatient(newPatient)}
                                     hasError={hasError}
                                     isUpdated={isUpdated}
                                     geoFilters={geoFilters}

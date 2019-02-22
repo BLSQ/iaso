@@ -252,8 +252,8 @@ class EditPatientInfos extends React.Component {
                         onClick={() => closeEdit()}
                     >
                         <FormattedMessage
-                            id="patientInfos.cancel"
-                            defaultMessage="Annuler"
+                            id="patientInfos.back"
+                            defaultMessage="Retour"
                         />
                     </button>
                     <button

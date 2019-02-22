@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import PatientInfos from '../components/PatientInfos';
+import EditPatientInfos from '../components/EditPatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
 import PatientCasesLocation from '../components/PatientCasesLocation';
 import PatientCasesTests from '../components/PatientCasesTests';
@@ -15,6 +16,8 @@ import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../../../redux/mapReducer';
 import { renderTestLabel } from '../../../utils/mapUtils';
 import { scrollTo } from '../../../utils';
+import { patientsActions } from '../redux/patients';
+import { filterActions } from '../../../redux/filtersRedux';
 
 const MESSAGES = defineMessages({
     infos: {
@@ -31,11 +34,25 @@ const MESSAGES = defineMessages({
     },
 });
 
+let timerSuccess;
+let timerError;
+
+const clearTimer = () => {
+    if (timerSuccess) {
+        clearTimeout(timerSuccess);
+    }
+    if (timerError) {
+        clearTimeout(timerError);
+    }
+};
+
 class PatientDetailsWrapper extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             currentTab: 'infos',
+            canEditPatientInfos: false,
+            baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
         };
     }
 
@@ -43,6 +60,8 @@ class PatientDetailsWrapper extends React.Component {
         const {
             dispatch,
             patient,
+            params,
+            redirectTo,
         } = this.props;
         if (patient.cases.length > 0) {
             dispatch(mapActions.setVillageslist(patient.cases));
@@ -52,6 +71,72 @@ class PatientDetailsWrapper extends React.Component {
                 scrollTo('selected-case');
             }, 500);
         }
+        if (patient) {
+            const newParams = {
+                ...params,
+                prov_id: patient.province_id,
+                ZS_id: patient.ZS_id,
+                AS_id: patient.AS_id,
+                vil_id: patient.village_id,
+            };
+            redirectTo(this.state.baseUrl, newParams);
+        }
+    }
+
+    componentWillReceiveProps(newProps) {
+        const {
+            currentUser,
+            permissions,
+            params: {
+                prov_id,
+                ZS_id,
+                AS_id,
+                vil_id,
+            },
+        } = newProps;
+        if (currentUser.id && permissions.length > 0) {
+            const editionRight = permissions.find(p => p.codename === 'x_datas_patient_edition');
+            if ((currentUser.is_superuser ||
+                currentUser.permissions.find(p => p === editionRight.id))) {
+                this.setState({
+                    canEditPatientInfos: true,
+                });
+            }
+        }
+        if (newProps.isUpdated) {
+            timerSuccess = setTimeout(() => {
+                newProps.setIsUpdated(false);
+            }, 10000);
+        }
+        if (newProps.hasError) {
+            timerSuccess = setTimeout(() => {
+                newProps.setHasError(false);
+            }, 10000);
+        }
+        if (prov_id !== this.props.params.prov_id) {
+            this.props.selectProvince(prov_id, ZS_id, AS_id, vil_id);
+        } else if (ZS_id !== this.props.params.ZS_id) {
+            this.props.selectZone(ZS_id, AS_id, vil_id);
+        } else if (AS_id !== this.props.params.AS_id) {
+            this.props.selectArea(AS_id, vil_id);
+        } else if (vil_id !== this.props.params.vil_id) {
+            this.props.selectVillage(vil_id);
+        }
+    }
+
+    componentWillUnmount() {
+        clearTimer();
+    }
+
+    savePatient(patient) {
+        clearTimer();
+        this.props.savePatient(patient);
+    }
+
+    toggleEdit() {
+        this.setState({
+            editEnabled: !this.state.editEnabled,
+        });
     }
 
     render() {
@@ -68,16 +153,23 @@ class PatientDetailsWrapper extends React.Component {
                 villages,
                 baseLayer,
             },
+            hasError,
+            isUpdated,
+            geoFilters,
+            redirectTo,
         } = this.props;
         const {
             currentTab,
+            canEditPatientInfos,
+            baseUrl,
+            editEnabled,
         } = this.state;
         return (
             <section>
                 <TabsComponent
                     selectTab={key => (this.setState({ currentTab: key }))}
                     params={params}
-                    defaultPath={params.case_id ? 'tests/detail' : 'register/detail'}
+                    defaultPath={baseUrl}
                     tabs={[
                         { label: formatMessage(MESSAGES.infos), key: 'infos' },
                         { label: formatMessage(MESSAGES.tests), key: 'tests' },
@@ -90,7 +182,40 @@ class PatientDetailsWrapper extends React.Component {
                     currentTab === 'infos' &&
                     <div className="widget__container" >
                         <div className="widget__content patient-detail">
-                            <PatientInfos patient={patient} />
+                            {
+                                canEditPatientInfos &&
+                                editEnabled &&
+                                <EditPatientInfos
+                                    patient={patient}
+                                    savePatient={newPatient => this.savePatient(newPatient)}
+                                    hasError={hasError}
+                                    isUpdated={isUpdated}
+                                    geoFilters={geoFilters}
+                                    params={params}
+                                    redirectTo={redirectTo}
+                                    baseUrl={baseUrl}
+                                    closeEdit={() => this.toggleEdit()}
+                                />
+                            }
+                            {
+                                (!canEditPatientInfos || (canEditPatientInfos && !editEnabled)) &&
+                                <PatientInfos patient={patient} />
+                            }
+                            {
+                                canEditPatientInfos &&
+                                !editEnabled &&
+                                <div className="align-right margin-top">
+                                    <button
+                                        className="button"
+                                        onClick={() => this.toggleEdit()}
+                                    >
+                                        <FormattedMessage
+                                            id="patientInfos.edit"
+                                            defaultMessage="Editer"
+                                        />
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 }
@@ -210,10 +335,26 @@ PatientDetailsWrapper.propTypes = {
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
+    savePatient: PropTypes.func.isRequired,
+    isUpdated: PropTypes.bool.isRequired,
+    hasError: PropTypes.bool.isRequired,
+    geoFilters: PropTypes.object.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    selectArea: PropTypes.func.isRequired,
+    selectVillage: PropTypes.func.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     map: state.map,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
+    isUpdated: state.patients.isUpdated,
+    hasError: state.patients.hasError,
+    geoFilters: state.geoFilters,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -221,6 +362,13 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     getShape: url => getRequest(url, dispatch, null, false),
+    savePatient: patient => dispatch(patientsActions.savePatient(dispatch, patient)),
+    setIsUpdated: value => dispatch(patientsActions.setIsUpdated(value)),
+    setHasError: value => dispatch(patientsActions.setErrorOnUpdated(value)),
+    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, false, 'YES,NO,OTHER')),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, false, 'YES,NO,OTHER')),
+    selectVillage: villageId => dispatch(filterActions.selectVillage(villageId)),
 });
 const PatientDetailsWrapperWithIntl = injectIntl(PatientDetailsWrapper);
 

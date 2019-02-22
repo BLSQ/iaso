@@ -7,8 +7,11 @@ const LOAD_CURRENT_DUPLICATE_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DUPLICATE
 const LOAD_TEST_MAPPING = 'hat/patient/detail/LOAD_TEST_MAPPING';
 const SET_PATIENTS_LIST = 'hat/patient/detail/SET_PATIENTS_LIST';
 const FETCH_ACTION = 'hat/patient/detail/FETCH_ACTION';
+const SAVE_ACTION = 'hat/patient/detail/SAVE_ACTION';
 const GET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/GET_MANUAL_MERGED_PATIENT';
 const SET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/SET_MANUAL_MERGED_PATIENT';
+const SET_ERROR_ON_UPDATED = 'hat/patient/detail/SET_ERROR_ON_UPDATED';
+const SET_IS_UPDATED = 'hat/patient/detail/SET_IS_UPDATED';
 
 
 const req = require('superagent');
@@ -55,13 +58,11 @@ const fetchTestMapping = (dispatch) => {
 };
 
 const fetchDetails = (dispatch, patientId) => {
-    dispatch(loadActions.startLoading());
     dispatch(loadCurrentDetail({}));
     dispatch(fetchTestMapping(dispatch));
     req
         .get(`/api/patients/${patientId}`)
         .then((result) => {
-            dispatch(loadActions.successLoadingNoData());
             dispatch(loadCurrentDetail(result.body));
         })
         .catch(err => (console.error(`Error while fetching detail ${err}`)));
@@ -154,6 +155,38 @@ export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, el
 };
 
 
+const setErrorOnUpdated = payload => ({
+    type: SET_ERROR_ON_UPDATED,
+    payload,
+});
+
+const setIsUpdated = payload => ({
+    type: SET_IS_UPDATED,
+    payload,
+});
+
+export const savePatient = (dispatch, patient) => {
+    dispatch(loadActions.startLoading());
+    req
+        .put(`/api/patients/${patient.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(patient)
+        .then((result) => {
+            dispatch(setErrorOnUpdated(false));
+            dispatch(setIsUpdated(true));
+            dispatch(loadCurrentDetail(result.body));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(setErrorOnUpdated(true));
+            dispatch(setIsUpdated(false));
+            return (console.error(`Error while saving patient ${err}`));
+        });
+    return ({
+        type: SAVE_ACTION,
+    });
+};
+
 export const patientsActions = {
     loadCurrentDetail,
     fetchDetails,
@@ -163,6 +196,9 @@ export const patientsActions = {
     getManualMergedPatient,
     setManualMergedPatient,
     saveAndMergePatient,
+    savePatient,
+    setErrorOnUpdated,
+    setIsUpdated,
 };
 
 export const patientsInitialState = {
@@ -178,6 +214,8 @@ export const patientsInitialState = {
     },
     manualMergedPatient: null,
     manualMergedConflicts: [],
+    isUpdated: false,
+    hasError: false,
 };
 
 export const patientsReducer = (state = patientsInitialState, action = {}) => {
@@ -233,6 +271,16 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
 
         case FETCH_ACTION: {
             return state;
+        }
+
+        case SET_ERROR_ON_UPDATED: {
+            const hasError = action.payload;
+            return { ...state, hasError };
+        }
+
+        case SET_IS_UPDATED: {
+            const isUpdated = action.payload;
+            return { ...state, isUpdated };
         }
 
         default:

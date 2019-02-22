@@ -86,10 +86,18 @@ export const deleteProvince = () => ({
     type: EMPTY_PROVINCE_ID,
 });
 
+export const selectVillage = villageId => ({
+    type: SELECT_VILLAGE,
+    payload: villageId,
+});
+
+
 const getVillages = (
     dispatch,
     areaId = null,
     zoneId = null,
+    villageId = null,
+    types = null,
 ) => {
     let url = '/api/villages/?as_list=true';
     if (zoneId) {
@@ -98,11 +106,17 @@ const getVillages = (
     if (areaId) {
         url += `&as_id=${areaId}`;
     }
+    if (types) {
+        url += `&types=${types}&include_unlocated=true`;
+    }
     req
         .get(url)
         .then((result) => {
             const payload = { villages: result.body, areaId };
             dispatch(loadVillages(payload));
+            if (villageId) {
+                dispatch(selectVillage(villageId));
+            }
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -112,11 +126,6 @@ const getVillages = (
 };
 
 
-export const selectVillage = villageId => ({
-    type: SELECT_VILLAGE,
-    payload: villageId,
-});
-
 export const selectArea = (
     areaId,
     dispatch,
@@ -124,16 +133,13 @@ export const selectArea = (
     zoneId = null,
     villageId = null,
     removeLoading = true,
+    villagesTypes = null,
 ) => {
     if (areaId) {
-        if (removeLoading) {
-            dispatch(loadActions.successLoadingNoData());
-        }
-        if (villageId) {
-            dispatch(selectVillage(villageId));
-        }
         if (displayVillage) {
-            getVillages(dispatch, areaId, zoneId, villageId);
+            getVillages(dispatch, areaId, zoneId, villageId, villagesTypes);
+        } else if (removeLoading) {
+            dispatch(loadActions.successLoadingNoData());
         }
     } else {
         dispatch(deleteArea());
@@ -152,6 +158,7 @@ export const selectZone = (
     areaId = null,
     villageId = null,
     removeLoading = true,
+    villageTypes = null,
 ) => {
     if (zoneId) {
         req
@@ -160,7 +167,7 @@ export const selectZone = (
                 const payload = { areas: result.body, zoneId };
                 dispatch(loadAreas(payload));
                 if (areaId) {
-                    dispatch(selectArea(areaId, dispatch, displayVillage, zoneId, villageId));
+                    dispatch(selectArea(areaId, dispatch, displayVillage, zoneId, villageId, removeLoading, villageTypes));
                 } else if (displayVillage) {
                     getVillages(dispatch, null, zoneId);
                 } else if (removeLoading) {
@@ -208,6 +215,7 @@ export const selectProvince = (
     villageId = null,
     displayVillage = true,
     removeLoading = true,
+    villageTypes = null,
 ) => {
     if (provinceId) {
         req
@@ -216,7 +224,7 @@ export const selectProvince = (
                 const payload = { zones: result.body, provinceId };
                 dispatch(loadZones(payload));
                 if (zoneId) {
-                    dispatch(selectZone(zoneId, dispatch, displayVillage, areaId, villageId));
+                    dispatch(selectZone(zoneId, dispatch, displayVillage, areaId, villageId, removeLoading, villageTypes));
                 } else if (removeLoading) {
                     dispatch(loadActions.successLoadingNoData());
                 }

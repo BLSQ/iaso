@@ -7,7 +7,10 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { patientsActions } from '../redux/patients';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
+import { filterActions } from '../../../redux/filtersRedux';
+import { loadActions } from '../../../redux/load';
 
 class PatientDetails extends React.Component {
     constructor(props) {
@@ -17,14 +20,25 @@ class PatientDetails extends React.Component {
         };
     }
 
-    componentDidMount() {
+    componentWillMount() {
+        this.props.startLoading();
+        this.props.fetchProvinces();
         this.props.fetchDetails(this.props.params.patient_id);
+        this.props.fetchCurrentUserInfos();
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
             patient: nextProps.patient,
         });
+        if (nextProps.patient.province_id !== this.props.patient.province_id) {
+            this.props.selectProvince(
+                nextProps.patient.province_id,
+                nextProps.patient.ZS_id,
+                nextProps.patient.AS_id,
+                nextProps.params.village_id,
+            );
+        }
     }
 
     goBack() {
@@ -32,10 +46,15 @@ class PatientDetails extends React.Component {
         const tempParams = {
             ...params,
         };
+        this.props.selectProvince(null);
         const baseUrl = params.case_id ? 'tests' : 'register/list';
         delete tempParams.patient_id;
         delete tempParams.case_id;
         delete tempParams.tab;
+        delete tempParams.prov_id;
+        delete tempParams.ZS_id;
+        delete tempParams.AS_id;
+        delete tempParams.vil_id;
         this.setState({
             patient: null,
         });
@@ -102,7 +121,6 @@ class PatientDetails extends React.Component {
                 </div>
                 {
                     patient && patient.id &&
-                    !loading &&
                     <PatientDetailsWrapper
                         patient={patient}
                         testsMapping={testsMapping}
@@ -124,6 +142,10 @@ PatientDetails.propTypes = {
     patient: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     testsMapping: PropTypes.object.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
+    fetchProvinces: PropTypes.func.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    startLoading: PropTypes.func.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -137,7 +159,11 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchDetails: patientId => dispatch(patientsActions.fetchDetails(dispatch, patientId)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
+    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
+    startLoading: () => dispatch(loadActions.startLoading()),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(PatientDetailsIntl);

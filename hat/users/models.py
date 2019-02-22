@@ -213,6 +213,7 @@ class Profile(models.Model):
             "province": self.province_scope.all().values_list('id', flat=True),
             "passwordReset": self.password_reset,
             "tester_type": self.tester_type,
+            "is_superuser": self.user.is_superuser,
     }
 
 

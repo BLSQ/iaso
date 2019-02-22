@@ -208,8 +208,8 @@ class SitesViewSet(viewsets.ViewSet):
             if ZS.objects.filter(geom__contains=site.location).count() > 0 else None
         area = AS.objects.filter(geom__contains=site.location).first()\
             if AS.objects.filter(geom__contains=site.location).count() > 0 else None
-        is_authorized = area is None or is_authorized_user(
-            request.user, province.id, zone.id, area.id)
+        is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
+
         if is_authorized:
             site_dict = site.as_dict()
             catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
@@ -269,12 +269,22 @@ class SitesViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         new_site = get_object_or_404(Site, pk=pk)
+        province = Province.objects.filter(geom__contains=new_site.location).first()\
+            if Province.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=new_site.location).first()\
+            if ZS.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=new_site.location).first()\
+            if AS.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
 
-        new_site.name = request.data.get('name', '')
-        new_site.description = request.data.get('description', '')
-        new_site.habitat = request.data.get('habitat', 'unknown')
-        new_site.is_reference = request.data.get('is_reference', False)
-        new_site.ignore = request.data.get('ignore', False)
-        new_site.save()
-        return Response(new_site.as_dict())
+        if is_authorized:
+            new_site.name = request.data.get('name', '')
+            new_site.description = request.data.get('description', '')
+            new_site.habitat = request.data.get('habitat', 'unknown')
+            new_site.is_reference = request.data.get('is_reference', False)
+            new_site.ignore = request.data.get('ignore', False)
+            new_site.save()
+            return Response(new_site.as_dict())
+        else:
+            return Response('Unauthorized', status=401)
 

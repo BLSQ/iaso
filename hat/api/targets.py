@@ -137,7 +137,7 @@ class TargetsViewSet(viewsets.ViewSet):
         province = Province.objects.filter(geom__contains=target.location)[0] if Province.objects.filter(geom__contains=target.location).count() > 0 else None
         zone = ZS.objects.filter(geom__contains=target.location)[0] if ZS.objects.filter(geom__contains=target.location).count() > 0 else None
         area = AS.objects.filter(geom__contains=target.location)[0] if AS.objects.filter(geom__contains=target.location).count() > 0 else None
-        is_authorized = (province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id)
+        is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
         if is_authorized:
             return Response(target.as_dict())
         else:
@@ -149,7 +149,7 @@ class TargetsViewSet(viewsets.ViewSet):
         province = Province.objects.filter(geom__contains=new_target.location)[0]
         zone = ZS.objects.filter(geom__contains=new_target.location)[0]
         area = AS.objects.filter(geom__contains=new_target.location)[0]
-        is_authorized = (province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id)
+        is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
         if is_authorized:
             new_target.name = request.data.get('name', '')
             new_target.river = request.data.get('river', '')

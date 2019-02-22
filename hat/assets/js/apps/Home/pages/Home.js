@@ -6,6 +6,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { userHasPermission } from '../../../utils/index';
+import { loadActions } from '../../../redux/load';
 
 class Home extends Component {
     constructor(props) {
@@ -15,10 +16,18 @@ class Home extends Component {
     }
 
     componentWillMount() {
+        const { dispatch } = this.props;
+        dispatch(loadActions.startLoading());
         this.props.fetchCurrentUserInfos();
     }
 
     componentWillReceiveProps(newProps) {
+        const { currentUser, dispatch } = newProps;
+        if ((currentUser.isConnected !== this.props.currentUser.isConnected) &&
+            (currentUser.isConnected === false ||
+            (currentUser.isConnected === true && currentUser.user !== {}))) {
+            dispatch(loadActions.successLoadingNoData());
+        }
     }
 
     render() {
@@ -152,6 +161,7 @@ Home.propTypes = {
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

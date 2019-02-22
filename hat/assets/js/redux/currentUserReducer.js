@@ -1,5 +1,6 @@
-
-import { loadActions } from './load';
+/*
+ * Includes the actions and state necessary to display the map view
+ */
 
 const SET_CURRENT_USER = 'hat/SET_CURRENT_USER';
 const SET_USER_PERMISSIONS = 'hat/SET_USER_PERMISSIONS';
@@ -23,8 +24,7 @@ const setIsConnected = isConnected => ({
     payload: isConnected,
 });
 
-const fetchCurrentUserInfos = (dispatch, displayLoad = false) => {
-    if (displayLoad) dispatch(loadActions.startLoading());
+const fetchCurrentUserInfos = (dispatch) => {
     req
         .get('/api/permissions')
         .then((result) => {
@@ -33,14 +33,12 @@ const fetchCurrentUserInfos = (dispatch, displayLoad = false) => {
             req
                 .get('/api/currentuser/')
                 .then((userResult) => {
-                    if (displayLoad) dispatch(loadActions.successLoadingNoData());
                     dispatch(setCurrentUser(userResult.body));
                 })
                 .catch(err => (console.error(`Error while fetching current user informations ${err}`)));
         })
         .catch((err) => {
             dispatch(setIsConnected(false));
-            if (displayLoad) dispatch(loadActions.successLoadingNoData());
             console.error(`Error while fetching current user permissions ${err}`);
         });
     return ({

@@ -7,7 +7,8 @@ from django.shortcuts import get_object_or_404
 
 from hat.geo.geojson import geojson_queryset
 from hat.geo.models import ZS, AS
-from django.core.serializers import serialize
+from django.db.models import Q
+from django.db.models import Count
 from hat.users.models import get_user_geo_list
 
 
@@ -37,6 +38,7 @@ class ZSViewSet(viewsets.ViewSet):
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         as_geo_json = request.GET.get("geojson", None)
+        years = request.GET.get("years", None)
 
         queryset = ZS.objects.all()
         if request.user.profile.province_scope.count() != 0:
@@ -50,12 +52,21 @@ class ZSViewSet(viewsets.ViewSet):
         if province_ids:
             queryset = queryset.filter(province_id__in=province_ids.split(','))
 
+        values = ['name', 'id', 'province_id']
+        if years:
+            years_array = years.split(",")
+            nr_positive_cases = Count(
+                "as", filter=Q(as__village__caseview__confirmed_case=True, as__village__caseview__normalized_year__in=years_array)
+            )
+            queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+            values.append('nr_positive_cases')
+
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False)
             geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
             return Response(geo_json)
         else:
-            return Response(queryset.values('name', 'id', 'province_id').order_by('name'))
+            return Response(queryset.values(*values).order_by('name'))
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)

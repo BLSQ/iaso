@@ -7,8 +7,8 @@ from django.core.management.base import BaseCommand
 
 from hat.constants import GPS_SRID
 from hat.geo.geo_finder import get_single_village, MultipleMatchesFoundException, get_single_zone, \
-    get_areas_by_name_or_alias
-from hat.geo.models import Village, GeopodeSettlement
+    get_areas_by_name_or_alias, get_areas_by_name
+from hat.geo.models import GeopodeSettlement
 
 
 def clean(s):
@@ -102,13 +102,17 @@ class Command(BaseCommand):
                     continue
 
                 settlement.normalized_zone = zone
-                settlement.save()
+                # settlement.save()
 
                 if options['verbose']:
                     print("Looking for AS", as_name)
-                areas = get_areas_by_name_or_alias(as_name, [zone])
-                if areas.count() == 1 and options['verbose']:
-                    print("Area found", as_name)
+                areas = get_areas_by_name(as_name, [zone])
+                if areas.count() == 0:  # if the exact name didn't work, try with aliases
+                    areas = get_areas_by_name_or_alias(as_name, [zone])
+
+                if areas.count() == 1:
+                    if options['verbose']:
+                        print("Area found", as_name)
                     settlement.normalized_area = areas[0]
                 if areas.count() > 1:
                     print('Multiple matches found for', as_name, "in zone", zone.name, zone.id, areas)

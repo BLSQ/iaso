@@ -2,13 +2,15 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
+from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString, CaseAbstract
 from hat.audit.models import log_modification, CASE_API
+from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+from hat.patient.models import Test
 from hat.sync.models import DeviceDB
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Exists
 from copy import copy
 
 from .export_utils import  Echo, generate_xlsx, iter_items
@@ -226,20 +228,38 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(device_id__in=device_ids.split(","))
 
         if pictures:
-            print ('TODO')
-            # choices are:
-            #     with_pictures
-            #     with_pictures_uploaded
-            #     without_pictures_uploaded  => but with pictures
-            #     without_pictures
-        if videos:
-            print ('TODO')
-            # choices are:
-            #     with_videos
-            #     with_videos_uploaded
-            #     without_videos_uploaded  => but with videos
-            #     without_videos
+            has_uploaded_pictures = Test.objects\
+                .filter(form_id=OuterRef("id")) \
+                .filter(type__in=TYPES_WITH_IMAGES) \
+                .filter(image_id__isnull=False)
+            if pictures == 'with_pictures':
+                queryset = queryset.filter(CaseAbstract.FILTER_ANY_PICTURE_FILENAME)
+            elif pictures == 'without_pictures':
+                queryset = queryset.filter(CaseAbstract.FILTER_NO_PICTURE_FILENAME)
+            elif pictures == 'with_pictures_uploaded':
+                queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
+                    .filter(has_uploaded_pictures=True)
+            elif pictures == 'without_pictures_uploaded':  # but with pictures:
+                queryset = queryset.filter(CaseAbstract.FILTER_ANY_PICTURE_FILENAME)
+                queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
+                    .filter(has_uploaded_pictures=False)
 
+        if videos:
+            has_uploaded_videos = Test.objects\
+                .filter(form_id=OuterRef("id"))\
+                .filter(type__in=TYPES_WITH_VIDEOS)\
+                .filter(video_id__isnull=False)
+            if videos == 'with_videos':
+                queryset = queryset.filter(CaseAbstract.FILTER_ANY_VIDEO_FILENAME)
+            elif videos == 'without_videos':
+                queryset = queryset.filter(CaseAbstract.FILTER_NO_VIDEO_FILENAME)
+            elif videos == 'with_videos_uploaded':
+                queryset = queryset.annotate(has_uploaded_videos=Exists(has_uploaded_videos))\
+                    .filter(has_uploaded_videos=True)
+            elif videos == 'without_videos_uploaded':  # but with videos:
+                queryset = queryset.filter(CaseAbstract.FILTER_ANY_VIDEO_FILENAME)
+                queryset = queryset.annotate(has_uploaded_videos=Exists(has_uploaded_videos))\
+                    .filter(has_uploaded_videos=False)
 
         # Performance prefetch
         queryset = queryset.prefetch_related("normalized_AS")

@@ -40,9 +40,9 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
-            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/tab/:tab)(/prov_id/:prov_id)' +
+            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)' +
             '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)' +
-            '(/videos/:videos)'}
+            '(/videos/:videos)(/tab/:tab)'}
             component={PatientDetailPage}
         />,
         <Route

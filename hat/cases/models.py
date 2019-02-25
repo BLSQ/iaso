@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 from django.db import models, connection
+from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
@@ -358,6 +359,27 @@ class CaseAbstract(models.Model):
     confirmed_case = models.NullBooleanField("Cas confirmé", default=False)
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
+
+    FILTER_ANY_PICTURE_FILENAME = Q(
+        Q(test_catt_picture_filename__isnull=False) |
+        Q(test_rdt_picture_filename__isnull=False)
+    )
+    FILTER_NO_PICTURE_FILENAME = Q(
+        Q(test_catt_picture_filename__isnull=True) &
+        Q(test_rdt_picture_filename__isnull=True)
+    )
+    FILTER_ANY_VIDEO_FILENAME = Q(
+        Q(test_ctcwoo_video_filename__isnull=False) |
+        Q(test_maect_video_filename__isnull=False) |
+        Q(test_pg_video_filename__isnull=False) |
+        Q(test_pl_video_filename__isnull=False)
+    )
+    FILTER_NO_VIDEO_FILENAME = Q(
+        Q(test_ctcwoo_video_filename__isnull=True) &
+        Q(test_maect_video_filename__isnull=True) &
+        Q(test_pg_video_filename__isnull=True) &
+        Q(test_pl_video_filename__isnull=True)
+    )
 
     class Meta:
         abstract = True

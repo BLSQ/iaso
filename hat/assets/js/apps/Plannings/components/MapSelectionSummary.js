@@ -23,7 +23,8 @@ class MapSelectionSummary extends Component {
         const assignedPopulation = data.filter(village =>
             assignationsMap[village.id]).reduce((prev, curr) => (prev + (curr.population || 0)), 0);
         const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0);
-        const displayWarning = parseInt(assignedPopulation, 10) > parseInt(capacity, 10);
+
+        const displayWarning = parseInt(population, 10) > parseInt(capacity, 10);
         return (
             <div className="map__selection__summary">
                 <h4 className="map__selection__summary__heading">

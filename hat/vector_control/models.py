@@ -25,7 +25,8 @@ HABITAT_CHOICES = (
 
 IMPORT_TYPE = (
     ("site", "Site"),
-    ("catch", "Catch")
+    ("catch", "Catch"),
+    ("target", "Target")
 )
 
 
@@ -201,7 +202,7 @@ class GpsImport(models.Model):
     creator = models.TextField(null=True, blank=True)  # This usually holds the model of GPS that created the file.
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
-    count =  models.IntegerField(default=0, null=True, blank=True)
+    count = models.IntegerField(default=0, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s " % (self.id, self.filename)
@@ -222,17 +223,17 @@ class GpsImport(models.Model):
 
 
 class Target(models.Model):
-    name = models.TextField(null=True)
-    deployment = models.IntegerField(null=True)
-    full_name = models.TextField(null=True)
-    gps = models.CharField(max_length=100)
+    name = models.TextField(null=True, blank=True)
+    deployment = models.IntegerField(null=True, blank=True)
+    full_name = models.TextField(null=True, blank=True)
+    gps = models.CharField(max_length=100, blank=True, null=True)
     date_time = models.DateTimeField(null=True)
-    river = models.TextField(null=True)
-    village = models.TextField(null=True)
-    uuid = models.TextField(null=True)
-    external_index = models.IntegerField(null=True)
-    gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE)
-    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
+    river = models.TextField(null=True, blank=True)
+    village = models.TextField(null=True, blank=True)
+    uuid = models.TextField(null=True, blank=True)
+    external_index = models.IntegerField(null=True, blank=True)
+    gps_import = models.ForeignKey(GpsImport, null=True, on_delete=CASCADE, blank=True)
+    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE, blank=True)
     location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
 
@@ -258,6 +259,8 @@ class Target(models.Model):
         username = None
         if self.gps_import:
             username = self.gps_import.user.username
+        if self.api_import:
+            username = self.api_import.user.username
         name = self.name
         if not name:
             name = self.uuid

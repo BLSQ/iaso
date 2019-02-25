@@ -7,6 +7,7 @@ import { createHistory } from 'history';
 import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
+import { homeReducer, homeInitialState } from './redux/home';
 import App from '../App';
 
 import HomePage from './pages/Home';
@@ -28,9 +29,11 @@ export default function datasApp(appConfig, element, baseUrl) {
     const store = createStore({
         load: {},
         currentUser: currentUserInitialState,
+        home: homeInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
+        home: homeReducer,
     }, [
         routerMiddleware(history),
     ]);

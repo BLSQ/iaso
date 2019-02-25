@@ -194,6 +194,7 @@ class MacroMap extends Component {
                 this.onEachAsFeature(feature, layer);
             },
         });
+        console.log(areas);
         areas.addTo(this.coordinationGroup);
 
         const zones = L.geoJSON(coordination.zones, {

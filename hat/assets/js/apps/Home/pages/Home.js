@@ -7,6 +7,8 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { userHasPermission } from '../../../utils/index';
 import { loadActions } from '../../../redux/load';
+import { homeActions } from '../redux/home';
+import HomeMap from '../components/HomeMap';
 
 class Home extends Component {
     constructor(props) {
@@ -19,13 +21,14 @@ class Home extends Component {
         const { dispatch } = this.props;
         dispatch(loadActions.startLoading());
         this.props.fetchCurrentUserInfos();
+        this.props.fetchGeoZones();
     }
 
     componentWillReceiveProps(newProps) {
         const { currentUser, dispatch } = newProps;
         if ((currentUser.isConnected !== this.props.currentUser.isConnected) &&
             (currentUser.isConnected === false ||
-            (currentUser.isConnected === true && currentUser.user !== {}))) {
+                (currentUser.isConnected === true && currentUser.user !== {}))) {
             dispatch(loadActions.successLoadingNoData());
         }
     }
@@ -36,6 +39,7 @@ class Home extends Component {
                 formatMessage,
             },
             currentUser,
+            geoZones,
         } = this.props;
         return (
             <section className="home-container">
@@ -70,8 +74,24 @@ class Home extends Component {
                     </div>
                 </section>
                 <section className="section--feature--pilot-area">
-                    <div className="section__content__image--pilot-area">
-                        <img src={`${STATIC_URL}images/map.png`} alt="'Map showing pilot health zones" width="540" />
+                    <div className="section__content__image--pilot-area" id="home-map">
+                        <div className="loading-small">
+                            <i className="fa fa-spinner" />
+                        </div>
+                        {/* {
+                            geoZones &&
+                            <HomeMap
+                                baseLayer="osm"
+                                overlays={{ labels: false }}
+                                geoZones={geoZones}
+                            />
+                        }
+                        {
+                            !geoZones &&
+                            <div className="loading-small">
+                                <i className="fa fa-spinner" />
+                            </div>
+                        } */}
                     </div>
                     <div className="section__content--pilot-area">
                         <h2><FormattedMessage id="home.subTitle" defaultMessage="Mission du Programme" /></h2>
@@ -154,6 +174,7 @@ class Home extends Component {
     }
 }
 Home.defaultProps = {
+    geoZones: null,
 };
 
 Home.propTypes = {
@@ -161,17 +182,22 @@ Home.propTypes = {
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
+    fetchGeoZones: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    geoZones: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     currentUser: state.currentUser,
+    geoZones: state.home.geoZones,
+    isAreasloading: state.home.isAreasloading,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch, true)),
+    fetchGeoZones: () => dispatch(homeActions.fetchGeoZones(dispatch)),
 });
 
 const HomeWithIntl = injectIntl(Home);

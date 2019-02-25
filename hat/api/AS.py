@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
+from django.db.models import Q
+from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
@@ -35,6 +37,7 @@ class ASViewSet(viewsets.ViewSet):
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         as_geo_json = request.GET.get("geojson", None)
+        years = request.GET.get("years", None)
 
         queryset = AS.objects.all()
         if request.user.profile.province_scope.count() != 0:
@@ -46,13 +49,22 @@ class ASViewSet(viewsets.ViewSet):
         if zs_ids:
             queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
 
+        values = ['name', 'id', 'ZS_id']
+        if years:
+            years_array = years.split(",")
+            nr_positive_cases = Count(
+                "village", filter=Q(village__caseview__confirmed_case=True, village__caseview__normalized_year__in=years_array)
+            )
+            queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
+            values.append('nr_positive_cases')
+
         if as_geo_json:
             queryset = queryset.filter(simplified_geom__isnull=False)
             geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'ZS'])
 
             return Response(geo_json)
         else:
-            return Response(queryset.values('name', 'id', 'ZS_id').order_by('name'))
+            return Response(queryset.values(*values).order_by('name'))
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)

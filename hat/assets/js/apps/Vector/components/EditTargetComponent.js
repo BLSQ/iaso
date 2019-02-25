@@ -96,28 +96,6 @@ class EditTargetComponent extends Component {
                         </div>
                         <div>
                             <label
-                                htmlFor={`usser-${target.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="vector.label.user"
-                                    defaultMessage="Utilisateur"
-                                />:
-                            </label>
-                            <Select
-                                multi={false}
-                                simpleValue
-                                autosize={false}
-                                name="user"
-                                value={target.username}
-                                placeholder={formatMessage(MESSAGES.none)}
-                                options={profiles.map(p =>
-                                    ({ label: p.user__username, value: p.user__username }))}
-                                onChange={username => this.updateTargetField('username', username)}
-                            />
-                        </div>
-                        <div>
-                            <label
                                 className="filter__container__select__label"
                             >
                                 <FormattedMessage

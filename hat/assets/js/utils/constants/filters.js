@@ -604,7 +604,7 @@ const onlyDead = () => (
         urlKey: 'dead',
         label: {
             id: 'main.label.onlyDead',
-            defaultMessage: 'Décédes',
+            defaultMessage: 'Décédés',
         },
         type: 'checkbox',
     }

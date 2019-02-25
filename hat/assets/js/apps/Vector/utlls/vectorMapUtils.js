@@ -199,8 +199,16 @@ export const renderTargetsPopup = (target, formatMessage) => `<section class="cu
                             <td>
                                 ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
                             </td>
+                            <td class="${!target.name ? 'align-center' : ''}">
+                                ${target.name ? target.name : '/'}
+                            </td>
+                        </tr>
+                        <tr>
                             <td>
-                                ${target.name}
+                                ${formatMessage({ defaultMessage: 'Uuid', id: 'vector.labels.uuid' })}
+                            </td>
+                            <td class="${!target.uuid ? 'align-center' : ''}">
+                                ${target.uuid ? target.uuid : '/'}
                             </td>
                         </tr>
                         <tr>

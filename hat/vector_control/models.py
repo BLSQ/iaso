@@ -258,12 +258,11 @@ class Target(models.Model):
         username = None
         if self.gps_import:
             username = self.gps_import.user.username
-        name = self.name
-        if not name:
-            name = self.uuid
+
         return {
             'id': self.id,
-            'name': name,
+            'name': self.name,
+            'uuid': self.uuid,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'deployment': self.deployment,

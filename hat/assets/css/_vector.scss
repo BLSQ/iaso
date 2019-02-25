@@ -19,8 +19,17 @@
     }
     table {
         margin-top: 10px;
-        td {
-            white-space: nowrap;
+        table-layout: fixed;
+        width: 300px;
+        tr {
+            td {
+                &:first-child {
+                    width: 80px;
+                }
+            }
+            td {
+                white-space: nowrap;
+            }
         }
     }
 }

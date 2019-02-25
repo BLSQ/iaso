@@ -1,23 +1,40 @@
 export const FETCH_ACTION = 'hat/home/FETCH_ACTION';
 export const SET_GEO_ZONES = 'hat/home/SET_GEO_ZONES';
+export const SET_ZONES = 'hat/home/SET_ZONES';
 
 const req = require('superagent');
 
-export const setGeoZones = payload => ({
+const setGeoZones = payload => ({
     type: SET_GEO_ZONES,
+    payload,
+});
+
+const setZones = payload => ({
+    type: SET_ZONES,
     payload,
 });
 
 
 export const fetchGeoZones = (dispatch) => {
+    const currentYear = new Date().getFullYear() - 1;
+    const years = [1, 2, 3].map(i => currentYear - i);
     req
-        .get('/api/zs/?geojson=true')
+        .get(`/api/zs/?years=${years}&with_geo_json=true`)
         .set('Content-Type', 'application/json')
         .then((res) => {
-            dispatch(setGeoZones(res.body));
+            dispatch(setZones(res.body));
+            req
+                .get('/api/zs/?geojson=true')
+                .set('Content-Type', 'application/json')
+                .then((resGoe) => {
+                    dispatch(setGeoZones(resGoe.body));
+                })
+                .catch((err) => {
+                    console.error(`Error while loading geo zones: ${err}`);
+                });
         })
         .catch((err) => {
-            console.error(`Error while loading areas: ${err}`);
+            console.error(`Error while loading zones: ${err}`);
         });
     return ({
         type: FETCH_ACTION,
@@ -26,6 +43,7 @@ export const fetchGeoZones = (dispatch) => {
 
 export const homeInitialState = {
     geoZones: null,
+    zones: [],
 };
 
 export const homeActions = {
@@ -46,6 +64,14 @@ export const homeReducer = (state = homeInitialState, action = {}) => {
             return {
                 ...state,
                 geoZones,
+            };
+        }
+
+        case SET_ZONES: {
+            const zones = action.payload;
+            return {
+                ...state,
+                zones,
             };
         }
 

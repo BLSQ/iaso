@@ -1182,6 +1182,7 @@ button {
 
 #home-map {
     position: relative;
+    width: 700px !important;
     .map-container {
         height: 720px;
     }
@@ -1192,9 +1193,12 @@ button {
         }
     }
     .loading-small {
-        position: absolute;
-        top: 50%;
-        left: 50%;
+        height: 100%;
+        margin-bottom: 0;    
+        .fa-spinner {
+            top: 50%;
+            position: relative;
+        }
     }
 }
 

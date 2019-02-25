@@ -11,12 +11,6 @@ import { homeActions } from '../redux/home';
 import HomeMap from '../components/HomeMap';
 
 class Home extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
-
     componentWillMount() {
         const { dispatch } = this.props;
         dispatch(loadActions.startLoading());
@@ -40,6 +34,7 @@ class Home extends Component {
             },
             currentUser,
             geoZones,
+            zones,
         } = this.props;
         return (
             <section className="home-container">
@@ -74,25 +69,6 @@ class Home extends Component {
                     </div>
                 </section>
                 <section className="section--feature--pilot-area">
-                    <div className="section__content__image--pilot-area" id="home-map">
-                        <div className="loading-small">
-                            <i className="fa fa-spinner" />
-                        </div>
-                        {/* {
-                            geoZones &&
-                            <HomeMap
-                                baseLayer="osm"
-                                overlays={{ labels: false }}
-                                geoZones={geoZones}
-                            />
-                        }
-                        {
-                            !geoZones &&
-                            <div className="loading-small">
-                                <i className="fa fa-spinner" />
-                            </div>
-                        } */}
-                    </div>
                     <div className="section__content--pilot-area">
                         <h2><FormattedMessage id="home.subTitle" defaultMessage="Mission du Programme" /></h2>
                         <p><FormattedMessage id="home.text" defaultMessage="Coordonner et Organiser la lutte contre la THA en R.D.Congo" /></p>
@@ -117,6 +93,22 @@ class Home extends Component {
                                 <FormattedMessage id="home.microplanningLink" defaultMessage="Utiliser l'outil de reprogrammation" />
                                 <i className="fa fa-arrow-right icon--right" />
                             </a>
+                        }
+                    </div>
+                    <div className="section__content__image--pilot-area" id="home-map">
+                        {
+                            geoZones &&
+                            <HomeMap
+                                overlays={{ labels: false }}
+                                geoZones={geoZones}
+                                zones={zones}
+                            />
+                        }
+                        {
+                            !geoZones &&
+                            <div className="loading-small">
+                                <i className="fa fa-spinner" />
+                            </div>
                         }
                     </div>
                 </section>
@@ -185,12 +177,14 @@ Home.propTypes = {
     fetchGeoZones: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     geoZones: PropTypes.object,
+    zones: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     currentUser: state.currentUser,
     geoZones: state.home.geoZones,
+    zones: state.home.zones,
     isAreasloading: state.home.isAreasloading,
 });
 

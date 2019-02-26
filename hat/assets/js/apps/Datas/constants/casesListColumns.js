@@ -14,7 +14,7 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Nom',
                 id: 'casesList.label.name',
             }),
-            accessor: 'lastname',
+            accessor: 'name',
             Cell: settings => (
                 <span>
                     {
@@ -28,7 +28,7 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Postnom',
                 id: 'casesList.label.Postnom',
             }),
-            accessor: 'name',
+            accessor: 'lastname',
             Cell: settings => (
                 <span>
                     {

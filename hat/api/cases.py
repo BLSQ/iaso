@@ -64,8 +64,8 @@ class CasesViewSet(viewsets.ViewSet):
         teams = request.GET.get("team_id", None)
 
         coordination_ids = request.GET.get("coordination_id", None)
-        from_date = request.GET.get("from", None)
-        to_date = request.GET.get("to", None)
+        from_date = request.GET.get("date_from", None)
+        to_date = request.GET.get("date_to", None)
         geo_search = request.GET.get("geo_search", None)
         normalized = request.GET.get("normalized", None)
         csv_format = request.GET.get("csv", None)

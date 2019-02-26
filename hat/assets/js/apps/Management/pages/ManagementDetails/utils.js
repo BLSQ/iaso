@@ -120,16 +120,16 @@ export const renderConfirmationPourcentage = (total) => {
 export const renderCountCell = (count, formatMessage) => {
     let daysClass = 'ok';
     let daysString = count;
-    if (!count || count < 0) {
+    if (count === undefined || count < 0) {
         daysString = formatMessage({
             defaultMessage: 'N/A',
             id: 'teamsdevices.last_sync.none',
         });
     }
-    if (!count || count < 0 || count > 40) {
+    if (count === undefined || count < 0 || count > 40) {
         daysClass = 'error';
     }
-    if (count && count > 20 && count < 40) {
+    if (count !== undefined && count > 20 && count < 40) {
         daysClass = 'warning';
     }
     return (

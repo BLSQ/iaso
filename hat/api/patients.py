@@ -8,6 +8,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, Case, RES_POSITIVE
+from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
 from hat.geo.models import AS, Village
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.patient.utils import *
@@ -191,20 +192,54 @@ class PatientsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(case__in=cases)
 
         if pictures:
-            print ('TODO')
-            # choices are:
-            #     with_pictures
-            #     with_pictures_uploaded
-            #     without_pictures_uploaded  => but with pictures
-            #     without_pictures
-        if videos:
-            print ('TODO')
-            # choices are:
-            #     with_videos
-            #     with_videos_uploaded
-            #     without_videos_uploaded  => but with videos
-            #     without_videos
+            picture_tests = Test.objects.filter(form__normalized_patient_id=OuterRef('id')) \
+                .filter(type__in=TYPES_WITH_IMAGES)
 
+            if pictures == 'with_pictures':
+                tests_with_pictures = picture_tests.filter(image_filename__isnull=False)
+                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures))\
+                    .filter(tests_with_pictures=True)
+            elif pictures == 'without_pictures':
+                tests_with_pictures = picture_tests.filter(image_filename__isnull=False)
+                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures)) \
+                    .filter(tests_with_pictures=False)
+            elif pictures == 'with_pictures_uploaded':
+                tests_with_pictures = picture_tests\
+                    .filter(image_filename__isnull=False)\
+                    .filter(image_id__isnull=False)
+                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures))\
+                    .filter(tests_with_pictures=True)
+            elif pictures == 'without_pictures_uploaded':  # but with pictures:
+                tests_without_pictures = picture_tests\
+                    .filter(image_filename__isnull=False)\
+                    .filter(image_id__isnull=True)
+                queryset = queryset.annotate(tests_without_pictures=Exists(tests_without_pictures))\
+                    .filter(tests_without_pictures=True)
+
+        if videos:
+            video_tests = Test.objects.filter(form__normalized_patient_id=OuterRef('id')) \
+                .filter(type__in=TYPES_WITH_VIDEOS)
+
+            if videos == 'with_videos':
+                tests_with_videos = video_tests.filter(video_filename__isnull=False)
+                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos))\
+                    .filter(tests_with_videos=True)
+            elif videos == 'without_videos':
+                tests_with_videos = video_tests.filter(video_filename__isnull=False)
+                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos)) \
+                    .filter(tests_with_videos=False)
+            elif videos == 'with_videos_uploaded':
+                tests_with_videos = video_tests\
+                    .filter(video_filename__isnull=False)\
+                    .filter(video_id__isnull=False)
+                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos))\
+                    .filter(tests_with_videos=True)
+            elif videos == 'without_videos_uploaded':  # but with videos:
+                tests_without_videos = video_tests\
+                    .filter(video_filename__isnull=False)\
+                    .filter(video_id__isnull=True)
+                queryset = queryset.annotate(tests_without_videos=Exists(tests_without_videos))\
+                    .filter(tests_without_videos=True)
 
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
             if search_name:

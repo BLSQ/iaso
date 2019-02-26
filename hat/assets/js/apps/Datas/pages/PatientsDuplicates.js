@@ -15,7 +15,7 @@ import FiltersComponent from '../../../components/FiltersComponent';
 import {
     filtersPatients,
     filtersPatientsDuplicates,
-    filtersPatientsSearch,
+    filtersDuplicatesPatientsSearch,
     filtersPatientsGeo,
 } from '../constants/filtersSelect';
 
@@ -133,7 +133,7 @@ class PatientsDuplicates extends Component {
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
-        const search = filtersPatientsSearch();
+        const search = filtersDuplicatesPatientsSearch();
         const geo = filtersPatientsGeo(
             workzones,
             provinces || [],

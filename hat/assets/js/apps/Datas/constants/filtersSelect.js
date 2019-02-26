@@ -132,6 +132,14 @@ const filtersPatientsSearch = devices => (
         device(devices),
     ]
 );
+const filtersDuplicatesPatientsSearch = () => (
+    [
+        searchLastname(),
+        searchName(),
+        searchPrename(),
+        searchMotherName(),
+    ]
+);
 
 const filtersPatientsGeo = (
     workzonesList,
@@ -167,5 +175,6 @@ export {
     filtersPatientsGeo,
     filtersPatientsDuplicates,
     filtersPatientsTreatments,
+    filtersDuplicatesPatientsSearch,
 };
 

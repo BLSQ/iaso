@@ -1,8 +1,33 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
 
 import { updateBaseLayer } from '../../../utils/mapUtils';
+
+const mapZonesDatas = (zones, geoZones) => {
+    const geoZonesTemp = {
+        ...geoZones,
+    };
+    geoZones.features.forEach((gz, index) => {
+        const zone = zones.find(z => gz.id === z.id);
+        if (zone) {
+            const geoZone = {
+                ...gz,
+                nr_positive_cases: zone.nr_positive_cases,
+            };
+            geoZonesTemp.features[index] = geoZone;
+        }
+    });
+    geoZonesTemp.features = geoZonesTemp.features.sort((a, b) => {
+        if (a.nr_positive_cases < b.nr_positive_cases) {
+            return -1;
+        }
+        return 1;
+    });
+    return geoZonesTemp;
+};
+
 
 class HomeMap extends Component {
     constructor(props) {
@@ -13,10 +38,11 @@ class HomeMap extends Component {
 
     componentDidMount() {
         this.createMap();
+        this.addLegend();
         this.includeDefaultLayersInMap();
         this.map.scrollWheelZoom.disable();
         updateBaseLayer(this.map, 'osm');
-        this.updateShapes(this.props.geoZones);
+        this.updateShapes();
         this.fitToBounds();
     }
 
@@ -27,9 +53,34 @@ class HomeMap extends Component {
     }
 
     createMap() {
-        const map = L.map(this.mapNode, {});
+        const map = L.map(this.mapNode, { zoomControl: false, dragging: false });
         map.createPane('custom-pane-shapes');
         this.map = map;
+    }
+
+    addLegend() {
+        const { map } = this;
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        const legend = L.control({ position: 'topleft' });
+        legend.onAdd = () => {
+            const div = L.DomUtil.create('div', 'legend');
+            let innerHTML = `<h6>${formatMessage({ defaultMessage: 'Légende', id: 'home.labels.title' })}</h6>`;
+            innerHTML += `<div class="endemic">${formatMessage({
+                defaultMessage: 'Zones de santé endémiques sur les trois dernières années',
+                id: 'home.labels.endemic',
+            })}</div>`;
+            innerHTML += `<div class="non-endemic">${formatMessage({
+                defaultMessage: 'Zones de santé non endémiques sur les trois dernières années',
+                id: 'home.labels.nonendemic',
+            })}</div>`;
+            div.innerHTML = innerHTML;
+            return div;
+        };
+        legend.addTo(map);
     }
 
     includeDefaultLayersInMap() {
@@ -38,16 +89,16 @@ class HomeMap extends Component {
         map.addLayer(this.zonesGroup);
     }
 
-    updateShapes(geoZones) {
-        const { zones } = this.props;
+    updateShapes() {
+        const { zones, geoZones } = this.props;
+        const mappedGeoZones = mapZonesDatas(zones, geoZones);
         this.zonesGroup.clearLayers();
-        const zonesShapes = L.geoJSON(geoZones, {
+        const zonesShapes = L.geoJSON(mappedGeoZones, {
             pane: 'custom-pane-shapes',
             className: 'home-zones',
             style(feature) {
-                const fullZone = zones.find(z => z.id === feature.id);
                 const tempStyle = {
-                    color: fullZone && fullZone.nr_positive_cases > 0 ? 'red' : 'green',
+                    color: feature.nr_positive_cases > 0 ? 'red' : 'green',
                 };
                 return tempStyle;
             },
@@ -78,6 +129,7 @@ class HomeMap extends Component {
 HomeMap.propTypes = {
     geoZones: PropTypes.object.isRequired,
     zones: PropTypes.array.isRequired,
+    intl: intlShape.isRequired,
 };
 
-export default HomeMap;
+export default injectIntl(HomeMap);

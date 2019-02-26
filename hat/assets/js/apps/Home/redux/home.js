@@ -19,12 +19,12 @@ export const fetchGeoZones = (dispatch) => {
     const currentYear = new Date().getFullYear() - 1;
     const years = [1, 2, 3].map(i => currentYear - i);
     req
-        .get(`/api/zs/?years=${years}&with_geo_json=true`)
+        .get(`/api/home/?years=${years}&with_geo_json=true`)
         .set('Content-Type', 'application/json')
         .then((res) => {
             dispatch(setZones(res.body));
             req
-                .get('/api/zs/?geojson=true')
+                .get('/api/home/?geojson=true')
                 .set('Content-Type', 'application/json')
                 .then((resGoe) => {
                     dispatch(setGeoZones(resGoe.body));

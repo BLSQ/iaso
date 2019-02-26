@@ -40,6 +40,14 @@ export const fetchTraps = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    req
+        .get('/api/newsites')
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedNewSites(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching new sites', err);
+        });
     return req
         .get(url)
         .then((result) => {

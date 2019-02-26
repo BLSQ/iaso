@@ -21,11 +21,13 @@ import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import sitesColumns from '../utlls/sitesColumns';
+import newSitesColumns from '../utlls/newSitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
 import EditSiteComponent from '../components/EditSiteComponent';
+import EditNewSiteComponent from '../components/EditNewSiteComponent';
 import ShowCatchesComponent from '../components/ShowCatchesComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
@@ -38,13 +40,16 @@ export class Vector extends Component {
         this.state = {
             itemsToShow: itemsToShow(props.params),
             sites: [],
+            newSites: [],
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: props.params.tab,
             sitesColumns: sitesColumns(props.intl.formatMessage, MESSAGES, this),
+            newSitesColumns: newSitesColumns(props.intl.formatMessage, this),
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
             showEditSiteModale: false,
+            showEditNewSiteModale: false,
             showEditTargetModale: false,
             showCatchesModale: false,
             siteEdited: props.siteEdited,
@@ -148,12 +153,23 @@ export class Vector extends Component {
 
 
     editItem(type, data = undefined) {
+        if (type === 'newSite') {
+            this.setState({
+                showEditSiteModale: false,
+                showEditNewSiteModale: true,
+                showCatchesModale: false,
+                showEditTargetModale: false,
+                siteEdited: data,
+            });
+        }
+
         if (type === 'site') {
             this.setState({
                 showEditSiteModale: true,
                 showCatchesModale: false,
                 showEditTargetModale: false,
                 siteEdited: data,
+                showEditNewSiteModale: false,
             });
         }
 
@@ -163,6 +179,7 @@ export class Vector extends Component {
                 showCatchesModale: false,
                 showEditTargetModale: true,
                 targetEdited: data,
+                showEditNewSiteModale: false,
             });
         }
     }
@@ -206,6 +223,7 @@ export class Vector extends Component {
             getSiteDetail,
             redirectTo,
             reduxSitesPage,
+            reduxNewSitesPage,
             reduxTargetsPage,
             profiles,
             habitats,
@@ -252,6 +270,18 @@ export class Vector extends Component {
                             })}
                         site={this.state.siteEdited}
                         habitats={habitats}
+                        saveSite={site => saveSite(site)}
+                    />
+                }
+                {
+                    this.state.showEditNewSiteModale &&
+                    <EditNewSiteComponent
+                        showModale={this.state.showEditNewSiteModale}
+                        toggleModal={() =>
+                            this.setState({
+                                showEditNewSiteModale: !this.state.showEditNewSiteModale,
+                            })}
+                        site={this.state.siteEdited}
                         saveSite={site => saveSite(site)}
                     />
                 }
@@ -321,6 +351,7 @@ export class Vector extends Component {
                     tabs={[
                         { label: formatMessage(MESSAGES.map), key: baseUrl },
                         { label: formatMessage(MESSAGES.sites), key: 'sites' },
+                        { label: `${formatMessage(MESSAGES.sites)} v2`, key: 'newSites' },
                         { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}
@@ -375,11 +406,34 @@ export class Vector extends Component {
                         columns={this.state.sitesColumns}
                         defaultSorted={[{ id: 'created_at', desc: false }]}
                         params={params}
-                        onRowClicked={() => { }}
                         multiSort
                         pageSize={50}
                         fetchDatas={false}
                         reduxPage={reduxSitesPage}
+                        pageKey="sitesPage"
+                        pageSizeKey="sitesPageSize"
+                        defaultPath={baseUrl}
+                        orderKey="orderSites"
+                        canSelect={false}
+                    />
+                    <div className="align-right">
+                        <DownloadButtonsComponent
+                            csvUrl={this.getDownloadUrl('sites', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('sites', 'xlsx')}
+                        />
+                    </div>
+                </div>
+                <div className={`widget__container ${currentTab === 'newSites' ? '' : 'hidden'}`}>
+                    <CustomTableComponent
+                        isSortable
+                        showPagination
+                        columns={this.state.newSitesColumns}
+                        defaultSorted={[{ id: 'created_at', desc: false }]}
+                        params={params}
+                        multiSort
+                        pageSize={50}
+                        fetchDatas={false}
+                        reduxPage={reduxNewSitesPage}
                         pageKey="sitesPage"
                         pageSizeKey="sitesPageSize"
                         defaultPath={baseUrl}
@@ -400,7 +454,6 @@ export class Vector extends Component {
                         columns={this.state.targetsColumns}
                         defaultSorted={[{ id: 'date_time', desc: false }]}
                         params={params}
-                        onRowClicked={() => { }}
                         multiSort
                         fetchDatas={false}
                         reduxPage={reduxTargetsPage}
@@ -439,6 +492,7 @@ Vector.propTypes = {
     changeCluster: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     reduxSitesPage: PropTypes.object.isRequired,
+    reduxNewSitesPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
@@ -464,6 +518,7 @@ const MapStateToProps = state => ({
     load: state.load,
     map: state.map,
     reduxSitesPage: state.vectors.sitesPage,
+    reduxNewSitesPage: state.vectors.newSitesPage,
     reduxTargetsPage: state.vectors.targetsPage,
     filters: state.geoFilters,
 });

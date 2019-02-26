@@ -34,6 +34,7 @@ class VectorContainer extends Component {
             fetchProfiles(dispatch),
             fetchHabitats(dispatch),
         ];
+        promises.push(fetchSites(dispatch, params)); // To remove
         if (params.sites && params.tab === 'map') {
             promises.push(fetchTraps(dispatch, params));
         }

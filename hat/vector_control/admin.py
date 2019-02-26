@@ -7,9 +7,9 @@ from django.contrib.gis.forms import OSMWidget
 
 class TrapAdmin(admin.GeoModelAdmin):
     date_hierarchy = 'created_at'
-    formfield_overrides = {
-       PointField: {'widget': OSMWidget},
-    }
+    # formfield_overrides = {
+    #    PointField: {'widget': OSMWidget},
+    # }
 
 
 admin.site.register(Trap, TrapAdmin)

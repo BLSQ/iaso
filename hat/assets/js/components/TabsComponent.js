@@ -52,7 +52,7 @@ class TabsComponent extends Component {
                     tabs.map(t => (
                         <li
                             className={this.state.currentTab === t.key ? 'selected' : ''}
-                            key={t.label}
+                            key={t.key}
                             onClick={() => this.onSelect(t.key)}
                         >
                             {t.label}

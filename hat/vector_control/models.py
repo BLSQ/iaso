@@ -67,28 +67,50 @@ class Site(models.Model):
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE, blank=True)
     responsible = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
+    creator = models.ForeignKey(User, related_name='site_creator', null=True, blank=True, on_delete=SET_NULL)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.location)
 
     def as_dict(self, additional_fields=None):
-        username = None
+        responsible = None
         if self.responsible:
-            username = self.responsible.username
+            responsible = self.responsible.username
+        creator = None
+        if self.creator:
+            creator = self.creator.username
 
         res = {
             'id': self.id,
             'name': self.name,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'username': username,
+            'responsible': responsible,
+            'creator': creator,
             'uuid': self.uuid,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'altitude': self.location.z,
-            'user': username,
             'accuracy': self.accuracy,
             'ignore': self.ignore
+        }
+
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    res[field] = getattr(self, field)
+
+        return res
+
+    def as_location(self, additional_fields):
+
+        res = {
+            'id': self.id,
+            'name': self.name,
+            'uuid': self.uuid,
+            'latitude': self.location.y,
+            'longitude': self.location.x,
         }
 
         # include fields that were added through annotate
@@ -115,6 +137,8 @@ class Trap(models.Model):
     location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
+    site = models.ForeignKey(Site, null=True, on_delete=CASCADE)
+    is_selected = models.BooleanField(default=True)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.location)
@@ -162,7 +186,8 @@ class Trap(models.Model):
             'user': username,
             'accuracy': self.accuracy,
             'source': self.source,
-            'latest_catch': latest_catch
+            'latest_catch': latest_catch,
+            'is_selected': self.is_selected,
         }
 
         # include fields that were added through annotate

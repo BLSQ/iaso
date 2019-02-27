@@ -162,7 +162,7 @@ class TrapsMap extends Component {
                     {
                         icon: renderDivIcon(
                             '',
-                            `traps small ${trapItem.selected !== undefined && trapItem.selected ? 'selected' : ''} ${trapItem.selected !== undefined && !trapItem.selected ? 'not-selected' : ''}`,
+                            `traps small ${trapItem.is_selected !== undefined && trapItem.is_selected ? 'selected' : ''} ${trapItem.is_selected !== undefined && !trapItem.is_selected ? 'not-selected' : ''}`,
                             30,
                         ),
                     },

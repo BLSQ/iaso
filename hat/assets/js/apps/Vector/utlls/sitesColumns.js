@@ -14,9 +14,9 @@ const sitesColumns = (formatMessage, element) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Créateur',
-                id: 'main.label.creation_user',
+                id: 'main.label.creator',
             }),
-            accessor: 'creation_user',
+            accessor: 'creator',
         },
         {
             Header: formatMessage({
@@ -35,9 +35,9 @@ const sitesColumns = (formatMessage, element) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Responsable',
-                id: 'main.label.responsable',
+                id: 'main.label.responsible',
             }),
-            accessor: 'responsable',
+            accessor: 'responsible',
         },
         {
             Header: formatMessage({
@@ -51,7 +51,7 @@ const sitesColumns = (formatMessage, element) => (
                 <section>
                     <button
                         className="button--edit--tiny"
-                        onClick={() => element.editItem('site', settings.original)}
+                        onClick={() => element.editSite(settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
                         <FormattedMessage id="main.label.edit" defaultMessage="Editer" />

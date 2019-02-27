@@ -194,6 +194,19 @@ export class Vector extends Component {
         }
     }
 
+    editSite(data) {
+        this.props.getDetail(data.id, 'sites').then((res) => {
+            const newState = {
+                showCatchesModale: false,
+                showEditSiteModale: true,
+                showEditTrapsModale: false,
+                showEditTargetModale: false,
+                siteEdited: res,
+            };
+            this.setState(newState);
+        });
+    }
+
 
     displayCatches(data = undefined, fetchDetails = false) {
         const newState = {

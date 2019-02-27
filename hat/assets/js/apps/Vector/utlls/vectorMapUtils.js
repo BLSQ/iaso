@@ -165,7 +165,7 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                             ${formatMessage({ defaultMessage: 'Déploiements', id: 'vector.labels.catches' })}
                                         </td>
                                         <td>
-                                            ${trap.catches_count}
+                                            ${trap.catches_count !== undefined ? trap.catches_count : '0'}
                                             ${trap.catches_count > 0 ? editCatchButton(trap.id, withActions) : ''}
 
                                         </td>
@@ -240,6 +240,15 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                         </td>
                                         <td>
                                         ${trap.is_reference ?
+        formatMessage({ defaultMessage: 'oui', id: 'vector.labels.yes' }) : formatMessage({ defaultMessage: 'non', id: 'vector.labels.yes' })}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            ${formatMessage({ defaultMessage: 'Piège sélectioné', id: 'vector.labels.is_selected' })}
+                                        </td>
+                                        <td>
+                                        ${trap.is_selected ?
         formatMessage({ defaultMessage: 'oui', id: 'vector.labels.yes' }) : formatMessage({ defaultMessage: 'non', id: 'vector.labels.yes' })}
                                         </td>
                                     </tr>

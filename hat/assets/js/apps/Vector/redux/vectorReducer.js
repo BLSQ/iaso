@@ -64,9 +64,9 @@ export const loadPaginatedTargets = (datas, params) => ({
 });
 
 export const vectorActions = {
-    loadSites,
+    loadTraps: loadSites,
     loadTargets,
-    loadPaginatedSites,
+    loadPaginatedTraps: loadPaginatedSites,
     loadPaginatedTargets,
     loadNonEndemicVillages,
     loadEndemicVillages,

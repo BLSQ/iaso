@@ -4,7 +4,7 @@ from django.db import models
 import uuid
 from django.contrib.postgres.fields import JSONField
 
-from django.db.models import CASCADE
+from django.db.models import CASCADE, SET_NULL
 
 SOURCE_CHOICES = (
     ('excel', 'Excel'),
@@ -24,6 +24,7 @@ HABITAT_CHOICES = (
 )
 
 IMPORT_TYPE = (
+    ("trap", "Trap"),
     ("site", "Site"),
     ("catch", "Catch"),
     ("target", "Target")
@@ -47,17 +48,59 @@ class APIImport(models.Model):
             'type': self.import_type
         }
 
-        if self.import_type == 'site':
-            site_count = self.site_set.count()
-            res['site_count'] = site_count
-
+        if self.import_type == 'trap':
+            res['trap_count'] = self.trap_set.count()
         elif self.import_type == 'catch':
-            catch_count = self.catch_set.count()
-            res['catch_count'] = catch_count
+            res['catch_count'] = self.catch_set.count()
+        elif self.import_type == 'target':
+            res['target_count'] = self.target_set.count()
         return res
 
 
 class Site(models.Model):
+    name = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    uuid = models.TextField(null=True, blank=True)
+    location = PointField(srid=4326, null=True, dim=3)
+    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    ignore = models.BooleanField(default=False)
+    api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE, blank=True)
+    responsible = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.id, self.name, self.location)
+
+    def as_dict(self, additional_fields=None):
+        username = None
+        if self.responsible:
+            username = self.responsible.username
+
+        res = {
+            'id': self.id,
+            'name': self.name,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'username': username,
+            'uuid': self.uuid,
+            'latitude': self.location.y,
+            'longitude': self.location.x,
+            'altitude': self.location.z,
+            'user': username,
+            'accuracy': self.accuracy,
+            'ignore': self.ignore
+        }
+
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    res[field] = getattr(self, field)
+
+        return res
+
+
+class Trap(models.Model):
     name = models.CharField(max_length=50, null=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     habitat = models.TextField(max_length=255, choices=HABITAT_CHOICES,  null=True, blank=True)
@@ -78,11 +121,11 @@ class Site(models.Model):
 
     def as_location(self):
         try:
-            latest_catch = Catch.objects.filter(site_id = self.id).order_by('-collect_date').last().as_dict()
+            latest_catch = Catch.objects.filter(trap_id=self.id).order_by('-collect_date').last().as_dict()
         except:
             latest_catch = None
         return {
-        'id': self.id,
+            'id': self.id,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'altitude': self.location.z,
@@ -94,7 +137,7 @@ class Site(models.Model):
         longitude = 0
         altitude = 0
         try:
-            latest_catch = Catch.objects.filter(site_id = self.id).order_by('-collect_date').last().as_dict()
+            latest_catch = Catch.objects.filter(trap_id = self.id).order_by('-collect_date').last().as_dict()
         except:
             latest_catch = None
         if self.location:
@@ -132,7 +175,7 @@ class Site(models.Model):
 
 
 class Catch(models.Model):
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    trap = models.ForeignKey(Trap, on_delete=models.CASCADE)
     setup_date = models.DateTimeField(null=True)
     collect_date = models.DateTimeField(null=True)
     male_count = models.IntegerField(default=0, null=True)
@@ -180,7 +223,7 @@ class Catch(models.Model):
             altitude = self.start_location.z
         return {
         'id': self.id,
-        'site': self.site.id,
+        'trap': self.trap.id,
         'male_count': self.male_count,
         'female_count': self.female_count,
         'unknown_count': self.unknown_count,
@@ -236,14 +279,6 @@ class Target(models.Model):
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE, blank=True)
     location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
-
-    # obj.put("uuid", target.uuid)
-    # obj.put("latitude", target.latitude)
-    # obj.put("longitude", target.longitude)
-    # obj.put("altitude", target.altitude)
-    # obj.put("accuracy", target.accuracy)
-    # obj.put("village", target.village)
-    # obj.put("index", target.index)
 
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.date_time)

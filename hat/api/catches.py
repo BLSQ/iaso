@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from hat.vector_control.models import Site, Catch, APIImport
+from hat.vector_control.models import Trap, Catch, APIImport
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.contrib.gis.geos import Point
@@ -28,7 +28,7 @@ class CatchesViewSet(viewsets.ViewSet):
     To insert an array of catches, send a POST to this URL
     Example: PUT on /api/catches/ with JSON body
     [{
-            "site_id": 18,
+            "trap_id": 18,
             "male_count": 10,
             "female_count": 50,
             "unknown_count": 50,
@@ -81,10 +81,10 @@ class CatchesViewSet(viewsets.ViewSet):
             else:
                 new_catch = Catch()
                 new_catch.uuid = uuid
-                site_uuid = catch.get('site_uuid', None)
-                site, created = Site.objects.get_or_create(uuid=site_uuid)
+                trap_uuid = catch.get('trap_uuid', catch.get('site_uuid', None))
+                trap, created = Trap.objects.get_or_create(uuid=trap_uuid)
 
-                new_catch.site = site
+                new_catch.trap = trap
                 new_catch.api_import = api_import
                 start_time = catch.get('startTime', None)
                 if start_time:

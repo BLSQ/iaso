@@ -572,12 +572,12 @@ const onlyReferenceSites = () => (
     }
 );
 
-const onlyIgnoredSites = () => (
+const onlyIgnoredTraps = () => (
     {
-        name: 'onlyIgnoredSites',
-        urlKey: 'onlyIgnoredSites',
+        name: 'onlyIgnoredTraps',
+        urlKey: 'onlyIgnoredTraps',
         label: {
-            id: 'main.label.onlyIgnoredSites',
+            id: 'main.label.onlyIgnoredTraps',
             defaultMessage: 'Sites ignorés',
         },
         type: 'checkbox',
@@ -799,7 +799,7 @@ export {
     users,
     habitats,
     onlyReferenceSites,
-    onlyIgnoredSites,
+    onlyIgnoredTraps,
     onlyIgnoredTargets,
     medecine,
     onlyTreatedPatients,

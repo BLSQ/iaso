@@ -9,26 +9,26 @@ from rest_framework.response import Response
 
 from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user
-from hat.vector_control.models import Site, APIImport, Catch
+from hat.vector_control.models import Trap, APIImport, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
 
 
-class SitesViewSet(viewsets.ViewSet):
+class TrapsViewSet(viewsets.ViewSet):
     """
-    Team API to allow create and retrieval of sites.
+    Team API to allow create and retrieval of traps.
 
     list:
-    Returns the list of existing sites
+    Returns the list of existing traps
 
     retrieve:
-    returns a given sites information
-    example: /api/sites/2/
+    returns a given trap information
+    example: /api/traps/2/
 
     create:
-    To insert an array of sites, send a POST to this URL
-    Example: PUT on /api/sites/ with JSON body
+    To insert an array of traps, send a POST to this URL
+    Example: PUT on /api/traps/ with JSON body
     [{
         "id":"2",
         "count": 10,
@@ -53,12 +53,12 @@ class SitesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
-        only_reference_sites = request.GET.get("only_reference_sites", False)
-        only_ignored_sites = request.GET.get("onlyIgnoredSites", False)
+        only_reference_traps = request.GET.get("onlyReferenceTraps", False)
+        only_ignored_traps = request.GET.get("onlyIgnoredTraps", False)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
-        queryset = Site.objects.all()
+        queryset = Trap.objects.all()
 
         if from_date is not None:
             queryset = queryset.filter(created_at__date__gte=from_date)
@@ -68,9 +68,9 @@ class SitesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
             queryset = queryset.filter(habitat__in=habitats.split(","))
-        if only_reference_sites:
+        if only_reference_traps:
             queryset = queryset.filter(is_reference=True)
-        if only_ignored_sites:
+        if only_ignored_traps:
             queryset = queryset.filter(ignore=True)
         else:
             queryset = queryset.filter(ignore=False)
@@ -150,30 +150,30 @@ class SitesViewSet(viewsets.ViewSet):
                        'Description',
                        'Référence',
                        'Utilisateur']
-            filename = 'sites'
+            filename = 'traps'
 
-            def get_row(site):
-                sdict = site.as_dict(additional_fields)
+            def get_row(trap):
+                sdict = trap.as_dict(additional_fields)
                 referenceText = "Non"
                 if sdict["is_reference"]:
                     referenceText = "Oui"
                 habitatText = "Inconnu"
                 if sdict["habitat"]:
-                    habitatText = site.get_habitat_display()
+                    habitatText = trap.get_habitat_display()
 
                 catches_count_male = 0
                 catches_count_female = 0
                 catches_count_unknown = 0
-                if site.catches_count > 0:
-                    catches_count_male = site.catches_count_male
-                    catches_count_female = site.catches_count_female
-                    catches_count_unknown = site.catches_count_unknown
+                if trap.catches_count > 0:
+                    catches_count_male = trap.catches_count_male
+                    catches_count_female = trap.catches_count_female
+                    catches_count_unknown = trap.catches_count_unknown
 
                 return [
                             sdict.get("id"),
-                            site.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                            trap.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                             sdict.get("name"),
-                            site.catches_count,
+                            trap.catches_count,
                             catches_count_male,
                             catches_count_female,
                             catches_count_unknown,
@@ -188,7 +188,7 @@ class SitesViewSet(viewsets.ViewSet):
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
-                    generate_xlsx('Sites', columns, queryset, get_row),
+                    generate_xlsx('Pièges', columns, queryset, get_row),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:
@@ -201,90 +201,90 @@ class SitesViewSet(viewsets.ViewSet):
             return response
 
     def retrieve(self, request, pk=None):
-        site = get_object_or_404(Site, pk=pk)
-        province = Province.objects.filter(geom__contains=site.location).first()\
-            if Province.objects.filter(geom__contains=site.location).count() > 0 else None
-        zone = ZS.objects.filter(geom__contains=site.location).first()\
-            if ZS.objects.filter(geom__contains=site.location).count() > 0 else None
-        area = AS.objects.filter(geom__contains=site.location).first()\
-            if AS.objects.filter(geom__contains=site.location).count() > 0 else None
+        trap = get_object_or_404(Trap, pk=pk)
+        province = Province.objects.filter(geom__contains=trap.location).first()\
+            if Province.objects.filter(geom__contains=trap.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=trap.location).first()\
+            if ZS.objects.filter(geom__contains=trap.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=trap.location).first()\
+            if AS.objects.filter(geom__contains=trap.location).count() > 0 else None
         is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
 
         if is_authorized:
-            site_dict = site.as_dict()
-            catches = Catch.objects.filter(site__id=pk).order_by('-collect_date')
-            site_dict['catches_count'] = catches.count()
-            site_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
-            site_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']
-            site_dict['catches_count_unknown'] = catches.aggregate(Sum('unknown_count'))['unknown_count__sum']
-            site_dict['catches'] = map(lambda x: x.as_dict(), catches)
-            return Response(site_dict)
+            trap_dict = trap.as_dict()
+            catches = Catch.objects.filter(trap__id=pk).order_by('-collect_date')
+            trap_dict['catches_count'] = catches.count()
+            trap_dict['catches_count_male'] = catches.aggregate(Sum('male_count'))['male_count__sum']
+            trap_dict['catches_count_female'] = catches.aggregate(Sum('female_count'))['female_count__sum']
+            trap_dict['catches_count_unknown'] = catches.aggregate(Sum('unknown_count'))['unknown_count__sum']
+            trap_dict['catches'] = map(lambda x: x.as_dict(), catches)
+            return Response(trap_dict)
         else:
             return Response('Unauthorized', status=401)
 
     def create(self, request):
-        sites = request.data
+        traps = request.data
 
-        new_sites = []
+        new_traps = []
         api_import = APIImport()
         api_import.user = request.user
-        api_import.import_type = 'site'
-        api_import.json_body = sites
+        api_import.import_type = 'trap'
+        api_import.json_body = traps
         api_import.save()
-        for site in sites:
-            uuid = site.get('uuid', None)
-            latitude = site.get('latitude', None)
-            longitude = site.get('longitude', None)
-            altitude = site.get('altitude', 0)
-            site_location = None
+        for trap in traps:
+            uuid = trap.get('uuid', None)
+            latitude = trap.get('latitude', None)
+            longitude = trap.get('longitude', None)
+            altitude = trap.get('altitude', 0)
+            trap_location = None
             if latitude and longitude:
-                site_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-            new_site, created = Site.objects.get_or_create(uuid=uuid)
+                trap_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+            new_trap, created = Trap.objects.get_or_create(uuid=uuid)
             if created:
 
-                new_site.name = site.get('name', None)
-                new_site.habitat = site.get('habitat', None)
-                new_site.accuracy = site.get('accuracy', None)
-                new_site.description = site.get('description', None)
-                t = site.get('time', None)
+                new_trap.name = trap.get('name', None)
+                new_trap.habitat = trap.get('habitat', None)
+                new_trap.accuracy = trap.get('accuracy', None)
+                new_trap.description = trap.get('description', None)
+                t = trap.get('time', None)
                 if t:
-                    new_site.created_at = timestamp_to_utc_datetime(int(t))
+                    new_trap.created_at = timestamp_to_utc_datetime(int(t))
                 else:
-                    new_site.created_at = site.get('created_at', None)
-                new_site.uuid = site.get('uuid', None)
+                    new_trap.created_at = trap.get('created_at', None)
+                new_trap.uuid = trap.get('uuid', None)
 
-                new_site.user = request.user
-                new_site.source = 'API'
-                new_site.api_import = api_import
-                if site_location:
-                    new_site.location = site_location
+                new_trap.user = request.user
+                new_trap.source = 'API'
+                new_trap.api_import = api_import
+                if trap_location:
+                    new_trap.location = trap_location
 
-                new_sites.append(new_site)
-                print("created", new_site)
+                new_traps.append(new_trap)
+                print("created", new_trap)
             else:
                 print("not created")
-            new_site.save()
+            new_trap.save()
 
-        return Response([site.as_dict() for site in new_sites])
+        return Response([trap.as_dict() for trap in new_traps])
 
     def update(self, request, pk=None):
-        new_site = get_object_or_404(Site, pk=pk)
-        province = Province.objects.filter(geom__contains=new_site.location).first()\
-            if Province.objects.filter(geom__contains=new_site.location).count() > 0 else None
-        zone = ZS.objects.filter(geom__contains=new_site.location).first()\
-            if ZS.objects.filter(geom__contains=new_site.location).count() > 0 else None
-        area = AS.objects.filter(geom__contains=new_site.location).first()\
-            if AS.objects.filter(geom__contains=new_site.location).count() > 0 else None
+        new_trap = get_object_or_404(Trap, pk=pk)
+        province = Province.objects.filter(geom__contains=new_trap.location).first()\
+            if Province.objects.filter(geom__contains=new_trap.location).count() > 0 else None
+        zone = ZS.objects.filter(geom__contains=new_trap.location).first()\
+            if ZS.objects.filter(geom__contains=new_trap.location).count() > 0 else None
+        area = AS.objects.filter(geom__contains=new_trap.location).first()\
+            if AS.objects.filter(geom__contains=new_trap.location).count() > 0 else None
         is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
 
         if is_authorized:
-            new_site.name = request.data.get('name', '')
-            new_site.description = request.data.get('description', '')
-            new_site.habitat = request.data.get('habitat', 'unknown')
-            new_site.is_reference = request.data.get('is_reference', False)
-            new_site.ignore = request.data.get('ignore', False)
-            new_site.save()
-            return Response(new_site.as_dict())
+            new_trap.name = request.data.get('name', '')
+            new_trap.description = request.data.get('description', '')
+            new_trap.habitat = request.data.get('habitat', 'unknown')
+            new_trap.is_reference = request.data.get('is_reference', False)
+            new_trap.ignore = request.data.get('ignore', False)
+            new_trap.save()
+            return Response(new_trap.as_dict())
         else:
             return Response('Unauthorized', status=401)
 

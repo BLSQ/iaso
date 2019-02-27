@@ -90,7 +90,7 @@ export class Vector extends Component {
                 userId,
                 habitats,
                 onlyReferenceSites,
-                onlyIgnoredSites,
+                onlyIgnoredTraps,
                 onlyIgnoredTargets,
                 province_id,
                 zs_id,
@@ -105,9 +105,9 @@ export class Vector extends Component {
             url += `&habitats=${habitats}`;
         }
         if (onlyReferenceSites) {
-            url += '&only_reference_sites=True';
+            url += '&onlyReferenceTraps=True';
         }
-        if (onlyIgnoredSites) {
+        if (onlyIgnoredTraps) {
             url += '&onlyIgnoredTargets=True';
         }
         if (onlyIgnoredTargets) {

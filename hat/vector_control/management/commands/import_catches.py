@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.vector_control.models import Catch, Site
+from hat.vector_control.models import Catch, Trap
 import csv
 from datetime import datetime
 
@@ -24,12 +24,12 @@ class Command(BaseCommand):
             #print(line)
             if count != 0:
                 try:
-                    site = Site.objects.get(name=line[0].strip())
+                    trap = Trap.objects.get(name=line[0].strip())
                 except:
-                    print("site not found", line[0])
-                    site = None
+                    print("trap not found", line[0])
+                    trap = None
 
-                if site:
+                if trap:
                     catch = Catch()
                     catch.operation = line[1]
                     catch.setup_date = datetime.strptime(line[2], date_format)
@@ -44,15 +44,15 @@ class Command(BaseCommand):
                         distance_s = line[9].replace(',', '.')
                     else:
                         distance_s = 0
-                    catch.start_location = site.location
-                    catch.end_location = site.location
+                    catch.start_location = trap.location
+                    catch.end_location = trap.location
                     catch.distance_to_targets = c(distance_s)
                     catch.near_intervention = line[10]
                     catch.elev_change = c(line[11])
                     catch.trap_elev = c(line[12])
                     catch.target_elev = c(line[13])
                     catch.elev_diff = c(line[13])
-                    catch.site = site
+                    catch.trap = trap
                     catch.save()
             count += 1
 

@@ -1,18 +1,18 @@
 from django.contrib.gis import admin
 
-from .models import Site, Catch, Target, GpsImport, APIImport
+from .models import Trap, Catch, Target, GpsImport, APIImport
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.forms import OSMWidget
 
 
-class SiteAdmin(admin.GeoModelAdmin):
+class TrapAdmin(admin.GeoModelAdmin):
     date_hierarchy = 'created_at'
     formfield_overrides = {
        PointField: {'widget': OSMWidget},
     }
 
 
-admin.site.register(Site, SiteAdmin)
+admin.site.register(Trap, TrapAdmin)
 
 
 class CatchAdmin(admin.GeoModelAdmin):

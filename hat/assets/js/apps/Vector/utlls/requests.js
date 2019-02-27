@@ -6,30 +6,30 @@ import { loadActions } from '../../../redux/load';
 const req = require('superagent');
 
 
-export const fetchSites = (dispatch, params) => {
+export const fetchTraps = (dispatch, params) => {
     const {
         dateFrom,
         dateTo,
         userId,
         habitats,
-        onlyReferenceSites,
-        onlyIgnoredSites,
+        onlyReferenceTraps,
+        onlyIgnoredTraps,
         province_id,
         zs_id,
         as_id,
     } = params;
-    let url = `/api/sites?from=${dateFrom}&to=${dateTo}`;
+    let url = `/api/traps?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
         url += `&userId=${userId}`;
     }
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceSites) {
-        url += '&only_reference_sites=True';
+    if (onlyReferenceTraps) {
+        url += '&onlyReferenceTraps=True';
     }
-    if (onlyIgnoredSites) {
-        url += '&onlyIgnoredSites=True';
+    if (onlyIgnoredTraps) {
+        url += '&onlyIgnoredTraps=True';
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -43,10 +43,10 @@ export const fetchSites = (dispatch, params) => {
     return req
         .get(url)
         .then((result) => {
-            dispatch(vectorActions.loadSites(result.body));
+            dispatch(vectorActions.loadTraps(result.body));
         })
         .catch((err) => {
-            console.error('Error when fetching sites', err);
+            console.error('Error when fetching traps', err);
         });
 };
 
@@ -90,19 +90,19 @@ export const fetchTargets = (dispatch, params) => {
         });
 };
 
-export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
+export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     const {
         dateFrom,
         dateTo,
         userId,
         habitats,
-        onlyReferenceSites,
-        onlyIgnoredSites,
+        onlyReferenceTraps,
+        onlyIgnoredTraps,
         province_id,
         zs_id,
         as_id,
     } = params;
-    let url = `/api/sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    let url = `/api/traps?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
         url += `&order=${order}`;
     }
@@ -112,11 +112,11 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceSites) {
-        url += '&only_reference_sites=True';
+    if (onlyReferenceTraps) {
+        url += '&onlyReferenceTraps=True';
     }
-    if (onlyIgnoredSites) {
-        url += '&onlyIgnoredSites=True';
+    if (onlyIgnoredTraps) {
+        url += '&onlyIgnoredTraps=True';
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -130,10 +130,10 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     return (req
         .get(url)
         .then((result) => {
-            dispatch(vectorActions.loadPaginatedSites(result.body, params));
+            dispatch(vectorActions.loadPaginatedTraps(result.body, params));
         })
         .catch((err) => {
-            console.error('Error when fetching paginated sites', err);
+            console.error('Error when fetching paginated traps', err);
         }));
 };
 
@@ -143,7 +143,7 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlyReferenceSites,
+        onlyReferenceTraps,
         onlyIgnoredTargets,
         province_id,
         zs_id,
@@ -159,8 +159,8 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceSites) {
-        url += '&only_reference_sites=True';
+    if (onlyReferenceTraps) {
+        url += '&onlyReferenceTraps=True';
     }
     if (onlyIgnoredTargets) {
         url += '&onlyIgnoredTargets=True';
@@ -237,16 +237,16 @@ export const fetchHabitats = dispatch => req
     });
 
 
-export const saveSite = (dispatch, site) => {
+export const saveTrap = (dispatch, trap) => {
     dispatch(loadActions.startLoading());
     return (req
-        .put(`/api/sites/${site.id}/`)
+        .put(`/api/traps/${trap.id}/`)
         .set('Content-Type', 'application/json')
-        .send(site)
+        .send(trap)
         .then(() => {
             dispatch(loadActions.successLoadingNoData());
         })
-        .catch(err => (console.error(`Error while saving site ${err}`))));
+        .catch(err => (console.error(`Error while saving trap ${err}`))));
 };
 
 export const saveTarget = (dispatch, target) => {

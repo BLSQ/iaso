@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from hat.vector_control.models import Site, HABITAT_CHOICES
+from hat.vector_control.models import Trap, HABITAT_CHOICES
 import csv
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -19,21 +19,19 @@ class Command(BaseCommand):
             print(line)
             if count != 0:
                 try:
-                    site = Site()
-                    site.name = line[0].strip()
-                    # site.zone = line[1]
+                    trap = Trap()
+                    trap.name = line[0].strip()
                     latitude = line[3].replace(',', '.')
                     longitude = line[4].replace(',', '.')
-                    site.location = Point(x=float(longitude), y=float(latitude), z=0, srid=4326)
+                    trap.location = Point(x=float(longitude), y=float(latitude), z=0, srid=4326)
                     habitat = line[5].lower()
                     if habitat not in habitats:
                         habitat = 'unknown'
-                    site.habitat = habitat
-                    # site.first_survey = line[6]
-                    site.created_at = datetime.strptime(line[7], '%m/%d/%y')
-                    # site.count = line[8]
-                    site.total = line[9]
-                    site.save()
+                    trap.habitat = habitat
+
+                    trap.created_at = datetime.strptime(line[7], '%m/%d/%y')
+                    trap.total = line[9]
+                    trap.save()
                 except:
                     pass
             count += 1

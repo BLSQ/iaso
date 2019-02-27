@@ -31,7 +31,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)' +
             '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
-            '(/onlyIgnoredSites/:onlyIgnoredSites)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
+            '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
             component={VectorContainer}
         />,
         <Route

@@ -9,11 +9,12 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from '../../../components/leaflet/zoom-bar';
+import * as zoomBar from '../../../../components/leaflet/zoom-bar';
 import {
     renderCatchesPopup,
+    renderSitesPopup,
     renderTrapsPopup,
-} from '../utlls/vectorMapUtils';
+} from '../../utlls/vectorMapUtils';
 
 import {
     MESSAGES,
@@ -22,7 +23,7 @@ import {
     defaultFitToBound,
     includeControlsInMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
+} from '../../../../utils/mapUtils';
 
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -53,7 +54,7 @@ const renderDivIcon = (content, key, size) => L.divIcon({
 });
 
 let exportControl;
-class CatchesMap extends Component {
+class TrapsMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -69,10 +70,10 @@ class CatchesMap extends Component {
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
-        this.catchesGroup = new L.FeatureGroup();
-        this.trapGroup = new L.FeatureGroup();
-        this.map.addLayer(this.catchesGroup);
-        this.map.addLayer(this.trapGroup);
+        this.trapsGroup = new L.FeatureGroup();
+        this.siteGroup = new L.FeatureGroup();
+        this.map.addLayer(this.trapsGroup);
+        this.map.addLayer(this.siteGroup);
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
         this.updateCatches();
@@ -88,7 +89,7 @@ class CatchesMap extends Component {
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
-            if (hasChanged(prevProps, this.props, 'trap')) {
+            if (hasChanged(prevProps, this.props, 'site')) {
                 this.updateCatches();
             }
         });
@@ -102,7 +103,7 @@ class CatchesMap extends Component {
 
     onResize(width, height) {
         const { map } = this;
-        exportControl = onResizeMap(width, height, exportControl, map, 'Catches');
+        exportControl = onResizeMap(width, height, exportControl, map, 'Traps');
     }
 
     /*
@@ -126,57 +127,57 @@ class CatchesMap extends Component {
 
     updateCatches() {
         const {
-            trap,
+            site,
             intl: {
                 formatMessage,
             },
         } = this.props;
-        this.catchesGroup.clearLayers();
-        this.trapGroup.clearLayers();
-        const trapCircle = L.marker(
-            [trap.latitude, trap.longitude],
+        this.trapsGroup.clearLayers();
+        this.siteGroup.clearLayers();
+        const siteCircle = L.marker(
+            [site.latitude, site.longitude],
             { icon: renderDivIcon('', 'sites small', 30) },
         );
-        trapCircle.addTo(this.trapGroup)
+        siteCircle.addTo(this.siteGroup)
             .on('click', (event) => {
                 const popUp = event.target.getPopup();
-                popUp.setContent(renderTrapsPopup(trap, formatMessage, false));
+                popUp.setContent(renderSitesPopup(site, formatMessage, false));
             })
             .bindPopup()
             .on('mouseover', () => {
-                const lat = trap.latitude;
-                const lng = trap.longitude;
+                const lat = site.latitude;
+                const lng = site.longitude;
                 const item = {
-                    label: `${formatMessage(MESSAGES.trap)} ${trap.name} `,
+                    label: `${formatMessage(MESSAGES.site)} ${site.name} `,
                 };
                 this.updateTooltipSmall(item, lat, lng);
             })
             .on('mouseout', () => {
                 this.updateTooltipSmall();
             });
-        if (trap.catches) {
-            trap.catches.map((catchItem) => {
-                const catchCircle = L.marker(
-                    [catchItem.latitude, catchItem.longitude],
+        if (site.traps) {
+            site.traps.map((trapItem) => {
+                const trapCircle = L.marker(
+                    [trapItem.latitude, trapItem.longitude],
                     {
                         icon: renderDivIcon(
                             '',
-                            'catches small',
+                            `traps small ${trapItem.selected !== undefined && trapItem.selected ? 'selected' : ''} ${trapItem.selected !== undefined && !trapItem.selected ? 'not-selected' : ''}`,
                             30,
                         ),
                     },
                 );
-                catchCircle.addTo(this.catchesGroup)
+                trapCircle.addTo(this.trapsGroup)
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
-                        popUp.setContent(renderCatchesPopup(catchItem, formatMessage));
+                        popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
                     })
                     .bindPopup()
                     .on('mouseover', () => {
-                        const lat = catchItem.latitude;
-                        const lng = catchItem.longitude;
+                        const lat = trapItem.latitude;
+                        const lng = trapItem.longitude;
                         const item = {
-                            label: `${formatMessage(MESSAGES.catch)}-${catchItem.id} `,
+                            label: `${formatMessage(MESSAGES.trap)}-${trapItem.id} `,
                         };
                         this.updateTooltipSmall(item, lat, lng);
                     })
@@ -206,7 +207,7 @@ class CatchesMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.catchesGroup.getBounds(), 15);
+        defaultFitToBound(map, this.trapsGroup.getBounds(), 15);
     }
 
     /*
@@ -250,11 +251,11 @@ class CatchesMap extends Component {
     }
 }
 
-CatchesMap.propTypes = {
+TrapsMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    trap: PropTypes.object.isRequired,
+    site: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
 };
 
-export default injectIntl(CatchesMap);
+export default injectIntl(TrapsMap);

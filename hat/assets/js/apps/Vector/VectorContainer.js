@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 import VectorElement from './pages/Vector';
 import {
+    fetchSites,
     fetchTraps,
     fetchTargets,
     fetchPaginatedTraps,
@@ -13,6 +14,7 @@ import {
     fetchHabitats,
     saveTrap,
     saveTarget,
+    fetchPaginatedSites,
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
@@ -23,6 +25,7 @@ class VectorContainer extends Component {
         super(props);
         this.state = {
             siteEdited: undefined,
+            trapEdited: undefined,
             targetEdited: undefined,
         };
     }
@@ -34,8 +37,10 @@ class VectorContainer extends Component {
             fetchProfiles(dispatch),
             fetchHabitats(dispatch),
         ];
-        promises.push(fetchTraps(dispatch, params)); // To remove
         if (params.sites && params.tab === 'map') {
+            promises.push(fetchSites(dispatch, params));
+        }
+        if (params.traps && params.tab === 'map') {
             promises.push(fetchTraps(dispatch, params));
         }
         if (params.targets && params.tab === 'map') {
@@ -48,6 +53,9 @@ class VectorContainer extends Component {
             promises.push(fetchVillages(dispatch, params, false));
         }
         if (params.tab === 'sites') {
+            promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
+        }
+        if (params.tab === 'traps') {
             promises.push(fetchPaginatedTraps(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
         }
         if (params.tab === 'targets') {
@@ -86,13 +94,16 @@ class VectorContainer extends Component {
             const dateChanged = hasChanged(this.props.params, newProps.params, 'dateFrom') ||
                 hasChanged(this.props.params, newProps.params, 'dateTo');
             const userChanged = hasChanged(this.props.params, newProps.params, 'userId');
-            const sitesFilterChanged = hasChanged(this.props.params, newProps.params, 'habitats') ||
-            hasChanged(this.props.params, newProps.params, 'onlyReferenceSites') ||
-            hasChanged(this.props.params, newProps.params, 'onlyIgnoredTraps');
+            const trapsFilterChanged = hasChanged(this.props.params, newProps.params, 'habitats') ||
+                hasChanged(this.props.params, newProps.params, 'onlyReferenceTraps') ||
+                hasChanged(this.props.params, newProps.params, 'onlyIgnoredTraps');
             const targetsFilterChanged = hasChanged(this.props.params, newProps.params, 'onlyIgnoredTargets');
             const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||
                 hasChanged(this.props.params, newProps.params, 'sitesPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderSites');
+            const trapsTableChanged = hasChanged(this.props.params, newProps.params, 'trapsPage') ||
+                hasChanged(this.props.params, newProps.params, 'trapsPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderTraps');
             const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
                 hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderTargets');
@@ -102,9 +113,15 @@ class VectorContainer extends Component {
 
             if ((dateChanged && newProps.params.sites) ||
                 (userChanged && newProps.params.sites) ||
-                (sitesFilterChanged && newProps.params.sites) ||
                 (geoChanged && newProps.params.sites) ||
                 (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map')) {
+                promises.push(fetchSites(dispatch, newProps.params));
+            }
+            if ((dateChanged && newProps.params.traps) ||
+                (userChanged && newProps.params.traps) ||
+                (trapsFilterChanged && newProps.params.traps) ||
+                (geoChanged && newProps.params.traps) ||
+                (newProps.params.traps && !this.props.vectors.traps && newProps.params.tab === 'map')) {
                 promises.push(fetchTraps(dispatch, newProps.params));
             }
             if ((dateChanged && newProps.params.targets) ||
@@ -127,10 +144,17 @@ class VectorContainer extends Component {
 
             if (dateChanged ||
                 userChanged ||
-                sitesFilterChanged ||
                 geoChanged ||
                 ((sitesTableChanged || !this.props.vectors.sitesPage.list) && newProps.params.tab === 'sites')) {
-                promises.push(fetchPaginatedTraps(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage, newProps.params.orderSites));
+                promises.push(fetchPaginatedSites(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage, newProps.params.orderSites));
+            }
+
+            if (dateChanged ||
+                userChanged ||
+                trapsFilterChanged ||
+                geoChanged ||
+                ((trapsTableChanged || !this.props.vectors.trapsPage.list) && newProps.params.tab === 'traps')) {
+                promises.push(fetchPaginatedTraps(dispatch, newProps.params, newProps.params.trapsPageZize, newProps.params.trapsPage, newProps.params.orderTraps));
             }
             if (dateChanged ||
                 userChanged ||
@@ -154,9 +178,23 @@ class VectorContainer extends Component {
         this.setState({
             siteEdited: site,
         });
+        console.log('save site');
+        // const { params, dispatch } = this.props;
+        // this.props.saveSiteRequest(site).then(() => {
+        //     if (params.sites) {
+        //         fetchTraps(dispatch, params);
+        //     }
+        //     fetchPaginatedTraps(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+        // });
+    }
+
+    saveTrap(trap) {
+        this.setState({
+            trapEdited: trap,
+        });
         const { params, dispatch } = this.props;
-        this.props.saveSiteRequest(site).then(() => {
-            if (params.sites) {
+        this.props.saveTrapRequest(trap).then(() => {
+            if (params.traps) {
                 fetchTraps(dispatch, params);
             }
             fetchPaginatedTraps(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
@@ -181,8 +219,10 @@ class VectorContainer extends Component {
             <VectorElement
                 params={this.props.params}
                 saveSite={site => this.saveSite(site)}
+                saveTrap={trap => this.saveTrap(trap)}
                 saveTarget={target => this.saveTarget(target)}
                 siteEdited={this.state.siteEdited}
+                trapEdited={this.state.trapEdited}
                 targetEdited={this.state.targetEdited}
             />
         );
@@ -199,7 +239,7 @@ VectorContainer.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
-    saveSiteRequest: PropTypes.func.isRequired,
+    saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
 };
 
@@ -215,7 +255,7 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: (provinceId, zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, false, removeLoading)),
     selectZone: (zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId, removeLoading)),
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
-    saveSiteRequest: site => saveTrap(dispatch, site),
+    saveTrapRequest: site => saveTrap(dispatch, site),
     saveTargetRequest: target => saveTarget(dispatch, target),
 });
 

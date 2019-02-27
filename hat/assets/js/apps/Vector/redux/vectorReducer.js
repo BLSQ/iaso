@@ -3,9 +3,10 @@
  */
 
 export const LOAD_SITES = 'hat/vector/LOAD_SITES';
+export const LOAD_TRAPS = 'hat/vector/LOAD_TRAPS';
 export const LOAD_TARGETS = 'hat/vector/LOAD_TARGETS';
 export const LOAD_PAGINATED_SITES = 'hat/vector/LOAD_PAGINATED_SITES';
-export const LOAD_PAGINATED_NEW_SITES = 'hat/vector/LOAD_PAGINATED_NEW_SITES';
+export const LOAD_PAGINATED_TRAPS = 'hat/vector/LOAD_PAGINATED_TRAPS';
 export const LOAD_PAGINATED_TARGETS = 'hat/vector/LOAD_PAGINATED_TARGETS';
 export const LOAD_NON_ENDEMIC_VILLAGES = 'hat/vector/LOAD_NON_ENDEMIC_VILLAGES';
 export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
@@ -16,6 +17,11 @@ export const FETCH_ACTION = 'hat/vector/FETCH_ACTION';
 
 export const loadSites = payload => ({
     type: LOAD_SITES,
+    payload,
+});
+
+export const loadTraps = payload => ({
+    type: LOAD_TRAPS,
     payload,
 });
 
@@ -53,8 +59,8 @@ export const loadPaginatedSites = (datas, params) => ({
     },
 });
 
-export const loadPaginatedNewSites = (datas, params) => ({
-    type: LOAD_PAGINATED_NEW_SITES,
+export const loadPaginatedTraps = (datas, params) => ({
+    type: LOAD_PAGINATED_TRAPS,
     payload: {
         list: datas.list,
         showPagination: true,
@@ -76,10 +82,11 @@ export const loadPaginatedTargets = (datas, params) => ({
 });
 
 export const vectorActions = {
-    loadTraps: loadSites,
+    loadSites,
+    loadTraps,
     loadTargets,
-    loadPaginatedTraps: loadPaginatedSites,
-    loadPaginatedNewSites,
+    loadPaginatedTraps,
+    loadPaginatedSites,
     loadPaginatedTargets,
     loadNonEndemicVillages,
     loadEndemicVillages,
@@ -91,6 +98,7 @@ export const vectorInitialState = {
     paginatedSites: null,
     paginatedTargets: null,
     sites: null,
+    traps: null,
     newSites: null,
     targets: null,
     endemicVillages: undefined,
@@ -102,7 +110,7 @@ export const vectorInitialState = {
         count: 0,
         pages: 0,
     },
-    newSitesPage: {
+    trapsPage: {
         list: null,
         showPagination: false,
         params: {},
@@ -125,6 +133,10 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
         case LOAD_SITES: {
             const sites = action.payload;
             return { ...state, sites };
+        }
+        case LOAD_TRAPS: {
+            const traps = action.payload;
+            return { ...state, traps };
         }
         case LOAD_TARGETS: {
             const targets = action.payload;
@@ -162,13 +174,13 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
                 },
             };
         }
-        case LOAD_PAGINATED_NEW_SITES: {
+        case LOAD_PAGINATED_TRAPS: {
             const {
                 list, showPagination, params, count, pages,
             } = action.payload;
             return {
                 ...state,
-                newSitesPage: {
+                trapsPage: {
                     list,
                     showPagination,
                     params,

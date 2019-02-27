@@ -4,7 +4,7 @@ import {
     provinces,
     zones,
     aires,
-    onlyReferenceSites,
+    onlyReferenceTraps,
     onlyIgnoredTraps,
     onlyIgnoredTargets,
 } from '../../../utils/constants/filters';
@@ -23,7 +23,7 @@ const filtersVectorsSync = usersList => (
 
 const filtersVectors2 = () => (
     [
-        onlyReferenceSites(),
+        onlyReferenceTraps(),
         onlyIgnoredTraps(),
         onlyIgnoredTargets(),
     ]

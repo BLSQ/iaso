@@ -83,12 +83,10 @@ $color in $types {
     }
 }
 
-
 .map__header--filters {
     position: relative;
     z-index: 1000;
 }
-
 
 .map-container {
     background: $background-highlight-gray;
@@ -349,6 +347,7 @@ $color in $types {
     &--villages-with-case,
     &--sites,
     &--site,
+    &--traps,
     &--catches,
     &--targets {
         border: none;
@@ -409,11 +408,11 @@ $color in $types {
         border: 2px solid orange;
         background: rgba(yellow, 0.5);
     }
-    &--catches {
+    &--traps {
         width: 12px;
         height: 12px;
         border: 2px solid orange;
-        background: rgba(orange, 0.5);
+        background: rgba(yellow, 0.5);
         &--selected {
             border: 2px solid green;
             background: rgba(orange, 0.5);
@@ -422,6 +421,12 @@ $color in $types {
             border: 2px solid red;
             background: rgba(orange, 0.5);
         }
+    }
+    &--catches {
+        width: 12px;
+        height: 12px;
+        border: 2px solid orange;
+        background: rgba(orange, 0.5);
     }
     &--targets {
         &:before {
@@ -608,14 +613,15 @@ path.map-layer {
         stroke-width: $stroke-width;
     }
 }
-$highlight-stroke : 1.5;
+
+$highlight-stroke: 1.5;
 path.map-marker {
     @include marker($gray);
     &.YES {
         @include marker($official, $fill-opacity: 1, $stroke-color: black, $stroke-opacity: 1, $stroke-width: 0.2);
         &.assignedToOtherTeam {
             @include marker($official, $stroke-color: blue, $fill-opacity: 1 !important);
-            stroke-opacity:  1 !important;
+            stroke-opacity: 1 !important;
             stroke-width: $highlight-stroke;
         }
         &.assignedToCurrentTeam {
@@ -633,7 +639,8 @@ path.map-marker {
     &.NA {
         @include marker($unknown, $fill-opacity: 1);
     }
-    &.selected, &.assignedToCurrentTeam {
+    &.selected,
+    &.assignedToCurrentTeam {
         @include marker($stroke-color: $selected !important, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
         &.YES {
             fill: $official;
@@ -652,12 +659,12 @@ path.map-marker {
         @include marker($highlight, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
         &.assignedToOtherTeam {
             @include marker($highlight, $stroke-color: blue, $fill-opacity: 1 !important);
-            stroke-opacity:  1 !important;
+            stroke-opacity: 1 !important;
             stroke-width: $highlight-stroke;
         }
         &.assignedToCurrentTeam {
             @include marker($highlight, $stroke-color: $selected, $fill-opacity: 1 !important);
-            stroke-opacity:  1 !important;
+            stroke-opacity: 1 !important;
             stroke-width: $highlight-stroke;
         }
     }
@@ -668,7 +675,7 @@ path.map-marker {
         @include marker($outsideGeoloc);
     }
     &.assignedToCurrentTeam {
-        filter: drop-shadow( 5px 2px 5px #000 );
+        filter: drop-shadow( 5px 2px 5px #000);
     }
     &.assignedToOtherTeam {
         @include marker($green, $stroke-color: blue);
@@ -1088,6 +1095,7 @@ button {
 .route-map,
 .split-map,
 .village-map-container,
+.traps-map-container,
 .catches-map-container,
 .vector-map,
 .geo-scope-map {
@@ -1187,7 +1195,8 @@ button {
     }
 }
 
-.catches-map-container {
+.catches-map-container,
+.traps-map-container {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
     .map-container {
@@ -1201,7 +1210,8 @@ button {
 }
 
 @media (max-height: 950px) {
-    .catches-map-container {
+    .catches-map-container,
+    .traps-map-container {
         .map-container {
             height: 550px;
         }
@@ -1214,7 +1224,8 @@ button {
 }
 
 @media (max-height: 880px) {
-    .catches-map-container {
+    .catches-map-container,
+    .traps-map-container {
         .map-container {
             height: 450px;
         }
@@ -1227,7 +1238,8 @@ button {
 }
 
 @media (max-height: 750px) {
-    .catches-map-container {
+    .catches-map-container,
+    .traps-map-container {
         .map-container {
             height: 400px;
         }
@@ -1269,7 +1281,8 @@ button {
 
 $filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
 #planning-map {
-    .leaflet-custom-pane-markers-pane, .leaflet-custom-pane-highlight-pane {
+    .leaflet-custom-pane-markers-pane,
+    .leaflet-custom-pane-highlight-pane {
         svg {
             filter: $filter;
         }

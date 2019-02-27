@@ -17,7 +17,7 @@ from .team import TeamViewSet
 from .village import VillageViewSet
 from .qc_check_stats import QCCheckStatsViewSet
 from .traps import TrapsViewSet
-from .new_sites import NewSitesViewSet
+from .sites import SitesViewSet
 from .targets import TargetsViewSet
 from .metrics import MetricsViewSet
 from .teststats import TestStatsViewSet
@@ -54,8 +54,7 @@ router.register(r"qctests", QCTestsViewSet, base_name="qctests")
 router.register(r"checks", QCChecksViewSet, base_name="checks")
 router.register(r"qccheckstats", QCCheckStatsViewSet, base_name="qc_check_stats")
 router.register(r"traps", TrapsViewSet, base_name="traps")
-router.register(r"sites", TrapsViewSet, base_name="traps_named_as_site")  #for compatibility reason, after a refactor
-router.register(r"newsites", NewSitesViewSet, base_name="newsites")
+router.register(r"sites", SitesViewSet, base_name="sites")
 router.register(r"targets", TargetsViewSet, base_name="targets")
 router.register(r"catches", CatchesViewSet, base_name="catches")
 router.register(r"metrics", MetricsViewSet, base_name="metrics")

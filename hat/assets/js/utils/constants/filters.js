@@ -554,19 +554,19 @@ const habitats = (formatMessage, messages, habitatsList) => (
         },
         label: {
             id: 'main.label.habitats',
-            defaultMessage: 'Habitats (sites uniquement)',
+            defaultMessage: 'Habitats (pièges uniquement)',
         },
         type: 'select',
     }
 );
 
-const onlyReferenceSites = () => (
+const onlyReferenceTraps = () => (
     {
-        name: 'onlyReferenceSites',
-        urlKey: 'onlyReferenceSites',
+        name: 'onlyReferenceTraps',
+        urlKey: 'onlyReferenceTraps',
         label: {
-            id: 'main.label.onlyReferenceSites',
-            defaultMessage: 'Sites de références',
+            id: 'main.label.onlyReferenceTraps',
+            defaultMessage: 'Pièges de références',
         },
         type: 'checkbox',
     }
@@ -578,7 +578,7 @@ const onlyIgnoredTraps = () => (
         urlKey: 'onlyIgnoredTraps',
         label: {
             id: 'main.label.onlyIgnoredTraps',
-            defaultMessage: 'Sites ignorés',
+            defaultMessage: 'Pièges ignorés',
         },
         type: 'checkbox',
     }
@@ -798,7 +798,7 @@ export {
     onlyDupes,
     users,
     habitats,
-    onlyReferenceSites,
+    onlyReferenceTraps,
     onlyIgnoredTraps,
     onlyIgnoredTargets,
     medecine,

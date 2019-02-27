@@ -26,7 +26,7 @@ class ShowCatchesComponent extends Component {
         super(props);
         this.state = {
             showModale: props.showModale,
-            site: props.site,
+            trap: props.trap,
             currentTab: 'map',
             catchesColumns: catchesColumns(props.intl.formatMessage, MESSAGES),
         };
@@ -39,14 +39,14 @@ class ShowCatchesComponent extends Component {
     componentWillReceiveProps(nextProps) {
         this.setState({
             showModale: nextProps.showModale,
-            site: nextProps.site,
+            trap: nextProps.trap,
         });
     }
 
 
     render() {
         const {
-            site,
+            trap,
             currentTab,
         } = this.state;
         const {
@@ -66,8 +66,8 @@ class ShowCatchesComponent extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.catches.title" defaultMessage="Déploiements sur le site" />:
-                    {' '}{site.name}
+                    <FormattedMessage id="vector.modale.catches.title" defaultMessage="Déploiements sur le piège" />:
+                    {' '}{trap.name}
                 </div>
                 <section className="edit-modal large extra">
                     <TabsComponent
@@ -93,7 +93,7 @@ class ShowCatchesComponent extends Component {
                                 <ul className="map__option__list legend">
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--site" />
-                                        <FormattedMessage id="vector.modale.catches.legend.site" defaultMessage="Site" />
+                                        <FormattedMessage id="vector.modale.catches.legend.trap" defaultMessage="Piège" />
                                     </li>
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--catches" />
@@ -105,7 +105,7 @@ class ShowCatchesComponent extends Component {
                         <div className="catches-map-container">
                             <CatchesMap
                                 baseLayer={baseCatchLayer}
-                                site={site}
+                                trap={trap}
                                 getShape={type => this.props.getShape(type)}
                             />
                         </div>
@@ -122,7 +122,7 @@ class ShowCatchesComponent extends Component {
                                 onRowClicked={() => { }}
                                 multiSort={false}
                                 reduxPage={{
-                                    list: site.catches,
+                                    list: trap.catches,
                                 }}
                                 fetchDatas={false}
                                 defaultPath="map"
@@ -148,14 +148,14 @@ class ShowCatchesComponent extends Component {
     }
 }
 ShowCatchesComponent.defaultProps = {
-    site: {},
+    trap: {},
 };
 ShowCatchesComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    site: PropTypes.object,
+    trap: PropTypes.object,
     getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,

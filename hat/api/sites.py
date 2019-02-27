@@ -6,7 +6,7 @@ from rest_framework.authentication import BasicAuthentication
 from django.http import JsonResponse
 
 
-class NewSitesViewSet(viewsets.ViewSet):
+class SitesViewSet(viewsets.ViewSet):
 
     permission_required = [
         'menupermissions.x_vectorcontrol'
@@ -28,7 +28,7 @@ class NewSitesViewSet(viewsets.ViewSet):
                     "longitude": 4.3506015,
                     "altitude": 5.0,
                     "accuracy": 15.0,
-                    "catches": [
+                    "traps": [
                         {
                             "id": 1,
                             "name": "Piège",
@@ -65,7 +65,7 @@ class NewSitesViewSet(viewsets.ViewSet):
                     "longitude": 4.3506015,
                     "altitude": 5.0,
                     "accuracy": 15.0,
-                    "catches": [
+                    "traps": [
                         {
                             "id": 3,
                             "name": "Piège 3",

@@ -6,6 +6,38 @@ import { loadActions } from '../../../redux/load';
 const req = require('superagent');
 
 
+export const fetchSites = (dispatch, params) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        province_id,
+        zs_id,
+        as_id,
+    } = params;
+    let url = `/api/sites?from=${dateFrom}&to=${dateTo}`;
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    return req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedSites(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching sites', err);
+        });
+};
+
 export const fetchTraps = (dispatch, params) => {
     const {
         dateFrom,
@@ -40,14 +72,6 @@ export const fetchTraps = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
-    req
-        .get('/api/newsites')
-        .then((result) => {
-            dispatch(vectorActions.loadPaginatedNewSites(result.body, params));
-        })
-        .catch((err) => {
-            console.error('Error when fetching new sites', err);
-        });
     return req
         .get(url)
         .then((result) => {
@@ -96,6 +120,41 @@ export const fetchTargets = (dispatch, params) => {
         .catch((err) => {
             console.error('Error when fetching targets', err);
         });
+};
+
+export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        province_id,
+        zs_id,
+        as_id,
+    } = params;
+    let url = `/api/sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    if (order) {
+        url += `&order=${order}`;
+    }
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    return (req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedSites(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching paginated sites', err);
+        }));
 };
 
 export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {

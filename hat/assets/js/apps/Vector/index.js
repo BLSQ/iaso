@@ -27,9 +27,10 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/targets/:targets)(/endemicVillages/:endemicVillages)' +
             '(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
+            '(/trapsPage/:trapsPage)(/trapsPageSize/:trapsPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
-            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlyReferenceSites/:onlyReferenceSites)' +
+            '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
+            '(/habitats/:habitats)(/onlyReferenceTraps/:onlyReferenceTraps)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
             '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
             component={VectorContainer}

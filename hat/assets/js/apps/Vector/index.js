@@ -24,7 +24,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
     const routes = [
         <Route
             path={'/map/dateFrom/:dateFrom/dateTo/:dateTo(/sites/:sites)' +
-            '(/targets/:targets)(/endemicVillages/:endemicVillages)' +
+            '(/traps/:traps)(/targets/:targets)(/endemicVillages/:endemicVillages)' +
             '(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/trapsPage/:trapsPage)(/trapsPageSize/:trapsPageSize)' +

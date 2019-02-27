@@ -31,7 +31,7 @@ export const fetchSites = (dispatch, params) => {
     return req
         .get(url)
         .then((result) => {
-            dispatch(vectorActions.loadPaginatedSites(result.body, params));
+            dispatch(vectorActions.loadSites(result.body.list, params)); // TO CHANGE WHEN REAL API
         })
         .catch((err) => {
             console.error('Error when fetching sites', err);

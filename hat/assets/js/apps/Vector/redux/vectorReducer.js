@@ -99,7 +99,6 @@ export const vectorInitialState = {
     paginatedTargets: null,
     sites: null,
     traps: null,
-    newSites: null,
     targets: null,
     endemicVillages: undefined,
     nonEndemicVillages: undefined,

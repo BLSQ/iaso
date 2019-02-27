@@ -55,7 +55,7 @@ export const MESSAGES = defineMessages({
         id: 'vectors.label.road',
     },
     cluster_title: {
-        defaultMessage: 'Regroupement des sites',
+        defaultMessage: 'Regroupement des pièges',
         id: 'vectors.labels.cluster_title',
     },
 });
@@ -531,6 +531,12 @@ export const itemsToShow = params => [
         defaultMessage: 'Sites',
         isActive: params.sites === 'true',
         iconClass: 'map__option__icon--sites',
+    },
+    {
+        id: 'traps',
+        defaultMessage: 'Pièges',
+        isActive: params.traps === 'true',
+        iconClass: 'map__option__icon--traps',
     },
     {
         id: 'targets',

@@ -7,6 +7,7 @@ import moment from 'moment';
 import L from 'leaflet';
 import {
     renderSitesPopup,
+    renderTrapsPopup,
     renderTargetsPopup,
     renderVillagesPopup,
 } from '../utlls/vectorMapUtils';
@@ -51,6 +52,9 @@ class VectorMapComponent extends Component {
         this.sitesGroup = new L.FeatureGroup();
         this.map.addLayer(this.sitesGroup);
 
+        this.trapsGroup = new L.FeatureGroup();
+        this.map.addLayer(this.trapsGroup);
+
         this.targetsGroup = new L.FeatureGroup();
         this.map.addLayer(this.targetsGroup);
 
@@ -84,8 +88,11 @@ class VectorMapComponent extends Component {
             if (hasChanged(prevProps, this.props, 'endemicVillages')) {
                 this.updateVillages(true);
             }
-            if (hasChanged(prevProps, this.props, 'sites') || this.props.withCluster !== prevProps.withCluster) {
+            if (hasChanged(prevProps, this.props, 'sites')) {
                 this.updateSites();
+            }
+            if (hasChanged(prevProps, this.props, 'traps') || this.props.withCluster !== prevProps.withCluster) {
+                this.updateTraps();
             }
             if (hasChanged(prevProps, this.props, 'targets')) {
                 this.updateTargets();
@@ -127,7 +134,6 @@ class VectorMapComponent extends Component {
             intl: {
                 formatMessage,
             },
-            withCluster,
         } = this.props;
 
         const markersSites = L.markerClusterGroup({
@@ -137,31 +143,9 @@ class VectorMapComponent extends Component {
         this.sitesGroup.clearLayers();
 
         sites.map((site) => {
-            let iconClass = 'small';
-            let iconSize = 30;
-            if (site.latest_catch && !withCluster) {
-                const totalFlies = site.latest_catch.male_count +
-                    site.latest_catch.female_count +
-                    site.latest_catch.unknown_count;
-                if ((totalFlies >= 10) && (totalFlies < 100)) {
-                    iconClass = 'medium';
-                    iconSize = 40;
-                }
-                if (totalFlies >= 100) {
-                    iconClass = 'large';
-                    iconSize = 50;
-                }
-                if ((site.latest_catch.collect_date &&
-                    moment(site.latest_catch.collect_date).isBefore(moment().subtract(6, 'months')))) {
-                    iconClass += ' warning';
-                }
-            }
-            if (!site.latest_catch && !withCluster) {
-                iconClass += ' alert';
-            }
             const siteMarker = L.marker(
                 [site.latitude, site.longitude],
-                { icon: renderDivIcon(withCluster ? '' : '', `sites ${iconClass}`, iconSize) },
+                { icon: renderDivIcon('', 'sites small', 30) },
             );
             siteMarker.on('click', (event) => {
                 const popUp = event.target.getPopup();
@@ -193,17 +177,94 @@ class VectorMapComponent extends Component {
                     this.updateTooltipSmall();
                 })
                 .bindPopup();
-            if (withCluster) {
-                markersSites.addLayer(siteMarker);
-            } else {
-                siteMarker.addTo(this.sitesGroup);
-            }
+            markersSites.addLayer(siteMarker);
 
             return true;
         });
         this.sitesGroup.addLayer(markersSites);
     }
 
+    updateTraps() {
+        const {
+            traps,
+            intl: {
+                formatMessage,
+            },
+            withCluster,
+        } = this.props;
+        const markersTraps = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), 'traps', 40),
+        });
+        this.trapsGroup.clearLayers();
+
+        traps.map((trap) => {
+            let iconClass = 'small';
+            let iconSize = 30;
+            if (trap.latest_catch && !withCluster) {
+                const totalFlies = trap.latest_catch.male_count +
+                trap.latest_catch.female_count +
+                trap.latest_catch.unknown_count;
+                if ((totalFlies >= 10) && (totalFlies < 100)) {
+                    iconClass = 'medium';
+                    iconSize = 40;
+                }
+                if (totalFlies >= 100) {
+                    iconClass = 'large';
+                    iconSize = 50;
+                }
+                if ((trap.latest_catch.collect_date &&
+                    moment(trap.latest_catch.collect_date).isBefore(moment().subtract(6, 'months')))) {
+                    iconClass += ' warning';
+                }
+            }
+            if (!trap.latest_catch && !withCluster) {
+                iconClass += ' alert';
+            }
+            const trapMarker = L.marker(
+                [trap.latitude, trap.longitude],
+                { icon: renderDivIcon('', `traps ${iconClass}`, iconSize) },
+            );
+            trapMarker.on('click', (event) => {
+                const popUp = event.target.getPopup();
+                this.props.selectMarker(trap.id, 'traps')
+                    .then((response) => {
+                        this.setState({ editedItem: response });
+                        setTimeout(() => {
+                            const editButton = document.getElementById('edit-button');
+                            const catchesButton = document.getElementById('catches-button');
+                            if (editButton) {
+                                editButton.addEventListener('click', () => {
+                                    this.props.editItem(editButton.dataset.type, this.state.editedItem);
+                                    this.map.closePopup();
+                                });
+                            }
+                            if (catchesButton) {
+                                catchesButton.addEventListener('click', () => {
+                                    this.props.displayCatches(this.state.editedItem);
+                                });
+                            }
+                        }, 500);
+                        popUp.setContent(renderTrapsPopup(response, formatMessage));
+                    });
+            })
+                .on('mouseover', () => {
+                    this.updateTooltipSmall(trap);
+                })
+                .on('mouseout', () => {
+                    this.updateTooltipSmall();
+                })
+                .bindPopup();
+            if (withCluster) {
+                markersTraps.addLayer(trapMarker);
+            } else {
+                trapMarker.addTo(this.trapsGroup);
+            }
+
+            return true;
+        });
+        this.trapsGroup.addLayer(markersTraps);
+    }
     updateTargets() {
         const {
             targets,
@@ -314,7 +375,7 @@ class VectorMapComponent extends Component {
 
     fitToBounds() {
         const { map } = this;
-        const group = new L.FeatureGroup([this.sitesGroup, this.targetsGroup, this.endemicVillagesGroup, this.nonEndemicVillagesGroup]);
+        const group = new L.FeatureGroup([this.sitesGroup, this.trapsGroup, this.targetsGroup, this.endemicVillagesGroup, this.nonEndemicVillagesGroup]);
         defaultFitToBound(map, group.getBounds(), 13);
     }
 
@@ -362,6 +423,7 @@ VectorMapComponent.propTypes = {
     selectMarker: PropTypes.func.isRequired,
     baseLayer: PropTypes.string.isRequired,
     sites: PropTypes.arrayOf(PropTypes.object).isRequired,
+    traps: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
     nonEndemicVillages: PropTypes.object.isRequired,
     endemicVillages: PropTypes.object.isRequired,

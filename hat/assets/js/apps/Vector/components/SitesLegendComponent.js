@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 
 const MESSAGES = defineMessages({
@@ -30,9 +29,9 @@ class SitesLegendComponent extends Component {
         return (
             <div className="map__option">
                 <span className="map__option__header">
-                    <FormattedMessage id="vector.label.siteLegend.title" defaultMessage="Légende des sites" />
+                    <FormattedMessage id="vector.label.siteLegend.title" defaultMessage="Légende des Pièges" />
                 </span>
-                <ul className="map__option__list">
+                <ul className="map__option__list large">
                     <li
                         className="interactive map__option__list__item initial-white-space"
                     >

@@ -110,11 +110,11 @@ class EditSiteComponent extends Component {
                                     </li>
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--traps--selected" />
-                                        <FormattedMessage id="vector.modal.legend.selectedTraps" defaultMessage="Pièges sélectionnés" />
+                                        <FormattedMessage id="vector.modal.legend.selectedTraps" defaultMessage="Piège sélectionné" />
                                     </li>
                                     <li className="map__option__list__item">
                                         <i className="map__option__icon--traps--not-selected" />
-                                        <FormattedMessage id="vector.modal.legend.notSelectedTraps" defaultMessage="Pièges non sélectionnés" />
+                                        <FormattedMessage id="vector.modal.legend.notSelectedTraps" defaultMessage="Piège non sélectionné" />
                                     </li>
                                 </ul>
                             </div>

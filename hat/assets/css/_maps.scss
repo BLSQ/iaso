@@ -227,6 +227,21 @@ $color in $types {
 .map__option__list {
     @include reset-list-style;
     clear: both;
+    &.large {
+        .map__option__list__item {
+            height: 20px;
+            i {
+                position: relative;
+                top: -2px;
+                &.map__option__icon--medium {
+                    top: -5px;
+                }
+                &.map__option__icon--large {
+                    top: -6px;
+                }
+            }
+        }
+    }
 }
 
 .map__option__list__item {
@@ -270,7 +285,7 @@ $color in $types {
 
 .map__option__icon {
     &--warning {
-        border-color: rgba(orange, 0.5);
+        border-color: rgba(yellow, 0.5);
         position: relative;
         &:after {
             width: 12px;
@@ -396,7 +411,7 @@ $color in $types {
     }
     &--sites {
         &:before {
-            background: rgba(orange, 0.5);
+            background: rgba($gray, 1);
         }
         &:after {
             background: yellow;
@@ -405,14 +420,10 @@ $color in $types {
     &--site {
         width: 12px;
         height: 12px;
-        border: 2px solid orange;
+        border: 2px solid $gray;
         background: rgba(yellow, 0.5);
     }
     &--traps {
-        width: 12px;
-        height: 12px;
-        border: 2px solid orange;
-        background: rgba(yellow, 0.5);
         &--selected {
             border: 2px solid green;
             background: rgba(orange, 0.5);
@@ -420,6 +431,12 @@ $color in $types {
         &--not-selected {
             border: 2px solid red;
             background: rgba(orange, 0.5);
+        }
+        &:before {
+            background: rgba(orange, 0.5);
+        }
+        &:after {
+            background: orange;
         }
     }
     &--catches {

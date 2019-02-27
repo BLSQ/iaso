@@ -40,7 +40,7 @@ export class Vector extends Component {
         this.state = {
             itemsToShow: itemsToShow(props.params),
             sites: [],
-            newSites: [],
+            traps: [],
             targets: [],
             nonEndemicVillages: {},
             endemicVillages: {},
@@ -382,14 +382,18 @@ export class Vector extends Component {
                                     change={(type, key) => changeLayer(type, key)}
                                 />
                             </div>
-                            <div className="margin-top">
-                                <ClusterSwitchComponent
-                                    withCluster={withCluster}
-                                    change={withCl => changeCluster(withCl)}
-                                    message={formatMessage(MESSAGES.cluster_title)}
-                                />
-                            </div>
                             {
+                                params.traps &&
+                                <div className="margin-top">
+                                    <ClusterSwitchComponent
+                                        withCluster={withCluster}
+                                        change={withCl => changeCluster(withCl)}
+                                        message={formatMessage(MESSAGES.cluster_title)}
+                                    />
+                                </div>
+                            }
+                            {
+                                params.traps &&
                                 !withCluster &&
                                 <div className="margin-top">
                                     <SitesLegendComponent />

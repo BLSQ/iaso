@@ -61,8 +61,8 @@ class SitesViewSet(viewsets.ViewSet):
                     "responsable": "cgerard",
                     "is_reference": True,
                     "ignore": False,
-                    "latitude": 50.8267692,
-                    "longitude": 4.3506015,
+                    "latitude": 50.8297692,
+                    "longitude": 4.3556015,
                     "altitude": 5.0,
                     "accuracy": 15.0,
                     "traps": [

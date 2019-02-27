@@ -28,7 +28,7 @@ class NewSitesViewSet(viewsets.ViewSet):
                     "longitude": 4.3506015,
                     "altitude": 5.0,
                     "accuracy": 15.0,
-                    "traps": [
+                    "catches": [
                         {
                             "id": 1,
                             "name": "Piège",
@@ -65,7 +65,7 @@ class NewSitesViewSet(viewsets.ViewSet):
                     "longitude": 4.3506015,
                     "altitude": 5.0,
                     "accuracy": 15.0,
-                    "traps": [
+                    "catches": [
                         {
                             "id": 3,
                             "name": "Piège 3",

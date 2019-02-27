@@ -17,9 +17,9 @@ admin.site.register(Trap, TrapAdmin)
 
 class CatchAdmin(admin.GeoModelAdmin):
     date_hierarchy = 'collect_date'
-    formfield_overrides = {
-       PointField: {'widget': OSMWidget},
-    }
+    # formfield_overrides = {
+    #    PointField: {'widget': OSMWidget},
+    # }
 
 
 admin.site.register(Catch, CatchAdmin)

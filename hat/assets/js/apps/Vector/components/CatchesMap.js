@@ -159,7 +159,13 @@ class CatchesMap extends Component {
             site.catches.map((catchItem) => {
                 const catchCircle = L.marker(
                     [catchItem.latitude, catchItem.longitude],
-                    { icon: renderDivIcon('', 'catches small', 30) },
+                    {
+                        icon: renderDivIcon(
+                            '',
+                            `catches small ${catchItem.selected !== undefined && catchItem.selected ? 'selected' : ''} ${catchItem.selected !== undefined && !catchItem.selected ? 'not-selected' : ''}`,
+                            30,
+                        ),
+                    },
                 );
                 catchCircle.addTo(this.catchesGroup)
                     .on('click', (event) => {

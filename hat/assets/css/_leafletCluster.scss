@@ -80,6 +80,12 @@
     div {
         background-color: orange;
     }
+    &.selected {
+        background-color: rgba(green, 0.8);
+    }
+    &.not-selected {
+        background-color: rgba(red, 0.8);
+    }
 }
 
 .marker-cluster,

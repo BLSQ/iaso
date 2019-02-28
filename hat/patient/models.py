@@ -317,7 +317,7 @@ class Treatment(models.Model):
             "otherIssues": self.other_issues,
             "event": self.event,
             "incomplete_reasons": self.incomplete_reasons,
-            "location": json.loads(self.location.geojson),
+            "location": json.loads(self.location.geojson) if self.location and self.location.geojson else None,
             "device": self.device.as_dict() if self.device else None,
             "death_moment": self.death_moment,
             "complete": self.complete,

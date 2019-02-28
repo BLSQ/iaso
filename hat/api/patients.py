@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db.models import Q, OuterRef, Exists, Count
 from django.http import HttpResponse, StreamingHttpResponse
@@ -259,6 +260,7 @@ class PatientsViewSet(viewsets.ViewSet):
                     Q(mothers_surname__contains=search_mother_name)
                 )
 
+        queryset_unprefetched = queryset
         # performance tweak for rendering of the patients
         queryset = queryset.prefetch_related("origin_area")
         queryset = queryset.prefetch_related("origin_area__ZS")
@@ -290,31 +292,40 @@ class PatientsViewSet(viewsets.ViewSet):
             filename = 'patients'
             if xlsx_format:
                 filename = filename + '.xlsx'
-                queryset_treatments = Treatment.objects.filter(patient__in=queryset).order_by(*["patient_id", "index"])
-                queryset_tests = Test.objects.filter(form__normalized_patient__in=queryset).order_by("form__normalized_patient__id")
+                queryset = queryset.annotate(test_ids=ArrayAgg("case__test"))  # avoid fetching it from get_row
+                queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment"))  # avoid fetching it from get_row
+                queryset_treatments = Treatment.objects\
+                    .filter(patient__in=queryset_unprefetched)\
+                    .order_by(*["patient_id", "index"])\
+                    .select_related("device__last_user__profile__team")
+                queryset_tests = Test.objects\
+                    .filter(form__normalized_patient__in=queryset)\
+                    .order_by("form__normalized_patient_id")\
+                    .select_related("form")\
+                    .select_related("village")\
+                    .select_related("form__normalized_patient")\
+                    .select_related("image")\
+                    .select_related("video")
+
                 response = HttpResponse(
                     generate_xlsx(
                         [
                             'Patients',
                             'Tests',
                             'Traitements',
-                        ],[
+                        ], [
                             columns,
                             columns_tests,
                             columns_treatments,
-                        ],[
+                        ], [
                             queryset,
                             queryset_tests,
                             queryset_treatments,
                         ], [
                             get_row,
-                            get_row_tests,
+                            lambda row: get_row_tests(row, request),
                             get_row_treatments,
-                        ], [
-                            False,
-                            True,
-                            False,
-                        ], request),
+                        ]),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:
@@ -336,9 +347,9 @@ class PatientsViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         new_patient = get_object_or_404(Patient, pk=pk)
-        is_authorized = ((not new_patient.origin_area) \
-            or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id, new_patient.origin_area.ZS.id, new_patient.origin_area.id)) \
-                and ((request.user.has_perm("menupermissions.x_anonymous" and not request.user.is_superuser) or request.user.is_superuser))
+        is_authorized = ((not new_patient.origin_area)
+            or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id, new_patient.origin_area.ZS.id, new_patient.origin_area.id))\
+            and (request.user.has_perm("menupermissions.x_anonymous" and not request.user.is_superuser) or request.user.is_superuser)
         if is_authorized:
             new_patient.post_name = request.data.get('post_name', '')
             new_patient.last_name = request.data.get('last_name', '')

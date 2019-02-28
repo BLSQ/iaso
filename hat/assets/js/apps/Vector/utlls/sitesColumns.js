@@ -1,5 +1,6 @@
 import moment from 'moment';
 import React from 'react';
+import Select from 'react-select';
 import { FormattedMessage } from 'react-intl';
 
 const sitesColumns = (formatMessage, element) => (
@@ -37,7 +38,24 @@ const sitesColumns = (formatMessage, element) => (
                 defaultMessage: 'Responsable',
                 id: 'main.label.responsible',
             }),
-            accessor: 'responsible',
+            Cell: (settings) => {
+                console.log('settings', settings);
+                const truc = (
+                    <section>
+                        <Select
+                            clearable
+                            simpleValue
+                            name="responsibleId"
+                            value={settings.original.responsible_id}
+                            placeholder="--"
+                            options={element.props.profiles.map(profile =>
+                                ({ label: profile.user__username, value: profile.id }))}
+                            onChange={value => element.selectResponsible(settings.original, value)}
+                        />
+                    </section>
+                );
+                return truc;
+            },
         },
         {
             Header: formatMessage({

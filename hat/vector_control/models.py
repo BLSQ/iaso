@@ -86,13 +86,14 @@ class Site(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'responsible': responsible,
+            'responsible_id': self.responsible.profile.id if self.responsible else None,
             'creator': creator,
             'uuid': self.uuid,
             'latitude': self.location.y,
             'longitude': self.location.x,
             'altitude': self.location.z,
             'accuracy': self.accuracy,
-            'ignore': self.ignore
+            'ignore': self.ignore,
         }
 
         # include fields that were added through annotate
@@ -104,7 +105,6 @@ class Site(models.Model):
         return res
 
     def as_location(self, additional_fields):
-
         res = {
             'id': self.id,
             'name': self.name,

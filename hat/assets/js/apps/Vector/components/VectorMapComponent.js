@@ -149,7 +149,7 @@ class VectorMapComponent extends Component {
             );
             siteMarker.on('click', (event) => {
                 const popUp = event.target.getPopup();
-                this.props.selectMarker(site.id, 'sites')
+                this.props.selectMarker(site.id, 'new_sites')
                     .then((response) => {
                         this.setState({ editedItem: response });
                         setTimeout(() => {

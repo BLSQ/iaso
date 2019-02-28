@@ -14,6 +14,7 @@ import {
     fetchHabitats,
     saveTrap,
     saveTarget,
+    saveSite,
     fetchPaginatedSites,
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
@@ -81,7 +82,7 @@ class VectorContainer extends Component {
         const { dispatch } = this.props;
         if (!newProps.load.loading && !this.props.load.loading) {
             const promises = [];
-
+            console.log('newProps', newProps);
             if (newProps.params.province_id !== this.props.params.province_id) {
                 promises.push(this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id, false));
             } else if (newProps.params.zs_id !== this.props.params.zs_id) {
@@ -178,14 +179,13 @@ class VectorContainer extends Component {
         this.setState({
             siteEdited: site,
         });
-        console.log('save site');
-        // const { params, dispatch } = this.props;
-        // this.props.saveSiteRequest(site).then(() => {
-        //     if (params.sites) {
-        //         fetchTraps(dispatch, params);
-        //     }
-        //     fetchPaginatedTraps(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
-        // });
+        const { params, dispatch } = this.props;
+        this.props.saveSiteRequest(site).then(() => {
+            if (params.sites) {
+                fetchSites(dispatch, params);
+            }
+            fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+        });
     }
 
     saveTrap(trap) {
@@ -241,6 +241,7 @@ VectorContainer.propTypes = {
     selectArea: PropTypes.func.isRequired,
     saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
+    saveSiteRequest: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -255,7 +256,8 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: (provinceId, zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, false, removeLoading)),
     selectZone: (zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId, removeLoading)),
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
-    saveTrapRequest: site => saveTrap(dispatch, site),
+    saveTrapRequest: trap => saveTrap(dispatch, trap),
+    saveSiteRequest: site => saveSite(dispatch, site),
     saveTargetRequest: target => saveTarget(dispatch, target),
 });
 

@@ -8,8 +8,8 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.geo.models import Province, ZS, AS
-from hat.users.models import get_user_geo_list, is_authorized_user
-from hat.vector_control.models import Site, APIImport, Catch, Trap
+from hat.users.models import get_user_geo_list, is_authorized_user, Profile
+from hat.vector_control.models import Site, APIImport, Trap
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
@@ -62,7 +62,7 @@ class SitesViewSet(viewsets.ViewSet):
         if to_date is not None:
             queryset = queryset.filter(created_at__date__lte=to_date)
         if user_ids is not None:
-            queryset = queryset.filter(user_id__in=user_ids.split(","))
+            queryset = queryset.filter(creator_id__in=user_ids.split(","))
 
         if request.user.profile.province_scope.count() != 0:
             user_prov_subquery = Province.objects.filter(id__in=get_user_geo_list(request.user, 'province_scope')).distinct() \
@@ -233,9 +233,14 @@ class SitesViewSet(viewsets.ViewSet):
         is_authorized = (province is None and zone is None and area is None) or ((province is not None and zone is not None and area is not None) and is_authorized_user(request.user, province.id, zone.id, area.id))
 
         if is_authorized:
+            profile_id = request.data.get('responsible_id', None)
+            if profile_id:
+                profile = get_object_or_404(Profile, pk=profile_id)
+                new_site.responsible = profile.user
             new_site.name = request.data.get('name', '')
             new_site.description = request.data.get('description', '')
             new_site.ignore = request.data.get('ignore', False)
+
             new_site.save()
             return Response(new_site.as_dict())
         else:

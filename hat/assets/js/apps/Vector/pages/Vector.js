@@ -195,7 +195,7 @@ export class Vector extends Component {
     }
 
     editSite(data) {
-        this.props.getDetail(data.id, 'sites').then((res) => {
+        this.props.getDetail(data.id, 'new_sites').then((res) => {
             const newState = {
                 showCatchesModale: false,
                 showEditSiteModale: true,
@@ -207,6 +207,11 @@ export class Vector extends Component {
         });
     }
 
+    selectResponsible(site, responsibleId) {
+        const s = site;
+        s.responsible_id = responsibleId;
+        this.props.saveSite(s);
+    }
 
     displayCatches(data = undefined, fetchDetails = false) {
         const newState = {

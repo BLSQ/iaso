@@ -245,7 +245,7 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                     </tr>
                                     <tr>
                                         <td>
-                                            ${formatMessage({ defaultMessage: 'Piège sélectioné', id: 'vector.labels.is_selected' })}
+                                            ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
                                         </td>
                                         <td>
                                         ${trap.is_selected ?

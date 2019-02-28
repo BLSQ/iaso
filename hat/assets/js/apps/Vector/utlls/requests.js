@@ -15,7 +15,7 @@ export const fetchSites = (dispatch, params) => {
         zs_id,
         as_id,
     } = params;
-    let url = `/api/sites?from=${dateFrom}&to=${dateTo}`;
+    let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
         url += `&userId=${userId}`;
     }
@@ -131,7 +131,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         zs_id,
         as_id,
     } = params;
-    let url = `/api/sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
         url += `&order=${order}`;
     }
@@ -294,6 +294,7 @@ export const fetchProfiles = dispatch => req
         console.error('Error when fetching profiles', err);
     });
 
+
 export const fetchHabitats = dispatch => req
     .get('/api/habitats')
     .then((result) => {
@@ -314,6 +315,18 @@ export const saveTrap = (dispatch, trap) => {
             dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while saving trap ${err}`))));
+};
+
+export const saveSite = (dispatch, site) => {
+    dispatch(loadActions.startLoading());
+    return (req
+        .put(`/api/new_sites/${site.id}/`)
+        .set('Content-Type', 'application/json')
+        .send(site)
+        .then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch(err => (console.error(`Error while saving site ${err}`))));
 };
 
 export const saveTarget = (dispatch, target) => {

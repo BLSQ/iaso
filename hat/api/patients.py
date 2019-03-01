@@ -108,7 +108,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(test_with_date_in_range=True)
 
         if teams:
-            teams_cases = CaseView.objects\
+            teams_cases = Case.objects\
                 .filter(normalized_team_id__in=teams.split(","))\
                 .filter(normalized_patient_id=OuterRef('id'))
             queryset = queryset\
@@ -116,7 +116,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(teams_cases=True)
 
         if coordination_id:
-            coord_cases = CaseView.objects\
+            coord_cases = Case.objects\
                 .filter(normalized_team__coordination_id__in=coordination_id.split(","))\
                 .filter(normalized_patient_id=OuterRef('id'))
             queryset = queryset\
@@ -140,7 +140,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
 
         if confirmation_result is not None:
-            confirmed_cases = CaseView.objects\
+            confirmed_cases = Case.objects\
                 .filter(confirmed_case=True)\
                 .filter(normalized_patient_id=OuterRef('id'))
             queryset = queryset\

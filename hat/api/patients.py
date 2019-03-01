@@ -326,7 +326,13 @@ class PatientsViewSet(viewsets.ViewSet):
                             get_row,
                             lambda row: get_row_tests(row, request),
                             get_row_treatments,
-                        ]),
+                        ],
+                        column_sizes=[
+                            columns_sizes,
+                            columns_tests_sizes,
+                            columns_treatments_sizes,
+                        ]
+                    ),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:

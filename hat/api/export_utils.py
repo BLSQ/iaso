@@ -6,10 +6,17 @@ from django.conf import settings
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 
-def write_sheet(wb, sheet_name, columns, queryset, get_row, with_link):
+def write_sheet(wb, sheet_name, columns, queryset, get_row, with_link, column_sizes):
     ws = wb.add_worksheet(sheet_name)
 
     bold = wb.add_format({'bold': True})
+    if column_sizes is None:
+        column_sizes = [len(col) for col in columns]
+
+    for i, size in enumerate(column_sizes):
+        xl_col = xl_rowcol_to_cell(0, i)
+        ws.set_column(xl_col + ':' + xl_col, size)
+
     row_num = 1
     ws.write_row('A' + str(row_num), columns, bold)
 
@@ -31,13 +38,15 @@ def write_sheet(wb, sheet_name, columns, queryset, get_row, with_link):
                     ws.write(cell, column)
 
 
-def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False):
+def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False, column_sizes=None):
     output = io.BytesIO()
     wb = xlsxwriter.Workbook(output, {'constant_memory': True})
     if isinstance(sheet_name, list):
         i = 0
         for sheet in sheet_name:
-            write_sheet(wb, sheet, columns[i], queryset[i], get_row[i], with_link[i] if with_link is list else with_link)
+            write_sheet(wb, sheet, columns[i], queryset[i], get_row[i],
+                        with_link[i] if with_link is list else with_link,
+                        column_sizes[i] if column_sizes else None)
             i += 1
     else:
         write_sheet(wb, sheet_name, columns, queryset, get_row, with_link)

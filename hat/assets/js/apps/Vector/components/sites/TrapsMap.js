@@ -6,12 +6,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
-import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from '../../../../components/leaflet/zoom-bar';
+
 import {
-    renderCatchesPopup,
     renderSitesPopup,
     renderTrapsPopup,
 } from '../../utlls/vectorMapUtils';
@@ -171,6 +169,16 @@ class TrapsMap extends Component {
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
                         popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
+                        setTimeout(() => {
+                            const selectedSelect = document.getElementById('selected-trap-select');
+
+                            if (selectedSelect) {
+                                selectedSelect.addEventListener('change', (e) => {
+                                    console.log('selectedSelect value', e.target.checked);
+                                    this.props.saveTrap(trapItem, e.target.checked);
+                                });
+                            }
+                        }, 500);
                     })
                     .bindPopup()
                     .on('mouseover', () => {
@@ -254,6 +262,7 @@ class TrapsMap extends Component {
 TrapsMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     site: PropTypes.object.isRequired,
+    saveTrap: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
 };

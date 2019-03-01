@@ -125,6 +125,7 @@ class EditSiteComponent extends Component {
                                 baseLayer={baseCatchLayer}
                                 site={site}
                                 getShape={type => this.props.getShape(type)}
+                                saveTrap={this.props.saveTrap}
                             />
                         </div>
                     </div>
@@ -167,6 +168,7 @@ EditSiteComponent.propTypes = {
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
+    saveTrap: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

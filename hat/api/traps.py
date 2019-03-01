@@ -283,6 +283,7 @@ class TrapsViewSet(viewsets.ViewSet):
             new_trap.habitat = request.data.get('habitat', 'unknown')
             new_trap.is_reference = request.data.get('is_reference', False)
             new_trap.ignore = request.data.get('ignore', False)
+            new_trap.is_selected = request.data.get('is_selected', False)
             new_trap.save()
             return Response(new_trap.as_dict())
         else:

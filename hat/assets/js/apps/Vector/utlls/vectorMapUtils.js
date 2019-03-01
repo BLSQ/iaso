@@ -248,8 +248,12 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                             ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
                                         </td>
                                         <td>
-                                        ${trap.is_selected ?
-        formatMessage({ defaultMessage: 'oui', id: 'vector.labels.yes' }) : formatMessage({ defaultMessage: 'non', id: 'vector.labels.yes' })}
+                                            <input
+                                                name="isGoing"
+                                                type="checkbox"
+                                                checked={trap.is_selected}
+                                                id="selected-trap-select"
+                                                /> 
                                         </td>
                                     </tr>
                                 </tbody>

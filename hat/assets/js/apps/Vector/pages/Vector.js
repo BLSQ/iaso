@@ -301,6 +301,7 @@ export class Vector extends Component {
                             })}
                         site={this.state.siteEdited}
                         saveSite={site => saveSite(site)}
+                        saveTrap={(trap, selectedValue) => { console.log('selectedValue', selectedValue); const t = trap; t.is_selected = selectedValue; saveTrap(t); }}
                         profiles={profiles}
                     />
                 }

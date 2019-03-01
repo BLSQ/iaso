@@ -6,10 +6,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
-import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from '../../../components/leaflet/zoom-bar';
 import {
     renderCatchesPopup,
     renderTrapsPopup,
@@ -254,6 +252,7 @@ CatchesMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     trap: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
+    saveTrap: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
 };
 

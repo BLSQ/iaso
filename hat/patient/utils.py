@@ -11,28 +11,22 @@ columns_tests = ['Identifiant', 'ID Patient', 'Type', 'Index', 'Résultats', 'Eq
 columns_treatments = ['Identifiant', 'ID Patient', 'Index', 'Médicament', 'Date de début', 'Date de fin',
                         "Cause de l'incomplétude", 'Evenements indésirables', 'Complet', 'Succés', 'Perdu', 'ID Tablette', 'Utilisateur tablette', 'Equipe Tablette']
 
-def get_row(patient, request = None):
+
+def get_row(patient):
     pdict = patient.as_dict()
     dead = "--"
-    if (pdict["dead"]):
+    if pdict["dead"]:
         dead = patient.death_date.strftime("%d-%m-%Y")
-    treatments = ""
-    treatmentsList = patient.treatment_set.all()
-    if not treatmentsList:
+    treatments_list = patient.treatment_ids
+    if not patient.treatment_ids:
         treatments = "--"
     else:
-        for treatment in treatmentsList:
-            if treatments == "":
-                treatments = str(treatment.id)
-            else:
-                treatments = treatments + ", " + str(treatment.id)
-    tests = "--"
-    for caseItem in patient.case_set.all():
-        for test in caseItem.test_set.all():
-            if tests == "--":
-                tests = str(test.id)
-            else:
-                tests = tests + ", " + str(test.id)
+        treatments = ", ".join(map(str, treatments_list))
+    tests = patient.test_ids  # annotate ArrayAgg("case__test")
+    if tests is None:
+        tests = '--'
+    else:
+        tests = ", ".join(map(str, tests))
 
     return [
         pdict["id"],
@@ -51,8 +45,8 @@ def get_row(patient, request = None):
         treatments,
     ]
 
-def get_row_tests(test, request = None):
-    caseItem = test.form
+
+def get_row_tests(test, request=None):
     return [
         test.id,
         test.form.normalized_patient.id,
@@ -73,7 +67,8 @@ def get_row_tests(test, request = None):
         test.form.test_pl_comments if (test.form.test_pl_comments and test.type == 'PL') else '/'
     ]
 
-def get_row_treatments(treatment, request = None):
+
+def get_row_treatments(treatment):
     tdict = treatment.as_dict()
     return [
         tdict["id"],

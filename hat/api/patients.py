@@ -292,8 +292,9 @@ class PatientsViewSet(viewsets.ViewSet):
             filename = 'patients'
             if xlsx_format:
                 filename = filename + '.xlsx'
-                queryset = queryset.annotate(test_ids=ArrayAgg("case__test"))  # avoid fetching it from get_row
-                queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment"))  # avoid fetching it from get_row
+                # avoid fetching those from get_row
+                queryset = queryset.annotate(test_ids=ArrayAgg("case__test", distinct=True))
+                queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment", distinct=True))
                 queryset_treatments = Treatment.objects\
                     .filter(patient__in=queryset_unprefetched)\
                     .order_by(*["patient_id", "index"])\

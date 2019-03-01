@@ -21,12 +21,12 @@ def get_row(patient):
     if not patient.treatment_ids:
         treatments = "--"
     else:
-        treatments = ", ".join(map(str, treatments_list))
+        treatments = ", ".join([str(t) for t in treatments_list if t is not None])
     tests = patient.test_ids  # annotate ArrayAgg("case__test")
     if tests is None:
         tests = '--'
     else:
-        tests = ", ".join(map(str, tests))
+        tests = ", ".join([str(t) for t in tests if t is not None])
 
     return [
         pdict["id"],

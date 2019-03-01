@@ -17,6 +17,7 @@
             font-weight: normal;
         }
     }
+
     table {
         margin-top: 10px;
         table-layout: fixed;
@@ -26,9 +27,18 @@
                 &:first-child {
                     width: 100px;
                 }
-            }
-            td {
                 white-space: nowrap;
+            }
+        }
+    }
+}
+
+.edit-modal {
+    table {
+
+        tr {
+            td {
+                overflow: visible;
             }
         }
     }

@@ -38,24 +38,7 @@ const sitesColumns = (formatMessage, element) => (
                 defaultMessage: 'Responsable',
                 id: 'main.label.responsible',
             }),
-            Cell: (settings) => {
-                console.log('settings', settings);
-                const truc = (
-                    <section>
-                        <Select
-                            clearable
-                            simpleValue
-                            name="responsibleId"
-                            value={settings.original.responsible_id}
-                            placeholder="--"
-                            options={element.props.profiles.map(profile =>
-                                ({ label: profile.user__username, value: profile.id }))}
-                            onChange={value => element.selectResponsible(settings.original, value)}
-                        />
-                    </section>
-                );
-                return truc;
-            },
+            accessor: 'responsible',
         },
         {
             Header: formatMessage({

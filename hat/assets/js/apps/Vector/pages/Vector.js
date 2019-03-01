@@ -301,6 +301,7 @@ export class Vector extends Component {
                             })}
                         site={this.state.siteEdited}
                         saveSite={site => saveSite(site)}
+                        profiles={profiles}
                     />
                 }
                 {

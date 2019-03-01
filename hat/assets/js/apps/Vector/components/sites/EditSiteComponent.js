@@ -91,6 +91,7 @@ class EditSiteComponent extends Component {
                         <SiteInfos
                             site={site}
                             updateSiteField={(key, value) => this.updateSiteField(key, value)}
+                            profiles={this.props.profiles}
                         />
                     }
                     <div className={`${currentTab !== 'traps' ? 'hidden-opacity' : ''} third-container small-filters`} >
@@ -165,6 +166,7 @@ EditSiteComponent.propTypes = {
     getShape: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
+    profiles: PropTypes.array.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

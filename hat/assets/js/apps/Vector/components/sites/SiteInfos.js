@@ -3,10 +3,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
+import Select from 'react-select';
 
 class SiteInfos extends Component {
     render() {
-        const { updateSiteField, site } = this.props;
+        const { updateSiteField, site, profiles } = this.props;
         return (
             <section>
                 <table>
@@ -26,6 +27,26 @@ class SiteInfos extends Component {
                                     className={(!site.name || site.name === '') ? 'form-error' : ''}
                                     value={site.name}
                                     onChange={event => updateSiteField('name', event.currentTarget.value)}
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage
+                                    id="main.label.responsible"
+                                    defaultMessage="Responsable"
+                                />
+                            </th>
+                            <td>
+                                <Select
+                                    clearable
+                                    simpleValue
+                                    name="responsibleId"
+                                    value={site.responsible_id}
+                                    placeholder="--"
+                                    options={profiles.map(profile =>
+                                        ({ label: profile.user__username, value: profile.id }))}
+                                    onChange={value => updateSiteField('responsible_id', value)}
                                 />
                             </td>
                         </tr>
@@ -92,6 +113,7 @@ class SiteInfos extends Component {
 SiteInfos.propTypes = {
     site: PropTypes.object.isRequired,
     updateSiteField: PropTypes.func.isRequired,
+    profiles: PropTypes.array.isRequired,
 };
 
 const SiteInfosWithIntl = injectIntl(SiteInfos);

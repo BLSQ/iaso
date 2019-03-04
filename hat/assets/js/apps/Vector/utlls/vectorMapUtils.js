@@ -251,7 +251,7 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                             <input
                                                 name="isGoing"
                                                 type="checkbox"
-                                                checked={trap.is_selected}
+                                                ${trap.is_selected === true ? 'checked' : ''}
                                                 id="selected-trap-select"
                                                 /> 
                                         </td>

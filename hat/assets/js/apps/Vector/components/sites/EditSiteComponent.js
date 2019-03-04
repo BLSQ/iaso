@@ -9,6 +9,7 @@ import TrapsMap from './TrapsMap';
 import LayersComponent from '../../../../components/LayersComponent';
 import { getRequest } from '../../../../utils/fetchData';
 import { mapActions } from '../../redux/mapReducer';
+import { vectorActions } from '../../redux/vectorReducer';
 
 
 const MESSAGES = defineMessages({
@@ -68,6 +69,9 @@ class EditSiteComponent extends Component {
                 baseCatchLayer,
             },
             changeLayer,
+            trapEdited,
+            isTrapUpdated,
+            trapUpdated,
         } = this.props;
         return (
             <ReactModal
@@ -126,6 +130,9 @@ class EditSiteComponent extends Component {
                                 site={site}
                                 getShape={type => this.props.getShape(type)}
                                 saveTrap={this.props.saveTrap}
+                                trapEdited={trapEdited}
+                                isTrapUpdated={isTrapUpdated}
+                                trapUpdated={trapUpdated}
                             />
                         </div>
                     </div>
@@ -157,11 +164,13 @@ class EditSiteComponent extends Component {
 }
 EditSiteComponent.defaultProps = {
     site: undefined,
+    trapEdited: undefined,
 };
 EditSiteComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     site: PropTypes.object,
+    trapEdited: PropTypes.object,
     intl: PropTypes.object.isRequired,
     saveSite: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
@@ -169,16 +178,20 @@ EditSiteComponent.propTypes = {
     map: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
     saveTrap: PropTypes.func.isRequired,
+    isTrapUpdated: PropTypes.bool.isRequired,
+    trapUpdated: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key, true)),
+    trapUpdated: isUpdated => dispatch(vectorActions.trapUpdated(isUpdated)),
 });
 
 const MapStateToProps = state => ({
     map: state.map,
+    isTrapUpdated: state.vectors.isTrapUpdated,
 });
 
 

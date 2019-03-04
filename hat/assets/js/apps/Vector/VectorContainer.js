@@ -19,6 +19,7 @@ import {
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
+import { vectorActions } from './redux/vectorReducer';
 
 
 class VectorContainer extends Component {
@@ -82,7 +83,6 @@ class VectorContainer extends Component {
         const { dispatch } = this.props;
         if (!newProps.load.loading && !this.props.load.loading) {
             const promises = [];
-            console.log('newProps', newProps);
             if (newProps.params.province_id !== this.props.params.province_id) {
                 promises.push(this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id, false));
             } else if (newProps.params.zs_id !== this.props.params.zs_id) {
@@ -194,6 +194,7 @@ class VectorContainer extends Component {
         });
         const { params, dispatch } = this.props;
         this.props.saveTrapRequest(trap).then(() => {
+            this.props.trapUpdated(true);
             if (params.traps) {
                 fetchTraps(dispatch, params);
             }
@@ -215,6 +216,7 @@ class VectorContainer extends Component {
     }
 
     render() {
+        console.log('this.state.trapEdited', this.state.trapEdited);
         return (
             <VectorElement
                 params={this.props.params}
@@ -242,6 +244,7 @@ VectorContainer.propTypes = {
     saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
+    trapUpdated: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -259,6 +262,7 @@ const MapDispatchToProps = dispatch => ({
     saveTrapRequest: trap => saveTrap(dispatch, trap),
     saveSiteRequest: site => saveSite(dispatch, site),
     saveTargetRequest: target => saveTarget(dispatch, target),
+    trapUpdated: isUpdated => dispatch(vectorActions.trapUpdated(isUpdated)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(VectorContainer);

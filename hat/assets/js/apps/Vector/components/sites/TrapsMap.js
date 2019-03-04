@@ -74,9 +74,11 @@ class TrapsMap extends Component {
         this.map.addLayer(this.siteGroup);
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
-        this.updateCatches();
+        this.updateSites();
+        this.updateTraps();
         this.fitToBounds();
     }
+
 
     componentDidUpdate(prevProps) {
         const { map } = this;
@@ -88,7 +90,12 @@ class TrapsMap extends Component {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
             if (hasChanged(prevProps, this.props, 'site')) {
-                this.updateCatches();
+                this.updateSites();
+                this.updateTraps();
+            }
+            if (this.props.isTrapUpdated && this.props.trapEdited) {
+                this.props.trapUpdated(false);
+                this.updateTraps(false, this.props.trapEdited);
             }
         });
     }
@@ -123,14 +130,13 @@ class TrapsMap extends Component {
 * UPDATE STATE
 *************************************************************************** */
 
-    updateCatches() {
+    updateSites() {
         const {
             site,
             intl: {
                 formatMessage,
             },
         } = this.props;
-        this.trapsGroup.clearLayers();
         this.siteGroup.clearLayers();
         const siteCircle = L.marker(
             [site.latitude, site.longitude],
@@ -153,6 +159,15 @@ class TrapsMap extends Component {
             .on('mouseout', () => {
                 this.updateTooltipSmall();
             });
+    }
+    updateTraps(fiitToBound = true, trapEdited = this.props.trapEdited) {
+        const {
+            site,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        this.trapsGroup.clearLayers();
         if (site.traps) {
             site.traps.map((trapItem) => {
                 const trapCircle = L.marker(
@@ -174,7 +189,6 @@ class TrapsMap extends Component {
 
                             if (selectedSelect) {
                                 selectedSelect.addEventListener('change', (e) => {
-                                    console.log('selectedSelect value', e.target.checked);
                                     this.props.saveTrap(trapItem, e.target.checked);
                                 });
                             }
@@ -192,10 +206,15 @@ class TrapsMap extends Component {
                     .on('mouseout', () => {
                         this.updateTooltipSmall();
                     });
+                if (trapEdited && (trapEdited.id === trapItem.id)) {
+                    trapCircle.fire('click');
+                }
 
                 return true;
             });
-            this.fitToBounds();
+            if (fiitToBound) {
+                this.fitToBounds();
+            }
         }
     }
 
@@ -259,12 +278,18 @@ class TrapsMap extends Component {
     }
 }
 
+TrapsMap.defaultProps = {
+    trapEdited: undefined,
+};
 TrapsMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     site: PropTypes.object.isRequired,
     saveTrap: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
+    trapEdited: PropTypes.object,
+    trapUpdated: PropTypes.func.isRequired,
+    isTrapUpdated: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(TrapsMap);

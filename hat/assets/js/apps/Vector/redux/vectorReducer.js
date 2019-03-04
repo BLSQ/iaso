@@ -13,6 +13,7 @@ export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
 export const LOAD_PROFILES = 'hat/vector/LOAD_PROFILES';
 export const LOAD_HABITATS = 'hat/vector/LOAD_HABITATS';
 export const FETCH_ACTION = 'hat/vector/FETCH_ACTION';
+export const IS_TRAP_UPDATED = 'hat/vector/IS_TRAP_UPDATED';
 
 
 export const loadSites = payload => ({
@@ -46,7 +47,10 @@ export const loadHabitats = payload => ({
     type: LOAD_HABITATS,
     payload,
 });
-
+export const trapUpdated = payload => ({
+    type: IS_TRAP_UPDATED,
+    payload,
+});
 
 export const loadPaginatedSites = (datas, params) => ({
     type: LOAD_PAGINATED_SITES,
@@ -92,6 +96,7 @@ export const vectorActions = {
     loadEndemicVillages,
     loadProfiles,
     loadHabitats,
+    trapUpdated,
 };
 
 export const vectorInitialState = {
@@ -125,6 +130,7 @@ export const vectorInitialState = {
     },
     profiles: [],
     habitats: [],
+    isTrapUpdated: false,
 };
 
 export const vectorReducer = (state = vectorInitialState, action = {}) => {
@@ -156,6 +162,10 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
         case LOAD_HABITATS: {
             const habitats = action.payload;
             return { ...state, habitats };
+        }
+        case IS_TRAP_UPDATED: {
+            const isTrapUpdated = action.payload;
+            return { ...state, isTrapUpdated };
         }
 
         case LOAD_PAGINATED_SITES: {

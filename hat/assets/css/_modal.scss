@@ -240,7 +240,8 @@
         margin-bottom: $padding-unit / 2;
     }
     input[type="checkbox"] {
-        margin-top: 15px;
+        margin: 5px 0;
+        width: 100%;
     }
     &.large {
         width: 550px;

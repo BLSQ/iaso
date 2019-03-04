@@ -4,7 +4,6 @@ import * as selection from './selection';
 
 describe('Microplanning selection redux', () => {
     describe('actions', () => {
-
         it('should create the display item action', () => {
             assert.deepEqual(
                 selection.displayItem(),
@@ -29,7 +28,6 @@ describe('Microplanning selection redux', () => {
         });
 
         it('should only accept positive buffer sizes', () => {
-
             assert.deepEqual(
                 reducer(undefined, { type: selection.HIGHLIGHT_BUFFER_SIZE_CHANGE, payload: -1 }),
                 initialState,
@@ -37,3 +35,4 @@ describe('Microplanning selection redux', () => {
         });
     });
 });
+

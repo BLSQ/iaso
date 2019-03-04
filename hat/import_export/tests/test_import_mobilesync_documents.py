@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from hat.cases.models import Case, RES_POSITIVE
@@ -25,7 +26,7 @@ def load_document(filename):
 
 
 class ImportMobileSyncDocuments(TestCase):
-    fixtures = ['locations', 'users']
+    fixtures = ['locations', 'users', 'teams']
 
     def tearDown(self):
         super().tearDown()
@@ -34,6 +35,8 @@ class ImportMobileSyncDocuments(TestCase):
     # This test contains most of the general document assertions
     def test_import_regular_neg_rdt(self):
         part_regular_neg_rdt, device_db = load_document("regular_neg_rdt.json")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=part_regular_neg_rdt).json()
@@ -62,6 +65,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.date.isoformat(), "2019-01-03T13:52:13.297000+00:00")
         self.assertEquals(rdt_test.village.name, "Kisala")
         self.assertEquals(rdt_test.device.id, device_db.id)
+        self.assertEquals(rdt_test.team.name, "Ateam")
         self.assertEquals(rdt_test.location, "SRID=4326;POINT (4.4009156 50.8367366)")
 
         # Patient

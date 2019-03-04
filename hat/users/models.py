@@ -154,7 +154,6 @@ class Profile(models.Model):
     :ivar Institution institution:           User institution.
     """
 
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # permissions will be handled by Django standard mechanisms based on the user permissions
     team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL)

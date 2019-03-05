@@ -38,7 +38,7 @@ class MapSelectionSummary extends Component {
                     <div className="map__selection__summary__item error-text">
                         <FormattedMessage
                             id="microplanning.selected.warning"
-                            defaultMessage="Attention la capicté dépasse la population assignée"
+                            defaultMessage="Attention la capacité dépasse la population assignée"
                         />
                     </div>
                 }

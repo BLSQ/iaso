@@ -43,25 +43,27 @@
   </head>
   <body class="menu-close">
 
+    <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
+      <span>
+      {% blocktrans %}
+      Ceci est la base de données de surveillance de la maladie du sommeil en RDC. Les données sont la propriété du Ministère de la Santé de la RDC. Aucune exploitation, dissémination ni publication ne peut être faite sur base de ces données sans autorisation écrite préalable du Ministère de la Santé.
+      {% endblocktrans %}<br/>{% blocktrans %}Les données historiques contenues dans la base sont en cours de digitalisation, et ne sont pas validées pour l’instant. Pour toute information, veuillez vous adresser au Directeur du PNLTHA.
+      {% endblocktrans %}
+      </span>
+      <i class="fa fa-times"></i>
+    </div>
+    <script>
+      if (Cookies.get('banner-closed') === 'true') {
+        document.getElementById('banner--warning').classList.toggle('no-animation');
+        document.getElementById('banner--warning').classList.toggle('closed');
+      }
+    </script>
     {% if user.is_authenticated %}
-      <div id="banner--warning" onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
-        <span>
-        {% blocktrans %}
-        Ceci est la base de données de surveillance de la maladie du sommeil en RDC. Les données sont la propriété du Ministère de la Santé de la RDC. Aucune exploitation, dissémination ni publication ne peut être faite sur base de ces données sans autorisation écrite préalable du Ministère de la Santé.
-        {% endblocktrans %}<br/>{% blocktrans %}Les données historiques contenues dans la base sont en cours de digitalisation, et ne sont pas validées pour l’instant. Pour toute information, veuillez vous adresser au Directeur du PNLTHA.
-        {% endblocktrans %}
-        </span>
-        <i class="fa fa-times"></i>
-      </div>
       <script>
         window.anonymised = false;
         {% if perms.menupermissions.x_anonymous and not user.is_superuser %}
           window.anonymised = true;
         {% endif %}
-        if (Cookies.get('banner-closed') === 'true') {
-          document.getElementById('banner--warning').classList.toggle('no-animation');
-          document.getElementById('banner--warning').classList.toggle('closed');
-        }
       </script>
     {% endif %}
     {% if environment == 'staging' %}

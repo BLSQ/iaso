@@ -245,21 +245,26 @@ class CasesViewSet(viewsets.ViewSet):
                     .filter(has_uploaded_pictures=False)
 
         if videos:
-            has_uploaded_videos = Test.objects\
+            has_videos = Test.objects\
                 .filter(form_id=OuterRef("id"))\
                 .filter(type__in=TYPES_WITH_VIDEOS)\
-                .filter(video_id__isnull=False)
+                .filter(video_filename__isnull=False)
             if videos == 'with_videos':
-                queryset = queryset.filter(CaseAbstract.FILTER_ANY_VIDEO_FILENAME)
+                queryset = queryset.annotate(has_videos=Exists(has_videos))\
+                    .filter(has_videos=True)
             elif videos == 'without_videos':
-                queryset = queryset.filter(CaseAbstract.FILTER_NO_VIDEO_FILENAME)
+                queryset = queryset.annotate(has_videos=Exists(has_videos))\
+                    .filter(has_videos=False)
             elif videos == 'with_videos_uploaded':
+                has_uploaded_videos = has_videos \
+                    .filter(video_id__isnull=False)
                 queryset = queryset.annotate(has_uploaded_videos=Exists(has_uploaded_videos))\
                     .filter(has_uploaded_videos=True)
             elif videos == 'without_videos_uploaded':  # but with videos:
-                queryset = queryset.filter(CaseAbstract.FILTER_ANY_VIDEO_FILENAME)
-                queryset = queryset.annotate(has_uploaded_videos=Exists(has_uploaded_videos))\
-                    .filter(has_uploaded_videos=False)
+                has_unuploaded_videos = has_videos\
+                    .filter(video_id__isnull=True)
+                queryset = queryset.annotate(has_unuploaded_videos=Exists(has_unuploaded_videos))\
+                    .filter(has_unuploaded_videos=True)
 
         # Performance prefetch
         queryset = queryset.prefetch_related("normalized_AS")

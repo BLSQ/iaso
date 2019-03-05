@@ -39,7 +39,7 @@ export class Vector extends Component {
         super(props);
         this.state = {
             itemsToShow: itemsToShow(props.params),
-            sites: [],
+            sites: [], // the sites
             traps: [],
             targets: [],
             nonEndemicVillages: {},

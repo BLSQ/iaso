@@ -6,7 +6,7 @@
     align-content: center;
     background: rgba(0, 0, 0, 0.5) !important;
     >div {
-        top: 15% !important;
+        top: 15vh !important;
     }
 }
 
@@ -371,5 +371,11 @@
                 }
             }
         }
+    }
+}
+
+.ReactModal__Overlay {
+    >div.img-modal {
+        top: auto !important;
     }
 }

@@ -74,6 +74,7 @@ class Patient(models.Model):
             "village": village,
             "dead": self.dead,
             "death_date": self.death_date,
+            "updated_at": self.updated_at,
         }
 
         # include fields that were added through annotate

@@ -6,6 +6,7 @@ const LOAD_CURRENT_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DETAIL';
 const LOAD_CURRENT_DUPLICATE_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DUPLICATE_DETAIL';
 const LOAD_TEST_MAPPING = 'hat/patient/detail/LOAD_TEST_MAPPING';
 const SET_PATIENTS_LIST = 'hat/patient/detail/SET_PATIENTS_LIST';
+const EMPTY_PATIENTS_LIST = 'hat/patient/detail/EMPTY_PATIENTS_LIST';
 const FETCH_ACTION = 'hat/patient/detail/FETCH_ACTION';
 const SAVE_ACTION = 'hat/patient/detail/SAVE_ACTION';
 const GET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/GET_MANUAL_MERGED_PATIENT';
@@ -43,6 +44,10 @@ const setPatientList = (list, showPagination, params, count, pages) => ({
         count,
         pages,
     },
+});
+
+const emptyPatientList = () => ({
+    type: EMPTY_PATIENTS_LIST,
 });
 
 const fetchTestMapping = (dispatch) => {
@@ -172,6 +177,7 @@ export const savePatient = (dispatch, patient) => {
         .set('Content-Type', 'application/json')
         .send(patient)
         .then((result) => {
+            dispatch(emptyPatientList());
             dispatch(setErrorOnUpdated(false));
             dispatch(setIsUpdated(true));
             dispatch(loadCurrentDetail(result.body));
@@ -247,6 +253,15 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
                     params,
                     count,
                     pages,
+                },
+            };
+        }
+        case EMPTY_PATIENTS_LIST: {
+            return {
+                ...state,
+                patientsPage: {
+                    ...state.patientsPage,
+                    list: null,
                 },
             };
         }

@@ -63,7 +63,7 @@ class CasesViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         village_ids = request.GET.get("village_id", None)
         years = request.GET.get("years", None)
-        teams = request.GET.get("team_id", None)
+        teams = request.GET.get("teams", None)
 
         coordination_ids = request.GET.get("coordination_id", None)
         from_date = request.GET.get("date_from", None)

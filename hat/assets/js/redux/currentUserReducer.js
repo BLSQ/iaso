@@ -23,7 +23,7 @@ const fetchCurrentUserInfos = (dispatch) => {
         .then((result) => {
             dispatch(setUserPermissions(result.body));
             req
-                .get('/api/currentuser')
+                .get('/api/currentuser/')
                 .then((userResult) => {
                     dispatch(setCurrentUser(userResult.body));
                 })

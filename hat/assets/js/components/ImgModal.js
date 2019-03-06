@@ -2,8 +2,28 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 import ReactDOM from 'react-dom';
+import ReactResizeDetector from 'react-resize-detector';
+import { FormattedMessage } from 'react-intl';
 
-import getImgProps from '../utils/images';
+const getImgProps = (imageObj, maxWidth, maxHeight) => {
+    let newWidth = maxWidth;
+    let newHeight = maxHeight;
+    const orientation = imageObj.height > imageObj.width ? 'portrait' : 'landscape';
+    const tempHeight = imageObj.height / (imageObj.width / maxWidth);
+    if ((imageObj.height > imageObj.width) || (tempHeight > maxHeight)) {
+        newWidth = imageObj.width / (imageObj.height / maxHeight);
+        newHeight = maxHeight;
+    } else {
+        newHeight = tempHeight;
+        newWidth = maxWidth;
+    }
+    return {
+        width: newWidth,
+        height: newHeight,
+        orientation,
+    };
+};
+
 
 const modalStyle = {
     content: {
@@ -39,15 +59,22 @@ class ImgModal extends React.Component {
     }
 
     componentDidMount() {
-        const domImg = document.querySelector(`img[src='${this.props.imgPath}']`);
+        this.onResize();
+    }
+
+    onResize() {
+        const newImg = new Image();
         const windowWidth = document.documentElement.clientWidth;
         const windowHeight = document.documentElement.clientHeight;
-        ReactDOM.unmountComponentAtNode(domImg);
-        domImg.onload = () => {
+        console.log('windowWidth', windowWidth);
+        console.log('windowHeight', windowHeight);
+        ReactDOM.unmountComponentAtNode(newImg);
+        newImg.onload = () => {
             this.setState({
-                imgProps: getImgProps(domImg, windowWidth * 0.9, windowHeight * 0.9),
+                imgProps: getImgProps(newImg, windowWidth * 0.9, (windowHeight * 0.9) - 60),
             });
         };
+        newImg.src = this.props.imgPath;
     }
 
 
@@ -72,26 +99,39 @@ class ImgModal extends React.Component {
         };
         if (showModal) {
             return (
-                <ReactModal
-                    isOpen
-                    shouldCloseOnOverlayClick
-                    onRequestClose={() => this.toggleModal()}
-                    style={modalStyle}
-                    className="img-modal"
-                >
-                    <img
-                        src={imgPath}
-                        alt={altText || imgPath}
-                        style={imgStyle}
-                        className={imgProps.orientation}
-                    />
-                </ReactModal>
+                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()}>
+                    <ReactModal
+                        isOpen
+                        shouldCloseOnOverlayClick
+                        onRequestClose={() => this.toggleModal()}
+                        style={modalStyle}
+                        className="img-modal"
+                    >
+                        <img
+                            src={imgPath}
+                            alt={altText || imgPath}
+                            style={imgStyle}
+                            className={imgProps.orientation}
+                        />
+
+                        <div className="align-right">
+                            <button
+                                className="button margin-top"
+                                onClick={() => this.toggleModal()}
+                            >
+                                <i className="fa fa-arrow-left" />
+                                <FormattedMessage id="main.label.close" defaultMessage="fermer" />
+                            </button>
+                        </div>
+                    </ReactModal>
+                </ReactResizeDetector>
             );
         }
         return (
             <img
                 src={imgPath}
                 alt={altText || imgPath}
+                className={imgProps.orientation}
                 onClick={() => this.toggleModal()}
                 style={{
                     width: imgProps.orientation === 'landscape' ? '100%' : 'auto',

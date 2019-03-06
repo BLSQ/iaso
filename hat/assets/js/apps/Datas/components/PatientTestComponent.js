@@ -113,7 +113,7 @@ class PatientTestComponent extends React.Component {
                                 <th>
                                     <FormattedMessage id="patientsCasesTests.image" defaultMessage="Photo" />
                                 </th>
-                                <td className={(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''}>
+                                <td className={`${(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''} ${test.image ? 'align-center' : ''}`}>
                                     {
                                         !test.image_filename && !test.image &&
                                         <span>

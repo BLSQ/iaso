@@ -1,0 +1,48 @@
+[
+  {
+    "model": "users.team",
+    "pk": 101,
+    "fields": {
+      "name": "Ateam",
+      "capacity": 10000,
+      "UM": true,
+      "aliases": [
+        "Agence tous risques"
+      ],
+      "created_at": "2016-09-14T10:37:41.949Z"
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$xwa6nkMr3bYg$kQQbvZShdE/7Rwdtvpa+ysOkJfLuwn/vV1KCG7QNJ6o=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "hannibal",
+      "first_name": "Hannibal",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-14T10:41:25Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 51,
+    "fields": {
+      "team": 101,
+      "user": [
+        "hannibal"
+      ]
+    }
+  }
+]

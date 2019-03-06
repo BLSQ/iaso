@@ -17,11 +17,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(sql="delete from vector_control_catch"),
         migrations.RunSQL(sql="delete from vector_control_site"),
-        migrations.RunSQL(sql="drop table vector_catch"),
-        migrations.RunSQL(sql="drop table vector_site"),
-        migrations.RunSQL(sql="drop table vector_target"),
-        migrations.RunSQL(sql="drop table vector_gpswaypoint"),
-        migrations.RunSQL(sql="drop table vector_gpsimport"),
+        migrations.RunSQL(sql="drop table if exists vector_catch"),
+        migrations.RunSQL(sql="drop table if exists vector_site"),
+        migrations.RunSQL(sql="drop table if exists vector_target"),
+        migrations.RunSQL(sql="drop table if exists vector_gpswaypoint"),
+        migrations.RunSQL(sql="drop table if exists vector_gpsimport"),
         migrations.CreateModel(
             name='Trap',
             fields=[

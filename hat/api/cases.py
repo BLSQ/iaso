@@ -302,42 +302,72 @@ class CasesViewSet(viewsets.ViewSet):
             if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
-                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sex', 'Age', 'CATT', 'RDT',
-                'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction Noeud Lymph.', 'Sang frais', 'MAECT', 'PL']
+                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'CATT', 'RDT',
+                'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction\nNoeud\nLymph.', 'Sang\nfrais', 'MAECT', 'PL']
+            column_sizes = [9,         14,   6,       10,        10,                 14,
+                            14, 20,              18,    18,        18,       6,      4,     7,      7,
+                            7, 7, 7,   7,     8,                         7,             7,       7]
 
             filename = 'cases'
+            queryset = queryset.values(
+                "id",
+                "normalized_team_name",
+                "normalized_year",
+                "source",
+                "normalized_province_name",
+                "normalized_zs_name",
+                "normalized_as_name",
+                "AS",
+                "normalized_village__name",
+                "village",
+                "normalized_patient__last_name",
+                "normalized_patient__post_name",
+                "normalized_patient__first_name",
+                "normalized_patient__sex",
+                "normalized_patient__age",
+                "test_catt",
+                "test_rdt",
+                "test_pg",
+                "test_ctcwoo",
+                "test_ge",
+                "test_lcr",
+                "test_lymph_node_puncture",
+                "test_sf",
+                "test_maect",
+                "test_pl",
+            )
 
             def get_row(case):
-                cdict = case.as_dict()
                 return [
-                        cdict["id"],
-                        cdict["normalized_team_name"],
-                        cdict["normalized_year"],
-                        cdict["source"],
-                        cdict["location"].get('province'),
-                        cdict["location"].get('ZS'),
-                        cdict["location"].get('AS'),
-                        cdict["location"].get('village'),
-                        cdict["patient"].get('last_name'),
-                        cdict["patient"].get('post_name'),
-                        cdict["patient"].get('first_name'),
-                        cdict["patient"].get('sex'),
-                        cdict["patient"].get('age'),
-                        testResultString(case.test_catt),
-                        testResultString(case.test_rdt),
-                        testResultString(case.test_pg),
-                        testResultString(case.test_ctcwoo),
-                        testResultString(case.test_ge),
-                        testResultString(case.test_lcr),
-                        testResultString(case.test_lymph_node_puncture),
-                        testResultString(case.test_sf),
-                        testResultString(case.test_maect),
-                        testResultString(case.test_pl)
+                        case["id"],
+                        case["normalized_team_name"],
+                        case["normalized_year"],
+                        case["source"],
+                        case["normalized_province_name"],
+                        case["normalized_zs_name"],
+                        case["normalized_as_name"] if case["normalized_as_name"] else case["AS"],
+                        case["normalized_village__name"] if case["normalized_village__name"] else case["village"],
+                        case["normalized_patient__last_name"],
+                        case["normalized_patient__post_name"],
+                        case["normalized_patient__first_name"],
+                        case["normalized_patient__sex"],
+                        case["normalized_patient__age"],
+                        testResultString(case["test_catt"]),
+                        testResultString(case["test_rdt"]),
+                        testResultString(case["test_pg"]),
+                        testResultString(case["test_ctcwoo"]),
+                        testResultString(case["test_ge"]),
+                        testResultString(case["test_lcr"]),
+                        testResultString(case["test_lymph_node_puncture"]),
+                        testResultString(case["test_sf"]),
+                        testResultString(case["test_maect"]),
+                        testResultString(case["test_pl"])
                     ]
+
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
-                    generate_xlsx('Cas', columns, queryset, get_row),
+                    generate_xlsx('Cas', columns, queryset, get_row, column_sizes=column_sizes),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             elif csv_format:

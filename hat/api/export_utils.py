@@ -10,8 +10,13 @@ def write_sheet(wb, sheet_name, columns, queryset, get_row, with_link, column_si
     ws = wb.add_worksheet(sheet_name)
 
     bold = wb.add_format({'bold': True})
+    bold.set_text_wrap()
     if column_sizes is None:
         column_sizes = [len(col) for col in columns]
+
+    max_height = max([c.count("\n") for c in columns]) + 1  # Nb of lines in titles
+    ws.set_row(0, 15 * max_height, bold)  # default height is 15
+    ws.freeze_panes(1, 0)
 
     for i, size in enumerate(column_sizes):
         xl_col = xl_rowcol_to_cell(0, i)

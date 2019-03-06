@@ -212,48 +212,84 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = [
-                'ID candidat duplicat', 'Score de similarité',
-                'ID patient 1', 'Prénom patient 1', 'Nom patient 1', 'Postnom patient 1', 'Nom de la maman',
-                'Année naissance patient 1', 'AS patient 1', 'Village patient 1',
-                'ID patient 2', 'Prénom patient 2', 'Nom patient 2', 'Postnom patient 2', 'Nom de la maman',
-                'Année naissance patient 2', 'AS patient 2', 'Village patient 2',
-                'Même patient ? (O/N)',
+                'ID candidat\nduplicat', 'Score de\nsimilarité',
+                'Patient 1\nID', 'Patient 1\nPrénom', 'Patient 1\nNom', 'Patient 1\nPostnom',
+                'Patient 1\nNom de la maman', 'Patient 1\nAnnée naissance', 'Patient 1\nAS', 'Patient 1\nVillage',
+                'Patient 2\nID', 'Patient 2\nPrénom', 'Patient 2\nNom', 'Patient 2\nPostnom',
+                'Patient 2\nNom de la maman', 'Patient 2\nAnnée naissance', 'Patient 2\nAS', 'Patient 2\nVillage',
+                'Même patient?\n(O/N)',
                 ]
+            column_sizes = [
+                10, 8,
+                10, 15, 15, 15,
+                15, 8, 15, 18,
+                10, 15, 15, 15,
+                15, 8, 15, 18,
+                8
+            ]
 
             filename = 'patientduplicatepairs'
+            limited_queryset = queryset.values(
+                "id",
+                "similarity_score",
+                "patient1_id",
+                "patient1__first_name",
+                "patient1__last_name",
+                "patient1__post_name",
+                "patient1__mothers_surname",
+                "patient1__year_of_birth",
+                "patient1__origin_area__name",
+                "patient1__origin_raw_AS",
+                "patient1__origin_village__name",
+                "patient1__origin_raw_village",
+                "patient2_id",
+                "patient2__first_name",
+                "patient2__last_name",
+                "patient2__post_name",
+                "patient2__mothers_surname",
+                "patient2__year_of_birth",
+                "patient2__origin_area__name",
+                "patient2__origin_raw_AS",
+                "patient2__origin_village__name",
+                "patient2__origin_raw_village",
+            )
 
             def get_row(dupe):
                 return [
-                        dupe.id,
-                        dupe.similarity_score,
-                        dupe.patient1_id,
-                        dupe.patient1.first_name,
-                        dupe.patient1.last_name,
-                        dupe.patient1.post_name,
-                        dupe.patient1.mothers_surname,
-                        dupe.patient1.year_of_birth,
-                        dupe.patient1.origin_area.name if dupe.patient1.origin_area else dupe.patient1.origin_raw_AS,
-                        dupe.patient1.origin_village.name if dupe.patient1.origin_village else dupe.patient1.origin_raw_village,
-                        dupe.patient2_id,
-                        dupe.patient2.first_name,
-                        dupe.patient2.last_name,
-                        dupe.patient2.post_name,
-                        dupe.patient2.mothers_surname,
-                        dupe.patient2.year_of_birth,
-                        dupe.patient2.origin_area.name if dupe.patient2.origin_area else dupe.patient2.origin_raw_AS,
-                        dupe.patient2.origin_village.name if dupe.patient2.origin_village else dupe.patient2.origin_raw_village,
+                        dupe['id'],
+                        dupe['similarity_score'],
+                        dupe['patient1_id'],
+                        dupe['patient1__first_name'],
+                        dupe['patient1__last_name'],
+                        dupe['patient1__post_name'],
+                        dupe['patient1__mothers_surname'],
+                        dupe['patient1__year_of_birth'],
+                        dupe['patient1__origin_area__name']
+                        if dupe['patient1__origin_area__name'] else dupe['patient1__origin_raw_AS'],
+                        dupe['patient1__origin_village__name']
+                        if dupe['patient1__origin_village__name'] else dupe['patient1__origin_raw_village'],
+                        dupe['patient2_id'],
+                        dupe['patient2__first_name'],
+                        dupe['patient2__last_name'],
+                        dupe['patient2__post_name'],
+                        dupe['patient2__mothers_surname'],
+                        dupe['patient2__year_of_birth'],
+                        dupe['patient2__origin_area__name']
+                        if dupe['patient1__origin_area__name'] else dupe['patient1__origin_raw_AS'],
+                        dupe['patient2__origin_village__name']
+                        if dupe['patient1__origin_village__name'] else dupe['patient1__origin_raw_village'],
                         ''
                     ]
 
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
-                    generate_xlsx('Doublons', columns, queryset, get_row),
+                    generate_xlsx('Doublons', columns, limited_queryset, get_row, column_sizes=column_sizes),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    streaming_content=(iter_items(limited_queryset, Echo(), columns, get_row)),
                     content_type='text/csv',
                 )
                 filename = filename + '.csv'

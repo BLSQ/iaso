@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 import VideoComponent from '../../../components/VideoComponent';
+import ImgModal from '../../../components/ImgModal';
 
 class PatientTestComponent extends React.Component {
     constructor(props) {
@@ -23,6 +24,9 @@ class PatientTestComponent extends React.Component {
     render() {
         const {
             test, similarTest, testsMapping, currentCase,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         if (!test) {
             return null;
@@ -126,7 +130,13 @@ class PatientTestComponent extends React.Component {
                                     }
                                     {
                                         test.image &&
-                                        <img src={test.image} alt="" />
+                                        <ImgModal
+                                            imgPath={test.image}
+                                            altText={formatMessage({
+                                                defaultMessage: 'Résultat test dépistage',
+                                                id: 'main.screening.result',
+                                            })}
+                                        />
                                     }
                                 </td>
                             </tr>
@@ -287,6 +297,7 @@ PatientTestComponent.propTypes = {
     testsMapping: PropTypes.object.isRequired,
     similarTest: PropTypes.object,
     currentCase: PropTypes.object,
+    intl: PropTypes.object.isRequired,
 };
 
 const PatientTestComponentWithIntl = injectIntl(PatientTestComponent);

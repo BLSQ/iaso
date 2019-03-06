@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
+import getImgProps from '../../../utils/images';
+
 const maxValue = 800;
 
 const initiaState = {
@@ -35,24 +37,9 @@ class ImageComponent extends React.Component {
     }
 
     onImgLoaded(imageObj) {
-        let newWidth = maxValue;
-        let newHeight = maxValue;
-        let orientation = 'landscape';
-        if (imageObj.height > imageObj.width) {
-            orientation = 'portrait';
-            newWidth = imageObj.width / (imageObj.height / maxValue);
-            newHeight = maxValue;
-        } else {
-            newHeight = imageObj.height / (imageObj.width / maxValue);
-            newWidth = maxValue;
-        }
         this.setState({
             imgLoaded: true,
-            imgSize: {
-                width: newWidth,
-                height: newHeight,
-                orientation,
-            },
+            imgSize: getImgProps(imageObj, maxValue, maxValue),
         });
     }
 

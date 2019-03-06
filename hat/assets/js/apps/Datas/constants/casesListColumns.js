@@ -8,6 +8,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.normalized_year',
             }),
             accessor: 'normalized_year',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -15,6 +16,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.name',
             }),
             accessor: 'name',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -29,6 +31,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.Postnom',
             }),
             accessor: 'lastname',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -43,6 +46,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.prename',
             }),
             accessor: 'prename',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -57,6 +61,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.label.team',
             }),
             accessor: 'normalized_team_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -64,14 +69,17 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.tooltip.province',
             }),
             accessor: 'normalized_province_name',
+            className: 'small',
         },
         {
             Header: 'ZS',
             accessor: 'normalized_zs_name',
+            className: 'small',
         },
         {
             Header: 'AS',
             accessor: 'normalized_as_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -79,6 +87,7 @@ const casesListColumns = formatMessage => (
                 id: 'casesList.tooltip.village',
             }),
             accessor: 'normalized_village_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -86,12 +95,14 @@ const casesListColumns = formatMessage => (
                 id: 'main.label.source',
             }),
             accessor: 'source',
+            className: 'small',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Localisation',
                 id: 'main.label.localisation',
             }),
+            className: 'small',
             Cell: settings => (
                 <section className={`table-row-action ${!settings.original.location.normalized.village ? 'not-located' : ''}`}>
                     {

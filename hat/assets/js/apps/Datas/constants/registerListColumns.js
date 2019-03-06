@@ -1,13 +1,28 @@
 import React from 'react';
+import moment from 'moment';
 
 const registerListColumns = formatMessage => (
     [
+        {
+            Header: formatMessage({
+                defaultMessage: 'Dernière modif.',
+                id: 'register.label.updated_at',
+            }),
+            accessor: 'updated_at',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {moment(settings.original.updated_at).format('DD-MM-YYYY HH:mm')}
+                </span>
+            ),
+        },
         {
             Header: formatMessage({
                 defaultMessage: 'Nom',
                 id: 'register.label.name',
             }),
             accessor: 'last_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -15,6 +30,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.Postnom',
             }),
             accessor: 'post_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -22,6 +38,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.prename',
             }),
             accessor: 'first_name',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -29,6 +46,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.mothers_surname',
             }),
             accessor: 'mothers_surname',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -36,6 +54,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.sex',
             }),
             accessor: 'sex',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -61,6 +80,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.age',
             }),
             accessor: 'age',
+            className: 'small',
         },
         {
             Header: formatMessage({
@@ -68,6 +88,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.province',
             }),
             accessor: 'origin_area__ZS__province__name',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -83,6 +104,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.zone',
             }),
             accessor: 'origin_area__ZS_name',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -98,6 +120,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.area',
             }),
             accessor: 'origin_area__name',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {
@@ -113,6 +136,7 @@ const registerListColumns = formatMessage => (
                 id: 'register.label.village',
             }),
             accessor: 'origin_village__name',
+            className: 'small',
             Cell: settings => (
                 <span>
                     {

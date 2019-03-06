@@ -23,6 +23,9 @@ body {
             padding: 10px;
             &.small {
                 font-size: 12px;
+                .not-located {
+                    margin: -5px 0;
+                }
             }
             &.action-zone {
                 padding: 0;

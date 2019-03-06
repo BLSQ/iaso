@@ -49,7 +49,7 @@ def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False, colum
                         column_sizes[i] if column_sizes else None)
             i += 1
     else:
-        write_sheet(wb, sheet_name, columns, queryset, get_row, with_link)
+        write_sheet(wb, sheet_name, columns, queryset, get_row, with_link, column_sizes)
 
     wb.close()
 

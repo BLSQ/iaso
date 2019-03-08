@@ -4,6 +4,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString, CaseAbstract
 from hat.audit.models import log_modification, CASE_API
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
@@ -86,6 +87,7 @@ class CasesViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
+        anonymous = (request.GET.get("anonymous", "False").lower() == "true")
 
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -326,6 +328,7 @@ class CasesViewSet(viewsets.ViewSet):
                 "normalized_patient__last_name",
                 "normalized_patient__post_name",
                 "normalized_patient__first_name",
+                "normalized_patient__mothers_surname",
                 "normalized_patient__sex",
                 "normalized_patient__age",
                 "test_catt",
@@ -350,9 +353,10 @@ class CasesViewSet(viewsets.ViewSet):
                         case["normalized_zs_name"],
                         case["normalized_as_name"] if case["normalized_as_name"] else case["AS"],
                         case["normalized_village__name"] if case["normalized_village__name"] else case["village"],
-                        case["normalized_patient__last_name"],
-                        case["normalized_patient__post_name"],
-                        case["normalized_patient__first_name"],
+                        case["normalized_patient__last_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        case["normalized_patient__post_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        case["normalized_patient__first_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        case["normalized_patient__mothers_surname"] if not anonymous else ANONYMOUS_PLACEHOLDER,
                         case["normalized_patient__sex"],
                         case["normalized_patient__age"],
                         testResultString(case["test_catt"]),

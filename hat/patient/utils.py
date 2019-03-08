@@ -21,8 +21,8 @@ columns_treatments_sizes = [8, 8, 5, 12, 10, 10,
                             15, 16, 15]
 
 
-def get_row(patient):
-    pdict = patient.as_dict()
+def get_row(patient, anon=True):
+    pdict = patient.as_dict(anonymous=anon)
     dead = "--"
     if pdict["dead"]:
         dead = patient.death_date.strftime("%d-%m-%Y")
@@ -55,7 +55,7 @@ def get_row(patient):
     ]
 
 
-def get_row_tests(test, request=None):
+def get_row_tests(test, request=None, anon=True):
     return [
         test.id,
         test.form.normalized_patient.id,
@@ -77,7 +77,7 @@ def get_row_tests(test, request=None):
     ]
 
 
-def get_row_treatments(treatment):
+def get_row_treatments(treatment, anon=True):
     tdict = treatment.as_dict()
     return [
         tdict["id"],
@@ -88,9 +88,9 @@ def get_row_treatments(treatment):
         treatment.end_date.strftime("%d-%m-%Y") if treatment.end_date else '/',
         str(treatment.incomplete_reasons).strip("[]'"),  # TODO: add translations
         str(treatment.issues).strip("[]'"),  # TODO: add translations
-        'Oui' if tdict["complete"] == True else 'Non' if tdict["complete"] == False else "Inconnu",
-        'Oui' if tdict["success"] == True else 'Non' if tdict["complete"] == False else "Inconnu",
-        'Oui' if tdict["lost"] == True else 'Non' if tdict["complete"] == False else "Inconnu",
+        'Oui' if tdict["complete"] is True else 'Non' if tdict["complete"] is False else "Inconnu",
+        'Oui' if tdict["success"] is True else 'Non' if tdict["complete"] is False else "Inconnu",
+        'Oui' if tdict["lost"] is True else 'Non' if tdict["complete"] is False else "Inconnu",
         treatment.device.device_id,
         treatment.device.last_user.username if treatment.device.last_user else '/',
         treatment.device.last_user.profile.team.name if (

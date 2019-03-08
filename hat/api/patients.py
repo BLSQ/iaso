@@ -80,6 +80,7 @@ class PatientsViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
+        anonymous = (request.GET.get("anonymous", "False").lower() == "true")
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -238,6 +239,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 queryset = queryset.annotate(tests_without_videos=Exists(tests_without_videos))\
                     .filter(tests_without_videos=True)
 
+        # Ignore the anonymous param here as the user might be entitled to use the filters but export anonymously
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
             if search_name:
                 queryset = queryset.filter(
@@ -319,9 +321,9 @@ class PatientsViewSet(viewsets.ViewSet):
                             queryset_tests,
                             queryset_treatments,
                         ], [
-                            get_row,
-                            lambda row: get_row_tests(row, request),
-                            get_row_treatments,
+                            lambda row: get_row(row, anonymous),
+                            lambda row: get_row_tests(row, request, anonymous),
+                            lambda row: get_row_treatments(row, anonymous),
                         ],
                         column_sizes=[
                             columns_sizes,

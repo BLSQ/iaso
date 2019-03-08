@@ -46,9 +46,9 @@ class Patient(models.Model):
     def __str__(self):
         return "%s %s %s " % (self.first_name, self.post_name, self.last_name)
 
-    def as_dict(self, additional_fields=None):
+    def as_dict(self, additional_fields=None, anonymous=False):
         user = get_current_user()
-        is_anonymised = user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
+        is_anonymised = anonymous or (user.has_perm("menupermissions.x_anonymous") and not user.is_superuser)
         AS = None
         ZS = None
         province = None
@@ -85,9 +85,9 @@ class Patient(models.Model):
 
         return result
 
-    def as_full_dict(self):
+    def as_full_dict(self, anonymous=False):
         user = get_current_user()
-        is_anonymised = user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
+        is_anonymised = anonymous or (user.has_perm("menupermissions.x_anonymous") and not user.is_superuser)
         cases = []
         tests = []
         for case in self.case_set.all():

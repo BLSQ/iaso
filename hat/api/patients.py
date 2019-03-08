@@ -193,51 +193,47 @@ class PatientsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(case__in=cases)
 
         if pictures:
-            picture_tests = Test.objects.filter(form__normalized_patient_id=OuterRef('id')) \
-                .filter(type__in=TYPES_WITH_IMAGES)
+            picture_tests = Test.objects\
+                .filter(form__normalized_patient_id=OuterRef("id")) \
+                .filter(type__in=TYPES_WITH_IMAGES) \
+                .filter(image_filename__isnull=False)
 
             if pictures == 'with_pictures':
-                tests_with_pictures = picture_tests.filter(image_filename__isnull=False)
-                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures))\
+                queryset = queryset.annotate(tests_with_pictures=Exists(picture_tests))\
                     .filter(tests_with_pictures=True)
             elif pictures == 'without_pictures':
-                tests_with_pictures = picture_tests.filter(image_filename__isnull=False)
-                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures)) \
+                queryset = queryset.annotate(tests_with_pictures=Exists(picture_tests)) \
                     .filter(tests_with_pictures=False)
             elif pictures == 'with_pictures_uploaded':
-                tests_with_pictures = picture_tests\
-                    .filter(image_filename__isnull=False)\
+                tests_with_uploaded_pictures = picture_tests\
                     .filter(image_id__isnull=False)
-                queryset = queryset.annotate(tests_with_pictures=Exists(tests_with_pictures))\
-                    .filter(tests_with_pictures=True)
+                queryset = queryset.annotate(tests_with_uploaded_pictures=Exists(tests_with_uploaded_pictures))\
+                    .filter(tests_with_uploaded_pictures=True)
             elif pictures == 'without_pictures_uploaded':  # but with pictures:
-                tests_without_pictures = picture_tests\
-                    .filter(image_filename__isnull=False)\
+                tests_without_uploaded_pictures = picture_tests\
                     .filter(image_id__isnull=True)
-                queryset = queryset.annotate(tests_without_pictures=Exists(tests_without_pictures))\
-                    .filter(tests_without_pictures=True)
+                queryset = queryset.annotate(tests_without_uploaded_pictures=Exists(tests_without_uploaded_pictures))\
+                    .filter(tests_without_uploaded_pictures=True)
 
         if videos:
-            video_tests = Test.objects.filter(form__normalized_patient_id=OuterRef('id')) \
-                .filter(type__in=TYPES_WITH_VIDEOS)
+            has_videos = Test.objects\
+                .filter(form__normalized_patient_id=OuterRef("id"))\
+                .filter(type__in=TYPES_WITH_VIDEOS)\
+                .filter(video_filename__isnull=False)
 
             if videos == 'with_videos':
-                tests_with_videos = video_tests.filter(video_filename__isnull=False)
-                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos))\
+                queryset = queryset.annotate(tests_with_videos=Exists(has_videos))\
                     .filter(tests_with_videos=True)
             elif videos == 'without_videos':
-                tests_with_videos = video_tests.filter(video_filename__isnull=False)
-                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos)) \
+                queryset = queryset.annotate(tests_with_videos=Exists(has_videos)) \
                     .filter(tests_with_videos=False)
             elif videos == 'with_videos_uploaded':
-                tests_with_videos = video_tests\
-                    .filter(video_filename__isnull=False)\
+                tests_with_videos = has_videos\
                     .filter(video_id__isnull=False)
                 queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos))\
                     .filter(tests_with_videos=True)
             elif videos == 'without_videos_uploaded':  # but with videos:
-                tests_without_videos = video_tests\
-                    .filter(video_filename__isnull=False)\
+                tests_without_videos = has_videos\
                     .filter(video_id__isnull=True)
                 queryset = queryset.annotate(tests_without_videos=Exists(tests_without_videos))\
                     .filter(tests_without_videos=True)

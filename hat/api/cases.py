@@ -228,21 +228,24 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(device_id__in=device_ids.split(","))
 
         if pictures:
-            has_uploaded_pictures = Test.objects\
-                .filter(form_id=OuterRef("id")) \
-                .filter(type__in=TYPES_WITH_IMAGES) \
-                .filter(image_id__isnull=False)
+            has_pictures = Test.objects\
+                .filter(form_id=OuterRef("id"))\
+                .filter(type__in=TYPES_WITH_IMAGES)\
+                .filter(image_filename__isnull=False)
             if pictures == 'with_pictures':
-                queryset = queryset.filter(CaseAbstract.FILTER_ANY_PICTURE_FILENAME)
+                queryset = queryset.annotate(has_pictures=Exists(has_pictures))\
+                    .filter(has_pictures=True)
             elif pictures == 'without_pictures':
-                queryset = queryset.filter(CaseAbstract.FILTER_NO_PICTURE_FILENAME)
+                queryset = queryset.annotate(has_pictures=Exists(has_pictures))\
+                    .filter(has_pictures=False)
             elif pictures == 'with_pictures_uploaded':
+                has_uploaded_pictures = has_pictures.filter(image_id__isnull=False)
                 queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
                     .filter(has_uploaded_pictures=True)
             elif pictures == 'without_pictures_uploaded':  # but with pictures:
-                queryset = queryset.filter(CaseAbstract.FILTER_ANY_PICTURE_FILENAME)
+                has_uploaded_pictures = has_pictures.filter(image_id__isnull=True)
                 queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
-                    .filter(has_uploaded_pictures=False)
+                    .filter(has_uploaded_pictures=True)
 
         if videos:
             has_videos = Test.objects\

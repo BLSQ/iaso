@@ -307,10 +307,10 @@ class CasesViewSet(viewsets.ViewSet):
             if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
                 return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
-                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'CATT', 'RDT',
+                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Nom de\nla maman''Sexe', 'Age', 'CATT', 'RDT',
                 'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction\nNoeud\nLymph.', 'Sang\nfrais', 'MAECT', 'PL']
             column_sizes = [9,         14,   6,       10,        10,                 14,
-                            14, 20,              18,    18,        18,       6,      4,     7,      7,
+                            14, 20,              18,    18,        18,       15,               6,      4,     7,      7,
                             7, 7, 7,   7,     8,                         7,             7,       7]
 
             filename = 'cases'

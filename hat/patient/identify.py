@@ -104,12 +104,16 @@ def should_hide_screening(case, test_date):
         return False
     if type(test_date) == str:
         test_date = dateutil.parser.parse(test_date)
-    other_test = Test.objects \
-        .filter(form__normalized_patient=case.normalized_patient) \
-        .filter(type__in=[CATT, RDT]) \
-        .filter(date__range=[test_date-timedelta(days=90), test_date+timedelta(days=1)])\
-        .exclude(form=case)  # don't find ourself
-    return other_test.count() > 0
+    try:
+        other_test = Test.objects \
+            .filter(form__normalized_patient=case.normalized_patient) \
+            .filter(type__in=[CATT, RDT]) \
+            .filter(date__range=[test_date-timedelta(days=90), test_date+timedelta(days=1)])\
+            .exclude(form=case)  # don't find ourself
+        return other_test.count() > 0
+    except Exception as e:
+        print("Exception while computing time difference with", test_date, e)
+        return False
 
 
 def get_devicedb_info_cached(device_id, cache):
@@ -117,11 +121,15 @@ def get_devicedb_info_cached(device_id, cache):
         return None, None
     devicedb_id, team_id = cache.get(device_id, (None, None))
     if devicedb_id is None:
-        devicedb = DeviceDB.objects.get(device_id=device_id)
-        devicedb_id = devicedb.id
-        team = devicedb.get_team()
-        team_id = team.id if team else None
-        cache[device_id] = (devicedb_id, team_id)
+        try:
+            devicedb = DeviceDB.objects.get(device_id=device_id)
+            devicedb_id = devicedb.id
+            team = devicedb.get_team()
+            team_id = team.id if team else None
+            cache[device_id] = (devicedb_id, team_id)
+        except DeviceDB.DoesNotExist:
+            print("Could not find device ID", device_id, "skipping")
+            return None, None
     return devicedb_id, team_id
 
 
@@ -232,13 +240,12 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
     # I chose to ignore the filename when searching for the test, not sure that's right
     test, test_created = Test.objects.get_or_create(type=test_type, date__date=test_date, index=index,
                                                     village=case.normalized_village, form=case,
+                                                    image_filename=image, video_filename=video,
+                                                    device_id=devicedb_id,
                                                     defaults={
-                                                        'image_filename': image,
-                                                        'video_filename': video,
                                                         'traveller_area': traveller_area,
                                                         'date': test_date,
                                                         'hidden': hidden,
-                                                        'device_id': devicedb_id,
                                                         'location': location,
                                                         'team_id': team_id,
                                                     })

@@ -96,15 +96,6 @@ module.exports = {
     rules: [
       // we pass the output from babel loader to react-hot loader
       {
-        enforce: "pre",
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: "eslint-loader",
-        options: {
-          quiet: true,
-        }
-      },
-      {
         test: /\.js?$/,
         exclude: /node_modules/,
         use: [

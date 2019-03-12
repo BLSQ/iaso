@@ -91,6 +91,21 @@ LOGGING = {
     },
 }
 
+# AWS expects python logs to be stored in this folder
+AWS_LOG_FOLDER = '/opt/python/log'
+if os.path.isdir(AWS_LOG_FOLDER):
+    if os.access(AWS_LOG_FOLDER, os.W_OK):
+        print("Logging to django log")
+        LOGGING['handlers']['file'] = {
+                'class': 'logging.FileHandler',
+                'level': 'DEBUG',
+                'filename': os.path.join(AWS_LOG_FOLDER, 'django.log'),
+            }
+        for logger in LOGGING['loggers'].values():
+            logger['handlers'].append('file')
+        LOGGING['loggers']['hat']['level'] = 'DEBUG'
+    else:
+        print(f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions")
 
 # Application definition
 

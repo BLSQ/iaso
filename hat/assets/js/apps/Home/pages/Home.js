@@ -9,6 +9,8 @@ import { userHasPermission } from '../../../utils/index';
 import { loadActions } from '../../../redux/load';
 import { homeActions } from '../redux/home';
 import HomeMap from '../components/HomeMap';
+import HomeBarChart from '../components/HomeBarChart';
+import datas from '../components/datas';
 
 class Home extends Component {
     componentWillMount() {
@@ -111,6 +113,16 @@ class Home extends Component {
                             </div>
                         }
                     </div>
+                </section>
+                <section className="section--feature--bar-chart">
+                    <HomeBarChart
+                        showLegend
+                        datas={datas}
+                        title={formatMessage({
+                            defaultMessage: 'Cas positifs par année',
+                            id: 'home.barchart.title',
+                        })}
+                    />
                 </section>
                 <section className="section--feature--reports">
                     <div className="section__content__image--reports">

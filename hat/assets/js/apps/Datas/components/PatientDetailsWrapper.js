@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+
 import PatientInfos from '../components/PatientInfos';
 import EditPatientInfos from '../components/EditPatientInfos';
 import PatientCasesInfos from '../components/PatientCasesInfos';
@@ -11,13 +12,13 @@ import PatientCasesTests from '../components/PatientCasesTests';
 import TreatmentComponent from '../components/TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
-import VillageMap from '../../../components/VillageMap';
+import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
-import { mapActions } from '../../../redux/mapReducer';
-import { renderTestLabel } from '../../../utils/mapUtils';
+import { mapActions } from '../redux/mapReducer';
 import { scrollTo } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
+import DynamicLegend from './DynamicLegend';
 
 const MESSAGES = defineMessages({
     infos: {
@@ -64,7 +65,7 @@ class PatientDetailsWrapper extends React.Component {
             redirectTo,
         } = this.props;
         if (patient.cases.length > 0) {
-            dispatch(mapActions.setVillageslist(patient.cases));
+            dispatch(mapActions.setMappedCaseslist(patient.cases));
         }
         if (this.props.params.case_id && this.props.params.tab === 'tests') {
             setTimeout(() => {
@@ -94,6 +95,7 @@ class PatientDetailsWrapper extends React.Component {
                 vil_id,
             },
         } = newProps;
+
         if (currentUser.id && permissions.length > 0) {
             const editionRight = permissions.find(p => p.codename === 'x_datas_patient_edition');
             if ((currentUser.is_superuser ||
@@ -150,13 +152,14 @@ class PatientDetailsWrapper extends React.Component {
                 formatMessage,
             },
             map: {
-                villages,
+                cases,
                 baseLayer,
             },
             hasError,
             isUpdated,
             geoFilters,
             redirectTo,
+            setCaseslist,
         } = this.props;
         const {
             currentTab,
@@ -287,35 +290,39 @@ class PatientDetailsWrapper extends React.Component {
                     <div className="widget__container" >
                         <div className="flex-container">
                             <div className="split-selector-container ">
-                                <LayersComponent
-                                    base={baseLayer}
-                                    change={(type, key) => changeLayer(type, key)}
-                                />
-                                <div className="map__option padding-top">
+                                <DynamicLegend cases={cases} setCaseslist={newCases => setCaseslist(newCases)} />
+                                <div className="map__option padding-top margin-bottom">
                                     <span className="map__option__header">
                                         <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
                                     </span>
                                     <form>
                                         <ul className="map__option__list legend">
                                             <li className="map__option__list__item">
-                                                <i className="map__option__icon--without-positive-cases" />
+                                                <i className="fa fa-tint negative" />
                                                 <FormattedMessage id="datas.detail.legend.noNewCases" defaultMessage="Tests négatifs" />
                                             </li>
                                             <li className="map__option__list__item">
-                                                <i className="map__option__icon--with-positive-cases" />
+                                                <i className="fa fa-tint positive" />
                                                 <FormattedMessage id="datas.detail.legend.newCases" defaultMessage="Tests positifs" />
+                                            </li>
+                                            <li className="map__option__list__item">
+                                                <i className="fa fa-home" />
+                                                <FormattedMessage id="datas.detail.legend.vilages" defaultMessage="Villages" />
                                             </li>
                                         </ul>
                                     </form>
                                 </div>
+                                <LayersComponent
+                                    base={baseLayer}
+                                    change={(type, key) => changeLayer(type, key)}
+                                />
                             </div>
                             <div className="split-map ">
-                                <VillageMap
+                                <TestsMap
                                     baseLayer={baseLayer}
-                                    villages={villages}
+                                    cases={cases}
                                     getShape={type => getShape(type)}
-                                    renderVillageLabel={village => renderTestLabel(village, formatMessage, testsMapping)}
-                                    isRed={village => village.tests.find(t => parseInt(t.result, 10) > 1)}
+                                    testsMapping={testsMapping}
                                 />
                             </div>
                         </div>
@@ -346,6 +353,7 @@ PatientDetailsWrapper.propTypes = {
     selectArea: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    setCaseslist: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -369,6 +377,7 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, false, 'YES,NO,OTHER')),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, false, 'YES,NO,OTHER')),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId)),
+    setCaseslist: cases => dispatch(mapActions.setCaseslist(cases)),
 });
 const PatientDetailsWrapperWithIntl = injectIntl(PatientDetailsWrapper);
 

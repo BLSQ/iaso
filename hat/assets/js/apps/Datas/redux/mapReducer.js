@@ -1,11 +1,10 @@
-import { mapCasesToVillages } from '../utils/mapUtils';
 /*
  * Includes the actions and state necessary to display the map view
  */
 
 export const UNKNOWN = 'hat/leaflet/action/UNKNWON';
 export const BASE_LAYER_CHANGE = 'hat/leaflet/base-layer/CHANGE';
-export const SET_VILLAGES_LIST = 'hat/leaflet/base-layer/SET_VILLAGES_LIST';
+export const SET_CASES_LIST = 'hat/leaflet/base-layer/SET_CASES_LIST';
 
 export const mapLayerTypes = {
     legend: 1,
@@ -34,19 +33,41 @@ export const changeLayer = (layerType, payload) => {
     }
 };
 
-export const setVillageslist = cases => ({
-    type: SET_VILLAGES_LIST,
-    payload: mapCasesToVillages(cases),
+const extendCases = (cases) => {
+    const tempCases = [...cases];
+    tempCases.forEach((c, caseIndex) => {
+        if (c.location.normalized.village) {
+            tempCases[caseIndex].location.normalized.village.displayed = true;
+        }
+        c.tests.forEach((t, testIndex) => {
+            tempCases[caseIndex].tests[testIndex].displayed = true;
+            if (t.village) {
+                tempCases[caseIndex].tests[testIndex].village.displayed = true;
+            }
+        });
+    });
+    return tempCases;
+};
+
+export const setCaseslist = cases => ({
+    type: SET_CASES_LIST,
+    payload: cases,
+});
+
+export const setMappedCaseslist = cases => ({
+    type: SET_CASES_LIST,
+    payload: extendCases(cases),
 });
 
 export const mapActions = {
     changeLayer,
-    setVillageslist,
+    setCaseslist,
+    setMappedCaseslist,
 };
 
 export const mapInitialState = {
     baseLayer: 'arcgis-topo',
-    villages: [],
+    cases: [],
 };
 
 export const mapReducer = (state = mapInitialState, action = {}) => {
@@ -59,10 +80,9 @@ export const mapReducer = (state = mapInitialState, action = {}) => {
             }
             return { ...state, baseLayer };
         }
-
-        case SET_VILLAGES_LIST: {
-            const villages = action.payload;
-            return { ...state, villages };
+        case SET_CASES_LIST: {
+            const cases = [...action.payload];
+            return { ...state, cases };
         }
 
         default:

@@ -206,3 +206,9 @@ export const scrollTo = (selectorId) => {
     }
 };
 
+export const isCaseLocalised = kase => (
+    kase.location.normalized &&
+    kase.location.normalized.as !== undefined &&
+    kase.location.normalized.village !== undefined
+);
+

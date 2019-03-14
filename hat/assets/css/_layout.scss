@@ -263,6 +263,15 @@ $directions: left right top bottom;
     margin-top: $padding-unit/2;
 }
 
+.text-padding-left {
+    display: inline-block;
+    padding-left: 5px;
+}
+
+.no-cursor {
+    cursor: default !important;
+}
+
 .margin {
     margin: $padding-unit/2 !important;
 }

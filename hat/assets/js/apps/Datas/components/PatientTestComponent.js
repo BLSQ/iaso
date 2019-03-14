@@ -277,6 +277,30 @@ class PatientTestComponent extends React.Component {
                                 </td>
                             </tr>
                         }
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.latitude" defaultMessage="Latitude" />
+                            </th>
+                            <td className={!test.latitude ? 'error-text' : ''}>
+                                {
+                                    test.latitude ?
+                                        test.latitude :
+                                        <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.longitude" defaultMessage="Longitude" />
+                            </th>
+                            <td className={!test.longitude ? 'error-text' : ''}>
+                                {
+                                    test.longitude ?
+                                        test.longitude :
+                                        <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                }
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

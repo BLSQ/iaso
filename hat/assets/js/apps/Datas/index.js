@@ -11,7 +11,7 @@ import App from '../App';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { patientsReducer, patientsInitialState } from './redux/patients';
 import { casesReducer, casesInitialState } from './redux/cases';
-import { mapReducer, mapInitialState } from '../../redux/mapReducer';
+import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 import CasesPage from './pages/Cases';

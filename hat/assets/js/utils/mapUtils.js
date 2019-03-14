@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 import moment from 'moment';
 import geoUtils from './geo';
+import { isCaseLocalised } from './index';
 
 export const genericMap = mapNode => L.map(mapNode, {
     attributionControl: false,
@@ -209,9 +210,18 @@ export const mapCasesToVillages = (cases) => {
             const tempT = {
                 ...t,
             };
-            const village = {
-                ...t.village,
-            };
+            let village;
+            if (isCaseLocalised(c)) {
+                village = {
+                    ...t.village,
+                    isLocalised: true,
+                };
+            } else {
+                village = {
+                    name: c.location && c.location.village ? c.location.village : '--',
+                    isLocalised: false,
+                };
+            }
             delete tempT.village;
             village.tests = [tempT];
             const villageExist = villages.find(v => v.id === village.id);
@@ -232,27 +242,58 @@ export const mapCasesToVillages = (cases) => {
     return villages;
 };
 
+export const mapCasesToTests = (cases) => {
+    let tests = [];
+    cases.forEach((c) => {
+        if (c.tests.length > 0) {
+            tests = tests.concat(c.tests);
+        }
+    });
+    return tests;
+};
 
-export const renderTestLabel = (village, formatMessage, testsMapping) => {
-    let message = `<section class="custom-popup-container">
-        <div>
-            ${formatMessage({ defaultMessage: 'Village', id: 'main.label.village' })}:
-            ${village.name}
-        </div>
-    `;
-    village.tests.forEach((t) => {
-        message += `
-        <span class="separator"></span>
-        <div>${t.type} - ${t.id}</div>
-        <div class="${parseInt(t.result, 10) > 1 ? 'error-text' : ''}">
+const renderTestTooltipContent = (test, formatMessage, testsMapping) => (
+    `<section class="custom-popup-container">
+        <div>${test.type}-${test.id}</div>
+        <div class="${parseInt(test.result, 10) > 1 ? 'error-text' : ''}">
             ${formatMessage({ defaultMessage: 'Résultat', id: 'main.label.testResult' })}:
-            <span>${testsMapping[t.result]}</span>
+            <span>${testsMapping[test.result]}</span>
         </div>
         <div>
             ${formatMessage({ defaultMessage: 'Date', id: 'main.label.testDate' })}:
-            <span>${moment(t.date).format('DD-MM-YYYY HH:mm')}</span>
-        </div>`;
+            <span>${moment(test.date).format('DD-MM-YYYY HH:mm')}</span>
+        </div>
+    </section>`
+);
+
+const renderVillageTooltipContent = village => (
+    `<section class="custom-popup-container">
+        <div>
+            ${village.name}
+        </div>
+    </section>`
+);
+
+const tooltip = (content, orientation) => (
+    `<div class="leaflet-tooltip custom-tooltip leaflet-tooltip-${orientation}">
+        ${content}
+    </div>`
+);
+
+export const renderTestIcon = (test, formatMessage, testsMapping) => {
+    const testTooltip = tooltip(renderTestTooltipContent(test, formatMessage, testsMapping), 'left');
+    return L.divIcon({
+        html: `<div>${testTooltip}<i class="fa fa-tint ${parseInt(test.result, 10) > 1 ? 'positive' : 'negative'}"></i></div>`,
+        className: 'marker-test',
+        iconSize: L.point(1, 1),
     });
-    message += '</section>';
-    return message;
 };
+export const renderVillageIcon = (village, formatMessage) => {
+    const villageTooltip = tooltip(renderVillageTooltipContent(village, formatMessage), 'right');
+    return L.divIcon({
+        html: `<div>${villageTooltip}<i class="fa fa-home"></i></div>`,
+        className: 'marker-village',
+        iconSize: L.point(1, 1),
+    });
+};
+

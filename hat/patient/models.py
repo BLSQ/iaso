@@ -193,7 +193,8 @@ class Test(models.Model):
             "village": self.village.as_dict() if self.village else None,
             "hidden": self.hidden,
             "device": self.device_id,
-            "location": f"{self.location.y} {self.location.x}" if self.location else None,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
         }
 
         if self.type in TYPES_WITH_IMAGES:

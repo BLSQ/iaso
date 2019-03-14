@@ -9,7 +9,9 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import * as zoomBar from './leaflet/zoom-bar';
+
+import * as zoomBar from '../../../components/leaflet/zoom-bar';
+import { deepEqual } from '../../../utils';
 
 import {
     updateBaseLayer,
@@ -19,11 +21,15 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../utils/mapUtils';
+    renderTestIcon,
+    renderVillageIcon,
+    mapCasesToVillages,
+    mapCasesToTests,
+} from '../../../utils/mapUtils';
 
 let exportControl;
 
-class VillageMap extends Component {
+class TestsMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -33,17 +39,19 @@ class VillageMap extends Component {
                 area: false,
             },
             containers: {},
+            firstLoad: true,
         };
     }
 
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
-        this.villageGroup = new L.FeatureGroup();
-        this.map.addLayer(this.villageGroup);
+        this.TestsGroup = new L.FeatureGroup();
+        this.map.addLayer(this.TestsGroup);
+        this.VillagesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.VillagesGroup);
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
-        this.fitToBounds();
     }
 
     componentDidUpdate(prevProps) {
@@ -54,9 +62,15 @@ class VillageMap extends Component {
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
-
-            if (hasChanged(prevProps, this.props, 'villages')) {
+            if (this.props.cases && this.props.cases.length > 0) {
+                this.updateTests();
                 this.updateVillages();
+                if (this.state.firstLoad) {
+                    this.setState({
+                        firstLoad: false,
+                    });
+                    this.fitToBounds();
+                }
             }
         });
     }
@@ -82,6 +96,8 @@ class VillageMap extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-markers');
+        map.createPane('custom-pane-tests');
+        map.createPane('custom-pane-villages');
         map.createPane('custom-pane-selected');
         this.map = map;
     }
@@ -90,45 +106,45 @@ class VillageMap extends Component {
 ***************************************************************************
 * UPDATE STATE
 *************************************************************************** */
+    updateTests() {
+        const {
+            cases,
+            testsMapping,
+        } = this.props;
+        const tests = mapCasesToTests(cases);
+        this.TestsGroup.clearLayers();
+        if (tests.length > 0) {
+            tests.forEach((test) => {
+                if (test.latitude && test.longitude && test.displayed) {
+                    const marker = L.marker(
+                        [test.latitude, test.longitude],
+                        { icon: renderTestIcon(test, this.props.intl.formatMessage, testsMapping) },
+                    );
+                    marker.addTo(this.TestsGroup);
+                }
+            });
+        }
+    }
     updateVillages() {
-        const { villages } = this.props;
-        this.villageGroup.clearLayers();
-        if (villages) {
+        const { cases } = this.props;
+        const villages = mapCasesToVillages(cases);
+        this.VillagesGroup.clearLayers();
+        if (villages.length > 0) {
             villages.forEach((village) => {
-                if (village.latitude && village.longitude) {
-                    const color = this.props.isRed(village) ? 'red' : 'green';
-                    const villageCircle = L.circle([village.latitude, village.longitude], {
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.2,
-                        radius: 500,
-                        pane: 'custom-pane-markers',
-                    });
-                    villageCircle.addTo(this.villageGroup)
-                        .on('click', (event) => {
-                            const popUp = event.target.getPopup();
-                            popUp.setContent(this.props.renderVillagePopUp(village, this.props.intl.formatMessage));
-                        })
+                if (village.latitude && village.longitude && village.displayed) {
+                    const marker = L.marker(
+                        [village.latitude, village.longitude],
+                        { icon: renderVillageIcon(village) },
+                    );
+                    marker.addTo(this.VillagesGroup)
                         .on('mouseover', () => {
                             this.updateTooltipSmall(village);
                         })
                         .on('mouseout', () => {
                             this.updateTooltipSmall();
-                        })
-                        .bindPopup();
-
-
-                    const villageLabel = L.tooltip({
-                        permanent: true,
-                        direction: 'right',
-                        className: 'text see-trough',
-                    });
-                    villageLabel.setLatLng([village.latitude, village.longitude + 0.0045])
-                        .setContent(this.props.renderVillageLabel(village, this.props.intl.formatMessage))
-                        .addTo(this.villageGroup);
+                        });
                 }
             });
-            this.fitToBounds();
         }
     }
 
@@ -148,7 +164,8 @@ class VillageMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-        defaultFitToBound(map, this.villageGroup.getBounds(), 13);
+        const group = new L.FeatureGroup([this.TestsGroup, this.VillagesGroup]);
+        defaultFitToBound(map, group.getBounds(), 15);
     }
 
     /*
@@ -191,21 +208,16 @@ class VillageMap extends Component {
         );
     }
 }
-VillageMap.defaultProps = {
-    villages: [],
-    renderVillagePopUp: () => {},
-    renderVillageLabel: () => {},
-    isRed: () => false,
+TestsMap.defaultProps = {
+    cases: [],
 };
 
-VillageMap.propTypes = {
+TestsMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
-    villages: PropTypes.array,
+    cases: PropTypes.array,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
-    renderVillagePopUp: PropTypes.func,
-    renderVillageLabel: PropTypes.func,
-    isRed: PropTypes.func,
+    testsMapping: PropTypes.object.isRequired,
 };
 
-export default injectIntl(VillageMap);
+export default injectIntl(TestsMap);

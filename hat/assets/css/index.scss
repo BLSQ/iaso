@@ -45,6 +45,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "fileUpload";
 @import "arrayField";
 @import "duplicates";
+@import "dynamicLegend";
 
 body {
   background-color: $background-gray;

@@ -1,0 +1,27 @@
+.dynamic-legend {
+    li {
+        width: 100%;
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        >div {
+            width: 100%;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: none;
+            outline: none;
+            i {
+                font-size: 20px;
+                display: inline-block;
+                width: 25px;
+            }
+        }
+    }
+    ul {
+        width: 100%;
+        margin-left: $padding-unit;
+    }
+}

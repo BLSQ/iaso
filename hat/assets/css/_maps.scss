@@ -1292,7 +1292,8 @@ button {
     opacity: 0.7 !important;
 }
 
-.leaflet-custom-pane-chosen-pane {
+.leaflet-custom-pane-chosen-pane,
+.leaflet-custom-pane-tests-pane {
     z-index: 603;
 }
 
@@ -1303,5 +1304,82 @@ $filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
         svg {
             filter: $filter;
         }
+    }
+}
+
+.legend {
+    li {
+        &:after {
+            clear: both;
+            display: block;
+            content: '';
+        }
+        i {
+            font-size: 22px;
+            position: relative;
+            top: -3px;
+            padding-right: 5px;
+            float: left;
+            &.positive {
+                color: red;
+            }
+            &.negative {
+                color: green;
+            }
+            &.fa-home {
+                top: -5px;
+                left: -4px;
+                padding-right: 2px;
+            }
+        }
+    }
+}
+
+.marker-test,
+.marker-village {
+    font-size: 50px;
+    position: relative;
+    z-index: 501 !important;
+    cursor: pointer;
+    >div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        i {
+            display: block;
+            &.positive {
+                color: red;
+            }
+            &.negative {
+                color: green;
+            }
+        }
+    }
+    &:hover {
+        z-index: 1000 !important;
+        .custom-tooltip {
+            background-color: white;
+        }
+    }
+}
+
+.marker-village {
+    z-index: 500 !important;
+}
+
+.custom-tooltip {
+    background-color: rgba(white, 0.8);
+    &.leaflet-tooltip-left {
+        left: auto;
+        right: 25px;
+    }
+    &.leaflet-tooltip-right {
+        left: 25px;
+        right: auto;
     }
 }

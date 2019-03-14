@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
+import { isCaseLocalised } from '../../../utils/index';
+
 const gotoLocator = case_id => window.open(`/dashboard/locator/case_id/${case_id}`, '_blank');
 
 class PatientCasesLocation extends React.Component {
@@ -16,7 +18,7 @@ class PatientCasesLocation extends React.Component {
         if (!currentCase) {
             return null;
         }
-        const isLocalised = currentCase.location.normalized && currentCase.location.normalized.as && currentCase.location.normalized.village;
+        const isLocalised = isCaseLocalised(currentCase);
         return (
             <div className="patient-infos-container no-padding-left no-padding-top">
 

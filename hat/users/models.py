@@ -13,11 +13,14 @@ from django.db.models import TextField
 
 from django.contrib.auth.models import Permission
 
+SCREENER = 'screener'
+CONFIRMER = 'confirmer'
 
 TESTER_TYPE_CHOICES = (
-    ('screener', 'Dépisteur'),
-    ('confirmer', 'Confirmateur'),
+    (SCREENER, 'Dépisteur'),
+    (CONFIRMER, 'Confirmateur'),
 )
+
 def get_user_geo_list(user, key):
     return getattr(user.profile, key).values_list('pk', flat=True)
 
@@ -129,6 +132,9 @@ class Team(models.Model):
 class Institution(models.Model):
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 
 class UserType(models.Model):
     name = models.CharField(max_length=255)
@@ -214,6 +220,9 @@ class Profile(models.Model):
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
     }
+
+    def __str__(self):
+        return "%s - %s" % (self.user, self.institution)
 
 
 @receiver(post_save, sender=User)

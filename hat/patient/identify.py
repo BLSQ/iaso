@@ -12,6 +12,7 @@ from hat.cases.models import Case
 from hat.constants import CATT, RDT, CTCWOO, MAECT, PG, PL, GPS_SRID
 from hat.import_export.mapping import mobile_get_date, mobile_get_null_boolean, mobile_get_location_from_gps
 from hat.patient.models import Test, Patient, Treatment
+from hat.users.models import Profile
 from hat.sync.models import ImageUpload, VideoUpload, DeviceDB
 
 """
@@ -119,18 +120,20 @@ def should_hide_screening(case, test_date):
 def get_devicedb_info_cached(device_id, cache):
     if device_id is None:
         return None, None
-    devicedb_id, team_id = cache.get(device_id, (None, None))
+    devicedb_id, team_id, device_last_profile_id = cache.get(device_id, (None, None, None))
     if devicedb_id is None:
         try:
             devicedb = DeviceDB.objects.get(device_id=device_id)
             devicedb_id = devicedb.id
             team = devicedb.get_team()
             team_id = team.id if team else None
-            cache[device_id] = (devicedb_id, team_id)
+            profile = Profile.objects.filter(user_id=devicedb.last_user_id).first()
+            device_last_profile_id = profile.id if profile else None
+            cache[device_id] = (devicedb_id, team_id, device_last_profile_id)
         except DeviceDB.DoesNotExist:
             print("Could not find device ID", device_id, "skipping")
             return None, None
-    return devicedb_id, team_id
+    return devicedb_id, team_id, device_last_profile_id
 
 
 def create_test_data(case: Case, patient_area, raw):
@@ -143,13 +146,14 @@ def create_test_data(case: Case, patient_area, raw):
     # should be automatically hidden
     if case.test_catt is not None:
         test_date = raw.get('test_catt_test_time', None)
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_catt_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_catt_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
             image=case.test_catt_picture_filename, traveller_area=patient_area,
             test_date=test_date, hidden=should_hide_screening(case, test_date),
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_catt_test_longitude'), latitude=raw.get('test_catt_test_latitude')
+            longitude=raw.get('test_catt_test_longitude'), latitude=raw.get('test_catt_test_latitude'),
+            tester_id=device_last_profile_id
         )
         if test_created:
             tests_created += 1
@@ -158,60 +162,65 @@ def create_test_data(case: Case, patient_area, raw):
     if case.test_rdt is not None:
         test_date = raw.get('test_rdt_test_time', None)
         hidden = should_hide_screening(case, test_date)
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename,
             traveller_area=patient_area, test_date=test_date, hidden=hidden,
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_rdt_test_longitude'), latitude=raw.get('test_rdt_test_latitude')
+            longitude=raw.get('test_rdt_test_longitude'), latitude=raw.get('test_rdt_test_latitude'),
+            tester_id=device_last_profile_id
         )
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_pg is not None:
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_pg_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pg_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_pg_test_time', None),
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_pg_test_longitude'), latitude=raw.get('test_pg_test_latitude')
+            longitude=raw.get('test_pg_test_longitude'), latitude=raw.get('test_pg_test_latitude'),
+            tester_id=device_last_profile_id,
         )
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_pl is not None:
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_pl_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pl_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_pl_test_time', None),
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_pl_test_longitude'), latitude=raw.get('test_pl_test_latitude')
+            longitude=raw.get('test_pl_test_longitude'), latitude=raw.get('test_pl_test_latitude'),
+            tester_id=device_last_profile_id,
         )
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_ctcwoo is not None:
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_ctcwoo_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_ctcwoo_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_ctcwoo_test_time', None),
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_ctcwoo_test_longitude'), latitude=raw.get('test_ctcwoo_test_latitude')
+            longitude=raw.get('test_ctcwoo_test_longitude'), latitude=raw.get('test_ctcwoo_test_latitude'),
+            tester_id=device_last_profile_id,
         )
         if test_created:
             tests_created += 1
         tests.append(test)
 
     if case.test_maect is not None:
-        devicedb_id, device_team_id = get_devicedb_info_cached(raw.get('test_maect_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_maect_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_maect_test_time', None),
             devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_maect_test_longitude'), latitude=raw.get('test_maect_test_latitude')
+            longitude=raw.get('test_maect_test_longitude'), latitude=raw.get('test_maect_test_latitude'),
+            tester_id=device_last_profile_id,
         )
         if test_created:
             tests_created += 1
@@ -222,7 +231,7 @@ def create_test_data(case: Case, patient_area, raw):
 
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
                        test_date=None, hidden=False, devicedb_id=None, device_id=None, location=None, latitude=None,
-                       longitude=None, team_id=None):
+                       longitude=None, team_id=None, tester_id=None):
     if test_date and str(test_date) != 'nan':  # nan can happen in some weird conditions
         test_date = dateutil.parser.parse(test_date)
     else:
@@ -253,7 +262,7 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
     if test_created:
         test.result = result
         test.note = note
-
+        test.tester_id = tester_id
         if image:
             db_image = find_image_by_test(filepath=image, test_type=test_type)
             if db_image:

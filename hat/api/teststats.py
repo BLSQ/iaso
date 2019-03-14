@@ -73,6 +73,11 @@ class TestStatsViewSet(viewsets.ViewSet):
                 "date",
             )
             queryset = Test.objects.extra(select={'date': "date_trunc('month', date) "})
+        elif grouping == "year":
+            grouping_fields = (
+                "date",
+            )
+            queryset = Test.objects.extra(select={'date': "date_trunc('year', date) "})
         elif grouping == "tester":
             grouping_fields = (
                 'tester_id', "tester__user__last_name", "tester__user__first_name",
@@ -125,7 +130,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(total_population=DistinctSum("village__population"))
         )
 
-        if grouping == "month":
+        if grouping == "month" or grouping == "year":
             values = ("date", "confirmation_count", "positive_catt_count", "positive_rdt_count",
                       "positive_screening_test_count", "pl_count_stage1", "pl_count_stage2",
                       "positive_confirmation_test_count", "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive", "pl_count_positive")

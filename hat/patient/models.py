@@ -13,6 +13,7 @@ from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.users.middleware import get_current_user
+from hat.users.models import Profile
 
 
 class Patient(models.Model):
@@ -177,6 +178,7 @@ class Test(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     hidden = models.BooleanField(default=False)
     device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE, blank=True, null=True)
+    tester = models.ForeignKey(Profile, on_delete=CASCADE, blank=True, null=True)
     location = PointField(srid=4326, null=True)
 
     def __str__(self):

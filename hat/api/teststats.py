@@ -21,7 +21,7 @@ class TestStatsViewSet(viewsets.ViewSet):
     /api/teststats/?device_id=394b85dce74bf3ee&grouping=villageday&from=2013-01-01&to=2017-12-31 (for the list, per device)
     /api/teststats/?device_id=394b85dce74bf3ee&grouping=villageyear&from=2013-01-01&to=2017-12-31 (for the map)
     /api/teststats/?device_id=394b85dce74bf3ee&grouping=month&from=2013-01-01&to=2017-12-31 (for the stat screen)
-
+    /api/teststats/?grouping=tester&from=2017-01-01&to=2017-12-31&testertype=screener (for the user stats screen)
     all results will include the following fields:
         "test_count"
         "catt_count"
@@ -56,6 +56,7 @@ class TestStatsViewSet(viewsets.ViewSet):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         orders = request.GET.get("order", "date").split(",")
+        tester_type = request.GET.get("testertype", None)
 
         if grouping == "villageday":
             grouping_fields = (
@@ -72,6 +73,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                 "date",
             )
             queryset = Test.objects.extra(select={'date': "date_trunc('month', date) "})
+        elif grouping == "year":
+            grouping_fields = (
+                "date",
+            )
+            queryset = Test.objects.extra(select={'date': "date_trunc('year', date) "})
+        elif grouping == "tester":
+            grouping_fields = (
+                'tester_id', "tester__user__last_name", "tester__user__first_name",
+            )
+            queryset = Test.objects.select_related('tester__user').filter(tester__isnull=False)
 
         if from_date is not None:
             queryset = queryset.filter(date__gte=from_date)
@@ -85,10 +96,12 @@ class TestStatsViewSet(viewsets.ViewSet):
         if team_id:
             queryset = queryset.filter(form__normalized_team_id=team_id)
 
+        if tester_type:
+            queryset = queryset.filter(tester__tester_type=tester_type)
+
         grouped_queryset = (
                 queryset
                 .values(*grouping_fields)
-                .annotate(village__name=Coalesce(Cast("village__name", TextField()), "form__village"))
                 .annotate(test_count=Count("id"))
                 .annotate(catt_count=Count("id", filter=Q(type=CATT)))
                 .annotate(rdt_count=Count("id", filter=Q(type=RDT)))
@@ -117,19 +130,27 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(total_population=DistinctSum("village__population"))
         )
 
-        if grouping == "month":
+        if grouping == "month" or grouping == "year":
             values = ("date", "confirmation_count", "positive_catt_count", "positive_rdt_count",
-                      "positive_screening_test_count","pl_count_stage1" , "pl_count_stage2",
-                      "positive_confirmation_test_count","pg_count_positive", "ctcwoo_count_positive", "maect_count_positive", "pl_count_positive")
+                      "positive_screening_test_count", "pl_count_stage1", "pl_count_stage2",
+                      "positive_confirmation_test_count", "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive", "pl_count_positive")
             orders = "date",
         elif grouping == "villageday":
+            grouped_queryset = grouped_queryset.annotate(village__name=Coalesce(Cast("village__name", TextField()), "form__village"))
             values = ("village__name", "village__id", "village__latitude", "village__longitude",
                       "date", "positive_screening_test_count", "positive_confirmation_test_count", "pl_count_stage1" , "pl_count_stage2", "confirmation_count", "screening_count")
             # order = "date",
         elif grouping == "villageyear":
+            grouped_queryset = grouped_queryset.annotate(village__name=Coalesce(Cast("village__name", TextField()), "form__village"))
             values = ("village__name", "date", "village__id", "village__latitude", "village__longitude",
                       "first_test_date", "last_test_date", "positive_confirmation_test_count")
             orders = "date", "village__name"
+        elif grouping == "tester":
+            values = ("tester_id", "tester__user__last_name", "tester__user__first_name", "screening_count", "rdt_count", "catt_count", "positive_catt_count", "positive_rdt_count",
+                      "positive_screening_test_count", "confirmation_count", "positive_confirmation_test_count", "pl_count_positive", "pl_count_stage1", "pl_count_stage2",
+                       "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive")
+            orders = "tester__user__last_name",
+
         values = values + ("test_count", "catt_count", "rdt_count", "pg_count", "ctcwoo_count")
         values = values + ("maect_count", "pl_count", "total_population")
 

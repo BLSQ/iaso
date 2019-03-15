@@ -19,6 +19,7 @@ import PatientsPage from './pages/Patients';
 import PatientDetailPage from './pages/PatientDetails';
 import PatientsDuplicates from './pages/PatientsDuplicates';
 import PatientDuplicateDetails from './pages/PatientDuplicateDetails';
+import MonitoringPAge from './pages/Monitoring';
 
 export default function datasApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
@@ -26,6 +27,7 @@ export default function datasApp(appConfig, element, baseUrl) {
     const defaultPathRegister = '/register/list/order/last_name/pageSize/50/page/1';
     const defaultPathDuplicates = '/register/duplicates/order/id/pageSize/50/page/1';
     const defaultPathTests = `/tests/order/form_year/pageSize/50/page/1/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultMonitoringPath = `/monitoring/screenerOrder/tester__user__last_name/confirmerOrder/tester__user__last_name/date_from/${dateFrom}/date_to/${dateTo}`;
     const routes = [
         <Route
             path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
@@ -79,9 +81,14 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/test_type/:test_type)(/manual_merge/:manual_merge)'}
             component={PatientDuplicateDetails}
         />,
+        <Route
+            path="/monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
+            component={MonitoringPAge}
+        />,
         <Redirect path="/register/list" to={defaultPathRegister} />,
         <Redirect path="/tests" to={defaultPathTests} />,
         <Redirect path="/register/duplicates" to={defaultPathDuplicates} />,
+        <Redirect path="/monitoring" to={defaultMonitoringPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

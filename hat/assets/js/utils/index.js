@@ -1,3 +1,4 @@
+import React from 'react';
 
 export function clone(x) {
     return JSON.parse(JSON.stringify(x));
@@ -211,4 +212,38 @@ export const isCaseLocalised = kase => (
     kase.location.normalized.as !== undefined &&
     kase.location.normalized.village !== undefined
 );
+
+export const getPourcentage = (total, value) => {
+    if (total === 0) return 0;
+    return 100 / (total / value);
+};
+
+export const renderCountCell = (total, value, formatMessage) => {
+    const pourcentage = getPourcentage(total, value);
+    return (
+        <span>
+            {formatThousand(total)}{' '}
+            {
+                pourcentage !== 0 &&
+                total !== 0 &&
+                <span>
+                    ({parseFloat(pourcentage).toFixed(2)}% {formatMessage({
+                        defaultMessage: 'positifs',
+                        id: 'monitoring.label.positive',
+                    })})
+                </span>
+            }
+            {
+                pourcentage === 0 &&
+                total !== 0 &&
+                <span>
+                    ({formatMessage({
+                        defaultMessage: '0 positif',
+                        id: 'monitoring.label.no_positve',
+                    })})
+                </span>
+            }
+        </span>
+    );
+};
 

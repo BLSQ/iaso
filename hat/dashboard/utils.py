@@ -69,6 +69,11 @@ def get_menu(user, active_link):
                     "name": "Doublons",
                     "url_key": reverse("dashboard:register_duplicates"),
                     "perms": "x_case_cases"
+                },
+                {
+                    "name": "Monitorage",
+                    "url_key": reverse("dashboard:monitoring"),
+                    "perms": "x_case_cases"
                 }
             ],
             "perms": None

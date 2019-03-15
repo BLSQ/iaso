@@ -296,7 +296,7 @@ class PatientDetailsWrapper extends React.Component {
                                         <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
                                     </span>
                                     <form>
-                                        <ul className="map__option__list legend">
+                                        <ul className="map__option__list legend with-icons">
                                             <li className="map__option__list__item">
                                                 <i className="fa fa-tint negative" />
                                                 <FormattedMessage id="datas.detail.legend.noNewCases" defaultMessage="Tests négatifs" />

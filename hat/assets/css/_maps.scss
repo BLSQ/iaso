@@ -1308,28 +1308,30 @@ $filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
 }
 
 .legend {
-    li {
-        &:after {
-            clear: both;
-            display: block;
-            content: '';
-        }
-        i {
-            font-size: 22px;
-            position: relative;
-            top: -3px;
-            padding-right: 5px;
-            float: left;
-            &.positive {
-                color: red;
+    &.with-icons {
+        li {
+            &:after {
+                clear: both;
+                display: block;
+                content: '';
             }
-            &.negative {
-                color: green;
-            }
-            &.fa-home {
-                top: -5px;
-                left: -4px;
-                padding-right: 2px;
+            i {
+                font-size: 22px;
+                position: relative;
+                top: -3px;
+                padding-right: 5px;
+                float: left;
+                &.positive {
+                    color: red;
+                }
+                &.negative {
+                    color: green;
+                }
+                &.fa-home {
+                    top: -5px;
+                    left: -4px;
+                    padding-right: 2px;
+                }
             }
         }
     }

@@ -1,6 +1,9 @@
+import moment from 'moment';
+
 export const FETCH_ACTION = 'hat/home/FETCH_ACTION';
 export const SET_GEO_ZONES = 'hat/home/SET_GEO_ZONES';
 export const SET_ZONES = 'hat/home/SET_ZONES';
+export const SET_BAR_CHART_DATAS = 'hat/home/SET_BAR_CHART_DATAS';
 
 const req = require('superagent');
 
@@ -14,17 +17,22 @@ const setZones = payload => ({
     payload,
 });
 
+const setBarChartDatas = payload => ({
+    type: SET_BAR_CHART_DATAS,
+    payload,
+});
+
 
 export const fetchGeoZones = (dispatch) => {
     const currentYear = new Date().getFullYear() - 1;
     const years = [1, 2, 3].map(i => currentYear - i);
     req
-        .get(`/api/home/?years=${years}&with_geo_json=true`)
+        .get(`/api/home/?map=true&years=${years}&with_geo_json=true`)
         .set('Content-Type', 'application/json')
         .then((res) => {
             dispatch(setZones(res.body));
             req
-                .get('/api/home/?geojson=true')
+                .get('/api/home/?map=true&geojson=true')
                 .set('Content-Type', 'application/json')
                 .then((resGoe) => {
                     dispatch(setGeoZones(resGoe.body));
@@ -41,13 +49,43 @@ export const fetchGeoZones = (dispatch) => {
     });
 };
 
+const mapBarChartDatas = (datas) => {
+    const mappedDatas = [];
+    datas.forEach((d) => {
+        mappedDatas.push({
+            date: moment(d.date).format('YYYY'),
+            value: d.positive_confirmation_test_count,
+        });
+    });
+    return mappedDatas;
+};
+
+export const fetchChartBarDatas = (dispatch) => {
+    const dateFrom = moment().subtract(13, 'year').format('YYYY-MM-DD');
+    const dateTo = moment().subtract(1, 'year').format('YYYY-MM-DD');
+    req
+        .get(`/api/home/?chart=true&from=${dateFrom}&to=${dateTo}`)
+        .set('Content-Type', 'application/json')
+        .then((res) => {
+            dispatch(setBarChartDatas(mapBarChartDatas(res.body)));
+        })
+        .catch((err) => {
+            console.error(`Error while bar chart datas: ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const homeInitialState = {
     geoZones: null,
     zones: [],
+    barChartDatas: [],
 };
 
 export const homeActions = {
     fetchGeoZones,
+    fetchChartBarDatas,
 };
 
 
@@ -72,6 +110,14 @@ export const homeReducer = (state = homeInitialState, action = {}) => {
             return {
                 ...state,
                 zones,
+            };
+        }
+
+        case SET_BAR_CHART_DATAS: {
+            const barChartDatas = action.payload;
+            return {
+                ...state,
+                barChartDatas,
             };
         }
 

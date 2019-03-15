@@ -10,7 +10,6 @@ import { loadActions } from '../../../redux/load';
 import { homeActions } from '../redux/home';
 import HomeMap from '../components/HomeMap';
 import HomeBarChart from '../components/HomeBarChart';
-import datas from '../components/datas';
 
 class Home extends Component {
     componentWillMount() {
@@ -18,6 +17,7 @@ class Home extends Component {
         dispatch(loadActions.startLoading());
         this.props.fetchCurrentUserInfos();
         this.props.fetchGeoZones();
+        this.props.fetchChartBarDatas();
     }
 
     componentWillReceiveProps(newProps) {
@@ -37,6 +37,7 @@ class Home extends Component {
             currentUser,
             geoZones,
             zones,
+            barChartDatas,
         } = this.props;
         return (
             <section className="home-container">
@@ -115,14 +116,25 @@ class Home extends Component {
                     </div>
                 </section>
                 <section className="section--feature--bar-chart">
-                    <HomeBarChart
-                        showLegend
-                        datas={datas}
-                        title={formatMessage({
+                    <h2>
+                        {formatMessage({
                             defaultMessage: 'Cas positifs par année',
                             id: 'home.barchart.title',
                         })}
-                    />
+                    </h2>
+                    {
+                        barChartDatas.length > 0 &&
+                        <HomeBarChart
+                            showLegend
+                            datas={barChartDatas}
+                        />
+                    }
+                    {
+                        barChartDatas.length === 0 &&
+                        <div className="loading-small">
+                            <i className="fa fa-spinner" />
+                        </div>
+                    }
                 </section>
                 <section className="section--feature--reports">
                     <div className="section__content__image--reports">
@@ -187,8 +199,10 @@ Home.propTypes = {
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
     fetchGeoZones: PropTypes.func.isRequired,
+    fetchChartBarDatas: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     geoZones: PropTypes.object,
+    barChartDatas: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
 };
 
@@ -196,6 +210,7 @@ const MapStateToProps = state => ({
     load: state.load,
     currentUser: state.currentUser,
     geoZones: state.home.geoZones,
+    barChartDatas: state.home.barChartDatas,
     zones: state.home.zones,
     isAreasloading: state.home.isAreasloading,
 });
@@ -204,6 +219,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch, true)),
     fetchGeoZones: () => dispatch(homeActions.fetchGeoZones(dispatch)),
+    fetchChartBarDatas: () => dispatch(homeActions.fetchChartBarDatas(dispatch)),
 });
 
 const HomeWithIntl = injectIntl(Home);

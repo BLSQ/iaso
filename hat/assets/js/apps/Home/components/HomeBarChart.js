@@ -93,9 +93,6 @@ class HomeBarChart extends Component {
     render() {
         return (
             <section>
-                <h2>
-                    {this.props.title}
-                </h2>
                 <div className="bar-chart-container" id="home-bar-chart">
                     <div
                         ref={(node) => { this.container = node; }}
@@ -107,7 +104,6 @@ class HomeBarChart extends Component {
     }
 }
 HomeBarChart.defaultProps = {
-    title: '',
     specs: {
         width: 1200,
         height: 450,
@@ -118,7 +114,6 @@ HomeBarChart.defaultProps = {
 };
 
 HomeBarChart.propTypes = {
-    title: PropTypes.string,
     datas: PropTypes.array.isRequired,
     specs: PropTypes.shape({
         width: PropTypes.number,

@@ -101,7 +101,7 @@ def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex
 
 
 def should_hide_screening(case, test_date):
-    if test_date is None:
+    if test_date is None or test_date == "":
         return False
     if type(test_date) == str:
         test_date = dateutil.parser.parse(test_date)

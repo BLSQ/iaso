@@ -14,7 +14,7 @@ from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import  User
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404 ,redirect
 
 from hat.patient.identify import find_tests_by_image, find_tests_by_video

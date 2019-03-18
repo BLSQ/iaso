@@ -13,6 +13,7 @@ from hat.constants import TYPES_CONFIRMATION
 from hat.patient.models import Test
 from django.core.cache import cache
 
+cacheValue = 60 * 60 * 24 * 7
 
 class HomeViewSet(viewsets.ViewSet):
     """
@@ -55,10 +56,10 @@ class HomeViewSet(viewsets.ViewSet):
             if as_geo_json:
                 queryset = queryset.filter(geom__isnull=False)
                 geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
-                cache.set(absolute_url, geo_json, 30 * 60)
+                cache.set(absolute_url, geo_json, cacheValue)
                 return Response(geo_json)
             else:
-                cache.set(absolute_url, queryset.values(*values).order_by('name'), 30 * 60)
+                cache.set(absolute_url, queryset.values(*values).order_by('name'), cacheValue)
                 return Response(queryset.values(*values).order_by('name'))
         if is_chart:
             from_date = request.GET.get("from", None)
@@ -83,6 +84,6 @@ class HomeViewSet(viewsets.ViewSet):
 
             grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
 
-            cache.set(absolute_url, grouped_queryset, 30 * 60)
+            cache.set(absolute_url, grouped_queryset, cacheValue)
             return Response(grouped_queryset)
 

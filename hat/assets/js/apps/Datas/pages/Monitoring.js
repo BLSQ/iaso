@@ -36,7 +36,7 @@ class Cases extends Component {
     }
 
     getEndpointUrl(type, toExport = false, exportType = 'csv') {
-        let url = `/api/teststats/?id=1&grouping=tester&testertype=${type}`;
+        let url = `/api/teststats/?grouping=tester&testertype=${type}`;
         const {
             params,
         } = this.props;

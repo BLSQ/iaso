@@ -70,7 +70,7 @@
     "react-router-redux": "~4.0.0",
     "react-select": "~1.2.1",
     "react-switch": "^3.0.4",
-    "react-table": "^6.8.0",
+    "react-table": "6.8.2",
     "recursive-readdir": "~2.2.1",
     "redux": "~3.7.2",
     "sass-loader": "~6.0.0",

@@ -11,6 +11,7 @@ from django.db.models import Count
 from hat.cases.models import RES_POSITIVE
 from hat.constants import TYPES_CONFIRMATION
 from hat.patient.models import Test
+from django.core.cache import cache
 
 
 class HomeViewSet(viewsets.ViewSet):
@@ -27,6 +28,11 @@ class HomeViewSet(viewsets.ViewSet):
 
     @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
+        absolute_url = request.build_absolute_uri()
+
+        result = cache.get(absolute_url)
+        if result:
+            return Response(result)
         is_map = request.GET.get("map", None)
         is_chart = request.GET.get("chart", None)
         if is_map:
@@ -49,8 +55,10 @@ class HomeViewSet(viewsets.ViewSet):
             if as_geo_json:
                 queryset = queryset.filter(geom__isnull=False)
                 geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
+                cache.set(absolute_url, geo_json, 30 * 60)
                 return Response(geo_json)
             else:
+                cache.set(absolute_url, queryset.values(*values).order_by('name'), 30 * 60)
                 return Response(queryset.values(*values).order_by('name'))
         if is_chart:
             from_date = request.GET.get("from", None)
@@ -75,6 +83,6 @@ class HomeViewSet(viewsets.ViewSet):
 
             grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
 
-
+            cache.set(absolute_url, grouped_queryset, 30 * 60)
             return Response(grouped_queryset)
 

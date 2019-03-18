@@ -8,6 +8,7 @@ from hat.constants import CATT, RDT, CTCWOO, MAECT, PL, PG
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
 from .authentication import CsrfExemptSessionAuthentication
+from django.core.cache import cache
 
 
 class DevicesViewSet(viewsets.ViewSet):
@@ -22,6 +23,11 @@ class DevicesViewSet(viewsets.ViewSet):
     ]
 
     def list(self, request):
+        absolute_url = request.build_absolute_uri()
+
+        result = cache.get(absolute_url)
+        if result:
+            return Response(result)
         with_tests_devices = request.GET.get("with_tests_devices", False)
         coordination_ids = request.GET.get("coordination_id", None)
         teams = request.GET.get("teams", None)
@@ -44,6 +50,7 @@ class DevicesViewSet(viewsets.ViewSet):
 
         if as_list:
             res = map(lambda device: device.as_dict(),  devices)
+            cache.set(absolute_url, res, 30 * 60)
             return Response(res)
         else:
             for device in devices:
@@ -125,6 +132,7 @@ class DevicesViewSet(viewsets.ViewSet):
                     reverse=invert,
                 )
 
+            cache.set(absolute_url, res, 30 * 60)
             return Response(res)
 
     def retrieve(self, request, pk=None):

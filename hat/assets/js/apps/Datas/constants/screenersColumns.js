@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { renderCountCell } from '../../../utils';
 
 const screenersColumns = formatMessage => (
@@ -9,6 +11,7 @@ const screenersColumns = formatMessage => (
             }),
             accessor: 'tester__user__last_name',
             class: 'small',
+            Cell: settings => <span>{`${settings.original.tester__user__first_name} ${settings.original.tester__user__last_name}`}</span>,
         },
         {
             Header: formatMessage({
@@ -35,11 +38,62 @@ const screenersColumns = formatMessage => (
                 renderCountCell(settings.original.rdt_count, settings.original.positive_rdt_count, formatMessage),
         },
         {
-            Header: 'RDT',
+            Header: formatMessage({
+                defaultMessage: 'Photos',
+                id: 'monitoring.label.pictures',
+            }),
             accessor: 'rdt_count',
             class: 'small',
-            Cell: settings =>
-                renderCountCell(settings.original.rdt_count, settings.original.positive_rdt_count, formatMessage),
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.rdt_test_pictures + settings.original.catt_test_pictures
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Photos',
+                id: 'monitoring.label.pictures',
+            }),
+            columns: [
+                {
+                    Header: 'CATT +',
+                    accessor: 'catt_test_positive_pictures',
+                    class: 'small',
+                },
+                {
+                    Header: 'CATT -',
+                    accessor: 'catt_test_negative_pictures',
+                    class: 'small',
+                },
+                {
+                    Header: 'RDT +',
+                    accessor: 'rdt_test_positive_pictures',
+                    class: 'small',
+                },
+                {
+                    Header: 'RDT -',
+                    accessor: 'rdt_test_negative_pictures',
+                    class: 'small',
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Total',
+                        id: 'monitoring.label.picturesTotal',
+                    }),
+                    accessor: 'rdt_count',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.rdt_test_pictures + settings.original.catt_test_pictures
+                            }
+                        </span>
+                    ),
+                },
+            ],
         },
     ]
 );

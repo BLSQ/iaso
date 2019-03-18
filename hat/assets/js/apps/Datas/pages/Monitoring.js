@@ -36,7 +36,7 @@ class Cases extends Component {
     }
 
     getEndpointUrl(type, toExport = false, exportType = 'csv') {
-        let url = `/api/teststats/?grouping=tester&testertype=${type}`;
+        let url = `/api/teststats/?id=1&grouping=tester&testertype=${type}`;
         const {
             params,
         } = this.props;
@@ -116,7 +116,7 @@ class Cases extends Component {
                         orderKey="screenerOrder"
                         multiSort
                         withBorder={false}
-                        isSortable
+                        isSortable={false}
                         canSelect={false}
                         dataKey="result"
                     />
@@ -132,7 +132,7 @@ class Cases extends Component {
                         orderKey="confirmerOrder"
                         multiSort
                         withBorder={false}
-                        isSortable
+                        isSortable={false}
                         canSelect={false}
                         dataKey="result"
                     />

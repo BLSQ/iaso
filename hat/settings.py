@@ -263,7 +263,7 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_PORT = 6379
 REDIS_DB = 0
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
-
+REDIS_CACHE_DB = 1
 
 # RQ
 
@@ -352,3 +352,17 @@ AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 AWS_S3_REGION_NAME = "eu-central-1"
 
+
+REDIS_CACHE_LOCATION = "redis://%s:%s/%s" % (REDIS_HOST, REDIS_PORT, REDIS_CACHE_DB)
+
+print("REDIS_CACHE_LOCATION", REDIS_CACHE_LOCATION)
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_CACHE_LOCATION,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

@@ -10,6 +10,7 @@ from hat.cases.models import RES_POSITIVE
 from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION
 from hat.patient.models import Test
 from .authentication import CsrfExemptSessionAuthentication
+from django.core.cache import cache
 
 
 class TestStatsViewSet(viewsets.ViewSet):
@@ -50,6 +51,11 @@ class TestStatsViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     def list(self, request):
+        absolute_url = request.build_absolute_uri()
+
+        result = cache.get(absolute_url)
+        if result:
+            return Response(result)
         device_id = request.GET.get("device_id", None)
         team_id = request.GET.get("team_id", None)
         grouping = request.GET.get("grouping", "villageday")
@@ -149,6 +155,23 @@ class TestStatsViewSet(viewsets.ViewSet):
             values = ("tester_id", "tester__user__last_name", "tester__user__first_name", "screening_count", "rdt_count", "catt_count", "positive_catt_count", "positive_rdt_count",
                       "positive_screening_test_count", "confirmation_count", "positive_confirmation_test_count", "pl_count_positive", "pl_count_stage1", "pl_count_stage2",
                        "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive")
+            if tester_type == "screener":
+                grouped_queryset = grouped_queryset\
+                    .annotate(rdt_test_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=RDT))) \
+                    .annotate(rdt_test_positive_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=RDT) & Q(result__gte=RES_POSITIVE))) \
+                    .annotate(rdt_test_negative_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=RDT) & Q(
+                    result__lt=RES_POSITIVE))) \
+                    .annotate(catt_test_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=CATT))) \
+                    .annotate(catt_test_positive_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=CATT) & Q(
+                    result__gte=RES_POSITIVE))) \
+                    .annotate(catt_test_negative_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=CATT) & Q(
+                    result__lt=RES_POSITIVE)))
+                values = values + ("rdt_test_pictures", "rdt_test_positive_pictures", "rdt_test_negative_pictures", "catt_test_pictures", "catt_test_positive_pictures", "catt_test_negative_pictures")
+            else:
+                grouped_queryset = grouped_queryset\
+                    .annotate(confirmation_video_count=Count("id", filter=Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False)))\
+                    .annotate(confirmation_positive_video_count=Count("id", filter=Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False) & Q(result__gte=RES_POSITIVE)))
+                values = values + ("confirmation_video_count", "confirmation_positive_video_count")
             orders = "tester__user__last_name",
 
         values = values + ("test_count", "catt_count", "rdt_count", "pg_count", "ctcwoo_count")
@@ -171,24 +194,24 @@ class TestStatsViewSet(viewsets.ViewSet):
             .annotate(maect_tests=Count("id", filter=Q(type=MAECT))) \
             .annotate(pl_tests=Count("id", filter=Q(type=PL))) \
             .annotate(pl_stage1=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage1'))) \
-            .annotate(pl_stage2=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage2'))) \
-
+            .annotate(pl_stage2=Count("id", filter=Q(type=PL) & Q(form__test_pl_result='stage2')))
 
         total_queryset = case_queryset.aggregate(
-            total_count=Count("*"),
-            total_confirmation_tests=Count("id", filter=Q(type__in=TYPES_CONFIRMATION)),
-            total_confirmation_tests_positive=Count("confirmation_tests_positive",
-                                                    filter=Q(confirmation_tests_positive__gt=0)),
-            total_catt=Count("catt_tests", filter=Q(catt_tests__gt=0)),
-            total_catt_positive=Count("catt_tests", filter=Q(catt_tests_positive__gt=0)),
-            total_rdt=Count("rdt_tests", filter=Q(rdt_tests__gt=0)),
-            total_rdt_positive=Count("rdt_tests", filter=Q(rdt_tests_positive__gt=0)),
-            total_pg=Count("pg_tests", filter=Q(pg_tests__gt=0)),
-            total_ctc=Count("ctc_tests", filter=Q(ctc_tests__gt=0)),
-            total_maect=Count("maect_tests", filter=Q(maect_tests__gt=0)),
-            total_pl=Count("pl_tests", filter=Q(pl_tests__gt=0)),
-            total_pl_stage1=Count("pl_tests", filter=Q(pl_stage1__gt=0)),
-            total_pl_stage2=Count("pl_tests", filter=Q(pl_stage2__gt=0)),
+                total_count=Count("*"),
+                total_confirmation_tests=Count("id", filter=Q(type__in=TYPES_CONFIRMATION)),
+                total_confirmation_tests_positive=Count("confirmation_tests_positive",
+                                                        filter=Q(confirmation_tests_positive__gt=0)),
+                total_catt=Count("catt_tests", filter=Q(catt_tests__gt=0)),
+                total_catt_positive=Count("catt_tests", filter=Q(catt_tests_positive__gt=0)),
+                total_rdt=Count("rdt_tests", filter=Q(rdt_tests__gt=0)),
+                total_rdt_positive=Count("rdt_tests", filter=Q(rdt_tests_positive__gt=0)),
+                total_pg=Count("pg_tests", filter=Q(pg_tests__gt=0)),
+                total_ctc=Count("ctc_tests", filter=Q(ctc_tests__gt=0)),
+                total_maect=Count("maect_tests", filter=Q(maect_tests__gt=0)),
+                total_pl=Count("pl_tests", filter=Q(pl_tests__gt=0)),
+                total_pl_stage1=Count("pl_tests", filter=Q(pl_stage1__gt=0)),
+                total_pl_stage2=Count("pl_tests", filter=Q(pl_stage2__gt=0)),
         )
-
-        return Response({"result": grouped_queryset, "total": total_queryset})
+        result = {"result": grouped_queryset, "total": total_queryset}
+        cache.set(absolute_url, result, 30 * 60)
+        return Response(result)

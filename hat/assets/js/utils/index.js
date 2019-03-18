@@ -246,4 +246,3 @@ export const renderCountCell = (total, value, formatMessage) => {
         </span>
     );
 };
-

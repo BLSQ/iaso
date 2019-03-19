@@ -53,3 +53,6 @@ selenium==3.3.1
 
 # cache
 django-redis==4.10.0
+
+black==18.6b2
+pre-commit==1.14.4

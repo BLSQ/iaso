@@ -27,12 +27,15 @@ class ProfilesViewSet(viewsets.ViewSet):
     GET /api/users/2/
 
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_required = ['menupermissions.x_management_users',
-        'menupermissions.x_vectorcontrol']
+    permission_required = [
+        "menupermissions.x_management_users",
+        "menupermissions.x_vectorcontrol",
+    ]
 
     def list(self, request):
-        order = request.GET.get("order", 'id')
+        order = request.GET.get("order", "id")
         limit = request.GET.get("limit", 50)
         page_offset = request.GET.get("page", 1)
         search = request.GET.get("search", None)
@@ -48,21 +51,26 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if search:
             queryset = queryset.filter(
-                Q(user__username__icontains=search) | Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search)
+                Q(user__username__icontains=search)
+                | Q(user__first_name__icontains=search)
+                | Q(user__last_name__icontains=search)
             )
 
-        matchings = { 'userName': 'user__username', 'firstName': 'user__first_name', 'lastName': 'user__last_name' }
-        prefix = ''
-        if order.startswith('-'):
-                    order = order[1:]
-                    prefix = '-'
+        matchings = {
+            "userName": "user__username",
+            "firstName": "user__first_name",
+            "lastName": "user__last_name",
+        }
+        prefix = ""
+        if order.startswith("-"):
+            order = order[1:]
+            prefix = "-"
         qs_order = "%s%s" % (prefix, matchings.get(order, order))
 
         queryset = queryset.order_by(qs_order)
 
         if not as_list:
             paginator = Paginator(queryset, limit)
-
 
             res = {"count": paginator.count}
             if page_offset > paginator.num_pages:
@@ -78,8 +86,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            return Response(queryset.values('id', 'user__username', 'user__id'))
-
+            return Response(queryset.values("id", "user__username", "user__id"))
 
     def retrieve(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)
@@ -91,25 +98,25 @@ class ProfilesViewSet(viewsets.ViewSet):
         original_profile = copy(profile)
         original_user = copy(user)
 
-        user.first_name = request.data.get('firstName', '')
-        user.last_name = request.data.get('lastName', '')
-        user.username = request.data.get('userName', '')
-        user.email = request.data.get('email', '')
-        password = request.data.get('password', None)
-        provinces = request.data.get('province', None)
-        zones = request.data.get('ZS', [])
-        areas = request.data.get('AS', [])
-        permissions = request.data.get('permissions', [])
-        tester_type = request.data.get('tester_type', None)
+        user.first_name = request.data.get("firstName", "")
+        user.last_name = request.data.get("lastName", "")
+        user.username = request.data.get("userName", "")
+        user.email = request.data.get("email", "")
+        password = request.data.get("password", None)
+        provinces = request.data.get("province", None)
+        zones = request.data.get("ZS", [])
+        areas = request.data.get("AS", [])
+        permissions = request.data.get("permissions", [])
+        tester_type = request.data.get("tester_type", None)
         if password:
             user.set_password(password)
         user.save()
         log_modification(original_user, user, PROFILE_API, request.user)
         profile.user = user
 
-        team = request.data.get('team', None)
-        institution = request.data.get('institution', None)
-        user_type = request.data.get('userType', None)
+        team = request.data.get("team", None)
+        institution = request.data.get("institution", None)
+        user_type = request.data.get("userType", None)
 
         new_team = None
         if team:
@@ -117,16 +124,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.team = new_team
 
         new_institution = None
-        if institution and institution.get('id'):
-            new_institution = get_object_or_404(Institution, id=institution.get('id'))
+        if institution and institution.get("id"):
+            new_institution = get_object_or_404(Institution, id=institution.get("id"))
         profile.institution = new_institution
 
         new_user_type = None
         if user_type:
-            new_user_type = get_object_or_404(UserType, id=user_type.get('id'))
+            new_user_type = get_object_or_404(UserType, id=user_type.get("id"))
         profile.userType = new_user_type
 
-        profile.phone = request.data.get('phone', '')
+        profile.phone = request.data.get("phone", "")
         profile.province_scope.clear()
         if provinces:
             for province in provinces:
@@ -152,7 +159,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if tester_type:
             profile.tester_type = tester_type
 
-        profile.password_reset = request.data.get('passwordReset', False)
+        profile.password_reset = request.data.get("passwordReset", False)
 
         profile.save()
         log_modification(original_profile, profile, PROFILE_API, request.user)
@@ -160,34 +167,34 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def create(self, request):
         user = User()
-        user.first_name = request.data.get('firstName', '')
-        user.last_name = request.data.get('lastName', '')
-        user.username = request.data.get('userName', '')
-        user.email = request.data.get('email', '')
-        password = request.data.get('password', None)
-        provinces = request.data.get('province', None)
-        zones = request.data.get('ZS', [])
-        areas = request.data.get('AS', [])
-        permissions = request.data.get('permissions', [])
+        user.first_name = request.data.get("firstName", "")
+        user.last_name = request.data.get("lastName", "")
+        user.username = request.data.get("userName", "")
+        user.email = request.data.get("email", "")
+        password = request.data.get("password", None)
+        provinces = request.data.get("province", None)
+        zones = request.data.get("ZS", [])
+        areas = request.data.get("AS", [])
+        permissions = request.data.get("permissions", [])
         if password:
             user.set_password(password)
         user.save()
-        institution = request.data.get('institution', None)
-        user_type = request.data.get('userType', None)
-        team = request.data.get('team', None)
+        institution = request.data.get("institution", None)
+        user_type = request.data.get("userType", None)
+        team = request.data.get("team", None)
 
         if institution:
-            institution = get_object_or_404(Institution, id=institution.get('id'))
+            institution = get_object_or_404(Institution, id=institution.get("id"))
             user.profile.institution = institution
         if team:
             new_team = get_object_or_404(Team, id=team)
             user.profile.team = new_team
 
         if user_type:
-            new_user_type = get_object_or_404(UserType, id=user_type.get('id'))
+            new_user_type = get_object_or_404(UserType, id=user_type.get("id"))
             user.profile.userType = new_user_type
 
-        user.profile.phone = request.data.get('phone', '')
+        user.profile.phone = request.data.get("phone", "")
 
         if provinces:
             for province in provinces:
@@ -217,4 +224,3 @@ class ProfilesViewSet(viewsets.ViewSet):
         log_modification(profile.user, None, PROFILE_API, request.user)
         profile.delete()
         return Response("ok")
-

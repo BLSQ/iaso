@@ -8,7 +8,12 @@ from django.db.models import Q, CASCADE, TextField
 from django.contrib.postgres import fields as contrib
 
 from hat.cases.models import Case
-from hat.constants import TEST_TYPE_CHOICES, TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES, GPS_SRID
+from hat.constants import (
+    TEST_TYPE_CHOICES,
+    TYPES_WITH_VIDEOS,
+    TYPES_WITH_IMAGES,
+    GPS_SRID,
+)
 from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
@@ -21,13 +26,12 @@ class Patient(models.Model):
     last_name = contrib.CITextField("Nom de famille", null=True)
     first_name = contrib.CITextField("Prénom", null=True)
 
-    SEX_CHOICES = (
-        ('female', 'Femme'),
-        ('male', 'Homme'),
-    )
+    SEX_CHOICES = (("female", "Femme"), ("male", "Homme"))
     sex = models.TextField("Sexe", choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
-    year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True, db_index=True)
+    year_of_birth = models.PositiveSmallIntegerField(
+        "Année de naissance", null=True, blank=True, db_index=True
+    )
     mothers_surname = contrib.CITextField("Nom de la mère", null=True)
     # Origin area/village is the normalized test location for residents and origin location for travellers
     origin_area = models.ForeignKey(AS, null=True, on_delete=models.CASCADE)
@@ -38,7 +42,9 @@ class Patient(models.Model):
     origin_raw_ZS = models.TextField(null=True, blank=True, db_index=True)
     dead = models.BooleanField(default=False)
     death_date = models.DateField(null=True, blank=True)
-    death_device = models.ForeignKey("sync.DeviceDB", null=True, blank=True, on_delete=CASCADE)
+    death_device = models.ForeignKey(
+        "sync.DeviceDB", null=True, blank=True, on_delete=CASCADE
+    )
     death_location = gis_models.PointField(srid=GPS_SRID, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,7 +55,9 @@ class Patient(models.Model):
 
     def as_dict(self, additional_fields=None, anonymous=False):
         user = get_current_user()
-        is_anonymised = anonymous or (user.has_perm("menupermissions.x_anonymous") and not user.is_superuser)
+        is_anonymised = anonymous or (
+            user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
+        )
         AS = None
         ZS = None
         province = None
@@ -64,11 +72,15 @@ class Patient(models.Model):
             "id": self.id,
             "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
-            "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "first_name": self.first_name
+            if not is_anonymised
+            else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "age": self.age,
             "year_of_birth": self.year_of_birth,
-            "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "mothers_surname": self.mothers_surname
+            if not is_anonymised
+            else ANONYMOUS_PLACEHOLDER,
             "province": province,
             "ZS": ZS,
             "AS": AS,
@@ -88,20 +100,24 @@ class Patient(models.Model):
 
     def as_full_dict(self, anonymous=False):
         user = get_current_user()
-        is_anonymised = anonymous or (user.has_perm("menupermissions.x_anonymous") and not user.is_superuser)
+        is_anonymised = anonymous or (
+            user.has_perm("menupermissions.x_anonymous") and not user.is_superuser
+        )
         cases = []
         tests = []
         for case in self.case_set.all():
             cases.append(case.as_dict(True))
             for test in case.test_set.all():
-                tests.append(test.to_dict())
+                tests.append(test.as_dict())
         similar_patients = []
-        for pair in PatientDuplicatesPair.objects.filter(Q(patient1_id=self.id) | Q(patient2_id=self.id)):
+        for pair in PatientDuplicatesPair.objects.filter(
+            Q(patient1_id=self.id) | Q(patient2_id=self.id)
+        ):
             if pair.patient1_id != self.id:
                 duplicate_patient = pair.patient1.as_dict()
             else:
                 duplicate_patient = pair.patient2.as_dict()
-            duplicate_patient['duplicateId'] = pair.id
+            duplicate_patient["duplicateId"] = pair.id
             similar_patients.append(duplicate_patient)
         AS = None
         ZS = None
@@ -126,22 +142,26 @@ class Patient(models.Model):
             death = {
                 "dead": self.dead,
                 "death_date": self.death_date,
-                "location": json.loads(self.death_location.geojson) if self.death_location else None,
+                "location": json.loads(self.death_location.geojson)
+                if self.death_location
+                else None,
                 "device": self.death_device.as_dict() if self.death_device else None,
             }
         else:
-            death = {
-                "dead": self.dead
-            }
+            death = {"dead": self.dead}
 
         return {
             "id": self.id,
             "post_name": self.post_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
             "last_name": self.last_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
-            "first_name": self.first_name if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "first_name": self.first_name
+            if not is_anonymised
+            else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "year_of_birth": self.year_of_birth,
-            "mothers_surname": self.mothers_surname if not is_anonymised else ANONYMOUS_PLACEHOLDER,
+            "mothers_surname": self.mothers_surname
+            if not is_anonymised
+            else ANONYMOUS_PLACEHOLDER,
             "origin_area": self.origin_area.as_dict() if self.origin_area else None,
             "cases": cases,
             "tests": tests,
@@ -164,28 +184,44 @@ class Test(models.Model):
     type = models.TextField("Type", choices=TEST_TYPE_CHOICES)
     note = models.TextField("Note", null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True, db_index=True)
-    result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True, db_index=True)
+    result = models.IntegerField(
+        choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True, db_index=True
+    )
     level = models.IntegerField(null=True, blank=True, db_index=True)
     index = models.IntegerField(null=True, blank=True)
-    team = models.ForeignKey("users.Team", null=True, blank=True, on_delete=models.CASCADE)
+    team = models.ForeignKey(
+        "users.Team", null=True, blank=True, on_delete=models.CASCADE
+    )
     village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
-    traveller_area = models.ForeignKey(AS, null=True, blank=True, on_delete=models.CASCADE)
+    traveller_area = models.ForeignKey(
+        AS, null=True, blank=True, on_delete=models.CASCADE
+    )
     form = models.ForeignKey(Case, on_delete=models.CASCADE)
-    image_filename = models.TextField("Filename for image/picture", null=True, blank=True, db_index=True)
-    image = models.ForeignKey(ImageUpload, blank=True, null=True, on_delete=models.CASCADE)
-    video_filename = models.TextField("Filename for video", null=True, blank=True, db_index=True)
-    video = models.ForeignKey(VideoUpload, blank=True, null=True, on_delete=models.CASCADE)
+    image_filename = models.TextField(
+        "Filename for image/picture", null=True, blank=True, db_index=True
+    )
+    image = models.ForeignKey(
+        ImageUpload, blank=True, null=True, on_delete=models.CASCADE
+    )
+    video_filename = models.TextField(
+        "Filename for video", null=True, blank=True, db_index=True
+    )
+    video = models.ForeignKey(
+        VideoUpload, blank=True, null=True, on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     hidden = models.BooleanField(default=False)
-    device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE, blank=True, null=True)
+    device = models.ForeignKey(
+        "sync.DeviceDB", on_delete=CASCADE, blank=True, null=True
+    )
     tester = models.ForeignKey(Profile, on_delete=CASCADE, blank=True, null=True)
     location = PointField(srid=4326, null=True)
 
     def __str__(self):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
 
-    def to_dict(self):
+    def as_dict(self, with_checks=False):
 
         res = {
             "id": self.id,
@@ -203,82 +239,87 @@ class Test(models.Model):
 
         if self.type in TYPES_WITH_IMAGES:
             if self.image_filename:
-                res['image_filename'] = self.image_filename
+                res["image_filename"] = self.image_filename
             if self.image:
-                res['image'] = self.image.image.url
-                res['group_id'] = self.image.participant_uuid
+                res["image"] = self.image.image.url
+                res["group_id"] = self.image.participant_uuid
 
         if self.type in TYPES_WITH_VIDEOS:
             if self.video_filename:
-                res['video_filename'] = self.video_filename
+                res["video_filename"] = self.video_filename
             if self.video:
-                res['video'] = self.video.video.url
-                res['group_id'] = self.video.participant_uuid
+                res["video"] = self.video.video.url
+                res["group_id"] = self.video.participant_uuid
+
+        if with_checks:
+            res["checks"] = [
+                check.as_dict() for check in self.check_set.order_by("created_at")
+            ]
 
         return res
 
 
 class Treatment(models.Model):
-    MED_NONE = 'none'
-    MED_PENTAMIDINE = 'pentamidine'
-    MED_MELARSOPROL = 'melarsoprol'
-    MED_EFLORNITHINE = 'eflornithine'
-    MED_NECT = 'nect'
-    MED_FEXINIDAZOLE = 'fexinidazole'
-    MED_OXABOROLE = 'oxaborole'
+    MED_NONE = "none"
+    MED_PENTAMIDINE = "pentamidine"
+    MED_MELARSOPROL = "melarsoprol"
+    MED_EFLORNITHINE = "eflornithine"
+    MED_NECT = "nect"
+    MED_FEXINIDAZOLE = "fexinidazole"
+    MED_OXABOROLE = "oxaborole"
     MED_CHOICES = (
-        (MED_NONE, 'Aucun'),
-        (MED_PENTAMIDINE, 'Pentamidine'),
-        (MED_MELARSOPROL, 'Melarsoprol'),
-        (MED_EFLORNITHINE, 'Eflornithine'),
-        (MED_NECT, 'NECT'),
-        (MED_FEXINIDAZOLE, 'Fexinidazole'),
-        (MED_OXABOROLE, 'Oxaborole')
+        (MED_NONE, "Aucun"),
+        (MED_PENTAMIDINE, "Pentamidine"),
+        (MED_MELARSOPROL, "Melarsoprol"),
+        (MED_EFLORNITHINE, "Eflornithine"),
+        (MED_NECT, "NECT"),
+        (MED_FEXINIDAZOLE, "Fexinidazole"),
+        (MED_OXABOROLE, "Oxaborole"),
     )
 
-    ISSUE_VOMITING = 'vomiting'
-    ISSUE_DIARRHEA = 'diarrhea'
-    ISSUE_DISORIENTATION = 'desorientation' # typo in document
-    ISSUE_OBNUBILATION = 'obnubilation'
-    ISSUE_BEHAVIOUR = 'behaviour'
-    ISSUE_COMA = 'coma'
-    ISSUE_NEURO = 'neuro'
-    ISSUE_CONVULSION = 'convulsion'
-    ISSUE_SEPTICEMY = 'septicemy'
-    ISSUE_ACUTE_RESPIRATORY_FAILURE = 'acute respiratory failure'
-    ISSUE_OTHERS = 'other'
-    ISSUE_CHOICES=(
-        (ISSUE_VOMITING, 'vomiting'),
-        (ISSUE_DIARRHEA, 'diarrhea'),
-        (ISSUE_DISORIENTATION, 'desorientation'),  # typo in document
-        (ISSUE_OBNUBILATION, 'obnubilation'),
-        (ISSUE_BEHAVIOUR, 'behaviour'),
-        (ISSUE_COMA, 'coma'),
-        (ISSUE_NEURO, 'neuro'),
-        (ISSUE_CONVULSION, 'convulsion'),
-        (ISSUE_SEPTICEMY, 'septicemy'),
-        (ISSUE_ACUTE_RESPIRATORY_FAILURE, 'acute respiratory failure'),
-        (ISSUE_OTHERS, 'other'),
+    ISSUE_VOMITING = "vomiting"
+    ISSUE_DIARRHEA = "diarrhea"
+    ISSUE_DISORIENTATION = "desorientation"  # typo in document
+    ISSUE_OBNUBILATION = "obnubilation"
+    ISSUE_BEHAVIOUR = "behaviour"
+    ISSUE_COMA = "coma"
+    ISSUE_NEURO = "neuro"
+    ISSUE_CONVULSION = "convulsion"
+    ISSUE_SEPTICEMY = "septicemy"
+    ISSUE_ACUTE_RESPIRATORY_FAILURE = "acute respiratory failure"
+    ISSUE_OTHERS = "other"
+    ISSUE_CHOICES = (
+        (ISSUE_VOMITING, "vomiting"),
+        (ISSUE_DIARRHEA, "diarrhea"),
+        (ISSUE_DISORIENTATION, "desorientation"),  # typo in document
+        (ISSUE_OBNUBILATION, "obnubilation"),
+        (ISSUE_BEHAVIOUR, "behaviour"),
+        (ISSUE_COMA, "coma"),
+        (ISSUE_NEURO, "neuro"),
+        (ISSUE_CONVULSION, "convulsion"),
+        (ISSUE_SEPTICEMY, "septicemy"),
+        (ISSUE_ACUTE_RESPIRATORY_FAILURE, "acute respiratory failure"),
+        (ISSUE_OTHERS, "other"),
     )
 
-    INCOMPLETE_REASON_OUTOFSTOCK = 'outofstock'
-    INCOMPLETE_REASON_ABANDON = 'abandon'
-    INCOMPLETE_REASON_DEATH = 'death'
-    INCOMPLETE_REASON_PATIENTINCAPACITY = 'patientincapacity'
+    INCOMPLETE_REASON_OUTOFSTOCK = "outofstock"
+    INCOMPLETE_REASON_ABANDON = "abandon"
+    INCOMPLETE_REASON_DEATH = "death"
+    INCOMPLETE_REASON_PATIENTINCAPACITY = "patientincapacity"
     INCOMPLETE_REASON_CHOICES = (
-        ('outofstock', 'rupture de stock'),
-        ('abandon', 'abandon'),
-        ('death', 'décès'),
-        ('patientincapacity', 'incapacité du patient')
+        ("outofstock", "rupture de stock"),
+        ("abandon", "abandon"),
+        ("death", "décès"),
+        ("patientincapacity", "incapacité du patient"),
     )
 
-    DEATH_MOMENT_BEFORE = 'before'
-    DEATH_MOMENT_DURING = 'during'
-    DEATH_MOMENT_AFTER = 'after'
+    DEATH_MOMENT_BEFORE = "before"
+    DEATH_MOMENT_DURING = "during"
+    DEATH_MOMENT_AFTER = "after"
     DEATH_MOMENT_CHOICES = (
-        ('before', 'Avant traitement'),
-        ('during', 'Pendant traitement'),
-        ('after', 'Après traitement')
+        ("before", "Avant traitement"),
+        ("during", "Pendant traitement"),
+        ("after", "Après traitement"),
     )
     patient = models.ForeignKey(to=Patient, on_delete=CASCADE)
     index = models.IntegerField()
@@ -324,7 +365,9 @@ class Treatment(models.Model):
             "otherIssues": self.other_issues,
             "event": self.event,
             "incomplete_reasons": self.incomplete_reasons,
-            "location": json.loads(self.location.geojson) if self.location and self.location.geojson else None,
+            "location": json.loads(self.location.geojson)
+            if self.location and self.location.geojson
+            else None,
             "device": self.device.as_dict() if self.device else None,
             "death_moment": self.death_moment,
             "complete": self.complete,
@@ -364,8 +407,12 @@ class PatientDuplicatesPair(models.Model):
 
     """
 
-    patient1 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
-    patient2 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
+    patient1 = models.ForeignKey(
+        "patient.Patient", on_delete=models.CASCADE, related_name="+", db_index=True
+    )
+    patient2 = models.ForeignKey(
+        "patient.Patient", on_delete=models.CASCADE, related_name="+", db_index=True
+    )
     similarity_score = models.SmallIntegerField(null=True)
     algorithm = models.CharField(max_length=10)
 
@@ -376,18 +423,16 @@ class PatientDuplicatesPair(models.Model):
             raise Exception("Patient1's id MUST always be greater than patient2's id")
 
     class Meta:
-        unique_together = (('patient1', 'patient2', 'algorithm'),)
-        permissions = (
-            ('reconcile_duplicates', 'Can reconcile duplicates'),
-        )
+        unique_together = (("patient1", "patient2", "algorithm"),)
+        permissions = (("reconcile_duplicates", "Can reconcile duplicates"),)
 
     def as_dict(self, full=False):
         return {
-            'id': self.id,
-            'patient1': self.patient1.as_dict() if full else {'id': self.patient1_id},
-            'patient2': self.patient2.as_dict() if full else {'id': self.patient2_id},
-            'similarity_score': self.similarity_score,
-            'algorithm': self.algorithm,
+            "id": self.id,
+            "patient1": self.patient1.as_dict() if full else {"id": self.patient1_id},
+            "patient2": self.patient2.as_dict() if full else {"id": self.patient2_id},
+            "similarity_score": self.similarity_score,
+            "algorithm": self.algorithm,
         }
 
     def __str__(self):
@@ -406,24 +451,33 @@ class PatientIgnoredPair(models.Model):
     :ivar text algorithm: The algorithm that generated the excluded pair, will affect all other algorithms too
 
     """
-    patient1 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
-    patient2 = models.ForeignKey('patient.Patient', on_delete=models.CASCADE, related_name='+', db_index=True)
-    algorithm = models.CharField(max_length=10)  # Only for information, the pair will be ignored with all algorithms
-    ignored_by = models.ForeignKey('auth.User', on_delete=models.DO_NOTHING, related_name='+')
+
+    patient1 = models.ForeignKey(
+        "patient.Patient", on_delete=models.CASCADE, related_name="+", db_index=True
+    )
+    patient2 = models.ForeignKey(
+        "patient.Patient", on_delete=models.CASCADE, related_name="+", db_index=True
+    )
+    algorithm = models.CharField(
+        max_length=10
+    )  # Only for information, the pair will be ignored with all algorithms
+    ignored_by = models.ForeignKey(
+        "auth.User", on_delete=models.DO_NOTHING, related_name="+"
+    )
 
     class Meta:
-        unique_together = (('patient1', 'patient2'),)
+        unique_together = (("patient1", "patient2"),)
 
     def __str__(self):
         return "%s - %s" % (self.patient1_id, self.patient2_id)
 
     def as_dict(self, full=False):
         return {
-            'id': self.id,
-            'patient1': self.patient1.as_dict() if full else {'id': self.patient1_id},
-            'patient2': self.patient2.as_dict() if full else {'id': self.patient2_id},
-            'algorithm': self.algorithm,
-            'ignore': True,
+            "id": self.id,
+            "patient1": self.patient1.as_dict() if full else {"id": self.patient1_id},
+            "patient2": self.patient2.as_dict() if full else {"id": self.patient2_id},
+            "algorithm": self.algorithm,
+            "ignore": True,
         }
 
 
@@ -433,20 +487,25 @@ class PatientDuplicatesView(models.Model):
 
     You should never query the whole table at once as it would take forever, one should apply filter on specific IDs
     """
+
     # Django forces us to name a primary key and doesn't support composite keys. This is a read only view, we don't care
-    patient1 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
-    patient2 = models.ForeignKey('patient.Patient', on_delete=models.DO_NOTHING, related_name='+')
+    patient1 = models.ForeignKey(
+        "patient.Patient", on_delete=models.DO_NOTHING, related_name="+"
+    )
+    patient2 = models.ForeignKey(
+        "patient.Patient", on_delete=models.DO_NOTHING, related_name="+"
+    )
     similarity_score = models.SmallIntegerField(null=True)
     algorithm = models.CharField(max_length=10, primary_key=True)
 
     class Meta:
         managed = False
-        db_table = 'patient_matching_all'
+        db_table = "patient_matching_all"
 
     def as_dict(self):
         return {
-            'patient1_id': self.patient1_id,
-            'patient2_id': self.patient2_id,
-            'similarity_score': self.similarity_score,
-            'algorithm': self.algorithm,
+            "patient1_id": self.patient1_id,
+            "patient2_id": self.patient2_id,
+            "similarity_score": self.similarity_score,
+            "algorithm": self.algorithm,
         }

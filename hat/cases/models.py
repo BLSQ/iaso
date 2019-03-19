@@ -12,39 +12,52 @@ from hat.sync.models import DeviceDB
 from hat.users.models import Team
 
 CASES_PERMISSIONS = (
-    ('import', 'Can import data'),
-    ('import_reconciled', 'Can import reconciliation data'),
-    ('export', 'Can export anonymized cases data'),
-    ('export_full', 'Can export non anonymized cases data'),
-    ('view', 'Can view anonymized cases data'),
-    ('view_full', 'Can view non anonymized cases data'),
+    ("import", "Can import data"),
+    ("import_reconciled", "Can import reconciliation data"),
+    ("export", "Can export anonymized cases data"),
+    ("export_full", "Can export non anonymized cases data"),
+    ("view", "Can view anonymized cases data"),
+    ("view_full", "Can view non anonymized cases data"),
 )
 
 CURRENT_YEAR = datetime.now().year
 years = range(CURRENT_YEAR, CURRENT_YEAR - 20, -1)
 YEAR_CHOICES = zip(years, years)
-MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre',
-          'Décembre']
+MONTHS = [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Aout",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre",
+]
 MONTH_CHOICES = [(i + 1, MONTHS[i]) for i in range(0, 12)]
+
 
 def testResultString(value):
     if value == RES_POSITIVE_POSITIVE_POSITIVE:
-        return 'Positif +++'
+        return "Positif +++"
     if value == RES_POSITIVE_POSITIVE:
-        return 'Positif ++'
+        return "Positif ++"
     if value == RES_POSITIVE:
-        return 'Positif +'
+        return "Positif +"
     if value == RES_NEGATIVE:
-        return 'Négatif'
+        return "Négatif"
     if value == RES_ABSENT:
-        return 'Absent'
+        return "Absent"
     if value == RES_MISSING:
-        return 'Manquant'
+        return "Manquant"
     if value == RES_UNREAD:
-        return 'Non lisible'
+        return "Non lisible"
     if value == RES_UNUSED:
-        return 'Non utlisé'
-    return '/'
+        return "Non utlisé"
+    return "/"
 
 
 RES_POSITIVE_POSITIVE_POSITIVE = 4
@@ -61,7 +74,7 @@ SCR_TYPE_ON_SITE = "onSite"
 
 
 class CaseAbstract(models.Model):
-    '''
+    """
     Models case object with generic properties, treatment, followup, tests...
 
     - **Generic**
@@ -210,13 +223,13 @@ class CaseAbstract(models.Model):
 
     :ivar integer test_other:                Other test.
 
-    '''
+    """
 
     SOURCE_CHOICES = (
-        ('historic', 'Historic'),
-        ('mobile_backup', 'Mobile backup'),
-        ('mobile_sync', 'Mobile synced'),
-        ('pv', 'Pharmacovigilance'),
+        ("historic", "Historic"),
+        ("mobile_backup", "Mobile backup"),
+        ("mobile_sync", "Mobile synced"),
+        ("pv", "Pharmacovigilance"),
     )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
@@ -227,22 +240,27 @@ class CaseAbstract(models.Model):
     entry_date = models.DateTimeField("Date de collection", null=True)
     entry_name = models.TextField("Nom d'entrée", null=True)
 
-    form_number = models.PositiveSmallIntegerField("Numéro de formulaire", null=True, blank=True)
+    form_number = models.PositiveSmallIntegerField(
+        "Numéro de formulaire", null=True, blank=True
+    )
 
-    form_year = models.PositiveSmallIntegerField("Année du formulaire", choices=YEAR_CHOICES, null=True, blank=True)
-    form_month = models.PositiveSmallIntegerField("Mois du formulaire", choices=MONTH_CHOICES, null=True, blank=True)
+    form_year = models.PositiveSmallIntegerField(
+        "Année du formulaire", choices=YEAR_CHOICES, null=True, blank=True
+    )
+    form_month = models.PositiveSmallIntegerField(
+        "Mois du formulaire", choices=MONTH_CHOICES, null=True, blank=True
+    )
 
     name = models.TextField("Postnom", null=True)
     lastname = models.TextField("Nom de famille", null=True)
     prename = models.TextField("Prénom", null=True)
 
-    SEX_CHOICES = (
-        ('female', 'Femme'),
-        ('male', 'Homme'),
-    )
+    SEX_CHOICES = (("female", "Femme"), ("male", "Homme"))
     sex = models.TextField("Sexe", choices=SEX_CHOICES, null=True)
     age = models.PositiveSmallIntegerField("Age", null=True, blank=True)
-    year_of_birth = models.PositiveSmallIntegerField("Année de naissance", null=True, blank=True)
+    year_of_birth = models.PositiveSmallIntegerField(
+        "Année de naissance", null=True, blank=True
+    )
     mothers_surname = models.TextField("Nom de la mère", null=True)
 
     province = models.TextField(null=True)
@@ -250,11 +268,15 @@ class CaseAbstract(models.Model):
     AS = models.TextField(null=True)
     village = models.TextField(null=True)
 
-    normalized_village = models.ForeignKey(Village, null=True, on_delete=models.SET_NULL)
+    normalized_village = models.ForeignKey(
+        Village, null=True, on_delete=models.SET_NULL
+    )
 
     normalized_AS = models.ForeignKey(ASModel, null=True, on_delete=models.SET_NULL)
     # Don't use the class here because the import will create a cyclic dependency on Case
-    normalized_patient = models.ForeignKey('patient.Patient', null=True, on_delete=models.SET_NULL)
+    normalized_patient = models.ForeignKey(
+        "patient.Patient", null=True, on_delete=models.SET_NULL
+    )
 
     normalized_village_not_found = models.NullBooleanField(default=False)
 
@@ -273,21 +295,27 @@ class CaseAbstract(models.Model):
     device_id = models.TextField(null=True)
 
     treatment_center = models.TextField("Centre de traitement", null=True, blank=True)
-    treatment_start_date = models.DateTimeField("Début de traitement", null=True, blank=True)
-    treatment_end_date = models.DateTimeField("Fin de traitement", null=True, blank=True)
+    treatment_start_date = models.DateTimeField(
+        "Début de traitement", null=True, blank=True
+    )
+    treatment_end_date = models.DateTimeField(
+        "Fin de traitement", null=True, blank=True
+    )
     treatment_prescribed = models.TextField("Prescription", null=True, blank=True)
-    treatment_secondary_effects = models.NullBooleanField("Effets Secondaires", blank=True)
+    treatment_secondary_effects = models.NullBooleanField(
+        "Effets Secondaires", blank=True
+    )
     treatment_result = models.TextField("Résultat", null=True, blank=True)
 
     GENERAL_TEST_RESULT_CHOICES = (
-        (RES_POSITIVE_POSITIVE_POSITIVE, 'Positif +++'),
-        (RES_POSITIVE_POSITIVE, 'Positif ++'),
-        (RES_POSITIVE, 'Positif'),
-        (RES_NEGATIVE, 'Négatif'),
-        (RES_ABSENT, 'Absent'),
-        (RES_MISSING, 'Manquant'),
-        (RES_UNREAD, 'Illisible'),
-        (RES_UNUSED, 'Inutilisé'),
+        (RES_POSITIVE_POSITIVE_POSITIVE, "Positif +++"),
+        (RES_POSITIVE_POSITIVE, "Positif ++"),
+        (RES_POSITIVE, "Positif"),
+        (RES_NEGATIVE, "Négatif"),
+        (RES_ABSENT, "Absent"),
+        (RES_MISSING, "Manquant"),
+        (RES_UNREAD, "Illisible"),
+        (RES_UNUSED, "Inutilisé"),
     )
 
     SESSION_TYPE_CHOICES = (
@@ -295,37 +323,92 @@ class CaseAbstract(models.Model):
         (SCR_TYPE_ON_SITE, "On site"),
     )
 
-    test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_catt = models.IntegerField(
+        "Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
     test_catt_index = models.IntegerField("CATT Card Index", null=True, blank=True)
-    test_catt_level = models.IntegerField("CATT positivity level", null=True, blank=True)
-    test_catt_dilution = models.TextField("Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_catt_picture_filename = models.TextField("CATT picture filename", null=True, blank=True)
-    test_catt_session_type = models.TextField("CATT session type door to door or on site",
-                                              choices=SESSION_TYPE_CHOICES, null=True, blank=True)
-    test_clinical_sickness = models.IntegerField("Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
-                                                 blank=True)
-    test_ctcwoo = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_ctcwoo_video_filename = models.TextField("filename of CTCWOO test video", null=True, blank=True)
-    test_dil = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_ge = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_ifat = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_lcr = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_lymph_node_puncture = models.IntegerField("Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True,
-                                                   blank=True)
-    test_maect = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_maect_video_filename = models.TextField("filename of mAECT test video", null=True, blank=True)
-    test_parasit = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_pg = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_pg_video_filename = models.TextField("filename of PG test video", null=True, blank=True)
-    test_pl = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_rdt = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_rdt_session_type = models.TextField("RDT session type door to door or on site",
-                                             choices=SESSION_TYPE_CHOICES, null=True, blank=True)
-    test_rdt_picture_filename = models.TextField("RDT picture filename", null=True, blank=True)
-    test_sf = models.IntegerField(choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
-    test_sternal_puncture = models.IntegerField("Test Ponction Sternale", choices=GENERAL_TEST_RESULT_CHOICES,
-                                                null=True, blank=True)
-    test_other = models.IntegerField("Autre test", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
+
+    test_catt_level = models.IntegerField(
+        "CATT positivity level", null=True, blank=True
+    )
+    test_catt_dilution = models.TextField(
+        "Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_catt_picture_filename = models.TextField(
+        "CATT picture filename", null=True, blank=True
+    )
+    test_catt_session_type = models.TextField(
+        "CATT session type door to door or on site",
+        choices=SESSION_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    test_clinical_sickness = models.IntegerField(
+        "Maladie clinique", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_ctcwoo = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_ctcwoo_video_filename = models.TextField(
+        "filename of CTCWOO test video", null=True, blank=True
+    )
+    test_dil = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_ge = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_ifat = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_lcr = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_lymph_node_puncture = models.IntegerField(
+        "Ponction Ganglions", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_maect = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_maect_video_filename = models.TextField(
+        "filename of mAECT test video", null=True, blank=True
+    )
+    test_parasit = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_pg = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_pg_video_filename = models.TextField(
+        "filename of PG test video", null=True, blank=True
+    )
+    test_pl = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_rdt = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_rdt_session_type = models.TextField(
+        "RDT session type door to door or on site",
+        choices=SESSION_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    test_rdt_picture_filename = models.TextField(
+        "RDT picture filename", null=True, blank=True
+    )
+    test_sf = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
+    test_sternal_puncture = models.IntegerField(
+        "Test Ponction Sternale",
+        choices=GENERAL_TEST_RESULT_CHOICES,
+        null=True,
+        blank=True,
+    )
+    test_other = models.IntegerField(
+        "Autre test", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
 
     # Some of these could be used for validating the correctness of the pl_result.
     # The pl_result field is the only one of this that is actually used for aggregation.
@@ -334,14 +417,20 @@ class CaseAbstract(models.Model):
     test_pl_gb_mm3 = models.TextField(null=True, blank=True)
     test_pl_albumine = models.TextField(null=True, blank=True)
     test_pl_lcr = models.TextField(null=True, blank=True)
-    test_pl_comments = models.TextField("Commentaire Ponction Lombaire", null=True, blank=True)
-    test_pl_video_filename = models.TextField("filename of PL test video", null=True, blank=True)
-    PL_TEST_RESULT_CHOICES = (
-        ('stage1', 'Stage1'),
-        ('stage2', 'Stage2'),
-        ('unknown', 'Inconnu'),
+    test_pl_comments = models.TextField(
+        "Commentaire Ponction Lombaire", null=True, blank=True
     )
-    test_pl_result = models.TextField("Résultat de test PL", choices=PL_TEST_RESULT_CHOICES, null=True, blank=True)
+    test_pl_video_filename = models.TextField(
+        "filename of PL test video", null=True, blank=True
+    )
+    PL_TEST_RESULT_CHOICES = (
+        ("stage1", "Stage1"),
+        ("stage2", "Stage2"),
+        ("unknown", "Inconnu"),
+    )
+    test_pl_result = models.TextField(
+        "Résultat de test PL", choices=PL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
 
     followup_done = models.NullBooleanField("Suivi effectué", blank=True)
 
@@ -353,7 +442,9 @@ class CaseAbstract(models.Model):
     test_followup_maect = models.TextField("Suivi MAECT", null=True, blank=True)
     test_followup_woo_maect = models.TextField("Suivi WOO MAECT", null=True, blank=True)
     test_followup_pl = models.TextField("Suivi PL", null=True, blank=True)
-    test_followup_pl_trypanosome = models.TextField("Suivi PL trypanosome", null=True, blank=True)
+    test_followup_pl_trypanosome = models.TextField(
+        "Suivi PL trypanosome", null=True, blank=True
+    )
     test_followup_pl_gb = models.TextField("Suivi PL GB", null=True, blank=True)
     test_followup_decision = models.TextField("Suivi décision", null=True, blank=True)
 
@@ -362,29 +453,29 @@ class CaseAbstract(models.Model):
     version_number = models.PositiveIntegerField(default=0)
 
     FILTER_ANY_PICTURE_FILENAME = Q(
-        Q(test_catt_picture_filename__isnull=False) |
-        Q(test_rdt_picture_filename__isnull=False)
+        Q(test_catt_picture_filename__isnull=False)
+        | Q(test_rdt_picture_filename__isnull=False)
     )
     FILTER_NO_PICTURE_FILENAME = Q(
-        Q(test_catt_picture_filename__isnull=True) &
-        Q(test_rdt_picture_filename__isnull=True)
+        Q(test_catt_picture_filename__isnull=True)
+        & Q(test_rdt_picture_filename__isnull=True)
     )
     FILTER_ANY_VIDEO_FILENAME = Q(
-        Q(test_ctcwoo_video_filename__isnull=False) |
-        Q(test_maect_video_filename__isnull=False) |
-        Q(test_pg_video_filename__isnull=False) |
-        Q(test_pl_video_filename__isnull=False)
+        Q(test_ctcwoo_video_filename__isnull=False)
+        | Q(test_maect_video_filename__isnull=False)
+        | Q(test_pg_video_filename__isnull=False)
+        | Q(test_pl_video_filename__isnull=False)
     )
     FILTER_NO_VIDEO_FILENAME = Q(
-        Q(test_ctcwoo_video_filename__isnull=True) &
-        Q(test_maect_video_filename__isnull=True) &
-        Q(test_pg_video_filename__isnull=True) &
-        Q(test_pl_video_filename__isnull=True)
+        Q(test_ctcwoo_video_filename__isnull=True)
+        & Q(test_maect_video_filename__isnull=True)
+        & Q(test_pg_video_filename__isnull=True)
+        & Q(test_pl_video_filename__isnull=True)
     )
 
     class Meta:
         abstract = True
-        ordering = ['-id']
+        ordering = ["-id"]
         permissions = CASES_PERMISSIONS
 
     def confirmed(self):
@@ -409,7 +500,7 @@ class CaseAbstract(models.Model):
 
 
 class Case(CaseAbstract):
-    '''
+    """
     Implements :class:`hat.cases.models.CaseAbstract`
 
     **Permissions**
@@ -421,21 +512,19 @@ class Case(CaseAbstract):
     - **view**              -- Can view anonymized cases data.
     - **view_full**         -- Can view non anonymized cases data.
 
-    '''
+    """
 
     class Meta:
         abstract = False
-        ordering = ['-id']
+        ordering = ["-id"]
         permissions = CASES_PERMISSIONS
 
-        indexes = [
-            models.Index(fields=['device_id'], name='device_id_idx'),
-        ]
+        indexes = [models.Index(fields=["device_id"], name="device_id_idx")]
 
     def as_dict(self, full=False):
         # Location
         normalized_as_dict = {
-            'normalized_village_not_found': self.normalized_village_not_found,
+            "normalized_village_not_found": self.normalized_village_not_found
         }
         if self.normalized_AS:
             if isinstance(self, CaseView):
@@ -454,60 +543,63 @@ class Case(CaseAbstract):
             province = self.province
         if self.normalized_village:
             village = self.normalized_village.name
-            normalized_as_dict['village_id'] = self.normalized_village_id
-            normalized_as_dict['village'] = self.normalized_village.as_dict()
+            normalized_as_dict["village_id"] = self.normalized_village_id
+            normalized_as_dict["village"] = self.normalized_village.as_dict()
         else:
             village = self.village
 
         device = None
         try:
             if self.device_id:
-                device = DeviceDB.objects.get(device_id=self.device_id).as_dict(full=True)
+                device = DeviceDB.objects.get(device_id=self.device_id).as_dict(
+                    full=True
+                )
         except DeviceDB.DoesNotExist:
             pass
 
         d = {
-            'id': self.id,
-            'location': {
-                'normalized': normalized_as_dict,
-                'ZS': ZS,
-                'AS': AS,
-                'village': village,
-                'province': province,
-                'record_location': {
-                    'lat': self.latitude,
-                    'long': self.longitude,
-                }
+            "id": self.id,
+            "location": {
+                "normalized": normalized_as_dict,
+                "ZS": ZS,
+                "AS": AS,
+                "village": village,
+                "province": province,
+                "record_location": {"lat": self.latitude, "long": self.longitude},
             },
-
-            'patient': self.normalized_patient.as_dict(),
-            'hat_id': self.hat_id,
-            'hat_document_id': self.document_id,
-
-            'device_id': self.device_id,
-            'device': device,
-
-            'form_number': self.form_number,
-            'form_year': self.form_year,
-            'team': {
-                'mobile_unit': self.mobile_unit,
-                'normalized_team': self.normalized_team.as_dict_without_as() if self.normalized_team else None,
+            "patient": self.normalized_patient.as_dict(),
+            "hat_id": self.hat_id,
+            "hat_document_id": self.document_id,
+            "device_id": self.device_id,
+            "device": device,
+            "form_number": self.form_number,
+            "form_year": self.form_year,
+            "team": {
+                "mobile_unit": self.mobile_unit,
+                "normalized_team": self.normalized_team.as_dict_without_as()
+                if self.normalized_team
+                else None,
             },
-            'source': self.source,
-            'test_catt_session_type': self.test_catt_session_type,
-            'test_pl_albumine': self.test_pl_albumine,
-            'test_pl_gb_mm3': self.test_pl_gb_mm3,
-            'test_pl_lcr': self.test_pl_lcr,
-            'test_pl_trypanosome': self.test_pl_trypanosome,
-            'test_pl_comments': self.test_pl_comments,
-            'circumstances_dp': self.circumstances_dp,
+            "source": self.source,
+            "test_catt_session_type": self.test_catt_session_type,
+            "test_pl_albumine": self.test_pl_albumine,
+            "test_pl_gb_mm3": self.test_pl_gb_mm3,
+            "test_pl_lcr": self.test_pl_lcr,
+            "test_pl_trypanosome": self.test_pl_trypanosome,
+            "test_pl_comments": self.test_pl_comments,
+            "circumstances_dp": self.circumstances_dp,
         }
 
         if full and self.test_set:
             # Test results
-            tests = [test.to_dict() if full else {'id': test.id, 'date': test.date} for test in self.test_set.all()]
-            tests.sort(key=lambda item: item['date'] if item['date'] else "")  # bisect.insort() doesn't play well with lists of dicts
-            d['tests'] = tests
+            tests = [
+                test.as_dict() if full else {"id": test.id, "date": test.date}
+                for test in self.test_set.all()
+            ]
+            tests.sort(
+                key=lambda item: item["date"] if item["date"] else ""
+            )  # bisect.insort() doesn't play well with lists of dicts
+            d["tests"] = tests
 
         return d
 
@@ -525,7 +617,7 @@ def increase_case_version_number(sender, instance, *args, **kwargs):  # type: ig
 
 
 class CaseView(CaseAbstract):
-    '''
+    """
     References a postgresql view that extends :class:`hat.cases.models.CaseAbstract`
     with calculated properties.
 
@@ -550,7 +642,7 @@ class CaseView(CaseAbstract):
 
     .. seealso:: :any:`hat.cases.filters` to get the list of test classification.
 
-    '''
+    """
 
     # calculated fields
     document_date_day = models.DateTimeField(null=True)
@@ -583,24 +675,26 @@ class CaseView(CaseAbstract):
 
     class Meta:
         managed = False
-        db_table = 'cases_case_view'
-        #ordering = ['-document_date']
+        db_table = "cases_case_view"
+        # ordering = ['-document_date']
         permissions = CASES_PERMISSIONS
 
     def as_dict(self, full=False):
         return dict(
             Case.as_dict(self, full),
-            **{'normalized_year': self.normalized_year,
-               'normalized_province_name': self.normalized_province_name,
-               'normalized_zs_name': self.normalized_zs_name,
-               'normalized_as_name': self.normalized_as_name,
-               'normalized_village_name': self.normalized_village_name,
-               'normalized_team_name': self.normalized_team_name,
-               })
+            **{
+                "normalized_year": self.normalized_year,
+                "normalized_province_name": self.normalized_province_name,
+                "normalized_zs_name": self.normalized_zs_name,
+                "normalized_as_name": self.normalized_as_name,
+                "normalized_village_name": self.normalized_village_name,
+                "normalized_team_name": self.normalized_team_name,
+            }
+        )
 
 
 class Location(models.Model):
-    '''
+    """
     The official location list created by
     :func:`hat.import_export.import_locations.import_locations_file`
     and updated by
@@ -635,7 +729,7 @@ class Location(models.Model):
     **Permissions**
 
     - **import_locations** -- Can import location data.
-    '''
+    """
 
     province = models.TextField(null=True)
     province_old = models.TextField(null=True)
@@ -646,10 +740,10 @@ class Location(models.Model):
     village_alt = models.TextField(null=True)
     village_type = models.TextField(null=True)
     VILLAGE_OFFICIAL_CHOICES = (
-        ('YES', 'Villages from Z.S.'),
-        ('NO', 'Villages not from Z.S.'),
-        ('OTHER', 'Locations where people are found during campaigns'),
-        ('NA', 'Villages from satellite (unknown)'),
+        ("YES", "Villages from Z.S."),
+        ("NO", "Villages not from Z.S."),
+        ("OTHER", "Locations where people are found during campaigns"),
+        ("NA", "Villages from satellite (unknown)"),
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
 
@@ -663,9 +757,7 @@ class Location(models.Model):
     already_put_in_normalized_form = models.BooleanField(default=False)
 
     class Meta:
-        permissions = (
-            ('import_locations', 'Can import location data'),
-        )
+        permissions = (("import_locations", "Can import location data"),)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (self.village, self.AS, self.ZS, self.village_type)
@@ -673,7 +765,7 @@ class Location(models.Model):
 
 class TestGroup(models.Model):
     type = models.TextField()
-    cases = models.ManyToManyField('Case')
+    cases = models.ManyToManyField("Case")
     group_id = models.TextField(db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

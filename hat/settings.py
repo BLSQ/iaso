@@ -11,201 +11,182 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
-STAGING = (os.environ.get('STAGING', '').lower() == 'true')
-TESTING = (os.environ.get('TESTING', '').lower() == 'true')
 
-SHOW_DEBUG_TOOLBAR = os.environ.get('SHOW_DEBUG_TOOLBAR', '').lower() == 'true'
+STAGING = os.environ.get("STAGING", "").lower() == "true"
+TESTING = os.environ.get("TESTING", "").lower() == "true"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = (os.environ.get('DEBUG', '').lower() == 'true')
-USE_CACHE = (os.environ.get('CACHE', '').lower() == 'true')
-DEV_SERVER = (os.environ.get('DEV_SERVER', '').lower() == 'true')
-ENVIRONMENT = os.environ.get('SENSE_HAT_ENVIRONMENT', 'development').lower()
+DEBUG = os.environ.get("DEBUG", "").lower() == "true"
+USE_CACHE = os.environ.get("CACHE", "").lower() == "true"
+DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
+ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", "development").lower()
+
 
 # SECURITY WARNING: this should also be considered a secret:
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 # Tell django to view requests as secure(ssl) that have this header set
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
-FIXTURE_DIRS = (
-    'hat/fixtures/',
-)
+FIXTURE_DIRS = ("hat/fixtures/",)
 
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
-CLOUDFRONT_DOMAIN = os.environ.get('CLOUDFRONT_DOMAIN', '')
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+CLOUDFRONT_DOMAIN = os.environ.get("CLOUDFRONT_DOMAIN", "")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 
 
 # Logging
 
-LOGGING_LEVEL = os.getenv('DJANGO_LOGGING_LEVEL', 'INFO')
+LOGGING_LEVEL = os.getenv("DJANGO_LOGGING_LEVEL", "INFO")
 if TESTING:
     # We don't want to see log output when running tests
-    LOGGING_LEVEL = 'CRITICAL'
+    LOGGING_LEVEL = "CRITICAL"
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s %(name)s -- %(message)s'
-        },
-    },
-    'filters': {
-        'no_static': {
-            '()': 'hat.common.log_filter.StaticUrlFilter'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"default": {"format": "%(asctime)s %(name)s -- %(message)s"}},
+    "filters": {"no_static": {"()": "hat.common.log_filter.StaticUrlFilter"}},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            # Don't pollute the log output with lots of static url request in development
+            "filters": ["no_static"] if DEBUG else None,
         }
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-            # Don't pollute the log output with lots of static url request in development
-            'filters': ['no_static'] if DEBUG else None,
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': LOGGING_LEVEL,
-        },
-        'hat': {
-            'handlers': ['console'],
-            'level': LOGGING_LEVEL
-        },
-        'rq': {
-            'handlers': ['console'],
-            'level': LOGGING_LEVEL
-        },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": LOGGING_LEVEL},
+        "hat": {"handlers": ["console"], "level": LOGGING_LEVEL},
+        "rq": {"handlers": ["console"], "level": LOGGING_LEVEL},
     },
 }
 
 # AWS expects python logs to be stored in this folder
-AWS_LOG_FOLDER = '/opt/python/log'
+AWS_LOG_FOLDER = "/opt/python/log"
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")
-        LOGGING['handlers']['file'] = {
-                'class': 'logging.FileHandler',
-                'level': 'DEBUG',
-                'filename': os.path.join(AWS_LOG_FOLDER, 'django.log'),
-            }
-        for logger in LOGGING['loggers'].values():
-            logger['handlers'].append('file')
-        LOGGING['loggers']['hat']['level'] = 'DEBUG'
+        LOGGING["handlers"]["file"] = {
+            "class": "logging.FileHandler",
+            "level": "DEBUG",
+            "filename": os.path.join(AWS_LOG_FOLDER, "django.log"),
+        }
+        for logger in LOGGING["loggers"].values():
+            logger["handlers"].append("file")
+        LOGGING["loggers"]["hat"]["level"] = "DEBUG"
     else:
-        print(f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions")
+        print(
+            f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions"
+        )
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'django.contrib.gis',
-    'django.contrib.postgres',
-    'django_rq',
-    'storages',
-    'corsheaders',
-    #'debug_toolbar',
-    'rest_framework',
-    'webpack_loader',
-    'hat.users',
-    'hat.api',
-    'hat.cases',
-    'hat.common',
-    'hat.couchdb',
-    'hat.dashboard',
-    'hat.quality',
-    'hat.import_export',
-    'hat.integration_tests',
-    'hat.maintenance',
-    'hat.sync',
-    'hat.tasks',
-    'hat.geo',
-    'hat.planning',
-    'hat.patient',
-    'hat.vector_control',
-    'hat.metrics',
-    'hat.audit',
-    'hat.menupermissions'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.messages",
+    "django.contrib.sessions",
+    "django.contrib.staticfiles",
+    "django.contrib.gis",
+    "django.contrib.postgres",
+    "django_rq",
+    "storages",
+    "corsheaders",
+    "rest_framework",
+    "webpack_loader",
+    "hat.users",
+    "hat.api",
+    "hat.cases",
+    "hat.common",
+    "hat.couchdb",
+    "hat.dashboard",
+    "hat.quality",
+    "hat.import_export",
+    "hat.integration_tests",
+    "hat.maintenance",
+    "hat.sync",
+    "hat.tasks",
+    "hat.geo",
+    "hat.planning",
+    "hat.patient",
+    "hat.vector_control",
+    "hat.metrics",
+    "hat.audit",
+    "hat.menupermissions",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'hat.users.middleware.ThreadLocalMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "hat.users.middleware.ThreadLocalMiddleware",
 ]
 
 
-ROOT_URLCONF = 'hat.urls'
+ROOT_URLCONF = "hat.urls"
 
 
 # Allow cors for all origins but only for the sync endpoint
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = r'^/sync/.*$'
+CORS_URLS_REGEX = r"^/sync/.*$"
 
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['./hat/templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.media',
-                'django.contrib.messages.context_processors.messages',
-                'hat.common.context_processors.appversions',
-                'hat.common.context_processors.environment'
-            ],
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": ["./hat/templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.template.context_processors.media",
+                "django.contrib.messages.context_processors.messages",
+                "hat.common.context_processors.appversions",
+                "hat.common.context_processors.environment",
+            ]
         },
-    },
+    }
 ]
 
-WSGI_APPLICATION = 'hat.wsgi.application'
+WSGI_APPLICATION = "hat.wsgi.application"
 
 
 # Database
 
-DB_NAME = os.environ.get('RDS_DB_NAME', 'postgres')
-DB_USERNAME = os.environ.get('RDS_USERNAME', 'postgres')
-DB_PASSWORD = os.environ.get('RDS_PASSWORD', None)
-DB_HOST = os.environ.get('RDS_HOSTNAME', 'db')
-DB_PORT = os.environ.get('RDS_PORT', 5432)
-SNS_NOTIFICATION_TOPIC = os.environ.get('SNS_NOTIFICATION_TOPIC', None)
+DB_NAME = os.environ.get("RDS_DB_NAME", "postgres")
+DB_USERNAME = os.environ.get("RDS_USERNAME", "postgres")
+DB_PASSWORD = os.environ.get("RDS_PASSWORD", None)
+DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
+DB_PORT = os.environ.get("RDS_PORT", 5432)
+SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': DB_NAME,
-        'USER': DB_USERNAME,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": DB_NAME,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
     }
 }
 
@@ -218,31 +199,22 @@ def is_superuser(u):
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 
 # Internationalization
 
 # switch webpack.dev and webpack.prod as well if changing here
-LANGUAGE_CODE = 'fr'
+LANGUAGE_CODE = "fr"
 
-LOCALE_PATHS = [
-    '/opt/app/hat/locale/',
-    'hat/locale/',
-]
+LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -252,86 +224,78 @@ USE_TZ = True
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-LOGIN_URL = '/login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = "/"
 
-COUCHDB_URL = os.environ.get('COUCHDB_URL', 'http://couchdb:5984')
-COUCHDB_USER = os.environ.get('COUCHDB_USER', None)
-COUCHDB_PASSWORD = os.environ.get('COUCHDB_PASSWORD', None)
-COUCHDB_DIR = './couchdb'
+COUCHDB_URL = os.environ.get("COUCHDB_URL", "http://couchdb:5984")
+COUCHDB_USER = os.environ.get("COUCHDB_USER", None)
+COUCHDB_PASSWORD = os.environ.get("COUCHDB_PASSWORD", None)
+COUCHDB_DIR = "./couchdb"
 
-REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_PORT = 6379
 REDIS_DB = 0
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", None)
 REDIS_CACHE_DB = 1
 
 # RQ
 
 RQ_QUEUES = {
-    'default': {
-        'HOST': REDIS_HOST,
-        'PORT': REDIS_PORT,
-        'DB': REDIS_DB,
-        'PASSWORD': REDIS_PASSWORD,
-        'DEFAULT_TIMEOUT': 360,
-    },
+    "default": {
+        "HOST": REDIS_HOST,
+        "PORT": REDIS_PORT,
+        "DB": REDIS_DB,
+        "PASSWORD": REDIS_PASSWORD,
+        "DEFAULT_TIMEOUT": 360,
+    }
 }
 RQ_SHOW_ADMIN_LINK = True
 
 
 # Files
 
-SHARED_DIR = '/opt/shared'
+SHARED_DIR = "/opt/shared"
 
 
-MOBILE_KEY = os.environ.get('HAT_MOBILE_KEY', None)
+MOBILE_KEY = os.environ.get("HAT_MOBILE_KEY", None)
 
 
 # Version Display
-HAT_COMMIT = os.environ.get('HAT_COMMIT', None)
+HAT_COMMIT = os.environ.get("HAT_COMMIT", None)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'assets/bundles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "hat/assets/webpack"),
-]
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "assets/bundles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "hat/assets/webpack")]
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': '/',  # used in prod
-        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/webpack', 'webpack-stats.json' if DEBUG else 'webpack-stats-prod.json'),
+    "DEFAULT": {
+        "BUNDLE_DIR_NAME": "/",  # used in prod
+        "STATS_FILE": os.path.join(
+            PROJECT_ROOT,
+            "assets/webpack",
+            "webpack-stats.json" if DEBUG else "webpack-stats-prod.json",
+        ),
     }
 }
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'hat.api.authentication.UserAccessPermission',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 50,
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '200/day'
-    }
+    "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
 }
 
-
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda _: SHOW_DEBUG_TOOLBAR
-}
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 if DEBUG:
-    MEDIA_URL = '/media/'
-    STATIC_URL = '/static/'
+    MEDIA_URL = "/media/"
+    STATIC_URL = "/static/"
 else:
-    MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-    STATIC_URL = 'https://s3.eu-central-1.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
+    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
+    STATIC_URL = "https://s3.eu-central-1.amazonaws.com/%s/" % AWS_STORAGE_BUCKET_NAME
 AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
 PREPEND_WWW = not DEBUG and not STAGING
 SECURE_SSL_REDIRECT = not DEBUG
@@ -340,12 +304,10 @@ SECURE_SSL_REDIRECT = not DEBUG
 
 
 if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
 AWS_S3_FILE_OVERWRITE = False
 S3_USE_SIGV4 = True
@@ -358,18 +320,14 @@ REDIS_CACHE_LOCATION = "redis://%s:%s/%s" % (REDIS_HOST, REDIS_PORT, REDIS_CACHE
 
 
 if not USE_CACHE:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        }
-    }
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 else:
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": REDIS_CACHE_LOCATION,
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            }
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
+
+AUTH_PROFILE_MODULE = "hat.users.Profile"

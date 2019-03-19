@@ -63,14 +63,19 @@ const fetchTestMapping = (dispatch) => {
 };
 
 const fetchDetails = (dispatch, patientId) => {
+    dispatch(loadActions.startLoading());
     dispatch(loadCurrentDetail({}));
     dispatch(fetchTestMapping(dispatch));
     req
         .get(`/api/patients/${patientId}`)
         .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
             dispatch(loadCurrentDetail(result.body));
         })
-        .catch(err => (console.error(`Error while fetching detail ${err}`)));
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while fetching detail ${err}`);
+        });
     return ({
         type: FETCH_ACTION,
     });
@@ -111,7 +116,10 @@ const fetchDuplicatesDetails = (dispatch, patientId, patientId2) => {
         dispatch(getManualMergedPatient(result[0].body, result[1].body));
         dispatch(loadCurrentDuplicatesDetail(result[0].body, result[1].body));
     })
-        .catch(err => (console.error(`Error while fetching detail ${err}`)));
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while fetching duplicate detail ${err}`);
+        });
     return ({
         type: FETCH_ACTION,
     });
@@ -141,7 +149,10 @@ const mergeDuplicates = (
             dispatch(loadActions.successLoadingNoData());
             element.goBack();
         })
-        .catch(err => (console.error(`Error while merging duplicates ${err}`)));
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while merging duplicates ${err}`);
+        });
     return ({
         type: FETCH_ACTION,
     });
@@ -156,7 +167,10 @@ export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, el
         .then(() => {
             dispatch(mergeDuplicates(dispatch, duplicateId, targetId, element));
         })
-        .catch(err => (console.error(`Error while saving patient ${err}`))));
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while saving patient ${err}`);
+        }));
 };
 
 
@@ -186,6 +200,7 @@ export const savePatient = (dispatch, patient) => {
         .catch((err) => {
             dispatch(setErrorOnUpdated(true));
             dispatch(setIsUpdated(false));
+            dispatch(loadActions.errorLoading(err));
             return (console.error(`Error while saving patient ${err}`));
         });
     return ({

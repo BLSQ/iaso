@@ -391,7 +391,11 @@ class CasesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         full = request.GET.get('full')
         case = get_object_or_404(Case, pk=pk)
-        is_authorized = is_authorized_user(request.user, case.normalized_AS.ZS.province.id, case.normalized_AS.ZS.id, case.normalized_AS.id)
+        is_authorized = is_authorized_user(
+            request.user,
+            case.normalized_AS.ZS.province.id if case.normalized_AS else None,
+            case.normalized_AS.ZS.id if case.normalized_AS else None,
+            case.normalized_AS.id if case.normalized_AS else None)
         if is_authorized:
             return Response(case.as_dict(full is not None))
         else:

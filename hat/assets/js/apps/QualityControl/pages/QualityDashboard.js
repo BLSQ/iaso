@@ -4,13 +4,13 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
-import { createUrl, getRequest } from '../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { dashboardActions } from '../redux/dashboard';
 import TabsComponent from '../../../components/TabsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import imagesColumns from '../constants/imagesColumns';
+import qualityColumns from '../constants/qualityColumns';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -29,19 +29,12 @@ class QualityDashboard extends React.Component {
         super(props);
         this.state = {
             currentTab: 'images',
-            imagesColumns: imagesColumns(props.intl.formatMessage),
+            qualityColumns: qualityColumns(props.intl.formatMessage),
         };
     }
 
     componentDidMount() {
-        this.updateDashboardInfos();
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if ((nextProps.params.date_from !== this.props.params.date_from) ||
-            (nextProps.params.date_to !== this.props.params.date_to)) {
-            this.updateDashboardInfos(nextProps.params.date_from, nextProps.params.date_to);
-        }
+        this.props.fetchTestMapping();
     }
 
     getEndpointUrl(type, toExport = false, exportType = 'csv') {
@@ -71,11 +64,6 @@ class QualityDashboard extends React.Component {
         return url;
     }
 
-    updateDashboardInfos(from = this.props.params.date_from, to = this.props.params.date_to) {
-        const url = `/api/qcstats?from=${from}&to=${to}`;
-        this.props.getDashboardInfos(url);
-    }
-
     render() {
         const {
             load: {
@@ -98,24 +86,22 @@ class QualityDashboard extends React.Component {
                     />
                 }
                 <div className="widget__container">
-                    {
-                        this.props.infos &&
-                        <section>
-                            <div className="widget__header">
-                                <h2 className="widget__heading">
-                                    <PeriodSelectorComponent
-                                        dateFrom={this.props.params.date_from}
-                                        dateTo={this.props.params.date_to}
-                                        onChangeDate={(dateFrom, dateTo) =>
-                                            this.props.redirectTo('', {
-                                                date_from: dateFrom,
-                                                date_to: dateTo,
-                                            })}
-                                    />
-                                </h2>
-                            </div>
-                        </section>
-                    }
+                    <section>
+                        <div className="widget__header">
+                            <h2 className="widget__heading">
+                                <PeriodSelectorComponent
+                                    dateFrom={this.props.params.date_from}
+                                    dateTo={this.props.params.date_to}
+                                    onChangeDate={(dateFrom, dateTo) =>
+                                        this.props.redirectTo(baseUrl, {
+                                            ...params,
+                                            date_from: dateFrom,
+                                            date_to: dateTo,
+                                        })}
+                                />
+                            </h2>
+                        </div>
+                    </section>
                 </div>
                 <TabsComponent
                     defaultPath={baseUrl}
@@ -127,59 +113,76 @@ class QualityDashboard extends React.Component {
                     ]}
                     defaultSelect={currentTab}
                 />
-                {
-                    this.props.infos &&
-                    <div className="widget__container">
-                        <div className={`widget__container no-border ${this.state.currentTab !== 'images' ? 'hidden' : ''}`} >
-                            <CustomTableComponent
-                                showPagination
-                                endPointUrl={this.getEndpointUrl('image')}
-                                columns={this.state.imagesColumns}
-                                defaultSorted={[{ id: 'date', desc: false }]}
-                                params={params}
-                                defaultPath={baseUrl}
-                                orderKey="imageOrder"
-                                multiSort
-                                withBorder={false}
-                                isSortable
-                                dataKey="list"
-                                onRowClicked={() => { }}
-                                pageKey="imagePage"
-                                pageSizeKey="imagePageSize"
-                            />
-                        </div>
+                <div className="widget__container">
+                    <div className={`widget__container no-border ${this.state.currentTab !== 'images' ? 'hidden' : ''}`} >
+                        <CustomTableComponent
+                            showPagination
+                            endPointUrl={this.getEndpointUrl('image')}
+                            columns={this.state.qualityColumns}
+                            defaultSorted={[{ id: 'date', desc: true }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            orderKey="imageOrder"
+                            multiSort
+                            withBorder={false}
+                            isSortable
+                            dataKey="list"
+                            onRowClicked={item => this.props.redirectTo('image', {
+                                test_id: item.id,
+                                ...params,
+                            })}
+                            pageKey="imagePage"
+                            pageSizeKey="imagePageSize"
+                        />
                     </div>
-                }
+                    <div className={`widget__container no-border ${this.state.currentTab !== 'videos' ? 'hidden' : ''}`} >
+                        <CustomTableComponent
+                            showPagination
+                            endPointUrl={this.getEndpointUrl('video')}
+                            columns={this.state.qualityColumns}
+                            defaultSorted={[{ id: 'date', desc: true }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            orderKey="videoOrder"
+                            multiSort
+                            withBorder={false}
+                            isSortable
+                            dataKey="list"
+                            onRowClicked={item => this.props.redirectTo('video', {
+                                test_id: item.id,
+                                ...params,
+                            })}
+                            pageKey="videoPage"
+                            pageSizeKey="videoPageSize"
+                        />
+                    </div>
+                </div>
             </section>
         );
     }
 }
 
 QualityDashboard.defaultProps = {
-    infos: null,
 };
 
 QualityDashboard.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    getDashboardInfos: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    infos: PropTypes.object,
+    fetchTestMapping: PropTypes.func.isRequired,
 };
 
 const QualityDashboardIntl = injectIntl(QualityDashboard);
 
 const MapStateToProps = state => ({
     load: state.load,
-    infos: state.infos,
+    testsMapping: state.dashboard.testsMapping,
 });
 
 const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    getDashboardInfos: url => getRequest(url, dispatch).then((response) => {
-        dispatch(dashboardActions.setDashboardInfo(response));
-    }),
+    fetchTestMapping: () => dispatch(dashboardActions.fetchTestMapping(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);

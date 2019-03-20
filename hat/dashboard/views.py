@@ -208,6 +208,20 @@ def quality_control_stats(request: HttpRequest) -> HttpResponse:
 
 @is_user_authorized
 @login_required()
+@permission_required('menupermissions.x_qualitycontrol')
+@require_http_methods(['GET'])
+def quality_control_image(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_qualitycontrol')
+@require_http_methods(['GET'])
+def quality_control_video(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+
+@is_user_authorized
+@login_required()
 @permission_required('menupermissions.x_case_cases')
 @require_http_methods(['GET'])
 def cases_list(request: HttpRequest) -> HttpResponse:

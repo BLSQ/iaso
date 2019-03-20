@@ -13,8 +13,8 @@ import QualityVideos from './pages/QualityVideos';
 import QualityImages from './pages/QualityImages';
 import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
-import { dashboardReducer } from './redux/dashboard';
-import { imageReducer } from './redux/image';
+import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
+import { testReducer, testInitialState } from './redux/test';
 import { videoReducer } from './redux/video';
 
 
@@ -26,16 +26,20 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     const routes = [
         <Route
             path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
-            '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
-            '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
+                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityDashboard}
         />,
         <Route
-            path="/videos/date_from/:date_from/date_to/:date_to"
+            path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
+                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityVideos}
         />,
         <Route
-            path="/images/date_from/:date_from/date_to/:date_to"
+            path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
+                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityImages}
         />,
         <Route
@@ -52,14 +56,14 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     });
 
     const store = createStore({
-        infos: null,
-        imageList: null,
+        dashboard: dashboardInitialStte,
         videoList: null,
+        test: testInitialState,
         load: {},
     }, {
-        infos: dashboardReducer,
-        imageList: imageReducer,
+        dashboard: dashboardReducer,
         videoList: videoReducer,
+        test: testReducer,
         load: loadReducer,
     }, [
         routerMiddleware(history),

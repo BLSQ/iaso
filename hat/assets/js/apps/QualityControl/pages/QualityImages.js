@@ -2,62 +2,29 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
-import Select from 'react-select';
+import { injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
-import { getRequest, createUrl } from '../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
-import { imageActions } from '../redux/image';
+import { testActions } from '../redux/test';
 
-const imageTypesList = [
-    {
-        label: 'CATT',
-        value: 'CATT',
-    },
-    {
-        label: 'RDT',
-        value: 'RDT',
-    },
-];
 
 class QualityImages extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentType: imageTypesList[0].value,
         };
     }
-
     componentDidMount() {
-        this.updateImageList(this.state.currentType);
+        this.props.fetchTestDetail(this.props.params.test_id);
     }
 
     componentWillReceiveProps(nextProps) {
-        if ((nextProps.params.date_from !== this.props.params.date_from) ||
-            (nextProps.params.date_to !== this.props.params.date_to)) {
-            this.updateImageList(
-                this.state.currentType,
-                nextProps.params.date_from,
-                nextProps.params.date_to,
-            );
+        if ((nextProps.params.test_id !== this.props.params.test_id)) {
+            this.fetchTestDetail(nextProps.params.test_id);
         }
-    }
-
-    onChangetype(newtype) {
-        this.setState({
-            currentType: newtype,
-        });
-        this.updateImageList(newtype);
-    }
-
-    updateImageList(type, from = this.props.params.date_from, to = this.props.params.date_to) {
-        const url = `/api/qctests/?type=${type}&limit=1&checked=false&from=${from}&to=${to}`;
-        getRequest(url, this.props.dispatch).then((response) => {
-            this.props.dispatch(imageActions.setImageList(response));
-        });
     }
 
     saveTestItem(imageItems) {
@@ -71,10 +38,15 @@ class QualityImages extends React.Component {
         }).catch(error => console.error(`Error while saving test: ${error}`));
     }
 
+    goBack() {
+        const newParams = {
+            ...this.props.params,
+        };
+        delete newParams.test_id;
+        this.props.redirectTo('dashboard', newParams);
+    }
+
     render() {
-        if (!this.props.imageList) {
-            return null;
-        }
         const { loading, error } = this.props.load;
         const { formatMessage } = this.props.intl;
         return (
@@ -92,75 +64,16 @@ class QualityImages extends React.Component {
                         <h2 className="widget__heading">
                             <button
                                 className="button--small"
-                                onClick={() =>
-                                    this.props.redirectTo('', {
-                                        date_from: this.props.params.date_from,
-                                        date_to: this.props.params.date_to,
-                                    })}
+                                onClick={() => this.goBack()}
                             >
                                 <i className="fa fa-arrow-left" />
                             </button>
-                            {
-                                !this.props.imageList.results[0] &&
-                                <section>
-                                    <FormattedMessage
-                                        id="quality.image.noimage"
-                                        defaultMessage="Aucune image trouvée"
-                                    />
-                                </section>
-                            }
-
-                            {
-                                this.props.imageList.results[0] &&
-                                <section>
-                                    <FormattedMessage
-                                        id="quality.label.rest"
-                                        defaultMessage="Reste"
-                                    />
-                                    <span>
-                                        {` ${this.props.imageList.remaining_count} `}
-                                    </span>
-                                    <FormattedMessage
-                                        id="quality.label.imagetockeck"
-                                        defaultMessage="image(s) à vérifier"
-                                    />
-                                </section>
-                            }
-
-                            {' '}
-                            <PeriodSelectorComponent
-                                dateFrom={this.props.params.date_from}
-                                dateTo={this.props.params.date_to}
-                                onChangeDate={(dateFrom, dateTo) =>
-                                    this.props.redirectTo('images', {
-                                        date_from: dateFrom,
-                                        date_to: dateTo,
-                                    })}
-                            />
                         </h2>
-                        <div className="type-filter">
-                            <div className="filter__label">
-                                <FormattedMessage
-                                    id="quality.image.typelabel"
-                                    defaultMessage="Type d'image"
-                                />:
-                            </div>
-                            <Select
-                                clearable={false}
-                                simpleValue
-                                name="currentType"
-                                value={this.state.currentType}
-                                placeholder="--"
-                                options={imageTypesList}
-                                onChange={event => this.onChangetype(event)}
-                            />
-                        </div>
                     </div>
                     {
-                        this.props.imageList.results[0] &&
+                        this.props.currentTest.id &&
                         <ImageValidatorComponent
-                            imageItems={this.props.imageList.results}
-                            type={this.state.currentType}
+                            currentTest={this.props.currentTest}
                             saveTest={imageItems => this.saveTestItem(imageItems)}
                             error={error}
                         />
@@ -171,7 +84,6 @@ class QualityImages extends React.Component {
 }
 
 QualityImages.defaultProps = {
-    imageList: null,
 };
 
 QualityImages.propTypes = {
@@ -179,7 +91,8 @@ QualityImages.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    imageList: PropTypes.object,
+    fetchTestDetail: PropTypes.func.isRequired,
+    currentTest: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
 };
 
@@ -187,12 +100,13 @@ const QualityImagesIntl = injectIntl(QualityImages);
 
 const MapStateToProps = state => ({
     load: state.load,
-    imageList: state.imageList,
+    currentTest: state.test.currentTest,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchTestDetail: id => dispatch(testActions.fetchTestDetail(dispatch, id)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);

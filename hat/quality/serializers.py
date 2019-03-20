@@ -11,18 +11,19 @@ class CheckSerializer(serializers.Serializer):
     test_id = serializers.IntegerField()
 
     def create(self, validated_data):
-        validator = self.context['request'].user
+        validator = self.context["request"].user
         check = Check(
-            result=validated_data.get('result', RES_UNUSED),
+            result=validated_data.get("result", RES_UNUSED),
             validator=validator,
-            test_id=validated_data.get('test_id')
+            test_id=validated_data.get("test_id"),
         )
         check.save()
         return check
 
     def update(self, instance, validated_data):
-        instance.result = validated_data.get('result', instance.result)
-        instance.validator = self.context['request'].user
-        instance.test_id = validated_data.get('test_id', instance.test_id)
+        instance.result = validated_data.get("result", instance.result)
+        instance.validator = self.context["request"].user
+        instance.level = self.context["request"].user.level
+        instance.test_id = validated_data.get("test_id", instance.test_id)
         instance.save()
         return instance

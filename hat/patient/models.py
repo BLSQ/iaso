@@ -231,6 +231,7 @@ class Test(models.Model):
             "level": self.level,
             "date": self.date,
             "village": self.village.as_dict() if self.village else None,
+            "tester": self.tester.as_dict(),
             "hidden": self.hidden,
             "device": self.device_id,
             "latitude": self.location.y if self.location else None,

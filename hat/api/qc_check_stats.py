@@ -9,6 +9,7 @@ from hat.quality.models import Test
 from hat.users.models import Team, Coordination
 
 
+
 class QCCheckStatsViewSet(viewsets.ViewSet):
     """
     Api to get statistics for the quality control tool.
@@ -31,11 +32,11 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
             coordination = get_object_or_404(Coordination, pk=coordination_id)
             is_authorized = is_user_coordination_authorized(coordination, request.user)
             if not is_authorized:
-                return Response('Unauthorized', status=401)
+                return Response("Unauthorized", status=401)
             teams = teams.filter(coordination_id=coordination_id)
 
         if team_type:
-            teams = teams.filter(UM=(team_type == 'UM'))
+            teams = teams.filter(UM=(team_type == "UM"))
 
         tests = Test.objects.all()
 
@@ -47,7 +48,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
 
         tests = tests.filter(type__in=test_types)
         tests = tests.filter(team__in=teams)
-        tests = tests.prefetch_related('check_set')
+        tests = tests.prefetch_related("check_set")
 
         class TypeCounts:
             def __init__(self):
@@ -57,7 +58,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
 
         temp_dict = {}
         for team in teams:
-            d = {'id': team.id, 'name': team.name, 'UM': team.UM}
+            d = {"id": team.id, "name": team.name, "UM": team.UM}
             for t in test_types:
                 d[t] = TypeCounts()
             temp_dict[team.id] = d
@@ -78,9 +79,9 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
         for team_id in temp_dict:
             team_dict = temp_dict[team_id]
             json_dict = {
-                'id': team_dict['id'],
-                'name': team_dict['name'],
-                'UM': team_dict['UM']
+                "id": team_dict["id"],
+                "name": team_dict["name"],
+                "UM": team_dict["UM"],
             }
 
             for the_type in test_types:
@@ -89,9 +90,9 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
             res.append(json_dict)
 
         if order is None:
-            order = 'name'
+            order = "name"
 
-        reverse = order.startswith('-')
+        reverse = order.startswith("-")
 
         if reverse:
             order = order[1:]

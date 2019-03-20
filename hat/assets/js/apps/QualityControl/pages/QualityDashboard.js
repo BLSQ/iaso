@@ -2,17 +2,35 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { dashboardActions } from '../redux/dashboard';
+import TabsComponent from '../../../components/TabsComponent';
+import CustomTableComponent from '../../../components/CustomTableComponent';
+import imagesColumns from '../constants/imagesColumns';
+
+const baseUrl = 'dashboard';
+const MESSAGES = defineMessages({
+    images: {
+        defaultMessage: 'Images',
+        id: 'quality.label.images',
+    },
+    videos: {
+        defaultMessage: 'Vidéos',
+        id: 'quality.label.videos',
+    },
+});
 
 class QualityDashboard extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            currentTab: 'images',
+            imagesColumns: imagesColumns(props.intl.formatMessage),
+        };
     }
 
     componentDidMount() {
@@ -25,16 +43,52 @@ class QualityDashboard extends React.Component {
             this.updateDashboardInfos(nextProps.params.date_from, nextProps.params.date_to);
         }
     }
+
+    getEndpointUrl(type, toExport = false, exportType = 'csv') {
+        let url = '/api/qctests/?';
+        const {
+            params,
+        } = this.props;
+        const urlParams = {
+            from: params.date_from,
+            to: params.date_to,
+            page: type === 'image' ? params.imagePage : params.videoPage,
+            order: type === 'image' ? params.imageOrder : params.videoOrder,
+            media_type: type,
+            limit: type === 'image' ? params.imagePageSize : params.videoPageSize,
+        };
+
+        if (toExport) {
+            urlParams[exportType] = true;
+        }
+
+        Object.keys(urlParams).forEach((key) => {
+            const value = urlParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
+        });
+        return url;
+    }
+
     updateDashboardInfos(from = this.props.params.date_from, to = this.props.params.date_to) {
         const url = `/api/qcstats?from=${from}&to=${to}`;
         this.props.getDashboardInfos(url);
     }
 
     render() {
-        const { loading } = this.props.load;
-        const { formatMessage } = this.props.intl;
+        const {
+            load: {
+                loading,
+            },
+            intl: {
+                formatMessage,
+            },
+            params,
+        } = this.props;
+        const { currentTab } = this.state;
         return (
-            <div className="widget__container">
+            <section>
                 {
                     loading &&
                     <LoadingSpinner message={formatMessage({
@@ -43,120 +97,60 @@ class QualityDashboard extends React.Component {
                     })}
                     />
                 }
+                <div className="widget__container">
+                    {
+                        this.props.infos &&
+                        <section>
+                            <div className="widget__header">
+                                <h2 className="widget__heading">
+                                    <PeriodSelectorComponent
+                                        dateFrom={this.props.params.date_from}
+                                        dateTo={this.props.params.date_to}
+                                        onChangeDate={(dateFrom, dateTo) =>
+                                            this.props.redirectTo('', {
+                                                date_from: dateFrom,
+                                                date_to: dateTo,
+                                            })}
+                                    />
+                                </h2>
+                            </div>
+                        </section>
+                    }
+                </div>
+                <TabsComponent
+                    defaultPath={baseUrl}
+                    params={params}
+                    selectTab={key => (this.setState({ currentTab: key }))}
+                    tabs={[
+                        { label: formatMessage(MESSAGES.images), key: 'images' },
+                        { label: formatMessage(MESSAGES.videos), key: 'videos' },
+                    ]}
+                    defaultSelect={currentTab}
+                />
                 {
                     this.props.infos &&
-                    <section>
-                        <div className="widget__header">
-                            <h2 className="widget__heading">
-                                <PeriodSelectorComponent
-                                    dateFrom={this.props.params.date_from}
-                                    dateTo={this.props.params.date_to}
-                                    onChangeDate={(dateFrom, dateTo) =>
-                                        this.props.redirectTo('', {
-                                            date_from: dateFrom,
-                                            date_to: dateTo,
-                                        })}
-                                />
-                            </h2>
+                    <div className="widget__container">
+                        <div className={`widget__container no-border ${this.state.currentTab !== 'images' ? 'hidden' : ''}`} >
+                            <CustomTableComponent
+                                showPagination
+                                endPointUrl={this.getEndpointUrl('image')}
+                                columns={this.state.imagesColumns}
+                                defaultSorted={[{ id: 'date', desc: false }]}
+                                params={params}
+                                defaultPath={baseUrl}
+                                orderKey="imageOrder"
+                                multiSort
+                                withBorder={false}
+                                isSortable
+                                dataKey="list"
+                                onRowClicked={() => { }}
+                                pageKey="imagePage"
+                                pageSizeKey="imagePageSize"
+                            />
                         </div>
-                        <div className="widget__content--flex">
-                            <div className="quality-control-element">
-                                <h3>
-                                    <FormattedMessage
-                                        id="quality.label.videos"
-                                        defaultMessage="Vidéos"
-                                    />
-                                </h3>
-                                <p>
-                                    {`${this.props.infos.videos.no_checks_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.tockeck"
-                                        defaultMessage="à vérifier"
-                                    />
-                                </p>
-                                <p>
-                                    {`${this.props.infos.videos.checks_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.checked"
-                                        defaultMessage="vérifiées"
-                                    />
-                                </p>
-                                <p className={this.props.infos.videos.mismatch_count > 0 ? 'with-problems' : ''}>
-                                    {`${this.props.infos.videos.mismatch_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.problems"
-                                        defaultMessage="problème(s)"
-                                    />
-                                </p>
-                                {
-                                    this.props.infos.videos.no_checks_count > 0 &&
-                                    <button className="button--small" onClick={() => this.props.redirectTo('/videos', this.props.params)}>
-                                        <i className="fa fa-video-camera" />
-                                        <FormattedMessage
-                                            id="quality.label.checkvideo"
-                                            defaultMessage="Vérifier les videos"
-                                        />
-                                    </button>
-                                }
-                            </div>
-                            <div className="quality-control-element">
-                                <h3>
-                                    <FormattedMessage
-                                        id="quality.label.images"
-                                        defaultMessage="Images"
-                                    />
-                                </h3>
-                                <p>
-                                    {`${this.props.infos.images.no_checks_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.tockeck"
-                                        defaultMessage="à vérifier"
-                                    />
-                                </p>
-                                <p>
-                                    {`${this.props.infos.images.checks_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.checked"
-                                        defaultMessage="vérifiées"
-                                    />
-                                </p>
-                                <p className={this.props.infos.images.mismatch_count > 0 ? 'with-problems' : ''}>
-                                    {`${this.props.infos.images.mismatch_count} `}
-                                    <FormattedMessage
-                                        id="quality.label.problems"
-                                        defaultMessage="problème(s)"
-                                    />
-                                </p>
-                                {
-                                    this.props.infos.images.no_checks_count > 0 &&
-                                    <button className="button--small" onClick={() => this.props.redirectTo('/images', this.props.params)}>
-                                        <i className="fa fa-picture-o" />
-                                        <FormattedMessage
-                                            id="quality.label.checkimages"
-                                            defaultMessage="Vérifier les images"
-                                        />
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                        <div className="widget__content no-padding-top">
-                            <button
-                                className="button--small"
-                                onClick={() => this.props.redirectTo('/stats', {
-                                    ...this.props.params,
-                                    order: 'id',
-                                })}
-                            >
-                                <i className="fa fa-calculator" />
-                                <FormattedMessage
-                                    id="quality.label.stats"
-                                    defaultMessage="Voir les statistiques"
-                                />
-                            </button>
-                        </div>
-                    </section>
+                    </div>
                 }
-            </div>
+            </section>
         );
     }
 }

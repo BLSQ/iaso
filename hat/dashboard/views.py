@@ -197,7 +197,14 @@ def vector_upload(request: HttpRequest) -> HttpResponse:
 @permission_required('menupermissions.x_qualitycontrol')
 @require_http_methods(['GET'])
 def quality_control(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'test_count': range(1,7), 'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_qualitycontrol')
+@require_http_methods(['GET'])
+def quality_control_stats(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control-stats"))})
 
 @is_user_authorized
 @login_required()

@@ -7,6 +7,7 @@ from hat.sync.models import ImageUpload
 from hat.patient.models import Test
 from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
 from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5
+from django.core.paginator import Paginator
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -28,8 +29,11 @@ class QCTestsViewSet(viewsets.ViewSet):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         checked = request.GET.get("checked", None)
-        limit = int(request.GET.get("limit", 1))
+        page_offset = int(request.GET.get("page", 1))
+        limit = request.GET.get("limit", None)
+        orders = request.GET.get("order", "date").split(",")
         test_type = request.GET.get("type", None)
+        media_type = request.GET.get("media_type", '"image')
 
         qs = Test.objects.all()
 
@@ -61,28 +65,30 @@ class QCTestsViewSet(viewsets.ViewSet):
         if test_type:
             qs = qs.filter(type=test_type)
 
-            if checked != "true":
-                if test_type in TYPES_WITH_IMAGES:
-                    qs = qs.exclude(image=None)
-                if test_type in TYPES_WITH_VIDEOS:
-                    qs = qs.exclude(video=None)
+        if media_type == "image":
+            qs = qs.exclude(image=None)
+        if media_type == "video":
+            qs = qs.exclude(video=None)
 
-        if qs and test_type == "CATT":
-            first_catt_test = qs[0]
-            temp_res = qs.filter(image=first_catt_test.image).order_by("index")
-            remaining = ImageUpload.objects.filter(
-                id__in=qs.values_list("image_id", flat=True)
-            ).count()
-        else:
-            temp_res = qs[:limit]
-            remaining = qs.count()
-
-        res = {
-            "results": [test.as_dict() for test in temp_res],
-            "remaining_count": remaining,
-        }
+        qs = qs.order_by(*orders)
+        limit = int(limit)
+        paginator = Paginator(qs, limit)
+        res = {"count": paginator.count}
+        if page_offset > paginator.num_pages:
+            page_offset = paginator.num_pages
+        page = paginator.page(page_offset)
+        res["list"] = map(lambda x: x.as_dict(), page.object_list)
+        res["has_next"] = page.has_next()
+        res["has_previous"] = page.has_previous()
+        res["page"] = page_offset
+        res["pages"] = paginator.num_pages
+        res["limit"] = limit
         return Response(res)
 
     def retrieve(self, request, pk):
         test = get_object_or_404(Test, id=pk)
-        return Response(test.as_dict(with_checks=True))
+        res = test.as_dict(with_checks=True)
+        if test.type == "CATT":
+            other_catt = Test.objects.filter(image=test.image).exclude(id=test.id).order_by("index")
+            res["other_catt"] = [test.as_dict() for test in other_catt]
+        return Response(res)

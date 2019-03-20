@@ -21,10 +21,13 @@ import { videoReducer } from './redux/video';
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-    const defaultPath = `/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultPath = `dashboard/date_from/${dateFrom}/date_to/${dateTo}/imagePageSize/50/imagePage/1/videoPageSize/50/videoPage/1`;
+    const defaulStatsPath = `/stats/date_from/${dateFrom}/date_to/${dateTo}/order/id`;
     const routes = [
         <Route
-            path="/date_from/:date_from/date_to/:date_to"
+            path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
+            '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+            '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityDashboard}
         />,
         <Route
@@ -39,7 +42,8 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path="/stats/date_from/:date_from/date_to/:date_to/order/:order(/coordination_id/:coordination_id)(/type/:type)(/pageSize/:pageSize)(/page/:page)"
             component={QualityStats}
         />,
-        <Redirect path="*" to={defaultPath} />,
+        <Redirect exact path="/dashboard" to={defaultPath} />,
+        <Redirect path="/stats" to={defaulStatsPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

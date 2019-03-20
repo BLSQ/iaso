@@ -173,8 +173,19 @@ def get_menu(user, active_link):
         {
             "name": "Contrôle de qualité",
             "url_key": reverse("dashboard:quality-control"),
-            "items": [],
-            "perms": "x_qualitycontrol"
+            "items": [
+                {
+                    "name": "Images/videos",
+                    "url_key": reverse("dashboard:quality-control"),
+                    "perms": "x_qualitycontrol"
+                },
+                {
+                    "name": "Statistiques",
+                    "url_key": reverse("dashboard:quality-control-stats"),
+                    "perms": "x_qualitycontrol"
+                },
+            ],
+            "perms": None
         }
     ]
     for menu_item in menu_list:

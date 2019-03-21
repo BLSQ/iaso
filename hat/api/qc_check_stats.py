@@ -1,11 +1,17 @@
+import inspect
+import random
+
+import objgraph
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
-from hat.quality.models import Test
+
+from hat.api.coordination import is_user_coordination_authorized
+from hat.common.utils import queryset_iterator
 from hat.constants import CATT, RDT, PG
+from hat.quality.models import Test
 from hat.users.models import Team, Coordination
 
-from django.shortcuts import get_object_or_404
-from hat.api.coordination import is_user_coordination_authorized
 
 class QCCheckStatsViewSet(viewsets.ViewSet):
     """
@@ -14,6 +20,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
     permission_required = [
         'menupermissions.x_qualitycontrol'
     ]
+
     def list(self, request):
         test_types = [CATT, RDT, PG]
 
@@ -59,7 +66,7 @@ class QCCheckStatsViewSet(viewsets.ViewSet):
                 d[t] = TypeCounts()
             temp_dict[team.id] = d
 
-        for test in tests:
+        for test in queryset_iterator(tests, 2000):
             type_counts = temp_dict[test.team_id][test.type]
             type_counts.test_count += 1
             if test.check_set.count() != 0:

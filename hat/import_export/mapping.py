@@ -292,11 +292,15 @@ def mobile_get_year(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     if type(x) == int:
-        return x
+        return x if x > 1900 else None
     if type(x) == str:
         match = mobile_year_re.match(x)
         if match:
-            return cast(int, match.group(1))
+            try:
+                year = int(match.group(1))
+                return year if year > 1900 else None
+            except:
+                pass
     return None
 
 

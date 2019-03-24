@@ -77,6 +77,29 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(case.normalized_patient.year_of_birth, 1956)
         self.assertEquals(case.normalized_patient.origin_village.name, "Kisala")
 
+    # This test contains some alternate assertions (birth year 1900)
+    def test_import_regular_neg_rdt(self):
+        part_regular_neg_rdt_alt, device_db = load_document("regular_neg_rdt_alternate.json")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=part_regular_neg_rdt_alt).json()
+        self.assertEqual(part_regular_neg_rdt_alt['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        device_cases = Case.objects.filter(device_id=part_regular_neg_rdt_alt['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+        self.assertIsNone(case.year_of_birth)
+
     ####################
     # Dépistage passif #
     ####################

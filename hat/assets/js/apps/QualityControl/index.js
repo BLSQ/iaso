@@ -14,8 +14,7 @@ import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
 import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
 import { testReducer, testInitialState } from './redux/test';
-import { videoReducer } from './redux/video';
-
+import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
@@ -56,13 +55,13 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
 
     const store = createStore({
         dashboard: dashboardInitialStte,
-        videoList: null,
         test: testInitialState,
+        currentUser: currentUserInitialState,
         load: {},
     }, {
         dashboard: dashboardReducer,
-        videoList: videoReducer,
         test: testReducer,
+        currentUser: currentUserReducer,
         load: loadReducer,
     }, [
         routerMiddleware(history),

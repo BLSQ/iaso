@@ -254,6 +254,7 @@ class Profile(models.Model):
             "passwordReset": self.password_reset,
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
+            "level": self.level
         }
 
     def __str__(self):

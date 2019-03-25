@@ -11,7 +11,7 @@ import VideoValidatorComponent from '../components/VideoValidatorComponent';
 import { createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { testActions } from '../redux/test';
-
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 class QualityDetail extends React.Component {
     constructor(props) {
@@ -23,6 +23,9 @@ class QualityDetail extends React.Component {
     }
     componentDidMount() {
         this.props.fetchTestDetail(this.props.params.test_id);
+        if (!this.props.currentUser.username) {
+            this.props.fetchCurrentUserInfos();
+        }
     }
 
     saveImageItem(test) {
@@ -57,6 +60,7 @@ class QualityDetail extends React.Component {
     render() {
         const { loading, error } = this.props.load;
         const { formatMessage } = this.props.intl;
+        console.log(this.props.currentUser);
         return (
             <div className="widget__container quality-control">
                 {
@@ -110,6 +114,8 @@ QualityDetail.propTypes = {
     fetchTestDetail: PropTypes.func.isRequired,
     currentTest: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const QualityDetailIntl = injectIntl(QualityDetail);
@@ -117,12 +123,14 @@ const QualityDetailIntl = injectIntl(QualityDetail);
 const MapStateToProps = state => ({
     load: state.load,
     currentTest: state.test.currentTest,
+    currentUser: state.currentUser.user,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchTestDetail: id => dispatch(testActions.fetchTestDetail(dispatch, id)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDetailIntl);

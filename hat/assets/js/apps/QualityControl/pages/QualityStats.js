@@ -311,7 +311,6 @@ const QualityStatsIntl = injectIntl(QualityStats);
 
 const MapStateToProps = state => ({
     load: state.load,
-    videoList: state.videoList,
 });
 
 const MapDispatchToProps = dispatch => ({

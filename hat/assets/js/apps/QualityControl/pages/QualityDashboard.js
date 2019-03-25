@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { injectIntl, defineMessages } from 'react-intl';
 
 import { createUrl } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
@@ -11,6 +11,7 @@ import { dashboardActions } from '../redux/dashboard';
 import TabsComponent from '../../../components/TabsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import qualityColumns from '../constants/qualityColumns';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -35,6 +36,7 @@ class QualityDashboard extends React.Component {
 
     componentDidMount() {
         this.props.fetchTestMapping();
+        this.props.fetchCurrentUserInfos();
     }
 
     getEndpointUrl(type, toExport = false, exportType = 'csv') {
@@ -73,6 +75,10 @@ class QualityDashboard extends React.Component {
                 formatMessage,
             },
             params,
+            reduxImagePage,
+            reduxVideoPage,
+            setImagesList,
+            setVideosList,
         } = this.props;
         const { currentTab } = this.state;
         return (
@@ -133,6 +139,8 @@ class QualityDashboard extends React.Component {
                             })}
                             pageKey="imagePage"
                             pageSizeKey="imagePageSize"
+                            onDataLoaded={(imagesList, count, pages) => setImagesList(imagesList, true, params, count, pages)}
+                            reduxPage={reduxImagePage}
                         />
                     </div>
                     <div className={`widget__container no-border ${this.state.currentTab !== 'videos' ? 'hidden' : ''}`} >
@@ -154,6 +162,8 @@ class QualityDashboard extends React.Component {
                             })}
                             pageKey="videoPage"
                             pageSizeKey="videoPageSize"
+                            onDataLoaded={(videosList, count, pages) => setVideosList(videosList, true, params, count, pages)}
+                            reduxPage={reduxVideoPage}
                         />
                     </div>
                 </div>
@@ -163,6 +173,8 @@ class QualityDashboard extends React.Component {
 }
 
 QualityDashboard.defaultProps = {
+    reduxImagePage: undefined,
+    reduxVideoPage: undefined,
 };
 
 QualityDashboard.propTypes = {
@@ -171,6 +183,11 @@ QualityDashboard.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     fetchTestMapping: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
+    reduxImagePage: PropTypes.object,
+    reduxVideoPage: PropTypes.object,
+    setImagesList: PropTypes.func.isRequired,
+    setVideosList: PropTypes.func.isRequired,
 };
 
 const QualityDashboardIntl = injectIntl(QualityDashboard);
@@ -178,11 +195,19 @@ const QualityDashboardIntl = injectIntl(QualityDashboard);
 const MapStateToProps = state => ({
     load: state.load,
     testsMapping: state.dashboard.testsMapping,
+    reduxImagePage: state.dashboard.reduxImagePage,
+    reduxVideoPage: state.dashboard.reduxVideoPage,
 });
 
 const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchTestMapping: () => dispatch(dashboardActions.fetchTestMapping(dispatch)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    setImagesList: (imagesList, showPagination, params, count, pages) =>
+        dispatch(dashboardActions.setImagesList(imagesList, showPagination, params, count, pages)),
+    setVideosList: (videosList, showPagination, params, count, pages) =>
+        dispatch(dashboardActions.setVideosList(videosList, showPagination, params, count, pages)),
+
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);

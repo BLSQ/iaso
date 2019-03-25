@@ -1,6 +1,8 @@
 export const SET_DASHBOARD_INFO = 'hat/quality/SET_DASHBOARD_INFO';
 const FETCH_ACTION = 'hat/quality/FETCH_ACTION';
 const LOAD_TEST_MAPPING = 'hat/quality/LOAD_TEST_MAPPING';
+const SET_IMAGES_LIST = 'hat/quality/SET_IMAGES_LIST';
+const SET_VIDEOS_LIST = 'hat/quality/SET_VIDEOS_LIST';
 
 const req = require('superagent');
 
@@ -21,12 +23,50 @@ export const fetchTestMapping = (dispatch) => {
     });
 };
 
+const setImagesList = (list, showPagination, params, count, pages) => ({
+    type: SET_IMAGES_LIST,
+    payload: {
+        list,
+        showPagination,
+        params,
+        count,
+        pages,
+    },
+});
+
+const setVideosList = (list, showPagination, params, count, pages) => ({
+    type: SET_VIDEOS_LIST,
+    payload: {
+        list,
+        showPagination,
+        params,
+        count,
+        pages,
+    },
+});
+
 export const dashboardActions = {
     fetchTestMapping,
+    setImagesList,
+    setVideosList,
 };
 
 export const dashboardInitialStte = {
     testsMapping: {},
+    reduxImagePage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
+    reduxVideoPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
 };
 
 export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
@@ -34,6 +74,38 @@ export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
         case LOAD_TEST_MAPPING: {
             const testsMapping = action.payload;
             return { ...state, testsMapping };
+        }
+
+        case SET_IMAGES_LIST: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                reduxImagePage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
+        }
+
+        case SET_VIDEOS_LIST: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                reduxVideoPage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
         }
 
         default:

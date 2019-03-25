@@ -4,13 +4,6 @@ import ImageComponent from './ImageComponent';
 import ImageFormComponent from './ImageFormComponent';
 
 class ImageValidatorComponent extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-        };
-    }
-
     render() {
         return (
             <div className="widget__content">
@@ -19,13 +12,13 @@ class ImageValidatorComponent extends React.Component {
                     <span>{this.props.currentTest.type}</span>
                 </div>
                 <ImageComponent imageItem={this.props.currentTest} />
-                {/* <ImageFormComponent
-                    imageItems={this.props.imageItems}
+                <ImageFormComponent
+                    currentTest={this.props.currentTest}
                     error={this.props.error}
-                    submitForm={(imageItems) => {
-                        this.props.saveTest(imageItems);
+                    submitForm={(test) => {
+                        this.props.saveTest(test);
                     }}
-                /> */}
+                />
             </div>
         );
     }

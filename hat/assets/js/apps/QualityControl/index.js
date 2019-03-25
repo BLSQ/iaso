@@ -9,8 +9,7 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
-import QualityVideos from './pages/QualityVideos';
-import QualityImages from './pages/QualityImages';
+import QualityDetail from './pages/QualityDetail';
 import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
 import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
@@ -34,13 +33,13 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
-            component={QualityVideos}
+            component={QualityDetail}
         />,
         <Route
             path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
-            component={QualityImages}
+            component={QualityDetail}
         />,
         <Route
             path="/stats/date_from/:date_from/date_to/:date_to/order/:order(/coordination_id/:coordination_id)(/type/:type)(/pageSize/:pageSize)(/page/:page)"

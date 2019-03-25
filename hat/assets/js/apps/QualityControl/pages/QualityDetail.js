@@ -6,36 +6,44 @@ import { injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
+import VideoValidatorComponent from '../components/VideoValidatorComponent';
+
 import { createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { testActions } from '../redux/test';
 
 
-class QualityImages extends React.Component {
+class QualityDetail extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            isImage: props.location.pathname.split('/')[0] === 'image',
+            isVideo: props.location.pathname.split('/')[0] === 'video',
         };
     }
     componentDidMount() {
         this.props.fetchTestDetail(this.props.params.test_id);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if ((nextProps.params.test_id !== this.props.params.test_id)) {
-            this.fetchTestDetail(nextProps.params.test_id);
+    saveImageItem(test) {
+        const promisesArray = [];
+        promisesArray.push(saveTest({ result: test.result, test_id: test.id }, this.props.dispatch));
+        if (test.other_catt) {
+            test.other_catt.forEach((item) => {
+                promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
+            });
         }
+        Promise.all(promisesArray).then(() => {
+            this.goBack();
+        }).catch(error => console.error(`Error while saving test: ${error}`));
     }
 
-    saveTestItem(imageItems) {
-        const promisesArray = [];
-        imageItems.map((item) => {
-            promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
-            return null;
+    saveVideoItem(test) {
+        saveTest(test, this.props.dispatch).then((isSaved) => {
+            if (isSaved) {
+                this.goBack();
+            }
         });
-        Promise.all(promisesArray).then(() => {
-            this.updateImageList(this.state.currentType);
-        }).catch(error => console.error(`Error while saving test: ${error}`));
     }
 
     goBack() {
@@ -72,9 +80,19 @@ class QualityImages extends React.Component {
                     </div>
                     {
                         this.props.currentTest.id &&
+                        this.state.isImage &&
                         <ImageValidatorComponent
                             currentTest={this.props.currentTest}
-                            saveTest={imageItems => this.saveTestItem(imageItems)}
+                            saveTest={imageItems => this.saveImageItem(imageItems)}
+                            error={error}
+                        />
+                    }
+                    {
+                        this.props.currentTest.id &&
+                        this.state.isVideo &&
+                        <VideoValidatorComponent
+                            currentTest={this.props.currentTest}
+                            saveTest={test => this.saveVideoItem(test)}
                             error={error}
                         />
                     }
@@ -83,11 +101,9 @@ class QualityImages extends React.Component {
     }
 }
 
-QualityImages.defaultProps = {
-};
-
-QualityImages.propTypes = {
+QualityDetail.propTypes = {
     params: PropTypes.object.isRequired,
+    location: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
@@ -96,7 +112,7 @@ QualityImages.propTypes = {
     dispatch: PropTypes.func.isRequired,
 };
 
-const QualityImagesIntl = injectIntl(QualityImages);
+const QualityDetailIntl = injectIntl(QualityDetail);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -109,4 +125,4 @@ const MapDispatchToProps = dispatch => ({
     fetchTestDetail: id => dispatch(testActions.fetchTestDetail(dispatch, id)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(QualityImagesIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(QualityDetailIntl);

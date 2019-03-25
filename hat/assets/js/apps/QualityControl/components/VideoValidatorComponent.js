@@ -5,28 +5,21 @@ import VideoFormComponent from './VideoFormComponent';
 
 
 class VideoValidatorComponent extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-        };
-    }
-
     render() {
         return (
             <div className="widget__content">
                 <div className="quality-label">
                     ID:
-                    <span>{this.props.videoItem.id}</span>
+                    <span>{this.props.currentTest.id}</span>
                     TYPE:
-                    <span>VIDEO</span>
+                    <span>{this.props.currentTest.type}</span>
                 </div>
                 <div className="quality-video-container">
-                    <VideoComponent videoItem={this.props.videoItem} />
+                    <VideoComponent videoItem={this.props.currentTest} />
                     <VideoFormComponent
                         error={this.props.error}
                         submitForm={(test) => {
-                            this.props.saveTest({ ...test, test_id: this.props.videoItem.id });
+                            this.props.saveTest({ ...test, test_id: this.props.currentTest.id });
                         }}
                     />
                 </div>
@@ -40,7 +33,7 @@ VideoValidatorComponent.defaultProps = {
 };
 
 VideoValidatorComponent.propTypes = {
-    videoItem: PropTypes.object.isRequired,
+    currentTest: PropTypes.object.isRequired,
     saveTest: PropTypes.func.isRequired,
     error: PropTypes.object,
 };

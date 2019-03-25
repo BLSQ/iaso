@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
@@ -19,8 +19,11 @@ class QualityDetail extends React.Component {
         this.state = {
             isImage: props.location.pathname.split('/')[0] === 'image',
             isVideo: props.location.pathname.split('/')[0] === 'video',
+            userLevel: null,
+            currentTest: props.currentTest,
         };
     }
+
     componentDidMount() {
         this.props.fetchTestDetail(this.props.params.test_id);
         if (!this.props.currentUser.username) {
@@ -28,9 +31,21 @@ class QualityDetail extends React.Component {
         }
     }
 
-    saveImageItem(test) {
+    componentWillReceiveProps(nextProps) {
+        const newState = {};
+        if (nextProps.currentUser) {
+            newState.userLevel = nextProps.currentUser.level;
+        }
+        if (nextProps.currentTest) {
+            newState.currentTest = nextProps.currentTest;
+        }
+
+        this.setState(newState);
+    }
+
+    saveImageItem(test, comment) {
         const promisesArray = [];
-        promisesArray.push(saveTest({ result: test.result, test_id: test.id }, this.props.dispatch));
+        promisesArray.push(saveTest({ result: test.result, test_id: test.id, comment }, this.props.dispatch));
         if (test.other_catt) {
             test.other_catt.forEach((item) => {
                 promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
@@ -58,13 +73,21 @@ class QualityDetail extends React.Component {
     }
 
     render() {
-        const { loading, error } = this.props.load;
-        const { formatMessage } = this.props.intl;
-        console.log(this.props.currentUser);
+        const {
+            load: { loading, error },
+            intl: { formatMessage },
+        } = this.props;
+        const {
+            userLevel,
+            currentTest,
+            isImage,
+            isVideo,
+        } = this.state;
+
         return (
             <div className="widget__container quality-control">
                 {
-                    loading &&
+                    (loading || !userLevel) &&
                     <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
                         id: 'microplanning.labels.loading',
@@ -83,22 +106,28 @@ class QualityDetail extends React.Component {
                         </h2>
                     </div>
                     {
-                        this.props.currentTest.id &&
-                        this.state.isImage &&
-                        <ImageValidatorComponent
-                            currentTest={this.props.currentTest}
-                            saveTest={imageItems => this.saveImageItem(imageItems)}
-                            error={error}
-                        />
-                    }
-                    {
-                        this.props.currentTest.id &&
-                        this.state.isVideo &&
-                        <VideoValidatorComponent
-                            currentTest={this.props.currentTest}
-                            saveTest={test => this.saveVideoItem(test)}
-                            error={error}
-                        />
+                        userLevel &&
+                        <Fragment>
+                            {
+                                currentTest.id &&
+                                isImage &&
+                                <ImageValidatorComponent
+                                    currentTest={currentTest}
+                                    saveTest={(test, comment) => this.saveImageItem(test, comment)}
+                                    error={error}
+                                    userLevel={userLevel}
+                                />
+                            }
+                            {
+                                currentTest.id &&
+                                isVideo &&
+                                <VideoValidatorComponent
+                                    currentTest={currentTest}
+                                    saveTest={test => this.saveVideoItem(test)}
+                                    error={error}
+                                />
+                            }
+                        </Fragment>
                     }
                 </section>
             </div>);

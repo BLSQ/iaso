@@ -98,6 +98,22 @@
         .current {
             border: 1px solid red;
         }
+        &.with-comment {
+            >div>section {
+                >div {
+                    &.comment-container{
+                        width: calc(100% - 165px);
+                    }
+                    &.quality-label {
+                        width: 150px;
+                    }
+                    textarea {
+                        resize: vertical;
+                        width: calc(100% - 32px);
+                    }
+                }
+            }
+        }
     }
     .quality-label {
         font-size: $font-size-xs;

@@ -24,6 +24,7 @@ const groupCattTests = (test) => {
     });
     return cattTests;
 };
+const isSuperUser = userLevel => userLevel > 10;
 
 class ImageFormComponent extends React.Component {
     constructor(props) {
@@ -32,12 +33,27 @@ class ImageFormComponent extends React.Component {
             currentTest: props.currentTest,
             groupedCattTests: groupCattTests(props.currentTest),
             isSubmitDisabled: true,
+            comment: '',
         };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            currentTest: nextProps.currentTest,
+            groupedCattTests: groupCattTests(nextProps.currentTest),
+            isSubmitDisabled: true,
+        });
     }
 
     onSubmit(e) {
         e.preventDefault();
-        this.props.submitForm(this.state.currentTest);
+        const test = {
+            ...this.state.currentTest,
+        };
+        if (isSuperUser(this.props.userLevel) && test.other_catt) {
+            delete test.other_catt;
+        }
+        this.props.submitForm(test, this.state.comment);
     }
 
     changeResult(result, imageItemId) {
@@ -63,24 +79,49 @@ class ImageFormComponent extends React.Component {
     }
 
     render() {
-        const { currentTest, groupedCattTests } = this.state;
+        const { currentTest, groupedCattTests, comment } = this.state;
+        const { userLevel } = this.props;
         return (
-            <form>
+            <form className={isSuperUser(userLevel) ? 'with-comment' : ''}>
                 {
-                    currentTest.type === 'RDT' &&
-                    <TestImageComponent
-                        test={currentTest}
-                        changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
-                    />
+                    (currentTest.type === 'RDT' ||
+                        (currentTest.type === 'CATT' &&
+                            isSuperUser(userLevel))) &&
+                            <TestImageComponent
+                                test={currentTest}
+                                changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
+                            />
                 }
                 {
                     currentTest.type === 'CATT' &&
+                    !isSuperUser(userLevel) &&
                     groupedCattTests.map(catt =>
                         (<TestImageComponent
                             key={`catt-${catt.id}`}
                             test={catt}
                             changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
                         />))
+                }
+                {
+                    isSuperUser(userLevel) &&
+                    <div>
+                        <section>
+                            <div className="quality-label inline">
+                                <FormattedMessage
+                                    id="main.label.comment"
+                                    defaultMessage="Commentaire"
+                                />:
+                            </div>
+                            <div className="comment-container">
+                                <textarea
+                                    name="comment"
+                                    id={`comment-${currentTest.id}`}
+                                    value={comment}
+                                    onChange={event => this.setState({ comment: event.currentTarget.value })}
+                                />
+                            </div>
+                        </section>
+                    </div>
                 }
                 <div className="submit-area">
                     {
@@ -111,6 +152,7 @@ ImageFormComponent.propTypes = {
     submitForm: PropTypes.func.isRequired,
     error: PropTypes.object,
     currentTest: PropTypes.object.isRequired,
+    userLevel: PropTypes.number.isRequired,
 };
 
 const ImageFormComponentIntl = injectIntl(ImageFormComponent);

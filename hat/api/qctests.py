@@ -25,7 +25,6 @@ class QCTestsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         user_level = request.user.profile.level
-        print("user_level", user_level)
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
         checked = request.GET.get("checked", None)

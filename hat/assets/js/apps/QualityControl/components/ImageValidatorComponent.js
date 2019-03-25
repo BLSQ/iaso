@@ -15,9 +15,10 @@ class ImageValidatorComponent extends React.Component {
                 <ImageFormComponent
                     currentTest={this.props.currentTest}
                     error={this.props.error}
-                    submitForm={(test) => {
-                        this.props.saveTest(test);
+                    submitForm={(test, comment) => {
+                        this.props.saveTest(test, comment);
                     }}
+                    userLevel={this.props.userLevel}
                 />
             </div>
         );
@@ -32,6 +33,7 @@ ImageValidatorComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
     saveTest: PropTypes.func.isRequired,
     error: PropTypes.object,
+    userLevel: PropTypes.number.isRequired,
 };
 
 export default ImageValidatorComponent;

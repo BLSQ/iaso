@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import TestImageComponent from './TestImageComponent';
+import SuperUserComponent from './SuperUserComponent';
+import { isMediumUser, isSuperUser } from '../../../utils/index';
 
 const groupCattTests = (test) => {
     const cattTests = [];
@@ -24,7 +26,6 @@ const groupCattTests = (test) => {
     });
     return cattTests;
 };
-const isSuperUser = userLevel => userLevel > 10;
 
 class ImageFormComponent extends React.Component {
     constructor(props) {
@@ -50,7 +51,7 @@ class ImageFormComponent extends React.Component {
         const test = {
             ...this.state.currentTest,
         };
-        if (isSuperUser(this.props.userLevel) && test.other_catt) {
+        if (isMediumUser(this.props.userLevel) && test.other_catt) {
             delete test.other_catt;
         }
         this.props.submitForm(test, this.state.comment);
@@ -81,19 +82,30 @@ class ImageFormComponent extends React.Component {
     render() {
         const { currentTest, groupedCattTests, comment } = this.state;
         const { userLevel } = this.props;
+        let formClasses = isMediumUser(userLevel) || isSuperUser(userLevel) ? 'with-comment ' : '';
+        formClasses += isSuperUser(userLevel) ? 'super-user' : '';
         return (
-            <form className={isSuperUser(userLevel) ? 'with-comment' : ''}>
+            <form className={formClasses}>
+                {
+                    isSuperUser(userLevel) &&
+                    <SuperUserComponent
+                        currentTest={currentTest}
+                    />
+                }
                 {
                     (currentTest.type === 'RDT' ||
                         (currentTest.type === 'CATT' &&
-                            isSuperUser(userLevel))) &&
+                            (isMediumUser(userLevel) || isSuperUser(userLevel)))) &&
                             <TestImageComponent
                                 test={currentTest}
+                                isSuperUser={isSuperUser(userLevel)}
+                                isMediumUser={isMediumUser(userLevel)}
                                 changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
                             />
                 }
                 {
                     currentTest.type === 'CATT' &&
+                    !isMediumUser(userLevel) &&
                     !isSuperUser(userLevel) &&
                     groupedCattTests.map(catt =>
                         (<TestImageComponent
@@ -103,7 +115,7 @@ class ImageFormComponent extends React.Component {
                         />))
                 }
                 {
-                    isSuperUser(userLevel) &&
+                    (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
                     <div>
                         <section>
                             <div className="quality-label inline">

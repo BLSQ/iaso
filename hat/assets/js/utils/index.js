@@ -213,6 +213,7 @@ export const isCaseLocalised = kase => (
     kase.location.normalized.village !== undefined
 );
 
+
 export const userHasPermission = (
     permissions,
     currentUser,
@@ -271,3 +272,5 @@ export const renderCountCell = (total, value, formatMessage) => {
     );
 };
 
+export const isMediumUser = userLevel => userLevel <= 30 && userLevel > 10;
+export const isSuperUser = userLevel => userLevel > 30;

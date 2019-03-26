@@ -57,10 +57,6 @@
                 font-size: 15px;
             }
         }
-        span {
-            position: relative;
-            top: 1px;
-        }
     }
     form {
         margin: $padding-unit auto;
@@ -69,22 +65,73 @@
         box-sizing: border-box;
         border: 1px solid $gray;
         font-size: 14px;
+        .quality-label {
+            padding-left: 15px;
+            padding-right: 10px;
+            border-right: 1px solid $gray;
+            width: 100px;
+            &.inline {
+                display: inline-block;
+                margin-right: 15px;
+            }
+        }
         >div>section {
             border-bottom: 1px solid $gray;
             display: flex;
             >div {
                 padding: 20px 0 18px 0;
-                &.quality-label {
-                    padding-left: 15px;
-                    padding-right: 10px;
-                    border-right: 1px solid $gray;
-                    width: 100px;
-                    &.inline {
-                        display: inline-block;
-                        margin-right: 15px;
+            }
+        }
+        h4 {
+            padding: 20px 15px 18px 15px;
+            width: 100% !important;
+            border-bottom: 1px solid $gray;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            .date {
+                float: right;
+                font-size: 14;
+                font-weight: normal
+            }
+        }
+        .test-infos {
+            border-bottom: 2px solid $mid-gray;
+            .comment-container {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: flex-start;
+                .quality-label {
+                    margin-right: 0;
+                    text-align: left;
+                    border-right: none;
+                }
+                >span {
+                    line-height: 18px;
+                    display: block;
+                    padding: 20px 15px 18px 15px;
+                    border-left: 1px solid $gray;
+                    width: calc(100% - 149px);
+                    box-sizing: border-box;
+                    min-height: 50px;
+                }
+            }
+            >div {
+                border-bottom: 1px solid $gray;
+                >div {
+                    padding: 20px 0 18px 15px;
+                    border-bottom: 1px solid $gray;
+                    &.quality-label {
+                        border-bottom: none !important;
+                        width: 150px !important;
                     }
                 }
             }
+        }
+        &.separator {
+            border-bottom: 2px solid $mid-gray;
         }
         .submit-area {
             padding: $padding-unit;
@@ -101,7 +148,7 @@
         &.with-comment {
             >div>section {
                 >div {
-                    &.comment-container{
+                    &.comment-container {
                         width: calc(100% - 165px);
                     }
                     &.quality-label {
@@ -114,13 +161,18 @@
                 }
             }
         }
+        .Select {
+            min-width: 90px;
+            padding-bottom: 0;
+            margin-bottom: 20px;
+        }
     }
     .quality-label {
         font-size: $font-size-xs;
         font-weight: bold;
         color: $mid-gray;
         text-transform: uppercase;
-        span {
+        div {
             font-weight: normal;
             color: $dark-blue;
             display: inline-block;

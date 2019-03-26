@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import ImageValidatorComponent from '../components/ImageValidatorComponent';
@@ -12,6 +12,7 @@ import { createUrl } from '../../../utils/fetchData';
 import { saveTest } from '../../../utils/saveData';
 import { testActions } from '../redux/test';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import { isMediumUser, isSuperUser } from '../../../utils/index';
 
 class QualityDetail extends React.Component {
     constructor(props) {
@@ -103,6 +104,25 @@ class QualityDetail extends React.Component {
                             >
                                 <i className="fa fa-arrow-left" />
                             </button>
+                            {
+                                currentTest.id &&
+                                <Fragment>
+                                    <FormattedMessage
+                                        id="quality.image.type"
+                                        defaultMessage="TYPE"
+                                    /> :{' '}{currentTest.type}{' '}
+                                    {
+                                        (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
+                                        currentTest.type === 'CATT' &&
+                                        <Fragment>
+                                            - {' '}<FormattedMessage
+                                                id="quality.image.index"
+                                                defaultMessage="Test n°"
+                                            /> : {currentTest.index}
+                                        </Fragment>
+                                    }
+                                </Fragment>
+                            }
                         </h2>
                     </div>
                     {

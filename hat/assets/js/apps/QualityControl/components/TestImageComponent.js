@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+
 import { CattTypeConstant, RdtTypeConstant } from '../../../utils/constants/ImageTypeConstant';
 
 
@@ -8,7 +9,9 @@ class TestImageComponent extends React.Component {
     render() {
         const typeConstant = this.props.test.type === 'RDT' ?
             RdtTypeConstant : CattTypeConstant;
-        const { test, changeResult } = this.props;
+        const {
+            test, changeResult, intl: { formatMessage }, isSuperUser, isMediumUser,
+        } = this.props;
         return (
             <div className={test.current ? 'current' : ''}>
                 {
@@ -24,20 +27,33 @@ class TestImageComponent extends React.Component {
                 }
                 {
                     test.index &&
+                    !isMediumUser &&
+                    !isSuperUser &&
                     <section>
                         <div className="quality-label inline">
                             <FormattedMessage
                                 id="quality.image.index"
-                                defaultMessage="Test n°:"
+                                defaultMessage="Test n°"
                             />:
                         </div>
                         <div>{test.index}</div>
                     </section>
                 }
+                {
+                    isSuperUser &&
+                    <section>
+                        <h4>
+                            <FormattedMessage
+                                id="quality.finalCheck"
+                                defaultMessage="Vérification finale"
+                            />
+                        </h4>
+                    </section>
+                }
                 <section>
                     <div className="quality-label inline">
                         <FormattedMessage
-                            id="quality.image.results"
+                            id="quality.results"
                             defaultMessage="Résultat"
                         />:
                     </div>
@@ -68,10 +84,17 @@ class TestImageComponent extends React.Component {
             </div>);
     }
 }
+TestImageComponent.defaultProps = {
+    isSuperUser: false,
+    isMediumUser: false,
+};
 
 TestImageComponent.propTypes = {
     test: PropTypes.object.isRequired,
     changeResult: PropTypes.func.isRequired,
+    intl: PropTypes.object.isRequired,
+    isSuperUser: PropTypes.bool,
+    isMediumUser: PropTypes.bool,
 };
 
 const TestImageComponentIntl = injectIntl(TestImageComponent);

@@ -7,10 +7,6 @@ class ImageValidatorComponent extends React.Component {
     render() {
         return (
             <div className="widget__content">
-                <div className="quality-label">
-                    TYPE:
-                    <span>{this.props.currentTest.type}</span>
-                </div>
                 <ImageComponent imageItem={this.props.currentTest} />
                 <ImageFormComponent
                     currentTest={this.props.currentTest}

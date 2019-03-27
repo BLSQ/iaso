@@ -58,9 +58,9 @@ def fetch_dbs_info() -> JsonType:
 
 
 def fetch_db_docs(dbname: str, last_seq: str) -> JsonType:
-    '''
+    """
     get all changed documents in the database since last sequence
-    '''
+    """
     changes_url = '{}/_changes?style=all_docs&include_docs=true&since={}'.format(dbname, last_seq)
 
     r = api.get(changes_url)
@@ -70,3 +70,39 @@ def fetch_db_docs(dbname: str, last_seq: str) -> JsonType:
         'last_seq': result['last_seq'],
         'docs': [doc['doc'] for doc in result['results']],
     }
+
+
+def fetch_all_docs(dbname):
+    """
+    get all documents in the specified database. Only returns the headers, not the full documents
+    This method cannot return deleted documents. They can only be found by requesting changes.
+    """
+    all_url = "{}/_all_docs".format(dbname)
+
+    r = api.get(all_url)
+    r.raise_for_status()
+    return r.json()
+
+
+def fetch_doc(dbname, document_id):
+    """
+    get specific document in a specific database. If the document was deleted, this will fetch the last existing version
+    """
+    get_url = '{}/{}'.format(dbname, document_id)
+
+    r = api.get(get_url)
+    if r.status_code == 404 and r.json()['reason'] == 'deleted':
+        # list all document revisions
+        del_url = get_url + "?revs=true&open_revs=all"
+        r = api.get(del_url)
+        r.raise_for_status()
+        rev_list = r.json()
+        # start is the latest revision, so we'll take the one before
+        rev_start = rev_list['_revisions']['start']
+        # ids is a list of all revision hashes. [0] being the deleted one
+        rev_ids = rev_list['_revisions']['ids']
+        get_url_rev = get_url + '?rev={}-{}'.format(rev_start-1, rev_ids[1])
+        r = api.get(get_url_rev)
+    r.raise_for_status()
+    result = r.json()
+    return result

@@ -104,7 +104,7 @@ def import_synced_devices() -> List[ImportResult]:
     return results
 
 
-def import_synced_docs(docs: JsonType, device_id: str) -> EventStats:
+def import_synced_docs(docs, device_id) -> EventStats:
     device = DeviceDB.objects.get(device_id=device_id)
     patient_docs: List[dict] = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
     for doc in patient_docs:

@@ -31,7 +31,7 @@ def write_sheet(wb, sheet_name, columns, queryset, get_row, with_link, column_si
             print(f"Sheet {sheet_name} row {row_num}")
 
         if not with_link:
-            ws.write_row('A' + str(row_num), get_row(item))
+            ws.write_row('A' + str(row_num), get_row(item, row_num=row_num))
         else:
             col_num = 0
             for column in get_row(item):

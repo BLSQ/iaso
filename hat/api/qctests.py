@@ -19,10 +19,13 @@ class QCTestsViewSet(viewsets.ViewSet):
         parameters:
            limit: the limit on the number of tests
            type: the type of test (Ex: 'CATT', 'RDT', 'PG', ....)
-           checked: if true, get tests that have already been checked, if false: get tests without check yet (only tests with images or videos allowing a check)
+           checked: if true, get tests that have already been checked, if false: get tests without check yet
+           (only tests with images or videos allowing a check)
     """
-
-    permission_required = ["menupermissions.x_qualitycontrol"]
+    
+    permission_required = [
+        'menupermissions.x_qualitycontrol'
+    ]
 
     def list(self, request):
         user_level = request.user.profile.level

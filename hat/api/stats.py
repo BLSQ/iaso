@@ -1,19 +1,16 @@
-from rest_framework import viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
-from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView
-from hat.geo.models import Village
+from django.db.models import Count
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
-from django.db.models import Count
-
-from .authentication import CsrfExemptSessionAuthentication
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
-from hat.users.models import get_user_geo_list, Coordination
+from rest_framework.response import Response
+
 from hat.api.coordination import is_user_coordination_authorized
+from hat.cases.models import CaseView
+from hat.geo.models import Village
+from hat.users.models import get_user_geo_list, Coordination
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class StatsViewSet(viewsets.ViewSet):

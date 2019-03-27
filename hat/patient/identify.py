@@ -119,7 +119,7 @@ def should_hide_screening(case, test_date):
 
 
 def get_devicedb_info_cached(device_id, cache):
-    if device_id is None or math.isnan(device_id):
+    if device_id is None:
         return None, None, None
     devicedb_id, team_id, device_last_profile_id = cache.get(device_id, (None, None, None))
     if devicedb_id is None:
@@ -137,14 +137,6 @@ def get_devicedb_info_cached(device_id, cache):
     return devicedb_id, team_id, device_last_profile_id
 
 
-def nan_to_none(value):
-    """
-    Pandas tends to store missing values as nan rather than None, this function simply converts it to None
-    :return: value or None
-    """
-    return None if type(value) is float and math.isnan(value) else value
-
-
 def create_test_data(case: Case, patient_area, raw):
     tests = []
     tests_created = 0
@@ -154,7 +146,7 @@ def create_test_data(case: Case, patient_area, raw):
     # CATT and RDT tests with confirmation tests and another screening tests within 90 days
     # should be automatically hidden
     if case.test_catt is not None:
-        test_date = nan_to_none(raw.get('test_catt_test_time', None))
+        test_date = raw.get('test_catt_test_time', None)
         devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_catt_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
@@ -169,7 +161,7 @@ def create_test_data(case: Case, patient_area, raw):
         tests.append(test)
 
     if case.test_rdt is not None:
-        test_date = nan_to_none(raw.get('test_rdt_test_time', None))
+        test_date = raw.get('test_rdt_test_time', None)
         hidden = should_hide_screening(case, test_date)
         devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'), device_cache)
         test, test_created = get_or_create_test(
@@ -241,7 +233,7 @@ def create_test_data(case: Case, patient_area, raw):
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
                        test_date=None, hidden=False, devicedb_id=None, device_id=None, location=None, latitude=None,
                        longitude=None, team_id=None, tester_id=None):
-    if test_date and str(test_date) != 'nan':  # nan can happen in some weird conditions
+    if test_date:  # nan can happen in some weird conditions
         test_date = dateutil.parser.parse(test_date)
     else:
         test_date = case.document_date

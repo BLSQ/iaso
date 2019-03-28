@@ -16,12 +16,28 @@ class Command(BaseCommand):
     help = 'Go through the entire couchdb database, verify that the participants are in sync_jsondocument and import' \
            'them if necessary.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            dest='verbose',
+            help='Be verbose about what it is doing',
+        )
+
+        parser.add_argument(
+            '--orphans',
+            action='store_true',
+            dest='orphans',
+            help='For JSONDocuments that don\'t have a linked Case, try to reunite them. This is quite slow',
+        )
+
     def handle(self, *args, **options):
         for device in DeviceDB.objects.all():
             try:
+                print(f"************** Checking {device.device_id} ****************")
                 docs = fetch_all_docs(device.db_name)
                 documents_to_add = []
-                for doc in docs['rows']:
+                for i, doc in enumerate(docs['rows']):
                     # Find the document in JSONDocument
                     db_document = JSONDocument.objects\
                         .filter(doc_id=doc['id'], doc_revision=doc['value']['rev'])\
@@ -30,9 +46,15 @@ class Command(BaseCommand):
                         # create the document
                         latest_doc = fetch_doc(dbname=device.db_name, document_id=doc['id'])
                         documents_to_add.append(latest_doc)
+
+                        # Don't accumulate too many records to import
+                        if len(documents_to_add) > 500:
+                            print("Flushing 500 records to add")
+                            import_synced_docs(documents_to_add, device.device_id)
+                            documents_to_add = []
                     else:
-                        if db_document.case_id is None:
-                            print(f"Document {db_document.id} is missing a case_id")
+                        if db_document.case_id is None and options['orphans']:
+                            print(f"{i} Document {db_document.id} is missing a case_id")
                             try:
                                 latest_doc = fetch_doc(dbname=device.db_name, document_id=doc['id'])
                                 # Ensure that the document_id is computer the same way by following the same process:
@@ -47,7 +69,10 @@ class Command(BaseCommand):
                             except Exception as exc:
                                 print("Failed to retrieve existing case", exc)
                         else:
-                            print(f"Document {db_document.id} OK")
+                            if options['verbose']:
+                                print(f"{i} Document {db_document.id} OK")
+                            if i % 100 == 0:
+                                print(f"************** {i} **************")
                 if len(documents_to_add) > 0:
                     import_synced_docs(documents_to_add, device.device_id)
             except Exception as ex:

@@ -2,25 +2,21 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
+import TestVideoComponent from './TestVideoComponent';
 import { isMediumUser, isSuperUser } from '../../../utils/index';
+import SuperUserVideoComponent from './superUser/SuperUserVideoComponent';
 
 
 class VideoFormComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            result: -3,
             isClear: false,
             isGoodPlace: false,
             isConfirmedCase: false,
-            hasOtherParasites: false,
+            hasOtherParasite: false,
+            comment: '',
         };
-    }
-
-    componentWillReceiveProps() {
-        this.setState({
-            result: -3,
-        });
     }
 
     onSubmit(e) {
@@ -35,131 +31,44 @@ class VideoFormComponent extends React.Component {
     }
 
     render() {
+        const { userLevel } = this.props;
+        const { comment } = this.state;
         return (
             <form>
-                <div>
-                    <section>
-                        <div className="quality-label inline">
-                            <FormattedMessage
-                                id="quality.main.isClear"
-                                defaultMessage="Netteté"
-                            />:
-                        </div>
-
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isClear"
-                                value={this.state.isClear}
-                                checked={this.state.isClear ? 'checked' : ''}
-                                onChange={() => this.changeOption('isClear')}
-                            />
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isClear"
-                                value={this.state.isClear}
-                                checked={!this.state.isClear ? 'checked' : ''}
-                                onChange={() => this.changeOption('isClear')}
-                            />
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />
-                        </div>
-                    </section>
-                    {
-                        this.state.isClear &&
+                {
+                    isSuperUser(userLevel) &&
+                    <SuperUserVideoComponent
+                        currentTest={this.props.currentTest}
+                    />
+                }
+                <TestVideoComponent
+                    changeOption={key => this.changeOption(key)}
+                    isClear={this.state.isClear}
+                    isGoodPlace={this.state.isGoodPlace}
+                    isConfirmedCase={this.state.isConfirmedCase}
+                    hasOtherParasite={this.state.hasOtherParasite}
+                    isSuperUser={isSuperUser(userLevel)}
+                />
+                {
+                    (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
+                    <div>
                         <section>
-                            <div className="quality-label inline">
+                            <div className="quality-label inline comment-label">
                                 <FormattedMessage
-                                    id="quality.main.search"
-                                    defaultMessage="Recherche parasite au bon endroit"
+                                    id="main.label.comment"
+                                    defaultMessage="Commentaire"
                                 />:
                             </div>
-                            <div className="quality-radio">
-                                <input
-                                    type="radio"
-                                    name="isGoodPlace"
-                                    value={this.state.isGoodPlace}
-                                    checked={this.state.isGoodPlace ? 'checked' : ''}
-                                    onChange={() => this.changeOption('isGoodPlace')}
+                            <div className="comment-container">
+                                <textarea
+                                    name="comment"
+                                    value={comment}
+                                    onChange={event => this.setState({ comment: event.currentTarget.value })}
                                 />
-                                <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                            </div>
-                            <div className="quality-radio">
-                                <input
-                                    type="radio"
-                                    name="isGoodPlace"
-                                    value={this.state.isGoodPlace}
-                                    checked={!this.state.isGoodPlace ? 'checked' : ''}
-                                    onChange={() => this.changeOption('isGoodPlace')}
-                                />
-                                <FormattedMessage id="main.submit.no" defaultMessage="Non" />
                             </div>
                         </section>
-                    }
-
-                    {
-                        this.state.isClear &&
-                        <section>
-                            <div className="quality-label inline">
-                                <FormattedMessage
-                                    id="quality.main.confirm"
-                                    defaultMessage="Confirmation vue trypanosome"
-                                />:
-                            </div>
-                            <div className="quality-radio">
-                                <input
-                                    type="radio"
-                                    name="isConfirmedCase"
-                                    value={this.state.isConfirmedCase}
-                                    checked={this.state.isConfirmedCase ? 'checked' : ''}
-                                    onChange={() => this.changeOption('isConfirmedCase')}
-                                />
-                                <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                            </div>
-                            <div className="quality-radio">
-                                <input
-                                    type="radio"
-                                    name="isConfirmedCase"
-                                    value={this.state.isConfirmedCase}
-                                    checked={!this.state.isConfirmedCase ? 'checked' : ''}
-                                    onChange={() => this.changeOption('isConfirmedCase')}
-                                />
-                                <FormattedMessage id="main.submit.no" defaultMessage="Non" />
-                            </div>
-                        </section>
-                    }
-
-                    <section>
-                        <div className="quality-label inline">
-                            <FormattedMessage
-                                id="quality.main.otherParasites"
-                                defaultMessage="Autre parasite"
-                            />:
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="hasOtherParasites"
-                                value={this.state.hasOtherParasites}
-                                checked={this.state.hasOtherParasites ? 'checked' : ''}
-                                onChange={() => this.changeOption('hasOtherParasites')}
-                            />
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="hasOtherParasites"
-                                value={this.state.hasOtherParasites}
-                                checked={!this.state.hasOtherParasites ? 'checked' : ''}
-                                onChange={() => this.changeOption('hasOtherParasites')}
-                            />
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />
-                        </div>
-                    </section>
-                </div>
+                    </div>
+                }
                 <div className="submit-area">
                     {
                         this.props.error &&
@@ -186,6 +95,8 @@ VideoFormComponent.defaultProps = {
 VideoFormComponent.propTypes = {
     submitForm: PropTypes.func.isRequired,
     error: PropTypes.object,
+    userLevel: PropTypes.number.isRequired,
+    currentTest: PropTypes.object.isRequired,
 };
 
 const VideoFormComponentIntl = injectIntl(VideoFormComponent);

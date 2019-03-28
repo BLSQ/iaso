@@ -13,9 +13,17 @@ class VideoValidatorComponent extends React.Component {
                     <VideoFormComponent
                         error={this.props.error}
                         submitForm={(test) => {
-                            this.props.saveTest({ ...test, test_id: this.props.currentTest.id });
+                            this.props.saveTest({
+                                test_id: this.props.currentTest.id,
+                                comment: test.comment,
+                                is_clear: test.isClear,
+                                is_good_place: test.isGoodPlace,
+                                is_confirmed_case: test.isConfirmedCase,
+                                has_other_parasite: test.hasOtherParasite,
+                            });
                         }}
                         userLevel={this.props.userLevel}
+                        currentTest={this.props.currentTest}
                     />
                 </div>
             </div>

@@ -129,6 +129,22 @@
                     }
                 }
             }
+            &.video {
+                >div {
+                    >div {
+                        &.quality-label {
+                            width: 240px !important;
+                            font-size: 11px;
+                        }
+                    }
+                    &.comment-container {
+                        width: 100%;
+                        span {
+                            width: calc(100% - 238px)
+                        }
+                    }
+                }
+            }
         }
         &.separator {
             border-bottom: 2px solid $mid-gray;
@@ -215,6 +231,17 @@
             margin: 20px 2.5% 0px 2.5%;
             & div>section>div.quality-label.inline {
                 width: 80%;
+            }
+            .comment-label {
+                width: 150px !important;
+            }
+            .comment-container {
+                width: calc(100% - 150px);
+                padding-right: 15px;
+                textarea {
+                    width: calc(100% - 18px);
+                    resize: vertical;
+                }
             }
         }
     }

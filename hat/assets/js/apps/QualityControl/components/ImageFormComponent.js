@@ -33,7 +33,6 @@ class ImageFormComponent extends React.Component {
         this.state = {
             currentTest: props.currentTest,
             groupedCattTests: groupCattTests(props.currentTest),
-            isSubmitDisabled: true,
             comment: '',
         };
     }
@@ -42,7 +41,6 @@ class ImageFormComponent extends React.Component {
         this.setState({
             currentTest: nextProps.currentTest,
             groupedCattTests: groupCattTests(nextProps.currentTest),
-            isSubmitDisabled: true,
         });
     }
 
@@ -75,7 +73,6 @@ class ImageFormComponent extends React.Component {
         this.setState({
             currentTest,
             groupedCattTests: groupCattTests(currentTest),
-            isSubmitDisabled: false,
         });
     }
 
@@ -144,7 +141,6 @@ class ImageFormComponent extends React.Component {
                     }
                     <button
                         className="button"
-                        disabled={this.state.isSubmitDisabled}
                         onClick={e => this.onSubmit(e)}
                     >
                         <i className="fa fa-save" />

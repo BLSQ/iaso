@@ -21,6 +21,10 @@ class Check(models.Model):
     comment = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_clear = models.BooleanField(default=False)
+    is_good_place = models.BooleanField(default=False)
+    is_confirmed_case = models.BooleanField(default=False)
+    has_other_parasite = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s" % (self.test, self.validator, self.result)
@@ -34,4 +38,8 @@ class Check(models.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
             "result": self.result,
+            "is_clear": self.is_clear,
+            "is_good_place": self.is_good_place,
+            "is_confirmed_case": self.is_confirmed_case,
+            "has_other_parasite": self.has_other_parasite,
         }

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import TestImageComponent from './TestImageComponent';
-import SuperUserComponent from './SuperUserComponent';
+import SuperUserImageComponent from './superUser/SuperUserImageComponent';
 import { isMediumUser, isSuperUser } from '../../../utils/index';
 
 const groupCattTests = (test) => {
@@ -88,7 +88,7 @@ class ImageFormComponent extends React.Component {
             <form className={formClasses}>
                 {
                     isSuperUser(userLevel) &&
-                    <SuperUserComponent
+                    <SuperUserImageComponent
                         currentTest={currentTest}
                     />
                 }

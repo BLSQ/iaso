@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
+import { isMediumUser, isSuperUser } from '../../../utils/index';
+
 
 class VideoFormComponent extends React.Component {
     constructor(props) {

@@ -145,6 +145,7 @@ class QualityDetail extends React.Component {
                                     currentTest={currentTest}
                                     saveTest={test => this.saveVideoItem(test)}
                                     error={error}
+                                    userLevel={userLevel}
                                 />
                             }
                         </Fragment>

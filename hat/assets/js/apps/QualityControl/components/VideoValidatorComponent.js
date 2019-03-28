@@ -8,12 +8,6 @@ class VideoValidatorComponent extends React.Component {
     render() {
         return (
             <div className="widget__content">
-                <div className="quality-label">
-                    ID:
-                    <span>{this.props.currentTest.id}</span>
-                    TYPE:
-                    <span>{this.props.currentTest.type}</span>
-                </div>
                 <div className="quality-video-container">
                     <VideoComponent videoItem={this.props.currentTest} />
                     <VideoFormComponent
@@ -21,6 +15,7 @@ class VideoValidatorComponent extends React.Component {
                         submitForm={(test) => {
                             this.props.saveTest({ ...test, test_id: this.props.currentTest.id });
                         }}
+                        userLevel={this.props.userLevel}
                     />
                 </div>
             </div>
@@ -36,6 +31,7 @@ VideoValidatorComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
     saveTest: PropTypes.func.isRequired,
     error: PropTypes.object,
+    userLevel: PropTypes.number.isRequired,
 };
 
 export default VideoValidatorComponent;

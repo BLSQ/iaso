@@ -42,20 +42,6 @@ const trapsColumns = (formatMessage, messages, element) => (
             }),
             accessor: 'catches_count_total',
             className: 'small',
-            Cell: (settings) => {
-                const site = settings.original;
-                let total = 0;
-                if (site.catches_count_male) {
-                    total += site.catches_count_male;
-                }
-                if (site.catches_count_female) {
-                    total += site.catches_count_female;
-                }
-                if (site.catches_count_unknown) {
-                    total += site.catches_count_male;
-                }
-                return <span>{total}</span>;
-            },
         },
         {
             Header: formatMessage({

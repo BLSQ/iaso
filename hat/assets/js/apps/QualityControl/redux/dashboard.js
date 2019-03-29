@@ -1,4 +1,3 @@
-export const SET_DASHBOARD_INFO = 'hat/quality/SET_DASHBOARD_INFO';
 const FETCH_ACTION = 'hat/quality/FETCH_ACTION';
 const LOAD_TEST_MAPPING = 'hat/quality/LOAD_TEST_MAPPING';
 const SET_IMAGES_LIST = 'hat/quality/SET_IMAGES_LIST';
@@ -51,7 +50,7 @@ const loadProfiles = payload => ({
     payload,
 });
 
-export const fetchProfiles = (dispatch) => {
+const fetchProfiles = (dispatch) => {
     req
         .get('/api/profiles?as_list=True')
         .then((result) => {
@@ -62,6 +61,7 @@ export const fetchProfiles = (dispatch) => {
         type: FETCH_ACTION,
     });
 };
+
 export const dashboardActions = {
     fetchTestMapping,
     setImagesList,

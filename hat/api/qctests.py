@@ -34,6 +34,9 @@ class QCTestsViewSet(viewsets.ViewSet):
         test_types = request.GET.get("type", None)
         media_type = request.GET.get("media_type", '"image')
         user_ids = request.GET.get("user_ids", None)
+        province_ids = request.GET.get("province_ids", None)
+        zs_ids = request.GET.get("zs_ids", None)
+        as_ids = request.GET.get("as_ids", None)
 
         qs = Test.objects.all()
 
@@ -41,7 +44,6 @@ class QCTestsViewSet(viewsets.ViewSet):
             qs = qs.filter(date__date__gte=from_date)
         if to_date is not None:
             qs = qs.filter(date__date__lte=to_date)
-
         if checked is not None:
             qs = qs.annotate(num_checks=Count("check"))
             if checked != "true":
@@ -61,17 +63,20 @@ class QCTestsViewSet(viewsets.ViewSet):
                         )
             else:
                 qs = qs.filter(num_checks__gt=0)
-
         if test_types:
             qs = qs.filter(type__in=test_types.upper().split(","))
-
         if user_ids is not None:
             qs = qs.filter(tester__user_id__in=user_ids.split(","))
-
         if media_type == "image":
             qs = qs.exclude(image=None)
         if media_type == "video":
             qs = qs.exclude(video=None)
+        if province_ids:
+            qs = qs.filter(village__AS__ZS__province_id__in=province_ids.split(","))
+        if zs_ids:
+            qs = qs.filter(village__AS__ZS_id__in=zs_ids.split(","))
+        if as_ids:
+            qs = qs.filter(village__AS_id__in=as_ids.split(","))
 
         qs = qs.order_by(*orders)
         limit = int(limit)

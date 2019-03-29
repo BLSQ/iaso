@@ -352,6 +352,7 @@ export const filterActions = {
     fetchVillageSource,
     fetchWorkZones,
     fetchDevices,
+    loadProvinces,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {

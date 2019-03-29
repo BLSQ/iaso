@@ -13,6 +13,7 @@ import QualityDetail from './pages/QualityDetail';
 import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
 import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
+import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { testReducer, testInitialState } from './redux/test';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
@@ -26,21 +27,24 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDashboard}
         />,
         <Route
             path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,
         <Route
             path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,
         <Route
@@ -61,11 +65,13 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
         test: testInitialState,
         currentUser: currentUserInitialState,
         load: {},
+        geoFilters: filtersInitialState,
     }, {
         dashboard: dashboardReducer,
         test: testReducer,
         currentUser: currentUserReducer,
         load: loadReducer,
+        geoFilters: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

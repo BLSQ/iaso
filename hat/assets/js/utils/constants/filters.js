@@ -591,7 +591,10 @@ const onlyDupes = () => (
     }
 );
 
-const users = usersList => (
+const users = (usersList, mainLabel = {
+    id: 'main.label.user',
+    defaultMessage: 'Utilisateurs',
+}) => (
     {
         name: 'userId',
         urlKey: 'userId',
@@ -612,10 +615,7 @@ const users = usersList => (
             id: 'main.label.allMale',
             defaultMessage: 'Tous',
         },
-        label: {
-            id: 'main.label.user',
-            defaultMessage: 'Utilisateurs',
-        },
+        label: mainLabel,
         type: 'select',
     }
 );

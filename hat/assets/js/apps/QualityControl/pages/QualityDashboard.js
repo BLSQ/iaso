@@ -13,8 +13,9 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import qualityColumns from '../constants/qualityColumns';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersTypes, filtersUsers } from '../constants/filters';
+import { filtersTypes, filtersUsers, filtersGeo } from '../constants/filters';
 import { loadActions } from '../../../redux/load';
+import { filterActions } from '../../../redux/filtersRedux';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -28,21 +29,44 @@ const MESSAGES = defineMessages({
     },
 });
 
+const req = require('superagent');
+
 class QualityDashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentTab: 'images',
+            currentTab: props.params.tab ? props.params.tab : 'images',
             qualityColumns: qualityColumns(props.intl.formatMessage),
             imagesLoaded: false,
             videosLoaded: false,
         };
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.props.fetchTestMapping();
         this.props.fetchCurrentUserInfos();
         this.props.fetchProfiles();
+        this.fetchProvinces().then(() => {
+            if (this.props.params.province_id) {
+                this.props.selectProvince(this.props.params.province_id);
+            }
+            if (this.props.params.zs_id) {
+                this.props.selectZone(this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
+            }
+            if (this.props.params.as_id) {
+                this.props.selectArea(this.props.params.as_id, this.props.params.village_id, this.props.params.zs_id);
+            }
+        });
+    }
+
+    componentWillReceiveProps(newProps) {
+        if (newProps.params.province_id !== this.props.params.province_id) {
+            this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
+        } else if (newProps.params.zs_id !== this.props.params.zs_id) {
+            this.props.selectZone(newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
+        } else if (newProps.params.as_id !== this.props.params.as_id) {
+            this.props.selectArea(newProps.params.as_id, newProps.params.village_id, newProps.params.zs_id);
+        }
     }
 
     onDataStartLoaded(key) {
@@ -78,6 +102,15 @@ class QualityDashboard extends React.Component {
         if (params.userId) {
             urlParams.user_ids = params.userId;
         }
+        if (params.province_id) {
+            urlParams.province_ids = params.province_id;
+        }
+        if (params.zs_id) {
+            urlParams.zs_ids = params.zs_id;
+        }
+        if (params.as_id) {
+            urlParams.as_ids = params.as_id;
+        }
         if (toExport) {
             urlParams[exportType] = true;
         }
@@ -89,6 +122,14 @@ class QualityDashboard extends React.Component {
         return url;
     }
 
+    fetchProvinces() {
+        return req
+            .get('/api/provinces/')
+            .then((result) => {
+                this.props.loadProvinces(result.body);
+            })
+            .catch(err => (console.error(`Error while fetching provinces ${err}`)));
+    }
 
     render() {
         const {
@@ -104,6 +145,11 @@ class QualityDashboard extends React.Component {
             setImagesList,
             setVideosList,
             profiles,
+            geoFilters: {
+                provinces,
+                zones,
+                areas,
+            },
         } = this.props;
         const { currentTab } = this.state;
         return (
@@ -152,6 +198,19 @@ class QualityDashboard extends React.Component {
                                     id: 'quality.label.tester',
                                     defaultMessage: 'Testeurs',
                                 })}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={filtersGeo(
+                                    provinces || [],
+                                    zones || [],
+                                    areas || [],
+                                    this.props,
+                                    baseUrl,
+                                )}
                             />
                         </div>
                     </div>
@@ -249,6 +308,11 @@ QualityDashboard.propTypes = {
     fetchProfiles: PropTypes.func.isRequired,
     startLoading: PropTypes.func.isRequired,
     endLoading: PropTypes.func.isRequired,
+    loadProvinces: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    selectArea: PropTypes.func.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    geoFilters: PropTypes.object.isRequired,
 };
 
 const QualityDashboardIntl = injectIntl(QualityDashboard);
@@ -259,6 +323,7 @@ const MapStateToProps = state => ({
     reduxImagePage: state.dashboard.reduxImagePage,
     reduxVideoPage: state.dashboard.reduxVideoPage,
     profiles: state.dashboard.profiles,
+    geoFilters: state.geoFilters,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -272,6 +337,11 @@ const MapDispatchToProps = dispatch => ({
     fetchProfiles: () => dispatch(dashboardActions.fetchProfiles(dispatch)),
     startLoading: () => dispatch(loadActions.startLoading()),
     endLoading: () => dispatch(loadActions.successLoadingNoData()),
+    loadProvinces: provinces => dispatch(filterActions.loadProvinces(provinces)),
+    selectProvince: (provinceId, zoneId, areaId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false, false)),
+    selectZone: (zoneId, areaId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, null, false)),
+    selectArea: (areaId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, null, false)),
+
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);

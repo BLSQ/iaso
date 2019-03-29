@@ -25,18 +25,21 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
         <Route
             path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityDashboard}
         />,
         <Route
             path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityDetail}
         />,
         <Route
             path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
+                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)'}
             component={QualityDetail}
         />,

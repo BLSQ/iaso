@@ -31,8 +31,9 @@ class QCTestsViewSet(viewsets.ViewSet):
         page_offset = int(request.GET.get("page", 1))
         limit = request.GET.get("limit", None)
         orders = request.GET.get("order", "date").split(",")
-        test_type = request.GET.get("type", None)
+        test_types = request.GET.get("type", None)
         media_type = request.GET.get("media_type", '"image')
+        user_ids = request.GET.get("user_ids", None)
 
         qs = Test.objects.all()
 
@@ -61,8 +62,11 @@ class QCTestsViewSet(viewsets.ViewSet):
             else:
                 qs = qs.filter(num_checks__gt=0)
 
-        if test_type:
-            qs = qs.filter(type=test_type)
+        if test_types:
+            qs = qs.filter(type__in=test_types.upper().split(","))
+
+        if user_ids is not None:
+            qs = qs.filter(tester__user_id__in=user_ids.split(","))
 
         if media_type == "image":
             qs = qs.exclude(image=None)

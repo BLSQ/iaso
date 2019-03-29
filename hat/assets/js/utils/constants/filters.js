@@ -159,6 +159,71 @@ const testType = (formatMessage, defineMessages) => (
     }
 );
 
+
+const testTypeImage = () => (
+    {
+        name: 'test_type_image',
+        urlKey: 'test_type_image',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: 'CATT',
+                value: 'catt',
+            },
+            {
+                label: 'RDT',
+                value: 'rdt',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'cases.label.test_type_image',
+            defaultMessage: 'Test(s) de dépistage effectué(s)',
+        },
+        type: 'select',
+    }
+);
+
+
+const testTypeVideo = () => (
+    {
+        name: 'test_type_video',
+        urlKey: 'test_type_video',
+        isMultiSelect: true,
+        isClearable: true,
+        options: [
+            {
+                label: 'CTCWOO',
+                value: 'ctcwoo',
+            },
+            {
+                label: 'PG',
+                value: 'pg',
+            },
+            {
+                label: 'MAECT',
+                value: 'maect',
+            },
+            {
+                label: 'PL',
+                value: 'pl',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'cases.label.test_type_video',
+            defaultMessage: 'Test(s) de confirmation effectué(s)',
+        },
+        type: 'select',
+    }
+);
 const screeningResult = (formatMessage, defineMessages) => (
     {
         name: 'screening_result',
@@ -533,8 +598,16 @@ const users = usersList => (
         hideEmpty: true,
         isMultiSelect: true,
         isClearable: true,
-        options: usersList.map(p =>
-            ({ label: p.user__username, value: p.user__id })),
+        options: usersList.map((p) => {
+            let label = p.user__username;
+            if (p.user__first_name || p.user__last_name) {
+                label += ` (${p.user__first_name}${p.user__last_name ? ` ${p.user__last_name}` : ''})`;
+            }
+            return ({
+                label,
+                value: p.user__id,
+            });
+        }),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'Tous',
@@ -788,6 +861,8 @@ const videos = (formatMessage, defineMessages) => (
 
 export {
     testType,
+    testTypeImage,
+    testTypeVideo,
     screeningResult,
     confirmationResult,
     source,

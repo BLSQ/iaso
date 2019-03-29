@@ -123,6 +123,7 @@ class CustomTableComponent extends React.Component {
     }
 
     onFetchData(settings, url = this.props.endPointUrl) {
+        this.props.onDataStartLoaded();
         let orderTemp = '';
         settings.sorted.map((sort, index) => {
             orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
@@ -131,7 +132,13 @@ class CustomTableComponent extends React.Component {
         this.setState({
             loading: true,
         });
-        getRequest(`${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`, this.props.dispatch).then((data) => {
+        getRequest(
+            `${url}&order=${orderTemp}&limit=${settings.pageSize}&page=${settings.page}`,
+            this.props.dispatch,
+            null,
+            this.props.displayLoader,
+
+        ).then((data) => {
             const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
             if (this.props.callBackWithDataKey) {
                 this.props.onDataLoaded(tempdata, parseInt(data.count, 10), data.pages);
@@ -273,6 +280,7 @@ CustomTableComponent.defaultProps = {
     multiSort: false,
     selectable: false,
     withBorder: true,
+    onDataStartLoaded: () => { },
     onDataLoaded: () => { },
     onDataUpdated: () => { },
     isUpdated: false,
@@ -290,6 +298,7 @@ CustomTableComponent.defaultProps = {
     pageSizeKey: 'pageSize',
     orderKey: 'order',
     canSelect: true,
+    displayLoader: true,
 };
 
 CustomTableComponent.propTypes = {
@@ -310,6 +319,7 @@ CustomTableComponent.propTypes = {
     dataKey: PropTypes.string,
     multiSort: PropTypes.bool,
     selectable: PropTypes.bool,
+    onDataStartLoaded: PropTypes.func,
     onDataLoaded: PropTypes.func,
     onDataUpdated: PropTypes.func,
     withBorder: PropTypes.bool,
@@ -322,6 +332,7 @@ CustomTableComponent.propTypes = {
     pageSizeKey: PropTypes.string,
     orderKey: PropTypes.string,
     canSelect: PropTypes.bool,
+    displayLoader: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

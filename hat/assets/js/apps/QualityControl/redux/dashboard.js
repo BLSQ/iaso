@@ -3,6 +3,7 @@ const FETCH_ACTION = 'hat/quality/FETCH_ACTION';
 const LOAD_TEST_MAPPING = 'hat/quality/LOAD_TEST_MAPPING';
 const SET_IMAGES_LIST = 'hat/quality/SET_IMAGES_LIST';
 const SET_VIDEOS_LIST = 'hat/quality/SET_VIDEOS_LIST';
+const LOAD_PROFILES = 'hat/quality/LOAD_PROFILES';
 
 const req = require('superagent');
 
@@ -45,10 +46,28 @@ const setVideosList = (list, showPagination, params, count, pages) => ({
     },
 });
 
+const loadProfiles = payload => ({
+    type: LOAD_PROFILES,
+    payload,
+});
+
+export const fetchProfiles = (dispatch) => {
+    req
+        .get('/api/profiles?as_list=True')
+        .then((result) => {
+            dispatch(loadProfiles(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching profiles ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
 export const dashboardActions = {
     fetchTestMapping,
     setImagesList,
     setVideosList,
+    fetchProfiles,
+    loadProfiles,
 };
 
 export const dashboardInitialStte = {
@@ -67,6 +86,7 @@ export const dashboardInitialStte = {
         count: 0,
         pages: 0,
     },
+    profiles: [],
 };
 
 export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
@@ -106,6 +126,11 @@ export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
                     pages,
                 },
             };
+        }
+
+        case LOAD_PROFILES: {
+            const profiles = action.payload;
+            return { ...state, profiles };
         }
 
         default:

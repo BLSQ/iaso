@@ -26,11 +26,11 @@ const qualityColumns = formatMessage => (
                 defaultMessage: 'Testeur',
                 id: 'quality.label.tester',
             }),
-            accessor: 'tester__userName',
+            accessor: 'tester__user__username',
             Cell: settings => (
                 <span>
                     {settings.original.tester.userName}
-                    {` (${settings.original.tester.firstName} ${settings.original.tester.lastName})`}
+                    {` (${settings.original.tester.firstName}${settings.original.tester.lastName ? `${settings.original.tester.lastName}` : ''})`}
                 </span>
             ),
         },

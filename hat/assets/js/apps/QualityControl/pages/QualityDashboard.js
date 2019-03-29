@@ -12,6 +12,9 @@ import TabsComponent from '../../../components/TabsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import qualityColumns from '../constants/qualityColumns';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { filtersTypes, filtersUsers } from '../constants/filters';
+import { loadActions } from '../../../redux/load';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -31,15 +34,34 @@ class QualityDashboard extends React.Component {
         this.state = {
             currentTab: 'images',
             qualityColumns: qualityColumns(props.intl.formatMessage),
+            imagesLoaded: false,
+            videosLoaded: false,
         };
     }
 
     componentDidMount() {
         this.props.fetchTestMapping();
         this.props.fetchCurrentUserInfos();
+        this.props.fetchProfiles();
     }
 
-    getEndpointUrl(type, toExport = false, exportType = 'csv') {
+    onDataStartLoaded(key) {
+        const newState = this.state;
+        newState[key] = false;
+        this.setState(newState);
+        this.props.startLoading();
+    }
+
+    onDataLoaded(key) {
+        const newState = this.state;
+        newState[key] = true;
+        this.setState(newState);
+        if (newState.imagesLoaded && newState.videosLoaded) {
+            this.props.endLoading();
+        }
+    }
+
+    getEndpointUrl(mediaType, toExport = false, exportType = 'csv') {
         let url = '/api/qctests/?';
         const {
             params,
@@ -47,24 +69,26 @@ class QualityDashboard extends React.Component {
         const urlParams = {
             from: params.date_from,
             to: params.date_to,
-            page: type === 'image' ? params.imagePage : params.videoPage,
-            order: type === 'image' ? params.imageOrder : params.videoOrder,
-            media_type: type,
-            limit: type === 'image' ? params.imagePageSize : params.videoPageSize,
+            media_type: mediaType,
         };
-
+        const type = mediaType === 'image' ? params.test_type_image : params.test_type_video;
+        if (type) {
+            urlParams.type = type;
+        }
+        if (params.userId) {
+            urlParams.user_ids = params.userId;
+        }
         if (toExport) {
             urlParams[exportType] = true;
         }
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
+            url += `&${key}=${value}`;
         });
         return url;
     }
+
 
     render() {
         const {
@@ -79,6 +103,7 @@ class QualityDashboard extends React.Component {
             reduxVideoPage,
             setImagesList,
             setVideosList,
+            profiles,
         } = this.props;
         const { currentTab } = this.state;
         return (
@@ -87,7 +112,7 @@ class QualityDashboard extends React.Component {
                     loading &&
                     <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        id: 'main.labels.loading',
                     })}
                     />
                 }
@@ -96,8 +121,8 @@ class QualityDashboard extends React.Component {
                         <div className="widget__header">
                             <h2 className="widget__heading">
                                 <PeriodSelectorComponent
-                                    dateFrom={this.props.params.date_from}
-                                    dateTo={this.props.params.date_to}
+                                    dateFrom={params.date_from}
+                                    dateTo={params.date_to}
                                     onChangeDate={(dateFrom, dateTo) =>
                                         this.props.redirectTo(baseUrl, {
                                             ...params,
@@ -108,6 +133,28 @@ class QualityDashboard extends React.Component {
                             </h2>
                         </div>
                     </section>
+                </div>
+
+                <div className="widget__container ">
+                    <div className="widget__content--tier">
+                        <div>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={filtersTypes()}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={filtersUsers(profiles, {
+                                    id: 'quality.label.tester',
+                                    defaultMessage: 'Testeurs',
+                                })}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <TabsComponent
                     defaultPath={baseUrl}
@@ -139,8 +186,13 @@ class QualityDashboard extends React.Component {
                             })}
                             pageKey="imagePage"
                             pageSizeKey="imagePageSize"
-                            onDataLoaded={(imagesList, count, pages) => setImagesList(imagesList, true, params, count, pages)}
+                            onDataLoaded={(imagesList, count, pages) => {
+                                this.onDataLoaded('imagesLoaded');
+                                return setImagesList(imagesList, true, params, count, pages);
+                            }}
                             reduxPage={reduxImagePage}
+                            displayLoader={false}
+                            onDataStartLoaded={() => this.onDataStartLoaded('imagesLoaded')}
                         />
                     </div>
                     <div className={`widget__container no-border ${this.state.currentTab !== 'videos' ? 'hidden' : ''}`} >
@@ -162,8 +214,13 @@ class QualityDashboard extends React.Component {
                             })}
                             pageKey="videoPage"
                             pageSizeKey="videoPageSize"
-                            onDataLoaded={(videosList, count, pages) => setVideosList(videosList, true, params, count, pages)}
+                            onDataLoaded={(videosList, count, pages) => {
+                                this.onDataLoaded('videosLoaded');
+                                return setVideosList(videosList, true, params, count, pages);
+                            }}
                             reduxPage={reduxVideoPage}
+                            displayLoader={false}
+                            onDataStartLoaded={() => this.onDataStartLoaded('videosLoaded')}
                         />
                     </div>
                 </div>
@@ -188,6 +245,10 @@ QualityDashboard.propTypes = {
     reduxVideoPage: PropTypes.object,
     setImagesList: PropTypes.func.isRequired,
     setVideosList: PropTypes.func.isRequired,
+    profiles: PropTypes.array.isRequired,
+    fetchProfiles: PropTypes.func.isRequired,
+    startLoading: PropTypes.func.isRequired,
+    endLoading: PropTypes.func.isRequired,
 };
 
 const QualityDashboardIntl = injectIntl(QualityDashboard);
@@ -197,6 +258,7 @@ const MapStateToProps = state => ({
     testsMapping: state.dashboard.testsMapping,
     reduxImagePage: state.dashboard.reduxImagePage,
     reduxVideoPage: state.dashboard.reduxVideoPage,
+    profiles: state.dashboard.profiles,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -207,7 +269,9 @@ const MapDispatchToProps = dispatch => ({
         dispatch(dashboardActions.setImagesList(imagesList, showPagination, params, count, pages)),
     setVideosList: (videosList, showPagination, params, count, pages) =>
         dispatch(dashboardActions.setVideosList(videosList, showPagination, params, count, pages)),
-
+    fetchProfiles: () => dispatch(dashboardActions.fetchProfiles(dispatch)),
+    startLoading: () => dispatch(loadActions.startLoading()),
+    endLoading: () => dispatch(loadActions.successLoadingNoData()),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDashboardIntl);

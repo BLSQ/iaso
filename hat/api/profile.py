@@ -86,7 +86,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            return Response(queryset.values("id", "user__username", "user__id"))
+            return Response(queryset.values("id", "user__username", "user__first_name", "user__last_name", "user__id"))
 
     def retrieve(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)

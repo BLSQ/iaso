@@ -177,6 +177,10 @@ Select {
     margin-left: 10px;
 }
 
+.Select--multi .Select-value {
+    display: inline-flex;
+}
+
 .styled-select {
     background: none;
     height: 29px;

@@ -87,7 +87,7 @@ class CasesViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
-        anonymous = (request.GET.get("anonymous", "False").lower() == "true")
+        anonymous = request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser
 
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -304,14 +304,12 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
-                return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
-                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Nom de\nla maman''Sexe', 'Age', 'CATT', 'RDT',
+                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Nom de\nla mère', 'Sexe', 'Age', 'CATT', 'RDT',
                 'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction\nNoeud\nLymph.', 'Sang\nfrais', 'MAECT', 'PL']
-            column_sizes = [9,         14,   6,       10,        10,                 14,
-                            14, 20,              18,    18,        18,       15,               6,      4,     7,      7,
-                            7, 7, 7,   7,     8,                         7,             7,       7]
+            column_sizes = [9, 14, 6, 10, 10, 14,
+                            14, 20, 18, 18, 18, 15, 6, 4, 7, 7,
+                            7, 7, 7, 7, 8, 7, 7, 7]
 
             filename = 'cases'
             queryset = queryset.values(

@@ -10,6 +10,7 @@ import { patientsActions } from '../redux/patients';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 import { filterActions } from '../../../redux/filtersRedux';
+
 class PatientDetails extends React.Component {
     constructor(props) {
         super(props);

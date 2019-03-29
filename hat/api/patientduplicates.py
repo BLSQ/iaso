@@ -6,6 +6,7 @@ from django.db.models import OuterRef, Exists, Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
@@ -77,6 +78,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        anonymous = request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser
 
         queryset = (
             PatientDuplicatesPair.objects.all()
@@ -209,8 +211,6 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
-                return Response('Unauthorized', status=401)
             columns = [
                 'ID candidat\nduplicat', 'Score de\nsimilarité',
                 'Patient 1\nID', 'Patient 1\nPrénom', 'Patient 1\nNom', 'Patient 1\nPostnom',
@@ -259,20 +259,20 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                         dupe['id'],
                         dupe['similarity_score'],
                         dupe['patient1_id'],
-                        dupe['patient1__first_name'],
-                        dupe['patient1__last_name'],
-                        dupe['patient1__post_name'],
-                        dupe['patient1__mothers_surname'],
+                        dupe['patient1__first_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient1__last_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient1__post_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient1__mothers_surname'] if not anonymous else ANONYMOUS_PLACEHOLDER,
                         dupe['patient1__year_of_birth'],
                         dupe['patient1__origin_area__name']
                         if dupe['patient1__origin_area__name'] else dupe['patient1__origin_raw_AS'],
                         dupe['patient1__origin_village__name']
                         if dupe['patient1__origin_village__name'] else dupe['patient1__origin_raw_village'],
                         dupe['patient2_id'],
-                        dupe['patient2__first_name'],
-                        dupe['patient2__last_name'],
-                        dupe['patient2__post_name'],
-                        dupe['patient2__mothers_surname'],
+                        dupe['patient2__first_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient2__last_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient2__post_name'] if not anonymous else ANONYMOUS_PLACEHOLDER,
+                        dupe['patient2__mothers_surname'] if not anonymous else ANONYMOUS_PLACEHOLDER,
                         dupe['patient2__year_of_birth'],
                         dupe['patient2__origin_area__name']
                         if dupe['patient1__origin_area__name'] else dupe['patient1__origin_raw_AS'],

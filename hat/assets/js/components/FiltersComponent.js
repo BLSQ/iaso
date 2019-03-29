@@ -82,7 +82,9 @@ class FiltersComponent extends React.Component {
 
     render() {
         const { formatMessage } = this.props.intl;
-        const { filters, params } = this.props;
+        const {
+            filters, params, currentUser, permissions,
+        } = this.props;
         if (!filters) {
             return null;
         }
@@ -91,7 +93,16 @@ class FiltersComponent extends React.Component {
                 {
                     filters.map((filter) => {
                         let searchDisabled = false;
-                        if (anonymisedFilterArray.indexOf(filter.name) !== -1 && window.anonymised) {
+                        if (
+                            currentUser &&
+                            permissions &&
+                            Object.getOwnPropertyNames(currentUser).length !== 0 &&
+                            permissions.length > 0 &&
+                            !currentUser.is_superuser &&
+                            typeof permissions.find(p => p.codename === 'x_anonymous') !== 'undefined' &&
+                            anonymisedFilterArray.indexOf(filter.name) !== -1
+                        ) {
+                            console.log('kk');
                             searchDisabled = true;
                         }
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
@@ -150,7 +161,7 @@ class FiltersComponent extends React.Component {
                                                     className="list--normalized-as-checkbox"
                                                     checked={
                                                         (this.props.params[filter.urlKey] === 'true') ||
-                                                        (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck])
+                                                            (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck])
                                                             ? 'checked' : ''
                                                     }
                                                     onChange={event => this.toggleCheckbox(event.target.checked, filter.urlKey)}
@@ -178,9 +189,14 @@ FiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     baseUrl: PropTypes.string,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

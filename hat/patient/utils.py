@@ -3,20 +3,20 @@ from hat.cases.models import testResultString
 
 columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
            'Aire', 'Village', 'Décès', 'ID Tests', 'ID traitements']
-columns_sizes = [8, 12, 12, 12, 4, 4, 12, 10, 14,
-                 14, 14, 5, 14, 8]
+columns_sizes = [10, 12, 12, 12, 5, 4, 12, 10, 14,
+                 14, 14, 6, 14, 11]
 
 columns_tests = ['Identifiant', 'ID Patient', 'Type', 'Index', 'Résultats', 'Equipe',
                     'Village', 'Création', 'Modification', 'Image', 'Vidéo', 'Session', 'PL  Gb/mm³',
                     'LCR', 'Trypanosome', 'Albumine', 'Commentaires']
-columns_tests_sizes = [8, 8, 8, 5, 8, 10,
+columns_tests_sizes = [10, 8, 8, 5, 8, 10,
                        14, 10, 10, 6, 6, 10, 12,
                        3, 11, 8, 20]
 
 columns_treatments = ['Identifiant', 'ID Patient', 'Index', 'Médicament', 'Date de début', 'Date de fin',
                       "Cause de l'incomplétude", 'Evenements indésirables', 'Complet', 'Succès', 'Perdu',
                       'ID Tablette', 'Utilisateur tablette', 'Equipe Tablette']
-columns_treatments_sizes = [8, 8, 5, 12, 10, 10,
+columns_treatments_sizes = [10, 8, 5, 12, 10, 10,
                             20, 20, 7, 7, 7,
                             15, 16, 15]
 

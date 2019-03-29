@@ -58,14 +58,6 @@
         document.getElementById('banner--warning').classList.toggle('closed');
       }
     </script>
-    {% if user.is_authenticated %}
-      <script>
-        window.anonymised = false;
-        {% if perms.menupermissions.x_anonymous and not user.is_superuser %}
-          window.anonymised = true;
-        {% endif %}
-      </script>
-    {% endif %}
     {% if environment == 'staging' %}
       <div class="banner--stage-warning">
         <span>

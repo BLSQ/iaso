@@ -10,8 +10,9 @@ import { filterActions } from '../../../redux/filtersRedux';
 import duplicateListColumns from '../constants/duplicateListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-
 import FiltersComponent from '../../../components/FiltersComponent';
+import { currentUserActions } from '../../../redux/currentUserReducer';
+
 import {
     filtersPatients,
     filtersPatientsDuplicates,
@@ -36,6 +37,7 @@ class PatientsDuplicates extends Component {
             this.props.fetchTeams(),
             this.props.fetchCoordinations(),
             this.props.fetchWorkZones(),
+            this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
@@ -157,7 +159,6 @@ class PatientsDuplicates extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.duplicates.header.title" defaultMessage="Doublons" /></h2>
                     </div>
-
                     <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
@@ -228,6 +229,7 @@ PatientsDuplicates.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -245,8 +247,9 @@ const MapDispatchToProps = dispatch => ({
     fetchWorkZones: () => dispatch(filterActions.fetchWorkZones(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 const PatientsDuplicatesWithIntl = injectIntl(PatientsDuplicates);

@@ -20,6 +20,7 @@ import {
 } from '../constants/filtersSelect';
 import { patientsActions } from '../redux/patients';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 export const urls = [];
 
@@ -40,6 +41,7 @@ class Patients extends Component {
             this.props.fetchCoordinations(),
             this.props.fetchWorkZones(),
             this.props.fetchDevices(),
+            this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
@@ -154,7 +156,6 @@ class Patients extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
                     </div>
-
                     <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
@@ -238,6 +239,7 @@ Patients.propTypes = {
     selectArea: PropTypes.func.isRequired,
     setPatientList: PropTypes.func.isRequired,
     reduxPage: PropTypes.object,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -257,9 +259,10 @@ const MapDispatchToProps = dispatch => ({
     fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
     setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 const PatientsWithIntl = injectIntl(Patients);

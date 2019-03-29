@@ -80,7 +80,7 @@ class PatientsViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
-        anonymous = (request.GET.get("anonymous", "False").lower() == "true")
+        anonymous = request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -284,8 +284,6 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
-                return Response('Unauthorized', status=401)
 
             filename = 'patients'
             if xlsx_format:

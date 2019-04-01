@@ -42,21 +42,6 @@ const screenersColumns = formatMessage => (
                 defaultMessage: 'Photos',
                 id: 'monitoring.label.pictures',
             }),
-            accessor: 'rdt_count',
-            class: 'small',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.rdt_test_pictures + settings.original.catt_test_pictures
-                    }
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Photos',
-                id: 'monitoring.label.pictures',
-            }),
             columns: [
                 {
                     Header: 'CATT +',

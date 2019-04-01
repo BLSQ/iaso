@@ -43,7 +43,7 @@ const confirmersColumns = formatMessage => (
             accessor: 'pl_count',
             Cell: settings =>
                 renderCountCell(
-                    settings.original.pg_count,
+                    settings.original.pl_count,
                     settings.original.pl_count_positive,
                     formatMessage,
                 ),

@@ -24,6 +24,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get('DEBUG', '').lower() == 'true')
+USE_CACHE = (os.environ.get('CACHE', '').lower() == 'true')
 DEV_SERVER = (os.environ.get('DEV_SERVER', '').lower() == 'true')
 ENVIRONMENT = os.environ.get('SENSE_HAT_ENVIRONMENT', 'development').lower()
 
@@ -355,14 +356,20 @@ AWS_S3_REGION_NAME = "eu-central-1"
 
 REDIS_CACHE_LOCATION = "redis://%s:%s/%s" % (REDIS_HOST, REDIS_PORT, REDIS_CACHE_DB)
 
-print("REDIS_CACHE_LOCATION", REDIS_CACHE_LOCATION)
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_CACHE_LOCATION,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+if not USE_CACHE:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_CACHE_LOCATION,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }

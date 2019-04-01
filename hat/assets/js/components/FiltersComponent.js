@@ -194,8 +194,8 @@ FiltersComponent.propTypes = {
 };
 
 const MapStateToProps = state => ({
-    currentUser: state.currentUser.user,
-    permissions: state.currentUser.permissions,
+    currentUser: state.currentUser ? state.currentUser.user : {},
+    permissions: state.currentUser ? state.currentUser.permissions : [],
 });
 
 const MapDispatchToProps = dispatch => ({

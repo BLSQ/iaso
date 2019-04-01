@@ -284,7 +284,8 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-
+            if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             filename = 'patients'
             if xlsx_format:
                 filename = filename + '.xlsx'

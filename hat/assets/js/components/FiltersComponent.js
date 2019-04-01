@@ -7,6 +7,7 @@ import { injectIntl } from 'react-intl';
 import Search from './Search';
 
 import { createUrl } from '../utils/fetchData';
+import { userHasPermission } from '../utils';
 
 const anonymisedFilterArray = [
     'search_prename',
@@ -92,19 +93,9 @@ class FiltersComponent extends React.Component {
             <section>
                 {
                     filters.map((filter) => {
-                        let searchDisabled = false;
-                        if (
-                            currentUser &&
-                            permissions &&
-                            Object.getOwnPropertyNames(currentUser).length !== 0 &&
-                            permissions.length > 0 &&
-                            !currentUser.is_superuser &&
-                            typeof permissions.find(p => p.codename === 'x_anonymous') !== 'undefined' &&
-                            anonymisedFilterArray.indexOf(filter.name) !== -1
-                        ) {
-                            console.log('kk');
-                            searchDisabled = true;
-                        }
+                        const searchDisabled = userHasPermission(permissions, currentUser, 'x_anonymous', false) &&
+                            anonymisedFilterArray.indexOf(filter.name) !== -1;
+
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
                                 <div key={filter.name}>

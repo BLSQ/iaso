@@ -212,3 +212,27 @@ export const isCaseLocalised = kase => (
     kase.location.normalized.village !== undefined
 );
 
+export const userHasPermission = (
+    permissions,
+    currentUser,
+    permissionKey,
+    allowSuperUser = true,
+) => {
+    let hasPermission = false;
+    if (
+        currentUser &&
+        permissions &&
+        Object.getOwnPropertyNames(currentUser).length !== 0 &&
+        permissions.length > 0
+    ) {
+        const currentPermission = permissions.find(p => p.codename === permissionKey);
+        if (
+            (currentUser.is_superuser && allowSuperUser) ||
+            currentUser.permissions.find(p => p === currentPermission.id)
+        ) {
+            hasPermission = true;
+        }
+    }
+    return hasPermission;
+};
+

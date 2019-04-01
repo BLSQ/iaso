@@ -15,7 +15,7 @@ import LayersComponent from '../../../components/LayersComponent';
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
-import { scrollTo } from '../../../utils';
+import { scrollTo, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
 import DynamicLegend from './DynamicLegend';
@@ -96,15 +96,11 @@ class PatientDetailsWrapper extends React.Component {
             },
         } = newProps;
 
-        if (currentUser.id && permissions.length > 0) {
-            const editionRight = permissions.find(p => p.codename === 'x_datas_patient_edition');
-            if ((currentUser.is_superuser ||
-                currentUser.permissions.find(p => p === editionRight.id))) {
-                this.setState({
-                    canEditPatientInfos: true,
-                });
-            }
-        }
+        this.setState({
+            canEditPatientInfos:
+                userHasPermission(permissions, currentUser, 'x_datas_patient_edition'),
+        });
+
         if (newProps.isUpdated) {
             timerSuccess = setTimeout(() => {
                 newProps.setIsUpdated(false);

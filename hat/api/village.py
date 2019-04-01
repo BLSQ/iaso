@@ -200,7 +200,8 @@ class VillageViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             if csv_format or xlsx_format:
-                if request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser:
+                if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
+                    not request.user.is_superuser):
                     return Response('Unauthorized', status=401)
                 filename = 'villages'
                 columns = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude',

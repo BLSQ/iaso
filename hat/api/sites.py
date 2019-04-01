@@ -145,11 +145,9 @@ class SitesViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_dict(additional_fields), queryset))
         else:
-            if (
-                request.user.has_perm("menupermissions.x_anonymous")
-                and not request.user.is_superuser
-            ):
-                return Response("Unauthorized", status=401)
+            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
+                not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             columns = [
                 "ID",
                 "Date de création",

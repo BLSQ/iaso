@@ -15,6 +15,7 @@ import VectorSync from './pages/VectorSync';
 import { vectorReducer, vectorInitialState } from './redux/vectorReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
+import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function vectorApp(appConfig, element, baseUrl) {
     const dateFrom = moment().startOf('year').subtract(3, 'years').format('YYYY-MM-DD');
@@ -60,11 +61,13 @@ export default function vectorApp(appConfig, element, baseUrl) {
         vectors: vectorInitialState,
         map: mapInitialState,
         geoFilters: filtersInitialState,
+        currentUser: currentUserInitialState,
     }, {
         load: loadReducer,
         vectors: vectorReducer,
         map: mapReducer,
         geoFilters: filtersReducer,
+        currentUser: currentUserReducer,
     }, [
         routerMiddleware(history),
     ]);

@@ -1,0 +1,18 @@
+image: python:3.7
+pipelines:
+  default:
+    - step:
+        caches:
+          - pip
+        script:
+          - pip install -r requirements.txt
+          # - python manage.py test --exclude-tag=externaltools --exclude-tag=selenium
+        services:
+          - postgres
+          - redis
+definitions:
+  services:
+    postgres:
+      image: postgres
+    redis:
+      image: redis

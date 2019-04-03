@@ -7,6 +7,7 @@ export const USER_UPDATED = 'hat/management/users/USER_UPDATED';
 export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
 export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
 export const SET_TESTER_TYPES = 'hat/management/users/SET_TESTER_TYPES';
+export const SET_USER_LEVELS = 'hat/management/users/SET_USER_LEVELS';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
 export const SET_TEAMS = 'hat/management/users/SET_TEAMS';
@@ -36,6 +37,11 @@ export const setUserTypes = payload => ({
 
 export const setTesterTypes = payload => ({
     type: SET_TESTER_TYPES,
+    payload,
+});
+
+export const setUserLevels = payload => ({
+    type: SET_USER_LEVELS,
     payload,
 });
 
@@ -214,6 +220,22 @@ export const fetchTesterTypes = (dispatch) => {
         type: FETCH_ACTION_NO_UPDATE,
     });
 };
+
+export const fetchUserLevels = (dispatch) => {
+    req
+        .get('/api/userlevels/')
+        .then((result) => {
+            dispatch(setUserLevels(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching user levels', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
 export const fetchTeams = (dispatch) => {
     req
         .get('/api/teams/')
@@ -295,6 +317,7 @@ export const usersInitialState = {
     institutions: [],
     userTypes: [],
     testerTypes: [],
+    userLevels: [],
     permissions: [],
     provinces: [],
     zones: [],
@@ -319,6 +342,7 @@ export const userActions = {
     fetchUserTypes,
     fetchTeams,
     fetchTesterTypes,
+    fetchUserLevels,
 };
 
 
@@ -373,6 +397,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 userTypes,
+            };
+        }
+
+        case SET_USER_LEVELS: {
+            const userLevels = action.payload;
+            return {
+                ...state,
+                userLevels,
             };
         }
 

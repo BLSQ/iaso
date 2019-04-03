@@ -243,6 +243,13 @@
         margin: 5px 0;
         width: 100%;
     }
+    &.user-modale {
+        input[type="checkbox"] {
+            position: relative;
+            top: 10px;
+            width: auto;
+        }
+    }
     &.large {
         width: 550px;
         input[type=text],

@@ -45,6 +45,7 @@ class UserInfosComponent extends Component {
             teams,
             password,
             testerTypes,
+            userLevels,
         } = this.props;
         return (
             <section>
@@ -159,6 +160,27 @@ class UserInfosComponent extends Component {
                         onChange={testerType => this.props.updateUserField('tester_type', testerType)}
                     />
                 </div>
+                <div>
+                    <label
+                        htmlFor="user_level"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.user_level"
+                            defaultMessage="Niveau de QC"
+                        />:
+                    </label>
+                    <Select
+                        simpleValue
+                        name="user_level"
+                        clearable={false}
+                        value={this.state.user.level || 10}
+                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
+                        options={userLevels.map(l =>
+                            ({ label: l[1], value: l[0] }))}
+                        onChange={level => this.props.updateUserField('level', level)}
+                    />
+                </div>
                 <div className="relative">
                     <label
                         htmlFor="password"
@@ -270,6 +292,7 @@ UserInfosComponent.propTypes = {
     updatePassword: PropTypes.func.isRequired,
     password: PropTypes.string.isRequired,
     testerTypes: PropTypes.array.isRequired,
+    userLevels: PropTypes.array.isRequired,
 };
 
 export default injectIntl(UserInfosComponent);

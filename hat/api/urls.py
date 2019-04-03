@@ -37,6 +37,7 @@ from .vector_api_import import VectorApiImportViewSet
 from .vector_gps_import import VectorGpsImportViewSet
 from .tester_types import TesterTypeViewSet
 from .current_user import CurrentUserViewSet
+from .user_levels import UserLevelsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -76,6 +77,7 @@ router.register(r"vectorapiimports", VectorApiImportViewSet, base_name="vectorap
 router.register(r"vectorgpsimports", VectorGpsImportViewSet, base_name="vectorgpsimports")
 router.register(r"testertypes", TesterTypeViewSet, base_name="testertypes")
 router.register(r"currentuser", CurrentUserViewSet, base_name="currentuser")
+router.register(r"userlevels", UserLevelsViewSet, base_name="userlevels")
 
 
 urlpatterns = [url(r"^", include(router.urls))]

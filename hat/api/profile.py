@@ -108,6 +108,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         areas = request.data.get("AS", [])
         permissions = request.data.get("permissions", [])
         tester_type = request.data.get("tester_type", None)
+        level = request.data.get("level", None)
         if password:
             user.set_password(password)
         user.save()
@@ -158,6 +159,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user.user_permissions.add(permission)
         if tester_type:
             profile.tester_type = tester_type
+        if level:
+            profile.level = level
 
         profile.password_reset = request.data.get("passwordReset", False)
 
@@ -181,6 +184,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         institution = request.data.get("institution", None)
         user_type = request.data.get("userType", None)
+        user.profile.tester_type = request.data.get("tester_type", None)
+        user.profile.level = request.data.get("level", None)
         team = request.data.get("team", None)
 
         if institution:

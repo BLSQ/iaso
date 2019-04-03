@@ -129,6 +129,7 @@ class UserModale extends Component {
         const {
             institutions,
             userTypes,
+            userLevels,
             provinces,
             teams,
             zones,
@@ -143,7 +144,7 @@ class UserModale extends Component {
                 onRequestClose={() => this.props.closeModal()}
                 className="with-tabs"
             >
-                <section className="edit-modal large">
+                <section className="edit-modal large user-modale">
                     <TabsComponent
                         selectTab={key => (this.setState({ currentTab: key }))}
                         isRedirecting={false}
@@ -165,6 +166,7 @@ class UserModale extends Component {
                             updatePassword={password => this.updatePassword(password)}
                             updateUserField={(key, value) => this.updateUserField(key, value)}
                             testerTypes={testerTypes}
+                            userLevels={userLevels}
                         />
                     }
                     {
@@ -240,6 +242,7 @@ UserModale.propTypes = {
     institutions: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
     testerTypes: PropTypes.array.isRequired,
+    userLevels: PropTypes.array.isRequired,
     permissions: PropTypes.array.isRequired,
     provinces: PropTypes.array.isRequired,
     teams: PropTypes.array.isRequired,

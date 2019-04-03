@@ -44,7 +44,7 @@ class SuperUserImageItem extends React.Component {
                         />:
                     </div>
                     <span>
-                        {formatMessage(getResult(currentTest.result, typeConstant))}
+                        {currentTest.result ? formatMessage(getResult(currentTest.result, typeConstant)) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
                     </span>
                 </div>
                 {

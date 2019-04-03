@@ -11,18 +11,18 @@ const CattTypeConstant = [
     },
     {
         value: -1,
-        defaultMessage: 'invalide',
-        id: 'quality.result.invalid',
+        defaultMessage: 'Manquant',
+        id: 'quality.result.missing',
     },
     {
         value: 0,
-        defaultMessage: '-',
-        id: 'quality.result.neg',
+        defaultMessage: 'Absent',
+        id: 'quality.result.absent',
     },
     {
         value: 1,
-        defaultMessage: '+ / -',
-        id: 'quality.result.medium',
+        defaultMessage: '-',
+        id: 'quality.result.negative',
     },
     {
         value: 2,
@@ -49,13 +49,18 @@ const RdtTypeConstant = [
     },
     {
         value: -1,
-        defaultMessage: 'invalide',
-        id: 'quality.result.invalid',
+        defaultMessage: 'manquant',
+        id: 'quality.result.missing',
     },
     {
         value: 0,
+        defaultMessage: 'Absent',
+        id: 'quality.result.absent',
+    },
+    {
+        value: 1,
         defaultMessage: '-',
-        id: 'quality.result.neg',
+        id: 'quality.result.negative',
     },
     {
         value: 2,

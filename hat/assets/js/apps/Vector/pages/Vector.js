@@ -384,6 +384,7 @@ export class Vector extends Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.props.onSearch()} />
                 </div>
                 <TabsComponent
                     defaultPath={baseUrl}
@@ -551,6 +552,7 @@ Vector.propTypes = {
     siteEdited: PropTypes.object,
     trapEdited: PropTypes.object,
     targetEdited: PropTypes.object,
+    onSearch: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

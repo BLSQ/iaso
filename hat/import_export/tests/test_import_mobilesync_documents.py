@@ -368,4 +368,27 @@ class ImportMobileSyncDocuments(TestCase):
         rdt_test = case.test_set.get(type="RDT")
         pl_test = case.test_set.get(type="PL")
         self.assertTrue(rdt_test.hidden)
+        self.assertIsNone(rdt_test.level)
         self.assertFalse(pl_test.hidden)
+
+    def test_import_screening_catt(self):
+        regular_pos_catt, device_db_scr = load_document("regular_pos_catt.json")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db_scr.db_name, json=regular_pos_catt).json()
+        self.assertEqual(regular_pos_catt['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db_scr.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=device_db_scr.device_id)
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+        self.assertEqual(case.test_catt_level, 2)
+
+        # Test
+        self.assertEquals(case.test_set.count(), 1, "There should only be 1 test")
+        catt_test = case.test_set.get(type="CATT")
+        self.assertEqual(catt_test.level, 2)

@@ -154,7 +154,7 @@ def create_test_data(case: Case, patient_area, raw):
             test_date=test_date, hidden=should_hide_screening(case, test_date),
             devicedb_id=devicedb_id, team_id=device_team_id,
             longitude=raw.get('test_catt_test_longitude'), latitude=raw.get('test_catt_test_latitude'),
-            tester_id=device_last_profile_id
+            tester_id=device_last_profile_id, level=case.test_catt_level
         )
         if test_created:
             tests_created += 1
@@ -237,7 +237,7 @@ def create_test_data(case: Case, patient_area, raw):
 
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
                        test_date=None, hidden=False, devicedb_id=None, device_id=None, location=None, latitude=None,
-                       longitude=None, team_id=None, tester_id=None):
+                       longitude=None, team_id=None, tester_id=None, level=None):
     if test_date:
         test_date = dateutil.parser.parse(test_date)
     else:
@@ -263,6 +263,7 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
                                                         'hidden': hidden,
                                                         'location': location,
                                                         'team_id': team_id,
+                                                        'level': level,
                                                     })
 
     if test_created:

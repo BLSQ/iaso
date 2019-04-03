@@ -1067,6 +1067,17 @@ MAPPING: List[JsonType] = [
         "test_type": SCREENING_TEST
     },
     {
+        "field": "test_catt_level",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.catt.level"),
+                "apply_to_column": mobile_get_safe_int,
+            },
+        },
+        "test_type": SCREENING_TEST
+    },
+    {
         "field": "test_catt_picture_filename",
         "export_levels": [Export.full, Export.anon],
         "sources": {

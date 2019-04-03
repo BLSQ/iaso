@@ -165,6 +165,7 @@ class Test(models.Model):
     note = models.TextField("Note", null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True, db_index=True)
     result = models.IntegerField(choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True, db_index=True)
+    level = models.IntegerField(null=True, blank=True, db_index=True)
     index = models.IntegerField(null=True, blank=True)
     team = models.ForeignKey("users.Team", null=True, blank=True, on_delete=models.CASCADE)
     village = models.ForeignKey(Village, null=True, on_delete=models.CASCADE)
@@ -191,6 +192,7 @@ class Test(models.Model):
             "type": self.type,
             "index": self.index,
             "result": self.result,
+            "level": self.level,
             "date": self.date,
             "village": self.village.as_dict() if self.village else None,
             "hidden": self.hidden,

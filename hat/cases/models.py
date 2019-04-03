@@ -297,6 +297,7 @@ class CaseAbstract(models.Model):
 
     test_catt = models.IntegerField("Test CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_catt_index = models.IntegerField("CATT Card Index", null=True, blank=True)
+    test_catt_level = models.IntegerField("CATT positivity level", null=True, blank=True)
     test_catt_dilution = models.TextField("Dilution CATT", choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True)
     test_catt_picture_filename = models.TextField("CATT picture filename", null=True, blank=True)
     test_catt_session_type = models.TextField("CATT session type door to door or on site",

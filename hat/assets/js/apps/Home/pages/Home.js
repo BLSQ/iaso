@@ -156,23 +156,25 @@ class Home extends Component {
                         }
                     </div>
                 </section>
-                <section className="section--feature--suspect">
-                    <div className="section__content--suspect">
-                        <h2>
-                            <FormattedMessage id="home.subTitle5" defaultMessage="Suivi des cas non confirmés" />
-                        </h2>
-                        <p>
-                            <FormattedMessage id="home.text6" defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités." />
-                        </p>
-                        {
-                            userHasPermission('x_case_cases', currentUser) &&
-                            <a href="/dashboard/datas/tests?suspect=true" className="button--bright">
-                                <FormattedMessage id="home.casesLink" defaultMessage="Aller sur les cas THA" />
-                                <i className="fa fa-arrow-right icon--right" />
-                            </a>
-                        }
-                    </div>
+              {
+                userHasPermission('x_case_cases', currentUser) && <section className="section--feature--suspect">
+                  <div className="section__content--suspect">
+                    <h2>
+                      <FormattedMessage id="home.subTitle5" defaultMessage="Suivi des cas non confirmés"/>
+                    </h2>
+                    <p>
+                      <FormattedMessage id="home.text6"
+                                        defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."/>
+                    </p>
+
+                    <a href="/dashboard/datas/tests?suspect=true" className="button--bright">
+                      <FormattedMessage id="home.casesLink" defaultMessage="Aller sur les cas THA"/>
+                      <i className="fa fa-arrow-right icon--right"/>
+                    </a>
+
+                  </div>
                 </section>
+              }
                 <section className="section--feature--partners">
                     <h2>
                         <FormattedMessage id="home.subTitle6" defaultMessage="En partenariat avec" />

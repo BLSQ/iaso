@@ -32,6 +32,9 @@ class ImageFormComponent extends React.Component {
         super(props);
         this.state = {
             currentTest: props.currentTest,
+            currentCheck: {
+                ...props.currentTest,
+            },
             groupedCattTests: groupCattTests(props.currentTest),
             comment: '',
         };
@@ -46,45 +49,47 @@ class ImageFormComponent extends React.Component {
 
     onSubmit(e) {
         e.preventDefault();
-        const test = {
-            ...this.state.currentTest,
+        const check = {
+            ...this.state.currentCheck,
         };
-        if (isMediumUser(this.props.userLevel) && test.other_catt) {
-            delete test.other_catt;
+        if ((isMediumUser(this.props.userLevel) || isSuperUser(this.props.userLevel)) && check.other_catt) {
+            delete check.other_catt;
         }
-        this.props.submitForm(test, this.state.comment);
+        this.props.submitForm(check, this.state.comment);
     }
 
     changeResult(result, imageItemId) {
-        const currentTest = {
-            ...this.state.currentTest,
+        const currentCheck = {
+            ...this.state.currentCheck,
         };
-        if (imageItemId === this.state.currentTest.id) {
-            currentTest.result = result;
+        if (imageItemId === this.state.currentCheck.id) {
+            currentCheck.result = result;
         } else {
-            const tempOtherCatt = [...this.state.currentTest.other_catt];
-            this.state.currentTest.other_catt.forEach((catt, index) => {
+            const tempOtherCatt = [...this.state.currentCheck.other_catt];
+            this.state.currentCheck.other_catt.forEach((catt, index) => {
                 if (catt.id === imageItemId) {
                     tempOtherCatt[index].result = result;
                 }
             });
-            currentTest.other_catt = tempOtherCatt;
+            currentCheck.other_catt = tempOtherCatt;
         }
         this.setState({
-            currentTest,
-            groupedCattTests: groupCattTests(currentTest),
+            currentCheck,
+            groupedCattTests: groupCattTests(currentCheck),
         });
     }
 
     render() {
-        const { currentTest, groupedCattTests, comment } = this.state;
+        const {
+            currentTest, groupedCattTests, comment, currentCheck,
+        } = this.state;
         const { userLevel } = this.props;
         let formClasses = isMediumUser(userLevel) || isSuperUser(userLevel) ? 'with-comment ' : '';
         formClasses += isSuperUser(userLevel) ? 'super-user' : '';
         return (
             <form className={formClasses}>
                 {
-                    isSuperUser(userLevel) &&
+                    isSuperUser(userLevel) && currentTest &&
                     <SuperUserImageComponent
                         currentTest={currentTest}
                     />
@@ -94,7 +99,7 @@ class ImageFormComponent extends React.Component {
                         (currentTest.type === 'CATT' &&
                             (isMediumUser(userLevel) || isSuperUser(userLevel)))) &&
                             <TestImageComponent
-                                test={currentTest}
+                                test={currentCheck}
                                 isSuperUser={isSuperUser(userLevel)}
                                 isMediumUser={isMediumUser(userLevel)}
                                 changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
@@ -104,6 +109,7 @@ class ImageFormComponent extends React.Component {
                     currentTest.type === 'CATT' &&
                     !isMediumUser(userLevel) &&
                     !isSuperUser(userLevel) &&
+                    groupedCattTests.length &&
                     groupedCattTests.map(catt =>
                         (<TestImageComponent
                             key={`catt-${catt.id}`}

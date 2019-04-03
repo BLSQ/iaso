@@ -12,6 +12,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import SearchButton from '../../../components/SearchButton';
 
 import {
     filtersPatients,
@@ -28,6 +29,7 @@ class PatientsDuplicates extends Component {
         super(props);
         this.state = {
             tableColumns: duplicateListColumns(props.intl.formatMessage),
+            tableUrl: this.getEndpointUrl(),
         };
     }
 
@@ -61,6 +63,12 @@ class PatientsDuplicates extends Component {
         } else if (newProps.params.village_id !== this.props.params.village_id) {
             this.props.selectVillage(newProps.params.village_id);
         }
+    }
+
+    onSearch() {
+        this.setState({
+            tableUrl: this.getEndpointUrl(),
+        });
     }
 
     getEndpointUrl(toExport, exportType = 'cv') {
@@ -189,12 +197,13 @@ class PatientsDuplicates extends Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container  no-border">
                     <CustomTableComponent
                         isSortable
                         showPagination
-                        endPointUrl={this.getEndpointUrl()}
+                        endPointUrl={this.state.tableUrl}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'id', desc: false }]}
                         params={params}

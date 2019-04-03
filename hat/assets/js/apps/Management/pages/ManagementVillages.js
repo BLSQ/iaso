@@ -16,6 +16,7 @@ import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import SearchButton from '../../../components/SearchButton';
 
 const newUser = {
     id: 0,
@@ -33,6 +34,7 @@ class ManagementVillages extends React.Component {
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
+            tableUrl: this.getEndpointUrl(),
         };
     }
 
@@ -68,6 +70,13 @@ class ManagementVillages extends React.Component {
         if (nextProps.params.as_id !== this.props.params.as_id) {
             this.props.selectArea(nextProps.params.as_id, nextProps.params.village_id, nextProps.params.zs_id);
         }
+    }
+
+
+    onSearch() {
+        this.setState({
+            tableUrl: this.getEndpointUrl(),
+        });
     }
 
     onChangeFilters(key, value) {
@@ -232,6 +241,7 @@ class ManagementVillages extends React.Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container management-control">
                     {
@@ -249,7 +259,7 @@ class ManagementVillages extends React.Component {
                             isSortable
                             multiSort
                             showPagination
-                            endPointUrl={this.getEndpointUrl()}
+                            endPointUrl={this.state.tableUrl}
                             columns={this.state.tableColumns}
                             defaultSorted={[{ id: 'name', desc: false }]}
                             params={this.props.params}

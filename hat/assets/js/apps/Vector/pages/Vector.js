@@ -31,6 +31,7 @@ import EditSiteComponent from '../components/sites/EditSiteComponent';
 import ShowCatchesComponent from '../components/ShowCatchesComponent';
 import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import SearchButton from '../../../components/SearchButton';
 
 const baseUrl = 'map';
 
@@ -160,7 +161,6 @@ export class Vector extends Component {
         });
         this.props.redirectTo(baseUrl, tempParams);
     }
-
 
     editItem(type, data = undefined) {
         if (type === 'site') {

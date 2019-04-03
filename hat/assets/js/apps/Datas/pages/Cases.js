@@ -16,6 +16,7 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from '../constants/filtersSelect';
 import { casesActions } from '../redux/cases';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import SearchButton from '../../../components/SearchButton';
 
 export const urls = [];
 
@@ -24,6 +25,7 @@ class Cases extends Component {
         super(props);
         this.state = {
             tableColumns: casesListColumns(props.intl.formatMessage),
+            tableUrl: this.getEndpointUrl(),
         };
     }
 
@@ -59,6 +61,13 @@ class Cases extends Component {
             this.props.selectVillage(newProps.params.village_id);
         }
     }
+
+    onSearch() {
+        this.setState({
+            tableUrl: this.getEndpointUrl(),
+        });
+    }
+
     getEndpointUrl(toExport = false, exportType = 'csv') {
         let url = '/api/cases/?';
         const {
@@ -89,7 +98,6 @@ class Cases extends Component {
         });
         return url;
     }
-
     selectCase(caseItem, event) {
         if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
             window.open(`/dashboard/locator/case_id/${caseItem.id}`, '_blank');
@@ -192,12 +200,13 @@ class Cases extends Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container  no-border">
                     <CustomTableComponent
                         isSortable
                         showPagination
-                        endPointUrl={this.getEndpointUrl()}
+                        endPointUrl={this.state.tableUrl}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'form_year', desc: false }]}
                         params={this.props.params}

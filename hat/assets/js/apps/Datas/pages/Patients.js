@@ -21,6 +21,7 @@ import {
 import { patientsActions } from '../redux/patients';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import SearchButton from '../../../components/SearchButton';
 
 export const urls = [];
 
@@ -31,6 +32,7 @@ class Patients extends Component {
         super(props);
         this.state = {
             tableColumns: registerListColumns(props.intl.formatMessage),
+            tableUrl: this.getEndpointUrl(),
         };
     }
 
@@ -65,6 +67,12 @@ class Patients extends Component {
         } else if (newProps.params.village_id !== this.props.params.village_id) {
             this.props.selectVillage(newProps.params.village_id);
         }
+    }
+
+    onSearch() {
+        this.setState({
+            tableUrl: this.getEndpointUrl(),
+        });
     }
 
     getEndpointUrl(toExport, exportType = 'csv') {
@@ -186,6 +194,7 @@ class Patients extends Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.onSearch()} />
                     <ChoosePeriodSelectorComponent
                         params={this.props.params}
                         baseUrl={baseUrl}
@@ -196,7 +205,7 @@ class Patients extends Component {
                     <CustomTableComponent
                         isSortable
                         showPagination
-                        endPointUrl={this.getEndpointUrl()}
+                        endPointUrl={this.state.tableUrl}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'last_name', desc: false }]}
                         params={params}

@@ -25,6 +25,7 @@ import { userReducer, usersInitialState } from './redux/users';
 import { villageReducer, villagesInitialState } from './redux/villages';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { devicesReducer, devicesInitialState } from './redux/devices';
+import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -90,6 +91,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         geoFilters: filtersInitialState,
         geoFiltersModale: filtersInitialState,
         devices: devicesInitialState,
+        currentUser: currentUserInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -103,6 +105,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         geoFilters: filtersReducer,
         geoFiltersModale: filtersReducer,
         devices: devicesReducer,
+        currentUser: currentUserReducer,
     }, [
         routerMiddleware(history),
     ]);

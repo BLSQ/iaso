@@ -13,11 +13,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { deepEqual, clone } from '../../utils/index';
-import { fetchUrls, launchAlgo, createUrl } from '../../utils/fetchData';
+import { fetchUrls, launchAlgo } from '../../utils/fetchData';
 import MicroplanningComponent from './Microplanning';
 import { selectionActions } from './redux/selection';
+import { currentUserActions } from '../../redux/currentUserReducer';
 
 const request = require('superagent');
 
@@ -129,6 +129,7 @@ export class MicroplanningContainer extends Component {
 
     componentDidMount() {
         this.loadFullData(this.props.params);
+        this.props.fetchCurrentUserInfos();
     }
 
     componentWillReceiveProps(newProps) {
@@ -215,6 +216,7 @@ MicroplanningContainer.propTypes = {
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     isTest: PropTypes.bool,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -223,6 +225,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningContainer);

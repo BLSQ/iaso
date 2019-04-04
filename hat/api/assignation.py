@@ -113,7 +113,8 @@ class AssignationViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
+                not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = ['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
                     'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']

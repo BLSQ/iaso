@@ -211,6 +211,8 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
+            if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             columns = [
                 'ID candidat\nduplicat', 'Score de\nsimilarité',
                 'Patient 1\nID', 'Patient 1\nPrénom', 'Patient 1\nNom', 'Patient 1\nPostnom',

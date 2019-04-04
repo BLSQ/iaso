@@ -15,6 +15,7 @@ import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 const newUser = {
     id: 0,
@@ -40,6 +41,7 @@ class ManagementVillages extends React.Component {
             this.props.fetchProvinces(),
             this.props.fetchGeoDatas(),
             this.props.fetchVillageSource(),
+            this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id);
@@ -301,6 +303,7 @@ ManagementVillages.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     fetchVillageSource: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const ManagementVillagesIntl = injectIntl(ManagementVillages);
@@ -326,6 +329,7 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
     fetchVillageSource: () => dispatch(filterActions.fetchVillageSource(dispatch)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);

@@ -18,7 +18,7 @@ import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
 import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
-
+import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
@@ -57,6 +57,7 @@ export default function microplanningApp(element, baseUrl) {
         coordinations: coordinationInitialState,
         assignations: [],
         geoScope: geoScopeMapInitialState,
+        currentUser: currentUserInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -67,6 +68,7 @@ export default function microplanningApp(element, baseUrl) {
         coordinations: coordinationReducer,
         assignations: assignationReducer,
         geoScope: geoScopeMapReducer,
+        currentUser: currentUserReducer,
     }, [
         routerMiddleware(history),
     ]);

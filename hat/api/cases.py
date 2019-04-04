@@ -304,6 +304,8 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
+            if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
             columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
                 'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Nom de\nla mère', 'Sexe', 'Age', 'CATT', 'RDT',
                 'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction\nNoeud\nLymph.', 'Sang\nfrais', 'MAECT', 'PL']

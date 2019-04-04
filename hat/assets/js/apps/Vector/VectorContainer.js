@@ -20,6 +20,7 @@ import {
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
 import { vectorActions } from './redux/vectorReducer';
+import { currentUserActions } from '../../redux/currentUserReducer';
 
 
 class VectorContainer extends Component {
@@ -38,6 +39,7 @@ class VectorContainer extends Component {
             this.props.fetchProvinces(),
             fetchProfiles(dispatch),
             fetchHabitats(dispatch),
+            this.props.fetchCurrentUserInfos(),
         ];
         if (params.sites && params.tab === 'map') {
             promises.push(fetchSites(dispatch, params));
@@ -216,7 +218,6 @@ class VectorContainer extends Component {
     }
 
     render() {
-        console.log('this.state.trapEdited', this.state.trapEdited);
         return (
             <VectorElement
                 params={this.props.params}
@@ -245,6 +246,7 @@ VectorContainer.propTypes = {
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
     trapUpdated: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -263,6 +265,7 @@ const MapDispatchToProps = dispatch => ({
     saveSiteRequest: site => saveSite(dispatch, site),
     saveTargetRequest: target => saveTarget(dispatch, target),
     trapUpdated: isUpdated => dispatch(vectorActions.trapUpdated(isUpdated)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(VectorContainer);

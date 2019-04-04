@@ -10,14 +10,17 @@ const getResult = (value, list) => list.find(e => e.value === value);
 
 class SuperUserImageComponent extends React.Component {
     render() {
+
         const {
             currentTest,
             intl: {
                 formatMessage,
             },
         } = this.props;
+
         const typeConstant = currentTest.type === 'RDT' ?
             RdtTypeConstant : CattTypeConstant;
+        console.log('currentTest', currentTest, getResult(currentTest.result, typeConstant))
         let check1;
         let check2;
         let check3;
@@ -62,7 +65,7 @@ class SuperUserImageComponent extends React.Component {
                             />:
                         </div>
                         <span>
-                            {formatMessage(getResult(currentTest.result, typeConstant))}
+                            {currentTest.result ? formatMessage(getResult(currentTest.result, typeConstant)) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
                         </span>
                     </div>
                 </section>

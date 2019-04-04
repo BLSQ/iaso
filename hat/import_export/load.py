@@ -304,6 +304,9 @@ def create_cases(df: DataFrame) -> None:
 
         json_document_id = ignored_columns.get("json_document_id", None)
         treatments = ignored_columns.get("treatments", [])
+        # Avoid having to check for None, nan, '' etc everywhere in the code
+        row = row.dropna()
+
         # Determine the test and patient location
         (normalized_AS, normalized_village) = normalize_location(case.ZS, case.AS, case.village,
                                                                  case.device_id, case.latitude, case.longitude)
@@ -371,6 +374,8 @@ def update_cases(df: DataFrame) -> int:
 
             json_document_id = ignored_columns.get("json_document_id", None)
             treatments = ignored_columns.get("treatments", [])
+            # Avoid having to check for None, nan, '' etc everywhere in the code
+            row = row.dropna()
 
             # The case location cannot change on mobile. Even if it does, a new location will produce a different
             # document_id and therefore a new document rather than an update. So we only need to worry about

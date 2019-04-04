@@ -12,8 +12,8 @@ from hat.cases.models import Case
 from hat.constants import CATT, RDT, CTCWOO, MAECT, PG, PL, GPS_SRID
 from hat.import_export.mapping import mobile_get_date, mobile_get_null_boolean, mobile_get_location_from_gps
 from hat.patient.models import Test, Patient, Treatment
-from hat.users.models import Profile
 from hat.sync.models import ImageUpload, VideoUpload, DeviceDB
+from hat.users.models import Profile
 
 """
 This file provides the tools to identify patients and tests from Case data
@@ -109,7 +109,7 @@ def should_hide_screening(case, test_date):
         other_test = Test.objects \
             .filter(form__normalized_patient=case.normalized_patient) \
             .filter(type__in=[CATT, RDT]) \
-            .filter(date__range=[test_date-timedelta(days=90), test_date+timedelta(days=1)])\
+            .filter(date__range=[test_date - timedelta(days=90), test_date + timedelta(days=1)]) \
             .exclude(form=case)  # don't find ourself
         return other_test.count() > 0
     except Exception as e:
@@ -119,7 +119,7 @@ def should_hide_screening(case, test_date):
 
 def get_devicedb_info_cached(device_id, cache):
     if device_id is None:
-        return None, None
+        return None, None, None
     devicedb_id, team_id, device_last_profile_id = cache.get(device_id, (None, None, None))
     if devicedb_id is None:
         try:
@@ -146,7 +146,8 @@ def create_test_data(case: Case, patient_area, raw):
     # should be automatically hidden
     if case.test_catt is not None:
         test_date = raw.get('test_catt_test_time', None)
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_catt_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_catt_test_device'),
+                                                                                       device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
             image=case.test_catt_picture_filename, traveller_area=patient_area,
@@ -162,7 +163,8 @@ def create_test_data(case: Case, patient_area, raw):
     if case.test_rdt is not None:
         test_date = raw.get('test_rdt_test_time', None)
         hidden = should_hide_screening(case, test_date)
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'),
+                                                                                       device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename,
             traveller_area=patient_area, test_date=test_date, hidden=hidden,
@@ -175,7 +177,8 @@ def create_test_data(case: Case, patient_area, raw):
         tests.append(test)
 
     if case.test_pg is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pg_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pg_test_device'),
+                                                                                       device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_pg_test_time', None),
@@ -188,7 +191,8 @@ def create_test_data(case: Case, patient_area, raw):
         tests.append(test)
 
     if case.test_pl is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pl_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pl_test_device'),
+                                                                                       device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_pl_test_time', None),
@@ -201,7 +205,8 @@ def create_test_data(case: Case, patient_area, raw):
         tests.append(test)
 
     if case.test_ctcwoo is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_ctcwoo_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(
+            raw.get('test_ctcwoo_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_ctcwoo_test_time', None),
@@ -214,7 +219,8 @@ def create_test_data(case: Case, patient_area, raw):
         tests.append(test)
 
     if case.test_maect is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_maect_test_device'), device_cache)
+        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(
+            raw.get('test_maect_test_device'), device_cache)
         test, test_created = get_or_create_test(
             case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename,
             traveller_area=patient_area, test_date=raw.get('test_maect_test_time', None),
@@ -232,7 +238,7 @@ def create_test_data(case: Case, patient_area, raw):
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
                        test_date=None, hidden=False, devicedb_id=None, device_id=None, location=None, latitude=None,
                        longitude=None, team_id=None, tester_id=None):
-    if test_date and str(test_date) != 'nan':  # nan can happen in some weird conditions
+    if test_date:
         test_date = dateutil.parser.parse(test_date)
     else:
         test_date = case.document_date
@@ -308,9 +314,9 @@ def find_tests_by_image(filepath, test_type, include_already_linked=False):
     filename = _path_leaf(filepath)
 
     tests = Test.objects.filter(
-            Q(image_filename=filename) |
-            Q(image_filename__endswith=filename)
-        ).filter(type=test_type)
+        Q(image_filename=filename) |
+        Q(image_filename__endswith=filename)
+    ).filter(type=test_type)
 
     if not include_already_linked:
         tests = tests.filter(image__isnull=True)
@@ -322,9 +328,9 @@ def find_tests_by_video(filepath, test_type, include_already_linked=False):
     filename = _path_leaf(filepath)
 
     tests = Test.objects.filter(
-            Q(video_filename=filename) |
-            Q(video_filename__endswith=filename)
-        ).filter(type=test_type)
+        Q(video_filename=filename) |
+        Q(video_filename__endswith=filename)
+    ).filter(type=test_type)
 
     if not include_already_linked:
         tests = tests.filter(video__isnull=True)

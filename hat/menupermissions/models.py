@@ -23,7 +23,7 @@ LOCATOR = _("Locator")
 VECTOR_CONTROL = _("Vector control")
 VECTOR_CONTROL_UPLOAD = _("Vector control import Gpx")
 QUALITY_CONTROL = _("Quality control")
-ANONYMOUS_VIEW = _("Anounymous view")
+ANONYMOUS_VIEW = _("Anonymous view")
 EDIT_PATIENT = _("Edition d'un patient")
 DOWNLOAD_DATAS = _("Téléchargement de données")
 

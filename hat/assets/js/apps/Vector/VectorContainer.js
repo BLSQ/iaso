@@ -94,6 +94,17 @@ class VectorContainer extends Component {
                 promises.push(this.props.selectArea(newProps.params.as_id, null, newProps.params.zs_id, false));
             }
 
+            const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
+            const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||
+                hasChanged(this.props.params, newProps.params, 'sitesPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderSites');
+            const trapsTableChanged = hasChanged(this.props.params, newProps.params, 'trapsPage') ||
+                hasChanged(this.props.params, newProps.params, 'trapsPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderTraps');
+            const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
+                hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderTargets');
+
             if (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map') {
                 promises.push(fetchSites(dispatch, newProps.params));
             }
@@ -108,6 +119,16 @@ class VectorContainer extends Component {
             }
             if (newProps.params.nonEndemicVillages && !this.props.vectors.nonEndemicVillages && newProps.params.tab === 'map') {
                 promises.push(fetchVillages(dispatch, newProps.params, false));
+            }
+            if ((sitesTableChanged || !this.props.vectors.sitesPage.list) && newProps.params.tab === 'sites') {
+                promises.push(fetchPaginatedSites(dispatch, newProps.params, newProps.params.sitesPageSize, newProps.params.sitesPage, newProps.params.orderSites));
+            }
+
+            if ((trapsTableChanged || !this.props.vectors.trapsPage.list) && newProps.params.tab === 'traps') {
+                promises.push(fetchPaginatedTraps(dispatch, newProps.params, newProps.params.trapsPageZize, newProps.params.trapsPage, newProps.params.orderTraps));
+            }
+            if ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets') {
+                promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
             }
             if (promises.length > 0) {
                 dispatch(loadActions.startLoading());

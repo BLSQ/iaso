@@ -303,7 +303,7 @@ STATICFILES_DIRS = [
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': '/',  # used in prod
-        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/webpack', 'webpack-stats.json'),
+        'STATS_FILE': os.path.join(PROJECT_ROOT, 'assets/webpack', 'webpack-stats.json' if DEBUG else 'webpack-stats-prod.json'),
     }
 }
 

@@ -45,7 +45,7 @@ module.exports = {
     ),
     new BundleTracker({
       path: __dirname,
-      filename: './assets/webpack/webpack-stats.json'
+      filename: './assets/webpack/webpack-stats-prod.json'
     }),
     new ExtractTextPlugin({filename: '[name]-[chunkhash].css'}),
     new CommonsPlugin({

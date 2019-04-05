@@ -43,6 +43,9 @@ class ImageFormComponent extends React.Component {
     componentWillReceiveProps(nextProps) {
         this.setState({
             currentTest: nextProps.currentTest,
+            currentCheck: {
+                ...nextProps.currentTest,
+            },
             groupedCattTests: groupCattTests(nextProps.currentTest),
         });
     }

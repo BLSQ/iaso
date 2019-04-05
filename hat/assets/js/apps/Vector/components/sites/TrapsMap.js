@@ -22,6 +22,7 @@ import {
     includeControlsInMap,
     includeDefaultLayersInMap,
 } from '../../../../utils/mapUtils';
+import { deepEqual } from '../../../../utils';
 
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -51,6 +52,7 @@ const renderDivIcon = (content, key, size) => L.divIcon({
     iconSize: L.point(size, size),
 });
 
+
 let exportControl;
 class TrapsMap extends Component {
     constructor(props) {
@@ -79,7 +81,6 @@ class TrapsMap extends Component {
         this.fitToBounds();
     }
 
-
     componentDidUpdate(prevProps) {
         const { map } = this;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
@@ -89,7 +90,10 @@ class TrapsMap extends Component {
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
                 updateBaseLayer(this.map, this.props.baseLayer);
             }
-            if (hasChanged(prevProps, this.props, 'site')) {
+            if (hasChanged(prevProps, this.props, 'site') || this.props.mapUpdated) {
+                if (this.props.mapUpdated) {
+                    this.props.setMapUpdate(false);
+                }
                 this.updateSites();
                 this.updateTraps();
             }
@@ -109,6 +113,15 @@ class TrapsMap extends Component {
     onResize(width, height) {
         const { map } = this;
         exportControl = onResizeMap(width, height, exportControl, map, 'Traps');
+    }
+
+    isItemVisible(key) {
+        let showItem = false;
+        const item = this.props.itemsToShow.find(i => i.key === key);
+        if (item && item.isActive) {
+            showItem = true;
+        }
+        return showItem;
     }
 
     /*
@@ -138,27 +151,30 @@ class TrapsMap extends Component {
             },
         } = this.props;
         this.siteGroup.clearLayers();
-        const siteCircle = L.marker(
-            [site.latitude, site.longitude],
-            { icon: renderDivIcon('', 'sites small', 30) },
-        );
-        siteCircle.addTo(this.siteGroup)
-            .on('click', (event) => {
-                const popUp = event.target.getPopup();
-                popUp.setContent(renderSitesPopup(site, formatMessage, false));
-            })
-            .bindPopup()
-            .on('mouseover', () => {
-                const lat = site.latitude;
-                const lng = site.longitude;
-                const item = {
-                    label: `${formatMessage(MESSAGES.site)} ${site.name} `,
-                };
-                this.updateTooltipSmall(item, lat, lng);
-            })
-            .on('mouseout', () => {
-                this.updateTooltipSmall();
-            });
+
+        if (this.isItemVisible('sites')) {
+            const siteCircle = L.marker(
+                [site.latitude, site.longitude],
+                { icon: renderDivIcon('', 'sites small', 30) },
+            );
+            siteCircle.addTo(this.siteGroup)
+                .on('click', (event) => {
+                    const popUp = event.target.getPopup();
+                    popUp.setContent(renderSitesPopup(site, formatMessage, false));
+                })
+                .bindPopup()
+                .on('mouseover', () => {
+                    const lat = site.latitude;
+                    const lng = site.longitude;
+                    const item = {
+                        label: `${formatMessage(MESSAGES.site)} ${site.name} `,
+                    };
+                    this.updateTooltipSmall(item, lat, lng);
+                })
+                .on('mouseout', () => {
+                    this.updateTooltipSmall();
+                });
+        }
     }
     updateTraps(fiitToBound = true, trapEdited = this.props.trapEdited) {
         const {
@@ -169,48 +185,50 @@ class TrapsMap extends Component {
         } = this.props;
         this.trapsGroup.clearLayers();
         if (site.traps) {
-            site.traps.map((trapItem) => {
-                const trapCircle = L.marker(
-                    [trapItem.latitude, trapItem.longitude],
-                    {
-                        icon: renderDivIcon(
-                            '',
-                            `traps small ${trapItem.is_selected !== undefined && trapItem.is_selected ? 'selected' : ''} ${trapItem.is_selected !== undefined && !trapItem.is_selected ? 'not-selected' : ''}`,
-                            30,
-                        ),
-                    },
-                );
-                trapCircle.addTo(this.trapsGroup)
-                    .on('click', (event) => {
-                        const popUp = event.target.getPopup();
-                        popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
-                        setTimeout(() => {
-                            const selectedSelect = document.getElementById('selected-trap-select');
-
-                            if (selectedSelect) {
-                                selectedSelect.addEventListener('change', (e) => {
-                                    this.props.saveTrap(trapItem, e.target.checked);
-                                });
-                            }
-                        }, 500);
-                    })
-                    .bindPopup()
-                    .on('mouseover', () => {
-                        const lat = trapItem.latitude;
-                        const lng = trapItem.longitude;
-                        const item = {
-                            label: `${formatMessage(MESSAGES.trap)}-${trapItem.id} `,
-                        };
-                        this.updateTooltipSmall(item, lat, lng);
-                    })
-                    .on('mouseout', () => {
-                        this.updateTooltipSmall();
-                    });
-                if (trapEdited && (trapEdited.id === trapItem.id)) {
-                    trapCircle.fire('click');
+            site.traps.forEach((trapItem) => {
+                if ((trapItem.is_selected !== undefined &&
+                    trapItem.is_selected &&
+                    this.isItemVisible('selected-traps')) ||
+                    (!trapItem.is_selected && this.isItemVisible('not-selected-traps'))) {
+                    const trapCircle = L.marker(
+                        [trapItem.latitude, trapItem.longitude],
+                        {
+                            icon: renderDivIcon(
+                                '',
+                                `traps small ${trapItem.is_selected !== undefined && trapItem.is_selected ? 'selected' : ''} ${trapItem.is_selected !== undefined && !trapItem.is_selected ? 'not-selected' : ''}`,
+                                30,
+                            ),
+                        },
+                    );
+                    trapCircle.addTo(this.trapsGroup)
+                        .on('click', (event) => {
+                            const popUp = event.target.getPopup();
+                            popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
+                            setTimeout(() => {
+                                const selectedSelect = document.getElementById('selected-trap-select');
+                                if (selectedSelect) {
+                                    selectedSelect.addEventListener('change', (e) => {
+                                        this.props.saveTrap(trapItem, e.target.checked);
+                                    });
+                                }
+                            }, 500);
+                        })
+                        .bindPopup()
+                        .on('mouseover', () => {
+                            const lat = trapItem.latitude;
+                            const lng = trapItem.longitude;
+                            const item = {
+                                label: `${formatMessage(MESSAGES.trap)}-${trapItem.id} `,
+                            };
+                            this.updateTooltipSmall(item, lat, lng);
+                        })
+                        .on('mouseout', () => {
+                            this.updateTooltipSmall();
+                        });
+                    if (trapEdited && (trapEdited.id === trapItem.id)) {
+                        trapCircle.fire('click');
+                    }
                 }
-
-                return true;
             });
             if (fiitToBound) {
                 this.fitToBounds();
@@ -290,6 +308,9 @@ TrapsMap.propTypes = {
     trapEdited: PropTypes.object,
     trapUpdated: PropTypes.func.isRequired,
     isTrapUpdated: PropTypes.bool.isRequired,
+    mapUpdated: PropTypes.bool.isRequired,
+    itemsToShow: PropTypes.array.isRequired,
+    setMapUpdate: PropTypes.func.isRequired,
 };
 
 export default injectIntl(TrapsMap);

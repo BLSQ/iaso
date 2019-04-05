@@ -10,6 +10,8 @@ import LayersComponent from '../../../../components/LayersComponent';
 import { getRequest } from '../../../../utils/fetchData';
 import { mapActions } from '../../redux/mapReducer';
 import { vectorActions } from '../../redux/vectorReducer';
+import RadiosComponent from '../../../../components/RadiosComponent';
+import { itemsEditSitesToShow } from '../../utlls/vectorMapUtils';
 
 
 const MESSAGES = defineMessages({
@@ -29,11 +31,14 @@ const MESSAGES = defineMessages({
 class EditSiteComponent extends Component {
     constructor(props) {
         super(props);
+        const itemsToShow = itemsEditSitesToShow.slice();
         this.state = {
             showModale: props.showModale,
             site: props.site,
             isChanged: false,
             currentTab: 'infos',
+            itemsToShow,
+            mapUpdated: false,
         };
     }
 
@@ -49,6 +54,12 @@ class EditSiteComponent extends Component {
         });
     }
 
+    setMapUpdate(mapUpdated) {
+        this.setState({
+            mapUpdated,
+        });
+    }
+
     updateSiteField(key, value) {
         const newSite = Object.assign({}, this.state.site, { [key]: value });
         this.setState({
@@ -57,6 +68,12 @@ class EditSiteComponent extends Component {
         });
     }
 
+    toggleItems(itemsToShow) {
+        this.setState({
+            itemsToShow,
+            mapUpdated: true,
+        });
+    }
 
     render() {
         const { site, currentTab } = this.state;
@@ -108,20 +125,10 @@ class EditSiteComponent extends Component {
                                 <span className="map__option__header">
                                     <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
                                 </span>
-                                <ul className="map__option__list legend">
-                                    <li className="map__option__list__item">
-                                        <i className="map__option__icon--site" />
-                                        <FormattedMessage id="vector.modal.legend.site" defaultMessage="Site" />
-                                    </li>
-                                    <li className="map__option__list__item">
-                                        <i className="map__option__icon--traps--selected" />
-                                        <FormattedMessage id="vector.modal.legend.selectedTraps" defaultMessage="Piège sélectionné" />
-                                    </li>
-                                    <li className="map__option__list__item">
-                                        <i className="map__option__icon--traps--not-selected" />
-                                        <FormattedMessage id="vector.modal.legend.notSelectedTraps" defaultMessage="Piège non sélectionné" />
-                                    </li>
-                                </ul>
+                                <RadiosComponent
+                                    showItems={items => this.toggleItems(items)}
+                                    items={this.state.itemsToShow}
+                                />
                             </div>
                         </div>
                         <div className="traps-map-container">
@@ -133,6 +140,9 @@ class EditSiteComponent extends Component {
                                 trapEdited={trapEdited}
                                 isTrapUpdated={isTrapUpdated}
                                 trapUpdated={trapUpdated}
+                                itemsToShow={this.state.itemsToShow}
+                                mapUpdated={this.state.mapUpdated}
+                                setMapUpdate={mapUpdated => this.setMapUpdate(mapUpdated)}
                             />
                         </div>
                     </div>

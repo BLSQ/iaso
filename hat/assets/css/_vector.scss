@@ -1,5 +1,6 @@
 .custom-popup-container {
     font-size: 12px;
+
     .separator {
         width: calc(100% + 16px);
         background-color: $light-gray;
@@ -7,13 +8,16 @@
         display: block;
         margin: 5px -8px;
     }
+
     h6 {
         button {
             float: right;
         }
     }
+
     >div {
         font-weight: bold;
+
         >span {
             font-weight: normal;
         }
@@ -23,11 +27,13 @@
         margin-top: 10px;
         table-layout: fixed;
         width: 300px;
+
         tr {
             td {
                 &:first-child {
                     width: 100px;
                 }
+
                 white-space: nowrap;
             }
         }
@@ -49,45 +55,53 @@
     .leaflet-popup-content-wrapper {
         padding-top: 15px;
     }
+
     .map__filters {
         width: 50%;
     }
-    .custom-radio {
-        box-sizing: border-box;
-        padding-top: 19px;
-        height: 45px;
-        input {
-            opacity: 0;
-            top: 0;
-            height: 100%;
-        }
-        span {
-            padding-left: 40px;
-        }
-        i {
-            position: absolute;
-            top: 10px;
-            left: -3px;
-            cursor: pointer;
-        }
-        &.checked {
-            span {
-                font-weight: bold;
-            }
-            i {
-                width: 40px;
-                height: 40px;
-                top: 8px;
-                left: -6px;
+}
+
+.ReactModal__Content {
+    .edit-modal {
+        .custom-radio-component {
+            margin-left: 8px;
+            input {
+                top: 0;
+                height: 100%;
                 display: inline-block;
-                font: normal normal normal 14px/1 FontAwesome;
-                font-size: inherit;
-                text-rendering: auto;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
+                width: 20px;
+            }
+
+            label {
+                width: 100% !important;
+                text-align: left;
+            }
+
+            i {
+                width: 20px !important;
+                height: 20px !important;
+                top: 19px;
+                &:before {
+                    display: none;
+                }
+
                 &:after {
-                    content: "\f00c";
-                    padding-top: 5px;
+                    position: relative;
+                    top: 3px;
+                    left: 1px;
+                    margin: 0;
+                    padding: 0;
+                    width: auto;
+                    height: auto;
+                    text-align: center;
+                    display: block;
+                }
+            }
+
+            &.checked {
+                i {
+                    top: 19px;
+                    left: -3px;
                 }
             }
         }

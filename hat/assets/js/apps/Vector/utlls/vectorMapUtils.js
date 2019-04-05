@@ -569,3 +569,28 @@ export const itemsToShow = params => [
         iconClass: 'map__option__icon--villages-with-case',
     },
 ];
+
+
+export const itemsEditSitesToShow = [
+    {
+        id: 'vector.modal.legend.sites',
+        defaultMessage: 'Sites',
+        key: 'sites',
+        isActive: true,
+        iconClass: 'map__option__icon--site',
+    },
+    {
+        id: 'vector.modal.legend.selectedTraps',
+        defaultMessage: 'Piège sélectionné',
+        key: 'selected-traps',
+        isActive: true,
+        iconClass: 'map__option__icon--traps--selected',
+    },
+    {
+        id: 'vector.modal.legend.notSelectedTraps',
+        defaultMessage: 'Piège non sélectionné',
+        key: 'not-selected-traps',
+        isActive: true,
+        iconClass: 'map__option__icon--traps--not-selected',
+    },
+];

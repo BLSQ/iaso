@@ -236,15 +236,6 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                                     </tr>
                                     <tr>
                                         <td>
-                                            ${formatMessage({ defaultMessage: 'Piège de référence', id: 'vector.labels.is_reference' })}
-                                        </td>
-                                        <td>
-                                        ${trap.is_reference ?
-        formatMessage({ defaultMessage: 'oui', id: 'vector.labels.yes' }) : formatMessage({ defaultMessage: 'non', id: 'vector.labels.yes' })}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
                                             ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
                                         </td>
                                         <td>
@@ -532,6 +523,14 @@ export const renderCatchesPopup = (catchItem, formatMessage) => `<section class=
                         </td>
                         <td>
                             ${catchItem.remarks}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${formatMessage({ defaultMessage: 'Problème', id: 'vector.labels.problem' })}
+                        </td>
+                        <td class="${!catchItem.problem ? 'align-center' : ''}">
+                            ${catchItem.problem ? catchItem.problem : '/'}
                         </td>
                     </tr>
                 </tbody>

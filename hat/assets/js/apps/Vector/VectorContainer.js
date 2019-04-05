@@ -98,7 +98,7 @@ class VectorContainer extends Component {
                 hasChanged(this.props.params, newProps.params, 'dateTo');
             const userChanged = hasChanged(this.props.params, newProps.params, 'userId');
             const trapsFilterChanged = hasChanged(this.props.params, newProps.params, 'habitats') ||
-                hasChanged(this.props.params, newProps.params, 'onlyReferenceTraps') ||
+                hasChanged(this.props.params, newProps.params, 'onlySelectedTraps') ||
                 hasChanged(this.props.params, newProps.params, 'onlyIgnoredTraps');
             const targetsFilterChanged = hasChanged(this.props.params, newProps.params, 'onlyIgnoredTargets');
             const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||

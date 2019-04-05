@@ -107,6 +107,7 @@ class ShowCatchesComponent extends Component {
                                 baseLayer={baseCatchLayer}
                                 trap={trap}
                                 getShape={type => this.props.getShape(type)}
+                                saveTrap={this.props.saveTrap}
                             />
                         </div>
                     </div>
@@ -159,6 +160,7 @@ ShowCatchesComponent.propTypes = {
     getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
+    saveTrap: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

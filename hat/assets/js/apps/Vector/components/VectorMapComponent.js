@@ -233,6 +233,7 @@ class VectorMapComponent extends Component {
                         setTimeout(() => {
                             const editButton = document.getElementById('edit-button');
                             const catchesButton = document.getElementById('catches-button');
+                            const selectedSelect = document.getElementById('selected-trap-select');
                             if (editButton) {
                                 editButton.addEventListener('click', () => {
                                     this.props.editItem(editButton.dataset.type, this.state.editedItem);
@@ -242,6 +243,11 @@ class VectorMapComponent extends Component {
                             if (catchesButton) {
                                 catchesButton.addEventListener('click', () => {
                                     this.props.displayCatches(this.state.editedItem);
+                                });
+                            }
+                            if (selectedSelect) {
+                                selectedSelect.addEventListener('change', (e) => {
+                                    this.props.saveTrap(this.state.editedItem, e.target.checked);
                                 });
                             }
                         }, 500);
@@ -432,6 +438,7 @@ VectorMapComponent.propTypes = {
     editItem: PropTypes.func.isRequired,
     displayCatches: PropTypes.func.isRequired,
     withCluster: PropTypes.bool.isRequired,
+    saveTrap: PropTypes.func.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

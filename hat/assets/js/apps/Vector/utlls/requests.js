@@ -44,7 +44,7 @@ export const fetchTraps = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlyReferenceTraps,
+        onlySelectedTraps,
         onlyIgnoredTraps,
         province_id,
         zs_id,
@@ -57,8 +57,8 @@ export const fetchTraps = (dispatch, params) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceTraps) {
-        url += '&onlyReferenceTraps=True';
+    if (onlySelectedTraps) {
+        url += '&onlySelectedTraps=True';
     }
     if (onlyIgnoredTraps) {
         url += '&onlyIgnoredTraps=True';
@@ -163,7 +163,7 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlyReferenceTraps,
+        onlySelectedTraps,
         onlyIgnoredTraps,
         province_id,
         zs_id,
@@ -179,8 +179,8 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceTraps) {
-        url += '&onlyReferenceTraps=True';
+    if (onlySelectedTraps) {
+        url += '&onlySelectedTraps=True';
     }
     if (onlyIgnoredTraps) {
         url += '&onlyIgnoredTraps=True';
@@ -210,7 +210,7 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlyReferenceTraps,
+        onlySelectedTraps,
         onlyIgnoredTargets,
         province_id,
         zs_id,
@@ -226,8 +226,8 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlyReferenceTraps) {
-        url += '&onlyReferenceTraps=True';
+    if (onlySelectedTraps) {
+        url += '&onlySelectedTraps=True';
     }
     if (onlyIgnoredTargets) {
         url += '&onlyIgnoredTargets=True';

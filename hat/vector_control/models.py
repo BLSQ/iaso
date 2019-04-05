@@ -148,7 +148,6 @@ class Trap(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     uuid = models.TextField(unique=True, default=uuid.uuid4)
     source = models.TextField(choices=SOURCE_CHOICES, null=True, default="excel")
-    is_reference = models.BooleanField(default=False)
     location = PointField(srid=4326, null=True, dim=3)
     ignore = models.BooleanField(default=False)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
@@ -205,7 +204,6 @@ class Trap(models.Model):
             "created_at": self.created_at,
             "created_at_timestamp": self.created_at.timestamp(),
             "username": username,
-            "is_reference": self.is_reference,
             "ignore": self.ignore,
             "latitude": latitude,
             "longitude": longitude,

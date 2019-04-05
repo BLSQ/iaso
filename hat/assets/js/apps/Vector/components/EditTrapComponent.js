@@ -126,21 +126,21 @@ class EditTrapComponent extends Component {
                                     className="filter__container__select__label"
                                 >
                                     <FormattedMessage
-                                        id="verctor.label.reference"
-                                        defaultMessage="Piège de référence"
+                                        id="verctor.label.selected"
+                                        defaultMessage="Piège sélectionné"
                                     />:
                                 </label>
                                 <section className="check-box-container">
                                     <input
-                                        id={`reference-${trap.id}`}
+                                        id={`selected-${trap.id}`}
                                         type="radio"
-                                        name="reference"
-                                        checked={trap.is_reference ? 'checked' : ''}
-                                        value={trap.is_reference}
-                                        onChange={() => this.updateSiteField('is_reference', true)}
+                                        name="selected"
+                                        checked={trap.is_selected ? 'checked' : ''}
+                                        value={trap.is_selected}
+                                        onChange={() => this.updateSiteField('is_selected', true)}
                                     />
                                     <label
-                                        htmlFor={`reference-${trap.id}`}
+                                        htmlFor={`selected-${trap.id}`}
                                         className="checkbox-label"
                                     >
                                         <FormattedMessage
@@ -149,15 +149,15 @@ class EditTrapComponent extends Component {
                                         />
                                     </label>
                                     <input
-                                        id={`reference-${trap.id}-false`}
+                                        id={`selected-${trap.id}-false`}
                                         type="radio"
-                                        name="reference"
-                                        checked={!trap.is_reference ? 'checked' : ''}
-                                        value={trap.is_reference}
-                                        onChange={() => this.updateSiteField('is_reference', false)}
+                                        name="selected"
+                                        checked={!trap.is_selected ? 'checked' : ''}
+                                        value={trap.is_selected}
+                                        onChange={() => this.updateSiteField('is_selected', false)}
                                     />
                                     <label
-                                        htmlFor={`reference-${trap.id}-false`}
+                                        htmlFor={`selected-${trap.id}-false`}
                                         className="checkbox-label"
                                     >
                                         <FormattedMessage

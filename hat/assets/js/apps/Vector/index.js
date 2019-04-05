@@ -31,7 +31,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/trapsPage/:trapsPage)(/trapsPageSize/:trapsPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
             '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlyReferenceTraps/:onlyReferenceTraps)' +
+            '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
             '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
             component={VectorContainer}

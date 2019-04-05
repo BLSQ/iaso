@@ -139,6 +139,15 @@ class CatchesMap extends Component {
             .on('click', (event) => {
                 const popUp = event.target.getPopup();
                 popUp.setContent(renderTrapsPopup(trap, formatMessage, false));
+                setTimeout(() => {
+                    const selectedSelect = document.getElementById('selected-trap-select');
+
+                    if (selectedSelect) {
+                        selectedSelect.addEventListener('change', (e) => {
+                            this.props.saveTrap(trap, e.target.checked);
+                        });
+                    }
+                }, 500);
             })
             .bindPopup()
             .on('mouseover', () => {

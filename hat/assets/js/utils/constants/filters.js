@@ -560,13 +560,13 @@ const habitats = (formatMessage, messages, habitatsList) => (
     }
 );
 
-const onlyReferenceTraps = () => (
+const onlySelectedTraps = () => (
     {
-        name: 'onlyReferenceTraps',
-        urlKey: 'onlyReferenceTraps',
+        name: 'onlySelectedTraps',
+        urlKey: 'onlySelectedTraps',
         label: {
-            id: 'main.label.onlyReferenceTraps',
-            defaultMessage: 'Pièges de références',
+            id: 'main.label.onlySelectedTraps',
+            defaultMessage: 'Pièges sélectionnés',
         },
         type: 'checkbox',
     }
@@ -798,7 +798,7 @@ export {
     onlyDupes,
     users,
     habitats,
-    onlyReferenceTraps,
+    onlySelectedTraps,
     onlyIgnoredTraps,
     onlyIgnoredTargets,
     medecine,

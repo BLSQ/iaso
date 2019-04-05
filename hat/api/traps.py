@@ -52,13 +52,12 @@ class TrapsViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
-        only_reference_traps = request.GET.get("onlyReferenceTraps", False)
+        only_selected_traps = request.GET.get("onlySelectedTraps", False)
         only_ignored_traps = request.GET.get("onlyIgnoredTraps", False)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         queryset = Trap.objects.all()
-
         if from_date is not None:
             queryset = queryset.filter(created_at__date__gte=from_date)
         if to_date is not None:
@@ -67,8 +66,8 @@ class TrapsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
             queryset = queryset.filter(habitat__in=habitats.split(","))
-        if only_reference_traps:
-            queryset = queryset.filter(is_reference=True)
+        if only_selected_traps:
+            queryset = queryset.filter(is_selected=True)
         if only_ignored_traps:
             queryset = queryset.filter(ignore=True)
         else:
@@ -182,16 +181,16 @@ class TrapsViewSet(viewsets.ViewSet):
                 "Altitude",
                 "Habitat",
                 "Description",
-                "Référence",
+                "Sélectionné",
                 "Utilisateur",
             ]
             filename = "traps"
 
             def get_row(trap):
                 sdict = trap.as_dict(additional_fields)
-                referenceText = "Non"
-                if sdict["is_reference"]:
-                    referenceText = "Oui"
+                selectedText = "Non"
+                if sdict["is_selected"]:
+                    selectedText = "Oui"
                 habitatText = "Inconnu"
                 if sdict["habitat"]:
                     habitatText = trap.get_habitat_display()
@@ -217,7 +216,7 @@ class TrapsViewSet(viewsets.ViewSet):
                     sdict.get("altitude"),
                     habitatText,
                     sdict.get("description"),
-                    referenceText,
+                    selectedText,
                     sdict["username"],
                 ]
 
@@ -346,7 +345,7 @@ class TrapsViewSet(viewsets.ViewSet):
             new_trap.name = request.data.get("name", "")
             new_trap.description = request.data.get("description", "")
             new_trap.habitat = request.data.get("habitat", "unknown")
-            new_trap.is_reference = request.data.get("is_reference", False)
+            new_trap.is_selected = request.data.get("is_selected", False)
             new_trap.ignore = request.data.get("ignore", False)
             new_trap.is_selected = request.data.get("is_selected", False)
             new_trap.save()

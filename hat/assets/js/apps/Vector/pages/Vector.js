@@ -101,7 +101,7 @@ export class Vector extends Component {
                 orderTargets,
                 userId,
                 habitats,
-                onlyReferenceTraps,
+                onlySelectedTraps,
                 onlyIgnoredTraps,
                 onlyIgnoredTargets,
                 province_id,
@@ -116,8 +116,8 @@ export class Vector extends Component {
         if (habitats) {
             url += `&habitats=${habitats}`;
         }
-        if (onlyReferenceTraps) {
-            url += '&onlyReferenceTraps=True';
+        if (onlySelectedTraps) {
+            url += '&onlySelectedTraps=True';
         }
         if (onlyIgnoredTraps) {
             url += '&onlyIgnoredTargets=True';
@@ -207,6 +207,12 @@ export class Vector extends Component {
         });
     }
 
+    saveTrap(trap, selectedValue) {
+        const t = trap;
+        t.is_selected = selectedValue;
+        this.props.saveTrap(t);
+    }
+
     selectResponsible(site, responsibleId) {
         const s = site;
         s.responsible_id = responsibleId;
@@ -289,6 +295,7 @@ export class Vector extends Component {
                             })}
                         trap={this.state.trapEdited}
                         params={params}
+                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                     />
                 }
                 {
@@ -302,11 +309,7 @@ export class Vector extends Component {
                         site={this.state.siteEdited}
                         trapEdited={this.state.trapEdited}
                         saveSite={site => saveSite(site)}
-                        saveTrap={(trap, selectedValue) => {
-                            const t = trap;
-                            t.is_selected = selectedValue;
-                            saveTrap(t);
-                        }}
+                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                         profiles={profiles}
                     />
                 }
@@ -438,6 +441,7 @@ export class Vector extends Component {
                                 editItem={(type, data) => this.editItem(type, data)}
                                 displayCatches={data => this.displayCatches(data)}
                                 withCluster={withCluster}
+                                saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                             />
                         </div>
                     </div>

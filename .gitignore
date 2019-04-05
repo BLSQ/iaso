@@ -102,3 +102,5 @@ hat/assets/messages/**/*.json
 \.vscode/
 
 /pgdata/
+
+hat/assets/webpack/webpack-stats\.json

@@ -81,45 +81,49 @@ class VectorContainer extends Component {
         });
     }
 
+
+    componentWillReceiveProps(newProps) {
+        const { dispatch } = this.props;
+        if (!newProps.load.loading && !this.props.load.loading) {
+            const promises = [];
+            if (newProps.params.province_id !== this.props.params.province_id) {
+                promises.push(this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id, false));
+            } else if (newProps.params.zs_id !== this.props.params.zs_id) {
+                promises.push(this.props.selectZone(newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id, false));
+            } else if (newProps.params.as_id !== this.props.params.as_id) {
+                promises.push(this.props.selectArea(newProps.params.as_id, null, newProps.params.zs_id, false));
+            }
+
+            if (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map') {
+                promises.push(fetchSites(dispatch, newProps.params));
+            }
+            if (newProps.params.traps && !this.props.vectors.traps && newProps.params.tab === 'map') {
+                promises.push(fetchTraps(dispatch, newProps.params));
+            }
+            if (newProps.params.targets && !this.props.vectors.targets && newProps.params.tab === 'map') {
+                promises.push(fetchTargets(dispatch, newProps.params));
+            }
+            if (newProps.params.endemicVillages && !this.props.vectors.endemicVillages && newProps.params.tab === 'map') {
+                promises.push(fetchVillages(dispatch, newProps.params, true));
+            }
+            if (newProps.params.nonEndemicVillages && !this.props.vectors.nonEndemicVillages && newProps.params.tab === 'map') {
+                promises.push(fetchVillages(dispatch, newProps.params, false));
+            }
+            if (promises.length > 0) {
+                dispatch(loadActions.startLoading());
+                Promise.all(promises).then(() => {
+                    dispatch(loadActions.successLoadingNoData());
+                }).catch((err) => {
+                    dispatch(loadActions.errorLoading(err));
+                });
+            }
+        }
+    }
+
     onSearch() {
         const { dispatch, params } = this.props;
         if (!this.props.load.loading) {
             const promises = [];
-            if (params.province_id) {
-                promises.push(this.props.selectProvince(params.province_id, params.zs_id, params.as_id, params.village_id, false));
-            } else if (params.zs_id) {
-                promises.push(this.props.selectZone(params.zs_id, params.as_id, params.village_id, false));
-            } else if (params.as_id) {
-                promises.push(this.props.selectArea(params.as_id, null, params.zs_id, false));
-            }
-
-            const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
-            const dateChanged = hasChanged(this.props.params, newProps.params, 'dateFrom') ||
-                hasChanged(this.props.params, newProps.params, 'dateTo');
-            const userChanged = hasChanged(this.props.params, newProps.params, 'userId');
-            const trapsFilterChanged = hasChanged(this.props.params, newProps.params, 'habitats') ||
-                hasChanged(this.props.params, newProps.params, 'onlySelectedTraps') ||
-                hasChanged(this.props.params, newProps.params, 'onlyIgnoredTraps');
-            const targetsFilterChanged = hasChanged(this.props.params, newProps.params, 'onlyIgnoredTargets');
-            const sitesTableChanged = hasChanged(this.props.params, newProps.params, 'sitesPage') ||
-                hasChanged(this.props.params, newProps.params, 'sitesPageSize') ||
-                hasChanged(this.props.params, newProps.params, 'orderSites');
-            const trapsTableChanged = hasChanged(this.props.params, newProps.params, 'trapsPage') ||
-                hasChanged(this.props.params, newProps.params, 'trapsPageSize') ||
-                hasChanged(this.props.params, newProps.params, 'orderTraps');
-            const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
-                hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
-                hasChanged(this.props.params, newProps.params, 'orderTargets');
-            const geoChanged = hasChanged(this.props.params, newProps.params, 'province_id') ||
-                hasChanged(this.props.params, newProps.params, 'zs_id') ||
-                hasChanged(this.props.params, newProps.params, 'as_id');
-
-            if ((dateChanged && newProps.params.sites) ||
-                (userChanged && newProps.params.sites) ||
-                (geoChanged && newProps.params.sites) ||
-                (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map')) {
-                promises.push(fetchSites(dispatch, newProps.params));
-            if (params.sites && params.tab === 'map') {
             if (params.sites) {
                 promises.push(fetchSites(dispatch, params));
             }

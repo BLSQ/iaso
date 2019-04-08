@@ -343,7 +343,7 @@ class CasesViewSet(viewsets.ViewSet):
                 "test_pl",
             )
 
-            def get_row(case):
+            def get_row(case, **kwargs):
                 return [
                         case["id"],
                         case["normalized_team_name"],

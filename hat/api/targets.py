@@ -1,19 +1,19 @@
+from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import OuterRef, Exists
+from django.db.models import Q
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from .catches import timestamp_to_utc_datetime
+
 from hat.geo.models import Province, ZS, AS
-from hat.vector_control.models import Target, GpsImport, APIImport
-from .authentication import CsrfExemptSessionAuthentication
-from .export_utils import Echo, generate_xlsx, iter_items
 from hat.users.models import get_user_geo_list, is_authorized_user
-from django.contrib.gis.geos import Point
-from django.db.models import Q
+from hat.vector_control.models import Target, APIImport
+from .authentication import CsrfExemptSessionAuthentication
+from .catches import timestamp_to_utc_datetime
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class TargetsViewSet(viewsets.ViewSet):
@@ -101,8 +101,9 @@ class TargetsViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
-                not request.user.is_superuser):
+            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
+                    "menupermissions.x_datas_download")) and
+                    not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = ['ID', 'Date', 'Nom', 'Latitude', 'Longitude', 'Altitude', 'Deploiement', 'Rivière']
             filename = 'targets'

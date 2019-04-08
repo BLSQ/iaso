@@ -207,7 +207,7 @@ class VillageViewSet(viewsets.ViewSet):
                 columns = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude',
                            'Latitude', 'Officiel', 'Source', 'Source Gps']
 
-                def get_row(village):
+                def get_row(village, **kwargs):
                     return [
                             village.id,
                             village.name,

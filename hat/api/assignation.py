@@ -1,21 +1,21 @@
-from rest_framework import viewsets
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.http import StreamingHttpResponse, HttpResponse
-from django.utils import timezone
 from django.db.models import Count
 from django.db.models import Q
-from hat.planning.models import Assignation, WorkZone
-from hat.users.models import Team, Coordination
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
+from hat.api.coordination import is_user_coordination_authorized
 from hat.geo.models import Village
 from hat.patient.models import Test
+from hat.planning.models import Assignation, WorkZone
 from hat.planning.models import Planning
-from .export_utils import  Echo, generate_xlsx, iter_items
-from hat.api.coordination import is_user_coordination_authorized
-
-from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
+from hat.users.models import Team, Coordination
 from hat.users.models import get_user_geo_list
+from .authentication import CsrfExemptSessionAuthentication
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class AssignationViewSet(viewsets.ViewSet):
@@ -113,23 +113,25 @@ class AssignationViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
-                not request.user.is_superuser):
+            if ((request.user.has_perm("menupermissions.x_anonymous")
+                 or not request.user.has_perm("menupermissions.x_datas_download")) and
+                    not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = ['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
-                    'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']
+                       'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']
             filename = "plannings"
-            def get_planning_export_row (assignation):
-                team = assignation.team
-                village = assignation.village
+
+            def get_planning_export_row(assign, **kwargs):
+                team = assign.team
+                village = assign.village
                 if team.UM:
-                    type = "UM"
+                    ttype = "UM"
                 else:
-                    type = "MUM"
+                    ttype = "MUM"
                 return [team.name,
                         team.coordination.name,
                         team.capacity,
-                        type,
+                        ttype,
                         village.name,
                         village.latitude,
                         village.longitude,
@@ -137,8 +139,10 @@ class AssignationViewSet(viewsets.ViewSet):
                         village.AS.name,
                         village.AS.ZS.name,
                         village.AS.ZS.province.name,
-                        village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017], confirmed_case=True).count()
-                    ]
+                        village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017],
+                                                confirmed_case=True).count()
+                        ]
+
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
@@ -171,7 +175,6 @@ class AssignationViewSet(viewsets.ViewSet):
             assignation_list = assignation_list.filter(village__AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
         if request.user.profile.AS_scope.count() != 0:
             assignation_list = assignation_list.filter(village__AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
-
 
         new_list = list(filter(lambda x: x.id != assignation.id, assignation_list))
         new_list.insert(index, assignation)

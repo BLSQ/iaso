@@ -320,9 +320,9 @@ class PatientsViewSet(viewsets.ViewSet):
                             queryset_tests,
                             queryset_treatments,
                         ], [
-                            lambda row: get_row(row, anonymous),
-                            lambda row: get_row_tests(row, request, anonymous),
-                            lambda row: get_row_treatments(row, anonymous),
+                            lambda row, **kwargs: get_row(row, anonymous),
+                            lambda row, **kwargs: get_row_tests(row, request),
+                            lambda row, **kwargs: get_row_treatments(row),
                         ],
                         column_sizes=[
                             columns_sizes,

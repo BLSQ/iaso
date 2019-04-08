@@ -21,7 +21,7 @@ columns_treatments_sizes = [10, 8, 5, 12, 10, 10,
                             15, 16, 15]
 
 
-def get_row(patient, anon=True):
+def get_row(patient, anon=True, **kwargs):
     pdict = patient.as_dict(anonymous=anon)
     dead = "--"
     if pdict["dead"]:
@@ -55,7 +55,7 @@ def get_row(patient, anon=True):
     ]
 
 
-def get_row_tests(test, request=None, anon=True):
+def get_row_tests(test, request=None, **kwargs):
     return [
         test.id,
         test.form.normalized_patient.id,
@@ -77,7 +77,7 @@ def get_row_tests(test, request=None, anon=True):
     ]
 
 
-def get_row_treatments(treatment, anon=True):
+def get_row_treatments(treatment, **kwargs):
     tdict = treatment.as_dict()
     return [
         tdict["id"],

@@ -256,7 +256,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 "patient2__origin_raw_village",
             )
 
-            def get_row(dupe):
+            def get_row(dupe, **kwargs):
                 return [
                         dupe['id'],
                         dupe['similarity_score'],

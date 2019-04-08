@@ -186,7 +186,7 @@ class TrapsViewSet(viewsets.ViewSet):
             ]
             filename = "traps"
 
-            def get_row(trap):
+            def get_row(trap, **kwargs):
                 sdict = trap.as_dict(additional_fields)
                 selectedText = "Non"
                 if sdict["is_selected"]:

@@ -136,6 +136,7 @@ class FiltersComponent extends React.Component {
                                                 resetOnUnmount={false}
                                                 onChange={value => this.onSearchChange(value, filter.urlKey)}
                                                 disabled={searchDisabled}
+                                                displayIcon={filter.displayIcon}
                                             />
                                         }
 

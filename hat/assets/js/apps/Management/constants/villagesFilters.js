@@ -172,6 +172,7 @@ const filtersSearch = (
             allowEmptySearch: true,
             showResetSearch: true,
             displayResults: false,
+            displayIcon: false,
             placeholder: {
                 id: 'main.label.search',
                 defaultMessage: 'Recherche',

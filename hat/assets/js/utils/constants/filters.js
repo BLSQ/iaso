@@ -310,6 +310,7 @@ const searchLastname = () => (
         allowEmptySearch: true,
         showResetSearch: true,
         displayResults: false,
+        displayIcon: false,
         placeholder: {
             id: 'main.label.search',
             defaultMessage: 'Recherche',
@@ -329,6 +330,7 @@ const searchName = () => (
         allowEmptySearch: true,
         showResetSearch: true,
         displayResults: false,
+        displayIcon: false,
         placeholder: {
             id: 'main.label.search',
             defaultMessage: 'Recherche',
@@ -348,6 +350,7 @@ const searchPrename = () => (
         allowEmptySearch: true,
         showResetSearch: true,
         displayResults: false,
+        displayIcon: false,
         placeholder: {
             id: 'main.label.search',
             defaultMessage: 'Recherche',
@@ -367,6 +370,7 @@ const searchMotherName = () => (
         allowEmptySearch: true,
         showResetSearch: true,
         displayResults: false,
+        displayIcon: false,
         placeholder: {
             id: 'main.label.search',
             defaultMessage: 'Recherche',

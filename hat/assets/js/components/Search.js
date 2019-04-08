@@ -69,6 +69,7 @@ class Search extends React.Component {
             displayResults,
             showResetSearch,
             disabled,
+            displayIcon,
         } = this.props;
         return (
             <div className="search-container">
@@ -86,7 +87,10 @@ class Search extends React.Component {
                             }
                         }}
                     />
-                    <i className="fa fa-search" aria-hidden="true" onClick={() => this.onSearch()} />
+                    {
+                        displayIcon &&
+                        <i className="fa fa-search" aria-hidden="true" onClick={() => this.onSearch()} />
+                    }
                     {
                         showResetSearch && this.state.searchString !== '' &&
                         <span
@@ -203,6 +207,7 @@ Search.defaultProps = {
     showResetSearch: false,
     resetOnUnmount: true,
     disabled: false,
+    displayIcon: true,
 };
 
 Search.propTypes = {
@@ -226,6 +231,7 @@ Search.propTypes = {
     resetOnUnmount: PropTypes.bool,
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
+    displayIcon: PropTypes.bool,
 };
 
 export default Search;

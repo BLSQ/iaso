@@ -324,11 +324,6 @@ class PatientsViewSet(viewsets.ViewSet):
                             lambda row, **kwargs: get_row_tests(row, request),
                             lambda row, **kwargs: get_row_treatments(row),
                         ],
-                        column_sizes=[
-                            columns_sizes,
-                            columns_tests_sizes,
-                            columns_treatments_sizes,
-                        ]
                     ),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )

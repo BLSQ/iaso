@@ -1,24 +1,58 @@
 from hat.cases.models import testResultString
 
+columns = [
+    {"title": 'Identifiant', "width": 10},
+    {"title": 'Nom', "width": 12},
+    {"title": 'Postnom', "width": 12},
+    {"title": 'Prénom', "width": 12},
+    {"title": 'Sexe', "width": 5},
+    {"title": 'Age', "width": 4},
+    {"title": 'Nom de la mère', "width": 12},
+    {"title": 'Province', "width": 10},
+    {"title": 'Zone', "width": 14},
+    {"title": 'Aire', "width": 14},
+    {"title": 'Village', "width": 14},
+    {"title": 'Décès', "width": 6},
+    {"title": 'ID Tests', "width": 14},
+    {"title": 'ID traitements', "width": 11},
+]
 
-columns = ['Identifiant', 'Nom', 'Postnom', 'Prénom', 'Sexe', 'Age', 'Nom de la mère', 'Province', 'Zone',
-           'Aire', 'Village', 'Décès', 'ID Tests', 'ID traitements']
-columns_sizes = [10, 12, 12, 12, 5, 4, 12, 10, 14,
-                 14, 14, 6, 14, 11]
+columns_tests = [
+    {"title": 'Identifiant', "width": 10},
+    {"title": 'ID Patient', "width": 8},
+    {"title": 'Type', "width": 8},
+    {"title": 'Index', "width": 5},
+    {"title": 'Résultats', "width": 8},
+    {"title": 'Equipe', "width": 10},
+    {"title": 'Village', "width": 14},
+    {"title": 'Création', "width": 10},
+    {"title": 'Modification', "width": 10},
+    {"title": 'Image', "width": 6},
+    {"title": 'Vidéo', "width": 6},
+    {"title": 'Session', "width": 10},
+    {"title": 'PL  Gb/mm³', "width": 12},
+    {"title": 'LCR', "width": 3},
+    {"title": 'Trypanosome', "width": 11},
+    {"title": 'Albumine', "width": 8},
+    {"title": 'Commentaires', "width": 20},
+]
 
-columns_tests = ['Identifiant', 'ID Patient', 'Type', 'Index', 'Résultats', 'Equipe',
-                    'Village', 'Création', 'Modification', 'Image', 'Vidéo', 'Session', 'PL  Gb/mm³',
-                    'LCR', 'Trypanosome', 'Albumine', 'Commentaires']
-columns_tests_sizes = [10, 8, 8, 5, 8, 10,
-                       14, 10, 10, 6, 6, 10, 12,
-                       3, 11, 8, 20]
-
-columns_treatments = ['Identifiant', 'ID Patient', 'Index', 'Médicament', 'Date de début', 'Date de fin',
-                      "Cause de l'incomplétude", 'Evenements indésirables', 'Complet', 'Succès', 'Perdu',
-                      'ID Tablette', 'Utilisateur tablette', 'Equipe Tablette']
-columns_treatments_sizes = [10, 8, 5, 12, 10, 10,
-                            20, 20, 7, 7, 7,
-                            15, 16, 15]
+columns_treatments = [
+    {"title": "Identifiant", "width": 10},
+    {"title": "ID Patient", "width": 8},
+    {"title": "Index", "width": 5},
+    {"title": "Médicament", "width": 12},
+    {"title": "Date de début", "width": 10},
+    {"title": "Date de fin", "width": 10},
+    {"title": "Cause de l'incomplétude", "width": 20},
+    {"title": "Evenements indésirables", "width": 20},
+    {"title": "Complet", "width": 7},
+    {"title": "Succès", "width": 7},
+    {"title": "Perdu", "width": 7},
+    {"title": "ID Tablette", "width": 15},
+    {"title": "Utilisateur tablette", "width": 16},
+    {"title": "Equipe Tablette", "width": 15},
+]
 
 
 def get_row(patient, anon=True, **kwargs):

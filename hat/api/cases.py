@@ -1,21 +1,22 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
+from copy import copy
+
+from django.core.paginator import Paginator
+from django.db.models import Q, OuterRef, Exists
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString, CaseAbstract
+from rest_framework import viewsets, status
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
 from hat.audit.models import log_modification, CASE_API
+from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
-from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-from django.core.paginator import Paginator
-from django.db.models import Q, OuterRef, Exists
-from copy import copy
-
-from .export_utils import  Echo, generate_xlsx, iter_items
 from hat.users.models import get_user_geo_list, is_authorized_user
+from .authentication import CsrfExemptSessionAuthentication
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -306,12 +307,32 @@ class CasesViewSet(viewsets.ViewSet):
         else:
             if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
-            columns = ['Identifiant', 'UM', 'Année', 'Source', 'Province encodée', 'ZS encodée',
-                'AS encodée', 'Village encodé', 'Nom', 'Postnom', 'Prénom', 'Nom de\nla mère', 'Sexe', 'Age', 'CATT', 'RDT',
-                'PG', 'CTCWOO', 'GE', 'LCR', 'Ponction\nNoeud\nLymph.', 'Sang\nfrais', 'MAECT', 'PL']
-            column_sizes = [9, 14, 6, 10, 10, 14,
-                            14, 20, 18, 18, 18, 15, 6, 4, 7, 7,
-                            7, 7, 7, 7, 8, 7, 7, 7]
+            columns = [
+                {"title": 'Identifiant', "width": 9},
+                {"title": 'UM', "width": 14},
+                {"title": 'Année', "width": 6},
+                {"title": 'Source', "width": 10},
+                {"title": 'Province encodée', "width": 10},
+                {"title": 'ZS encodée', "width": 14},
+                {"title": 'AS encodée', "width": 14},
+                {"title": 'Village encodé', "width": 20},
+                {"title": 'Nom', "width": 18},
+                {"title": 'Postnom', "width": 18},
+                {"title": 'Prénom', "width": 18},
+                {"title": 'Nom de\nla mère', "width": 15},
+                {"title": 'Sexe', "width": 6},
+                {"title": 'Age', "width": 4},
+                {"title": 'CATT', "width": 7},
+                {"title": 'RDT', "width": 7},
+                {"title": 'PG', "width": 7},
+                {"title": 'CTCWOO', "width": 7},
+                {"title": 'GE', "width": 7},
+                {"title": 'LCR', "width": 7},
+                {"title": 'Ponction\nNoeud\nLymph.', "width": 8},
+                {"title": 'Sang\nfrais', "width": 7},
+                {"title": 'MAECT', "width": 7},
+                {"title": 'PL', "width": 7},
+            ]
 
             filename = 'cases'
             queryset = queryset.values(
@@ -374,7 +395,7 @@ class CasesViewSet(viewsets.ViewSet):
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
-                    generate_xlsx('Cas', columns, queryset, get_row, column_sizes=column_sizes),
+                    generate_xlsx('Cas', columns, queryset, get_row),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             elif csv_format:

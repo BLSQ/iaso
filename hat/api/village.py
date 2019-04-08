@@ -1,20 +1,20 @@
 from copy import copy
 
+from django.core.paginator import Paginator
 from django.db.models import Count
 from django.db.models import Q
+from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.response import Response
-from django.http import StreamingHttpResponse, HttpResponse
-from django.core.paginator import Paginator
-
-from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
+from hat.audit.models import log_modification, VILLAGE_API
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
-from hat.audit.models import log_modification, VILLAGE_API
-from .export_utils import  Echo, generate_xlsx, iter_items
 from hat.users.models import get_user_geo_list, is_authorized_user
+from .authentication import CsrfExemptSessionAuthentication
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -200,12 +200,23 @@ class VillageViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             if csv_format or xlsx_format:
-                if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
-                    not request.user.is_superuser):
+                if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
+                        "menupermissions.x_datas_download")) and
+                        not request.user.is_superuser):
                     return Response('Unauthorized', status=401)
                 filename = 'villages'
-                columns = ['Identifiant', 'Nom', 'Population', 'Cas positifs', 'Province', 'ZS', 'AS', 'Longitude',
-                           'Latitude', 'Officiel', 'Source', 'Source Gps']
+                columns = [{"title": 'Identifiant'},
+                           {"title": 'Nom'},
+                           {"title": 'Population'},
+                           {"title": 'Cas positifs'},
+                           {"title": 'Province'},
+                           {"title": 'ZS'},
+                           {"title": 'AS'},
+                           {"title": 'Longitude'},
+                           {"title": 'Latitude'},
+                           {"title": 'Officiel'},
+                           {"title": 'Source'},
+                           {"title": 'Source Gps'}]
 
                 def get_row(village, **kwargs):
                     return [

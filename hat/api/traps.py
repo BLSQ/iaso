@@ -165,24 +165,25 @@ class TrapsViewSet(viewsets.ViewSet):
             else:
                 return Response(map(lambda x: x.as_location(), queryset))
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm("menupermissions.x_datas_download")) and
-                not request.user.is_superuser):
+            if ((request.user.has_perm("menupermissions.x_anonymous") or
+                 not request.user.has_perm("menupermissions.x_datas_download")) and
+                    not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = [
-                "ID",
-                "Date de création",
-                "Nom",
-                "Nombre de déploiements",
-                "Males",
-                "Femelles",
-                "Inconnus",
-                "Latitude",
-                "Longitude",
-                "Altitude",
-                "Habitat",
-                "Description",
-                "Sélectionné",
-                "Utilisateur",
+                {"title": "ID"},
+                {"title": "Date de création"},
+                {"title": "Nom"},
+                {"title": "Nombre de déploiements"},
+                {"title": "Males"},
+                {"title": "Femelles"},
+                {"title": "Inconnus"},
+                {"title": "Latitude"},
+                {"title": "Longitude"},
+                {"title": "Altitude"},
+                {"title": "Habitat"},
+                {"title": "Description"},
+                {"title": "Sélectionné"},
+                {"title": "Utilisateur"},
             ]
             filename = "traps"
 

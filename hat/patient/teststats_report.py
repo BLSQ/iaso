@@ -1,11 +1,23 @@
 from hat.api.export_utils import generate_xlsx
 
 columns_month = [
-    "FOYER", "ZSR", "AS / CS", "VILLAGE/LOCALITE", "PTR", "PTE TOTAL", 	"PTE CATT", "PTE TDR", "TP", "CATT+", "TDR+",
-    "NC", "ST1", "ST2", "INC", "TI"
+    {"title": "FOYER", "width": 15},
+    {"title": "ZSR", "width": 15},
+    {"title": "AS / CS", "width": 15},
+    {"title": "VILLAGE/LOCALITE", "width": 20},
+    {"title": "PTR", "width": 8},
+    {"title": "PTE TOTAL", "width": 10},
+    {"title": "PTE CATT", "width": 10},
+    {"title": "PTE TDR", "width": 10},
+    {"title": "TP", "width": 7},
+    {"title": "CATT+", "width": 7},
+    {"title": "TDR+", "width": 7},
+    {"title": "NC", "width": 7},
+    {"title": "ST1", "width": 7},
+    {"title": "ST2", "width": 7},
+    {"title": "INC", "width": 7},
+    {"title": "TI", "width": 7},
 ]
-columns_month_sizes = [10, 10, 10, 20, 10, 10, 10, 10, 10, 10, 10, 10,
-                       10, 10, 10, 10]
 
 
 def get_village_day_row(row, row_num, **kwargs):
@@ -40,7 +52,4 @@ def generate_village_report(grouped_queryset, total_queryset):
         ], [
             get_village_day_row,
         ],
-        column_sizes=[
-            columns_month_sizes,
-        ]
     )

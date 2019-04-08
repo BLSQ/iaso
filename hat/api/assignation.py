@@ -117,8 +117,20 @@ class AssignationViewSet(viewsets.ViewSet):
                  or not request.user.has_perm("menupermissions.x_datas_download")) and
                     not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
-            columns = ['Equipe', 'Coordination', 'Capacite', 'UM', 'Village', 'Latitude',
-                       'Longitude', 'Population', 'AS', 'ZS', 'Province', 'Nombre Cas']
+            columns = [
+                {"title": "Equipe"},
+                {"title": "Coordination"},
+                {"title": "Capacité"},
+                {"title": "UM"},
+                {"title": "Village"},
+                {"title": "Latitude"},
+                {"title": "Longitude"},
+                {"title": "Population"},
+                {"title": "AS"},
+                {"title": "ZS"},
+                {"title": "Province"},
+                {"title": "Nombre Cas"}
+            ]
             filename = "plannings"
 
             def get_planning_export_row(assign, **kwargs):

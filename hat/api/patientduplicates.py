@@ -1,16 +1,13 @@
-from time import time
-
 from django.core.paginator import Paginator
-from django.db import connection
 from django.db.models import OuterRef, Exists, Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, RES_POSITIVE
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
 from hat.patient.models import PatientDuplicatesPair, Test
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -214,20 +211,25 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = [
-                'ID candidat\nduplicat', 'Score de\nsimilarité',
-                'Patient 1\nID', 'Patient 1\nPrénom', 'Patient 1\nNom', 'Patient 1\nPostnom',
-                'Patient 1\nNom de la maman', 'Patient 1\nAnnée naissance', 'Patient 1\nAS', 'Patient 1\nVillage',
-                'Patient 2\nID', 'Patient 2\nPrénom', 'Patient 2\nNom', 'Patient 2\nPostnom',
-                'Patient 2\nNom de la maman', 'Patient 2\nAnnée naissance', 'Patient 2\nAS', 'Patient 2\nVillage',
-                'Même patient?\n(O/N)',
-                ]
-            column_sizes = [
-                10, 8,
-                10, 15, 15, 15,
-                15, 8, 15, 18,
-                10, 15, 15, 15,
-                15, 8, 15, 18,
-                8
+                {"title": "ID candidat\nduplicat",      "width": 10},
+                {"title": "Score de\nsimilarité",       "width": 8},
+                {"title": "Patient 1\nID",              "width": 10},
+                {"title": "Patient 1\nPrénom",          "width": 15},
+                {"title": "Patient 1\nNom",             "width": 15},
+                {"title": "Patient 1\nPostnom",         "width": 15},
+                {"title": "Patient 1\nNom de la maman", "width": 15},
+                {"title": "Patient 1\nAnnée naissance", "width": 8},
+                {"title": "Patient 1\nAS",              "width": 15},
+                {"title": "Patient 1\nVillage",         "width": 18},
+                {"title": "Patient 2\nID",              "width": 10},
+                {"title": "Patient 2\nPrénom",          "width": 15},
+                {"title": "Patient 2\nNom",             "width": 15},
+                {"title": "Patient 2\nPostnom",         "width": 15},
+                {"title": "Patient 2\nNom de la maman", "width": 15},
+                {"title": "Patient 2\nAnnée naissance", "width": 8},
+                {"title": "Patient 2\nAS",              "width": 15},
+                {"title": "Patient 2\nVillage",         "width": 15},
+                {"title": "Même patient?\n(O/N)",       "width": 8},
             ]
 
             filename = 'patientduplicatepairs'
@@ -286,7 +288,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             if xlsx_format:
                 filename = filename + '.xlsx'
                 response = HttpResponse(
-                    generate_xlsx('Doublons', columns, limited_queryset, get_row, column_sizes=column_sizes),
+                    generate_xlsx('Doublons', columns, limited_queryset, get_row),
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
             if csv_format:

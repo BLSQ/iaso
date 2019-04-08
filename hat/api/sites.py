@@ -150,15 +150,15 @@ class SitesViewSet(viewsets.ViewSet):
                     not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = [
-                "ID",
-                "Date de création",
-                "Nom",
-                "Latitude",
-                "Longitude",
-                "Altitude",
-                "Description",
-                "Responsable",
-                "Nombre de pièges",
+                {"title": "ID"},
+                {"title": "Date de création"},
+                {"title": "Nom"},
+                {"title": "Latitude"},
+                {"title": "Longitude"},
+                {"title": "Altitude"},
+                {"title": "Description"},
+                {"title": "Responsable"},
+                {"title": "Nombre de pièges"},
             ]
             filename = "sites"
 

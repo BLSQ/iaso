@@ -451,11 +451,11 @@ const searchMotherName = component => (
         onKeyPressed: () => component.onSearch(),
     }
 );
-const coordinations = coordinationsList => (
+const coordinations = (coordinationsList, isMultiSelect = true) => (
     {
         name: 'coordination_id',
         urlKey: 'coordination_id',
-        isMultiSelect: true,
+        isMultiSelect,
         isClearable: true,
         options: coordinationsList,
         placeholder: {

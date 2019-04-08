@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Visualization from '../Visualization';
+import { formatThousand } from '../../../../utils';
 import Donut from '../Donut';
 
 class ScreeningWidget extends Component {
@@ -36,7 +36,7 @@ class ScreeningWidget extends Component {
                                         <FormattedMessage id="statspage.screening.count.pos" defaultMessage="Number of participants with a positive screening result" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.positive}
+                                        {formatThousand(total.positive)}
                                     </span>
                                 </li>
                                 <li className="list__item--stats--reduced">
@@ -44,7 +44,7 @@ class ScreeningWidget extends Component {
                                         <FormattedMessage id="statspage.screening.count.neg" defaultMessage="Number of participants with a negative screening result" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.negative}
+                                        {formatThousand(total.negative)}
                                     </span>
                                 </li>
                             </ul>

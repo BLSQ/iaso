@@ -65,7 +65,7 @@ const filtersGeo = (
 
 const filtersCoordinations = coordinationsList => (
     [
-        coordinations(coordinationsList),
+        coordinations(coordinationsList, false),
     ]
 );
 

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import { formatThousand } from '../../../../utils';
 import Donut from '../Donut';
 
 class ConfirmationWidget extends Component {
@@ -36,7 +37,7 @@ class ConfirmationWidget extends Component {
                                         <FormattedMessage id="statspage.confirmation.count.pos" defaultMessage="Number of participants confirmed positive for HAT" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.positive_confirmations}
+                                        {formatThousand(total.positive_confirmations)}
                                     </span>
                                 </li>
                                 <li className="list__item--stats--reduced">
@@ -44,7 +45,7 @@ class ConfirmationWidget extends Component {
                                         <FormattedMessage id="statspage.confirmation.count.neg" defaultMessage="Number of participants confirmed negative for HAT" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {total.negative_confirmations}
+                                        {formatThousand(total.negative_confirmations)}
                                     </span>
                                 </li>
                             </ul>

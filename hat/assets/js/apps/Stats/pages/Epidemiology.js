@@ -43,12 +43,10 @@ export class Epidemiology extends Component {
         this.props.fetchProvinces();
         if (province_id) {
             this.props.selectProvince(province_id, zs_id, as_id);
-        }
-        if (zs_id) {
-            this.props.selectZone(zs_id);
-        }
-        if (as_id) {
-            this.props.selectArea(as_id);
+        } else if (zs_id) {
+            this.props.selectZone(zs_id, as_id);
+        } else if (as_id) {
+            this.props.selectArea(as_id, zs_id);
         }
     }
 
@@ -61,12 +59,10 @@ export class Epidemiology extends Component {
             },
         } = newProps;
         if (province_id !== this.props.params.province_id) {
-            this.props.selectProvince(province_id);
-        }
-        if (zs_id !== this.props.params.zs_id) {
-            this.props.selectZone(zs_id);
-        }
-        if (as_id !== this.props.params.as_id) {
+            this.props.selectProvince(province_id, zs_id, as_id);
+        } else if (zs_id !== this.props.params.zs_id) {
+            this.props.selectZone(zs_id, as_id);
+        } else if (as_id !== this.props.params.as_id) {
             this.props.selectArea(as_id, zs_id);
         }
     }
@@ -167,7 +163,6 @@ Epidemiology.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -179,9 +174,9 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
-    selectZone: zoneId => dispatch(filterActions.selectZone(zoneId, dispatch, false, null)),
-    selectArea: (areaId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId)),
+    selectProvince: (provinceId, zoneId, areaId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
+    selectZone: (zoneId, areaId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, null, false)),
+    selectArea: (areaId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, null, false)),
 });
 
 const MapStateToProps = state => ({

@@ -16,6 +16,7 @@ export class EpidemiologyContainer extends Component {
     componentDidMount() {
         this.loadData(this.props.params);
     }
+
     componentWillReceiveProps(nextProps) {
         if (!deepEqual(this.props.params, nextProps.params)) {
             this.loadData(nextProps.params);

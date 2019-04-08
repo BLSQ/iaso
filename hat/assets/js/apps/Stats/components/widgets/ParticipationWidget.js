@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import Visualization from '../Visualization';
+import { formatThousand } from '../../../../utils';
 
 class ParticipationWidget extends Component {
     render() {
@@ -44,14 +45,14 @@ class ParticipationWidget extends Component {
                                     <span className="text--label">
                                         <FormattedMessage id="statspage.participation.registered" defaultMessage="Number of participants registered" />
                                     </span>
-                                    <span className="list__item__number--prominent">{registered}</span>
+                                    <span className="list__item__number--prominent">{formatThousand(registered)}</span>
                                 </li>
                                 <li className="list__item--stats--reduced">
                                     <span className="text--label">
                                         <FormattedMessage id="statspage.participation.totalpop" defaultMessage="Total population of screened areas (estimate)" />
                                     </span>
                                     <span className="list__item__number--prominent">
-                                        {population}
+                                        {formatThousand(population)}
                                     </span>
                                 </li>
                             </ul>

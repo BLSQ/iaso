@@ -10,7 +10,6 @@ const getResult = (value, list) => list.find(e => e.value === value);
 
 class SuperUserImageComponent extends React.Component {
     render() {
-
         const {
             currentTest,
             intl: {
@@ -20,7 +19,7 @@ class SuperUserImageComponent extends React.Component {
 
         const typeConstant = currentTest.type === 'RDT' ?
             RdtTypeConstant : CattTypeConstant;
-        console.log('currentTest', currentTest, getResult(currentTest.result, typeConstant))
+
         let check1;
         let check2;
         let check3;

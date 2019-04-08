@@ -53,7 +53,7 @@ def testResultString(value):
         return "Absent"
     if value == RES_MISSING:
         return "Manquant"
-    if value == RES_UNREAD:
+    if value == RES_UNREADABLE:
         return "Non lisible"
     if value == RES_UNUSED:
         return "Non utlisé"
@@ -66,8 +66,9 @@ RES_POSITIVE = 2
 RES_NEGATIVE = 1
 RES_ABSENT = 0
 RES_MISSING = -1
-RES_UNREAD = -2
+RES_UNREADABLE = -2
 RES_UNUSED = -3
+RES_UNSURE = -4
 
 SCR_TYPE_DOOR_TO_DOOR = "doorToDoor"
 SCR_TYPE_ON_SITE = "onSite"
@@ -314,7 +315,7 @@ class CaseAbstract(models.Model):
         (RES_NEGATIVE, "Négatif"),
         (RES_ABSENT, "Absent"),
         (RES_MISSING, "Manquant"),
-        (RES_UNREAD, "Illisible"),
+        (RES_UNREADABLE, "Illisible"),
         (RES_UNUSED, "Inutilisé"),
     )
 

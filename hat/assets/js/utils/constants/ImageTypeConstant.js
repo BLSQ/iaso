@@ -1,12 +1,12 @@
 const CattTypeConstant = [
     {
         value: -3,
-        defaultMessage: 'inutilisé',
+        defaultMessage: 'Inutilisé',
         id: 'quality.result.unused',
     },
     {
         value: -2,
-        defaultMessage: 'illisible',
+        defaultMessage: 'Illisible',
         id: 'quality.result.notreadeble',
     },
     {
@@ -23,6 +23,11 @@ const CattTypeConstant = [
         value: 1,
         defaultMessage: '-',
         id: 'quality.result.negative',
+    },
+    {
+        value: -4,
+        defaultMessage: '+/-',
+        id: 'quality.result.pos',
     },
     {
         value: 2,
@@ -44,12 +49,12 @@ const CattTypeConstant = [
 const RdtTypeConstant = [
     {
         value: -2,
-        defaultMessage: 'illisible',
+        defaultMessage: 'Illisible',
         id: 'quality.result.notreadeble',
     },
     {
         value: -1,
-        defaultMessage: 'manquant',
+        defaultMessage: 'Manquant',
         id: 'quality.result.missing',
     },
     {

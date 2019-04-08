@@ -19,6 +19,17 @@ from hat.sync.models import VideoUpload, ImageUpload
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.users.middleware import get_current_user
 from hat.users.models import Profile
+from hat.cases.models import (
+    RES_POSITIVE_POSITIVE_POSITIVE,
+    RES_POSITIVE_POSITIVE,
+    RES_POSITIVE,
+    RES_NEGATIVE,
+    RES_ABSENT,
+    RES_MISSING,
+    RES_UNREADABLE,
+    RES_UNUSED,
+    RES_UNSURE,
+)
 
 
 class Patient(models.Model):
@@ -222,12 +233,16 @@ class Test(models.Model):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
 
     def as_dict(self, with_checks=False):
+        consolidated_result = self.result
+        if self.result == RES_NEGATIVE and self.level == 0:
+            consolidated_result = RES_UNSURE
 
         res = {
             "id": self.id,
             "type": self.type,
             "index": self.index,
             "result": self.result,
+            "consolidated_result": consolidated_result,
             "level": self.level,
             "date": self.date,
             "village": self.village.as_dict() if self.village else None,

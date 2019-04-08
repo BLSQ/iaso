@@ -272,5 +272,5 @@ export const renderCountCell = (total, value, formatMessage) => {
     );
 };
 
-export const isMediumUser = userLevel => userLevel <= 30 && userLevel > 10;
-export const isSuperUser = userLevel => userLevel > 30;
+export const isMediumUser = userLevel => userLevel > 10 && userLevel <= 30;
+export const isSuperUser = userLevel => userLevel >= 40;

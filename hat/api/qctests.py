@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from hat.sync.models import ImageUpload
 from hat.patient.models import Test
 from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
-from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5
+from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -27,7 +28,6 @@ class QCTestsViewSet(viewsets.ViewSet):
         user_level = request.user.profile.level
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
-        checked = request.GET.get("checked", None)
         page_offset = int(request.GET.get("page", 1))
         limit = request.GET.get("limit", None)
         orders = request.GET.get("order", "date").split(",")
@@ -37,6 +37,7 @@ class QCTestsViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_ids", None)
         zs_ids = request.GET.get("zs_ids", None)
         as_ids = request.GET.get("as_ids", None)
+        checked = request.GET.get("checked", False)
 
         qs = Test.objects.all()
 
@@ -44,25 +45,20 @@ class QCTestsViewSet(viewsets.ViewSet):
             qs = qs.filter(date__date__gte=from_date)
         if to_date is not None:
             qs = qs.filter(date__date__lte=to_date)
-        if checked is not None:
-            qs = qs.annotate(num_checks=Count("check"))
-            if checked != "true":
-                if user_level == LEVEL_1:
-                    qs = qs.exclude(num_checks__gt=0)
-                else:
-                    if user_level > LEVEL_1:
-                        target_level = LEVEL_1
-                        if user_level == LEVEL_3:
-                            target_level = LEVEL_2
-                        elif user_level == LEVEL_4:
-                            target_level == LEVEL_3
-                        elif user_level == LEVEL_5:
-                            target_level == LEVEL_4
-                        qs = qs.filter(check__level=target_level).exclude(
-                            check__level__gt=target_level
-                        )
-            else:
-                qs = qs.filter(num_checks__gt=0)
+
+        qs = qs.annotate(num_checks=Count("check"))
+
+        qs = qs.exclude(check__level__gte=user_level)
+
+        if user_level == LEVEL_2:
+            qs = qs.filter(check__level=LEVEL_1).exclude(check__level=LEVEL_2)
+
+        if user_level == LEVEL_3:
+            qs = qs.filter(check__level=LEVEL_2).exclude(check__level=LEVEL_3)
+
+        if user_level == LEVEL_4 and checked:
+            qs = qs.filter(check__level=LEVEL_3)
+
         if test_types:
             qs = qs.filter(type__in=test_types.upper().split(","))
         if user_ids is not None:
@@ -97,6 +93,10 @@ class QCTestsViewSet(viewsets.ViewSet):
         test = get_object_or_404(Test, id=pk)
         res = test.as_dict(with_checks=True)
         if test.type == "CATT":
-            other_catt = Test.objects.filter(image=test.image).exclude(id=test.id).order_by("index")
+            other_catt = (
+                Test.objects.filter(image=test.image)
+                .exclude(id=test.id)
+                .order_by("index")
+            )
             res["other_catt"] = [test.as_dict() for test in other_catt]
         return Response(res)

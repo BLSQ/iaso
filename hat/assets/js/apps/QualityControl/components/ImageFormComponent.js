@@ -98,9 +98,10 @@ class ImageFormComponent extends React.Component {
                     />
                 }
                 {
-                    (currentTest.type === 'RDT' ||
+                    ((currentTest.type === 'RDT' &&
+                            !isSuperUser(userLevel)) ||
                         (currentTest.type === 'CATT' &&
-                            (isMediumUser(userLevel) || isSuperUser(userLevel)))) &&
+                            !isSuperUser(userLevel))) &&
                             <TestImageComponent
                                 test={currentCheck}
                                 isSuperUser={isSuperUser(userLevel)}
@@ -121,7 +122,7 @@ class ImageFormComponent extends React.Component {
                         />))
                 }
                 {
-                    (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
+                    (!isSuperUser(userLevel)) &&
                     <div>
                         <section>
                             <div className="quality-label inline">
@@ -141,21 +142,24 @@ class ImageFormComponent extends React.Component {
                         </section>
                     </div>
                 }
-                <div className="submit-area">
-                    {
+                {
+                    (!isSuperUser(userLevel)) &&
+                    <div className="submit-area">
+                        {
                         this.props.error &&
                         <div className="saving--error">
-                            <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
+                          <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde"/>
                         </div>
-                    }
-                    <button
+                      }
+                      <button
                         className="button"
                         onClick={e => this.onSubmit(e)}
-                    >
-                        <i className="fa fa-save" />
-                        <FormattedMessage id="main.submit" defaultMessage="Valider" />
-                    </button>
-                </div>
+                      >
+                        <i className="fa fa-save"/>
+                        <FormattedMessage id="main.submit" defaultMessage="Valider"/>
+                      </button>
+                    </div>
+                }
             </form>);
     }
 }

@@ -28,7 +28,6 @@ class TestImageComponent extends React.Component {
                 {
                     test.index &&
                     !isMediumUser &&
-                    !isSuperUser &&
                     <section>
                         <div className="quality-label inline">
                             <FormattedMessage
@@ -37,17 +36,6 @@ class TestImageComponent extends React.Component {
                             />:
                         </div>
                         <div>{test.index}</div>
-                    </section>
-                }
-                {
-                    isSuperUser &&
-                    <section>
-                        <h4>
-                            <FormattedMessage
-                                id="quality.finalCheck"
-                                defaultMessage="Vérification finale"
-                            />
-                        </h4>
                     </section>
                 }
                 <section>

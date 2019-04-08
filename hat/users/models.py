@@ -19,14 +19,12 @@ LEVEL_1 = 10
 LEVEL_2 = 20
 LEVEL_3 = 30
 LEVEL_4 = 40
-LEVEL_5 = 50
 
 LEVEL_CHOICES = (
     (LEVEL_1, "Niveau 1"),
     (LEVEL_2, "Niveau 2"),
     (LEVEL_3, "Niveau 3"),
     (LEVEL_4, "Niveau 4"),
-    (LEVEL_5, "Niveau 5"),
 )
 
 
@@ -254,7 +252,7 @@ class Profile(models.Model):
             "passwordReset": self.password_reset,
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
-            "level": self.level
+            "level": self.level,
         }
 
     def __str__(self):

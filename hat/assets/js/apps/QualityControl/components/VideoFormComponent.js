@@ -41,16 +41,19 @@ class VideoFormComponent extends React.Component {
                         currentTest={this.props.currentTest}
                     />
                 }
-                <TestVideoComponent
-                    changeOption={key => this.changeOption(key)}
-                    isClear={this.state.isClear}
-                    isGoodPlace={this.state.isGoodPlace}
-                    isConfirmedCase={this.state.isConfirmedCase}
-                    hasOtherParasite={this.state.hasOtherParasite}
-                    isSuperUser={isSuperUser(userLevel)}
-                />
+                  {
+                    (!isSuperUser(userLevel)) &&
+                    <TestVideoComponent
+                      changeOption={key => this.changeOption(key)}
+                      isClear={this.state.isClear}
+                      isGoodPlace={this.state.isGoodPlace}
+                      isConfirmedCase={this.state.isConfirmedCase}
+                      hasOtherParasite={this.state.hasOtherParasite}
+                      isSuperUser={isSuperUser(userLevel)}
+                    />
+                  }
                 {
-                    (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
+                    (!isSuperUser(userLevel)) &&
                     <div>
                         <section>
                             <div className="quality-label inline comment-label">
@@ -69,21 +72,24 @@ class VideoFormComponent extends React.Component {
                         </section>
                     </div>
                 }
+              {
+                (!isSuperUser(userLevel)) &&
                 <div className="submit-area">
-                    {
-                        this.props.error &&
-                        <div className="saving--error">
-                            <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
-                        </div>
-                    }
-                    <button
-                        className="button"
-                        onClick={e => this.onSubmit(e)}
-                    >
-                        <i className="fa fa-save" />
-                        <FormattedMessage id="main.submit" defaultMessage="Valider" />
-                    </button>
+                  {
+                    this.props.error &&
+                    <div className="saving--error">
+                      <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde"/>
+                    </div>
+                  }
+                  <button
+                    className="button"
+                    onClick={e => this.onSubmit(e)}
+                  >
+                    <i className="fa fa-save"/>
+                    <FormattedMessage id="main.submit" defaultMessage="Valider"/>
+                  </button>
                 </div>
+              }
             </form>);
     }
 }

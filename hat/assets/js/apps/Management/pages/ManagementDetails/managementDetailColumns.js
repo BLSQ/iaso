@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormattedDate } from 'react-intl';
+import { formatThousand } from '../../../../utils';
 
 const managementDetailColumns = (formatMessage, tableTotal) => (
     [
@@ -36,7 +37,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_catt : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_catt) : ''),
                 },
                 {
                     Header: 'RDT',
@@ -44,7 +45,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_rdt : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_rdt) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -55,7 +56,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_catt_positive + tableTotal.total_rdt_positive : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_catt_positive + tableTotal.total_rdt_positive) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -66,7 +67,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 120,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_catt + tableTotal.total_rdt : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_catt + tableTotal.total_rdt) : ''),
                 },
             ],
         },
@@ -82,7 +83,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_pg : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_pg) : ''),
                 },
                 {
                     Header: 'CTCWOO',
@@ -90,7 +91,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_ctc : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_ctc) : ''),
                 },
                 {
                     Header: 'MAECT',
@@ -98,7 +99,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_maect : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_maect) : ''),
                 },
                 {
                     Header: 'PL',
@@ -106,7 +107,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_pl : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_pl) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -117,7 +118,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_confirmation_tests_positive : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_confirmation_tests_positive) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -128,7 +129,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 120,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_confirmation_tests : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_confirmation_tests) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -139,7 +140,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_pl_stage1 : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_pl_stage1) : ''),
                 },
                 {
                     Header: formatMessage({
@@ -150,7 +151,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     className: 'small',
                     width: 80,
                     resizable: false,
-                    Footer: () => (tableTotal ? tableTotal.total_pl_stage2 : ''),
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_pl_stage2) : ''),
                 },
             ],
         },

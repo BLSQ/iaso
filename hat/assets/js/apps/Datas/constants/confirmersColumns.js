@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { renderCountCell, getPourcentage, formatThousand, renderPLCell } from '../../../utils';
+import { renderCountCell } from '../../../utils';
 
 const confirmersColumns = formatMessage => (
     [

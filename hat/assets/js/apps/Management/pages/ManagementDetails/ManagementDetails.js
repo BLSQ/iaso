@@ -48,7 +48,7 @@ export class ManagementDetails extends Component {
             dispatch(detailsActions.fetchDetails(dispatch, parseInt(teamId, 10), `/api/teams/${teamId}`));
         }
 
-        const { formatMessage } = this.props.intl;
+        const { formatMessage } = props.intl;
 
         this.state = {
             currentTab: 'table',
@@ -104,7 +104,11 @@ export class ManagementDetails extends Component {
     }
 
     onTableLoaded(datas) {
+        const { formatMessage } = this.props.intl;
         tableTotal = datas.total;
+        this.setState({
+            tableColumns: managementDetailColumns(formatMessage, tableTotal),
+        });
         this.props.setVillages(datas.result);
     }
 

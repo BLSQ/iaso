@@ -34,7 +34,7 @@ class UserModale extends Component {
             isChanged: false,
             currentTab: 'infos',
             isUpdated: false,
-            error: false,
+            error: null,
         };
     }
 
@@ -56,7 +56,9 @@ class UserModale extends Component {
                 });
             }, 10000);
         }
-        if (nextProps.error) {
+        if (!deepEqual(nextProps.user, this.props.user, true)) {
+            newState.user = nextProps.user;
+        } else if (nextProps.error) {
             newState = {
                 error: nextProps.error,
                 isUpdated: false,
@@ -64,12 +66,9 @@ class UserModale extends Component {
             };
             setTimeout(() => {
                 this.setState({
-                    error: false,
+                    error: null,
                 });
             }, 10000);
-        }
-        if (!deepEqual(nextProps.user, this.props.user, true)) {
-            newState.user = nextProps.user;
         }
         this.setState(newState);
     }
@@ -198,7 +197,10 @@ class UserModale extends Component {
                     {
                         this.state.error &&
                         <div className="align-right text--error">
-                            <FormattedMessage id="main.label.erro" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            {
+                                this.state.error.message ||
+                                <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            }
                         </div>
                     }
                     <div className="align-right">

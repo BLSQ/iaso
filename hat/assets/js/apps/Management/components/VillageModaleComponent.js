@@ -68,7 +68,9 @@ class VillageModale extends Component {
                 });
             }, 10000);
         }
-        if (nextProps.error) {
+        if (!deepEqual(nextProps.village, this.props.village, true)) {
+            newState.village = nextProps.village;
+        } else if (nextProps.error) {
             newState = {
                 error: nextProps.error,
                 isUpdated: false,
@@ -79,9 +81,6 @@ class VillageModale extends Component {
                     error: false,
                 });
             }, 10000);
-        }
-        if (!deepEqual(nextProps.village, this.props.village, true)) {
-            newState.village = nextProps.village;
         }
         this.setState(newState);
     }

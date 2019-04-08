@@ -15,6 +15,7 @@ from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Province, ZS, AS
 from django.db.models import Q
+from hat.dashboard.utils import return_error
 
 
 class ProfilesViewSet(viewsets.ViewSet):
@@ -169,6 +170,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(profile.as_dict())
 
     def create(self, request):
+<<<<<<< HEAD
         user = User()
         user.first_name = request.data.get("firstName", "")
         user.last_name = request.data.get("lastName", "")
@@ -223,6 +225,65 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.profile.save()
         log_modification(None, user, PROFILE_API, request.user)
         return Response(user.profile.as_dict())
+=======
+        username = request.data.get('userName')
+        existing_profile = Profile.objects.get(user__username=username)
+        if existing_profile:
+            return return_error("Nom d'utlisateur existant", 400)
+        else:
+            user = User()
+            user.first_name = request.data.get('firstName', '')
+            user.last_name = request.data.get('lastName', '')
+            user.username = username
+            user.email = request.data.get('email', '')
+            password = request.data.get('password', None)
+            provinces = request.data.get('province', None)
+            zones = request.data.get('ZS', [])
+            areas = request.data.get('AS', [])
+            permissions = request.data.get('permissions', [])
+            if password:
+                user.set_password(password)
+            user.save()
+            institution = request.data.get('institution', None)
+            user_type = request.data.get('userType', None)
+            team = request.data.get('team', None)
+
+            if institution:
+                institution = get_object_or_404(Institution, id=institution.get('id'))
+                user.profile.institution = institution
+            if team:
+                new_team = get_object_or_404(Team, id=team)
+                user.profile.team = new_team
+
+            if user_type:
+                new_user_type = get_object_or_404(UserType, id=user_type.get('id'))
+                user.profile.userType = new_user_type
+
+            user.profile.phone = request.data.get('phone', '')
+
+            if provinces:
+                for province in provinces:
+                    new_province = get_object_or_404(Province, id=province)
+                    user.profile.province_scope.add(new_province)
+
+            if zones:
+                for zone in zones:
+                    new_zone = get_object_or_404(ZS, id=zone)
+                    user.profile.ZS_scope.add(new_zone)
+
+            if areas:
+                for area in areas:
+                    new_area = get_object_or_404(AS, id=area)
+                    user.profile.AS_scope.add(new_area)
+
+            if permissions:
+                for permission_id in permissions:
+                    permission = get_object_or_404(Permission, pk=permission_id)
+                    user.user_permissions.add(permission)
+            user.profile.save()
+            log_modification(None, user, PROFILE_API, request.user)
+            return Response(user.profile.as_dict())
+>>>>>>> display a specific message if username already used
 
     def delete(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)

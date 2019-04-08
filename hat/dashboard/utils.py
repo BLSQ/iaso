@@ -2,6 +2,7 @@ from datetime import datetime
 from django.shortcuts import redirect
 from django.urls import reverse
 from functools import wraps
+from django.http import JsonResponse
 
 def is_user_authorized(view_func):
     def _decorator(request, *args, **kwargs):
@@ -213,3 +214,7 @@ def get_menu(user, active_link):
                 menu_item["active"] = True
             menu.append(menu_item)
     return menu
+
+
+def return_error(message, error_code = 400):
+    return JsonResponse({"message": message}, status=error_code)

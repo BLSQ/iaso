@@ -147,6 +147,9 @@ export const selectZone = (
             .catch((err) => {
                 dispatch(loadActions.errorLoading(err));
                 console.error(`Error while fetching Areas: ${err}`);
+                setTimeout(() => {
+                    dispatch(loadActions.errorLoading(null));
+                }, 10000);
             });
     }
     return ({
@@ -282,9 +285,9 @@ export const createUser = (dispatch, user) => {
             dispatch(selectUser(res.body));
             dispatch(loadActions.successLoadingNoData());
         })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when creating user', err);
+        .catch((error) => {
+            dispatch(loadActions.errorLoading(error.response.body));
+            console.error('Error when creating user', error.response.body.message || error);
         });
     return ({
         type: FETCH_ACTION,

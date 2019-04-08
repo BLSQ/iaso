@@ -139,7 +139,7 @@ class Patients extends Component {
             reduxPage,
         } = this.props;
         const filters = filtersPatients2(formatMessage, defineMessages);
-        const search = filtersPatientsSearch(devices);
+        const search = filtersPatientsSearch(devices, this);
         const geo = filtersPatientsGeo(
             workzones,
             provinces || [],

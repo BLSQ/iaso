@@ -60,6 +60,9 @@
         &:hover{
             color: red;
         }
+        &.no-icon {
+            right: 8px;
+        }
     }
 }
 

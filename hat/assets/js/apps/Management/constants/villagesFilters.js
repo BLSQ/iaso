@@ -164,6 +164,7 @@ const filtersZone2 = (
 const filtersSearch = (
     formatMessage,
     defineMessages,
+    component,
 ) => (
     [
         {
@@ -182,6 +183,7 @@ const filtersSearch = (
                 defaultMessage: 'Recherche textuelle',
             },
             type: 'search',
+            onKeyPressed: () => component.onSearch(),
         },
         {
             name: 'population',

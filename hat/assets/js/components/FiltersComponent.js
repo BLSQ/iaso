@@ -137,6 +137,7 @@ class FiltersComponent extends React.Component {
                                                 onChange={value => this.onSearchChange(value, filter.urlKey)}
                                                 disabled={searchDisabled}
                                                 displayIcon={filter.displayIcon}
+                                                onKeyPressed={filter.onKeyPressed}
                                             />
                                         }
 

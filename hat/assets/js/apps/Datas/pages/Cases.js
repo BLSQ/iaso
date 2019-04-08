@@ -73,6 +73,7 @@ class Cases extends Component {
         const {
             params,
         } = this.props;
+
         const urlParams = {
             ...params,
             located: params.located ? params.located : 'all',
@@ -133,7 +134,7 @@ class Cases extends Component {
         } = this.props;
         const filters1 = filtersCases(formatMessage, defineMessages, devices);
         const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
-        const search = filtersCasesSearch(formatMessage, defineMessages);
+        const search = filtersCasesSearch(formatMessage, defineMessages, this);
         const geo = filtersCasesGeo(
             workzones,
             provinces || [],

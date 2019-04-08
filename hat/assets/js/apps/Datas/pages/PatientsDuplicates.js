@@ -143,7 +143,7 @@ class PatientsDuplicates extends Component {
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
-        const search = filtersDuplicatesPatientsSearch();
+        const search = filtersDuplicatesPatientsSearch(this);
         const geo = filtersPatientsGeo(
             workzones,
             provinces || [],

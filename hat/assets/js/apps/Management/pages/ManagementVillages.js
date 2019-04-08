@@ -171,7 +171,7 @@ class ManagementVillages extends React.Component {
             this.props,
             'villages',
         );
-        const search = filtersSearch(formatMessage, defineMessages);
+        const search = filtersSearch(formatMessage, defineMessages, this);
         return (
             <section>
                 {

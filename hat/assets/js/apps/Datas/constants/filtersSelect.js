@@ -50,11 +50,11 @@ const filtersCases2 = (
     ]
 );
 
-const filtersCasesSearch = (formatMessage, defineMessages) => (
+const filtersCasesSearch = (formatMessage, defineMessages, component) => (
     [
-        searchLastname(),
-        searchName(),
-        searchPrename(),
+        searchLastname(component),
+        searchName(component),
+        searchPrename(component),
         images(formatMessage, defineMessages),
         videos(formatMessage, defineMessages),
     ]
@@ -123,21 +123,21 @@ const filtersPatientsDuplicates = (
     ]
 );
 
-const filtersPatientsSearch = devices => (
+const filtersPatientsSearch = (devices, component) => (
     [
-        searchLastname(),
-        searchName(),
-        searchPrename(),
-        searchMotherName(),
+        searchLastname(component),
+        searchName(component),
+        searchPrename(component),
+        searchMotherName(component),
         device(devices),
     ]
 );
-const filtersDuplicatesPatientsSearch = () => (
+const filtersDuplicatesPatientsSearch = component => (
     [
-        searchLastname(),
-        searchName(),
-        searchPrename(),
-        searchMotherName(),
+        searchLastname(component),
+        searchName(component),
+        searchPrename(component),
+        searchMotherName(component),
     ]
 );
 

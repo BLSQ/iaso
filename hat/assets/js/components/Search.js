@@ -70,6 +70,7 @@ class Search extends React.Component {
             showResetSearch,
             disabled,
             displayIcon,
+            onKeyPressed,
         } = this.props;
         return (
             <div className="search-container">
@@ -83,7 +84,14 @@ class Search extends React.Component {
                         onBlur={event => this.onBlur(event.target.value)}
                         onKeyPress={(event) => {
                             if (event.which === 13 || event.keyCode === 13) {
-                                this.onSearch();
+                                if (onKeyPressed) {
+                                    this.onBlur(event.target.value);
+                                    setTimeout(() => {
+                                        onKeyPressed();
+                                    }, 0);
+                                } else {
+                                    this.onSearch();
+                                }
                             }
                         }}
                     />
@@ -96,7 +104,7 @@ class Search extends React.Component {
                         <span
                             role="button"
                             tabIndex={0}
-                            className="Select-clear"
+                            className={`Select-clear ${!displayIcon ? 'no-icon' : ''}`}
                             onClick={() => this.props.resetSearch()}
                         >
                             ×
@@ -208,6 +216,7 @@ Search.defaultProps = {
     resetOnUnmount: true,
     disabled: false,
     displayIcon: true,
+    onKeyPressed: null,
 };
 
 Search.propTypes = {
@@ -232,6 +241,7 @@ Search.propTypes = {
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
     displayIcon: PropTypes.bool,
+    onKeyPressed: PropTypes.any,
 };
 
 export default Search;

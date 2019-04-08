@@ -303,7 +303,7 @@ const located = (formatMessage, defineMessages) => (
     }
 );
 
-const searchLastname = () => (
+const searchLastname = component => (
     {
         name: 'search_lastname',
         urlKey: 'search_lastname',
@@ -320,10 +320,11 @@ const searchLastname = () => (
             defaultMessage: 'Recherche par nom',
         },
         type: 'search',
+        onKeyPressed: () => component.onSearch(),
     }
 );
 
-const searchName = () => (
+const searchName = component => (
     {
         name: 'search_name',
         urlKey: 'search_name',
@@ -340,10 +341,11 @@ const searchName = () => (
             defaultMessage: 'Recherche par postnom',
         },
         type: 'search',
+        onKeyPressed: () => component.onSearch(),
     }
 );
 
-const searchPrename = () => (
+const searchPrename = component => (
     {
         name: 'search_prename',
         urlKey: 'search_prename',
@@ -360,10 +362,11 @@ const searchPrename = () => (
             defaultMessage: 'Recherche par prénom',
         },
         type: 'search',
+        onKeyPressed: () => component.onSearch(),
     }
 );
 
-const searchMotherName = () => (
+const searchMotherName = component => (
     {
         name: 'search_mother_name',
         urlKey: 'search_mother_name',
@@ -380,6 +383,7 @@ const searchMotherName = () => (
             defaultMessage: 'Recherche par le nom de la mère',
         },
         type: 'search',
+        onKeyPressed: () => component.onSearch(),
     }
 );
 const coordinations = coordinationsList => (

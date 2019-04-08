@@ -66,8 +66,6 @@ class ImgModal extends React.Component {
         const newImg = new Image();
         const windowWidth = document.documentElement.clientWidth;
         const windowHeight = document.documentElement.clientHeight;
-        console.log('windowWidth', windowWidth);
-        console.log('windowHeight', windowHeight);
         ReactDOM.unmountComponentAtNode(newImg);
         newImg.onload = () => {
             this.setState({

@@ -15,7 +15,7 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Nom',
                 id: 'casesList.label.name',
             }),
-            accessor: 'name',
+            accessor: 'normalized_patient__last_name',
             className: 'small',
             Cell: settings => (
                 <span>
@@ -30,7 +30,7 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Postnom',
                 id: 'casesList.label.Postnom',
             }),
-            accessor: 'lastname',
+            accessor: 'normalized_patient__post_name',
             className: 'small',
             Cell: settings => (
                 <span>
@@ -45,7 +45,7 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Prénom',
                 id: 'casesList.label.prename',
             }),
-            accessor: 'prename',
+            accessor: 'normalized_patient__first_name',
             className: 'small',
             Cell: settings => (
                 <span>

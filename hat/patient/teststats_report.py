@@ -9,14 +9,14 @@ columns_month = [
     {"title": "PTE TOTAL", "width": 10},
     {"title": "PTE CATT", "width": 10},
     {"title": "PTE TDR", "width": 10},
-    {"title": "TP", "width": 7},
+    {"title": "TP", "width": 7, "format": "percent"},
     {"title": "CATT+", "width": 7},
     {"title": "TDR+", "width": 7},
     {"title": "NC", "width": 7},
     {"title": "ST1", "width": 7},
     {"title": "ST2", "width": 7},
     {"title": "INC", "width": 7},
-    {"title": "TI", "width": 7},
+    {"title": "TI", "width": 7, "format": "percent"},
 ]
 
 

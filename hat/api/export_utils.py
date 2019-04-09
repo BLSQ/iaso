@@ -6,12 +6,17 @@ from django.conf import settings
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 
-def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link):
+def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link): # TODO remove with_link
     ws = wb.add_worksheet(sheet_name)
 
     bold = wb.add_format({'bold': True})
     bold.set_text_wrap()
+    formats = {
+        'bold': bold,
+        'percent': wb.add_format({'num_format': '0.00%'}),
+    }
 
+    advanced = any([1 for cd in col_descs if 'format' in cd])
     max_height = max([c["title"].count("\n") for c in col_descs]) + 1  # Nb of lines in titles
     ws.set_row(0, 15 * max_height, bold)  # default height is 15
     ws.freeze_panes(1, 0)
@@ -19,7 +24,8 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link):
     for i, col_desc in enumerate(col_descs):
         xl_col = xl_rowcol_to_cell(0, i)
         size = col_desc["width"] if col_desc["width"] else len(col_desc["title"])
-        ws.set_column(xl_col + ':' + xl_col, size)
+        col_format = formats.get(col_desc["format"]) if "format" in col_desc else None
+        ws.set_column(xl_col + ':' + xl_col, size, col_format)
 
     row_num = 1
     col_titles = [cd["title"] for cd in col_descs]
@@ -30,17 +36,17 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link):
         if row_num % 1000 == 0 and settings.DEBUG:
             print(f"Sheet {sheet_name} row {row_num}")
 
-        if not with_link:
+        if not with_link and not advanced:
             ws.write_row('A' + str(row_num), get_row(item, row_num=row_num))
         else:
             col_num = 0
-            for column in get_row(item):
+            for column in get_row(item, row_num=row_num):  # TODO enumerate
                 cell = xl_rowcol_to_cell(row_num - 1, col_num)
                 col_num += 1
-                if 'http' in str(column):
+                if 'http' in str(column): # TODO or advanced and format link
                     ws.write_url(cell, str(column), string='Lien')
                 else:
-                    ws.write(cell, column)
+                    ws.write(cell, column) # TODO format
 
 
 def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False):

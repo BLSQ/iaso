@@ -30,7 +30,7 @@ const groupCattTests = (test) => {
 class ImageFormComponent extends React.Component {
     constructor(props) {
         super(props);
-        const tempGroupedCattTests = groupCattTests(props.currentTest);
+        const tempGroupedCattTests = !isMediumUser(props.userLevel) && !isSuperUser(props.userLevel) && props.currentTest.type === 'CATT' ? groupCattTests(props.currentTest) : [];
         this.state = {
             currentTest: props.currentTest,
             currentCheck: {
@@ -43,7 +43,7 @@ class ImageFormComponent extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const tempGroupedCattTests = groupCattTests(nextProps.currentTest);
+        const tempGroupedCattTests = !isMediumUser(nextProps.userLevel) && !isSuperUser(nextProps.userLevel) && nextProps.currentTest.type === 'CATT' ? groupCattTests(nextProps.currentTest) : [];
         this.setState({
             currentTest: nextProps.currentTest,
             currentCheck: {
@@ -70,7 +70,7 @@ class ImageFormComponent extends React.Component {
             ...this.state.currentCheck,
         };
         const tempOtherCatt = [...this.state.groupedCattTests];
-        if (!isMediumUser(this.props.userLevel) && !isSuperUser(this.props.userLevel) && this.state.groupedCattTests) {
+        if (!isMediumUser(this.props.userLevel) && !isSuperUser(this.props.userLevel) && currentCheck.type === 'CATT') {
             this.state.groupedCattTests.forEach((catt, index) => {
                 if (catt.id === testId) {
                     tempOtherCatt[index].result = result;

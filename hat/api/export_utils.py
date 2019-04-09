@@ -6,7 +6,7 @@ from django.conf import settings
 from xlsxwriter.utility import xl_rowcol_to_cell
 
 
-def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link): # TODO remove with_link
+def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
     ws = wb.add_worksheet(sheet_name)
 
     bold = wb.add_format({'bold': True})
@@ -36,22 +36,23 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, with_link): # TODO
         if row_num % 1000 == 0 and settings.DEBUG:
             print(f"Sheet {sheet_name} row {row_num}")
 
-        if not with_link and not advanced:
+        if not advanced:
             ws.write_row('A' + str(row_num), get_row(item, row_num=row_num))
         else:
-            col_num = 0
-            for column in get_row(item, row_num=row_num):  # TODO enumerate
+            for col_num, column in enumerate(get_row(item, row_num=row_num)):
                 cell = xl_rowcol_to_cell(row_num - 1, col_num)
-                col_num += 1
-                if 'http' in str(column): # TODO or advanced and format link
+                # The link format is using a text for the link display. Without specific format, a http link
+                # will still be automatically colored by Excel but will show the full URL instead of a short text.
+                if str(column).startswith("http") and col_descs[col_num].get("format", "") == "link":
                     ws.write_url(cell, str(column), string='Lien')
                 else:
-                    ws.write(cell, column) # TODO format
+                    ws.write(cell, column)
 
 
-def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False):
+def generate_xlsx(sheet_name, columns, queryset, get_row):
     """
     Generate an XLSX file with the provided parameters.
+    The with_link parameter is deprecated. To force
     :param sheet_name: Array of sheet names
     :param columns: Array of column descriptors. First array per sheet, second Array per column, then dict. Example
                     [[{"title": "This is the\ntitle", "width": 10}, {"title": "foo"}]]
@@ -66,8 +67,6 @@ def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False):
                     **kwargs allows the XLSX generator to pass additional params without rewriting all get_row methods
                     Additional params include:
                     * row_num that is useful to make basic formulas.
-    :param with_link: Will be renamed to advanced. By default, rows are processed as a whole to be faster. Specifying
-                      this parameter will process data by cell and set the proper format (like links)
     :return: the XLSX result to be included in the response. This is always using a temporary file.
     """
     output = io.BytesIO()
@@ -75,11 +74,10 @@ def generate_xlsx(sheet_name, columns, queryset, get_row, with_link=False):
     if isinstance(sheet_name, list):
         i = 0
         for sheet in sheet_name:
-            write_sheet(wb, sheet, columns[i], queryset[i], get_row[i],
-                        with_link[i] if with_link is list else with_link)
+            write_sheet(wb, sheet, columns[i], queryset[i], get_row[i])
             i += 1
     else:
-        write_sheet(wb, sheet_name, columns, queryset, get_row, with_link)
+        write_sheet(wb, sheet_name, columns, queryset, get_row)
 
     wb.close()
 

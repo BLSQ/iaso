@@ -105,17 +105,17 @@ class TargetsViewSet(viewsets.ViewSet):
                     "menupermissions.x_datas_download")) and
                     not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
-            columns = [{"title": 'ID'},
-                       {"title": 'Date'},
-                       {"title": 'Nom'},
+            columns = [{"title": 'ID', "width": 6},
+                       {"title": 'Date', "width": 17},
+                       {"title": 'Nom', "width": 15},
                        {"title": 'Latitude'},
                        {"title": 'Longitude'},
                        {"title": 'Altitude'},
                        {"title": 'Déploiement'},
-                       {"title": 'Rivière'}]
+                       {"title": 'Rivière', "width": 15}]
             filename = 'targets'
 
-            def get_row(target):
+            def get_row(target, **kwargs):
                 tdict = target.as_dict()
                 return [
                             tdict.get("id"),

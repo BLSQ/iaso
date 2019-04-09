@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import Count, Min, Max, TextField
 from django.db.models import Q
 from django.db.models.functions import Coalesce, Cast
@@ -10,9 +11,8 @@ from rest_framework.response import Response
 from hat.cases.models import RES_POSITIVE
 from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION
 from hat.patient.models import Test
-from hat.patient.teststats_report import generate_village_report
+from hat.patient.teststats_report import generate_report
 from .authentication import CsrfExemptSessionAuthentication
-from django.core.cache import cache
 
 
 class TestStatsViewSet(viewsets.ViewSet):
@@ -182,7 +182,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                           "rdt_count", "catt_count", "positive_catt_count", "positive_rdt_count",
                           "positive_screening_test_count", "confirmation_count", "positive_confirmation_test_count",
                           "pl_count_positive", "pl_count_stage1", "pl_count_stage2",
-                           "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive")
+                          "pg_count_positive", "ctcwoo_count_positive", "maect_count_positive")
                 if tester_type == "screener":
                     grouped_queryset = grouped_queryset\
                         .annotate(rdt_test_pictures=Count("id", filter=Q(image__isnull=False) & Q(type=RDT))) \
@@ -249,7 +249,7 @@ class TestStatsViewSet(viewsets.ViewSet):
 
         if xlsx_format is not None:
             return HttpResponse(
-                generate_village_report(result['result'], result['total']),
+                generate_report(grouping, result['result'], result['total']),
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
         else:

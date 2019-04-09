@@ -170,10 +170,10 @@ class TrapsViewSet(viewsets.ViewSet):
                     not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = [
-                {"title": "ID"},
-                {"title": "Date de création"},
-                {"title": "Nom"},
-                {"title": "Nombre de déploiements"},
+                {"title": "ID", "width": 5},
+                {"title": "Date de création", "width": 17},
+                {"title": "Nom", "width": 15},
+                {"title": "Nombre de\ndéploiements", "width": 10},
                 {"title": "Males"},
                 {"title": "Femelles"},
                 {"title": "Inconnus"},

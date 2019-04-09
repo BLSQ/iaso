@@ -23,7 +23,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
 
     for i, col_desc in enumerate(col_descs):
         xl_col = xl_rowcol_to_cell(0, i)
-        size = col_desc["width"] if col_desc["width"] else len(col_desc["title"])
+        size = col_desc["width"] if "width" in col_desc else len(col_desc["title"])
         col_format = formats.get(col_desc["format"]) if "format" in col_desc else None
         ws.set_column(xl_col + ':' + xl_col, size, col_format)
 

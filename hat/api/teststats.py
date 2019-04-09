@@ -273,7 +273,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "positive_catt_count",
                     "positive_rdt_count",
                 )
-                orders = ("village__id",)
+                orders = (Coalesce(
+                        Cast("village__name", TextField()), "form__village"
+                    ),)
             elif grouping == "villageyear":
                 grouped_queryset = grouped_queryset.annotate(
                     village__name=Coalesce(

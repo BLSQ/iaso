@@ -858,6 +858,17 @@ const videos = (formatMessage, defineMessages) => (
     }
 );
 
+const onlyCheckedTests = () => (
+    {
+        name: 'only_checked_tests',
+        urlKey: 'only_checked_tests',
+        label: {
+            id: 'main.label.onlyCheckedTests',
+            defaultMessage: 'Uniquement les test vérifiés',
+        },
+        type: 'checkbox',
+    }
+);
 
 export {
     testType,
@@ -892,4 +903,5 @@ export {
     device,
     images,
     videos,
+    onlyCheckedTests,
 };

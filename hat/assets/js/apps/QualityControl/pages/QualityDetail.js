@@ -22,7 +22,7 @@ class QualityDetail extends React.Component {
             isImage: props.location.pathname.split('/')[0] === 'image',
             isVideo: props.location.pathname.split('/')[0] === 'video',
             userLevel: null,
-            currentTest: props.currentTest,
+            currentTest: null,
         };
     }
 
@@ -109,6 +109,7 @@ class QualityDetail extends React.Component {
                                 <i className="fa fa-arrow-left" />
                             </button>
                             {
+                                currentTest &&
                                 currentTest.id &&
                                 <Fragment>
                                     <FormattedMessage
@@ -133,6 +134,7 @@ class QualityDetail extends React.Component {
                         userLevel &&
                         <Fragment>
                             {
+                                currentTest &&
                                 currentTest.id &&
                                 isImage &&
                                 <ImageValidatorComponent
@@ -143,6 +145,7 @@ class QualityDetail extends React.Component {
                                 />
                             }
                             {
+                                currentTest &&
                                 currentTest.id &&
                                 isVideo &&
                                 <VideoValidatorComponent

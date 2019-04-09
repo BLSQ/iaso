@@ -1,4 +1,4 @@
-import { testTypeImage, testTypeVideo, users } from '../../../utils/constants/filters';
+import { testTypeImage, testTypeVideo, users, onlyCheckedTests } from '../../../utils/constants/filters';
 import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo';
 
 const filtersTypes = () => (
@@ -11,6 +11,12 @@ const filtersTypes = () => (
 const filtersUsers = (usersList, userTitle) => (
     [
         users(usersList, userTitle),
+    ]
+);
+
+const filtersChecked = (usersList, userTitle) => (
+    [
+        onlyCheckedTests(),
     ]
 );
 
@@ -83,4 +89,5 @@ export {
     filtersTypes,
     filtersUsers,
     filtersGeo,
+    filtersChecked,
 };

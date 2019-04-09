@@ -13,9 +13,10 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import qualityColumns from '../constants/qualityColumns';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersTypes, filtersUsers, filtersGeo } from '../constants/filters';
+import { filtersTypes, filtersUsers, filtersGeo, filtersChecked } from '../constants/filters';
 import { loadActions } from '../../../redux/load';
 import { filterActions } from '../../../redux/filtersRedux';
+import { isSuperUser } from '../../../utils/index';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -111,6 +112,9 @@ class QualityDashboard extends React.Component {
         if (params.as_id) {
             urlParams.as_ids = params.as_id;
         }
+        if (params.only_checked_tests) {
+            urlParams.checked = 'true';
+        }
         if (toExport) {
             urlParams[exportType] = true;
         }
@@ -150,6 +154,7 @@ class QualityDashboard extends React.Component {
                 zones,
                 areas,
             },
+            currentUser,
         } = this.props;
         const { currentTab } = this.state;
         return (
@@ -199,6 +204,14 @@ class QualityDashboard extends React.Component {
                                     defaultMessage: 'Testeurs',
                                 })}
                             />
+                            {
+                                currentUser.id && isSuperUser(currentUser.level) &&
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    filters={filtersChecked()}
+                                />
+                            }
                         </div>
                         <div>
                             <FiltersComponent
@@ -313,6 +326,7 @@ QualityDashboard.propTypes = {
     selectArea: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     geoFilters: PropTypes.object.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const QualityDashboardIntl = injectIntl(QualityDashboard);
@@ -324,6 +338,7 @@ const MapStateToProps = state => ({
     reduxVideoPage: state.dashboard.reduxVideoPage,
     profiles: state.dashboard.profiles,
     geoFilters: state.geoFilters,
+    currentUser: state.currentUser.user,
 });
 
 const MapDispatchToProps = dispatch => ({

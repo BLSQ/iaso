@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import TestVideoComponent from './TestVideoComponent';
-import { isMediumUser, isSuperUser } from '../../../utils/index';
+import { isSuperUser } from '../../../utils/index';
 import SuperUserVideoComponent from './superUser/SuperUserVideoComponent';
 
 
@@ -41,17 +41,17 @@ class VideoFormComponent extends React.Component {
                         currentTest={this.props.currentTest}
                     />
                 }
-                  {
+                {
                     (!isSuperUser(userLevel)) &&
                     <TestVideoComponent
-                      changeOption={key => this.changeOption(key)}
-                      isClear={this.state.isClear}
-                      isGoodPlace={this.state.isGoodPlace}
-                      isConfirmedCase={this.state.isConfirmedCase}
-                      hasOtherParasite={this.state.hasOtherParasite}
-                      isSuperUser={isSuperUser(userLevel)}
+                        changeOption={key => this.changeOption(key)}
+                        isClear={this.state.isClear}
+                        isGoodPlace={this.state.isGoodPlace}
+                        isConfirmedCase={this.state.isConfirmedCase}
+                        hasOtherParasite={this.state.hasOtherParasite}
+                        isSuperUser={isSuperUser(userLevel)}
                     />
-                  }
+                }
                 {
                     (!isSuperUser(userLevel)) &&
                     <div>
@@ -72,24 +72,24 @@ class VideoFormComponent extends React.Component {
                         </section>
                     </div>
                 }
-              {
-                (!isSuperUser(userLevel)) &&
-                <div className="submit-area">
-                  {
-                    this.props.error &&
-                    <div className="saving--error">
-                      <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde"/>
+                {
+                    (!isSuperUser(userLevel)) &&
+                    <div className="submit-area">
+                        {
+                            this.props.error &&
+                            <div className="saving--error">
+                                <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
+                            </div>
+                        }
+                        <button
+                            className="button"
+                            onClick={e => this.onSubmit(e)}
+                        >
+                            <i className="fa fa-save" />
+                            <FormattedMessage id="main.submit" defaultMessage="Valider" />
+                        </button>
                     </div>
-                  }
-                  <button
-                    className="button"
-                    onClick={e => this.onSubmit(e)}
-                  >
-                    <i className="fa fa-save"/>
-                    <FormattedMessage id="main.submit" defaultMessage="Valider"/>
-                  </button>
-                </div>
-              }
+                }
             </form>);
     }
 }

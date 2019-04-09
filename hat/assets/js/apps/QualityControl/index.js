@@ -27,7 +27,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
                 '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDashboard}
         />,
@@ -35,7 +35,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
                 '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,
@@ -43,7 +43,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)' +
+                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
                 '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,

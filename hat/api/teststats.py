@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.core.cache import cache
 from django.db.models import Count, Min, Max, TextField
 from django.db.models import Q
@@ -466,9 +468,12 @@ class TestStatsViewSet(viewsets.ViewSet):
         # end of data fetch if not in cache
 
         if xlsx_format is not None:
-            return HttpResponse(
+            response = HttpResponse(
                 generate_report(grouping, result["result"], result["total"]),
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+            filename = f"TrypelimStats_{grouping}_{from_date}-{to_date}_{str(datetime.today())[:10]}.xlsx"
+            response['Content-Disposition'] = f"attachment; filename={filename}"
+            return response
         else:
             return Response(result)

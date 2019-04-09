@@ -66,24 +66,68 @@ class PatientDuplicateDetails extends React.Component {
         dispatch(patientsActions.getManualMergedPatient(this.props.patient, this.props.duplicatePatient));
     }
 
-    fixConflict(key, value) {
+    fixConflict(key, value, patient) {
         if (value && this.state.manualMerge) {
             const { dispatch } = this.props;
             const tempMergedPatient = {
                 ...this.state.mergedPatient,
             };
             tempMergedPatient[key] = value;
+            if (key === 'death_date' && value) {
+                tempMergedPatient.death = {
+                    dead: true,
+                    death_date: value,
+                };
+            }
+            if (key === 'village' && value) {
+                tempMergedPatient.village_id = patient.village_id;
+            }
+            if (key === 'province' && value && !tempMergedPatient.ZS_id && !tempMergedPatient.AS_id) {
+                tempMergedPatient.province_id = patient.province_id;
+            } else if (key === 'ZS' && value && !tempMergedPatient.AS_id) {
+                tempMergedPatient.ZS_id = patient.ZS_id;
+            } else if (key === 'AS' && value) {
+                tempMergedPatient.AS_id = patient.AS_id;
+                tempMergedPatient.province_id = patient.province_id;
+                tempMergedPatient.ZS_id = patient.ZS_id;
+                tempMergedPatient.province = patient.province;
+                tempMergedPatient.ZS = patient.ZS;
+            }
             const tempConflicts = [];
             tempConflicts.splice(this.state.conflicts.indexOf(key), 1);
-            this.state.conflicts.map((c) => {
+            this.state.conflicts.forEach((c) => {
                 const conflict = {
                     ...c,
                 };
                 if (conflict.key === key) {
                     conflict.value = value;
                 }
+                if (key === 'death_date' && conflict.key === 'death') {
+                    conflict.value = {
+                        dead: true,
+                    };
+                }
+                if (key === 'village' && conflict.key === 'village_id') {
+                    conflict.value = patient.village_id;
+                }
+                if (key === 'province' && conflict.key === 'province_id') {
+                    conflict.value = patient.province_id;
+                }
+                if (key === 'ZS' && conflict.key === 'ZS_id') {
+                    conflict.value = patient.ZS_id;
+                }
+                if (key === 'AS' && conflict.key === 'AS_id') {
+                    conflict.value = patient.AS_id;
+                    const tempProvinceId = tempConflicts.find(t => t.key === 'province_id');
+                    if (tempProvinceId) tempProvinceId.value = patient.province_id;
+                    const tempProvince = tempConflicts.find(t => t.key === 'province');
+                    if (tempProvince) tempProvince.value = patient.province;
+                    const tempZsId = tempConflicts.find(t => t.key === 'ZS_id');
+                    if (tempZsId) tempZsId.value = patient.ZS_id;
+                    const tempZs = tempConflicts.find(t => t.key === 'ZS');
+                    if (tempZs) tempZs.value = patient.ZS;
+                }
                 tempConflicts.push(conflict);
-                return null;
             });
             dispatch(patientsActions.setManualMergedPatient(tempMergedPatient, tempConflicts));
         }
@@ -113,7 +157,13 @@ class PatientDuplicateDetails extends React.Component {
             manualMerge,
             conflicts,
         } = this.state;
-        const conflictsNotSolved = conflicts.filter(c => c.value === undefined);
+        const conflictsNotSolved = conflicts.filter(c =>
+            (c.value === undefined) &&
+            c.key !== 'death' &&
+            c.key !== 'province_id' &&
+            c.key !== 'AS_id' &&
+            c.key !== 'ZS_id' &&
+            c.key !== 'village_id');
         return (
             <section>
                 {
@@ -223,7 +273,7 @@ class PatientDuplicateDetails extends React.Component {
                                 params={params}
                                 manualMerge={manualMerge}
                                 mergeDuplicates={(patientIdA, patientIdB) => this.props.mergeDuplicates(patientIdA, patientIdB, this)}
-                                fixConflict={(key, value) => this.fixConflict(key, value)}
+                                fixConflict={(key, value, currentPatient) => this.fixConflict(key, value, currentPatient)}
                                 conflicts={conflicts}
                             />
                         }

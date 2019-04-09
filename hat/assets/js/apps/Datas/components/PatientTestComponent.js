@@ -9,12 +9,12 @@ class PatientTestComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            open: !props.test.hidden,
+            open: this.props.test && !props.test.hidden,
         };
     }
 
     toggleContent() {
-        if (this.props.test.hidden) {
+        if (this.props.test && this.props.test.hidden) {
             this.setState({
                 open: !this.state.open,
             });

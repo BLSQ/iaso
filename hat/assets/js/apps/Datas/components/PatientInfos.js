@@ -10,8 +10,8 @@ class PatientInfos extends React.Component {
     render() {
         const {
             patient,
-            fixConflict,
             conflicts,
+            fixConflict,
             isResult,
         } = this.props;
         const { formatMessage } = this.props.intl;
@@ -37,10 +37,21 @@ class PatientInfos extends React.Component {
                                 } else {
                                     className = `${hasConflict ? 'warning-light' : ''}`;
                                 }
+                                const geoFalsePositive = (key === 'province' || key === 'ZS') && patient.AS && hasConflict;
+                                className += `${geoFalsePositive ?
+                                    ' forbid-pointer' : ''}`;
                                 return (
                                     <tr
                                         key={key}
-                                        onClick={() => fixConflict(key, patient[key])}
+                                        onClick={() => {
+                                            if (key === 'province' && patient.AS) {
+                                                return null;
+                                            }
+                                            if (key === 'ZS' && patient.AS) {
+                                                return null;
+                                            }
+                                            return fixConflict(key, patient[key], patient);
+                                        }}
                                     >
                                         <th>
                                             {formatMessage(infoList[key])}
@@ -91,7 +102,7 @@ class PatientInfos extends React.Component {
                                                 )
                                             }
                                             {
-                                                key === 'death' &&
+                                                key === 'death_date' && !hasConflict &&
                                                 (
                                                     patient.death.dead === false && fieldPlaceholder !== '--' ? '--' : ''
                                                 )
@@ -115,6 +126,10 @@ class PatientInfos extends React.Component {
                                                     (
                                                         patient[key] ? patient[key] : fieldPlaceholder
                                                     )
+                                            }
+                                            {
+                                                geoFalsePositive &&
+                                                <span>{' '}(<FormattedMessage id="patientsinfos.selectAs" defaultMessage="sélectionnez l'aire de santé" />)</span>
                                             }
                                         </td>
                                     </tr>

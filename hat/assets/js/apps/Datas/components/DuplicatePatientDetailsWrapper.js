@@ -74,14 +74,14 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                             <td>
                                 <PatientInfos
                                     patient={patient}
-                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    fixConflict={(key, value, currentPatient) => fixConflict(key, value, currentPatient)}
                                     conflicts={conflicts}
                                 />
                             </td>
                             <td>
                                 <PatientInfos
                                     patient={duplicatePatient}
-                                    fixConflict={(key, value) => fixConflict(key, value)}
+                                    fixConflict={(key, value, currentPatient) => fixConflict(key, value, currentPatient)}
                                     conflicts={conflicts}
                                 />
                             </td>

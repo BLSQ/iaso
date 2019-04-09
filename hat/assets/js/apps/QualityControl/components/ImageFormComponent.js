@@ -30,23 +30,27 @@ const groupCattTests = (test) => {
 class ImageFormComponent extends React.Component {
     constructor(props) {
         super(props);
+        const tempGroupedCattTests = groupCattTests(props.currentTest);
         this.state = {
             currentTest: props.currentTest,
             currentCheck: {
                 ...props.currentTest,
             },
-            groupedCattTests: groupCattTests(props.currentTest),
+            groupedCattTests: tempGroupedCattTests,
             comment: '',
+            isFullCatt: this.isFullCatt(props.currentTest, tempGroupedCattTests),
         };
     }
 
     componentWillReceiveProps(nextProps) {
+        const tempGroupedCattTests = groupCattTests(nextProps.currentTest);
         this.setState({
             currentTest: nextProps.currentTest,
             currentCheck: {
                 ...nextProps.currentTest,
             },
-            groupedCattTests: groupCattTests(nextProps.currentTest),
+            groupedCattTests: tempGroupedCattTests,
+            isFullCatt: this.isFullCatt(nextProps.currentTest, tempGroupedCattTests),
         });
     }
 
@@ -61,30 +65,37 @@ class ImageFormComponent extends React.Component {
         this.props.submitForm(check, this.state.comment);
     }
 
-    changeResult(result, imageItemId) {
+    changeResult(result, testId) {
         const currentCheck = {
             ...this.state.currentCheck,
         };
-        if (imageItemId === this.state.currentCheck.id) {
-            currentCheck.result = result;
-        } else {
-            const tempOtherCatt = [...this.state.currentCheck.other_catt];
-            this.state.currentCheck.other_catt.forEach((catt, index) => {
-                if (catt.id === imageItemId) {
+        const tempOtherCatt = [...this.state.groupedCattTests];
+        if (!isMediumUser(this.props.userLevel) && !isSuperUser(this.props.userLevel) && this.state.groupedCattTests) {
+            this.state.groupedCattTests.forEach((catt, index) => {
+                if (catt.id === testId) {
                     tempOtherCatt[index].result = result;
                 }
             });
-            currentCheck.other_catt = tempOtherCatt;
+        } else {
+            currentCheck.result = result;
         }
         this.setState({
             currentCheck,
-            groupedCattTests: groupCattTests(currentCheck),
+            groupedCattTests: tempOtherCatt,
         });
+    }
+
+    isFullCatt(currentTest, groupedCattTests) {
+        const { userLevel } = this.props;
+        return currentTest.type === 'CATT' &&
+            !isMediumUser(userLevel) &&
+            !isSuperUser(userLevel) &&
+            groupedCattTests.length > 0;
     }
 
     render() {
         const {
-            currentTest, groupedCattTests, comment, currentCheck,
+            currentTest, groupedCattTests, comment, currentCheck, isFullCatt,
         } = this.state;
         const { userLevel } = this.props;
         let formClasses = isMediumUser(userLevel) || isSuperUser(userLevel) ? 'with-comment ' : '';
@@ -98,31 +109,25 @@ class ImageFormComponent extends React.Component {
                     />
                 }
                 {
-                    ((currentTest.type === 'RDT' &&
-                            !isSuperUser(userLevel)) ||
-                        (currentTest.type === 'CATT' &&
-                            !isSuperUser(userLevel))) &&
-                            <TestImageComponent
-                                test={currentCheck}
-                                isSuperUser={isSuperUser(userLevel)}
-                                isMediumUser={isMediumUser(userLevel)}
-                                changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
-                            />
+                    (!isSuperUser(userLevel) && !isFullCatt) &&
+                    <TestImageComponent
+                        test={currentCheck}
+                        isSuperUser={isSuperUser(userLevel)}
+                        isMediumUser={isMediumUser(userLevel)}
+                        changeResult={(result, testId) => this.changeResult(result, testId)}
+                    />
                 }
                 {
-                    currentTest.type === 'CATT' &&
-                    !isMediumUser(userLevel) &&
-                    !isSuperUser(userLevel) &&
-                    groupedCattTests.length &&
+                    isFullCatt &&
                     groupedCattTests.map(catt =>
                         (<TestImageComponent
                             key={`catt-${catt.id}`}
                             test={catt}
-                            changeResult={(result, imageItemId) => this.changeResult(result, imageItemId)}
+                            changeResult={(result, testId) => this.changeResult(result, testId)}
                         />))
                 }
                 {
-                    (!isSuperUser(userLevel)) &&
+                    (isMediumUser(userLevel)) &&
                     <div>
                         <section>
                             <div className="quality-label inline">
@@ -146,18 +151,18 @@ class ImageFormComponent extends React.Component {
                     (!isSuperUser(userLevel)) &&
                     <div className="submit-area">
                         {
-                        this.props.error &&
-                        <div className="saving--error">
-                          <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde"/>
-                        </div>
-                      }
-                      <button
-                        className="button"
-                        onClick={e => this.onSubmit(e)}
-                      >
-                        <i className="fa fa-save"/>
-                        <FormattedMessage id="main.submit" defaultMessage="Valider"/>
-                      </button>
+                            this.props.error &&
+                            <div className="saving--error">
+                                <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
+                            </div>
+                        }
+                        <button
+                            className="button"
+                            onClick={e => this.onSubmit(e)}
+                        >
+                            <i className="fa fa-save" />
+                            <FormattedMessage id="main.submit" defaultMessage="Valider" />
+                        </button>
                     </div>
                 }
             </form>);

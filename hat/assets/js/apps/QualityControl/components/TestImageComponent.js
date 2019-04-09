@@ -10,7 +10,7 @@ class TestImageComponent extends React.Component {
         const typeConstant = this.props.test.type === 'RDT' ?
             RdtTypeConstant : CattTypeConstant;
         const {
-            test, changeResult, intl: { formatMessage }, isSuperUser, isMediumUser,
+            test, changeResult,
         } = this.props;
         return (
             <div className={test.current ? 'current' : ''}>
@@ -26,8 +26,7 @@ class TestImageComponent extends React.Component {
                     </section>
                 }
                 {
-                    test.index &&
-                    !isMediumUser &&
+                    test.index && test.type === 'CATT' &&
                     <section>
                         <div className="quality-label inline">
                             <FormattedMessage
@@ -35,7 +34,7 @@ class TestImageComponent extends React.Component {
                                 defaultMessage="Test n°"
                             />:
                         </div>
-                        <div>{test.index}</div>
+                        <div>{test.index} - {test.id}</div>
                     </section>
                 }
                 <section>

@@ -2,6 +2,8 @@ const FETCH_ACTION = 'hat/quality/FETCH_ACTION';
 const LOAD_TEST_MAPPING = 'hat/quality/LOAD_TEST_MAPPING';
 const SET_IMAGES_LIST = 'hat/quality/SET_IMAGES_LIST';
 const SET_VIDEOS_LIST = 'hat/quality/SET_VIDEOS_LIST';
+const RESET_IMAGES_LIST = 'hat/quality/RESET_IMAGES_LIST';
+const RESET_VIDEOS_LIST = 'hat/quality/RESET_VIDEOS_LIST';
 const LOAD_PROFILES = 'hat/quality/LOAD_PROFILES';
 
 const req = require('superagent');
@@ -45,6 +47,15 @@ const setVideosList = (list, showPagination, params, count, pages) => ({
     },
 });
 
+
+const resetImagesList = () => ({
+    type: RESET_IMAGES_LIST,
+});
+
+const resetVideosList = () => ({
+    type: RESET_VIDEOS_LIST,
+});
+
 const loadProfiles = payload => ({
     type: LOAD_PROFILES,
     payload,
@@ -68,6 +79,8 @@ export const dashboardActions = {
     setVideosList,
     fetchProfiles,
     loadProfiles,
+    resetImagesList,
+    resetVideosList,
 };
 
 export const dashboardInitialStte = {
@@ -125,6 +138,21 @@ export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
                     count,
                     pages,
                 },
+            };
+        }
+
+
+        case RESET_IMAGES_LIST: {
+            return {
+                ...state,
+                reduxImagePage: dashboardInitialStte.reduxImagePage,
+            };
+        }
+
+        case RESET_VIDEOS_LIST: {
+            return {
+                ...state,
+                reduxVideoPage: dashboardInitialStte.reduxVideoPage,
             };
         }
 

@@ -98,6 +98,9 @@
         }
         .test-infos {
             border-bottom: 2px solid $mid-gray;
+            &:last-child {
+                border-bottom: none;
+            }
             .comment-container {
                 display: flex;
                 flex-direction: row;
@@ -198,7 +201,7 @@
     .quality-radio {
         display: inline-block;
         position: relative;
-        margin-right: 15px;
+        margin-right: 10px;
         input {
             display: inline-block;
             height: 20px;

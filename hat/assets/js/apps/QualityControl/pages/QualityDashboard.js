@@ -37,8 +37,8 @@ class QualityDashboard extends React.Component {
         this.state = {
             currentTab: props.params.tab ? props.params.tab : 'images',
             qualityColumns: qualityColumns(props.intl.formatMessage),
-            imagesLoaded: false,
-            videosLoaded: false,
+            imagesLoaded: props.reduxImagePage.list !== null,
+            videosLoaded: props.reduxVideoPage.listt !== null,
         };
     }
 

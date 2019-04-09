@@ -13,6 +13,7 @@ import { saveTest } from '../../../utils/saveData';
 import { testActions } from '../redux/test';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { isMediumUser, isSuperUser } from '../../../utils/index';
+import { dashboardActions } from '../redux/dashboard';
 
 class QualityDetail extends React.Component {
     constructor(props) {
@@ -46,13 +47,15 @@ class QualityDetail extends React.Component {
 
     saveImageItem(test, comment) {
         const promisesArray = [];
-        promisesArray.push(saveTest({ result: test.result, test_id: test.id, comment }, this.props.dispatch));
         if (test.other_catt) {
             test.other_catt.forEach((item) => {
                 promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
             });
+        } else {
+            promisesArray.push(saveTest({ result: test.result, test_id: test.id, comment }, this.props.dispatch));
         }
         Promise.all(promisesArray).then(() => {
+            this.props.resetImagesList();
             this.goBack();
         }).catch(error => console.error(`Error while saving test: ${error}`));
     }
@@ -60,6 +63,7 @@ class QualityDetail extends React.Component {
     saveVideoItem(test) {
         saveTest(test, this.props.dispatch).then((isSaved) => {
             if (isSaved) {
+                this.props.resetVideosList();
                 this.goBack();
             }
         });
@@ -166,6 +170,8 @@ QualityDetail.propTypes = {
     dispatch: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
+    resetImagesList: PropTypes.func.isRequired,
+    resetVideosList: PropTypes.func.isRequired,
 };
 
 const QualityDetailIntl = injectIntl(QualityDetail);
@@ -181,6 +187,8 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchTestDetail: id => dispatch(testActions.fetchTestDetail(dispatch, id)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    resetImagesList: () => dispatch(dashboardActions.resetImagesList()),
+    resetVideosList: () => dispatch(dashboardActions.resetVideosList()),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(QualityDetailIntl);

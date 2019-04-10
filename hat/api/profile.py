@@ -179,7 +179,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def create(self, request):
         username = request.data.get("userName")
-        existing_profile = Profile.objects.get(user__username=username)
+        existing_profile = Profile.objects.filter(user__username=username).first()
         if existing_profile:
             return return_error("Nom d'utlisateur existant", 400)
         else:

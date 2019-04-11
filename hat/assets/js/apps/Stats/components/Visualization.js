@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { curveLinear } from 'd3';
 import PropTypes from 'prop-types';
 import MG from 'metrics-graphics';
 
@@ -37,6 +38,7 @@ class Visualization extends Component {
             full_width: true,
             height: 200,
             target: this.container,
+            interpolate: curveLinear,
             // Transitions can easily kill the browser with lots of data points. So we disable them
             transition_on_update: false,
             ...spec,

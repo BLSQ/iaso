@@ -17,7 +17,6 @@ from hat.geo.models import Province, ZS, AS
 from django.db.models import Q
 from hat.dashboard.utils import return_error
 
-
 class ProfilesViewSet(viewsets.ViewSet):
     """
     API to manage users
@@ -44,6 +43,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         page_offset = int(page_offset)
         institutionId = request.GET.get("institutionId", None)
         as_list = request.GET.get("as_list", False)
+        team_id = request.GET.get("team_id", False)
 
         queryset = Profile.objects.all()
 
@@ -56,6 +56,10 @@ class ProfilesViewSet(viewsets.ViewSet):
                 | Q(user__first_name__icontains=search)
                 | Q(user__last_name__icontains=search)
             )
+
+        if team_id:
+            queryset = queryset.filter(team_id=team_id)
+
 
         matchings = {
             "userName": "user__username",

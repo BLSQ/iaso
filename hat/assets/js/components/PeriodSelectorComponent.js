@@ -24,6 +24,20 @@ class PeriodSelectorComponent extends React.Component {
         });
     }
 
+    onChangeDate(key, value) {
+        const newState = {
+            ...this.state,
+        };
+        newState[key] = value;
+        this.setState(newState);
+        if (!this.props.showApplybutton) {
+            this.props.onChangeDate(
+                moment(newState.dateFrom).format(newState.dateFormat),
+                moment(newState.dateTo).format(newState.dateFormat),
+            );
+        }
+    }
+
     render() {
         return (
             <section className="date-select-container">
@@ -42,10 +56,7 @@ class PeriodSelectorComponent extends React.Component {
                         dateFormat={this.state.dateFormat}
                         dateFormatCalendar={this.state.dateFormat}
                         selected={this.state.dateFrom}
-                        onChange={date =>
-                            this.setState({
-                                dateFrom: moment(date),
-                            })}
+                        onChange={date => this.onChangeDate('dateFrom', moment(date))}
                         maxDate={this.state.dateTo}
                     />
                 </div>
@@ -65,35 +76,38 @@ class PeriodSelectorComponent extends React.Component {
                         dateFormatCalendar={this.state.dateFormat}
                         selected={this.state.dateTo}
                         minDate={this.state.dateFrom}
-                        onChange={date =>
-                            this.setState({
-                                dateTo: moment(date),
-                            })}
+                        onChange={date => this.onChangeDate('dateTo', moment(date))}
                     />
                 </div>
-                <button
-                    onClick={() =>
-                        this.props.onChangeDate(
-                            moment(this.state.dateFrom).format(this.state.dateFormat),
-                            moment(this.state.dateTo).format(this.state.dateFormat),
-                        )}
-                    className="button--save--tiny"
-                >
-                    <FormattedMessage
-                        id="PeriodSelectorComponent.label.apply"
-                        defaultMessage="Appliquer"
-                    />
-                </button>
+                {
+                    this.props.showApplybutton &&
+                    <button
+                        onClick={() =>
+                            this.props.onChangeDate(
+                                moment(this.state.dateFrom).format(this.state.dateFormat),
+                                moment(this.state.dateTo).format(this.state.dateFormat),
+                            )}
+                        className="button--save--tiny"
+                    >
+                        <FormattedMessage
+                            id="PeriodSelectorComponent.label.apply"
+                            defaultMessage="Appliquer"
+                        />
+                    </button>
+                }
             </section>
         );
     }
 }
-
+PeriodSelectorComponent.defaultProps = {
+    showApplybutton: true,
+};
 
 PeriodSelectorComponent.propTypes = {
     onChangeDate: PropTypes.func.isRequired,
     dateFrom: PropTypes.string.isRequired,
     dateTo: PropTypes.string.isRequired,
+    showApplybutton: PropTypes.bool,
 };
 
 const PeriodSelectorComponentIntl = injectIntl(PeriodSelectorComponent);

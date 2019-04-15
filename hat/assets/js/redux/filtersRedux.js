@@ -18,6 +18,7 @@ export const EMPTY_VILLAGE_ID = 'hat/casesList/list/EMPTY_VILLAGE_ID';
 export const EMPTY_PROVINCE_ID = 'hat/casesList/list/EMPTY_PROVINCE_ID';
 export const SELECT_VILLAGE = 'hat/casesList/SELECT_VILLAGE';
 export const SHOW_TEAMS = 'hat/casesList/SHOW_TEAMS';
+export const SHOW_PROFILES = 'hat/casesList/SHOW_PROFILES';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 export const LOAD_VILLAGE_SOURCE = 'hat/casesList/LOAD_VILLAGE_SOURCE';
 export const LOAD_WORKZONES = 'hat/casesList/LOAD_WORKZONES';
@@ -37,6 +38,7 @@ export const filtersInitialState = {
     villageSources: [],
     workzones: [],
     devices: [],
+    profiles: [],
 };
 
 const req = require('superagent');
@@ -263,6 +265,24 @@ export const fetchTeams = (dispatch) => {
     });
 };
 
+export const showProfiles = profiles => ({
+    type: SHOW_PROFILES,
+    payload: profiles,
+});
+
+export const fetchProfiles = (dispatch, teamId) => {
+    req
+        .get(`/api/profiles/?as_list=True&geo_scoped=true${teamId ? `&team_id=${teamId}` : ''}`)
+        .then((result) => {
+            dispatch(showProfiles(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching profiles ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+
 export const showCoordinations = coordinations => ({
     type: SHOW_COORDINATIONS,
     payload: coordinations,
@@ -353,6 +373,7 @@ export const filterActions = {
     fetchWorkZones,
     fetchDevices,
     loadProvinces,
+    fetchProfiles,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {
@@ -484,6 +505,7 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
                 zones: [],
                 areas: [],
                 villages: [],
+                profiles: [],
             };
             return newState;
         }
@@ -491,6 +513,10 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
         case SHOW_TEAMS: {
             const teams = action.payload;
             return { ...state, teams };
+        }
+        case SHOW_PROFILES: {
+            const profiles = action.payload;
+            return { ...state, profiles };
         }
         case SHOW_COORDINATIONS: {
             const coordinations = action.payload;

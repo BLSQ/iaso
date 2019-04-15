@@ -55,14 +55,6 @@ def home(request: HttpRequest) -> HttpResponse:
         else:
             return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
 
-@is_user_authorized
-@login_required()
-@permission_required('menupermissions.x_stats_reports')
-@require_http_methods(['GET'])
-def monthly_report(request: HttpRequest) -> HttpResponse:
-    # Use the start of tomorrow as the maximum date to omit records with wrong future dates
-
-    return render(request, 'dashboard/monthly_report.html', {'menu': get_menu(request.user, reverse("dashboard:monthly_report"))})
 
 @is_user_authorized
 @login_required()
@@ -77,6 +69,13 @@ def epidemiology(request: HttpRequest) -> HttpResponse:
 @require_http_methods(['GET'])
 def data_monitoring(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:data_monitoring"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_stats_reports')
+@require_http_methods(['GET'])
+def reports(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:reports"))})
 
 @is_user_authorized
 @login_required()

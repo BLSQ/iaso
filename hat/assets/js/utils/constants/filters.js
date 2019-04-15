@@ -317,11 +317,11 @@ const source = (formatMessage, defineMessages) => (
 );
 
 
-const teams = teamsList => (
+const teams = (teamsList, isMultiSelect = true) => (
     {
-        name: 'teams',
-        urlKey: 'teams',
-        isMultiSelect: true,
+        name: isMultiSelect ? 'teams' : 'team_id',
+        urlKey: isMultiSelect ? 'teams' : 'team_id',
+        isMultiSelect,
         isClearable: true,
         options: teamsList,
         placeholder: {
@@ -594,12 +594,12 @@ const onlyDupes = () => (
 const users = (usersList, mainLabel = {
     id: 'main.label.user',
     defaultMessage: 'Utilisateurs',
-}) => (
+}, isMultiSelect = true, urlKey = 'userId') => (
     {
-        name: 'userId',
-        urlKey: 'userId',
+        name: urlKey,
+        urlKey,
         hideEmpty: true,
-        isMultiSelect: true,
+        isMultiSelect,
         isClearable: true,
         options: usersList.map((p) => {
             let label = p.user__username;

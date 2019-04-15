@@ -87,8 +87,8 @@
         {% endblocktrans %}
       </p>
       {% if perms.menupermissions.x_stats_reports %}
-        <a href="{% url 'dashboard:monthly_report' %}" class="button--bright">
-          {% trans 'Monthly reports' %}
+        <a href="{% url 'dashboard:reports' %}" class="button--bright">
+          {% trans 'Reports' %}
           <i class="fa fa-arrow-right icon--right"></i>
         </a>
       {% endif %}

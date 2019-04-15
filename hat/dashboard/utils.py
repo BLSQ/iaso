@@ -46,7 +46,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Rapports",
-                    "url_key": reverse("dashboard:monthly_report"),
+                    "url_key": reverse("dashboard:reports"),
                     "perms": "x_stats_reports"
                 }
             ],

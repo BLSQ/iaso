@@ -80,7 +80,8 @@ class PatientsViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
-        anonymous = request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser
+        anonymous_request = request.GET.get("anonymous", None)
+        anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
@@ -287,11 +288,11 @@ class PatientsViewSet(viewsets.ViewSet):
             if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             filename = 'patients'
+            queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment", distinct=True))
+            queryset = queryset.annotate(test_ids=ArrayAgg("case__test", distinct=True))
             if xlsx_format:
                 filename = filename + '.xlsx'
                 # avoid fetching those from get_row
-                queryset = queryset.annotate(test_ids=ArrayAgg("case__test", distinct=True))
-                queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment", distinct=True))
                 queryset_treatments = Treatment.objects\
                     .filter(patient__in=queryset_unprefetched)\
                     .order_by(*["patient_id", "index"])\
@@ -330,7 +331,8 @@ class PatientsViewSet(viewsets.ViewSet):
             if csv_format:
                 filename = filename + '.csv'
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    streaming_content=(
+                        iter_items(queryset, Echo(), columns, lambda row, **kwargs: get_row(row, anonymous))),
                     content_type='text/csv',
                 )
             response['Content-Disposition'] = 'attachment; filename=%s' % filename

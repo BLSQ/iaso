@@ -22,6 +22,7 @@ import { patientsActions } from '../redux/patients';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+import { anonymous } from '../../../utils/constants/filters';
 
 export const urls = [];
 
@@ -99,6 +100,7 @@ class Patients extends Component {
 
         if (toExport) {
             urlParams[exportType] = true;
+            urlParams.anonymous = params.anonymous;
         }
 
         Object.keys(urlParams).forEach((key) => {
@@ -217,6 +219,13 @@ class Patients extends Component {
                         reduxPage={reduxPage}
                     />
                     <div className="align-right">
+                        <div className="display-inline-block">
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={[anonymous()]}
+                            />
+                        </div>
                         <DownloadButtonsComponent
                             csvUrl={this.getEndpointUrl(true, 'csv')}
                             xlsxUrl={this.getEndpointUrl(true, 'xlsx')}

@@ -66,6 +66,7 @@ class CasesViewSet(viewsets.ViewSet):
         village_ids = request.GET.get("village_id", None)
         years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
+        anonymous_request = request.GET.get("anonymous", None)
 
         coordination_ids = request.GET.get("coordination_id", None)
         from_date = request.GET.get("date_from", None)
@@ -88,8 +89,7 @@ class CasesViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
-        anonymous = request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser
-
+        anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
 

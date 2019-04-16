@@ -870,6 +870,19 @@ const onlyCheckedTests = () => (
     }
 );
 
+
+const anonymous = () => (
+    {
+        name: 'anonymous',
+        urlKey: 'anonymous',
+        label: {
+            id: 'main.label.anonymousDownload',
+            defaultMessage: 'Données anonymisées',
+        },
+        type: 'checkbox',
+    }
+);
+
 export {
     testType,
     testTypeImage,
@@ -904,4 +917,5 @@ export {
     images,
     videos,
     onlyCheckedTests,
+    anonymous,
 };

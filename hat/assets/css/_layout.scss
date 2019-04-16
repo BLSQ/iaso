@@ -35,13 +35,16 @@ article {
     -webkit-font-smoothing: antialiased;
     -webkit-transition: top 0.5s ease-in-out;
     transition: top 0.5s ease-in-out;
+
     a {
         color: white;
     }
+
     &.no-animation {
         -webkit-transition: none;
         transition: none;
     }
+
     &.closed {
         top: - 100%;
     }
@@ -56,19 +59,23 @@ article {
     display: flex;
     align-items: center;
     justify-content: center;
+
     i {
         display: inline-block;
         margin-left: 10px;
     }
+
     span {
         display: inline-block;
         max-width: 80%;
         text-align: justify;
     }
+
     .fa-warning {
         margin: 0 15px 0 0;
         color: red;
         position: relative;
+
         &:after {
             display: block;
             content: '';
@@ -80,10 +87,12 @@ article {
             height: 13px;
             z-index: -1;
         }
+
         &.second {
             margin: 0 0 0 15px;
         }
     }
+
     .fa-times {
         position: absolute;
         right: $padding-unit / 2;
@@ -94,19 +103,24 @@ article {
 /* margin classes */
 
 $directions: left right top bottom;
+
 @each $direction in $directions {
     .block--margin-#{$direction}--none {
         margin-#{$direction}: 0;
     }
+
     .block--margin-#{$direction}--xxs {
         margin-#{$direction}: $padding-unit/4;
     }
+
     .block--margin-#{$direction}--xs {
         margin-#{$direction}: $padding-unit/2;
     }
+
     .block--margin-#{$direction}--small {
         margin-#{$direction}: $padding-unit;
     }
+
     .block--margin-#{$direction}--med {
         margin-#{$direction}: $padding-unit*2;
     }
@@ -164,6 +178,10 @@ $directions: left right top bottom;
     display: flex ! important;
 }
 
+.display-inline-block {
+    display: inline-block !important;
+}
+
 .float-right {
     float: right;
 }
@@ -209,6 +227,7 @@ $directions: left right top bottom;
 .split-map {
     height: 600px;
     width: 80%;
+
     &.big {
         height: 800px;
     }
@@ -300,6 +319,7 @@ $directions: left right top bottom;
 .split-bottom {
     border-bottom: 1px solid $gray;
     margin-bottom: $padding-unit;
+
     &:last-child {
         border-bottom: none;
         margin-bottom: 0px;
@@ -321,6 +341,7 @@ $directions: left right top bottom;
 
 .stars {
     color: $yellow;
+
     &>span {
         color: $gray;
         font-size: 12px;

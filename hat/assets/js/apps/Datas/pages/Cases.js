@@ -17,6 +17,7 @@ import { filtersCases, filtersCases2, filtersCasesSearch, filtersCasesGeo } from
 import { casesActions } from '../redux/cases';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+import { anonymous } from '../../../utils/constants/filters';
 
 export const urls = [];
 
@@ -86,6 +87,7 @@ class Cases extends Component {
 
         if (toExport) {
             urlParams[exportType] = true;
+            urlParams.anonymous = params.anonymous;
         }
         if (urlParams.order) {
             delete urlParams.order;
@@ -219,6 +221,13 @@ class Cases extends Component {
                         reduxPage={reduxPage}
                     />
                     <div className="align-right">
+                        <div className="display-inline-block">
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl="tests"
+                                filters={[anonymous()]}
+                            />
+                        </div>
                         <DownloadButtonsComponent
                             csvUrl={this.getEndpointUrl(true, 'csv')}
                             xlsxUrl={this.getEndpointUrl(true, 'xlsx')}

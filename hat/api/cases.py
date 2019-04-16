@@ -181,10 +181,17 @@ class CasesViewSet(viewsets.ViewSet):
         if screening_result is not None:
             if screening_result == 'true':
                 queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
-            else:
+            elif screening_result == 'false':
                 queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
+            elif screening_result == 'not_done':
+                queryset = queryset.filter(screening_result__isnull=True)
         if confirmation_result is not None:
-            queryset = queryset.filter(confirmed_case=(confirmation_result == 'true'))
+            if confirmation_result == 'true':
+                queryset = queryset.filter(confirmation_result__gte=RES_POSITIVE)
+            elif confirmation_result == 'false':
+                queryset = queryset.filter(confirmation_result__lt=RES_POSITIVE)
+            elif confirmation_result == 'not_done':
+                queryset = queryset.filter(confirmation_result__isnull=True)
 
         if normalized is not None:
             if normalized != 'true':

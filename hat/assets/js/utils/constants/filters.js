@@ -19,6 +19,10 @@ export const MESSAGES = {
         defaultMessage: 'Négatif',
         id: 'main.label.negative',
     },
+    not_done: {
+        defaultMessage: 'Non fait',
+        id: 'main.label.not_done',
+    },
     mobile_sync: {
         defaultMessage: 'Sync Tablette',
         id: 'main.label.mobile_sync',
@@ -239,6 +243,10 @@ const screeningResult = (formatMessage, defineMessages) => (
                 label: formatMessage(getMessage(defineMessages, 'negative')),
                 value: 'false',
             },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_done')),
+                value: 'not_done',
+            },
         ],
         placeholder: {
             id: 'main.label.allMale',
@@ -266,6 +274,10 @@ const confirmationResult = (formatMessage, defineMessages) => (
             {
                 label: formatMessage(getMessage(defineMessages, 'negative')),
                 value: 'false',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_done')),
+                value: 'not_done',
             },
         ],
         placeholder: {

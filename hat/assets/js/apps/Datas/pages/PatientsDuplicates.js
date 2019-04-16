@@ -29,7 +29,7 @@ class PatientsDuplicates extends Component {
         super(props);
         this.state = {
             tableColumns: duplicateListColumns(props.intl.formatMessage),
-            tableUrl: this.getEndpointUrl(),
+            tableUrl: null,
         };
     }
 
@@ -199,26 +199,29 @@ class PatientsDuplicates extends Component {
                     </div>
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
-                <div className="widget__container  no-border">
-                    <CustomTableComponent
-                        isSortable
-                        showPagination
-                        endPointUrl={this.state.tableUrl}
-                        columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'id', desc: false }]}
-                        params={params}
-                        defaultPath={baseUrl}
-                        dataKey="patientduplicatepairs"
-                        onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
-                        multiSort
-                    />
-                    <div className="align-right">
-                        <DownloadButtonsComponent
-                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                {
+                    this.state.tableUrl &&
+                    <div className="widget__container  no-border">
+                        <CustomTableComponent
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'id', desc: false }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            dataKey="patientduplicatepairs"
+                            onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
+                            multiSort
                         />
+                        <div className="align-right">
+                            <DownloadButtonsComponent
+                                csvUrl={this.getEndpointUrl(true, 'csv')}
+                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                            />
+                        </div>
                     </div>
-                </div>
+                }
             </section>
         );
     }

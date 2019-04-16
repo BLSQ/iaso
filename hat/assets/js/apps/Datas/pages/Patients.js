@@ -33,7 +33,7 @@ class Patients extends Component {
         super(props);
         this.state = {
             tableColumns: registerListColumns(props.intl.formatMessage),
-            tableUrl: this.getEndpointUrl(),
+            tableUrl: null,
         };
     }
 
@@ -203,35 +203,38 @@ class Patients extends Component {
                         redirectTo={this.props.redirectTo}
                     />
                 </div>
-                <div className="widget__container  no-border">
-                    <CustomTableComponent
-                        isSortable
-                        showPagination
-                        endPointUrl={this.state.tableUrl}
-                        columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'last_name', desc: false }]}
-                        params={params}
-                        defaultPath={baseUrl}
-                        dataKey="patient"
-                        onRowClicked={patientItem => this.selectPatient(patientItem)}
-                        multiSort
-                        onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
-                        reduxPage={reduxPage}
-                    />
-                    <div className="align-right">
-                        <div className="display-inline-block">
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl={baseUrl}
-                                filters={[anonymous()]}
+                {
+                    this.state.tableUrl &&
+                    <div className="widget__container  no-border">
+                        <CustomTableComponent
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'last_name', desc: false }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            dataKey="patient"
+                            onRowClicked={patientItem => this.selectPatient(patientItem)}
+                            multiSort
+                            onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
+                            reduxPage={reduxPage}
+                        />
+                        <div className="align-right">
+                            <div className="display-inline-block">
+                                <FiltersComponent
+                                    params={this.props.params}
+                                    baseUrl={baseUrl}
+                                    filters={[anonymous()]}
+                                />
+                            </div>
+                            <DownloadButtonsComponent
+                                csvUrl={this.getEndpointUrl(true, 'csv')}
+                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                             />
                         </div>
-                        <DownloadButtonsComponent
-                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                        />
                     </div>
-                </div>
+                }
             </section>
         );
     }

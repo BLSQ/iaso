@@ -34,7 +34,7 @@ class ManagementVillages extends React.Component {
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
-            tableUrl: this.getEndpointUrl(),
+            tableUrl: null,
         };
     }
 
@@ -252,38 +252,41 @@ class ManagementVillages extends React.Component {
                         })}
                         />
                     }
-                    <section>
-                        <CustomTableComponent
-                            pageSize={50}
-                            withBorder={false}
-                            isSortable
-                            multiSort
-                            showPagination
-                            endPointUrl={this.state.tableUrl}
-                            columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'name', desc: false }]}
-                            params={this.props.params}
-                            defaultPath="villages"
-                            dataKey="villages"
-                            onDataLoaded={villages => (this.props.setVillages(villages))}
-                            onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
-                            isUpdated={isUpdated}
-                            canSelect={false}
-                        />
-                        <div className="widget__content align-right border-top">
-                            <DownloadButtonsComponent
-                                csvUrl={this.getEndpointUrl(true, 'csv')}
-                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                    {
+                        this.state.tableUrl &&
+                        <section>
+                            <CustomTableComponent
+                                pageSize={50}
+                                withBorder={false}
+                                isSortable
+                                multiSort
+                                showPagination
+                                endPointUrl={this.state.tableUrl}
+                                columns={this.state.tableColumns}
+                                defaultSorted={[{ id: 'name', desc: false }]}
+                                params={this.props.params}
+                                defaultPath="villages"
+                                dataKey="villages"
+                                onDataLoaded={villages => (this.props.setVillages(villages))}
+                                onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
+                                isUpdated={isUpdated}
+                                canSelect={false}
                             />
-                            <button
-                                className="button--add"
-                                onClick={() => this.props.selectVillage(newUser)}
-                            >
-                                <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
-                            </button>
-                        </div>
-                    </section>
+                            <div className="widget__content align-right border-top">
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getEndpointUrl(true, 'csv')}
+                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                />
+                                <button
+                                    className="button--add"
+                                    onClick={() => this.props.selectVillage(newUser)}
+                                >
+                                    <i className="fa fa-plus" />
+                                    <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                </button>
+                            </div>
+                        </section>
+                    }
                 </div>
             </section>);
     }

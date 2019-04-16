@@ -26,7 +26,7 @@ class Cases extends Component {
         super(props);
         this.state = {
             tableColumns: casesListColumns(props.intl.formatMessage),
-            tableUrl: this.getEndpointUrl(),
+            tableUrl: null,
         };
     }
 
@@ -205,35 +205,38 @@ class Cases extends Component {
                     </div>
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
-                <div className="widget__container  no-border">
-                    <CustomTableComponent
-                        isSortable
-                        showPagination
-                        endPointUrl={this.state.tableUrl}
-                        columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'form_year', desc: false }]}
-                        params={this.props.params}
-                        defaultPath="tests"
-                        dataKey="cases"
-                        onRowClicked={(caseItem, state, event) => this.selectCase(caseItem, event)}
-                        multiSort
-                        onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
-                        reduxPage={reduxPage}
-                    />
-                    <div className="align-right">
-                        <div className="display-inline-block">
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl="tests"
-                                filters={[anonymous()]}
+                {
+                    this.state.tableUrl &&
+                    <div className="widget__container  no-border">
+                        <CustomTableComponent
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'form_year', desc: false }]}
+                            params={this.props.params}
+                            defaultPath="tests"
+                            dataKey="cases"
+                            onRowClicked={(caseItem, state, event) => this.selectCase(caseItem, event)}
+                            multiSort
+                            onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
+                            reduxPage={reduxPage}
+                        />
+                        <div className="align-right">
+                            <div className="display-inline-block">
+                                <FiltersComponent
+                                    params={this.props.params}
+                                    baseUrl="tests"
+                                    filters={[anonymous()]}
+                                />
+                            </div>
+                            <DownloadButtonsComponent
+                                csvUrl={this.getEndpointUrl(true, 'csv')}
+                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                             />
                         </div>
-                        <DownloadButtonsComponent
-                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                        />
                     </div>
-                </div>
+                }
             </section>
         );
     }

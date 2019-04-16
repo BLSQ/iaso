@@ -6,7 +6,7 @@ class SearchButton extends Component {
     render() {
         const { onSearch } = this.props;
         return (
-            <div className="widget__content align-right">
+            <div className="widget__content align-right no-padding-top">
                 <button
                     onClick={() => onSearch()}
                     className="button--save--tiny"

@@ -39,7 +39,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
 
     const routes = [
         <Route
-            path="/devices(/order/:order)(/with_tests_devices/:with_tests_devices)"
+            path="/devices(/order/:order)(/with_tests_devices/:with_tests_devices)(/coordination_id/:coordination_id)(/teams/:teams)(/profile_id/:profile_id)"
             component={ManagementDevicesPage}
         />,
         <Route
@@ -92,6 +92,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         geoFiltersModale: filtersInitialState,
         devices: devicesInitialState,
         currentUser: currentUserInitialState,
+        devicesFilters: filtersInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -106,6 +107,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         geoFiltersModale: filtersReducer,
         devices: devicesReducer,
         currentUser: currentUserReducer,
+        devicesFilters: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

@@ -23,6 +23,9 @@ class DevicesViewSet(viewsets.ViewSet):
 
     def list(self, request):
         with_tests_devices = request.GET.get("with_tests_devices", False)
+        coordination_ids = request.GET.get("coordination_id", None)
+        teams = request.GET.get("teams", None)
+        profile_ids = request.GET.get("profile_id", None)
         as_list = request.GET.get("as_list", None)
         devices = DeviceDB.objects.all()\
             .prefetch_related("last_user")\
@@ -31,6 +34,12 @@ class DevicesViewSet(viewsets.ViewSet):
 
         if not with_tests_devices:
             devices = devices.filter(is_test=False)
+        if coordination_ids:
+            devices = devices.filter(last_user__profile__team__coordination__id__in=coordination_ids.split(","))
+        if teams:
+            devices = devices.filter(last_user__profile__team__id__in=teams.split(","))
+        if profile_ids:
+            devices = devices.filter(last_user__id__in=profile_ids.split(","))
         res = []
 
         if as_list:

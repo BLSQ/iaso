@@ -254,6 +254,10 @@ $directions: left right top bottom;
     padding-right: $padding-unit/2;
 }
 
+.no-padding-top {
+    padding-top: 0 !important;
+}
+
 .big-padding-right {
     padding-right: $padding-unit;
 }

@@ -33,11 +33,6 @@ const dataMonitoringUrls = [
         url: '/api/metrics/casecount/',
         mock: [],
     },
-    {
-        name: 'coordinations',
-        url: '/api/coordinations/',
-        mock: [],
-    },
 ];
 
 export {

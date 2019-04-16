@@ -13,6 +13,7 @@ class PeriodSelectorComponent extends React.Component {
         this.state = {
             dateFrom: moment(props.dateFrom),
             dateTo: moment(props.dateTo),
+            minDate: props.minDate !== '' ? moment(props.minDate) : null,
             dateFormat: 'YYYY-MM-DD',
         };
     }
@@ -21,6 +22,7 @@ class PeriodSelectorComponent extends React.Component {
         this.setState({
             dateFrom: moment(nextProps.dateFrom),
             dateTo: moment(nextProps.dateTo),
+            minDate: nextProps.minDate !== '' ? moment(nextProps.minDate) : null,
         });
     }
 
@@ -56,6 +58,7 @@ class PeriodSelectorComponent extends React.Component {
                         dateFormat={this.state.dateFormat}
                         dateFormatCalendar={this.state.dateFormat}
                         selected={this.state.dateFrom}
+                        minDate={this.state.minDate}
                         onChange={date => this.onChangeDate('dateFrom', moment(date))}
                         maxDate={this.state.dateTo}
                     />
@@ -103,10 +106,15 @@ PeriodSelectorComponent.defaultProps = {
     showApplybutton: true,
 };
 
+PeriodSelectorComponent.defaultProps = {
+    minDate: '',
+};
+
 PeriodSelectorComponent.propTypes = {
     onChangeDate: PropTypes.func.isRequired,
     dateFrom: PropTypes.string.isRequired,
     dateTo: PropTypes.string.isRequired,
+    minDate: PropTypes.string,
     showApplybutton: PropTypes.bool,
 };
 

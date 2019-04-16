@@ -50,7 +50,7 @@ class ChoosePeriodSelectorComponent extends React.Component {
             baseUrl,
         } = this.props;
         return (
-            <div className={`widget__content--tier border-top choose-period-container${this.state.withPeriod ? ' with-separation' : ''}`}>
+            <div className={`widget__content--tier choose-period-container${this.state.withPeriod ? ' with-separation' : ''}`}>
                 <div>
                     <Select
                         multi={false}
@@ -69,6 +69,7 @@ class ChoosePeriodSelectorComponent extends React.Component {
                     this.state.withPeriod &&
                     <div className="three-tier">
                         <PeriodSelectorComponent
+                            showApplybutton={this.props.showApplybutton}
                             dateFrom={this.state.dateFrom}
                             dateTo={this.state.dateTo}
                             onChangeDate={(dateFrom, dateTo) =>
@@ -85,11 +86,16 @@ class ChoosePeriodSelectorComponent extends React.Component {
     }
 }
 
+ChoosePeriodSelectorComponent.defaultProps = {
+    showApplybutton: true,
+};
+
 
 ChoosePeriodSelectorComponent.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     baseUrl: PropTypes.string.isRequired,
+    showApplybutton: PropTypes.bool,
 };
 
 const ChoosePeriodSelectorComponentIntl = injectIntl(ChoosePeriodSelectorComponent);

@@ -166,6 +166,14 @@ class Patients extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Registre" /></h2>
                     </div>
+                    <div className="border-bottom">
+                        <ChoosePeriodSelectorComponent
+                            params={this.props.params}
+                            baseUrl={baseUrl}
+                            redirectTo={this.props.redirectTo}
+                            showApplybutton={false}
+                        />
+                    </div>
                     <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
@@ -197,11 +205,6 @@ class Patients extends Component {
                         </div>
                     </div>
                     <SearchButton onSearch={() => this.onSearch()} />
-                    <ChoosePeriodSelectorComponent
-                        params={this.props.params}
-                        baseUrl={baseUrl}
-                        redirectTo={this.props.redirectTo}
-                    />
                 </div>
                 {
                     this.state.tableUrl &&

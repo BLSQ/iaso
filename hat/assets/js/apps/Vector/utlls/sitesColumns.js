@@ -1,10 +1,14 @@
 import moment from 'moment';
 import React from 'react';
-import Select from 'react-select';
 import { FormattedMessage } from 'react-intl';
 
 const sitesColumns = (formatMessage, element) => (
     [
+        {
+            Header: 'UUID',
+            className: 'small',
+            accessor: 'uuid',
+        },
         {
             Header: formatMessage({
                 defaultMessage: 'Nom',

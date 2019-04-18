@@ -101,6 +101,12 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                 <table>
                     <tbody>
                         <tr>
+                            <td>UUID</td>
+                            <td>
+                                ${site.uuid}
+                            </td>
+                        </tr>
+                        <tr>
                             <td>
                                 ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
                             </td>
@@ -152,6 +158,12 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
 
                             <table>
                                 <tbody>
+                                    <tr>
+                                        <td>UUID</td>
+                                        <td>
+                                            ${trap.uuid}
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td>
                                             ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
@@ -251,94 +263,6 @@ export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<s
                             </table>
                         </section>`;
 
-export const renderTargetsPopup = (target, formatMessage) => `<section class="custom-popup-container">
-                <h6>
-                    ${formatMessage({ defaultMessage: 'Ecran', id: 'vector.labels.target' })}:
-                    <button class="button--tiny"
-                        id="edit-button"
-                        data-id="${target.id}"
-                        data-type="target"
-                    >
-                    <i class="fa fa-pencil-square-o"> </i>
-                        </button>
-                </h6>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
-                            </td>
-                            <td class="${!target.name ? 'align-center' : ''}">
-                                ${target.name ? target.name : '/'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Uuid', id: 'vector.labels.uuid' })}
-                            </td>
-                            <td class="${!target.uuid ? 'align-center' : ''}">
-                                ${target.uuid ? target.uuid : '/'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
-                            </td>
-                            <td>
-                                ${target.altitude}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
-                            </td>
-                            <td>
-                                ${target.latitude}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
-                            </td>
-                            <td>
-                                ${target.longitude}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Utilisateur', id: 'vector.labels.user' })}
-                            </td>
-                            <td>
-                                ${target.username}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Date', id: 'vector.labels.date_time' })}
-                            </td>
-                            <td>
-                                ${moment(target.date_time.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.deployment' })}
-                            </td>
-                            <td class="${!target.deployment ? 'align-center' : ''}">
-                                ${target.deployment ? target.deployment : '/'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                ${formatMessage({ defaultMessage: 'Rivière', id: 'vector.labels.river' })}
-                            </td>
-                            <td class="${!target.river ? 'align-center' : ''}">
-                                ${target.river ? target.river : '/'}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>`;
 
 export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<section class="custom-popup-container">
                 <h6>
@@ -437,6 +361,12 @@ export const renderCatchesPopup = (catchItem, formatMessage) => `<section class=
             </h6>
             <table>
                 <tbody>
+                    <tr>
+                        <td>UUID</td>
+                        <td>
+                            ${catchItem.uuid}
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             ${formatMessage({ defaultMessage: 'Dernière collecte', id: 'vector.labels.collect_date' })}

@@ -154,7 +154,7 @@ def get_menu(user, active_link):
             "url_key": reverse("dashboard:vector"),
             "items": [
                 {
-                    "name": "Carte",
+                    "name": "Gestion",
                     "url_key": reverse("dashboard:vector"),
                     "perms": "x_vectorcontrol"
                 },

@@ -43,10 +43,8 @@ class EditTargetComponent extends Component {
 
 
     render() {
-        const { formatMessage } = this.props.intl;
         const { target } = this.state;
         const {
-            profiles,
             saveTarget,
         } = this.props;
         return (
@@ -57,6 +55,15 @@ class EditTargetComponent extends Component {
             >
                 <section className="edit-modal large">
                     <section>
+                        <div>
+                            <label
+                                htmlFor={`name-${target.id}`}
+                                className="filter__container__select__label"
+                            >
+                                UUID:
+                            </label>
+                            <span className="read-only">{target.uuid}</span>
+                        </div>
                         <div>
                             <label
                                 htmlFor={`name-${target.id}`}

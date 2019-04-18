@@ -5,12 +5,7 @@ import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import moment from 'moment';
 import L from 'leaflet';
-import {
-    renderSitesPopup,
-    renderTrapsPopup,
-    renderTargetsPopup,
-    renderVillagesPopup,
-} from '../utlls/vectorMapUtils';
+import { renderVillagesPopup } from '../utlls/vectorMapUtils';
 import 'leaflet.markercluster'; // eslint-disable-line
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
@@ -42,7 +37,6 @@ class VectorMapComponent extends Component {
                 area: false,
             },
             containers: {},
-            editedItem: undefined,
         };
     }
 
@@ -66,11 +60,7 @@ class VectorMapComponent extends Component {
 
         includeDefaultLayersInMap(this);
         updateBaseLayer(this.map, this.props.baseLayer);
-        this.fitToBounds();
-
-        this.map.on('popupclose', () => {
-            this.setState({ editedItem: undefined });
-        });
+        this.fitToBounds()
     }
 
     componentDidUpdate(prevProps) {
@@ -131,9 +121,6 @@ class VectorMapComponent extends Component {
     updateSites() {
         const {
             sites,
-            intl: {
-                formatMessage,
-            },
         } = this.props;
 
         const markersSites = L.markerClusterGroup({
@@ -147,27 +134,10 @@ class VectorMapComponent extends Component {
                 [site.latitude, site.longitude],
                 { icon: renderDivIcon('', 'sites small', 30) },
             );
-            siteMarker.on('click', (event) => {
-                const popUp = event.target.getPopup();
+            siteMarker.on('click', () => {
                 this.props.selectMarker(site.id, 'new_sites')
                     .then((response) => {
-                        this.setState({ editedItem: response });
-                        setTimeout(() => {
-                            const editButton = document.getElementById('edit-button');
-                            const catchesButton = document.getElementById('catches-button');
-                            if (editButton) {
-                                editButton.addEventListener('click', () => {
-                                    this.props.editItem(editButton.dataset.type, this.state.editedItem);
-                                    this.map.closePopup();
-                                });
-                            }
-                            if (catchesButton) {
-                                catchesButton.addEventListener('click', () => {
-                                    this.props.displayCatches(this.state.editedItem);
-                                });
-                            }
-                        }, 500);
-                        popUp.setContent(renderSitesPopup(response, formatMessage));
+                        this.props.editItem('site', response);
                     });
             })
                 .on('mouseover', () => {
@@ -175,8 +145,7 @@ class VectorMapComponent extends Component {
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
-                })
-                .bindPopup();
+                });
             markersSites.addLayer(siteMarker);
 
             return true;
@@ -187,9 +156,6 @@ class VectorMapComponent extends Component {
     updateTraps() {
         const {
             traps,
-            intl: {
-                formatMessage,
-            },
             withCluster,
         } = this.props;
         const markersTraps = L.markerClusterGroup({
@@ -225,33 +191,10 @@ class VectorMapComponent extends Component {
                 [trap.latitude, trap.longitude],
                 { icon: renderDivIcon('', `traps ${iconClass}`, iconSize) },
             );
-            trapMarker.on('click', (event) => {
-                const popUp = event.target.getPopup();
+            trapMarker.on('click', () => {
                 this.props.selectMarker(trap.id, 'traps')
                     .then((response) => {
-                        this.setState({ editedItem: response });
-                        setTimeout(() => {
-                            const editButton = document.getElementById('edit-button');
-                            const catchesButton = document.getElementById('catches-button');
-                            const selectedSelect = document.getElementById('selected-trap-select');
-                            if (editButton) {
-                                editButton.addEventListener('click', () => {
-                                    this.props.editItem(editButton.dataset.type, this.state.editedItem);
-                                    this.map.closePopup();
-                                });
-                            }
-                            if (catchesButton) {
-                                catchesButton.addEventListener('click', () => {
-                                    this.props.displayCatches(this.state.editedItem);
-                                });
-                            }
-                            if (selectedSelect) {
-                                selectedSelect.addEventListener('change', (e) => {
-                                    this.props.saveTrap(this.state.editedItem, e.target.checked);
-                                });
-                            }
-                        }, 500);
-                        popUp.setContent(renderTrapsPopup(response, formatMessage));
+                        this.props.editItem('trap', response);
                     });
             })
                 .on('mouseover', () => {
@@ -259,8 +202,7 @@ class VectorMapComponent extends Component {
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
-                })
-                .bindPopup();
+                });
             if (withCluster) {
                 markersTraps.addLayer(trapMarker);
             } else {
@@ -274,9 +216,6 @@ class VectorMapComponent extends Component {
     updateTargets() {
         const {
             targets,
-            intl: {
-                formatMessage,
-            },
         } = this.props;
         const markersTargets = L.markerClusterGroup({
             maxClusterRadius: 30,
@@ -290,21 +229,10 @@ class VectorMapComponent extends Component {
                 [target.latitude, target.longitude],
                 { icon: renderDivIcon('1', 'targets small', 30) },
             )
-                .on('click', (event) => {
-                    const popUp = event.target.getPopup();
+                .on('click', () => {
                     this.props.selectMarker(target.id, 'targets')
                         .then((response) => {
-                            this.setState({ editedItem: response });
-                            setTimeout(() => {
-                                const editButton = document.getElementById('edit-button');
-                                if (editButton) {
-                                    editButton.addEventListener('click', () => {
-                                        this.props.editItem(editButton.dataset.type, this.state.editedItem);
-                                        this.map.closePopup();
-                                    });
-                                }
-                            }, 500);
-                            popUp.setContent(renderTargetsPopup(response, formatMessage));
+                            this.props.editItem('trap', response);
                         });
                 })
                 .on('mouseover', () => {
@@ -312,8 +240,7 @@ class VectorMapComponent extends Component {
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
-                })
-                .bindPopup());
+                }));
             return true;
         });
 

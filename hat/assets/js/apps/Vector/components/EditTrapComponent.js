@@ -218,6 +218,12 @@ class EditTrapComponent extends Component {
                             <table>
                                 <tbody>
                                     <tr>
+                                        <th>UUID</th>
+                                        <td className="small">
+                                            {trap.uuid}
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <th>
                                             <FormattedMessage
                                                 id="vector.label.creation"

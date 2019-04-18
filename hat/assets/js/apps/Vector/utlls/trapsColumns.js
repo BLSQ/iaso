@@ -5,6 +5,11 @@ import { FormattedMessage } from 'react-intl';
 const trapsColumns = (formatMessage, messages, element) => (
     [
         {
+            Header: 'UUID',
+            className: 'small',
+            accessor: 'uuid',
+        },
+        {
             Header: formatMessage({
                 defaultMessage: 'Création',
                 id: 'main.label.created_at',
@@ -26,6 +31,23 @@ const trapsColumns = (formatMessage, messages, element) => (
             }),
             className: 'small',
             accessor: 'name',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Site',
+                id: 'main.label.site',
+            }),
+            className: 'small',
+            accessor: 'site__name',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.site ?
+                            settings.original.site.name :
+                            formatMessage(messages.unknown)
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({

@@ -196,9 +196,16 @@ class Trap(models.Model):
         username = None
         if self.user:
             username = self.user.username
+        site = None
+        if self.site:
+            site = {
+                "id": self.site.id,
+                "name": self.site.name,
+            }
         res = {
             "id": self.id,
             "name": self.name,
+            "site": site,
             "description": self.description,
             "habitat": self.habitat,
             "created_at": self.created_at,

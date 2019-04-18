@@ -4,6 +4,11 @@ import React from 'react';
 const catchesColumns = formatMessage => (
     [
         {
+            Header: 'UUID',
+            className: 'small',
+            accessor: 'uuid',
+        },
+        {
             Header: formatMessage({
                 defaultMessage: 'Installé',
                 id: 'vector.catchs.setup_date',

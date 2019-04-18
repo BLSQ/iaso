@@ -271,13 +271,18 @@
                     margin: 8px $padding-unit/2 0 5px;
                 }
             }
+            .read-only {
+                display: flex;
+                align-items: center;
+            }
         }
         .Select {
-            flex-basis: calc(100% - 211px);
-            width: calc(100% - 211px);
+            flex-basis: 100%;
+            width: 100%;
             margin-right: 0px;
             float: none;
             text-align: left;
+            margin-bottom: 7px;
         }
         .check-box-container {
             flex-basis: calc(100% - 211px);

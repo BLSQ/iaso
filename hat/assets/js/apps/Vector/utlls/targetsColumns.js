@@ -5,6 +5,11 @@ import { FormattedMessage } from 'react-intl';
 const targetsColumns = (formatMessage, element) => (
     [
         {
+            Header: 'UUID',
+            className: 'small',
+            accessor: 'uuid',
+        },
+        {
             Header: formatMessage({
                 defaultMessage: 'Date',
                 id: 'main.label.date_time',

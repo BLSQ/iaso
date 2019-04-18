@@ -104,7 +104,6 @@ class VectorContainer extends Component {
             const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
                 hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderTargets');
-
             if (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map') {
                 promises.push(fetchSites(dispatch, newProps.params));
             }
@@ -125,7 +124,7 @@ class VectorContainer extends Component {
             }
 
             if ((trapsTableChanged || !this.props.vectors.trapsPage.list) && newProps.params.tab === 'traps') {
-                promises.push(fetchPaginatedTraps(dispatch, newProps.params, newProps.params.trapsPageZize, newProps.params.trapsPage, newProps.params.orderTraps));
+                promises.push(fetchPaginatedTraps(dispatch, newProps.params, newProps.params.trapsPageSize, newProps.params.trapsPage, newProps.params.orderTraps));
             }
             if ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets') {
                 promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
@@ -161,7 +160,7 @@ class VectorContainer extends Component {
                 promises.push(fetchVillages(dispatch, params, false));
             }
             promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
-            promises.push(fetchPaginatedTraps(dispatch, params, params.trapsPageZize, params.trapsPage, params.orderTraps));
+            promises.push(fetchPaginatedTraps(dispatch, params, params.trapsPageSize, params.trapsPage, params.orderTraps));
             promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
             dispatch(loadActions.startLoading());
             Promise.all(promises).then(() => {

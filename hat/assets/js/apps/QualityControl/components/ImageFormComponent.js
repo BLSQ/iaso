@@ -58,6 +58,9 @@ class ImageFormComponent extends React.Component {
         e.preventDefault();
         const check = {
             ...this.state.currentCheck,
+            other_catt: [
+                ...this.state.groupedCattTests,
+            ],
         };
         if ((isMediumUser(this.props.userLevel) || isSuperUser(this.props.userLevel)) && check.other_catt) {
             delete check.other_catt;

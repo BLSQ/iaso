@@ -57,6 +57,8 @@ def testResultString(value):
         return "Non lisible"
     if value == RES_UNUSED:
         return "Non utlisé"
+    if value == RES_UNSURE:
+        return "Pas certain"
     return "/"
 
 
@@ -317,6 +319,7 @@ class CaseAbstract(models.Model):
         (RES_MISSING, "Manquant"),
         (RES_UNREADABLE, "Illisible"),
         (RES_UNUSED, "Inutilisé"),
+        (RES_UNSURE, "Pas certain"),
     )
 
     SESSION_TYPE_CHOICES = (

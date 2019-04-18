@@ -6,7 +6,7 @@ from hat.cases.models import RES_UNUSED
 
 
 class CheckSerializer(serializers.Serializer):
-    result = serializers.IntegerField(min_value=-3, max_value=4, required=False)
+    result = serializers.IntegerField(min_value=-4, max_value=4, required=False)
     validator = serializers.CharField(required=False)
     test_id = serializers.IntegerField()
     comment = serializers.CharField(required=False, allow_blank=True)

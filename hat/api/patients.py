@@ -133,21 +133,37 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(test_with_type_in=True)
 
         if screening_result is not None:
-            # setting this to false will provide patients that had no positive screening result at all
-            positive_screening_cases = CaseView.objects\
-                .filter(screening_result__gte=RES_POSITIVE)\
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
-                .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
+            if screening_result == 'not_done':
+                none_screening_cases = CaseView.objects\
+                    .filter(screening_result__isnull=True)\
+                    .filter(normalized_patient_id=OuterRef('id'))
+                queryset = queryset\
+                    .annotate(has_none_screening_case=Exists(none_screening_cases))\
+                    .filter(has_none_screening_case=True)
+            else:
+                # setting this to false will provide patients that had no positive screening result at all
+                positive_screening_cases = CaseView.objects\
+                    .filter(screening_result__gte=RES_POSITIVE)\
+                    .filter(normalized_patient_id=OuterRef('id'))
+                queryset = queryset\
+                    .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
+                    .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
 
         if confirmation_result is not None:
-            confirmed_cases = Case.objects\
-                .filter(confirmed_case=True)\
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(has_confirmed_case=Exists(confirmed_cases))\
-                .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
+            if confirmation_result == 'not_done':
+                none_confirmed_case = CaseView.objects\
+                    .filter(confirmed_case__isnull=True)\
+                    .filter(normalized_patient_id=OuterRef('id'))
+                queryset = queryset\
+                    .annotate(has_none_confirmed_case=Exists(none_confirmed_case))\
+                    .filter(has_none_confirmed_case=True)
+            else:
+                confirmed_cases = Case.objects\
+                    .filter(confirmed_case=True)\
+                    .filter(normalized_patient_id=OuterRef('id'))
+                queryset = queryset\
+                    .annotate(has_confirmed_case=Exists(confirmed_cases))\
+                    .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
 
         if treatment_medicine is not None:
             treatment_meds = Treatment.objects\

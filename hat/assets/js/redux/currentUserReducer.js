@@ -4,6 +4,7 @@
 
 const SET_CURRENT_USER = 'hat/SET_CURRENT_USER';
 const SET_USER_PERMISSIONS = 'hat/SET_USER_PERMISSIONS';
+const SET_IS_CONNECTED = 'hat/SET_IS_CONNECTED';
 const FETCH_ACTION = 'hat/FETCH_ACTION';
 
 const req = require('superagent');
@@ -12,9 +13,15 @@ const setCurrentUser = user => ({
     type: SET_CURRENT_USER,
     payload: user,
 });
+
 const setUserPermissions = permissions => ({
     type: SET_USER_PERMISSIONS,
     payload: permissions,
+});
+
+const setIsConnected = isConnected => ({
+    type: SET_IS_CONNECTED,
+    payload: isConnected,
 });
 
 const fetchCurrentUserInfos = (dispatch) => {
@@ -22,6 +29,7 @@ const fetchCurrentUserInfos = (dispatch) => {
         .get('/api/permissions')
         .then((result) => {
             dispatch(setUserPermissions(result.body));
+            dispatch(setIsConnected(true));
             req
                 .get('/api/currentuser/')
                 .then((userResult) => {
@@ -29,7 +37,10 @@ const fetchCurrentUserInfos = (dispatch) => {
                 })
                 .catch(err => (console.error(`Error while fetching current user informations ${err}`)));
         })
-        .catch(err => (console.error(`Error while fetching current user permissions ${err}`)));
+        .catch((err) => {
+            dispatch(setIsConnected(false));
+            console.error(`Error while fetching current user permissions ${err}`);
+        });
     return ({
         type: FETCH_ACTION,
     });
@@ -43,6 +54,7 @@ export const currentUserActions = {
 export const currentUserInitialState = {
     user: {},
     permissions: [],
+    isConnected: undefined,
 };
 
 export const currentUserReducer = (state = currentUserInitialState, action = {}) => {
@@ -54,6 +66,10 @@ export const currentUserReducer = (state = currentUserInitialState, action = {})
         case SET_USER_PERMISSIONS: {
             const permissions = action.payload;
             return { ...state, permissions };
+        }
+        case SET_IS_CONNECTED: {
+            const isConnected = action.payload;
+            return { ...state, isConnected };
         }
 
         default:

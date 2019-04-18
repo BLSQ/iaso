@@ -39,6 +39,7 @@ class ZSViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_id", None)
         as_geo_json = request.GET.get("geojson", None)
         years = request.GET.get("years", None)
+        with_geo_json = request.GET.get("with_geo_json", None)
 
         queryset = ZS.objects.all()
         if request.user.profile.province_scope.count() != 0:
@@ -53,6 +54,8 @@ class ZSViewSet(viewsets.ViewSet):
             queryset = queryset.filter(province_id__in=province_ids.split(','))
 
         values = ['name', 'id', 'province_id']
+        if with_geo_json:
+            queryset = queryset.filter(geom__isnull=False)
         if years:
             years_array = years.split(",")
             nr_positive_cases = Count(
@@ -60,7 +63,6 @@ class ZSViewSet(viewsets.ViewSet):
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values.append('nr_positive_cases')
-
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False)
             geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])

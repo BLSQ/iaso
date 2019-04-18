@@ -60,7 +60,7 @@ class ASViewSet(viewsets.ViewSet):
 
         if as_geo_json:
             queryset = queryset.filter(simplified_geom__isnull=False)
-            geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'ZS'])
+            geo_json = geojson_queryset(queryset, geometry_field='geo_as.simplified_geom', fields=['name', 'ZS'])
 
             return Response(geo_json)
         else:

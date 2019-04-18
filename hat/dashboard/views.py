@@ -48,12 +48,12 @@ def change_password(request):
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
     if user.is_anonymous:
-        return render(request, 'dashboard/home.html')
+        return render(request, 'dashboard/home.html', {'STATIC_URL': settings.STATIC_URL})
     else:
         if user.profile.password_reset:
             return redirect('/dashboard/password')
         else:
-            return render(request, 'dashboard/home.html', {'menu': get_menu(user, reverse("dashboard:home"))})
+            return render(request, 'dashboard/home.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:home"))})
 
 
 @is_user_authorized
@@ -82,21 +82,21 @@ def reports(request: HttpRequest) -> HttpResponse:
 @permission_required('menupermissions.x_plannings_microplanning')
 @require_http_methods(['GET'])
 def plannings_micro(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:micro"))})
+    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:micro"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_plannings_macroplanning')
 @require_http_methods(['GET'])
 def plannings_macro(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:macro"))})
+    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:macro"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_plannings_routes')
 @require_http_methods(['GET'])
 def plannings_routes(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:routes"))})
+    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:routes"))})
 
 @is_user_authorized
 @login_required()
@@ -119,56 +119,56 @@ def device_management(request: HttpRequest) -> HttpResponse:
         'dates': [d.strftime('%Y-%m') for d in dates]
     })
 
-    return render(request, 'dashboard/management.html', {'json_data': json_data, 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_devices"))})
+    return render(request, 'dashboard/management.html', {'json_data': json_data, 'menu': get_menu(request.user, reverse("dashboard:management_devices"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_teams')
 @require_http_methods(['GET'])
 def teams_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_team"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_team"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_coordinations')
 @require_http_methods(['GET'])
 def coordinations_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_coord"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_coord"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_workzones')
 @require_http_methods(['GET'])
 def workzones_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_workzone"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_workzone"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_plannings')
 @require_http_methods(['GET'])
 def plannings_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_planning"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_planning"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_users')
 @require_http_methods(['GET'])
 def users_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_user"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_user"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_management_villages')
 @require_http_methods(['GET'])
 def villages_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:management_village"))})
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_village"))})
 
 @is_user_authorized
 @login_required()
 @permission_required('menupermissions.x_locator')
 @require_http_methods(['GET'])
 def locator(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/locator.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:locator_list"))})
+    return render(request, 'dashboard/locator.html', {'menu': get_menu(request.user, reverse("dashboard:locator_list"))})
 
 @is_user_authorized
 @login_required()

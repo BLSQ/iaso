@@ -213,7 +213,6 @@ export const isCaseLocalised = kase => (
     kase.location.normalized.village !== undefined
 );
 
-
 export const userHasPermission = (
     permissions,
     currentUser,

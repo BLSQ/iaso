@@ -1180,6 +1180,63 @@ button {
     }
 }
 
+#home-map {
+    position: relative;
+    width: 700px !important;
+    .map-container {
+        height: 720px;
+    }
+    .map-parent-container {
+        width: 700px !important;
+        .leaflet-control-attribution {
+            display: none;
+        }
+    }
+    .loading-small {
+        height: 100%;
+        margin-bottom: 0;    
+        .fa-spinner {
+            top: 50%;
+            position: relative;
+        }
+    }
+    .legend {
+        background-color: white;
+        border-radius: 5px;
+        border: 1px solid $light-gray;
+        padding: 5px;
+        h6 {
+            font-size: 12px;
+        }
+        >div {
+            &:before {
+                content: '';
+                display: inline-block;
+                margin-right: 5px;
+                width: 15px;
+                height: 15px;
+                border-radius: 15px;
+                border: 2px solid gray;
+                position: relative;
+                box-sizing: border-box;
+                top: 3px;
+            }
+        }
+        .endemic {
+            &:before {
+                background-color: rgba(red, 0.5);
+                border-color: red;
+            }
+        }
+        .non-endemic {
+            &:before {
+                background-color: rgba(green, 0.5);
+                border-color: green;
+            }
+        }
+    }
+}
+
 .split-map {
     .map-container {
         height: 600px;
@@ -1305,6 +1362,10 @@ $filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
             filter: $filter;
         }
     }
+}
+
+.home-zones {
+    cursor: default ! important;
 }
 
 .legend {

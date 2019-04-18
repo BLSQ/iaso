@@ -2,11 +2,6 @@
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 
-{% block extrajs %}
-    <script type="text/javascript">
-        var STATIC_URL = "{{ STATIC_URL }}";
-    </script>
-{% endblock %}
 {% block header %}
   <h1 class="header__title">Contrôle de qualité</h1>
 {% endblock %}

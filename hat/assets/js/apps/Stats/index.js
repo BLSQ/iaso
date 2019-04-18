@@ -20,7 +20,8 @@ export default function statsApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateFromMonitoring = minDateDataMonitoring;
     const dateTo = moment().format('YYYY-MM-DD');
-    const defaultPath = `/date_from/${dateFromMonitoring}/date_to/${dateTo}`;
+    const defaultPath = `/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultMonitoringPath = `/date_from/${dateFromMonitoring}/date_to/${dateTo}`;
     const routes = [
         <Route
             path="epidemiology/date_from/:date_from/date_to/:date_to(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/coordination_id/:coordination_id)"
@@ -35,7 +36,7 @@ export default function statsApp(element, baseUrl) {
             component={ReportsPage}
         />,
         <Redirect path="/epidemiology" to={`epidemiology${defaultPath}`} />,
-        <Redirect path="/data_monitoring" to={`data_monitoring${defaultPath}`} />,
+        <Redirect path="/data_monitoring" to={`data_monitoring${defaultMonitoringPath}`} />,
         <Redirect path="/reports" to={`reports${defaultPath}`} />,
     ];
 

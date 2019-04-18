@@ -261,6 +261,7 @@ export class Vector extends Component {
             reduxTrapsPage,
             reduxTargetsPage,
             profiles,
+            teams,
             habitats,
             saveSite,
             saveTrap,
@@ -274,7 +275,7 @@ export class Vector extends Component {
             nonEndemicVillages,
             endemicVillages,
         } = this.state;
-        const filters = filtersVectors(formatMessage, MESSAGES, profiles, habitats);
+        const filters = filtersVectors(formatMessage, MESSAGES, profiles, teams, habitats);
         const filters2 = filtersVectors2();
         const geoFilters = filtersVectorsGeo(
             provinces || [],
@@ -544,6 +545,7 @@ Vector.propTypes = {
     reduxTrapsPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
+    teams: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
     saveSite: PropTypes.func.isRequired,
@@ -566,6 +568,7 @@ const MapDispatchToProps = dispatch => ({
 const MapStateToProps = state => ({
     vectors: state.vectors,
     profiles: state.vectors.profiles,
+    teams: state.vectors.teams,
     habitats: state.vectors.habitats,
     load: state.load,
     map: state.map,

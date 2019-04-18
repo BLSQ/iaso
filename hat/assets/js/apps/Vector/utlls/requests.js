@@ -286,12 +286,21 @@ export const fetchVillages = (dispatch, params, withEndemic) => {
 };
 
 export const fetchProfiles = dispatch => req
-    .get('/api/profiles?as_list=True')
+    .get('/api/profiles?as_list=True&team_type=vector')
     .then((result) => {
         dispatch(vectorActions.loadProfiles(result.body));
     })
     .catch((err) => {
         console.error('Error when fetching profiles', err);
+    });
+
+export const fetchTeams = dispatch => req
+    .get('/api/teams?team_type=vector')
+    .then((result) => {
+        dispatch(vectorActions.loadTeams(result.body));
+    })
+    .catch((err) => {
+        console.error('Error when fetching teams', err);
     });
 
 

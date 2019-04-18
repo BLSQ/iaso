@@ -45,7 +45,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         institution_id = request.GET.get("institutionId", request.GET.get("institution_id", None))
         as_list = request.GET.get("as_list", False)
         team_id = request.GET.get("team_id", False)
+
         screening_type = request.GET.get("screening_type", None)
+        team_type = request.GET.get("team_type", "tester")
+
 
         queryset = Profile.objects.all()
 
@@ -67,6 +70,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
                                 status=status.HTTP_400_BAD_REQUEST)
             queryset = queryset.filter(screening_type=screening_type)
+
+        queryset = queryset.filter(team__team_type=team_type)
+
 
         matchings = {
             "userName": "user__username",

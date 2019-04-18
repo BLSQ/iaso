@@ -11,6 +11,7 @@ export const LOAD_PAGINATED_TARGETS = 'hat/vector/LOAD_PAGINATED_TARGETS';
 export const LOAD_NON_ENDEMIC_VILLAGES = 'hat/vector/LOAD_NON_ENDEMIC_VILLAGES';
 export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
 export const LOAD_PROFILES = 'hat/vector/LOAD_PROFILES';
+export const LOAD_TEAMS = 'hat/vector/LOAD_TEAMS';
 export const LOAD_HABITATS = 'hat/vector/LOAD_HABITATS';
 export const FETCH_ACTION = 'hat/vector/FETCH_ACTION';
 export const IS_TRAP_UPDATED = 'hat/vector/IS_TRAP_UPDATED';
@@ -41,6 +42,10 @@ export const loadEndemicVillages = payload => ({
 });
 export const loadProfiles = payload => ({
     type: LOAD_PROFILES,
+    payload,
+});
+export const loadTeams = payload => ({
+    type: LOAD_TEAMS,
     payload,
 });
 export const loadHabitats = payload => ({
@@ -95,6 +100,7 @@ export const vectorActions = {
     loadNonEndemicVillages,
     loadEndemicVillages,
     loadProfiles,
+    loadTeams,
     loadHabitats,
     trapUpdated,
 };
@@ -131,6 +137,7 @@ export const vectorInitialState = {
     profiles: [],
     habitats: [],
     isTrapUpdated: false,
+    teams: [],
 };
 
 export const vectorReducer = (state = vectorInitialState, action = {}) => {
@@ -158,6 +165,10 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
         case LOAD_PROFILES: {
             const profiles = action.payload;
             return { ...state, profiles };
+        }
+        case LOAD_TEAMS: {
+            const teams = action.payload;
+            return { ...state, teams };
         }
         case LOAD_HABITATS: {
             const habitats = action.payload;

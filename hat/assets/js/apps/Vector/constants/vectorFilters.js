@@ -1,5 +1,6 @@
 import {
     users,
+    teams,
     habitats,
     provinces,
     zones,
@@ -9,9 +10,10 @@ import {
     onlyIgnoredTargets,
 } from '../../../utils/constants/filters';
 
-const filtersVectors = (formatMessage, messages, usersList, habitatsList) => (
+const filtersVectors = (formatMessage, messages, usersList, teamsList, habitatsList) => (
     [
         users(usersList),
+        teams(teamsList),
         habitats(formatMessage, messages, habitatsList),
     ]
 );

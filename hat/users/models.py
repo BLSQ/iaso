@@ -17,6 +17,11 @@ CONFIRMER = "confirmer"
 
 TESTER_TYPE_CHOICES = ((SCREENER, "Dépisteur"), (CONFIRMER, "Confirmateur"))
 
+VC = "vector"
+TESTER = "tester"
+
+TEAM_TYPE_CHOICES = ((TESTER, "Testeur"), (VC, "Vecteur contrôle"))
+
 LEVEL_1 = 10
 LEVEL_2 = 20
 LEVEL_3 = 30
@@ -111,9 +116,17 @@ class Team(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    team_type = models.TextField(
+        "Type d'équipe", choices=TEAM_TYPE_CHOICES, null=True, blank=True
+    )
 
     def as_dict(self, planning_id=None):
-        res = {"name": self.name, "id": self.id, "capacity": self.capacity}
+        res = {
+            "name": self.name,
+            "id": self.id,
+            "capacity": self.capacity,
+            "team_type": self.team_type
+        }
         if planning_id is not None:
             from hat.planning.models import TeamActionZone
 

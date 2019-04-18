@@ -11,6 +11,7 @@ import {
     fetchPaginatedTargets,
     fetchVillages,
     fetchProfiles,
+    fetchTeams,
     fetchHabitats,
     saveTrap,
     saveTarget,
@@ -38,6 +39,7 @@ class VectorContainer extends Component {
         const promises = [
             this.props.fetchProvinces(),
             fetchProfiles(dispatch),
+            fetchTeams(dispatch),
             fetchHabitats(dispatch),
             this.props.fetchCurrentUserInfos(),
         ];

@@ -31,7 +31,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/trapsPage/:trapsPage)(/trapsPageSize/:trapsPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
             '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)' +
+            '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)(/teams/:teams)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
             '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
             component={VectorContainer}
@@ -40,7 +40,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             path={'/sync/dateFrom/:dateFrom/dateTo/:dateTo/tab/:tab' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
-            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)'}
+            '(/orderSites/:orderSites)(/orderTargets/:orderTargets)(/userId/:userId)(/teams/:teams)'}
             component={VectorSync}
         />,
         <Route

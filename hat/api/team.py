@@ -54,7 +54,8 @@ class TeamViewSet(viewsets.ViewSet):
     def list(self, request):
         coordination_id = request.GET.get("coordination_id", None)
         workzone_id = request.GET.get("workzone_id", None)
-        team_type = request.GET.get("type", None)
+        tester_team_type = request.GET.get("type", None)
+        team_type = request.GET.get("team_type", "tester")
         order = request.GET.get("order", None)
 
         queryset = Team.objects.all()
@@ -65,20 +66,21 @@ class TeamViewSet(viewsets.ViewSet):
             queryset = queryset.filter(coordination_id=coordination_id)
         if workzone_id:
             queryset = queryset.filter(workzone__id=workzone_id)
-        if team_type:
-            queryset = queryset.filter(UM=(team_type == 'UM'))
+        if tester_team_type:
+            queryset = queryset.filter(UM=(tester_team_type == 'UM'))
 
         if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(coordination__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(coordination__ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+        queryset = queryset.filter(team_type=team_type)
 
-
+        res = queryset.values('name', 'id', 'capacity', 'UM',
+                                  'coordination_id', 'team_type')
         if order is None:
-            res = queryset.values('name', 'id', 'capacity').order_by('-UM', 'name')
+            res = res.order_by('-UM', 'name')
         else:
-            res = queryset.values('name', 'id', 'capacity', 'UM',
-                                  'coordination_id').order_by(order)
+            res = res.order_by(order)
 
         return Response(res)
 

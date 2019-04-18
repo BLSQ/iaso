@@ -212,13 +212,13 @@ export const isCaseLocalised = kase => (
     kase.location.normalized.as !== undefined &&
     kase.location.normalized.village !== undefined
 );
-export const userHasPermission = (permission, currentUser) => {
-    if (currentUser.user.permissions && currentUser.permissions) {
-        const permissionObject = currentUser.permissions.find(p => p.codemname === permission);
-        return currentUser.user.is_superuser || currentUser.user.permissions.indexOf(permissionObject.id) !== -1;
-    }
-    return false;
-};
+// export const userHasPermission = (permission, currentUser) => {
+//     if (currentUser.user.permissions && currentUser.permissions) {
+//         const permissionObject = currentUser.permissions.find(p => p.codemname === permission);
+//         return currentUser.user.is_superuser || currentUser.user.permissions.indexOf(permissionObject.id) !== -1;
+//     }
+//     return false;
+// };
 
 
 export const userHasPermission = (

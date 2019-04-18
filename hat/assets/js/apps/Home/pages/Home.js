@@ -3,30 +3,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import LoadingSpinner from '../../../components/loading-spinner';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { userHasPermission } from '../../../utils/index';
-import { loadActions } from '../../../redux/load';
 import { homeActions } from '../redux/home';
 import HomeMap from '../components/HomeMap';
 import HomeBarChart from '../components/HomeBarChart';
 
 class Home extends Component {
     componentWillMount() {
-        const { dispatch } = this.props;
-        dispatch(loadActions.startLoading());
         this.props.fetchCurrentUserInfos();
         this.props.fetchGeoZones();
         this.props.fetchChartBarDatas();
-    }
-
-    componentWillReceiveProps(newProps) {
-        const { currentUser, dispatch } = newProps;
-        if ((currentUser.isConnected !== this.props.currentUser.isConnected) &&
-            (currentUser.isConnected === false ||
-                (currentUser.isConnected === true && currentUser.user !== {}))) {
-            dispatch(loadActions.successLoadingNoData());
-        }
     }
 
     render() {
@@ -41,13 +28,6 @@ class Home extends Component {
         } = this.props;
         return (
             <section className="home-container">
-                {
-                    this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
-                    })}
-                    />
-                }
                 {
                     currentUser.isConnected === false &&
                     <a href="/login" className="button home-login-button">
@@ -91,7 +71,7 @@ class Home extends Component {
                             <FormattedMessage id="home.text5" defaultMessage="Exécution de la lutte" />
                         </p>
                         {
-                            userHasPermission('x_plannings_microplanning', currentUser) &&
+                            userHasPermission(currentUser.permissions, currentUser.user, 'x_plannings_microplanning') &&
                             <a href="/dashboard/plannings/micro/" className="button--success">
                                 <FormattedMessage id="home.microplanningLink" defaultMessage="Utiliser l'outil de reprogrammation" />
                                 <i className="fa fa-arrow-right icon--right" />
@@ -148,7 +128,7 @@ class Home extends Component {
                             <FormattedMessage id="home.text6" defaultMessage="Rapport montrant les statistiques mensuel et annuel sur les dépistages actifs et passifs de la THA, les statistiques comprenent le nombre de cas suspects confirmé, la PTR, la PTE et plus encore." />
                         </p>
                         {
-                            userHasPermission('x_stats_reports', currentUser) &&
+                            userHasPermission(currentUser.permissions, currentUser.user, 'x_stats_reports') &&
                             <a href="/dashboard/monthly-report/" className="button--bright">
                                 <FormattedMessage id="home.monthlyReportLink" defaultMessage="Rapports mensuels" />
                                 <i className="fa fa-arrow-right icon--right" />
@@ -156,25 +136,27 @@ class Home extends Component {
                         }
                     </div>
                 </section>
-              {
-                userHasPermission('x_case_cases', currentUser) && <section className="section--feature--suspect">
-                  <div className="section__content--suspect">
-                    <h2>
-                      <FormattedMessage id="home.subTitle5" defaultMessage="Suivi des cas non confirmés"/>
-                    </h2>
-                    <p>
-                      <FormattedMessage id="home.text6"
-                                        defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."/>
-                    </p>
+                {
+                    userHasPermission(currentUser.permissions, currentUser.user, 'x_case_cases') &&
+                    <section className="section--feature--suspect">
+                        <div className="section__content--suspect">
+                            <h2>
+                                <FormattedMessage id="home.subTitle5" defaultMessage="Suivi des cas non confirmés" />
+                            </h2>
+                            <p>
+                                <FormattedMessage
+                                    id="home.text6"
+                                    defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."/>
+                            </p>
 
-                    <a href="/dashboard/datas/tests?suspect=true" className="button--bright">
-                      <FormattedMessage id="home.casesLink" defaultMessage="Aller sur les cas THA"/>
-                      <i className="fa fa-arrow-right icon--right"/>
-                    </a>
+                            <a href="/dashboard/datas/tests?suspect=true" className="button--bright">
+                                <FormattedMessage id="home.casesLink" defaultMessage="Aller sur les cas THA" />
+                                <i className="fa fa-arrow-right icon--right" />
+                            </a>
 
-                  </div>
-                </section>
-              }
+                        </div>
+                    </section>
+                }
                 <section className="section--feature--partners">
                     <h2>
                         <FormattedMessage id="home.subTitle6" defaultMessage="En partenariat avec" />
@@ -196,20 +178,17 @@ Home.defaultProps = {
 };
 
 Home.propTypes = {
-    load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
     fetchGeoZones: PropTypes.func.isRequired,
     fetchChartBarDatas: PropTypes.func.isRequired,
-    dispatch: PropTypes.func.isRequired,
     geoZones: PropTypes.object,
     barChartDatas: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
-    load: state.load,
     currentUser: state.currentUser,
     geoZones: state.home.geoZones,
     barChartDatas: state.home.barChartDatas,
@@ -218,7 +197,6 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    dispatch,
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch, true)),
     fetchGeoZones: () => dispatch(homeActions.fetchGeoZones(dispatch)),
     fetchChartBarDatas: () => dispatch(homeActions.fetchChartBarDatas(dispatch)),

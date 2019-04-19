@@ -145,7 +145,7 @@ class Home extends Component {
                             </h2>
                             <p>
                                 <FormattedMessage
-                                    id="home.text6"
+                                    id="home.text7"
                                     defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."/>
                             </p>
 

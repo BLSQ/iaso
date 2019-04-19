@@ -40,7 +40,7 @@ def get_or_create_patient_from_case(case: Case, origin_area, origin_village,
         else:
             age = None
     if death_device and type(death_device) == str:
-        death_device_db = DeviceDB.objects.get(device_id=death_device)  # Let it fail if the device is unknown
+        death_device_db = DeviceDB.objects.filter(device_id=death_device).first()
     else:
         death_device_db = death_device
 
@@ -356,7 +356,7 @@ def create_or_udpate_treatments(patient, treatments, device_id):
                 'adverse_effects': mobile_get_null_boolean(treatment['adverseEffects']),
                 'success': mobile_get_null_boolean(treatment['success']),
                 'event': mobile_get_null_boolean(treatment['event']),
-                'device': DeviceDB.objects.get(device_id=device_id),
+                'device': DeviceDB.objects.filter(device_id=device_id).first(),
                 'location': mobile_get_location_from_gps(treatment['position']),
                 'issues': treatment.get('issues', []),
                 'other_issues': treatment.get('otherIssues', ''),

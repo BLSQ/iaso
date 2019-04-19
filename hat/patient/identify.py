@@ -132,7 +132,7 @@ def get_devicedb_info_cached(device_id, cache):
             cache[device_id] = (devicedb_id, team_id, device_last_profile_id)
         except DeviceDB.DoesNotExist:
             print("Could not find device ID", device_id, "skipping")
-            return None, None
+            return None, None, None
     return devicedb_id, team_id, device_last_profile_id
 
 

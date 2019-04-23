@@ -9,6 +9,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, Case, RES_POSITIVE
+from hat.common.utils import queryset_iterator
 from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
 from hat.geo.models import AS, Village
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
@@ -313,14 +314,17 @@ class PatientsViewSet(viewsets.ViewSet):
                     .filter(patient__in=queryset_unprefetched)\
                     .order_by(*["patient_id", "index"])\
                     .select_related("device__last_user__profile__team")
+                subquery = queryset.filter(id=OuterRef("form__normalized_patient_id"))
                 queryset_tests = Test.objects\
-                    .filter(form__normalized_patient__in=queryset)\
+                    .annotate(exists_patient=Exists(subquery))\
+                    .filter(exists_patient=True)\
                     .order_by("form__normalized_patient_id")\
                     .select_related("form")\
                     .select_related("village")\
                     .select_related("form__normalized_patient")\
                     .select_related("image")\
-                    .select_related("video")
+                    .select_related("video")\
+                    .select_related("team")
 
                 response = HttpResponse(
                     generate_xlsx(
@@ -333,9 +337,9 @@ class PatientsViewSet(viewsets.ViewSet):
                             columns_tests,
                             columns_treatments,
                         ], [
-                            queryset,
-                            queryset_tests,
-                            queryset_treatments,
+                            queryset_iterator(queryset, 5000),
+                            queryset_iterator(queryset_tests, 5000),
+                            queryset_iterator(queryset_treatments, 5000),
                         ], [
                             lambda row, **kwargs: get_row(row, anonymous),
                             lambda row, **kwargs: get_row_tests(row, request),
@@ -348,7 +352,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 filename = filename + '.csv'
                 response = StreamingHttpResponse(
                     streaming_content=(
-                        iter_items(queryset, Echo(), columns, lambda row, **kwargs: get_row(row, anonymous))),
+                        iter_items(queryset, Echo(), columns, lambda row, **kwargs: get_row(row, anonymous), chunk_size=10000)),
                     content_type='text/csv',
                 )
             response['Content-Disposition'] = 'attachment; filename=%s' % filename
@@ -356,7 +360,10 @@ class PatientsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(Patient, pk=pk)
-        is_authorized = (not patient.origin_area) or is_authorized_user(request.user, patient.origin_area.ZS.province.id, patient.origin_area.ZS.id, patient.origin_area.id)
+        is_authorized = (not patient.origin_area) or is_authorized_user(request.user,
+                                                                        patient.origin_area.ZS.province.id,
+                                                                        patient.origin_area.ZS.id,
+                                                                        patient.origin_area.id)
         if is_authorized:
             return Response(patient.as_full_dict())
         else:

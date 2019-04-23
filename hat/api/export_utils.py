@@ -4,6 +4,7 @@ import io
 import xlsxwriter
 from django.conf import settings
 from xlsxwriter.utility import xl_rowcol_to_cell
+from hat.common.utils import queryset_iterator
 
 
 def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
@@ -90,8 +91,8 @@ class Echo:
         return value
 
 
-def iter_items(queryset, pseudo_buffer, columns, get_row):
+def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
     writer = csv.writer(pseudo_buffer)
     yield writer.writerow(columns)
-    for site in queryset.iterator(chunk_size=5000):
-        yield writer.writerow(get_row(site))
+    for item in queryset_iterator(queryset, chunk_size=chunk_size):
+        yield writer.writerow(get_row(item))

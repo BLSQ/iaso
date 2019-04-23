@@ -26,7 +26,7 @@ const setIsConnected = isConnected => ({
 
 const fetchCurrentUserInfos = (dispatch) => {
     req
-        .get('/api/permissions')
+        .get('/api/permissions/')
         .then((result) => {
             dispatch(setUserPermissions(result.body));
             dispatch(setIsConnected(true));

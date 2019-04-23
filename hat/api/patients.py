@@ -364,9 +364,16 @@ class PatientsViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         new_patient = get_object_or_404(Patient, pk=pk)
-        is_authorized = ((not new_patient.origin_area)
-            or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id, new_patient.origin_area.ZS.id, new_patient.origin_area.id))\
-            and (request.user.has_perm("menupermissions.x_anonymous" and not request.user.is_superuser) or request.user.is_superuser)
+        is_authorized = \
+            (
+                (not new_patient.origin_area)
+                or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id,
+                                               new_patient.origin_area.ZS.id, new_patient.origin_area.id)
+            ) \
+            and (
+                request.user.is_superuser
+                or not request.user.has_perm("menupermissions.x_anonymous")
+            )
         if is_authorized:
             new_patient.post_name = request.data.get('post_name', '')
             new_patient.last_name = request.data.get('last_name', '')

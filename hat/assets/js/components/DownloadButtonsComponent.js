@@ -7,8 +7,10 @@ import { userHasPermission } from '../utils';
 class downloadComponent extends Component {
     constructor(props) {
         super(props);
+        const { currentUser, permissions } = props;
         this.state = {
-            downloadEnabled: false,
+            downloadEnabled: currentUser && permissions ?
+                userHasPermission(permissions, currentUser, 'x_datas_download') : false,
         };
     }
 

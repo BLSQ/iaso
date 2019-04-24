@@ -7,6 +7,8 @@ const LOAD_CURRENT_DUPLICATE_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DUPLICATE
 const LOAD_TEST_MAPPING = 'hat/patient/detail/LOAD_TEST_MAPPING';
 const SET_PATIENTS_LIST = 'hat/patient/detail/SET_PATIENTS_LIST';
 const EMPTY_PATIENTS_LIST = 'hat/patient/detail/EMPTY_PATIENTS_LIST';
+const SET_DUPLICATE_PATIENTS_LIST = 'hat/patient/detail/SET_DUPLICATE_PATIENTS_LIST';
+const EMPTY_DUPLICATE_PATIENTS_LIST = 'hat/patient/detail/EMPTY_DUPLICATE_PATIENTS_LIST';
 const FETCH_ACTION = 'hat/patient/detail/FETCH_ACTION';
 const SAVE_ACTION = 'hat/patient/detail/SAVE_ACTION';
 const GET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/GET_MANUAL_MERGED_PATIENT';
@@ -46,8 +48,23 @@ const setPatientList = (list, showPagination, params, count, pages) => ({
     },
 });
 
+const setDuplicatePatientList = (list, showPagination, params, count, pages) => ({
+    type: SET_DUPLICATE_PATIENTS_LIST,
+    payload: {
+        list,
+        showPagination,
+        params,
+        count,
+        pages,
+    },
+});
+
 const emptyPatientList = () => ({
     type: EMPTY_PATIENTS_LIST,
+});
+
+const emptyDuplicatePatientList = () => ({
+    type: EMPTY_DUPLICATE_PATIENTS_LIST,
 });
 
 const fetchTestMapping = (dispatch) => {
@@ -146,6 +163,7 @@ const mergeDuplicates = (
         .set('Content-Type', 'application/json')
         .send(data)
         .then(() => {
+            dispatch(emptyDuplicatePatientList());
             dispatch(loadActions.successLoadingNoData());
             element.goBack();
         })
@@ -160,7 +178,7 @@ const mergeDuplicates = (
 
 export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, element) => {
     dispatch(loadActions.startLoading());
-    return (req
+    req
         .put(`/api/patients/${patient.id}/`)
         .set('Content-Type', 'application/json')
         .send(patient)
@@ -170,7 +188,10 @@ export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, el
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
             console.error(`Error while saving patient ${err}`);
-        }));
+        });
+    return ({
+        type: SAVE_ACTION,
+    });
 };
 
 
@@ -212,6 +233,7 @@ export const patientsActions = {
     loadCurrentDetail,
     fetchDetails,
     setPatientList,
+    setDuplicatePatientList,
     fetchDuplicatesDetails,
     mergeDuplicates,
     getManualMergedPatient,
@@ -227,6 +249,13 @@ export const patientsInitialState = {
     duplicateCurrent: {},
     testsMapping: {},
     patientsPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
+    patientsDuplicatePage: {
         list: null,
         showPagination: false,
         params: {},
@@ -276,6 +305,31 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
                 ...state,
                 patientsPage: {
                     ...state.patientsPage,
+                    list: null,
+                },
+            };
+        }
+
+        case SET_DUPLICATE_PATIENTS_LIST: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                patientsDuplicatePage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
+        }
+        case EMPTY_DUPLICATE_PATIENTS_LIST: {
+            return {
+                ...state,
+                patientsDuplicatePage: {
+                    ...state.patientsDuplicatePage,
                     list: null,
                 },
             };

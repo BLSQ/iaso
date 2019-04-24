@@ -45,6 +45,12 @@ export class ManagementDevices extends Component {
     }
 
     componentWillMount() {
+        if (this.props.params.back) {
+            this.onSearch();
+            const { params } = this.props;
+            delete params.back;
+            this.props.redirectTo(baseUrl, params);
+        }
         this.props.fetchTeams();
         this.props.fetchCoordinations();
         this.props.fetchProfiles();

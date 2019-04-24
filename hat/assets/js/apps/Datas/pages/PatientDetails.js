@@ -53,6 +53,7 @@ class PatientDetails extends React.Component {
         delete tempParams.ZS_id;
         delete tempParams.AS_id;
         delete tempParams.vil_id;
+        tempParams.back = true;
         this.setState({
             patient: null,
         });

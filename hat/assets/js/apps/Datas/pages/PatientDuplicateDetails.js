@@ -45,6 +45,7 @@ class PatientDuplicateDetails extends React.Component {
         delete tempParams.patient_id_2;
         delete tempParams.duplicate_id;
         delete tempParams.manual_merge;
+        tempParams.back = true;
         this.setState({
             patient: null,
             duplicatePatient: null,

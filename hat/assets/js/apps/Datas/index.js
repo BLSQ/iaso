@@ -33,7 +33,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
+            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/back/:back)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={CasesPage}
         />,
@@ -53,7 +53,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
             '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
             '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)' +
-            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
+            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/back/:back)'}
             component={PatientsPage}
         />,
         <Route
@@ -70,7 +70,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
-            '(/search_mother_name/:search_mother_name)(/test_type/:test_type)'}
+            '(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/back/:back)'}
             component={PatientsDuplicates}
         />,
         <Route

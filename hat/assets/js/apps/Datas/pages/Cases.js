@@ -31,6 +31,12 @@ class Cases extends Component {
     }
 
     componentWillMount() {
+        if (this.props.params.back) {
+            this.onSearch();
+            const { params } = this.props;
+            delete params.back;
+            this.props.redirectTo('tests', params);
+        }
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchTeams(),

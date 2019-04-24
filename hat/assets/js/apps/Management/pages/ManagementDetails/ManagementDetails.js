@@ -146,6 +146,10 @@ export class ManagementDetails extends Component {
         this.props.redirectTo('devices', {
             order: params.deviceOrder,
             with_tests_devices: params.with_tests_devices,
+            coordination_id: params.coordination_id,
+            teams: params.teams,
+            profile_id: params.profile_id,
+            back: true,
         });
     }
 

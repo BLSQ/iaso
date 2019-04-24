@@ -13,6 +13,7 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import FiltersComponent from '../../../components/FiltersComponent';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+import { patientsActions } from '../redux/patients';
 
 import {
     filtersPatients,
@@ -34,6 +35,12 @@ class PatientsDuplicates extends Component {
     }
 
     componentWillMount() {
+        if (this.props.params.back) {
+            this.onSearch();
+            const { params } = this.props;
+            delete params.back;
+            this.props.redirectTo(baseUrl, params);
+        }
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
@@ -140,6 +147,8 @@ class PatientsDuplicates extends Component {
                 workzones,
             },
             params,
+            reduxPage,
+            setDuplicatePatientList,
         } = this.props;
         const filters1 = filtersPatients(formatMessage, defineMessages);
         const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
@@ -213,6 +222,8 @@ class PatientsDuplicates extends Component {
                             dataKey="patientduplicatepairs"
                             onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
                             multiSort
+                            onDataLoaded={(newDuplicatePatientList, count, pages) => setDuplicatePatientList(newDuplicatePatientList, true, params, count, pages)}
+                            reduxPage={reduxPage}
                         />
                         <div className="align-right">
                             <DownloadButtonsComponent
@@ -226,6 +237,10 @@ class PatientsDuplicates extends Component {
         );
     }
 }
+PatientsDuplicates.defaultProps = {
+    reduxPage: undefined,
+};
+
 
 PatientsDuplicates.propTypes = {
     load: PropTypes.object.isRequired,
@@ -242,12 +257,14 @@ PatientsDuplicates.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    reduxPage: PropTypes.object,
+    setDuplicatePatientList: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     filters: state.patientsFilters,
-    patientList: state.patients.list,
+    reduxPage: state.patients.patientsDuplicatePage,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -262,6 +279,7 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    setDuplicatePatientList: (duplicatePatientList, showPagination, params, count, pages) => dispatch(patientsActions.setDuplicatePatientList(duplicatePatientList, showPagination, params, count, pages)),
 });
 
 const PatientsDuplicatesWithIntl = injectIntl(PatientsDuplicates);

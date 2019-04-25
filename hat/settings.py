@@ -44,6 +44,10 @@ CLOUDFRONT_DOMAIN = os.environ.get("CLOUDFRONT_DOMAIN", "")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 
+# HSTS
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 
 # Logging
 

@@ -9,7 +9,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Q
 
 from hat.cases.models import Case
-from hat.constants import CATT, RDT, CTCWOO, MAECT, PG, PL, GPS_SRID
+from hat.constants import *
 from hat.import_export.mapping import mobile_get_date, mobile_get_null_boolean, mobile_get_location_from_gps
 from hat.patient.models import Test, Patient, Treatment
 from hat.sync.models import ImageUpload, VideoUpload, DeviceDB
@@ -142,95 +142,52 @@ def create_test_data(case: Case, patient_area, raw):
 
     device_cache = {}  # Most cases will have multiple tests from the same device, let's cache it
 
-    # CATT and RDT tests with confirmation tests and another screening tests within 90 days
-    # should be automatically hidden
-    if case.test_catt is not None:
-        test_date = raw.get('test_catt_test_time', None)
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_catt_test_device'),
-                                                                                       device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=CATT, result=case.test_catt, index=case.test_catt_index,
-            image=case.test_catt_picture_filename, traveller_area=patient_area,
-            test_date=test_date, hidden=should_hide_screening(case, test_date),
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_catt_test_longitude'), latitude=raw.get('test_catt_test_latitude'),
-            tester_id=device_last_profile_id, level=case.test_catt_level
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
+    test_types = {
+        CATT: "test_catt",
+        RDT: "test_rdt",
+        PG: "test_pg",
+        PL: "test_pl",
+        CTCWOO: "test_ctcwoo",
+        MAECT: "test_maect",
+        SF: "test_sf",
+        SP: "test_sternal_puncture",
+        IFAT: "test_ifat",
+        LCR: "test_lcr",
+        DIL: "test_dil",
+        GE: "test_ge",
+        CLINICAL_SICKNESS: "test_clinical_sickness",
+        LNP: "test_lymph_node_puncture",
+        PARASIT: "test_parasit",
+    }
+    for test_type, test_field in test_types.items():
+        test_result = getattr(case, test_field, None)
+        if test_result is not None:
+            test_date = raw.get(f"{test_field}_test_time", None)
+            # CATT and RDT tests with confirmation tests and another screening tests within 90 days
+            # should be automatically hidden
+            hidden = should_hide_screening(case, test_date) if test_type in [CATT, RDT] else False
 
-    if case.test_rdt is not None:
-        test_date = raw.get('test_rdt_test_time', None)
-        hidden = should_hide_screening(case, test_date)
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_rdt_test_device'),
-                                                                                       device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=RDT, result=case.test_rdt, image=case.test_rdt_picture_filename,
-            traveller_area=patient_area, test_date=test_date, hidden=hidden,
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_rdt_test_longitude'), latitude=raw.get('test_rdt_test_latitude'),
-            tester_id=device_last_profile_id
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
-
-    if case.test_pg is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pg_test_device'),
-                                                                                       device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=PG, result=case.test_pg, video=case.test_pg_video_filename,
-            traveller_area=patient_area, test_date=raw.get('test_pg_test_time', None),
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_pg_test_longitude'), latitude=raw.get('test_pg_test_latitude'),
-            tester_id=device_last_profile_id,
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
-
-    if case.test_pl is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(raw.get('test_pl_test_device'),
-                                                                                       device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=PL, result=case.test_pl, video=case.test_pl_video_filename,
-            traveller_area=patient_area, test_date=raw.get('test_pl_test_time', None),
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_pl_test_longitude'), latitude=raw.get('test_pl_test_latitude'),
-            tester_id=device_last_profile_id,
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
-
-    if case.test_ctcwoo is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(
-            raw.get('test_ctcwoo_test_device'), device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=CTCWOO, result=case.test_ctcwoo, video=case.test_ctcwoo_video_filename,
-            traveller_area=patient_area, test_date=raw.get('test_ctcwoo_test_time', None),
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_ctcwoo_test_longitude'), latitude=raw.get('test_ctcwoo_test_latitude'),
-            tester_id=device_last_profile_id,
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
-
-    if case.test_maect is not None:
-        devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(
-            raw.get('test_maect_test_device'), device_cache)
-        test, test_created = get_or_create_test(
-            case=case, test_type=MAECT, result=case.test_maect, video=case.test_maect_video_filename,
-            traveller_area=patient_area, test_date=raw.get('test_maect_test_time', None),
-            devicedb_id=devicedb_id, team_id=device_team_id,
-            longitude=raw.get('test_maect_test_longitude'), latitude=raw.get('test_maect_test_latitude'),
-            tester_id=device_last_profile_id,
-        )
-        if test_created:
-            tests_created += 1
-        tests.append(test)
+            devicedb_id, device_team_id, device_last_profile_id = get_devicedb_info_cached(
+                raw.get(f"{test_field}_test_device"), device_cache)
+            test, test_created = get_or_create_test(
+                case=case,
+                test_type=test_type,
+                result=test_result,
+                hidden=hidden,
+                video=getattr(case, f"{test_field}_video_filename", None),
+                image=getattr(case, f"{test_field}_picture_filename", None),
+                traveller_area=patient_area,
+                test_date=test_date,
+                devicedb_id=devicedb_id,
+                team_id=device_team_id,
+                longitude=raw.get(f"{test_field}_test_longitude"), latitude=raw.get(f"{test_field}_test_latitude"),
+                tester_id=device_last_profile_id,
+                level=getattr(case, f"{test_field}_level", None),  # CATT only
+                index=getattr(case, f"{test_field}_index", None),  # CATT only
+            )
+            if test_created:
+                tests_created += 1
+            tests.append(test)
 
     return tests, tests_created
 

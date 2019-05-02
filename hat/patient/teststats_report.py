@@ -37,7 +37,7 @@ def get_village_row(row, row_num, **kwargs):
         row["pl_count_stage1"],
         row["pl_count_stage2"],
         0,  # INC ?
-        f"=L{row_num}/F{row_num}",
+        f"=L{row_num}/F{row_num}" if row["screening_count"] else "",
     ]
 
 

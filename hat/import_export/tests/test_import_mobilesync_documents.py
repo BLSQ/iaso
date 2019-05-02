@@ -100,6 +100,48 @@ class ImportMobileSyncDocuments(TestCase):
         case = device_cases[0]
         self.assertIsNone(case.year_of_birth)
 
+    # This test contains some tests for travelers rather than residents
+    def test_import_traveler_neg_rdt(self):
+        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler.json")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=part_traveler_neg_rdt).json()
+        self.assertEqual(part_traveler_neg_rdt['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+
+    # This test contains some tests for travelers rather than residents
+    def test_import_traveler_neg_rdt_zone_only(self):
+        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler_zone_only.json")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=part_traveler_neg_rdt).json()
+        self.assertEqual(part_traveler_neg_rdt['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+
     ####################
     # Dépistage passif #
     ####################

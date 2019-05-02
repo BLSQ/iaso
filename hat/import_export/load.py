@@ -294,65 +294,70 @@ def create_cases(df: DataFrame) -> None:
     for _, row in df.iterrows():
         case = Case()
         ignored_columns = {}
-        for index, value in enumerate(row):
-            column_name = df.columns[index]
-            if not numpy.all(pandas.isnull(value)) and value != '':
-                if column_name in CASE_IGNORE:
-                    ignored_columns[column_name] = value
-                else:
-                    setattr(case, column_name, convert_to_db_type(Case, column_name, value))
+        json_document_id = None
+        try:
+            for index, value in enumerate(row):
+                column_name = df.columns[index]
+                if not numpy.all(pandas.isnull(value)) and value != '':
+                    if column_name in CASE_IGNORE:
+                        ignored_columns[column_name] = value
+                    else:
+                        setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
-        json_document_id = ignored_columns.get("json_document_id", None)
-        treatments = ignored_columns.get("treatments", [])
-        # Avoid having to check for None, nan, '' etc everywhere in the code
-        row = row.dropna()
+            json_document_id = ignored_columns.get("json_document_id", None)
+            treatments = ignored_columns.get("treatments", [])
+            # Avoid having to check for None, nan, '' etc everywhere in the code
+            row = row.dropna()
 
-        # Determine the test and patient location
-        (normalized_AS, normalized_village) = normalize_location(case.ZS, case.AS, case.village,
-                                                                 case.device_id, case.latitude, case.longitude)
-        if normalized_AS:
-            case.normalized_AS = normalized_AS
-        if normalized_village:
-            case.normalized_village = normalized_village
+            # Determine the test and patient location
+            (normalized_AS, normalized_village) = normalize_location(case.ZS, case.AS, case.village,
+                                                                     case.device_id, case.latitude, case.longitude)
+            if normalized_AS:
+                case.normalized_AS = normalized_AS
+            if normalized_village:
+                case.normalized_village = normalized_village
 
-        if 'participant_member_type' in row.index and row['participant_member_type'] == 'traveller':
-            patient_as, patient_village = normalize_location(
-                row['participant_origin_zone'],
-                row['participant_origin_area'],
-                None,
+            if 'participant_member_type' in row.index and row['participant_member_type'] == 'traveller':
+                patient_as, patient_village = normalize_location(
+                    row.get('participant_origin_zone', None),
+                    row.get('participant_origin_area', None),
+                    None,
+                )
+            else:
+                patient_as = normalized_AS
+                patient_village = normalized_village
+
+            patient, patient_created = get_or_create_patient_from_case(
+                case, patient_as, patient_village,
+                dead=ignored_columns.get('dead', False),
+                death_date=mobile_get_date(ignored_columns.get('death_date', None)),
+                death_device=ignored_columns.get('death_device', None),
+                death_location=mobile_get_location_from_coordinates(
+                    ignored_columns.get('death_position_longitude', None),
+                    ignored_columns.get('death_position_latitude', None)
+                )
             )
-        else:
-            patient_as = normalized_AS
-            patient_village = normalized_village
+            case.normalized_patient = patient
+            case.normalized_team = get_case_team(case)
 
-        patient, patient_created = get_or_create_patient_from_case(
-            case, patient_as, patient_village,
-            dead=ignored_columns.get('dead', False),
-            death_date=mobile_get_date(ignored_columns.get('death_date', None)),
-            death_device=ignored_columns.get('death_device', None),
-            death_location=mobile_get_location_from_coordinates(
-                ignored_columns.get('death_position_longitude', None),
-                ignored_columns.get('death_position_latitude', None)
-            )
-        )
-        case.normalized_patient = patient
-        case.normalized_team = get_case_team(case)
+            case.save()
 
-        case.save()
+            if json_document_id:
+                doc = JSONDocument.objects.get(id=json_document_id)
+                doc.case = case
+                doc.processed = True
+                doc.save()
 
-        if json_document_id:
-            doc = JSONDocument.objects.get(id=json_document_id)
-            doc.case = case
-            doc.processed = True
-            doc.save()
+            create_test_data(case, patient_as, row)
 
-        create_test_data(case, patient_as, row)
+            create_or_udpate_treatments(patient, treatments, case.device_id)
 
-        create_or_udpate_treatments(patient, treatments, case.device_id)
-
-        # Check potential patient duplicates
-        if patient_created:
-            create_potential_duplicates_for_patient(patient)
+            # Check potential patient duplicates
+            if patient_created:
+                create_potential_duplicates_for_patient(patient)
+        except Exception as exc:
+            logger.error("Error importing document %s: %s", json_document_id, exc, exc_info=1)
+            raise
 
 
 def update_cases(df: DataFrame) -> int:

@@ -49,7 +49,7 @@ class DevicesViewSet(viewsets.ViewSet):
         res = []
 
         if as_list:
-            res = map(lambda device: device.as_dict(),  devices)
+            res = list(map(lambda device: device.as_dict(),  devices))
             cache.set(absolute_url, res, 30 * 60)
             return Response(res)
         else:

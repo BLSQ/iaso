@@ -33,7 +33,7 @@ def get_village_row(row, row_num, **kwargs):
         f"=F{row_num}/E{row_num}",
         row["positive_catt_count"],
         row["positive_rdt_count"],
-        row["confirmation_count"],
+        row["positive_confirmation_test_count"],
         row["pl_count_stage1"],
         row["pl_count_stage2"],
         0,  # INC ?

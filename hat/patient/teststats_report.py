@@ -30,7 +30,7 @@ def get_village_row(row, row_num, **kwargs):
         row["screening_count"],
         row["catt_count"],
         row["rdt_count"],
-        f"=F{row_num}/E{row_num}",
+        f"=F{row_num}/E{row_num}" if row["village__population"] else "",
         row["positive_catt_count"],
         row["positive_rdt_count"],
         row["positive_confirmation_test_count"],

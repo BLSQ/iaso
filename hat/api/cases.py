@@ -12,6 +12,7 @@ from hat.audit.models import log_modification, CASE_API
 from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -444,9 +445,14 @@ class CasesViewSet(viewsets.ViewSet):
             not_found = request.data.get("not_found", None)
 
             if village_id:
+                village = get_object_or_404(Village, pk=village_id)
                 case.normalized_village_not_found = False
-                case.normalized_village_id = village_id
+                case.normalized_village = village
+                case.normalized_AS = village.AS
                 case.save()
+                case.normalized_patient.origin_village = village
+                case.normalized_patient.origin_area = village.AS
+                case.normalized_patient.save()
             elif not_found:
                 case.normalized_village_not_found = True
                 case.normalized_village_id = None

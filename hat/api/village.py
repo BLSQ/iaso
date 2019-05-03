@@ -157,14 +157,14 @@ class VillageViewSet(viewsets.ViewSet):
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
-        res = queryset.values(*values)
 
         if results == "positive":
-            res = res.filter(nr_positive_cases__gte=1)
+            queryset = queryset.filter(nr_positive_cases__gte=1)
 
         if results == "negative":
-            res = res.filter(nr_positive_cases=0)
+            queryset = queryset.filter(nr_positive_cases=0)
 
+        res = queryset.values(*values)
         queryset = queryset.prefetch_related("AS")
         queryset = queryset.prefetch_related("AS__ZS")
         queryset = queryset.prefetch_related("AS__ZS__province")
@@ -220,19 +220,19 @@ class VillageViewSet(viewsets.ViewSet):
 
                 def get_row(village, **kwargs):
                     return [
-                            village.id,
-                            village.name,
-                            village.population,
-                            village.nr_positive_cases,
-                            village.AS.ZS.province.name,
-                            village.AS.ZS.name,
-                            village.AS.name,
-                            village.longitude,
-                            village.latitude,
-                            village.village_type,
-                            village.village_source,
-                            village.gps_source
-                        ]
+                        village.id,
+                        village.name,
+                        village.population,
+                        village.nr_positive_cases,
+                        village.AS.ZS.province.name,
+                        village.AS.ZS.name,
+                        village.AS.name,
+                        village.longitude,
+                        village.latitude,
+                        village.village_type,
+                        village.village_source,
+                        village.gps_source
+                    ]
 
                 if xlsx_format:
                     filename = filename + '.xlsx'

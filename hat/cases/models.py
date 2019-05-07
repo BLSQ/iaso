@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+from hat.constants import SCREENING_TYPE_CHOICES
 from hat.geo.models import Village
 from hat.geo.models import AS as ASModel
 from hat.sync.models import DeviceDB
@@ -72,8 +73,8 @@ RES_UNREADABLE = -2
 RES_UNUSED = -3
 RES_UNSURE = -4
 
-SCR_TYPE_DOOR_TO_DOOR = "doorToDoor"
-SCR_TYPE_ON_SITE = "onSite"
+SESSION_TYPE_DOOR_TO_DOOR = "doorToDoor"
+SESSION_TYPE_ON_SITE = "onSite"
 
 
 class CaseAbstract(models.Model):
@@ -286,11 +287,11 @@ class CaseAbstract(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
-    circumstances_da = models.NullBooleanField(null=True)
-    circumstances_dp = models.NullBooleanField(null=True)
+    screening_type = models.TextField(null=True, blank=True, choices=SCREENING_TYPE_CHOICES)
     circumstances_da_um = models.TextField(null=True, blank=True)
     circumstances_dp_um = models.TextField(null=True, blank=True)
     circumstances_dp_cs = models.TextField(null=True, blank=True)
+    circumstances_dp_cdtc = models.TextField(null=True, blank=True)
     circumstances_dp_hgr = models.TextField(null=True, blank=True)
 
     normalized_team = models.ForeignKey(Team, null=True, on_delete=models.SET_NULL)
@@ -323,8 +324,8 @@ class CaseAbstract(models.Model):
     )
 
     SESSION_TYPE_CHOICES = (
-        (SCR_TYPE_DOOR_TO_DOOR, "Door to door"),
-        (SCR_TYPE_ON_SITE, "On site"),
+        (SESSION_TYPE_DOOR_TO_DOOR, "Door to door"),
+        (SESSION_TYPE_ON_SITE, "On site"),
     )
 
     test_catt = models.IntegerField(

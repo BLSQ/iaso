@@ -18,20 +18,4 @@ class Migration(migrations.Migration):
               and normalized_village_id is not null
               and "normalized_AS_id" is null;
         """, reverse_sql=""),
-        migrations.RunSQL(sql="""
-            update patient_patient pt
-            set origin_area_id=cc."normalized_AS_id"
-            from cases_case cc
-            where cc."normalized_AS_id" is not null
-            and pt.origin_area_id is null
-            and pt.id=cc.normalized_patient_id;
-        """, reverse_sql=""),
-        migrations.RunSQL(sql="""
-            update patient_patient pt
-            set origin_village_id=cc."normalized_village_id"
-            from cases_case cc
-            where cc."normalized_village_id" is not null
-            and pt.origin_village_id is null
-            and pt.id=cc.normalized_patient_id
-        """, reverse_sql=""),
     ]

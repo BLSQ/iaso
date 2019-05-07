@@ -36,14 +36,15 @@ the village `1111` is in AS `111`, ZS `11` and province `1`.
 
 ## Users
 
-| Username           | Super | Scope  | Permissions |
-|:-------------------|:------|:-------|:------------|
-| root               | Yes   |        | -           |
-| admin              | Yes   |        |             |
-| supervisor         |       |        |             |
-| supervisor-kwilu   |       | Prov:1 |             |
-| supervisor-mosango |       | ZS:11  |             |
-| supervisor-muluma  |       | AS:111 |             |
-| importer           |       |        |             |
-| full-exporter      |       |        |             |
-| anon-exporter      |       |        |             |
+| Username           | Super | Scope  | Permissions | Password             |
+|:-------------------|:------|:-------|:------------|----------------------|
+| root               | Yes   |        | -           |                      |
+| admin              | Yes   |        |             | pwd                  |
+| supervisor         |       |        |             | supervisorsupervisor |
+| supervisor-kwilu   |       | Prov:1 |             | supervisorsupervisor |
+| supervisor-mosango |       | ZS:11  |             | supervisorsupervisor |
+| supervisor-muluma  |       | AS:111 |             | supervisorsupervisor |
+| importer           |       |        |             | importerimporter     |
+| full-exporter      |       |        |             |                      |
+| anon-exporter      |       |        |             |                      |
+| passive            |       |        |             | pwd                     |

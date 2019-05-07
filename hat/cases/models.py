@@ -122,8 +122,7 @@ class CaseAbstract(models.Model):
     :ivar double   longitude:       GPS coordinates: longitude.
     :ivar double   latitude:        GPS coordinates: latitude.
 
-    :ivar text     circumstances_da:     Dépistage Actif
-    :ivar text     circumstances_dp:     Dépistage Passif
+    :ivar text     screening_type:       passif, actif ou None
     :ivar text     circumstances_da_um:  Dépistage Actif UM
     :ivar text     circumstances_dp_um:  Dépistage Passif UM
     :ivar text     circumstances_dp_cs:  Dépistage Passif Centre de Santé
@@ -229,11 +228,15 @@ class CaseAbstract(models.Model):
 
     """
 
+    SOURCE_HISTORIC = "historic"
+    SOURCE_MOBILE_BACKUP = "mobile_backup"
+    SOURCE_MOBILE_SYNC = "mobile_sync"
+    SOURCE_PV = "pv"
     SOURCE_CHOICES = (
-        ("historic", "Historic"),
-        ("mobile_backup", "Mobile backup"),
-        ("mobile_sync", "Mobile synced"),
-        ("pv", "Pharmacovigilance"),
+        (SOURCE_HISTORIC, "Historic"),
+        (SOURCE_MOBILE_BACKUP, "Mobile backup"),
+        (SOURCE_MOBILE_SYNC, "Mobile synced"),
+        (SOURCE_PV, "Pharmacovigilance"),
     )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
@@ -287,7 +290,7 @@ class CaseAbstract(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
-    screening_type = models.TextField(null=True, blank=True, choices=SCREENING_TYPE_CHOICES)
+    screening_type = models.TextField(null=True, blank=True, choices=SCREENING_TYPE_CHOICES, db_index=True)
     circumstances_da_um = models.TextField(null=True, blank=True)
     circumstances_dp_um = models.TextField(null=True, blank=True)
     circumstances_dp_cs = models.TextField(null=True, blank=True)
@@ -592,7 +595,7 @@ class Case(CaseAbstract):
             "test_pl_lcr": self.test_pl_lcr,
             "test_pl_trypanosome": self.test_pl_trypanosome,
             "test_pl_comments": self.test_pl_comments,
-            "circumstances_dp": self.circumstances_dp,
+            "screening_type": self.screening_type,
         }
 
         if full and self.test_set:

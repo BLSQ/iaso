@@ -15,6 +15,10 @@ CONFIRMER = "confirmer"
 
 TESTER_TYPE_CHOICES = ((SCREENER, "Dépisteur"), (CONFIRMER, "Confirmateur"))
 
+SCREENING_ACTIVE = "active"
+SCREENING_PASSIVE = "passive"
+SCREENING_TYPE_CHOICES = ((SCREENING_ACTIVE, "Dépistage actif"), (SCREENING_PASSIVE, "Dépistage passif"))
+
 LEVEL_1 = 10
 LEVEL_2 = 20
 LEVEL_3 = 30
@@ -204,6 +208,8 @@ class Profile(models.Model):
     tester_type = models.TextField(
         "Type de tester", choices=TESTER_TYPE_CHOICES, null=True, blank=True
     )
+    screening_type = models.TextField("Dépistage actif/passif", choices=SCREENING_TYPE_CHOICES, null=True, blank=True,
+                                      default=SCREENING_ACTIVE)
     level = models.IntegerField(
         choices=LEVEL_CHOICES, null=True, blank=True, default=LEVEL_1
     )

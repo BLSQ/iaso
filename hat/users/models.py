@@ -259,6 +259,7 @@ class Profile(models.Model):
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
             "level": self.level,
+            "screening_type": self.screening_type,
         }
 
     def __str__(self):

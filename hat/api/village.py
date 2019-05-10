@@ -46,15 +46,25 @@ class VillageViewSet(viewsets.ViewSet):
     /api/villages/?types=YES,NA
     /api/villages/?search=bo&include_unlocated=true&as_list=true&limit=300
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
-        'menupermissions.x_plannings_microplanning',
-        'menupermissions.x_locator',
-        'menupermissions.x_vectorcontrol'
+        "menupermissions.x_plannings_microplanning",
+        "menupermissions.x_locator",
+        "menupermissions.x_vectorcontrol",
     ]
 
     def list(self, request):
-        values = ("name", "id", "longitude", "latitude", "population", "AS_id", "AS__name", "village_official")
+        values = (
+            "name",
+            "id",
+            "longitude",
+            "latitude",
+            "population",
+            "AS_id",
+            "AS__name",
+            "village_official",
+        )
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
@@ -82,14 +92,27 @@ class VillageViewSet(viewsets.ViewSet):
 
         if search:
             queryset = queryset.filter(name__icontains=search)
-            values = values + ("AS__ZS__name", "AS__ZS__id", "AS__ZS__province__name", "AS__ZS__province__id")
+            values = values + (
+                "AS__ZS__name",
+                "AS__ZS__id",
+                "AS__ZS__province__name",
+                "AS__ZS__province__id",
+            )
 
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(
+                AS__ZS__province_id__in=get_user_geo_list(
+                    request.user, "province_scope"
+                )
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(
+                AS__ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            queryset = queryset.filter(AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            queryset = queryset.filter(
+                AS_id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
 
         if province_ids:
             queryset = queryset.filter(AS__ZS__province_id__in=province_ids.split(","))
@@ -107,7 +130,7 @@ class VillageViewSet(viewsets.ViewSet):
             queryset = queryset.filter(AS__ZS__id__in=coordination.ZS.all())
 
         if types:
-            if types != 'all':
+            if types != "all":
                 types_array = types.split(",")
                 queryset = queryset.filter(village_official__in=types_array)
 
@@ -118,9 +141,12 @@ class VillageViewSet(viewsets.ViewSet):
         if unlocated:
             if unlocated == "located":
                 queryset = queryset.filter(
-                    Q(latitude__isnull=False) & Q(longitude__isnull=False))
+                    Q(latitude__isnull=False) & Q(longitude__isnull=False)
+                )
             if unlocated == "unlocated":
-                queryset = queryset.filter(latitude__isnull=True, longitude__isnull=True)
+                queryset = queryset.filter(
+                    latitude__isnull=True, longitude__isnull=True
+                )
 
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
@@ -132,13 +158,16 @@ class VillageViewSet(viewsets.ViewSet):
             if population == "populationOk":
                 queryset = queryset.filter(Q(population__gt=0))
             if population == "populationNok":
-                queryset = queryset.filter(
-                    Q(population=0) | Q(population__isnull=True))
+                queryset = queryset.filter(Q(population=0) | Q(population__isnull=True))
 
         if years:
             years_array = years.split(",")
             nr_positive_cases = Count(
-                "caseview", filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years_array)
+                "caseview",
+                filter=Q(
+                    caseview__confirmed_case=True,
+                    caseview__normalized_year__in=years_array,
+                ),
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ("nr_positive_cases",)
@@ -146,14 +175,16 @@ class VillageViewSet(viewsets.ViewSet):
             if from_date is not None and to_date is not None:
                 nr_positive_cases = Count(
                     "caseview",
-                    filter=Q(caseview__confirmed_case=True, caseview__normalized_date__range=(from_date, to_date)),
+                    filter=Q(
+                        caseview__confirmed_case=True,
+                        caseview__normalized_date__range=(from_date, to_date),
+                    ),
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
             else:
                 nr_positive_cases = Count(
-                    "caseview",
-                    filter=Q(caseview__confirmed_case=True),
+                    "caseview", filter=Q(caseview__confirmed_case=True)
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
@@ -185,7 +216,8 @@ class VillageViewSet(viewsets.ViewSet):
                     "village_type",
                     "village_source",
                     "gps_source",
-                    "is_erased")
+                    "is_erased",
+                )
                 paginator = Paginator(queryset.values(*values), limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
@@ -200,23 +232,26 @@ class VillageViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             if csv_format or xlsx_format:
-                if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
-                        "menupermissions.x_datas_download")) and
-                        not request.user.is_superuser):
-                    return Response('Unauthorized', status=401)
-                filename = 'villages'
-                columns = [{"title": 'Identifiant'},
-                           {"title": 'Nom'},
-                           {"title": 'Population'},
-                           {"title": 'Cas positifs'},
-                           {"title": 'Province'},
-                           {"title": 'ZS'},
-                           {"title": 'AS'},
-                           {"title": 'Longitude'},
-                           {"title": 'Latitude'},
-                           {"title": 'Officiel'},
-                           {"title": 'Source'},
-                           {"title": 'Source Gps'}]
+                if (
+                    request.user.has_perm("menupermissions.x_anonymous")
+                    or not request.user.has_perm("menupermissions.x_datas_download")
+                ) and not request.user.is_superuser:
+                    return Response("Unauthorized", status=401)
+                filename = "villages"
+                columns = [
+                    {"title": "Identifiant"},
+                    {"title": "Nom"},
+                    {"title": "Population"},
+                    {"title": "Cas positifs"},
+                    {"title": "Province"},
+                    {"title": "ZS"},
+                    {"title": "AS"},
+                    {"title": "Longitude"},
+                    {"title": "Latitude"},
+                    {"title": "Officiel"},
+                    {"title": "Source"},
+                    {"title": "Source Gps"},
+                ]
 
                 def get_row(village, **kwargs):
                     return [
@@ -231,24 +266,26 @@ class VillageViewSet(viewsets.ViewSet):
                         village.latitude,
                         village.village_type,
                         village.village_source,
-                        village.gps_source
+                        village.gps_source,
                     ]
 
                 if xlsx_format:
-                    filename = filename + '.xlsx'
+                    filename = filename + ".xlsx"
                     response = HttpResponse(
-                        generate_xlsx('Villages', columns, queryset, get_row),
-                        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        generate_xlsx("Villages", columns, queryset, get_row),
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     )
                 if csv_format:
-                    filename = filename + '.csv'
+                    filename = filename + ".csv"
                     response = StreamingHttpResponse(
-                        streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                        content_type='text/csv',
+                        streaming_content=(
+                            iter_items(queryset, Echo(), columns, get_row)
+                        ),
+                        content_type="text/csv",
                     )
 
-                response['Content-Disposition'] = 'attachment; filename=%s' % filename
-                response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response["Content-Disposition"] = "attachment; filename=%s" % filename
+                response["Cache-Control"] = "no-cache, no-store, must-revalidate"
                 return response
             else:
                 if limit:
@@ -258,7 +295,9 @@ class VillageViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         village = get_object_or_404(Village, pk=pk)
-        is_authorized = is_authorized_user(request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id)
+        is_authorized = is_authorized_user(
+            request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id
+        )
         if is_authorized:
             res = {
                 "name": village.name,
@@ -278,38 +317,45 @@ class VillageViewSet(viewsets.ViewSet):
             }
             planning_id = request.GET.get("planning_id", None)
             if planning_id:
-                assignations = Assignation.objects.filter(planning_id=planning_id, village=village)
+                assignations = Assignation.objects.filter(
+                    planning_id=planning_id, village=village
+                )
                 if assignations.exists():
                     team = assignations[0].team
                     res["team"] = {
                         "id": team.id,
                         "name": team.name,
-                        "coordination": {"id": team.coordination_id, "name": team.coordination.name},
+                        "coordination": {
+                            "id": team.coordination_id,
+                            "name": team.coordination.name,
+                        },
                     }
                 else:
                     res["team"] = None
             return Response(res)
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def partial_update(self, request, pk=None):
         village = get_object_or_404(Village, id=pk)
-        is_authorized = is_authorized_user(request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id)
+        is_authorized = is_authorized_user(
+            request.user, village.AS.ZS.province.id, village.AS.ZS.id, village.AS.id
+        )
         if is_authorized:
             original_village = copy(village)
-            village.name = request.data.get('name', '')
-            village.population = request.data.get('population', 0)
-            village.population_source = request.data.get('population_source', '')
-            village.population_year = request.data.get('population_year', 0)
-            village.village_official = request.data.get('village_official', None)
-            village.latitude = request.data.get('latitude', 0)
-            village.longitude = request.data.get('longitude', 0)
-            village.is_erased = request.data.get('is_erased', False)
-            village.village_type = request.data.get('village_type', '')
-            village.village_source = request.data.get('village_source', None)
-            village.gps_source = request.data.get('gps_source', '')
-            village.aliases = request.data.get('aliases', '')
-            AS_id = request.data.get('AS_id', None)
+            village.name = request.data.get("name", "")
+            village.population = request.data.get("population", 0)
+            village.population_source = request.data.get("population_source", "")
+            village.population_year = request.data.get("population_year", 0)
+            village.village_official = request.data.get("village_official", None)
+            village.latitude = request.data.get("latitude", 0)
+            village.longitude = request.data.get("longitude", 0)
+            village.is_erased = request.data.get("is_erased", False)
+            village.village_type = request.data.get("village_type", "")
+            village.village_source = request.data.get("village_source", None)
+            village.gps_source = request.data.get("gps_source", "")
+            village.aliases = request.data.get("aliases", "")
+            AS_id = request.data.get("AS_id", None)
 
             if AS_id:
                 newAs = get_object_or_404(AS, pk=AS_id)
@@ -319,21 +365,21 @@ class VillageViewSet(viewsets.ViewSet):
             log_modification(original_village, village, VILLAGE_API, request.user)
             return Response(village.as_dict())
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def create(self, request):
         name = request.data.get("name", None)
         population = request.data.get("population", 0)
-        population_source = request.data.get("population_source", '')
+        population_source = request.data.get("population_source", "")
         population_year = request.data.get("population_year", 0)
         village_official = request.data.get("village_official", None)
-        AS_id = request.data.get('AS_id', None)
-        latitude = request.data.get('latitude', 0)
-        longitude = request.data.get('longitude', 0)
-        village_type = request.data.get('village_type', '')
-        village_source = request.data.get('village_source', None)
-        gps_source = request.data.get('gps_source', '')
-        aliases = request.data.get('aliases', '')
+        AS_id = request.data.get("AS_id", None)
+        latitude = request.data.get("latitude", 0)
+        longitude = request.data.get("longitude", 0)
+        village_type = request.data.get("village_type", "")
+        village_source = request.data.get("village_source", None)
+        gps_source = request.data.get("gps_source", "")
+        aliases = request.data.get("aliases", "{}")
 
         village = Village()
         village.name = name
@@ -350,11 +396,13 @@ class VillageViewSet(viewsets.ViewSet):
         is_authorized = True
         if AS_id:
             newAs = get_object_or_404(AS, pk=AS_id)
-            is_authorized = is_authorized_user(request.user, newAs.ZS.province.id, newAs.ZS.id, newAs.id)
+            is_authorized = is_authorized_user(
+                request.user, newAs.ZS.province.id, newAs.ZS.id, newAs.id
+            )
             village.AS = newAs
         if is_authorized:
             village.save()
             log_modification(None, village, VILLAGE_API, request.user)
             return Response(village.as_dict())
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)

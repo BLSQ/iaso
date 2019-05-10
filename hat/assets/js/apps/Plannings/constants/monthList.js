@@ -2,7 +2,7 @@ const monthList = [
     {
         id: 1,
         key: 'january',
-        label: 'Jan',
+        label: 'M. 1',
         fullLabel: 'Janvier',
         data: [],
         population: 0,
@@ -10,7 +10,7 @@ const monthList = [
     {
         id: 2,
         key: 'february',
-        label: 'Févr',
+        label: 'M. 2',
         fullLabel: 'Février',
         data: [],
         population: 0,
@@ -18,7 +18,7 @@ const monthList = [
     {
         id: 3,
         key: 'march',
-        label: 'Mar',
+        label: 'M. 3',
         fullLabel: 'Mars',
         data: [],
         population: 0,
@@ -26,7 +26,7 @@ const monthList = [
     {
         id: 4,
         key: 'april',
-        label: 'Avr',
+        label: 'M. 4',
         fullLabel: 'Avril',
         data: [],
         population: 0,
@@ -34,7 +34,7 @@ const monthList = [
     {
         id: 5,
         key: 'may',
-        label: 'Mai',
+        label: 'M. 5',
         fullLabel: 'Mai',
         data: [],
         population: 0,
@@ -42,7 +42,7 @@ const monthList = [
     {
         id: 6,
         key: 'juny',
-        label: 'Juin',
+        label: 'M. 6',
         fullLabel: 'Juin',
         data: [],
         population: 0,
@@ -50,7 +50,7 @@ const monthList = [
     {
         id: 7,
         key: 'jully',
-        label: 'Juil',
+        label: 'M. 7',
         fullLabel: 'Juillet',
         data: [],
         population: 0,
@@ -58,7 +58,7 @@ const monthList = [
     {
         id: 8,
         key: 'august',
-        label: 'Aou',
+        label: 'M. 8',
         fullLabel: 'Aôut',
         data: [],
         population: 0,
@@ -66,7 +66,7 @@ const monthList = [
     {
         id: 9,
         key: 'september',
-        label: 'Sept',
+        label: 'M. 9',
         fullLabel: 'Septembre',
         data: [],
         population: 0,
@@ -74,7 +74,7 @@ const monthList = [
     {
         id: 10,
         key: 'october',
-        label: 'Oct',
+        label: 'M. 10',
         fullLabel: 'Octobre',
         data: [],
         population: 0,
@@ -82,7 +82,7 @@ const monthList = [
     {
         id: 11,
         key: 'november',
-        label: 'Nov',
+        label: 'M. 11',
         fullLabel: 'Novembre',
         data: [],
         population: 0,
@@ -90,7 +90,7 @@ const monthList = [
     {
         id: 12,
         key: 'december',
-        label: 'Déc',
+        label: 'M. 12',
         fullLabel: 'Décembre',
         data: [],
         population: 0,

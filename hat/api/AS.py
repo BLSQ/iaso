@@ -116,7 +116,7 @@ class ASViewSet(viewsets.ViewSet):
                 if delete:
                     TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
                 else:
-                    TeamActionZone.objects.filter(area=area, planning=planning).delete()
+                    TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
                     taz = TeamActionZone()
                     taz.team = team
                     taz.area = area

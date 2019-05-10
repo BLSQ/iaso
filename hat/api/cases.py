@@ -15,7 +15,7 @@ from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
 from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
-from hat.users.models import get_user_geo_list, is_authorized_user
+from hat.users.models import get_user_geo_list, is_authorized_user, SCREENING_TYPE_CHOICES
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
 
@@ -87,6 +87,7 @@ class CasesViewSet(viewsets.ViewSet):
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
         tester_type = request.GET.get("tester_type", None)
+        screening_type = request.GET.get("screening_type", None)
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
@@ -216,14 +217,14 @@ class CasesViewSet(viewsets.ViewSet):
                     queryset = queryset.filter(test_rdt__isnull=False)
                 if test_type == "ctc":
                     queryset = queryset.filter(test_ctcwoo__isnull=False)
-                # if test_type == "ge":
-                #     queryset = queryset.filter(test_ge__isnull=False)
-                # if test_type == "lcr":
-                #     queryset = queryset.filter(test_lcr__isnull=False)
-                # if test_type == "lnp":
-                #     queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
-                # if test_type == "sf":
-                #     queryset = queryset.filter(test_sf__isnull=False)
+                if test_type == "ge":
+                    queryset = queryset.filter(test_ge__isnull=False)
+                if test_type == "lcr":
+                    queryset = queryset.filter(test_lcr__isnull=False)
+                if test_type == "lnp":
+                    queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
+                if test_type == "sf":
+                    queryset = queryset.filter(test_sf__isnull=False)
                 if test_type == "pg":
                     queryset = queryset.filter(test_pg__isnull=False)
                 if test_type == "maect":
@@ -234,6 +235,12 @@ class CasesViewSet(viewsets.ViewSet):
         if tester_type:
             devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
             queryset = queryset.filter(device_id__in=devices)
+
+        if screening_type:
+            if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            queryset = queryset.filter(screening_type=screening_type)
 
         if device_ids:
             queryset = queryset.filter(device_id__in=device_ids.split(","))

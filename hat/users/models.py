@@ -5,6 +5,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
+
+from hat.constants import SCREENING_ACTIVE, SCREENING_TYPE_CHOICES
 from hat.geo.models import AS, ZS, Province
 from hat.users.middleware import get_current_user
 
@@ -14,10 +16,6 @@ SCREENER = "screener"
 CONFIRMER = "confirmer"
 
 TESTER_TYPE_CHOICES = ((SCREENER, "Dépisteur"), (CONFIRMER, "Confirmateur"))
-
-SCREENING_ACTIVE = "active"
-SCREENING_PASSIVE = "passive"
-SCREENING_TYPE_CHOICES = ((SCREENING_ACTIVE, "Dépistage actif"), (SCREENING_PASSIVE, "Dépistage passif"))
 
 LEVEL_1 = 10
 LEVEL_2 = 20

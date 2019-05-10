@@ -4,13 +4,13 @@ from django.core.paginator import Paginator
 from django.db.models import Q, OuterRef, Exists, Count
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import CaseView, Case, RES_POSITIVE
 from hat.common.utils import queryset_iterator
-from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
+from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS, SCREENING_TYPE_CHOICES
 from hat.geo.models import AS, Village
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.patient.utils import *
@@ -72,6 +72,7 @@ class PatientsViewSet(viewsets.ViewSet):
         search_mother_name = request.GET.get("search_mother_name", None)
         test_types = request.GET.get("test_type", None)
         screening_result = request.GET.get("screening_result", None)
+        screening_type = request.GET.get("screening_type", None)
         confirmation_result = request.GET.get("confirmation_result", None)
         only_dupes = request.GET.get("only_dupes", None)
         treatment_medicine = request.GET.get("treatment_medicine", None)
@@ -149,6 +150,17 @@ class PatientsViewSet(viewsets.ViewSet):
                 queryset = queryset\
                     .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
                     .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
+
+        if screening_type:
+            if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            cases_of_screening_type = Case.objects \
+                .filter(screening_type=screening_type) \
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset \
+                .annotate(has_cases_of_screening_type=Exists(cases_of_screening_type)) \
+                .filter(has_cases_of_screening_type=True)
 
         if confirmation_result is not None:
             if confirmation_result == 'not_done':

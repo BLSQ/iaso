@@ -143,7 +143,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk):
         work_zone = get_object_or_404(WorkZone, id=pk)
-        is_authorized = False
+        is_authorized = is_authorized = work_zone.AS.count() == 0
         for area in work_zone.AS.all():
             is_authorized = is_authorized_user(
                 request.user, area.ZS.province.id, area.ZS.id, area.id
@@ -200,7 +200,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
         name = request.data.get("name", None)
         color = request.data.get("color", None)
 
-        is_authorized = False
+        is_authorized = work_zone.AS.count() == 0
         for area in work_zone.AS.all():
             is_authorized = is_authorized_user(
                 request.user, area.ZS.province.id, area.ZS.id, area.id

@@ -43,80 +43,105 @@ class AssignationViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     permission_required = [
-        'menupermissions.x_plannings_microplanning',
-        'menupermissions.x_plannings_routes'
+        "menupermissions.x_plannings_microplanning",
+        "menupermissions.x_plannings_routes",
     ]
 
     def list(self, request):
-        planning_id = request.GET.get('planning_id', None)
-        coordination_id = request.GET.get('coordination_id', None)
-        workzone_id = request.GET.get('workzone_id', None)
-        team_id = request.GET.get('team_id', None)
-        show_case_count = request.GET.get('show_case_count', False)
-        show_tests_count = request.GET.get('show_tests_count', False)
+        planning_id = request.GET.get("planning_id", None)
+        coordination_id = request.GET.get("coordination_id", None)
+        workzone_id = request.GET.get("workzone_id", None)
+        team_id = request.GET.get("team_id", None)
+        show_case_count = request.GET.get("show_case_count", False)
+        show_tests_count = request.GET.get("show_tests_count", False)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
 
         assignations = Assignation.objects
         if request.user.profile.province_scope.count() != 0:
-            assignations = assignations.filter(village__AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            assignations = assignations.filter(
+                village__AS__ZS__province_id__in=get_user_geo_list(
+                    request.user, "province_scope"
+                )
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            assignations = assignations.filter(village__AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            assignations = assignations.filter(
+                village__AS__ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            assignations = assignations.filter(village__AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            assignations = assignations.filter(
+                village__AS_id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
 
         if coordination_id:
             coordination = get_object_or_404(Coordination, pk=coordination_id)
             is_authorized = is_user_coordination_authorized(coordination, request.user)
             if not is_authorized:
-                return Response('Unauthorized', status=401)
+                return Response("Unauthorized", status=401)
             teams = Team.objects.filter(coordination_id=coordination_id)
             assignations = assignations.filter(team__in=teams)
 
         if workzone_id:
             workzone = WorkZone.objects.get(pk=workzone_id)
-            assignations = assignations.filter(team__in=workzone.teams.all()).filter(village__AS__in=workzone.AS.all())
+            assignations = assignations.filter(team__in=workzone.teams.all()).filter(
+                village__AS__in=workzone.AS.all()
+            )
 
         if team_id:
             assignations = assignations.filter(team__id=team_id)
 
-        assignations = assignations.filter(planning_id=planning_id).select_related('village__AS').order_by('team__name')
+        assignations = (
+            assignations.filter(planning_id=planning_id)
+            .select_related("village__AS")
+            .order_by("team__name", "index")
+        )
 
         village_ids = map(lambda ass: ass.village_id, assignations)
         if show_tests_count:
             current_planning = get_object_or_404(Planning, pk=planning_id)
-            tests = Test.objects.filter(village_id__in=village_ids)\
-                .filter(date__year=current_planning.year)
+            tests = Test.objects.filter(village_id__in=village_ids).filter(
+                date__year=current_planning.year
+            )
             if team_id:
                 tests = tests.filter(team_id=team_id)
 
         if show_case_count:
             villages = Village.objects.filter(id__in=village_ids)
             year = timezone.now().year
-            years_array = range(year-5, year)
-            nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True,
-                                                           caseview__normalized_year__in=years_array)
-
-                                      )
+            years_array = range(year - 5, year)
+            nr_positive_cases = Count(
+                "caseview",
+                filter=Q(
+                    caseview__confirmed_case=True,
+                    caseview__normalized_year__in=years_array,
+                ),
+            )
             villages = villages.annotate(nr_positive_cases=nr_positive_cases)
-            endemic_dict = {village.id:village.nr_positive_cases for village in villages}
+            endemic_dict = {
+                village.id: village.nr_positive_cases for village in villages
+            }
 
         if csv_format is None and xlsx_format is None:
             res = []
             for assignation in assignations:
                 assignation_dict = assignation.as_dict()
                 if show_tests_count:
-                    assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
+                    assignation_dict["tests_count"] = tests.filter(
+                        village_id=assignation_dict["village_id"]
+                    ).count()
                 if show_case_count:
-                    assignation_dict['case_count'] = endemic_dict.get(assignation.village_id, None)
+                    assignation_dict["case_count"] = endemic_dict.get(
+                        assignation.village_id, None
+                    )
                 res.append(assignation_dict)
 
             return Response(res)
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous")
-                 or not request.user.has_perm("menupermissions.x_datas_download")) and
-                    not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
             columns = [
                 {"title": "Equipe"},
                 {"title": "Coordination"},
@@ -129,7 +154,7 @@ class AssignationViewSet(viewsets.ViewSet):
                 {"title": "AS"},
                 {"title": "ZS"},
                 {"title": "Province"},
-                {"title": "Nombre Cas"}
+                {"title": "Nombre Cas"},
             ]
             filename = "plannings"
 
@@ -140,53 +165,72 @@ class AssignationViewSet(viewsets.ViewSet):
                     ttype = "UM"
                 else:
                     ttype = "MUM"
-                return [team.name,
-                        team.coordination.name,
-                        team.capacity,
-                        ttype,
-                        village.name,
-                        village.latitude,
-                        village.longitude,
-                        village.population,
-                        village.AS.name,
-                        village.AS.ZS.name,
-                        village.AS.ZS.province.name,
-                        village.case_set.filter(form_year__in=[2013, 2014, 2015, 2016, 2017],
-                                                confirmed_case=True).count()
-                        ]
+                return [
+                    team.name,
+                    team.coordination.name,
+                    team.capacity,
+                    ttype,
+                    village.name,
+                    village.latitude,
+                    village.longitude,
+                    village.population,
+                    village.AS.name,
+                    village.AS.ZS.name,
+                    village.AS.ZS.province.name,
+                    village.case_set.filter(
+                        form_year__in=[2013, 2014, 2015, 2016, 2017],
+                        confirmed_case=True,
+                    ).count(),
+                ]
 
             if xlsx_format:
-                filename = filename + '.xlsx'
+                filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx('Plannings', columns, assignations, get_planning_export_row),
-                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    generate_xlsx(
+                        "Plannings", columns, assignations, get_planning_export_row
+                    ),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(assignations, Echo(), columns, get_planning_export_row)),
-                    content_type='text/csv',
+                    streaming_content=(
+                        iter_items(
+                            assignations, Echo(), columns, get_planning_export_row
+                        )
+                    ),
+                    content_type="text/csv",
                 )
-                filename = filename + '.csv'
-            response['Content-Disposition'] = 'attachment; filename=%s' % filename
+                filename = filename + ".csv"
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
     def partial_update(self, request, pk):
 
         assignation = get_object_or_404(Assignation, pk=pk)
 
-        index = request.data.get('index', assignation.index)
-        month = request.data.get('month', None)
-        show_tests_count = request.data.get('show_tests_count', None)
+        index = request.data.get("index", assignation.index)
+        month = request.data.get("month", None)
+        show_tests_count = request.data.get("show_tests_count", None)
 
         assignation.month = month
 
-        assignation_list = Assignation.objects.filter(team=assignation.team, planning=assignation.planning).order_by('index')
+        assignation_list = Assignation.objects.filter(
+            team=assignation.team, planning=assignation.planning
+        ).order_by("index")
         if request.user.profile.province_scope.count() != 0:
-            assignation_list = assignation_list.filter(village__AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            assignation_list = assignation_list.filter(
+                village__AS__ZS__province_id__in=get_user_geo_list(
+                    request.user, "province_scope"
+                )
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            assignation_list = assignation_list.filter(village__AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            assignation_list = assignation_list.filter(
+                village__AS__ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            assignation_list = assignation_list.filter(village__AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            assignation_list = assignation_list.filter(
+                village__AS_id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
 
         new_list = list(filter(lambda x: x.id != assignation.id, assignation_list))
         new_list.insert(index, assignation)
@@ -198,16 +242,19 @@ class AssignationViewSet(viewsets.ViewSet):
         village_ids = map(lambda ass: ass.village_id, new_list)
         if show_tests_count:
             current_planning = get_object_or_404(Planning, pk=assignation.planning.id)
-            tests = Test.objects.all().filter(village_id__in=village_ids)\
-                .filter(date__year=current_planning.year)\
+            tests = (
+                Test.objects.all()
+                .filter(village_id__in=village_ids)
+                .filter(date__year=current_planning.year)
                 .filter(team_id=assignation.team.id)
+            )
         res = []
         for assignation in new_list:
             assignation_dict = assignation.as_dict()
             if show_tests_count:
-                assignation_dict['tests_count'] = tests.filter(village_id=assignation_dict['village_id']).count()
+                assignation_dict["tests_count"] = tests.filter(
+                    village_id=assignation_dict["village_id"]
+                ).count()
             res.append(assignation_dict)
 
         return Response(res)
-
-

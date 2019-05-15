@@ -35,6 +35,7 @@ columns_tests = [
     {"title": 'Trypanosome', "width": 11},
     {"title": 'Albumine', "width": 8},
     {"title": 'Commentaires', "width": 20},
+    {"title": 'Dépistage\nactif/passif', "width": 15},
 ]
 
 columns_treatments = [
@@ -107,7 +108,8 @@ def get_row_tests(test, request=None, **kwargs):
         test.form.test_pl_lcr if (test.form.test_pl_lcr and test.type == 'PL') else '/',
         test.form.test_pl_trypanosome if (test.form.test_pl_trypanosome and test.type == 'PL') else '/',
         test.form.test_pl_albumine if (test.form.test_pl_albumine and test.type == 'PL') else '/',
-        test.form.test_pl_comments if (test.form.test_pl_comments and test.type == 'PL') else '/'
+        test.form.test_pl_comments if (test.form.test_pl_comments and test.type == 'PL') else '/',
+        test.form.screening_type,
     ]
 
 

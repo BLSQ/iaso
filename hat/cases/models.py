@@ -595,6 +595,11 @@ class Case(CaseAbstract):
             "test_pl_lcr": self.test_pl_lcr,
             "test_pl_trypanosome": self.test_pl_trypanosome,
             "test_pl_comments": self.test_pl_comments,
+            "circumstances_da_um": self.circumstances_da_um,
+            "circumstances_dp_um": self.circumstances_dp_um,
+            "circumstances_dp_cdtc": self.circumstances_dp_cdtc,
+            "circumstances_dp_cs": self.circumstances_dp_cs,
+            "circumstances_dp_hgr": self.circumstances_dp_hgr,
             "screening_type": self.screening_type,
         }
 

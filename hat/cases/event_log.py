@@ -34,9 +34,20 @@ class EventTable(Enum):
 # 'SELECT * FROM {}'.format(sql.Identifier(table_name))
 
 
-def get_events() -> List[JsonType]:
+def get_events(filename=None, start=None, type=None) -> List[JsonType]:
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM hat_event_view')
+        query = 'SELECT * FROM hat_event_view where 1=1'
+        query_params = []
+        if filename is not None and len(filename) >= 3:
+            query += " AND name ilike %s"
+            query_params.append("%" + filename + "%")
+        if start is not None:
+            query += " and id >= %s"
+            query_params.append(start)
+        if type is not None:
+            query += " and sub_type = %s"
+            query_params.append(type)
+        cursor.execute(query, query_params)
         columns = [col[0] for col in cursor.description]
         events = [dict(zip(columns, row)) for row in cursor.fetchall()]
         return events

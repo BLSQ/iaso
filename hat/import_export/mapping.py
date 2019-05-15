@@ -278,7 +278,9 @@ def historic_get_screening_type(ignored_columns):
     da = ignored_columns.get("circumstances_da", False)
     dp = ignored_columns.get("circumstances_dp", False)
     if da and dp:
-        raise Exception("Case contains both DA and DP flags, this should not be possible")
+        # In theory, this is not possible but it does happen on some MS Access files. We will leave them as None
+        # and set the flag according to the other fields (or a future update from another file)
+        return None
     elif da is False and dp is False:
         return None  # DA/DP status is unknown
     else:

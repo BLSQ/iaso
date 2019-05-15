@@ -17,12 +17,27 @@ class Command(BaseCommand):
             default='historic',
             help='type of data to reimport, pv or historic mainly',
         )
+        parser.add_argument(
+            '--filename',
+            action='store',
+            dest='filename',
+            default=None,
+            help='part of the filename to consider',
+        )
+        parser.add_argument(
+            '--start',
+            action='store',
+            dest='start',
+            default=None,
+            help='ID of the file to start',
+        )
 
     def handle(self, *args, **options):
-        all_events = get_events()
+        all_events = get_events(filename=options.get("filename", None), start=options.get("start", None),
+                                type=options['type'] if options['type'] != 'all' else None)
         num_updated = 0
         for event in all_events:
-            if event['sub_type'] == options['type']:
+            if event['sub_type'] == options['type'] or options['type'] == 'all':
                 print(event['id'], event['name'], event['total'], event['created'], event['updated'], event['deleted'])
                 print("Prep...", end="", flush=True)
                 prepared = prepare_mdb_data(event['sub_type'], event['data'])

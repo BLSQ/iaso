@@ -248,6 +248,7 @@ export class Locator extends Component {
                                     results={this.props.locatorState.searchResults}
                                     isLoading={this.props.locatorState.searchLoading}
                                     keys={searchResultsKeys}
+                                    disableBlurSearch
                                     onSelect={village => this.props.selectProvince(village.AS__ZS__province__id, village.AS__ZS__id, village.AS_id, village.id)}
                                 />
                             </div>

@@ -71,6 +71,7 @@ class Search extends React.Component {
             disabled,
             displayIcon,
             onKeyPressed,
+            disableBlurSearch,
         } = this.props;
         return (
             <div className="search-container">
@@ -81,7 +82,9 @@ class Search extends React.Component {
                         disabled={disabled}
                         placeholder={this.props.placeholderText}
                         onChange={event => this.onChange(event.target.value)}
-                        onBlur={event => this.onBlur(event.target.value)}
+                        onBlur={(event) => {
+                            if (!disableBlurSearch) { this.onBlur(event.target.value); }
+                        }}
                         onKeyPress={(event) => {
                             if (event.which === 13 || event.keyCode === 13) {
                                 if (onKeyPressed) {
@@ -217,6 +220,7 @@ Search.defaultProps = {
     disabled: false,
     displayIcon: true,
     onKeyPressed: null,
+    disableBlurSearch: false,
 };
 
 Search.propTypes = {
@@ -242,6 +246,7 @@ Search.propTypes = {
     disabled: PropTypes.bool,
     displayIcon: PropTypes.bool,
     onKeyPressed: PropTypes.any,
+    disableBlurSearch: PropTypes.bool,
 };
 
 export default Search;

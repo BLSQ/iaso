@@ -1,7 +1,30 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
+    tester: {
+        defaultMessage: 'Dépistage & confirmation',
+        id: 'main.label.tester',
+    },
+    vector: {
+        defaultMessage: 'Contrôle de vecteur',
+        id: 'main.label.vector',
+    },
+});
 
 const managementTeamsColumns = (formatMessage, component) => ([
+    {
+        Header: formatMessage({
+            defaultMessage: 'Type',
+            id: 'main.label.team_type',
+        }),
+        accessor: 'team_type',
+        Cell: settings => (
+            <span>
+                {settings.original.team_type ? formatMessage(MESSAGES[settings.original.team_type]) : '/'}
+            </span>
+        ),
+    },
     {
         Header: formatMessage({
             defaultMessage: 'Nom',
@@ -18,12 +41,16 @@ const managementTeamsColumns = (formatMessage, component) => ([
     },
     {
         Header: formatMessage({
-            defaultMessage: 'Type',
-            id: 'main.label.type',
+            defaultMessage: 'Type de dépistage',
+            id: 'main.label.screening_type',
         }),
         accessor: 'UM',
         Cell: settings => (
-            <span>{settings.original.UM ? 'UM' : 'MUM'}</span>
+            <span>
+                {settings.original.UM === true && 'UM'}
+                {settings.original.UM === false && 'MUM'}
+                {settings.original.UM === null && '/'}
+            </span>
         ),
     },
     {
@@ -53,13 +80,14 @@ const managementTeamsColumns = (formatMessage, component) => ([
         width: 250,
         Cell: settings => (
             <section>
-                <button
-                    className="button--tiny margin-right"
-                    onClick={() => component.selectTeam(settings.original)}
-                >
-                    <i className="fa fa-info-circle" />
-                    <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
-                </button>
+                {settings.original.team_type === 'tester' &&
+                    <button
+                        className="button--tiny margin-right"
+                        onClick={() => component.selectTeam(settings.original)}
+                    >
+                        <i className="fa fa-info-circle" />
+                        <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
+                    </button>}
                 <button
                     className="button--edit--tiny margin-right"
                     onClick={() => component.editTeam(settings.original)}

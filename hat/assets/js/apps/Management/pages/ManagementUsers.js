@@ -131,7 +131,7 @@ class ManagementUsers extends React.Component {
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
-            if (value && !url.includes(key)) {
+            if (value) {
                 url += `&${key}=${value}`;
             }
         });

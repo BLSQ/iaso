@@ -110,7 +110,7 @@ class Team(models.Model):
     name = models.CharField(max_length=255)
     coordination = models.ForeignKey(Coordination, null=True, on_delete=models.CASCADE)
     capacity = models.IntegerField()
-    UM = models.BooleanField(default=True)
+    UM = models.NullBooleanField(null=True, blank=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True), size=20, null=True, blank=True
     )

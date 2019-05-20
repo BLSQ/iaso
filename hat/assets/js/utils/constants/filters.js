@@ -935,7 +935,7 @@ const screenTeamType = () => (
         },
         label: {
             id: 'main.label.screening_team_type',
-            defaultMessage: 'Type d\'équipe de dépistage',
+            defaultMessage: 'Type de dépistage',
         },
         type: 'select',
     }

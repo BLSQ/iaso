@@ -118,8 +118,9 @@ class TeamViewSet(viewsets.ViewSet):
         else:
             team.name = request.data.get('name', '')
             team.capacity = request.data.get('capacity', 0)
-            team.UM = request.data.get('UM', False)
+            team.UM = request.data.get('UM', None)
             team.coordination_id = request.data.get('coordination_id', -1)
+            team.team_type = request.data.get('team_type', 'tester')
             team.save()
 
         return Response(team.as_dict())

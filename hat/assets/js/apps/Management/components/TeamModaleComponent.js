@@ -1,9 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
 
+const MESSAGES = defineMessages({
+    tester: {
+        defaultMessage: 'Dépistage & confirmation',
+        id: 'main.label.tester',
+    },
+    vector: {
+        defaultMessage: 'Contrôle de vecteur',
+        id: 'main.label.vector',
+    },
+});
 
 class TeamModale extends Component {
     constructor(props) {
@@ -46,6 +56,7 @@ class TeamModale extends Component {
     }
 
     render() {
+        const { formatMessage } = this.props.intl;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -53,6 +64,35 @@ class TeamModale extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <section className="edit-modal">
+                    <div>
+                        <label
+                            htmlFor={`team-type-${this.state.team.id}`}
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="main.label.team_type"
+                                defaultMessage="Type d'équipe"
+                            />:
+                        </label>
+                        <Select
+                            id={`team-type-${this.state.team.id}`}
+                            className={!this.state.team.team_type ? 'form-error' : ''}
+                            simpleValue
+                            name="team_type"
+                            value={this.state.team.team_type}
+                            options={[
+                                {
+                                    label: formatMessage(MESSAGES.tester),
+                                    value: 'tester',
+                                },
+                                {
+                                    label: formatMessage(MESSAGES.vector),
+                                    value: 'vector',
+                                },
+                            ]}
+                            onChange={teamType => this.updateTeamField('team_type', teamType)}
+                        />
+                    </div>
                     <div>
                         <label
                             htmlFor={`name-${this.state.team.id}`}
@@ -113,41 +153,44 @@ class TeamModale extends Component {
                             onChange={event => this.updateTeamField('capacity', parseInt(event.currentTarget.value, 10))}
                         />
                     </div>
-                    <div>
-                        <label
-                            htmlFor={`type-${this.state.team.id}`}
-                            className="filter__container__select__label"
-                        >
-                            <FormattedMessage
-                                id="main.label.teamtype"
-                                defaultMessage="Type"
-                            />:
-                        </label>
-                        <section
-                            onClick={() => this.changeOption('UM')}
-                            role="button"
-                            tabIndex={0}
-                        >
-                            <input
-                                id={`type-${this.state.team.id}`}
-                                type="radio"
-                                name="type"
-                                checked={this.state.team.UM ? 'checked' : ''}
-                                value={this.state.team.UM}
-                                onChange={() => this.changeOption('UM')}
-                            />
-                            <span>UM</span>
-                            <input
-                                id={`type-${this.state.team.id}-false`}
-                                type="radio"
-                                name="type"
-                                checked={!this.state.team.UM ? 'checked' : ''}
-                                value={this.state.team.UM}
-                                onChange={() => this.changeOption('UM')}
-                            />
-                            <span>MUM</span>
-                        </section>
-                    </div>
+                    {
+                        this.state.team.team_type === 'tester' &&
+                        <div>
+                            <label
+                                htmlFor={`type-${this.state.team.id}`}
+                                className="filter__container__select__label"
+                            >
+                                <FormattedMessage
+                                    id="main.label.teamtype"
+                                    defaultMessage="Type"
+                                />:
+                            </label>
+                            <section
+                                onClick={() => this.changeOption('UM')}
+                                role="button"
+                                tabIndex={0}
+                            >
+                                <input
+                                    id={`type-${this.state.team.id}`}
+                                    type="radio"
+                                    name="type"
+                                    checked={this.state.team.UM ? 'checked' : ''}
+                                    value={this.state.team.UM}
+                                    onChange={() => this.changeOption('UM')}
+                                />
+                                <span>UM</span>
+                                <input
+                                    id={`type-${this.state.team.id}-false`}
+                                    type="radio"
+                                    name="type"
+                                    checked={!this.state.team.UM ? 'checked' : ''}
+                                    value={this.state.team.UM}
+                                    onChange={() => this.changeOption('UM')}
+                                />
+                                <span>MUM</span>
+                            </section>
+                        </div>
+                    }
                     <div className="align-right">
                         <button
                             className="button"
@@ -180,10 +223,11 @@ TeamModale.defaultProps = {
         id: 0,
         name: '',
         capacity: 0,
-        UM: false,
+        UM: null,
     },
 };
 TeamModale.propTypes = {
+    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     team: PropTypes.object,

@@ -49,7 +49,6 @@ class ManagementTeams extends React.Component {
         const {
             params,
         } = this.props;
-
         const urlParams = {
             ...params,
         };
@@ -60,7 +59,7 @@ class ManagementTeams extends React.Component {
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
-            if (value && !url.includes(key)) {
+            if (value) {
                 url += `&${key}=${value}`;
             }
         });
@@ -70,8 +69,8 @@ class ManagementTeams extends React.Component {
 
     fetchCoordinations() {
         const { dispatch } = this.props;
-        getRequest('/api/coordinations/', dispatch).then((coordinations) => {
-            dispatch(teamsActions.loadCoordinations(coordinations));
+        getRequest('/api/coordinations/', dispatch).then((coordinationsList) => {
+            dispatch(teamsActions.loadCoordinations(coordinationsList));
         });
     }
 
@@ -214,19 +213,22 @@ class ManagementTeams extends React.Component {
                                 params={params}
                                 baseUrl={baseUrl}
                                 filters={[
-                                    screenTeamType(),
-                                ]}
-                            />
-                        </div>
-                        <div>
-                            <FiltersComponent
-                                params={params}
-                                baseUrl={baseUrl}
-                                filters={[
                                     teamType(formatMessage, defineMessages),
                                 ]}
                             />
                         </div>
+                        {
+                            params.team_type !== 'vector' &&
+                            <div>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    filters={[
+                                        screenTeamType(),
+                                    ]}
+                                />
+                            </div>
+                        }
                     </div>
                 </div>
                 <div className="widget__container management-control">

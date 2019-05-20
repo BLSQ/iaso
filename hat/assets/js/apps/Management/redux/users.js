@@ -241,7 +241,7 @@ export const fetchUserLevels = (dispatch) => {
 
 export const fetchTeams = (dispatch) => {
     req
-        .get('/api/teams/')
+        .get('/api/teams?team_type=all')
         .then((result) => {
             dispatch(setTeams(result.body));
         })

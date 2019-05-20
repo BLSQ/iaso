@@ -20,7 +20,7 @@ TESTER_TYPE_CHOICES = ((SCREENER, "Dépisteur"), (CONFIRMER, "Confirmateur"))
 VC = "vector"
 TESTER = "tester"
 
-TEAM_TYPE_CHOICES = ((TESTER, "Testeur"), (VC, "Vecteur contrôle"))
+TEAM_TYPE_CHOICES = ((TESTER, "Dépistage & confirmation"), (VC, "Vecteur contrôle"))
 
 LEVEL_1 = 10
 LEVEL_2 = 20

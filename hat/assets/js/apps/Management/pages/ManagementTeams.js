@@ -22,9 +22,8 @@ const baseUrl = 'teams';
 class ManagementTeams extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
         this.state = {
-            tableColumns: managementTeamsColumns(formatMessage, this),
+            tableColumns: [],
             coordinations: props.coordinations,
             showEditModale: false,
             showDeleteModale: false,
@@ -36,12 +35,19 @@ class ManagementTeams extends React.Component {
 
     componentDidMount() {
         this.fetchCoordinations();
+        this.fetchTeamTypes();
     }
 
     componentWillReceiveProps(newProps) {
-        this.setState({
+        const { formatMessage } = newProps.intl;
+        const newState = {
             coordinations: newProps.coordinations,
-        });
+        };
+        if (newProps.teamTypes.length > 0) {
+            newState.tableColumns = managementTeamsColumns(formatMessage, this, newProps.teamTypes);
+        }
+
+        this.setState(newState);
     }
 
     getEndpointUrl() {
@@ -71,6 +77,13 @@ class ManagementTeams extends React.Component {
         const { dispatch } = this.props;
         getRequest('/api/coordinations/', dispatch).then((coordinationsList) => {
             dispatch(teamsActions.loadCoordinations(coordinationsList));
+        });
+    }
+
+    fetchTeamTypes() {
+        const { dispatch } = this.props;
+        getRequest('/api/teamtypes/', dispatch).then((teamtypesList) => {
+            dispatch(teamsActions.loadTeamTypes(teamtypesList));
         });
     }
 
@@ -164,8 +177,8 @@ class ManagementTeams extends React.Component {
                 loading,
             },
             params,
+            teamTypes,
         } = this.props;
-
         return (
             <section>
                 {
@@ -175,6 +188,7 @@ class ManagementTeams extends React.Component {
                         toggleModal={() => this.toggleEditModale()}
                         team={this.state.teamEdited}
                         coordinations={this.state.coordinations}
+                        teamTypes={teamTypes}
                         saveTeam={team => this.saveTeam(team)}
                         isUpdating={this.state.isUpdating}
                     />
@@ -213,7 +227,7 @@ class ManagementTeams extends React.Component {
                                 params={params}
                                 baseUrl={baseUrl}
                                 filters={[
-                                    teamType(formatMessage, defineMessages),
+                                    teamType(formatMessage, defineMessages, teamTypes),
                                 ]}
                             />
                         </div>
@@ -281,6 +295,7 @@ ManagementTeams.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     coordinations: PropTypes.array.isRequired,
+    teamTypes: PropTypes.array.isRequired,
 };
 
 const ManagementTeamsIntl = injectIntl(ManagementTeams);
@@ -288,6 +303,7 @@ const ManagementTeamsIntl = injectIntl(ManagementTeams);
 const MapStateToProps = state => ({
     load: state.load,
     coordinations: state.teams.coordinations,
+    teamTypes: state.teams.teamTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

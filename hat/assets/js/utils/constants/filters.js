@@ -99,14 +99,6 @@ export const MESSAGES = {
         defaultMessage: 'Sans vidéos',
         id: 'main.label.without_videos',
     },
-    tester: {
-        defaultMessage: 'Dépistage & confirmation',
-        id: 'main.label.tester',
-    },
-    vector: {
-        defaultMessage: 'Contrôle de vecteur',
-        id: 'main.label.vector',
-    },
 };
 
 const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
@@ -891,7 +883,7 @@ const onlyCheckedTests = () => (
     }
 );
 
-const teamType = (formatMessage, defineMessages, label = {
+const teamType = (formatMessage, defineMessages, teamTypeList, label = {
     id: 'main.label.team_type',
     defaultMessage: 'Type d\'équipe',
 }, placeholder = {
@@ -903,16 +895,7 @@ const teamType = (formatMessage, defineMessages, label = {
         urlKey: 'team_type',
         isMultiSelect: false,
         isClearable: true,
-        options: [
-            {
-                label: formatMessage(getMessage(defineMessages, 'tester')),
-                value: 'tester',
-            },
-            {
-                label: formatMessage(getMessage(defineMessages, 'vector')),
-                value: 'vector',
-            },
-        ],
+        options: teamTypeList,
         placeholder,
         label,
         type: 'select',

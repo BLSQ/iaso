@@ -6,10 +6,11 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
+import { createUrl, getRequest } from '../../../utils/fetchData';
 import UserModaleComponent from '../components/UserModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { userActions } from '../redux/users';
+import { teamsActions } from '../redux/teams';
 import Search from '../../../components/Search';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { teamType, institutions } from '../../../utils/constants/filters';
@@ -102,6 +103,10 @@ class ManagementUsers extends React.Component {
         };
     }
 
+    componentDidMount() {
+        this.fetchTeamTypes();
+    }
+
     componentWillReceiveProps(nextProps) {
         this.setState({
             showEditModale: nextProps.selectedUser !== null,
@@ -171,6 +176,13 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.deleteUser(dispatch, element));
     }
 
+    fetchTeamTypes() {
+        const { dispatch } = this.props;
+        getRequest('/api/teamtypes/', dispatch).then((teamtypesList) => {
+            dispatch(teamsActions.loadTeamTypes(teamtypesList));
+        });
+    }
+
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
@@ -189,6 +201,7 @@ class ManagementUsers extends React.Component {
             selectedUser,
             teams,
             load,
+            teamTypes,
         } = this.props;
 
         return (
@@ -200,7 +213,7 @@ class ManagementUsers extends React.Component {
                         closeModal={() => this.props.selectUser(null)}
                         user={selectedUser}
                         saveData={newData => this.saveData(newData)}
-                        institutions={institutions}
+                        institutions={institutionsList}
                         userTypes={userTypes}
                         testerTypes={testerTypes}
                         userLevels={userLevels}
@@ -268,7 +281,7 @@ class ManagementUsers extends React.Component {
                                 params={this.props.params}
                                 baseUrl={baseUrl}
                                 filters={[
-                                    teamType(formatMessage, defineMessages, {
+                                    teamType(formatMessage, defineMessages, teamTypes, {
                                         id: 'main.label.team_user_type',
                                         defaultMessage: 'Type d\'utilisateur',
                                     }, {
@@ -353,6 +366,7 @@ ManagementUsers.propTypes = {
     selectUser: PropTypes.func.isRequired,
     selectedUser: PropTypes.object,
     updateCurrentUser: PropTypes.func.isRequired,
+    teamTypes: PropTypes.array.isRequired,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);
@@ -370,6 +384,7 @@ const MapStateToProps = state => ({
     areas: state.users.areas,
     isUpdated: state.users.isUpdated,
     selectedUser: state.users.current,
+    teamTypes: state.teams.teamTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

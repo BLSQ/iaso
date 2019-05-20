@@ -1,19 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
-
-const MESSAGES = defineMessages({
-    tester: {
-        defaultMessage: 'Dépistage & confirmation',
-        id: 'main.label.tester',
-    },
-    vector: {
-        defaultMessage: 'Contrôle de vecteur',
-        id: 'main.label.vector',
-    },
-});
 
 class TeamModale extends Component {
     constructor(props) {
@@ -56,7 +45,7 @@ class TeamModale extends Component {
     }
 
     render() {
-        const { formatMessage } = this.props.intl;
+        const { teamTypes } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -71,27 +60,30 @@ class TeamModale extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.team_type"
-                                defaultMessage="Type d'équipe"
+                                defaultMessage="Type"
                             />:
                         </label>
-                        <Select
-                            id={`team-type-${this.state.team.id}`}
-                            className={!this.state.team.team_type ? 'form-error' : ''}
-                            simpleValue
-                            name="team_type"
-                            value={this.state.team.team_type}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.tester),
-                                    value: 'tester',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.vector),
-                                    value: 'vector',
-                                },
-                            ]}
-                            onChange={teamType => this.updateTeamField('team_type', teamType)}
-                        />
+                        {
+                            teamTypes.length > 0 &&
+                            <Select
+                                id={`team-type-${this.state.team.id}`}
+                                className={!this.state.team.team_type ? 'form-error' : ''}
+                                simpleValue
+                                name="team_type"
+                                value={this.state.team.team_type}
+                                options={[
+                                    {
+                                        label: teamTypes.find(type => type.value === 'tester').label,
+                                        value: 'tester',
+                                    },
+                                    {
+                                        label: teamTypes.find(type => type.value === 'vector').label,
+                                        value: 'vector',
+                                    },
+                                ]}
+                                onChange={teamType => this.updateTeamField('team_type', teamType)}
+                            />
+                        }
                     </div>
                     <div>
                         <label
@@ -162,7 +154,7 @@ class TeamModale extends Component {
                             >
                                 <FormattedMessage
                                     id="main.label.teamtype"
-                                    defaultMessage="Type"
+                                    defaultMessage="Type d'unité"
                                 />:
                             </label>
                             <section
@@ -227,11 +219,11 @@ TeamModale.defaultProps = {
     },
 };
 TeamModale.propTypes = {
-    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     team: PropTypes.object,
     coordinations: PropTypes.array.isRequired,
+    teamTypes: PropTypes.array.isRequired,
     saveTeam: PropTypes.func.isRequired,
     isUpdating: PropTypes.bool.isRequired,
 };

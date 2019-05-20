@@ -1,18 +1,7 @@
 import React from 'react';
-import { FormattedMessage, defineMessages } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
-const MESSAGES = defineMessages({
-    tester: {
-        defaultMessage: 'Dépistage & confirmation',
-        id: 'main.label.tester',
-    },
-    vector: {
-        defaultMessage: 'Contrôle de vecteur',
-        id: 'main.label.vector',
-    },
-});
-
-const managementTeamsColumns = (formatMessage, component) => ([
+const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
     {
         Header: formatMessage({
             defaultMessage: 'Type',
@@ -21,7 +10,7 @@ const managementTeamsColumns = (formatMessage, component) => ([
         accessor: 'team_type',
         Cell: settings => (
             <span>
-                {settings.original.team_type ? formatMessage(MESSAGES[settings.original.team_type]) : '/'}
+                {settings.original.team_type ? teamTypes.find(type => type.value === settings.original.team_type).label : '/'}
             </span>
         ),
     },

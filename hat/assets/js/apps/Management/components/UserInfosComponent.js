@@ -12,6 +12,10 @@ const LOCAL_MESSAGES = defineMessages({
         defaultMessage: 'Aucune',
         id: 'management.none',
     },
+    noneMasc: {
+        defaultMessage: 'Aucun',
+        id: 'management.noneMasc',
+    },
 });
 
 class UserInfosComponent extends Component {
@@ -154,7 +158,7 @@ class UserInfosComponent extends Component {
                         simpleValue
                         name="tester_type"
                         value={this.state.user.tester_type}
-                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
+                        placeholder={formatMessage(LOCAL_MESSAGES.noneMasc)}
                         options={testerTypes.map(t =>
                             ({ label: formatMessage(MESSAGES[t[0]]), value: t[0] }))}
                         onChange={testerType => this.props.updateUserField('tester_type', testerType)}

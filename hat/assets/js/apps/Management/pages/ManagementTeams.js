@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
-import Select from 'react-select';
 import moment from 'moment';
 
 import LoadingSpinner from '../../../components/loading-spinner';
@@ -15,32 +14,17 @@ import { saveFull, deleteFull } from '../../../utils/saveData';
 import { teamsActions } from '../redux/teams';
 import { detailsActions } from '../redux/details';
 import managementTeamsColumns from '../constants/managementTeamsColumns';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { teamType, coordinations, screenTeamType } from '../../../utils/constants/filters';
 
-const baseApiUrl = '/api/teams/?';
-
-
-const MESSAGES = defineMessages({
-    all: {
-        defaultMessage: 'Toutes',
-        id: 'microplanning.all',
-    },
-    allMale: {
-        defaultMessage: 'Tous',
-        id: 'microplanning.allMale',
-    },
-});
+const baseUrl = 'teams';
 
 class ManagementTeams extends React.Component {
     constructor(props) {
         super(props);
         const { formatMessage } = props.intl;
-        let newUrl = baseApiUrl;
-        if (props.params.coordination_id) {
-            newUrl = `${newUrl}&coordination_id=${props.params.coordination_id}`;
-        }
         this.state = {
             tableColumns: managementTeamsColumns(formatMessage, this),
-            tableUrl: newUrl,
             coordinations: props.coordinations,
             showEditModale: false,
             showDeleteModale: false,
@@ -49,30 +33,40 @@ class ManagementTeams extends React.Component {
             isUpdating: false,
         };
     }
+
     componentDidMount() {
         this.fetchCoordinations();
     }
 
     componentWillReceiveProps(newProps) {
-        let newUrl = baseApiUrl;
-        if (newProps.params.coordination_id) {
-            newUrl = `${newUrl}&coordination_id=${newProps.params.coordination_id}`;
-        }
-        if (newProps.params.type) {
-            newUrl = `${newUrl}&type=${newProps.params.type}`;
-        }
         this.setState({
-            tableUrl: newUrl,
             coordinations: newProps.coordinations,
         });
     }
 
-    onChangeFilters(key, value) {
-        this.props.redirectTo('teams', {
-            ...this.props.params,
-            [key]: value,
+    getEndpointUrl() {
+        let url = '/api/teams/?';
+        const {
+            params,
+        } = this.props;
+
+        const urlParams = {
+            ...params,
+        };
+
+        if (!urlParams.team_type) {
+            url += 'team_type=all';
+        }
+
+        Object.keys(urlParams).forEach((key) => {
+            const value = urlParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
         });
+        return url;
     }
+
 
     fetchCoordinations() {
         const { dispatch } = this.props;
@@ -163,8 +157,15 @@ class ManagementTeams extends React.Component {
     }
 
     render() {
-        const { loading } = this.props.load;
-        const { formatMessage } = this.props.intl;
+        const {
+            intl: {
+                formatMessage,
+            },
+            load: {
+                loading,
+            },
+            params,
+        } = this.props;
 
         return (
             <section>
@@ -200,32 +201,30 @@ class ManagementTeams extends React.Component {
                     </div>
                     <div className="widget__content--tier">
                         <div>
-                            <FormattedMessage id="microplanning.label.coordination" defaultMessage="Coordination: " />
-                            {
-                                this.state.coordinations &&
-                                <Select
-                                    simpleValue
-                                    name="coordination_id"
-                                    value={parseInt(this.props.params.coordination_id, 10)}
-                                    placeholder={formatMessage(MESSAGES.all)}
-                                    options={this.state.coordinations.map(coordination =>
-                                        ({ label: coordination.name, value: coordination.id }))}
-                                    onChange={coordinationId => this.onChangeFilters('coordination_id', coordinationId)}
-                                />
-                            }
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={[
+                                    coordinations(this.state.coordinations, false),
+                                ]}
+                            />
                         </div>
                         <div>
-                            <FormattedMessage id="management.teamType" defaultMessage="Type d'équipe: " />
-                            <Select
-                                simpleValue
-                                name="teams_type"
-                                value={this.props.params.type}
-                                placeholder={formatMessage(MESSAGES.allMale)}
-                                options={[
-                                    { label: 'UM', value: 'UM' },
-                                    { label: 'MUM', value: 'MUM' },
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={[
+                                    screenTeamType(),
                                 ]}
-                                onChange={typeId => this.onChangeFilters('type', typeId)}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={[
+                                    teamType(formatMessage, defineMessages),
+                                ]}
                             />
                         </div>
                     </div>
@@ -247,7 +246,7 @@ class ManagementTeams extends React.Component {
                                 multiSort
                                 isSortable
                                 showPagination
-                                endPointUrl={this.state.tableUrl}
+                                endPointUrl={this.getEndpointUrl()}
                                 columns={this.state.tableColumns}
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 params={this.props.params}

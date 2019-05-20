@@ -99,6 +99,14 @@ export const MESSAGES = {
         defaultMessage: 'Sans vidéos',
         id: 'main.label.without_videos',
     },
+    tester: {
+        defaultMessage: 'Dépistage & confirmation',
+        id: 'main.label.tester',
+    },
+    vector: {
+        defaultMessage: 'Contrôle de vecteur',
+        id: 'main.label.vector',
+    },
 };
 
 const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
@@ -463,6 +471,7 @@ const searchMotherName = component => (
         onKeyPressed: () => component.onSearch(),
     }
 );
+
 const coordinations = (coordinationsList, isMultiSelect = true) => (
     {
         name: 'coordination_id',
@@ -882,6 +891,55 @@ const onlyCheckedTests = () => (
     }
 );
 
+const teamType = (formatMessage, defineMessages, label = {
+    id: 'main.label.team_type',
+    defaultMessage: 'Type d\'équipe',
+}, placeholder = {
+    id: 'cases.label.all',
+    defaultMessage: 'Toutes',
+}) => (
+    {
+        name: 'team_type',
+        urlKey: 'team_type',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'tester')),
+                value: 'tester',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'vector')),
+                value: 'vector',
+            },
+        ],
+        placeholder,
+        label,
+        type: 'select',
+    }
+);
+
+const screenTeamType = () => (
+    {
+        name: 'type',
+        urlKey: 'type',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            { label: 'UM', value: 'UM' },
+            { label: 'MUM', value: 'MUM' },
+        ],
+        placeholder: {
+            id: 'cases.label.all',
+            defaultMessage: 'Toutes',
+        },
+        label: {
+            id: 'main.label.screening_team_type',
+            defaultMessage: 'Type d\'équipe de dépistage',
+        },
+        type: 'select',
+    }
+);
 
 const anonymous = () => (
     {
@@ -892,6 +950,26 @@ const anonymous = () => (
             defaultMessage: 'Données anonymisées',
         },
         type: 'checkbox',
+    }
+);
+
+const institutions = (institutionsList, isMultiSelect = false) => (
+    {
+        name: 'institution_id',
+        urlKey: 'institution_id',
+        isMultiSelect,
+        isClearable: true,
+        options: institutionsList.map(institution =>
+            ({ label: institution.name, value: institution.id })),
+        placeholder: {
+            id: 'main.label.all',
+            defaultMessage: 'Toutes',
+        },
+        label: {
+            id: 'cases.label.institution',
+            defaultMessage: 'Institution',
+        },
+        type: 'select',
     }
 );
 
@@ -930,4 +1008,7 @@ export {
     videos,
     onlyCheckedTests,
     anonymous,
+    teamType,
+    screenTeamType,
+    institutions,
 };

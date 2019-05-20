@@ -47,7 +47,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDetailsPage}
         />,
         <Route
-            path="/teams(/coordination_id/:coordination_id)(/type/:type)(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="/teams(/coordination_id/:coordination_id)(/type/:type)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/team_type/:team_type)"
             component={ManagementTeamsPage}
         />,
         <Route
@@ -63,7 +63,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementPlanningsPage}
         />,
         <Route
-            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institutionId/:institutionId)"
+            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institution_id/:institution_id)(/team_type/:team_type)"
             component={ManagementUsersPage}
         />,
         <Route

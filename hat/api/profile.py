@@ -71,7 +71,10 @@ class ProfilesViewSet(viewsets.ViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
             queryset = queryset.filter(screening_type=screening_type)
 
-        queryset = queryset.filter(team__team_type=team_type)
+
+        if team_type != "all":
+            queryset = queryset.filter(team__team_type=team_type)
+
 
 
         matchings = {

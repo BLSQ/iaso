@@ -73,7 +73,9 @@ class TeamViewSet(viewsets.ViewSet):
             queryset = queryset.filter(coordination__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if request.user.profile.ZS_scope.count() != 0:
             queryset = queryset.filter(coordination__ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
-        queryset = queryset.filter(team_type=team_type)
+
+        if team_type != "all":
+            queryset = queryset.filter(team_type=team_type)
 
         res = queryset.values('name', 'id', 'capacity', 'UM',
                                   'coordination_id', 'team_type')

@@ -117,7 +117,7 @@ class Team(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     team_type = models.TextField(
-        "Type d'équipe", choices=TEAM_TYPE_CHOICES, null=True, blank=True
+        "Type d'équipe", choices=TEAM_TYPE_CHOICES, default=TESTER
     )
 
     def as_dict(self, planning_id=None):

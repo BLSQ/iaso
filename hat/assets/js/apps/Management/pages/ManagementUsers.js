@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import Select from 'react-select';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
@@ -12,18 +11,16 @@ import UserModaleComponent from '../components/UserModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { userActions } from '../redux/users';
 import Search from '../../../components/Search';
+import FiltersComponent from '../../../components/FiltersComponent';
+import { teamType, institutions } from '../../../utils/constants/filters';
 
-const baseApiUrl = '/api/profiles/?';
+const baseUrl = 'users';
 
 
 const MESSAGES = defineMessages({
     searchPlaceholder: {
         defaultMessage: 'Recherche',
         id: 'listlocator.search.placeholder',
-    },
-    none: {
-        defaultMessage: 'Aucune',
-        id: 'management.none',
     },
 });
 class ManagementUsers extends React.Component {
@@ -39,13 +36,6 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.fetchUserTypes(dispatch));
         dispatch(userActions.fetchTesterTypes(dispatch));
         dispatch(userActions.fetchUserLevels(dispatch));
-        let tableUrl = baseApiUrl;
-        if (props.params.search) {
-            tableUrl += `search=${props.params.search}`;
-        }
-        if (props.params.institutionId) {
-            tableUrl += `&institutionId=${props.params.institutionId}`;
-        }
         this.state = {
             tableColumns: [
                 {
@@ -106,7 +96,6 @@ class ManagementUsers extends React.Component {
                     ),
                 },
             ],
-            tableUrl,
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -114,24 +103,39 @@ class ManagementUsers extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let tableUrl = baseApiUrl;
-        if (nextProps.params.search) {
-            tableUrl += `search=${nextProps.params.search}`;
-        }
-        if (nextProps.params.institutionId) {
-            tableUrl += `&institutionId=${nextProps.params.institutionId}`;
-        }
         this.setState({
-            tableUrl,
             showEditModale: nextProps.selectedUser !== null,
         });
     }
 
-    onChangeFilters(key, value) {
-        this.props.redirectTo('users', {
+    onSearch(value) {
+        this.props.redirectTo(baseUrl, {
             ...this.props.params,
-            [key]: value,
+            search: value,
         });
+    }
+
+    getEndpointUrl() {
+        let url = '/api/profiles/?';
+        const {
+            params,
+        } = this.props;
+
+        const urlParams = {
+            ...params,
+        };
+
+        if (!urlParams.team_type) {
+            url += 'team_type=all';
+        }
+
+        Object.keys(urlParams).forEach((key) => {
+            const value = urlParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
+        });
+        return url;
     }
 
     showDelete(data) {
@@ -171,7 +175,7 @@ class ManagementUsers extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
-            institutions,
+            institutionsList,
             userTypes,
             testerTypes,
             userLevels,
@@ -246,27 +250,32 @@ class ManagementUsers extends React.Component {
                             <Search
                                 placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
                                 allowEmptySearch
-                                onSearch={value => this.onChangeFilters('search', value)}
-                                resetSearch={() => this.onChangeFilters('search', null)}
+                                onSearch={value => this.onSearch(value)}
+                                resetSearch={() => this.onSearch(null)}
                                 displayResults={false}
                                 searchString={this.props.params.search}
                             />
                         </div>
                         <div>
-                            <span className="map__text--select">
-                                <FormattedMessage
-                                    id="main.label.institution"
-                                    defaultMessage="Institution"
-                                />
-                            </span>
-                            <Select
-                                simpleValue
-                                name="institution_id"
-                                value={this.props.params.institutionId}
-                                placeholder={formatMessage(MESSAGES.none)}
-                                options={institutions.map(institution =>
-                                    ({ label: institution.name, value: institution.id }))}
-                                onChange={institutionId => this.onChangeFilters('institutionId', institutionId)}
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={[institutions(institutionsList)]}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={[
+                                    teamType(formatMessage, defineMessages, {
+                                        id: 'main.label.team_user_type',
+                                        defaultMessage: 'Type d\'utilisateur',
+                                    }, {
+                                        id: 'cases.label.allMale',
+                                        defaultMessage: 'Tous',
+                                    }),
+                                ]}
                             />
                         </div>
                     </div>
@@ -286,7 +295,7 @@ class ManagementUsers extends React.Component {
                             withBorder={false}
                             isSortable
                             showPagination
-                            endPointUrl={this.state.tableUrl}
+                            endPointUrl={this.getEndpointUrl()}
                             columns={this.state.tableColumns}
                             defaultSorted={[{ id: 'id', desc: false }]}
                             params={this.props.params}
@@ -330,7 +339,7 @@ ManagementUsers.propTypes = {
     dispatch: PropTypes.func.isRequired,
     userUpdated: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
-    institutions: PropTypes.array.isRequired,
+    institutionsList: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
     testerTypes: PropTypes.array.isRequired,
     userLevels: PropTypes.array.isRequired,
@@ -350,7 +359,7 @@ const ManagementUsersIntl = injectIntl(ManagementUsers);
 
 const MapStateToProps = state => ({
     load: state.load,
-    institutions: state.users.institutions,
+    institutionsList: state.users.institutions,
     userTypes: state.users.userTypes,
     testerTypes: state.users.testerTypes,
     userLevels: state.users.userLevels,

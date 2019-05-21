@@ -97,7 +97,7 @@ def extract_reconciliation_file(filename: str) -> DataFrame:
 def prepare_mdb_data(source_type: str, tables: Dict[str, str]) -> Dict[str, DataFrame]:
     import_config = IMPORT_CONFIG[source_type]
     result = {}
-    for table_name, options in import_config['import_options'].items():
+    for table_name, options in import_config.get('import_options', {}).items():
         csv = tables[table_name]
         df = pandas.read_csv(
             StringIO(csv),

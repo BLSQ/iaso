@@ -5,6 +5,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from functools import wraps
+
+from hat.constants import SCREENING_ACTIVE, SCREENING_TYPE_CHOICES
 from hat.geo.models import AS, ZS, Province
 from hat.users.middleware import get_current_user
 
@@ -204,6 +206,8 @@ class Profile(models.Model):
     tester_type = models.TextField(
         "Type de tester", choices=TESTER_TYPE_CHOICES, null=True, blank=True
     )
+    screening_type = models.TextField("Dépistage actif/passif", choices=SCREENING_TYPE_CHOICES, null=True, blank=True,
+                                      default=SCREENING_ACTIVE)
     level = models.IntegerField(
         choices=LEVEL_CHOICES, null=True, blank=True, default=LEVEL_1
     )
@@ -253,6 +257,7 @@ class Profile(models.Model):
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
             "level": self.level,
+            "screening_type": self.screening_type,
         }
 
     def __str__(self):

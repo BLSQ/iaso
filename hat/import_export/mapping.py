@@ -265,10 +265,26 @@ def historic_get_followup_test_result(main_table: DataFrame,
 
 
 def historic_get_null_boolean(x) -> Optional[bool]:
-    try:
-        return x.lower() in ("yes", "true", "t", "1")
-    except AttributeError:
+    if type(x) == int:
+        return x == 1
+    else:
+        try:
+            return x.lower() in ("yes", "true", "t", "1")
+        except AttributeError:
+            return None
+
+
+def historic_get_screening_type(ignored_columns):
+    da = ignored_columns.get("circumstances_da", False)
+    dp = ignored_columns.get("circumstances_dp", False)
+    if da and dp:
+        # In theory, this is not possible but it does happen on some MS Access files. We will leave them as None
+        # and set the flag according to the other fields (or a future update from another file)
         return None
+    elif da is False and dp is False:
+        return None  # DA/DP status is unknown
+    else:
+        return "passive" if dp else "active"
 
 
 ################################################################################
@@ -610,6 +626,7 @@ MAPPING: List[JsonType] = [
     },
     {
         "field": "circumstances_da",
+        "case_ignore": True,  # We have one field for DA/DP so no direct mapping here
         "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "historic": {
@@ -620,6 +637,7 @@ MAPPING: List[JsonType] = [
     },
     {
         "field": "circumstances_dp",
+        "case_ignore": True,  # We have one field for DA/DP so no direct mapping here
         "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
         "sources": {
             "historic": {
@@ -644,6 +662,16 @@ MAPPING: List[JsonType] = [
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_UM"),
+                "apply_to_column": capitalize
+            },
+        }
+    },
+    {
+        "field": "circumstances_dp_cdtc",
+        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "sources": {
+            "historic": {
+                "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_CDTC"),
                 "apply_to_column": capitalize
             },
         }

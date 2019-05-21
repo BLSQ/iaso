@@ -13,9 +13,10 @@ from hat.sync.tests import clean_couch
 from ..import_synced import import_synced_devices
 
 
-def load_document(filename):
+def load_document(filename, username=None):
     device_db_name = filename + str(uuid.uuid4())
-    device_db = DeviceDB.objects.create(device_id=device_db_name)
+    user = User.objects.get(username=username) if username else None
+    device_db = DeviceDB.objects.create(device_id=device_db_name, creator=user, last_user=user)
     with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
         document = json.load(f)
         document['_id'] = str(uuid.uuid4())  # Avoid updates in couch
@@ -34,7 +35,7 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains most of the general document assertions
     def test_import_regular_neg_rdt(self):
-        part_regular_neg_rdt, device_db = load_document("regular_neg_rdt.json")
+        part_regular_neg_rdt, device_db = load_document("regular_neg_rdt.json", "supervisor")
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
@@ -79,7 +80,7 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains some alternate assertions (birth year 1900)
     def test_import_regular_neg_rdt(self):
-        part_regular_neg_rdt_alt, device_db = load_document("regular_neg_rdt_alternate.json")
+        part_regular_neg_rdt_alt, device_db = load_document("regular_neg_rdt_alternate.json", "supervisor")
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
@@ -102,7 +103,7 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains some tests for travelers rather than residents
     def test_import_traveler_neg_rdt(self):
-        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler.json")
+        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler.json", "supervisor")
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
@@ -123,7 +124,7 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains some tests for travelers rather than residents
     def test_import_traveler_neg_rdt_zone_only(self):
-        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler_zone_only.json")
+        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler_zone_only.json", "supervisor")
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
@@ -146,7 +147,7 @@ class ImportMobileSyncDocuments(TestCase):
     # Dépistage passif #
     ####################
     def test_import_stfix_treatment_started(self):
-        stfix_treatment_started, device_db = load_document("stfix_treatment_started.json")
+        stfix_treatment_started, device_db = load_document("stfix_treatment_started.json", "supervisor")
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_started).json()
@@ -207,7 +208,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNone(melarsoprol.end_date)
 
     def test_import_stfix_treatment_ended(self):
-        stfix_treatment_ended, device_db = load_document("stfix_treatment_ended.json")
+        stfix_treatment_ended, device_db = load_document("stfix_treatment_ended.json", "supervisor")
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_ended).json()
@@ -269,7 +270,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(str(melarsoprol.end_date), "2019-01-10")
 
     def test_import_stfix_treatment_dead(self):
-        stfix_treatment_dead, device_db = load_document("stfix_treatment_dead.json")
+        stfix_treatment_dead, device_db = load_document("stfix_treatment_dead.json", "supervisor")
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_dead).json()
@@ -380,7 +381,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(str(acoziborole.end_date), "2019-01-10")
 
     def test_import_screening(self):
-        regular_pos_rdt, device_db_scr = load_document("regular_pos_rdt.json")
+        regular_pos_rdt, device_db_scr = load_document("regular_pos_rdt.json", "supervisor")
 
         # create documents in device db and sync
         p1 = api.post(device_db_scr.db_name, json=regular_pos_rdt).json()
@@ -414,7 +415,7 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertFalse(pl_test.hidden)
 
     def test_import_screening_catt(self):
-        regular_pos_catt, device_db_scr = load_document("regular_pos_catt.json")
+        regular_pos_catt, device_db_scr = load_document("regular_pos_catt.json", "passive")
 
         # create documents in device db and sync
         p1 = api.post(device_db_scr.db_name, json=regular_pos_catt).json()

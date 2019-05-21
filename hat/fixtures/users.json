@@ -325,6 +325,29 @@
     }
   },
   {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$sUaQXwEX35wG$/bKQ4BY0udmBX9QPIiUvfCLQNjmvsMzq8LqzEFQj184=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "passive",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-09-14T10:41:25Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ]
+      ]
+    }
+  },
+  {
     "model": "users.profile",
     "pk": 1,
     "fields": {
@@ -406,6 +429,16 @@
         "supervisor-muluma"
       ],
       "AS_scope": [111]
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 10,
+    "fields": {
+      "user": [
+        "passive"
+      ],
+      "screening_type": "passive"
     }
   }
 ]

@@ -21,12 +21,12 @@ from django.db.models import Q
 from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.event_log import EventStats
-from hat.cases.models import Case, Location
+from hat.cases.models import Case, Location, CaseAbstract
 from hat.common.utils import is_int, sns_notify
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_coordinates, \
-    mobile_get_date
+    mobile_get_date, historic_get_screening_type
 from hat.patient.duplicates import create_potential_duplicates_for_patient
 from hat.patient.identify import get_or_create_patient_from_case, create_test_data, create_or_udpate_treatments
 from hat.patient.models import Test
@@ -304,6 +304,7 @@ def create_cases(df: DataFrame) -> None:
                     else:
                         setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
+            case.screening_type = get_screening_type(case, ignored_columns)
             json_document_id = ignored_columns.get("json_document_id", None)
             treatments = ignored_columns.get("treatments", [])
             # Avoid having to check for None, nan, '' etc everywhere in the code
@@ -378,6 +379,7 @@ def update_cases(df: DataFrame) -> int:
                     else:
                         setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
+            case.screening_type = get_screening_type(case, ignored_columns)
             json_document_id = ignored_columns.get("json_document_id", None)
             treatments = ignored_columns.get("treatments", [])
             # Avoid having to check for None, nan, '' etc everywhere in the code
@@ -435,3 +437,14 @@ def update_entries(duplicates: DataFrame) -> int:
         errors='ignore'
     )
     return update_cases(duplicates)
+
+
+def get_screening_type(case, ignored_columns):
+    if case.source in (CaseAbstract.SOURCE_PV, CaseAbstract.SOURCE_HISTORIC):
+        return historic_get_screening_type(ignored_columns)
+    else:
+        device = DeviceDB.objects.filter(device_id=case.device_id).first()
+        if device and device.last_user:
+            return device.last_user.profile.screening_type
+        else:
+            return None

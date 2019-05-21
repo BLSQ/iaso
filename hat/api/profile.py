@@ -3,11 +3,11 @@ from copy import copy
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, PROFILE_API
-from hat.users.models import Profile, Institution, UserType, Team
+from hat.users.models import Profile, Institution, UserType, Team, SCREENING_TYPE_CHOICES, TESTER_TYPE_CHOICES
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 
@@ -16,6 +16,7 @@ from rest_framework.authentication import BasicAuthentication
 from hat.geo.models import Province, ZS, AS
 from django.db.models import Q
 from hat.dashboard.utils import return_error
+
 
 class ProfilesViewSet(viewsets.ViewSet):
     """
@@ -41,14 +42,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
         limit = int(limit)
         page_offset = int(page_offset)
-        institutionId = request.GET.get("institutionId", None)
+        institution_id = request.GET.get("institutionId", request.GET.get("institution_id", None))
         as_list = request.GET.get("as_list", False)
         team_id = request.GET.get("team_id", False)
+        screening_type = request.GET.get("screening_type", None)
 
         queryset = Profile.objects.all()
 
-        if institutionId:
-            queryset = queryset.filter(institution_id=institutionId)
+        if institution_id:
+            queryset = queryset.filter(institution_id=institution_id)
 
         if search:
             queryset = queryset.filter(
@@ -60,6 +62,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         if team_id:
             queryset = queryset.filter(team_id=team_id)
 
+        if screening_type is not None:
+            if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            queryset = queryset.filter(screening_type=screening_type)
 
         matchings = {
             "userName": "user__username",
@@ -82,7 +89,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["users"] = map(lambda x: x.as_dict(), page.object_list)
+            res["users"] = list(map(lambda x: x.as_dict(), page.object_list))
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -121,6 +128,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         areas = request.data.get("AS", [])
         permissions = request.data.get("permissions", [])
         tester_type = request.data.get("tester_type", None)
+        screening_type = request.data.get("screening_type", None)
         level = request.data.get("level", None)
         if password:
             user.set_password(password)
@@ -172,6 +180,11 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user.user_permissions.add(permission)
         if tester_type:
             profile.tester_type = tester_type
+        if screening_type:
+            if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            profile.screening_type = screening_type
         if level:
             profile.level = level
 
@@ -202,6 +215,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.save()
             institution = request.data.get("institution", None)
             user_type = request.data.get("userType", None)
+            tester_type = request.data.get("testerType", request.data.get("tester_type", None))
+            screening_type = request.data.get("screening_type", None)
             team = request.data.get("team", None)
 
             if institution:
@@ -214,6 +229,18 @@ class ProfilesViewSet(viewsets.ViewSet):
             if user_type:
                 new_user_type = get_object_or_404(UserType, id=user_type.get("id"))
                 user.profile.userType = new_user_type
+
+            if tester_type:
+                if tester_type not in [x[0] for x in TESTER_TYPE_CHOICES]:
+                    return Response(f"Invalid tester_type, should be {TESTER_TYPE_CHOICES}",
+                                    status=status.HTTP_400_BAD_REQUEST)
+                user.profile.tester_type = tester_type
+
+            if screening_type:
+                if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                    return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                    status=status.HTTP_400_BAD_REQUEST)
+                user.profile.screening_type = screening_type
 
             user.profile.phone = request.data.get("phone", "")
 

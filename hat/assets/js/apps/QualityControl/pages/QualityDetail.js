@@ -73,6 +73,7 @@ class QualityDetail extends React.Component {
         const newParams = {
             ...this.props.params,
         };
+        newParams.back = true;
         delete newParams.test_id;
         this.props.redirectTo('dashboard', newParams);
     }

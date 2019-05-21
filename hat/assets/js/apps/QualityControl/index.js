@@ -28,7 +28,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
                 '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
                 '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
                 '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
-                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
+                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/back/:back)'}
             component={QualityDashboard}
         />,
         <Route

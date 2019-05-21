@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
@@ -17,6 +17,7 @@ import { filtersTypes, filtersUsers, filtersGeo, filtersChecked } from '../const
 import { loadActions } from '../../../redux/load';
 import { filterActions } from '../../../redux/filtersRedux';
 import { isSuperUser } from '../../../utils/index';
+import SearchButton from '../../../components/SearchButton';
 
 const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
@@ -40,10 +41,18 @@ class QualityDashboard extends React.Component {
             qualityColumns: qualityColumns(props.intl.formatMessage),
             imagesLoaded: props.reduxImagePage.list !== null,
             videosLoaded: props.reduxVideoPage.listt !== null,
+            imageTableUrl: null,
+            videoTableUrl: null,
         };
     }
 
     componentWillMount() {
+        if (this.props.params.back) {
+            this.onSearch();
+            const { params } = this.props;
+            delete params.back;
+            this.props.redirectTo(baseUrl, params);
+        }
         this.props.fetchTestMapping();
         this.props.fetchCurrentUserInfos();
         this.props.fetchProfiles();
@@ -85,6 +94,14 @@ class QualityDashboard extends React.Component {
             this.props.endLoading();
         }
     }
+
+    onSearch() {
+        this.setState({
+            imageTableUrl: this.getEndpointUrl('image'),
+            videoTableUrl: this.getEndpointUrl('video'),
+        });
+    }
+
 
     getEndpointUrl(mediaType, toExport = false, exportType = 'csv') {
         let url = '/api/qctests/?';
@@ -156,7 +173,7 @@ class QualityDashboard extends React.Component {
             },
             currentUser,
         } = this.props;
-        const { currentTab } = this.state;
+        const { currentTab, imageTableUrl, videoTableUrl } = this.state;
         return (
             <section>
                 {
@@ -227,75 +244,81 @@ class QualityDashboard extends React.Component {
                             />
                         </div>
                     </div>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
-                <TabsComponent
-                    defaultPath={baseUrl}
-                    params={params}
-                    selectTab={key => (this.setState({ currentTab: key }))}
-                    tabs={[
-                        { label: formatMessage(MESSAGES.images), key: 'images' },
-                        { label: formatMessage(MESSAGES.videos), key: 'videos' },
-                    ]}
-                    defaultSelect={currentTab}
-                />
-                <div className="widget__container">
-                    <div className={`widget__container no-border ${this.state.currentTab !== 'images' ? 'hidden' : ''}`} >
-                        <CustomTableComponent
-                            showPagination
-                            endPointUrl={this.getEndpointUrl('image')}
-                            columns={this.state.qualityColumns}
-                            defaultSorted={[{ id: 'date', desc: true }]}
-                            params={params}
+                {
+                    imageTableUrl && videoTableUrl &&
+                    <Fragment>
+                        <TabsComponent
                             defaultPath={baseUrl}
-                            orderKey="imageOrder"
-                            multiSort
-                            withBorder={false}
-                            isSortable
-                            dataKey="list"
-                            onRowClicked={item => this.props.redirectTo('image', {
-                                test_id: item.id,
-                                ...params,
-                            })}
-                            pageKey="imagePage"
-                            pageSizeKey="imagePageSize"
-                            onDataLoaded={(imagesList, count, pages) => {
-                                this.onDataLoaded('imagesLoaded');
-                                return setImagesList(imagesList, true, params, count, pages);
-                            }}
-                            reduxPage={reduxImagePage}
-                            displayLoader={false}
-                            onDataStartLoaded={() => this.onDataStartLoaded('imagesLoaded')}
-                        />
-                    </div>
-                    <div className={`widget__container no-border ${this.state.currentTab !== 'videos' ? 'hidden' : ''}`} >
-                        <CustomTableComponent
-                            showPagination
-                            endPointUrl={this.getEndpointUrl('video')}
-                            columns={this.state.qualityColumns}
-                            defaultSorted={[{ id: 'date', desc: true }]}
                             params={params}
-                            defaultPath={baseUrl}
-                            orderKey="videoOrder"
-                            multiSort
-                            withBorder={false}
-                            isSortable
-                            dataKey="list"
-                            onRowClicked={item => this.props.redirectTo('video', {
-                                test_id: item.id,
-                                ...params,
-                            })}
-                            pageKey="videoPage"
-                            pageSizeKey="videoPageSize"
-                            onDataLoaded={(videosList, count, pages) => {
-                                this.onDataLoaded('videosLoaded');
-                                return setVideosList(videosList, true, params, count, pages);
-                            }}
-                            reduxPage={reduxVideoPage}
-                            displayLoader={false}
-                            onDataStartLoaded={() => this.onDataStartLoaded('videosLoaded')}
+                            selectTab={key => (this.setState({ currentTab: key }))}
+                            tabs={[
+                                { label: formatMessage(MESSAGES.images), key: 'images' },
+                                { label: formatMessage(MESSAGES.videos), key: 'videos' },
+                            ]}
+                            defaultSelect={currentTab}
                         />
-                    </div>
-                </div>
+                        <div className="widget__container">
+                            <div className={`widget__container no-border ${currentTab !== 'images' ? 'hidden' : ''}`} >
+                                <CustomTableComponent
+                                    showPagination
+                                    endPointUrl={imageTableUrl}
+                                    columns={this.state.qualityColumns}
+                                    defaultSorted={[{ id: 'date', desc: true }]}
+                                    params={params}
+                                    defaultPath={baseUrl}
+                                    orderKey="imageOrder"
+                                    multiSort
+                                    withBorder={false}
+                                    isSortable
+                                    dataKey="list"
+                                    onRowClicked={item => this.props.redirectTo('image', {
+                                        test_id: item.id,
+                                        ...params,
+                                    })}
+                                    pageKey="imagePage"
+                                    pageSizeKey="imagePageSize"
+                                    onDataLoaded={(imagesList, count, pages) => {
+                                        this.onDataLoaded('imagesLoaded');
+                                        return setImagesList(imagesList, true, params, count, pages);
+                                    }}
+                                    reduxPage={reduxImagePage}
+                                    displayLoader={false}
+                                    onDataStartLoaded={() => this.onDataStartLoaded('imagesLoaded')}
+                                />
+                            </div>
+                            <div className={`widget__container no-border ${this.state.currentTab !== 'videos' ? 'hidden' : ''}`} >
+                                <CustomTableComponent
+                                    showPagination
+                                    endPointUrl={videoTableUrl}
+                                    columns={this.state.qualityColumns}
+                                    defaultSorted={[{ id: 'date', desc: true }]}
+                                    params={params}
+                                    defaultPath={baseUrl}
+                                    orderKey="videoOrder"
+                                    multiSort
+                                    withBorder={false}
+                                    isSortable
+                                    dataKey="list"
+                                    onRowClicked={item => this.props.redirectTo('video', {
+                                        test_id: item.id,
+                                        ...params,
+                                    })}
+                                    pageKey="videoPage"
+                                    pageSizeKey="videoPageSize"
+                                    onDataLoaded={(videosList, count, pages) => {
+                                        this.onDataLoaded('videosLoaded');
+                                        return setVideosList(videosList, true, params, count, pages);
+                                    }}
+                                    reduxPage={reduxVideoPage}
+                                    displayLoader={false}
+                                    onDataStartLoaded={() => this.onDataStartLoaded('videosLoaded')}
+                                />
+                            </div>
+                        </div>
+                    </Fragment>
+                }
             </section>
         );
     }

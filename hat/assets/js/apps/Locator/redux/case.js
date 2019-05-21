@@ -1,11 +1,12 @@
 import { loadActions } from '../../../redux/load';
-import { selectZone, selectArea, emptyVillages, resetFilters, locatorActions, FETCH_ACTION } from './locator';
+import { emptyVillages, resetFilters, FETCH_ACTION } from './locator';
 import { selectProvince } from './province';
 
 const req = require('superagent');
 
 export const SET_CASE = 'hat/locator/cases/SET_CASE';
 export const SET_LIST = 'hat/locator/cases/SET_LIST';
+export const SET_CASES_LIST = 'hat/patient/detail/SET_CASES_LIST';
 
 
 export const setList = list => ({
@@ -16,6 +17,17 @@ export const setList = list => ({
 export const setCase = kase => ({
     type: SET_CASE,
     payload: kase,
+});
+
+export const setCasesList = (list, showPagination, params, count, pages) => ({
+    type: SET_CASES_LIST,
+    payload: {
+        list,
+        showPagination,
+        params,
+        count,
+        pages,
+    },
 });
 
 export const fetchCase = (dispatch, caseId) => {
@@ -50,9 +62,21 @@ export const caseActions = {
     setCase,
     setList,
     fetchCase,
+    setCasesList,
 };
 
-export const caseReducer = (state = {}, action = {}) => {
+export const caseInitialState = {
+    casesPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
+};
+
+
+export const caseReducer = (state = caseInitialState, action = {}) => {
     switch (action.type) {
         case SET_CASE: {
             const newCase = action.payload;
@@ -64,6 +88,21 @@ export const caseReducer = (state = {}, action = {}) => {
         }
         case FETCH_ACTION: {
             return state;
+        }
+        case SET_CASES_LIST: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                casesPage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
         }
         default:
             return state;

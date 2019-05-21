@@ -11,18 +11,28 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import listLocatorColumns from '../constants/ListLocatorColumns';
 
 import { locatorActions } from '../redux/locator';
+import { caseActions } from '../redux/case';
 import { provinceActions } from '../redux/province';
+import SearchButton from '../../../components/SearchButton';
 
+const baseUrl = 'list';
 
 export class ListLocator extends Component {
     constructor(props) {
         super(props);
         this.state = {
             tableColumns: listLocatorColumns(props.intl.formatMessage),
+            tableUrl: null,
         };
     }
 
     componentWillMount() {
+        if (this.props.params.back) {
+            this.onSearch();
+            const { params } = this.props;
+            delete params.back;
+            this.props.redirectTo(baseUrl, params);
+        }
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
@@ -47,7 +57,13 @@ export class ListLocator extends Component {
         }
     }
 
-    getEnpointUrl() {
+    onSearch() {
+        this.setState({
+            tableUrl: this.getEndpointUrl('image'),
+        });
+    }
+
+    getEndpointUrl() {
         let url = '/api/cases/?';
         const urlParams = {
             province_id: this.props.params.province_id,
@@ -87,7 +103,7 @@ export class ListLocator extends Component {
         if (!provinceId) {
             delete tempParams.province_id;
         }
-        this.props.redirectTo('list', tempParams);
+        this.props.redirectTo(baseUrl, tempParams);
     }
 
     selectZone(zoneId) {
@@ -99,7 +115,7 @@ export class ListLocator extends Component {
         if (!zoneId) {
             delete tempParams.zs_id;
         }
-        this.props.redirectTo('list', tempParams);
+        this.props.redirectTo(baseUrl, tempParams);
     }
 
     selectArea(areaId) {
@@ -110,22 +126,31 @@ export class ListLocator extends Component {
         if (!areaId) {
             delete tempParams.as_id;
         }
-        this.props.redirectTo('list', tempParams);
+        this.props.redirectTo(baseUrl, tempParams);
     }
 
 
     render() {
-        const { formatMessage } = this.props.intl;
+        const {
+            intl: {
+                formatMessage,
+            },
+            params,
+            reduxPage,
+            setCasesList,
+        } = this.props;
         return (
             <section>
                 <div className="widget__container">
                     <ListFilters
                         filters={this.props.listFilters}
-                        params={this.props.params}
-                        redirect={(params) => {
-                            const tempParam = params;
+                        params={params}
+                        redirect={(redirectParams) => {
+                            const tempParam = {
+                                ...redirectParams,
+                            };
                             tempParam.page = 1;
-                            return (this.props.redirectTo('list', tempParam));
+                            return (this.props.redirectTo(baseUrl, tempParam));
                         }}
                         resetSearch={() => this.props.resetSearch()}
                         listFilters={this.props.listFilters}
@@ -133,6 +158,7 @@ export class ListLocator extends Component {
                         selectZone={zsId => this.selectZone(zsId)}
                         selectArea={asId => this.selectArea(asId)}
                     />
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="locator-container widget__container no-border">
                     {
@@ -145,24 +171,32 @@ export class ListLocator extends Component {
                             />
                         </div>
                     }
-
-                    <CustomTableComponent
-                        isSortable
-                        showPagination
-                        endPointUrl={this.getEnpointUrl()}
-                        columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'form_year', desc: false }]}
-                        params={this.props.params}
-                        defaultPath="list"
-                        dataKey="cases"
-                        onRowClicked={caseItem => this.selectCase(caseItem)}
-                        multiSort
-                    />
+                    {
+                        this.state.tableUrl &&
+                        <CustomTableComponent
+                            isSortable
+                            showPagination
+                            endPointUrl={this.state.tableUrl}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'form_year', desc: false }]}
+                            params={params}
+                            defaultPath="list"
+                            dataKey="cases"
+                            onRowClicked={caseItem => this.selectCase(caseItem)}
+                            multiSort
+                            onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
+                            reduxPage={reduxPage}
+                        />
+                    }
                 </div>
             </section>
         );
     }
 }
+
+ListLocator.defaultProps = {
+    reduxPage: undefined,
+};
 
 ListLocator.propTypes = {
     params: PropTypes.object.isRequired,
@@ -176,6 +210,8 @@ ListLocator.propTypes = {
     selectArea: PropTypes.func.isRequired,
     resetSearch: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
+    reduxPage: PropTypes.object,
+    setCasesList: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(ListLocator);
@@ -188,12 +224,14 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId) => dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, false, areaId)),
     selectArea: (areaId, zoneId) => dispatch(locatorActions.selectArea(areaId, undefined, dispatch, false, zoneId)),
     resetSearch: () => dispatch(locatorActions.resetSearch()),
+    setCasesList: (patientList, showPagination, params, count, pages) => dispatch(caseActions.setCasesList(patientList, showPagination, params, count, pages)),
 });
 
 const MapStateToProps = state => ({
     load: state.load,
     listFilters: state.locator,
     kase: state.kase,
+    reduxPage: state.kase.casesPage,
 });
 
 

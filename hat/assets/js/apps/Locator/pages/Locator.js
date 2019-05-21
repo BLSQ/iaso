@@ -114,10 +114,22 @@ export class Locator extends Component {
         }
     }
 
+    goBack() {
+        const { dispatch } = this.props;
+        const tempParams = {
+            ...this.props.params,
+        };
+        tempParams.back = true;
+        delete tempParams.case_id;
+        dispatch(locatorActions.resetFilters());
+        this.props.redirectTo('list', {
+            ...tempParams,
+        });
+    }
+
     render() {
         const { baseLayer } = this.props.map;
         const { formatMessage } = this.props.intl;
-        const { dispatch } = this.props;
         const searchResultsKeys = [
             { value: 'name', translation: formatMessage(MESSAGES.villageNameLabel) },
             { value: 'population', translation: formatMessage(MESSAGES.populationLabel) },
@@ -133,14 +145,7 @@ export class Locator extends Component {
                             <div>
                                 <button
                                     className="button--back"
-                                    onClick={() => {
-                                        const tempParams = this.props.params;
-                                        delete tempParams.case_id;
-                                        dispatch(locatorActions.resetFilters());
-                                        this.props.redirectTo('list', {
-                                            ...tempParams,
-                                        });
-                                    }}
+                                    onClick={() => this.goBack()}
                                 >
                                     <i className="fa fa-arrow-left" />{' '}
                                 </button>

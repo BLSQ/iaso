@@ -50,16 +50,6 @@ const filtersCases2 = (
     ]
 );
 
-const filtersCasesSearch = (formatMessage, defineMessages, component) => (
-    [
-        searchLastname(component),
-        searchName(component),
-        searchPrename(component),
-        images(formatMessage, defineMessages),
-        videos(formatMessage, defineMessages),
-    ]
-);
-
 const filtersCasesGeo = (
     workzonesList,
     provincesList,
@@ -120,6 +110,17 @@ const filtersPatientsDuplicates = (
     [
         coordinations(coordinationsList),
         teams(teamsList),
+    ]
+);
+
+const filtersCasesSearch = (formatMessage, defineMessages, component) => (
+    [
+        searchLastname(component),
+        searchName(component),
+        searchPrename(component),
+        searchMotherName(component),
+        images(formatMessage, defineMessages),
+        videos(formatMessage, defineMessages),
     ]
 );
 

@@ -57,6 +57,21 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Nom de la mère',
+                id: 'casesList.label.mothers_surname',
+            }),
+            accessor: 'normalized_patient__mothers_surname',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.patient.mothers_surname
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Équipe',
                 id: 'casesList.label.team',
             }),

@@ -10,6 +10,7 @@ import { filterActions } from '../../../redux/filtersRedux';
 import duplicateListColumns from '../constants/duplicateListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import ChoosePeriodSelectorComponent from '../../../components/ChoosePeriodSelectorComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
@@ -175,6 +176,14 @@ class PatientsDuplicates extends Component {
                 <div className="widget__container ">
                     <div className="widget__header">
                         <h2 className="widget__heading"><FormattedMessage id="datas.duplicates.header.title" defaultMessage="Doublons" /></h2>
+                    </div>
+                    <div className="border-bottom">
+                        <ChoosePeriodSelectorComponent
+                            params={this.props.params}
+                            baseUrl={baseUrl}
+                            redirectTo={this.props.redirectTo}
+                            showApplybutton={false}
+                        />
                     </div>
                     <div className="widget__content--quarter">
                         <div>

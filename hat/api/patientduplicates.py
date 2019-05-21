@@ -65,6 +65,8 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         teams = request.GET.get("teams", None)
         coordination_id = request.GET.get("coordination_id", None)
+        date_from = request.GET.get("date_from", None)
+        date_to = request.GET.get("date_to", None)
         search_name = request.GET.get("search_name", None)
         search_prename = request.GET.get("search_prename", None)
         search_lastname = request.GET.get("search_lastname", None)
@@ -188,6 +190,18 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             queryset = queryset \
                 .annotate(test_with_type_in=Exists(test_with_type_in)) \
                 .filter(test_with_type_in=True)
+
+        if date_from or date_to:
+            test_with_date_in_range = Test.objects.filter(Q(form__normalized_patient_id=OuterRef('patient1_id'))
+                                                    | Q(form__normalized_patient_id=OuterRef('patient2_id')))
+            if date_from:
+                test_with_date_in_range = test_with_date_in_range.filter(date__gte=date_from)
+            if date_to:
+                test_with_date_in_range = test_with_date_in_range.filter(date__lte=date_to)
+
+            queryset = queryset\
+                .annotate(test_with_date_in_range=Exists(test_with_date_in_range))\
+                .filter(test_with_date_in_range=True)
 
         if algorithm:
             queryset = queryset.filter(algorithm=algorithm)

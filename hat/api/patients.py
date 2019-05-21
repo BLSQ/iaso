@@ -273,19 +273,19 @@ class PatientsViewSet(viewsets.ViewSet):
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
             if search_name:
                 queryset = queryset.filter(
-                    Q(post_name__contains=search_name)
+                    Q(post_name__icontains=search_name)
                 )
             if search_prename:
                 queryset = queryset.filter(
-                    Q(first_name__contains=search_prename)
+                    Q(first_name__icontains=search_prename)
                 )
             if search_lastname:
                 queryset = queryset.filter(
-                    Q(last_name__contains=search_lastname)
+                    Q(last_name__icontains=search_lastname)
                 )
             if search_mother_name:
                 queryset = queryset.filter(
-                    Q(mothers_surname__contains=search_mother_name)
+                    Q(mothers_surname__icontains=search_mother_name)
                 )
 
         queryset_unprefetched = queryset

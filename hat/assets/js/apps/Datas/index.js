@@ -32,7 +32,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         <Route
             path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
-            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
+            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/back/:back)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={CasesPage}
@@ -40,7 +40,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         <Route
             path={'/tests/detail/patient_id/:patient_id/case_id/:case_id/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
-            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
+            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)' +
             '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)' +

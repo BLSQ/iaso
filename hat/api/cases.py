@@ -83,6 +83,7 @@ class CasesViewSet(viewsets.ViewSet):
         search_name = request.GET.get("search_name", None)
         search_prename = request.GET.get("search_prename", None)
         search_lastname = request.GET.get("search_lastname", None)
+        search_mother_name = request.GET.get("search_mother_name", None)
         coordination = request.GET.get("coordination", None)
         is_locator = request.GET.get("isLocator", None)
         test_types = request.GET.get("test_type", None)
@@ -178,6 +179,10 @@ class CasesViewSet(viewsets.ViewSet):
             if search_lastname:
                 queryset = queryset.filter(
                     Q(lastname__icontains=search_lastname)
+                )
+            if search_mother_name:
+                queryset = queryset.filter(
+                    Q(mothers_surname__icontains=search_mother_name)
                 )
 
         if screening_result is not None:

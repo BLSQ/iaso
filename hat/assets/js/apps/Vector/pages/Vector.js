@@ -121,7 +121,7 @@ export class Vector extends Component {
             url += '&onlySelectedTraps=True';
         }
         if (onlyIgnoredTraps) {
-            url += '&onlyIgnoredTargets=True';
+            url += '&onlyIgnoredTraps=True';
         }
         if (onlyIgnoredTargets) {
             url += '&onlyIgnoredTargets=True';
@@ -138,7 +138,7 @@ export class Vector extends Component {
         if ((key === 'targets') && orderTargets) {
             url += `&order=${orderTargets}`;
         }
-        if ((key === 'sites') && orderSites) {
+        if ((key === 'new_sites') && orderSites) {
             url += `&order=${orderSites}`;
         }
         if ((key === 'traps') && orderTraps) {
@@ -467,8 +467,8 @@ export class Vector extends Component {
                     />
                     <div className="align-right">
                         <DownloadButtonsComponent
-                            csvUrl={this.getDownloadUrl('sites', 'csv')}
-                            xlsxUrl={this.getDownloadUrl('sites', 'xlsx')}
+                            csvUrl={this.getDownloadUrl('new_sites', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('new_sites', 'xlsx')}
                         />
                     </div>
                 </div>
@@ -491,8 +491,8 @@ export class Vector extends Component {
                     />
                     <div className="align-right">
                         <DownloadButtonsComponent
-                            csvUrl={this.getDownloadUrl('sites', 'csv')}
-                            xlsxUrl={this.getDownloadUrl('sites', 'xlsx')}
+                            csvUrl={this.getDownloadUrl('traps', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('traps', 'xlsx')}
                         />
                     </div>
                 </div>

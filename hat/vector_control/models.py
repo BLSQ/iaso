@@ -155,6 +155,7 @@ class Trap(models.Model):
     is_selected = models.BooleanField(default=True)
     river = models.TextField(null=True, blank=True)
 
+
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.location)
 
@@ -199,6 +200,7 @@ class Trap(models.Model):
         site = None
         if self.site:
             site = {
+                "uuid": self.site.uuid,
                 "id": self.site.id,
                 "name": self.site.name,
             }
@@ -372,4 +374,6 @@ class Target(models.Model):
             "river": self.river,
             "username": username,
             "ignore": self.ignore,
+            "gps_import": self.gps_import.as_dict(),
+            "api_import": self.api_import.as_dict()
         }

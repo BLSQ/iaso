@@ -122,6 +122,42 @@ export const fetchTargets = (dispatch, params) => {
         });
 };
 
+export const fetchCatches = (dispatch, params) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        problems,
+        province_id,
+        zs_id,
+        as_id,
+    } = params;
+    let url = `/api/catches?as_location=true&from=${dateFrom}&to=${dateTo}`;
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    return req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadCatches(result.body));
+        })
+        .catch((err) => {
+            console.error('Error when fetching catches', err);
+        });
+};
+
 export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     const {
         dateFrom,
@@ -248,6 +284,45 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         })
         .catch((err) => {
             console.error('Error when fetching paginated targets', err);
+        }));
+};
+
+export const fetchPaginatedCatches = (dispatch, params, limit, page, order) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        problems,
+        province_id,
+        zs_id,
+        as_id,
+    } = params;
+    let url = `/api/catches?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    if (order) {
+        url += `&order=${order}`;
+    }
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
+    return (req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedCatches(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching paginated catches', err);
         }));
 };
 

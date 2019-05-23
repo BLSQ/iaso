@@ -50,6 +50,15 @@
     }
 }
 
+.marker-cluster-catches {
+    background-color: rgba(violet, 0.6);
+    z-index: 1000000 !important;
+    div {
+        background-color: violet;
+        color: white;
+    }
+}
+
 .marker-cluster-sites,
 .marker-sites {
     background-color: $gray;
@@ -100,10 +109,10 @@
     z-index: 2000000 !important;
 }
 .marker-catches {
-    background-color: rgba(orange, 0.6);
+    background-color: rgba(violet, 0.6);
     z-index: 1000000 !important;
     div {
-        background-color: orange;
+        background-color: violet;
     }
 }
 

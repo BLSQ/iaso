@@ -90,6 +90,7 @@ VectorModalesComponent.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     showModale: PropTypes.object.isRequired,
     targetEdited: PropTypes.object.isRequired,
+    catchEdited: PropTypes.object.isRequired,
     trapEdited: PropTypes.object.isRequired,
     siteEdited: PropTypes.object.isRequired,
 };

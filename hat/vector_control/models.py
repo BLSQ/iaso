@@ -264,6 +264,7 @@ class Catch(models.Model):
             altitude = self.start_location.z
         return {
             "id": self.id,
+            "uuid": self.uuid,
             "latitude": latitude,
             "longitude": longitude,
             "altitude": altitude,
@@ -282,6 +283,7 @@ class Catch(models.Model):
             altitude = self.start_location.z
         return {
             "id": self.id,
+            "uuid": self.uuid,
             "trap": self.trap.id,
             "male_count": self.male_count,
             "female_count": self.female_count,

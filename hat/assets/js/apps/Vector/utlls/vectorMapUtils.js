@@ -18,6 +18,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Ecrans',
         id: 'details.label.targets',
     },
+    catches: {
+        defaultMessage: 'Déploiements',
+        id: 'details.label.catches',
+    },
     unknown: {
         defaultMessage: 'Inconnu',
         id: 'vectors.label.unknown',
@@ -485,6 +489,12 @@ export const itemsToShow = params => [
         defaultMessage: 'Ecrans',
         isActive: params.targets === 'true',
         iconClass: 'map__option__icon--targets',
+    },
+    {
+        id: 'catches',
+        defaultMessage: 'Déploiements',
+        isActive: params.catches === 'true',
+        iconClass: 'map__option__icon--catches',
     },
     {
         id: 'nonEndemicVillages',

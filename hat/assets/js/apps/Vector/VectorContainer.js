@@ -7,8 +7,10 @@ import {
     fetchSites,
     fetchTraps,
     fetchTargets,
+    fetchCatches,
     fetchPaginatedTraps,
     fetchPaginatedTargets,
+    fetchPaginatedCatches,
     fetchVillages,
     fetchProfiles,
     fetchTeams,
@@ -31,6 +33,7 @@ class VectorContainer extends Component {
             siteEdited: {},
             trapEdited: {},
             targetEdited: {},
+            catchEdited: {},
         };
     }
 
@@ -52,6 +55,9 @@ class VectorContainer extends Component {
         if (params.targets && params.tab === 'map') {
             promises.push(fetchTargets(dispatch, params));
         }
+        if (params.catches && params.tab === 'map') {
+            promises.push(fetchCatches(dispatch, params));
+        }
         if (params.endemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchVillages(dispatch, params, true));
         }
@@ -66,6 +72,9 @@ class VectorContainer extends Component {
         }
         if (params.tab === 'targets') {
             promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
+        }
+        if (params.tab === 'catches') {
+            promises.push(fetchPaginatedCatches(dispatch, params, params.catchesPageSize, params.catchesPage, params.ordercatches));
         }
         dispatch(loadActions.startLoading());
         Promise.all(promises).then(() => {
@@ -106,6 +115,9 @@ class VectorContainer extends Component {
             const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
                 hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderTargets');
+            const catchesTableChanged = hasChanged(this.props.params, newProps.params, 'catchesPage') ||
+                hasChanged(this.props.params, newProps.params, 'catchesPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderCatches');
             if (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map') {
                 promises.push(fetchSites(dispatch, newProps.params));
             }
@@ -114,6 +126,9 @@ class VectorContainer extends Component {
             }
             if (newProps.params.targets && !this.props.vectors.targets && newProps.params.tab === 'map') {
                 promises.push(fetchTargets(dispatch, newProps.params));
+            }
+            if (newProps.params.catches && !this.props.vectors.catches && newProps.params.tab === 'map') {
+                promises.push(fetchCatches(dispatch, newProps.params));
             }
             if (newProps.params.endemicVillages && !this.props.vectors.endemicVillages && newProps.params.tab === 'map') {
                 promises.push(fetchVillages(dispatch, newProps.params, true));
@@ -130,6 +145,9 @@ class VectorContainer extends Component {
             }
             if ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets') {
                 promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
+            }
+            if ((catchesTableChanged || !this.props.vectors.catchesPage.list) && newProps.params.tab === 'catches') {
+                promises.push(fetchPaginatedCatches(dispatch, newProps.params, newProps.params.catchesPageSize, newProps.params.catchesPage, newProps.params.ordercCatches));
             }
             if (promises.length > 0) {
                 dispatch(loadActions.startLoading());
@@ -155,6 +173,9 @@ class VectorContainer extends Component {
             if (params.targets) {
                 promises.push(fetchTargets(dispatch, params));
             }
+            if (params.catches) {
+                promises.push(fetchCatches(dispatch, params));
+            }
             if (params.endemicVillages) {
                 promises.push(fetchVillages(dispatch, params, true));
             }
@@ -164,6 +185,7 @@ class VectorContainer extends Component {
             promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
             promises.push(fetchPaginatedTraps(dispatch, params, params.trapsPageSize, params.trapsPage, params.orderTraps));
             promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
+            promises.push(fetchPaginatedCatches(dispatch, params, params.catchesPageSize, params.catchesPage, params.orderCatches));
             dispatch(loadActions.startLoading());
             Promise.all(promises).then(() => {
                 dispatch(loadActions.successLoadingNoData());
@@ -223,6 +245,7 @@ class VectorContainer extends Component {
                 siteEdited={this.state.siteEdited}
                 trapEdited={this.state.trapEdited}
                 targetEdited={this.state.targetEdited}
+                catchEdited={this.state.catchEdited}
                 onSearch={() => this.onSearch()}
             />
         );

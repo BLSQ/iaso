@@ -23,6 +23,7 @@ import TabsComponent from '../../../components/TabsComponent';
 import trapsColumns from '../utlls/trapsColumns';
 import sitesColumns from '../utlls/sitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
+import catchesColumns from '../utlls/catchesColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
@@ -36,12 +37,14 @@ export class Vector extends Component {
             sites: [],
             traps: [],
             targets: [],
+            catches: [],
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: props.params.tab,
             sitesColumns: sitesColumns(props.intl.formatMessage, this),
             trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, this),
             targetsColumns: targetsColumns(props.intl.formatMessage, this),
+            catchesColumns: catchesColumns(props.intl.formatMessage, this),
             showEditTrapsModale: false,
             showEditSiteModale: false,
             showEditTargetModale: false,
@@ -49,6 +52,7 @@ export class Vector extends Component {
             siteEdited: props.siteEdited,
             trapEdited: props.trapEdited,
             targetEdited: props.targetEdited,
+            catchEdited: props.catchEdited,
         };
     }
 
@@ -62,9 +66,11 @@ export class Vector extends Component {
             siteEdited: newProps.siteEdited || this.state.siteEdited,
             trapEdited: newProps.trapEdited || this.state.trapEdited,
             targetEdited: newProps.targetEdited || this.state.targetEdited,
+            catchEdited: newProps.catchEdited || this.state.catchEdited,
             sites: newProps.params.sites ? newProps.vectors.sites : [],
             traps: newProps.params.traps ? newProps.vectors.traps : [],
-            targets: newProps.params.targets ? newProps.vectors.sitetargetss : [],
+            targets: newProps.params.targets ? newProps.vectors.targets : [],
+            catches: newProps.params.catches ? newProps.vectors.catches : [],
         });
     }
 
@@ -76,6 +82,7 @@ export class Vector extends Component {
                 orderSites,
                 orderTraps,
                 orderTargets,
+                orderCatches,
                 userId,
                 habitats,
                 onlySelectedTraps,
@@ -120,6 +127,9 @@ export class Vector extends Component {
         if ((key === 'traps') && orderTraps) {
             url += `&order=${orderTraps}`;
         }
+        if ((key === 'catches') && orderCatches) {
+            url += `&order=${orderCatches}`;
+        }
         return url;
     }
 
@@ -140,13 +150,14 @@ export class Vector extends Component {
 
     editItem(type, data = undefined) {
         this.setState({
-            showEditSiteModale: type === 'site',
-            showEditTrapsModale: type === 'trap',
-            showCatchesModale: false,
-            showEditTargetModale: type === 'target',
-            siteEdited: type === 'site' ? data : {},
-            trapEdited: type === 'trap' ? data : {},
-            targetEdited: type === 'target' ? data : {},
+            showEditSiteModale: type === 'sites',
+            showEditTrapsModale: type === 'traps',
+            showEditTargetModale: type === 'targets',
+            showCatchesModale: type === 'catches',
+            siteEdited: type === 'sites' ? data : {},
+            trapEdited: type === 'traps' ? data : {},
+            targetEdited: type === 'targets' ? data : {},
+            catchEdited: type === 'catches' ? data : {},
         });
     }
 
@@ -212,6 +223,7 @@ export class Vector extends Component {
             reduxSitesPage,
             reduxTrapsPage,
             reduxTargetsPage,
+            reduxCatchesPage,
             saveSite,
             saveTrap,
             saveTarget,
@@ -221,6 +233,7 @@ export class Vector extends Component {
             sites,
             traps,
             targets,
+            catches,
             nonEndemicVillages,
             endemicVillages,
             showCatchesModale,
@@ -230,6 +243,7 @@ export class Vector extends Component {
             trapEdited,
             siteEdited,
             targetEdited,
+            catchEdited,
         } = this.state;
         return (
             <section className="vectors-container">
@@ -251,6 +265,7 @@ export class Vector extends Component {
                     trapEdited={trapEdited}
                     siteEdited={siteEdited}
                     targetEdited={targetEdited}
+                    catchEdited={catchEdited}
                     params={params}
                     saveSite={site => saveSite(site)}
                     saveTrap={site => saveTrap(site)}
@@ -266,6 +281,7 @@ export class Vector extends Component {
                         { label: formatMessage(MESSAGES.sites), key: 'sites' },
                         { label: formatMessage(MESSAGES.traps), key: 'traps' },
                         { label: formatMessage(MESSAGES.targets), key: 'targets' },
+                        { label: formatMessage(MESSAGES.catches), key: 'catches' },
                     ]}
                     defaultSelect={currentTab}
                 />
@@ -296,6 +312,7 @@ export class Vector extends Component {
                                 sites={sites || []}
                                 traps={traps || []}
                                 targets={targets || []}
+                                catches={catches || []}
                                 endemicVillages={endemicVillages || {}}
                                 nonEndemicVillages={nonEndemicVillages || {}}
                                 getShape={type => getShape(type)}
@@ -378,6 +395,30 @@ export class Vector extends Component {
                         />
                     </div>
                 </div>
+                <div className={`widget__container ${currentTab === 'catches' ? '' : 'hidden'}`}>
+                    <CustomTableComponent
+                        isSortable
+                        showPagination
+                        columns={this.state.catchesColumns}
+                        defaultSorted={[{ id: 'setup_date', desc: false }]}
+                        params={params}
+                        multiSort
+                        fetchDatas={false}
+                        reduxPage={reduxCatchesPage}
+                        pageSize={50}
+                        pageKey="catchesPage"
+                        pageSizeKey="catchesPageSize"
+                        defaultPath={baseUrl}
+                        orderKey="orderCatches"
+                        canSelect={false}
+                    />
+                    <div className="align-right">
+                        <DownloadButtonsComponent
+                            csvUrl={this.getDownloadUrl('catches', 'csv')}
+                            xlsxUrl={this.getDownloadUrl('catches', 'xlsx')}
+                        />
+                    </div>
+                </div>
             </section>
         );
     }
@@ -396,12 +437,14 @@ Vector.propTypes = {
     reduxSitesPage: PropTypes.object.isRequired,
     reduxTrapsPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
+    reduxCatchesPage: PropTypes.object.isRequired,
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
     siteEdited: PropTypes.object.isRequired,
     trapEdited: PropTypes.object.isRequired,
     targetEdited: PropTypes.object.isRequired,
+    catchEdited: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
 };
 
@@ -420,6 +463,7 @@ const MapStateToProps = state => ({
     reduxSitesPage: state.vectors.sitesPage,
     reduxTrapsPage: state.vectors.trapsPage,
     reduxTargetsPage: state.vectors.targetsPage,
+    reduxCatchesPage: state.vectors.catchesPage,
 });
 const VectorWithIntl = injectIntl(Vector);
 

@@ -51,6 +51,9 @@ class VectorMapComponent extends Component {
         this.targetsGroup = new L.FeatureGroup();
         this.map.addLayer(this.targetsGroup);
 
+        this.catchesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.catchesGroup);
+
         this.nonEndemicVillagesGroup = new L.FeatureGroup();
         this.map.addLayer(this.nonEndemicVillagesGroup);
 
@@ -76,6 +79,7 @@ class VectorMapComponent extends Component {
                 this.updateMarkers('sites', this.sitesGroup, this.props.sites);
                 this.updateMarkers('targets', this.targetsGroup, this.props.targets);
                 this.updateMarkers('traps', this.trapsGroup, this.props.traps);
+                this.updateMarkers('catches', this.catchesGroup, this.props.catches);
             }
 
             if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
@@ -92,6 +96,9 @@ class VectorMapComponent extends Component {
             }
             if (hasChanged(prevProps, this.props, 'targets')) {
                 this.updateMarkers('targets', this.targetsGroup, this.props.targets);
+            }
+            if (hasChanged(prevProps, this.props, 'catches')) {
+                this.updateMarkers('catches', this.catchesGroup, this.props.catches);
             }
         });
     }
@@ -142,7 +149,7 @@ class VectorMapComponent extends Component {
             marker.on('click', () => {
                 this.props.selectMarker(item.id, key === 'sites' ? 'new_sites' : key)
                     .then((response) => {
-                        this.props.editItem(key.slice(0, -1), response);
+                        this.props.editItem(key, response);
                     });
             })
                 .on('mouseover', () => {
@@ -231,7 +238,14 @@ class VectorMapComponent extends Component {
 
     fitToBounds() {
         const { map } = this;
-        const group = new L.FeatureGroup([this.sitesGroup, this.trapsGroup, this.targetsGroup, this.endemicVillagesGroup, this.nonEndemicVillagesGroup]);
+        const group = new L.FeatureGroup([
+            this.sitesGroup,
+            this.trapsGroup,
+            this.targetsGroup,
+            this.catchesGroup,
+            this.endemicVillagesGroup,
+            this.nonEndemicVillagesGroup,
+        ]);
         defaultFitToBound(map, group.getBounds(), 13);
     }
 
@@ -281,6 +295,7 @@ VectorMapComponent.propTypes = {
     sites: PropTypes.arrayOf(PropTypes.object).isRequired,
     traps: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
+    catches: PropTypes.arrayOf(PropTypes.object).isRequired,
     nonEndemicVillages: PropTypes.object.isRequired,
     endemicVillages: PropTypes.object.isRequired,
     intl: intlShape.isRequired,

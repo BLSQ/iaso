@@ -5,9 +5,11 @@
 export const LOAD_SITES = 'hat/vector/LOAD_SITES';
 export const LOAD_TRAPS = 'hat/vector/LOAD_TRAPS';
 export const LOAD_TARGETS = 'hat/vector/LOAD_TARGETS';
+export const LOAD_CATCHES = 'hat/vector/LOAD_CATCHES';
 export const LOAD_PAGINATED_SITES = 'hat/vector/LOAD_PAGINATED_SITES';
 export const LOAD_PAGINATED_TRAPS = 'hat/vector/LOAD_PAGINATED_TRAPS';
 export const LOAD_PAGINATED_TARGETS = 'hat/vector/LOAD_PAGINATED_TARGETS';
+export const LOAD_PAGINATED_CATCHES = 'hat/vector/LOAD_PAGINATED_CATCHES';
 export const LOAD_NON_ENDEMIC_VILLAGES = 'hat/vector/LOAD_NON_ENDEMIC_VILLAGES';
 export const LOAD_ENDEMIC_VILLAGES = 'hat/vector/LOAD_ENDEMIC_VILLAGES';
 export const LOAD_PROFILES = 'hat/vector/LOAD_PROFILES';
@@ -29,6 +31,11 @@ export const loadTraps = payload => ({
 
 export const loadTargets = payload => ({
     type: LOAD_TARGETS,
+    payload,
+});
+
+export const loadCatches = payload => ({
+    type: LOAD_CATCHES,
     payload,
 });
 
@@ -90,13 +97,26 @@ export const loadPaginatedTargets = (datas, params) => ({
     },
 });
 
+export const loadPaginatedCatches = (datas, params) => ({
+    type: LOAD_PAGINATED_CATCHES,
+    payload: {
+        list: datas.list,
+        showPagination: true,
+        params,
+        count: datas.count,
+        pages: datas.pages,
+    },
+});
+
 export const vectorActions = {
     loadSites,
     loadTraps,
     loadTargets,
+    loadCatches,
     loadPaginatedTraps,
     loadPaginatedSites,
     loadPaginatedTargets,
+    loadPaginatedCatches,
     loadNonEndemicVillages,
     loadEndemicVillages,
     loadProfiles,
@@ -111,6 +131,7 @@ export const vectorInitialState = {
     sites: null,
     traps: null,
     targets: null,
+    catches: null,
     endemicVillages: undefined,
     nonEndemicVillages: undefined,
     sitesPage: {
@@ -128,6 +149,13 @@ export const vectorInitialState = {
         pages: 0,
     },
     targetsPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
+    catchesPage: {
         list: null,
         showPagination: false,
         params: {},
@@ -153,6 +181,10 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
         case LOAD_TARGETS: {
             const targets = action.payload;
             return { ...state, targets };
+        }
+        case LOAD_CATCHES: {
+            const catches = action.payload;
+            return { ...state, catches };
         }
         case LOAD_ENDEMIC_VILLAGES: {
             const endemicVillages = action.payload;
@@ -217,6 +249,22 @@ export const vectorReducer = (state = vectorInitialState, action = {}) => {
             return {
                 ...state,
                 targetsPage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
+        }
+
+        case LOAD_PAGINATED_CATCHES: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                catchesPage: {
                     list,
                     showPagination,
                     params,

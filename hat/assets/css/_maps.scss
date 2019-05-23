@@ -440,10 +440,25 @@ $color in $types {
         }
     }
     &--catches {
-        width: 12px;
-        height: 12px;
-        border: 2px solid orange;
-        background: rgba(orange, 0.5);
+        &:before {
+            background: rgba(violet, 0.5);
+        }
+        &:after {
+            background: violet;
+            color: white;
+        }
+        &.small {
+            width: 12px;
+            height: 12px;
+            border: 2px solid violet;
+            background: rgba(violet, 0.5);
+            &:before {
+                display: none;
+            }
+            &:after {
+                display: none;
+            }
+        }
     }
     &--targets {
         &:before {

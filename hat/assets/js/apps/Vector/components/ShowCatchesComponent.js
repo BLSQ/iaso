@@ -96,7 +96,7 @@ class ShowCatchesComponent extends Component {
                                         <FormattedMessage id="vector.modale.catches.legend.trap" defaultMessage="Piège" />
                                     </li>
                                     <li className="map__option__list__item">
-                                        <i className="map__option__icon--catches" />
+                                        <i className="map__option__icon--catches small" />
                                         <FormattedMessage id="vector.modale.catches.legend.catches" defaultMessage="Déploiements" />
                                     </li>
                                 </ul>

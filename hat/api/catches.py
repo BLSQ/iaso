@@ -1,12 +1,19 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
+from django.db.models import OuterRef, Exists
 from django.shortcuts import get_object_or_404
 from hat.vector_control.models import Trap, Catch, APIImport
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from django.http import StreamingHttpResponse, HttpResponse
 from django.contrib.gis.geos import Point
 from datetime import datetime
 from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from hat.geo.models import Province, ZS, AS
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 def timestamp_to_utc_datetime(timestamp):
@@ -48,6 +55,17 @@ class CatchesViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("from", None)
         to_date = request.GET.get("to", None)
+        as_location = request.GET.get("as_location", False)
+        province_ids = request.GET.get("province_id", None)
+        zs_ids = request.GET.get("zs_id", None)
+        as_ids = request.GET.get("as_id", None)
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+        orders = request.GET.get("order", "created_at").split(",")
+        user_ids = request.GET.get("userId", None)
+
         queryset = Catch.objects.all()
 
         if from_date is not None:
@@ -56,7 +74,109 @@ class CatchesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(setup_date__date__lte=to_date)
         queryset = queryset
 
-        return Response(queryset.values('id', 'male_count', 'female_count', 'unknown_count', 'source'))
+        if province_ids:
+            province_list = province_ids.split(",")
+            prov_subquery = Province.objects.filter(id__in=province_list).filter(
+                geom__contains=OuterRef("start_location")
+            )
+            queryset = queryset.annotate(in_prov=Exists(prov_subquery)).filter(
+                in_prov=True
+            )
+        if zs_ids:
+            zone_list = zs_ids.split(",")
+            zs_subquery = ZS.objects.filter(id__in=zone_list).filter(
+                geom__contains=OuterRef("start_location")
+            )
+            queryset = queryset.annotate(in_zs=Exists(zs_subquery)).filter(in_zs=True)
+        if as_ids:
+            area_list = as_ids.split(",")
+            as_subquery = AS.objects.filter(id__in=area_list).filter(
+                geom__contains=OuterRef("start_location")
+            )
+            queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
+
+
+        if csv_format is None and xlsx_format is None:
+            if as_location:
+                return Response(map(lambda x: x.as_location(), queryset))
+
+            if limit:
+                limit = int(limit)
+                page_offset = int(page_offset)
+
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
+
+                res["list"] = map(
+                    lambda x: x.as_dict(), page.object_list
+                )
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+
+            return Response(map(lambda x: x.as_dict(), queryset))
+        else:
+            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
+                    "menupermissions.x_datas_download")) and
+                    not request.user.is_superuser):
+                return Response('Unauthorized', status=401)
+            columns = [
+                {"title": "ID", "width": 5},
+                {"title": "UUID", "width": 15},
+                {"title": "Date de création", "width": 17},
+                {"title": "Date de collecte", "width": 17},
+                {"title": "Mâles", "width": 10},
+                {"title": "Femelles", "width": 10},
+                {"title": "Inconnus", "width": 10},
+                {"title": "Source", "width": 8},
+                {"title": "Latitude"},
+                {"title": "Longitude"},
+                {"title": "Altitude"},
+                {"title": "Utilisateur"},
+                {"title": "Remarques"},
+                {"title": "Problème"},
+            ]
+            filename = "catches"
+
+            def get_row(catch, **kwargs):
+                cdict = catch.as_dict()
+                return [
+                    cdict.get("id"),
+                    cdict.get("uuid"),
+                    catch.setup_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    catch.collect_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    cdict.get("male_count"),
+                    cdict.get("female_count"),
+                    cdict.get("unknown_count"),
+                    cdict.get("source"),
+                    cdict.get("latitude"),
+                    cdict.get("longitude"),
+                    cdict.get("altitude"),
+                    cdict.get("username"),
+                    cdict.get("remarks"),
+                    cdict.get("problem"),
+                ]
+
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Catches", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type="text/csv",
+                )
+                filename = filename + ".csv"
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
 
     def retrieve(self, request, pk=None):
         catch = get_object_or_404(Catch, pk=pk)

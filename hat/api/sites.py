@@ -6,10 +6,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+from django.db.models import Q
 
 from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user, Profile
-from hat.vector_control.models import Site, APIImport, Trap
+from hat.vector_control.models import Site, APIImport, Trap, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
@@ -58,9 +59,26 @@ class SitesViewSet(viewsets.ViewSet):
         queryset = Site.objects.all()
 
         if from_date is not None:
-            queryset = queryset.filter(created_at__date__gte=from_date)
+            trap_subquery = Trap.objects.filter(created_at__date__gte=from_date)
+            sitesTraps = [trap.site.id for trap in trap_subquery]
+            catch_subquery = Catch.objects.filter(setup_date__date__gte=from_date)
+            sitesCatchs = [catch.trap.site.id for catch in catch_subquery]
+            queryset = queryset.filter(
+                Q(created_at__date__gte=from_date)
+                | Q(id__in=sitesTraps)
+                | Q(id__in=sitesCatchs)
+            )
         if to_date is not None:
-            queryset = queryset.filter(created_at__date__lte=to_date)
+            trap_subquery = Trap.objects.filter(created_at__date__lte=to_date)
+            sitesTraps = [trap.site.id for trap in trap_subquery]
+            catch_subquery = Catch.objects.filter(setup_date__date__lte=to_date)
+            sitesCatchs = [catch.trap.site.id for catch in catch_subquery]
+            queryset = queryset.filter(
+                Q(created_at__date__lte=to_date)
+                | Q(id__in=sitesTraps)
+                | Q(id__in=sitesCatchs)
+            )
+
         if user_ids is not None:
             queryset = queryset.filter(creator_id__in=user_ids.split(","))
 

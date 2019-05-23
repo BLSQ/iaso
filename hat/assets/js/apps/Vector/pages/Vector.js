@@ -33,7 +33,7 @@ export class Vector extends Component {
         super(props);
         this.state = {
             itemsToShow: itemsToShow(props.params),
-            sites: [], // the sites
+            sites: [],
             traps: [],
             targets: [],
             nonEndemicVillages: {},
@@ -156,6 +156,19 @@ export class Vector extends Component {
         this.props.saveSite(s);
     }
 
+    editSite(data) {
+        this.props.getDetail(data.id, 'new_sites').then((res) => {
+            const newState = {
+                showCatchesModale: false,
+                showEditSiteModale: true,
+                showEditTrapsModale: false,
+                showEditTargetModale: false,
+                siteEdited: res,
+            };
+            this.setState(newState);
+        });
+    }
+
     displayCatches(data = undefined, fetchDetails = false) {
         const newState = {
             showCatchesModale: true,
@@ -220,6 +233,13 @@ export class Vector extends Component {
         } = this.state;
         return (
             <section className="vectors-container">
+                {
+                    this.props.load.loading && <LoadingSpinner message={formatMessage({
+                        defaultMessage: 'Chargement en cours',
+                        id: 'microplanning.labels.loading',
+                    })}
+                    />
+                }
                 <VectorModalesComponent
                     toggleModal={key => this.toggleModal(key)}
                     showModale={{
@@ -236,13 +256,6 @@ export class Vector extends Component {
                     saveTrap={site => saveTrap(site)}
                     saveTarget={target => saveTarget(target)}
                 />
-                {
-                    this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
-                    })}
-                    />
-                }
                 <VectorFiltersComponent onSearch={() => this.props.onSearch()} params={params} />
                 <TabsComponent
                     defaultPath={baseUrl}
@@ -251,7 +264,7 @@ export class Vector extends Component {
                     tabs={[
                         { label: formatMessage(MESSAGES.map), key: baseUrl },
                         { label: formatMessage(MESSAGES.sites), key: 'sites' },
-                        { label: `${formatMessage(MESSAGES.traps)}`, key: 'traps' },
+                        { label: formatMessage(MESSAGES.traps), key: 'traps' },
                         { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}

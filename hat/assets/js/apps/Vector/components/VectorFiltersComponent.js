@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
@@ -33,18 +33,22 @@ class VectorFiltersComponent extends PureComponent {
         return (
             <div className="widget__container">
                 <div className="widget__header">
-                    <h2 className="widget__heading">
-                        <PeriodSelectorComponent
-                            dateFrom={params.dateFrom}
-                            dateTo={params.dateTo}
-                            onChangeDate={(dateFrom, dateTo) =>
-                                redirectTo(baseUrl, {
-                                    ...params,
-                                    dateFrom,
-                                    dateTo,
-                                })}
-                        />
+                    <h2 className="widget__heading inline-block width-auto margin-right small-padding-top">
+                        <FormattedMessage
+                            id="vector.label.period"
+                            defaultMessage="Période d'activité"
+                        />:{' '}
                     </h2>
+                    <PeriodSelectorComponent
+                        dateFrom={params.dateFrom}
+                        dateTo={params.dateTo}
+                        onChangeDate={(dateFrom, dateTo) =>
+                            redirectTo(baseUrl, {
+                                ...params,
+                                dateFrom,
+                                dateTo,
+                            })}
+                    />
                 </div>
                 <div className="widget__content--tier">
                     <div>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import VectorElement from './pages/Vector';
+import VectorDashboard from './pages/Vector';
 import {
     fetchSites,
     fetchTraps,
@@ -215,7 +215,7 @@ class VectorContainer extends Component {
 
     render() {
         return (
-            <VectorElement
+            <VectorDashboard
                 params={this.props.params}
                 saveSite={site => this.saveSite(site)}
                 saveTrap={trap => this.saveTrap(trap)}

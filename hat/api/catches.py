@@ -51,9 +51,9 @@ class CatchesViewSet(viewsets.ViewSet):
         queryset = Catch.objects.all()
 
         if from_date is not None:
-            queryset = queryset.filter(collect_date__date__gte=from_date)
+            queryset = queryset.filter(setup_date__date__gte=from_date)
         if to_date is not None:
-            queryset = queryset.filter(collect_date__date__lte=to_date)
+            queryset = queryset.filter(setup_date__date__lte=to_date)
         queryset = queryset
 
         return Response(queryset.values('id', 'male_count', 'female_count', 'unknown_count', 'source'))

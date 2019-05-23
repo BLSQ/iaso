@@ -59,7 +59,7 @@ def testResultString(value):
     if value == RES_UNUSED:
         return "Non utlisé"
     if value == RES_UNSURE:
-        return "Pas certain"
+        return "Incertain +/-"
     return "/"
 
 

@@ -17,6 +17,7 @@ from hat.cases.models import (
     RES_MISSING,
     RES_UNREADABLE,
     RES_UNUSED,
+    RES_UNSURE,
     testResultString,
 )
 
@@ -28,6 +29,7 @@ class TestsMappingViewSet(viewsets.ViewSet):
 
     def list(self, request):
         res = {
+            RES_UNSURE: testResultString(RES_UNSURE),
             RES_POSITIVE: testResultString(RES_POSITIVE),
             RES_POSITIVE_POSITIVE_POSITIVE: testResultString(
                 RES_POSITIVE_POSITIVE_POSITIVE

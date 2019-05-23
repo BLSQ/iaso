@@ -4,21 +4,24 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
 import SuperUserImageItem from './SuperUserImageItem';
-import { CattTypeConstant, RdtTypeConstant } from '../../../../utils/constants/ImageTypeConstant';
 
-const getResult = (value, list) => list.find(e => e.value === value);
+export const getResult = (value, list) => {
+    const item = list.find(e => e.value === value);
+    return item ? item.label : value;
+};
 
 class SuperUserImageComponent extends React.Component {
     render() {
         const {
             currentTest,
+            testsMapping,
             intl: {
                 formatMessage,
             },
         } = this.props;
 
         const typeConstant = currentTest.type === 'RDT' ?
-            RdtTypeConstant : CattTypeConstant;
+            testsMapping.rdtTypeConstant : testsMapping.cattTypeConstant;
 
         let check1;
         let check2;
@@ -64,13 +67,14 @@ class SuperUserImageComponent extends React.Component {
                             />:
                         </div>
                         <span>
-                            {currentTest.result ? formatMessage(getResult(currentTest.result, typeConstant)) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
+                            {currentTest.result ? getResult(currentTest.result, typeConstant) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
                         </span>
                     </div>
                 </section>
                 {
                     check1 &&
                     <SuperUserImageItem
+                        typeConstant={typeConstant}
                         currentTest={check1}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
@@ -81,6 +85,7 @@ class SuperUserImageComponent extends React.Component {
                 {
                     check2 &&
                     <SuperUserImageItem
+                        typeConstant={typeConstant}
                         currentTest={check2}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
@@ -91,6 +96,7 @@ class SuperUserImageComponent extends React.Component {
                 {
                     check3 &&
                     <SuperUserImageItem
+                        typeConstant={typeConstant}
                         currentTest={check3}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
@@ -104,6 +110,7 @@ class SuperUserImageComponent extends React.Component {
 
 SuperUserImageComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
+    testsMapping: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
 };
 

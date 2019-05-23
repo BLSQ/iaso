@@ -2,21 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
-import { CattTypeConstant, RdtTypeConstant } from '../../../../utils/constants/ImageTypeConstant';
 
-const getResult = (value, list) => list.find(e => e.value === value);
+import { getResult } from './SuperUserImageComponent';
+
 
 class SuperUserImageItem extends React.Component {
     render() {
         const {
             currentTest,
             title,
-            intl: {
-                formatMessage,
-            },
+            typeConstant,
         } = this.props;
-        const typeConstant = currentTest.type === 'RDT' ?
-            RdtTypeConstant : CattTypeConstant;
         return (
             <section className="test-infos">
                 <h4>
@@ -44,7 +40,7 @@ class SuperUserImageItem extends React.Component {
                         />:
                     </div>
                     <span>
-                        {currentTest.result ? formatMessage(getResult(currentTest.result, typeConstant)) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
+                        {currentTest.result ? getResult(currentTest.result, typeConstant) : <FormattedMessage id="quality.noresult" defaultMessage="Pas de résultat" /> }
                     </span>
                 </div>
                 {
@@ -67,8 +63,8 @@ class SuperUserImageItem extends React.Component {
 
 SuperUserImageItem.propTypes = {
     currentTest: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     title: PropTypes.string.isRequired,
+    typeConstant: PropTypes.array.isRequired,
 };
 
 const SuperUserImageItemIntl = injectIntl(SuperUserImageItem);

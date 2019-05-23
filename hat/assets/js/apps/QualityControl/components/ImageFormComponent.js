@@ -1,9 +1,12 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+
 import TestImageComponent from './TestImageComponent';
 import SuperUserImageComponent from './superUser/SuperUserImageComponent';
 import { isMediumUser, isSuperUser } from '../../../utils/index';
+import { testActions } from '../redux/test';
 
 const groupCattTests = (test) => {
     const cattTests = [];
@@ -40,6 +43,10 @@ class ImageFormComponent extends React.Component {
             comment: '',
             isFullCatt: this.isFullCatt(props.currentTest, tempGroupedCattTests),
         };
+    }
+
+    componentWillMount() {
+        this.props.fetchTestMapping();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -100,21 +107,25 @@ class ImageFormComponent extends React.Component {
         const {
             currentTest, groupedCattTests, comment, currentCheck, isFullCatt,
         } = this.state;
-        const { userLevel } = this.props;
+        const { userLevel, testsMapping } = this.props;
+        if (!testsMapping) return null;
         let formClasses = isMediumUser(userLevel) || isSuperUser(userLevel) ? 'with-comment ' : '';
         formClasses += isSuperUser(userLevel) ? 'super-user' : '';
+        formClasses += 'quality-image-container';
         return (
             <form className={formClasses}>
                 {
                     isSuperUser(userLevel) && currentTest &&
                     <SuperUserImageComponent
                         currentTest={currentTest}
+                        testsMapping={testsMapping}
                     />
                 }
                 {
                     (!isSuperUser(userLevel) && !isFullCatt) &&
                     <TestImageComponent
                         test={currentCheck}
+                        testsMapping={testsMapping}
                         isSuperUser={isSuperUser(userLevel)}
                         isMediumUser={isMediumUser(userLevel)}
                         changeResult={(result, testId) => this.changeResult(result, testId)}
@@ -125,6 +136,7 @@ class ImageFormComponent extends React.Component {
                     groupedCattTests.map(catt =>
                         (<TestImageComponent
                             key={`catt-${catt.id}`}
+                            testsMapping={testsMapping}
                             test={catt}
                             changeResult={(result, testId) => this.changeResult(result, testId)}
                         />))
@@ -182,8 +194,18 @@ ImageFormComponent.propTypes = {
     error: PropTypes.object,
     currentTest: PropTypes.object.isRequired,
     userLevel: PropTypes.number.isRequired,
+    fetchTestMapping: PropTypes.func.isRequired,
+    testsMapping: PropTypes.object.isRequired,
 };
 
 const ImageFormComponentIntl = injectIntl(ImageFormComponent);
 
-export default ImageFormComponentIntl;
+const MapStateToProps = state => ({
+    testsMapping: state.test.testsMapping,
+});
+
+const MapDispatchToProps = dispatch => ({
+    fetchTestMapping: () => dispatch(testActions.fetchTestMapping(dispatch)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(ImageFormComponentIntl);

@@ -2,16 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
-import { CattTypeConstant, RdtTypeConstant } from '../../../utils/constants/ImageTypeConstant';
-
-
 class TestImageComponent extends React.Component {
     render() {
-        const typeConstant = this.props.test.type === 'RDT' ?
-            RdtTypeConstant : CattTypeConstant;
         const {
-            test, changeResult,
+            test, changeResult, testsMapping,
         } = this.props;
+        const typeConstant = this.props.test.type === 'RDT' ?
+            testsMapping.rdtTypeConstant : testsMapping.cattTypeConstant;
         return (
             <div className={test.current ? 'current' : ''}>
                 {
@@ -45,27 +42,20 @@ class TestImageComponent extends React.Component {
                         />:
                     </div>
                     {
-                        typeConstant.map((type) => {
-                            const messageProps = {
-                                id: type.id,
-                                defaultMessage: type.defaultMessage,
-                            };
-                            return (
-                                <div className="quality-radio" key={type.value}>
-                                    <input
-                                        type="radio"
-                                        id={`result-${type.value}-${test.id}`}
-                                        name={`result-${type.value}-${test.id} `}
-                                        checked={type.value === test.result ? 'checked' : ''}
-                                        value={type.value}
-                                        onChange={() => changeResult(type.value, test.id)}
-                                    />
-                                    <label htmlFor={`result-${type.value}-${test.id}`}>
-                                        <FormattedMessage {...messageProps} />
-                                    </label>
-                                </div>
-                            );
-                        })
+                        typeConstant.map(type => (
+                            <div className="quality-radio" key={type.value}>
+                                <input
+                                    type="radio"
+                                    id={`result-${type.value}-${test.id}`}
+                                    name={`result-${type.value}-${test.id} `}
+                                    checked={type.value === test.result ? 'checked' : ''}
+                                    value={type.value}
+                                    onChange={() => changeResult(type.value, test.id)}
+                                />
+                                <label htmlFor={`result-${type.value}-${test.id}`}>
+                                    <span>{type.label}</span>
+                                </label>
+                            </div>))
                     }
                 </section>
             </div>);
@@ -82,6 +72,7 @@ TestImageComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     isSuperUser: PropTypes.bool,
     isMediumUser: PropTypes.bool,
+    testsMapping: PropTypes.object.isRequired,
 };
 
 const TestImageComponentIntl = injectIntl(TestImageComponent);

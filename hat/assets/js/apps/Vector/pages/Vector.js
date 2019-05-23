@@ -6,7 +6,6 @@ import { injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl, getRequest } from '../../../utils/fetchData';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import { mapActions } from '../redux/mapReducer';
 
 import {
@@ -15,6 +14,8 @@ import {
 } from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
+import VectorModalesComponent from '../components/VectorModalesComponent';
+import VectorFiltersComponent from '../components/VectorFiltersComponent';
 import ClusterSwitchComponent from '../../../components/ClusterSwitchComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
@@ -23,14 +24,7 @@ import trapsColumns from '../utlls/trapsColumns';
 import sitesColumns from '../utlls/sitesColumns';
 import targetsColumns from '../utlls/targetsColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
-import EditTrapComponent from '../components/EditTrapComponent';
-import EditSiteComponent from '../components/sites/EditSiteComponent';
-import ShowCatchesComponent from '../components/ShowCatchesComponent';
-import EditTargetComponent from '../components/EditTargetComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import SearchButton from '../../../components/SearchButton';
 
 const baseUrl = 'map';
 
@@ -162,60 +156,47 @@ export class Vector extends Component {
     }
 
     editItem(type, data = undefined) {
-        if (type === 'site') {
-            this.setState({
-                showEditSiteModale: true,
-                showEditTrapsModale: false,
-                showCatchesModale: false,
-                showEditTargetModale: false,
-                siteEdited: data,
-            });
-        }
-
-        if (type === 'trap') {
-            this.setState({
-                showEditSiteModale: false,
-                showEditTrapsModale: true,
-                showCatchesModale: false,
-                showEditTargetModale: false,
-                trapEdited: data,
-            });
-        }
-
-        if (type === 'target') {
-            this.setState({
-                showEditSiteModale: false,
-                showEditTrapsModale: false,
-                showCatchesModale: false,
-                showEditTargetModale: true,
-                targetEdited: data,
-            });
-        }
-    }
-
-    editSite(data) {
-        this.props.getDetail(data.id, 'new_sites').then((res) => {
-            const newState = {
-                showCatchesModale: false,
-                showEditSiteModale: true,
-                showEditTrapsModale: false,
-                showEditTargetModale: false,
-                siteEdited: res,
-            };
-            this.setState(newState);
+        this.setState({
+            showEditSiteModale: type === 'site',
+            showEditTrapsModale: type === 'trap',
+            showCatchesModale: false,
+            showEditTargetModale: type === 'target',
+            siteEdited: type === 'site' ? data : {},
+            trapEdited: type === 'trap' ? data : {},
+            targetEdited: type === 'target' ? data : {},
         });
-    }
-
-    saveTrap(trap, selectedValue) {
-        const t = trap;
-        t.is_selected = selectedValue;
-        this.props.saveTrap(t);
     }
 
     selectResponsible(site, responsibleId) {
         const s = site;
         s.responsible_id = responsibleId;
         this.props.saveSite(s);
+    }
+
+    displayCatches(data = undefined, fetchDetails = false) {
+        const newState = {
+            showCatchesModale: true,
+            showEditSiteModale: false,
+            showEditTrapsModale: false,
+            showEditTargetModale: false,
+            trapEdited: data,
+        };
+        if (!fetchDetails) {
+            this.setState(newState);
+        } else {
+            this.props.getDetail(data.id, 'traps').then((res) => {
+                newState.trapEdited = res;
+                this.setState(newState);
+            });
+        }
+    }
+
+    toggleModal(key) {
+        const newState = {
+            ...this.state,
+        };
+        newState[key] = !newState[key];
+        this.setState(newState);
     }
 
     render() {
@@ -227,23 +208,14 @@ export class Vector extends Component {
             intl: {
                 formatMessage,
             },
-            filters: {
-                provinces,
-                zones,
-                areas,
-            },
             params,
             getShape,
             changeLayer,
             changeCluster,
             getDetail,
-            redirectTo,
             reduxSitesPage,
             reduxTrapsPage,
             reduxTargetsPage,
-            profiles,
-            teams,
-            habitats,
             saveSite,
             saveTrap,
             saveTarget,
@@ -256,71 +228,22 @@ export class Vector extends Component {
             nonEndemicVillages,
             endemicVillages,
         } = this.state;
-        const filters = filtersVectors(formatMessage, MESSAGES, profiles, teams, habitats);
-        const filters2 = filtersVectors2();
-        const geoFilters = filtersVectorsGeo(
-            provinces || [],
-            zones || [],
-            areas || [],
-            this.props,
-            baseUrl,
-        );
         return (
             <section className="vectors-container">
-                {
-                    this.state.showCatchesModale &&
-                    <ShowCatchesComponent
-                        showModale={this.state.showCatchesModale}
-                        toggleModal={() =>
-                            this.setState({
-                                showCatchesModale: !this.state.showCatchesModale,
-                            })}
-                        trap={this.state.trapEdited}
-                        params={params}
-                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
-                    />
-                }
-                {
-                    this.state.showEditSiteModale &&
-                    <EditSiteComponent
-                        showModale={this.state.showEditSiteModale}
-                        toggleModal={() =>
-                            this.setState({
-                                showEditSiteModale: !this.state.showEditSiteModale,
-                            })}
-                        site={this.state.siteEdited}
-                        trapEdited={this.state.trapEdited}
-                        saveSite={site => saveSite(site)}
-                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
-                        profiles={profiles}
-                    />
-                }
-                {
-                    this.state.showEditTrapsModale &&
-                    <EditTrapComponent
-                        showModale={this.state.showEditTrapsModale}
-                        toggleModal={() =>
-                            this.setState({
-                                showEditTrapsModale: !this.state.showEditTrapsModale,
-                            })}
-                        trap={this.state.trapEdited}
-                        habitats={habitats}
-                        saveTrap={site => saveTrap(site)}
-                    />
-                }
-                {
-                    this.state.showEditTargetModale &&
-                    <EditTargetComponent
-                        showModale={this.state.showEditTargetModale}
-                        toggleModal={() =>
-                            this.setState({
-                                showEditTargetModale: !this.state.showEditTargetModale,
-                            })}
-                        target={this.state.targetEdited}
-                        profiles={profiles}
-                        saveTarget={target => saveTarget(target)}
-                    />
-                }
+                <VectorModalesComponent
+                    toggleModal={key => this.toggleModal(key)}
+                    showCatchesModale={this.state.showCatchesModale}
+                    showEditSiteModale={this.state.showEditSiteModale}
+                    showEditTrapsModale={this.state.showEditTrapsModale}
+                    showEditTargetModale={this.state.showEditTargetModale}
+                    trapEdited={this.state.trapEdited}
+                    siteEdited={this.state.siteEdited}
+                    targetEdited={this.state.targetEdited}
+                    params={params}
+                    saveSite={site => saveSite(site)}
+                    saveTrap={site => saveTrap(site)}
+                    saveTarget={target => saveTarget(target)}
+                />
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
@@ -328,46 +251,7 @@ export class Vector extends Component {
                     })}
                     />
                 }
-                <div className="widget__container">
-                    <div className="widget__header">
-                        <h2 className="widget__heading">
-                            <PeriodSelectorComponent
-                                dateFrom={params.dateFrom}
-                                dateTo={params.dateTo}
-                                onChangeDate={(dateFrom, dateTo) =>
-                                    redirectTo(baseUrl, {
-                                        ...params,
-                                        dateFrom,
-                                        dateTo,
-                                    })}
-                            />
-                        </h2>
-                    </div>
-                    <div className="widget__content--tier">
-                        <div>
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl={baseUrl}
-                                filters={filters}
-                            />
-                        </div>
-                        <div>
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl={baseUrl}
-                                filters={geoFilters}
-                            />
-                        </div>
-                        <div>
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl={baseUrl}
-                                filters={filters2}
-                            />
-                        </div>
-                    </div>
-                    <SearchButton onSearch={() => this.props.onSearch()} />
-                </div>
+                <VectorFiltersComponent onSearch={() => this.props.onSearch()} params={params} />
                 <TabsComponent
                     defaultPath={baseUrl}
                     params={params}
@@ -493,18 +377,12 @@ export class Vector extends Component {
         );
     }
 }
-Vector.defaultProps = {
-    siteEdited: undefined,
-    trapEdited: undefined,
-    targetEdited: undefined,
-};
 
 Vector.propTypes = {
     getDetail: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    vectors: PropTypes.object.isRequired,
     getShape: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
@@ -513,16 +391,12 @@ Vector.propTypes = {
     reduxSitesPage: PropTypes.object.isRequired,
     reduxTrapsPage: PropTypes.object.isRequired,
     reduxTargetsPage: PropTypes.object.isRequired,
-    profiles: PropTypes.array.isRequired,
-    teams: PropTypes.array.isRequired,
-    habitats: PropTypes.array.isRequired,
-    filters: PropTypes.object.isRequired,
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
-    siteEdited: PropTypes.object,
-    trapEdited: PropTypes.object,
-    targetEdited: PropTypes.object,
+    siteEdited: PropTypes.object.isRequired,
+    trapEdited: PropTypes.object.isRequired,
+    targetEdited: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
 };
 
@@ -536,15 +410,11 @@ const MapDispatchToProps = dispatch => ({
 
 const MapStateToProps = state => ({
     vectors: state.vectors,
-    profiles: state.vectors.profiles,
-    teams: state.vectors.teams,
-    habitats: state.vectors.habitats,
     load: state.load,
     map: state.map,
     reduxSitesPage: state.vectors.sitesPage,
     reduxTrapsPage: state.vectors.trapsPage,
     reduxTargetsPage: state.vectors.targetsPage,
-    filters: state.geoFilters,
 });
 const VectorWithIntl = injectIntl(Vector);
 

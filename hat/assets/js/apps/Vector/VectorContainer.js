@@ -28,9 +28,9 @@ class VectorContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            siteEdited: undefined,
-            trapEdited: undefined,
-            targetEdited: undefined,
+            siteEdited: {},
+            trapEdited: {},
+            targetEdited: {},
         };
     }
 

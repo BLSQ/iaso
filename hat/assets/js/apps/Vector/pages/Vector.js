@@ -53,36 +53,19 @@ export class Vector extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        const newState = {
+        this.setState({
             ...this.state,
             itemsToShow: itemsToShow(newProps.params),
-            sites: [],
-            traps: [],
-            targets: [],
-            nonEndemicVillages: {},
-            endemicVillages: {},
+            nonEndemicVillages: newProps.params.nonEndemicVillages ? newProps.vectors.nonEndemicVillages : {},
+            endemicVillages: newProps.params.endemicVillages ? newProps.vectors.endemicVillages : {},
             currentTab: newProps.params.tab,
             siteEdited: newProps.siteEdited || this.state.siteEdited,
             trapEdited: newProps.trapEdited || this.state.trapEdited,
             targetEdited: newProps.targetEdited || this.state.targetEdited,
-        };
-        if (newProps.params.sites) {
-            newState.sites = newProps.vectors.sites;
-        }
-        if (newProps.params.traps) {
-            newState.traps = newProps.vectors.traps;
-        }
-        if (newProps.params.targets) {
-            newState.targets = newProps.vectors.targets;
-        }
-        if (newProps.params.nonEndemicVillages) {
-            newState.nonEndemicVillages = newProps.vectors.nonEndemicVillages;
-        }
-        if (newProps.params.endemicVillages) {
-            newState.endemicVillages = newProps.vectors.endemicVillages;
-        }
-
-        this.setState(newState);
+            sites: newProps.params.sites ? newProps.vectors.sites : [],
+            traps: newProps.params.traps ? newProps.vectors.traps : [],
+            targets: newProps.params.targets ? newProps.vectors.sitetargetss : [],
+        });
     }
 
     getDownloadUrl(key, exportFormat = 'csv') {
@@ -227,18 +210,27 @@ export class Vector extends Component {
             targets,
             nonEndemicVillages,
             endemicVillages,
+            showCatchesModale,
+            showEditSiteModale,
+            showEditTrapsModale,
+            showEditTargetModale,
+            trapEdited,
+            siteEdited,
+            targetEdited,
         } = this.state;
         return (
             <section className="vectors-container">
                 <VectorModalesComponent
                     toggleModal={key => this.toggleModal(key)}
-                    showCatchesModale={this.state.showCatchesModale}
-                    showEditSiteModale={this.state.showEditSiteModale}
-                    showEditTrapsModale={this.state.showEditTrapsModale}
-                    showEditTargetModale={this.state.showEditTargetModale}
-                    trapEdited={this.state.trapEdited}
-                    siteEdited={this.state.siteEdited}
-                    targetEdited={this.state.targetEdited}
+                    showModale={{
+                        showCatch: showCatchesModale,
+                        showSite: showEditSiteModale,
+                        showTrap: showEditTrapsModale,
+                        showTarget: showEditTargetModale,
+                    }}
+                    trapEdited={trapEdited}
+                    siteEdited={siteEdited}
+                    targetEdited={targetEdited}
                     params={params}
                     saveSite={site => saveSite(site)}
                     saveTrap={site => saveTrap(site)}

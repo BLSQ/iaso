@@ -24,13 +24,19 @@ class VectorModalesComponent extends PureComponent {
             saveSite,
             saveTarget,
             saveTrap,
+            showModale: {
+                showCatch,
+                showSite,
+                showTrap,
+                showTarget,
+            },
         } = this.props;
         return (
             <Fragment>
                 {
-                    this.props.showCatchesModale &&
+                    showCatch &&
                     <ShowCatchesComponent
-                        showModale={this.props.showCatchesModale}
+                        showModale={showCatch}
                         toggleModal={() => this.props.toggleModal('showCatchesModale')}
                         trap={this.props.trapEdited}
                         params={params}
@@ -38,9 +44,9 @@ class VectorModalesComponent extends PureComponent {
                     />
                 }
                 {
-                    this.props.showEditSiteModale &&
+                    showSite &&
                     <EditSiteComponent
-                        showModale={this.props.showEditSiteModale}
+                        showModale={showSite}
                         toggleModal={() => this.props.toggleModal('showEditSiteModale')}
                         site={this.props.siteEdited}
                         trapEdited={this.props.trapEdited}
@@ -50,9 +56,9 @@ class VectorModalesComponent extends PureComponent {
                     />
                 }
                 {
-                    this.props.showEditTrapsModale &&
+                    showTrap &&
                     <EditTrapComponent
-                        showModale={this.props.showEditTrapsModale}
+                        showModale={showTrap}
                         toggleModal={() => this.props.toggleModal('showEditTrapsModale')}
                         trap={this.props.trapEdited}
                         habitats={habitats}
@@ -60,9 +66,9 @@ class VectorModalesComponent extends PureComponent {
                     />
                 }
                 {
-                    this.props.showEditTargetModale &&
+                    showTarget &&
                     <EditTargetComponent
-                        showModale={this.props.showEditTargetModale}
+                        showModale={showTarget}
                         toggleModal={() => this.props.toggleModal('showEditTargetModale')}
                         target={this.props.targetEdited}
                         profiles={profiles}
@@ -82,10 +88,7 @@ VectorModalesComponent.propTypes = {
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
     toggleModal: PropTypes.func.isRequired,
-    showCatchesModale: PropTypes.bool.isRequired,
-    showEditSiteModale: PropTypes.bool.isRequired,
-    showEditTrapsModale: PropTypes.bool.isRequired,
-    showEditTargetModale: PropTypes.bool.isRequired,
+    showModale: PropTypes.object.isRequired,
     targetEdited: PropTypes.object.isRequired,
     trapEdited: PropTypes.object.isRequired,
     siteEdited: PropTypes.object.isRequired,

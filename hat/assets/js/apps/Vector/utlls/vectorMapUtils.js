@@ -55,7 +55,7 @@ export const MESSAGES = defineMessages({
         id: 'vectors.label.road',
     },
     cluster_title: {
-        defaultMessage: 'Regroupement des pièges',
+        defaultMessage: 'Regroupement',
         id: 'vectors.labels.cluster_title',
     },
 });

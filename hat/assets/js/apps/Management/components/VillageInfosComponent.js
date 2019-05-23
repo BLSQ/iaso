@@ -94,7 +94,7 @@ class VillageInfosComponent extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.village_official"
-                                defaultMessage="Officel"
+                                defaultMessage="Officiel"
                             />:
                         </label>
                         <Select

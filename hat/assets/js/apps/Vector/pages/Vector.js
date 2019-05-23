@@ -16,7 +16,6 @@ import {
 
 import VectorMapComponent from '../components/VectorMapComponent';
 import ClusterSwitchComponent from '../../../components/ClusterSwitchComponent';
-import SitesLegendComponent from '../components/SitesLegendComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -219,24 +218,6 @@ export class Vector extends Component {
         this.props.saveSite(s);
     }
 
-    displayCatches(data = undefined, fetchDetails = false) {
-        const newState = {
-            showCatchesModale: true,
-            showEditSiteModale: false,
-            showEditTrapsModale: false,
-            showEditTargetModale: false,
-            trapEdited: data,
-        };
-        if (!fetchDetails) {
-            this.setState(newState);
-        } else {
-            this.props.getDetail(data.id, 'traps').then((res) => {
-                newState.trapEdited = res;
-                this.setState(newState);
-            });
-        }
-    }
-
     render() {
         const {
             map: {
@@ -407,28 +388,18 @@ export class Vector extends Component {
                                 items={this.state.itemsToShow}
                             />
                             <div className="margin-top">
+                                <ClusterSwitchComponent
+                                    withCluster={withCluster}
+                                    change={withCl => changeCluster(withCl)}
+                                    message={formatMessage(MESSAGES.cluster_title)}
+                                />
+                            </div>
+                            <div className="margin-top">
                                 <LayersComponent
                                     base={baseLayer}
                                     change={(type, key) => changeLayer(type, key)}
                                 />
                             </div>
-                            {
-                                params.traps &&
-                                <div className="margin-top">
-                                    <ClusterSwitchComponent
-                                        withCluster={withCluster}
-                                        change={withCl => changeCluster(withCl)}
-                                        message={formatMessage(MESSAGES.cluster_title)}
-                                    />
-                                </div>
-                            }
-                            {
-                                params.traps &&
-                                !withCluster &&
-                                <div className="margin-top">
-                                    <SitesLegendComponent />
-                                </div>
-                            }
                         </div>
                         <div className="split-map big">
                             <VectorMapComponent
@@ -441,9 +412,7 @@ export class Vector extends Component {
                                 getShape={type => getShape(type)}
                                 selectMarker={(itemId, key) => getDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
-                                displayCatches={data => this.displayCatches(data)}
                                 withCluster={withCluster}
-                                saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                             />
                         </div>
                     </div>

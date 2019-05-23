@@ -327,7 +327,6 @@ class GpsImport(models.Model):
             "count": self.count,
         }
 
-
 class Target(models.Model):
     name = models.TextField(null=True, blank=True)
     deployment = models.IntegerField(null=True, blank=True)

@@ -69,7 +69,11 @@ const targetsColumns = (formatMessage, element) => (
                 <section>
                     <button
                         className="button--edit--tiny"
-                        onClick={() => element.editItem('target', settings.original)}
+                        onClick={() => {
+                            element.props.getDetail(settings.original.id, 'targets').then((response) => {
+                                element.editItem('targets', response);
+                            });
+                        }}
                     >
                         <i className="fa fa-pencil-square-o" />
                         <FormattedMessage id="main.label.edit" defaultMessage="Editer" />

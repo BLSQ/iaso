@@ -48,6 +48,7 @@ export class Vector extends Component {
             showEditTrapsModale: false,
             showEditSiteModale: false,
             showEditTargetModale: false,
+            showEditCatchesModale: false,
             showCatchesModale: false,
             siteEdited: props.siteEdited,
             trapEdited: props.trapEdited,
@@ -153,7 +154,8 @@ export class Vector extends Component {
             showEditSiteModale: type === 'sites',
             showEditTrapsModale: type === 'traps',
             showEditTargetModale: type === 'targets',
-            showCatchesModale: type === 'catches',
+            showEditCatchesModale: type === 'catches',
+            showCatchesModale: false,
             siteEdited: type === 'sites' ? data : {},
             trapEdited: type === 'traps' ? data : {},
             targetEdited: type === 'targets' ? data : {},
@@ -174,6 +176,7 @@ export class Vector extends Component {
                 showEditSiteModale: true,
                 showEditTrapsModale: false,
                 showEditTargetModale: false,
+                showEditCatchesModale: false,
                 siteEdited: res,
             };
             this.setState(newState);
@@ -186,6 +189,7 @@ export class Vector extends Component {
             showEditSiteModale: false,
             showEditTrapsModale: false,
             showEditTargetModale: false,
+            showEditCatchesModale: false,
             trapEdited: data,
         };
         if (!fetchDetails) {
@@ -236,10 +240,11 @@ export class Vector extends Component {
             catches,
             nonEndemicVillages,
             endemicVillages,
-            showCatchesModale,
+            showEditCatchesModale,
             showEditSiteModale,
             showEditTrapsModale,
             showEditTargetModale,
+            showCatchesModale,
             trapEdited,
             siteEdited,
             targetEdited,
@@ -257,10 +262,11 @@ export class Vector extends Component {
                 <VectorModalesComponent
                     toggleModal={key => this.toggleModal(key)}
                     showModale={{
-                        showCatch: showCatchesModale,
+                        showCatch: showEditCatchesModale,
                         showSite: showEditSiteModale,
                         showTrap: showEditTrapsModale,
                         showTarget: showEditTargetModale,
+                        showCatches: showCatchesModale,
                     }}
                     trapEdited={trapEdited}
                     siteEdited={siteEdited}

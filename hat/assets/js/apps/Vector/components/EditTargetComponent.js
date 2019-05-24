@@ -53,6 +53,9 @@ class EditTargetComponent extends Component {
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
             >
+                <div className="widget__header">
+                    <FormattedMessage id="vector.modale.Target.title" defaultMessage="Ecran" />
+                </div>
                 <section className="edit-modal large">
                     <section>
                         <div>

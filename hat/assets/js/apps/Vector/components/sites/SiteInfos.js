@@ -10,13 +10,12 @@ class SiteInfos extends Component {
         const { updateSiteField, site, profiles } = this.props;
         return (
             <section className="half-container">
-                <div />
                 <div>
                     <table>
                         <tbody>
                             <tr>
                                 <th>UUID</th>
-                                <td>
+                                <td className="small">
                                     {site.uuid}
                                 </td>
                             </tr>

@@ -120,10 +120,14 @@ const trapsColumns = (formatMessage, messages, element) => (
                     }
                     <button
                         className="button--edit--tiny"
-                        onClick={() => element.editItem('trap', settings.original)}
+                        onClick={() => {
+                            element.props.getDetail(settings.original.id, 'traps').then((response) => {
+                                element.editItem('traps', response);
+                            });
+                        }}
                     >
                         <i className="fa fa-pencil-square-o" />
-                        <FormattedMessage id="main.label.detail" defaultMessage="Détails" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
                     </button>
                 </section>
             ),

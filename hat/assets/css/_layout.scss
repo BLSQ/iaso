@@ -380,3 +380,10 @@ $directions: left right top bottom;
     background: transparent;
     color: green;
 }
+
+.bordered {
+    border: 1px solid $gray;
+    &.round {
+        border-radius: 5px;
+    }
+}

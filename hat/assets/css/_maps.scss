@@ -1289,11 +1289,11 @@ button {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
     .map-container {
-        height: 600px;
+        height: 500px;
     }
     .map-parent-container {
         >div:not(.map-container) {
-            height: 600px !important;
+            height: 500px !important;
         }
     }
 }
@@ -1302,21 +1302,7 @@ button {
     .catches-map-container,
     .traps-map-container {
         .map-container {
-            height: 550px;
-        }
-        .map-parent-container {
-            >div:not(.map-container) {
-                height: 550px !important;
-            }
-        }
-    }
-}
-
-@media (max-height: 880px) {
-    .catches-map-container,
-    .traps-map-container {
-        .map-container {
-            height: 450px;
+            height:450px;
         }
         .map-parent-container {
             >div:not(.map-container) {
@@ -1326,7 +1312,7 @@ button {
     }
 }
 
-@media (max-height: 750px) {
+@media (max-height: 880px) {
     .catches-map-container,
     .traps-map-container {
         .map-container {
@@ -1335,6 +1321,20 @@ button {
         .map-parent-container {
             >div:not(.map-container) {
                 height: 400px !important;
+            }
+        }
+    }
+}
+
+@media (max-height: 750px) {
+    .catches-map-container,
+    .traps-map-container {
+        .map-container {
+            height: 350px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 350px !important;
             }
         }
     }

@@ -345,6 +345,21 @@
             }
         }
     }
+    .tabs-relative {
+        .tabs-container {
+            position: relative;
+            top: auto;
+            left: auto;
+            li {
+                border: 1px solid $gray;
+            }
+        }
+        + div {
+            border-top-left-radius: 0 ! important;
+            position: relative;
+            top: -1px;
+        }
+    }
     .filter__container__select__label {
         background-color: transparent;
         border: none;

@@ -6,15 +6,18 @@ import ReactModal from 'react-modal';
 import TabsComponent from '../../../../components/TabsComponent';
 import SiteInfos from './SiteInfos';
 import TrapsMap from './TrapsMap';
+
 import LayersComponent from '../../../../components/LayersComponent';
 import { getRequest } from '../../../../utils/fetchData';
 import { mapActions } from '../../redux/mapReducer';
 import { vectorActions } from '../../redux/vectorReducer';
 import RadiosComponent from '../../../../components/RadiosComponent';
-import { itemsEditSitesToShow } from '../../utlls/vectorMapUtils';
+import { itemsEditSitesToShow, MESSAGES } from '../../utlls/vectorMapUtils';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import trapsColumns from '../../utlls/trapsColumns';
 
 
-const MESSAGES = defineMessages({
+const LOCAL_MESSAGES = defineMessages({
     none: {
         defaultMessage: 'Aucun',
         id: 'vector.labels.none',
@@ -24,8 +27,12 @@ const MESSAGES = defineMessages({
         id: 'vector.labels.infos',
     },
     catches: {
-        defaultMessage: 'Pièges',
-        id: 'vector.labels.catches',
+        defaultMessage: 'Liste des pièges',
+        id: 'vector.labels.traps',
+    },
+    map: {
+        defaultMessage: 'Carte',
+        id: 'vector.labels.map',
     },
 });
 class EditSiteComponent extends Component {
@@ -34,6 +41,7 @@ class EditSiteComponent extends Component {
         const itemsToShow = itemsEditSitesToShow.slice();
         this.state = {
             showModale: props.showModale,
+            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, this),
             site: props.site,
             isChanged: false,
             currentTab: 'infos',
@@ -96,57 +104,87 @@ class EditSiteComponent extends Component {
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
             >
+                <div className="widget__header">
+                    <FormattedMessage id="vector.modale.site.title" defaultMessage="Site" />:
+                    {' '}{site.name}
+                </div>
                 <section className="edit-modal large extra">
-                    <TabsComponent
-                        isRedirecting={false}
-                        selectTab={key => (this.setState({ currentTab: key }))}
-                        tabs={[
-                            { label: formatMessage(MESSAGES.infos), key: 'infos' },
-                            { label: formatMessage(MESSAGES.catches), key: 'traps' },
-                        ]}
-                        defaultSelect={currentTab}
-                        currentTab={currentTab}
-                    />
-                    {
-                        currentTab === 'infos' &&
-                        <SiteInfos
-                            site={site}
-                            updateSiteField={(key, value) => this.updateSiteField(key, value)}
-                            profiles={this.props.profiles}
+                    <div className="tabs-relative">
+                        <TabsComponent
+                            isRedirecting={false}
+                            selectTab={key => (this.setState({ currentTab: key }))}
+                            tabs={[
+                                { label: formatMessage(LOCAL_MESSAGES.infos), key: 'infos' },
+                                { label: formatMessage(LOCAL_MESSAGES.map), key: 'map' },
+                                { label: formatMessage(LOCAL_MESSAGES.catches), key: 'traps' },
+                            ]}
+                            defaultSelect={currentTab}
+                            currentTab={currentTab}
                         />
-                    }
-                    <div className={`${currentTab !== 'traps' ? 'hidden-opacity' : ''} third-container small-filters`} >
-                        <div>
-                            <LayersComponent
-                                base={baseCatchLayer}
-                                change={(type, key) => changeLayer(type, key)}
+                    </div>
+                    <div className="padding bordered round">
+                        {
+                            currentTab === 'infos' &&
+                            <SiteInfos
+                                site={site}
+                                updateSiteField={(key, value) => this.updateSiteField(key, value)}
+                                profiles={this.props.profiles}
                             />
-                            <div className="map__option padding-top">
-                                <span className="map__option__header">
-                                    <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
-                                </span>
-                                <RadiosComponent
-                                    showItems={items => this.toggleItems(items)}
-                                    items={this.state.itemsToShow}
+                        }
+                        <div className={`${currentTab !== 'map' ? 'hidden-opacity' : ''} third-container small-filters`} >
+                            <div>
+                                <LayersComponent
+                                    base={baseCatchLayer}
+                                    change={(type, key) => changeLayer(type, key)}
+                                />
+                                <div className="map__option padding-top">
+                                    <span className="map__option__header">
+                                        <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                                    </span>
+                                    <RadiosComponent
+                                        showItems={items => this.toggleItems(items)}
+                                        items={this.state.itemsToShow}
+                                    />
+                                </div>
+                            </div>
+                            <div className="traps-map-container">
+                                <TrapsMap
+                                    baseLayer={baseCatchLayer}
+                                    site={site}
+                                    getShape={type => this.props.getShape(type)}
+                                    saveTrap={this.props.saveTrap}
+                                    trapEdited={trapEdited}
+                                    isTrapUpdated={isTrapUpdated}
+                                    trapUpdated={trapUpdated}
+                                    itemsToShow={this.state.itemsToShow}
+                                    mapUpdated={this.state.mapUpdated}
+                                    setMapUpdate={mapUpdated => this.setMapUpdate(mapUpdated)}
                                 />
                             </div>
                         </div>
-                        <div className="traps-map-container">
-                            <TrapsMap
-                                baseLayer={baseCatchLayer}
-                                site={site}
-                                getShape={type => this.props.getShape(type)}
-                                saveTrap={this.props.saveTrap}
-                                trapEdited={trapEdited}
-                                isTrapUpdated={isTrapUpdated}
-                                trapUpdated={trapUpdated}
-                                itemsToShow={this.state.itemsToShow}
-                                mapUpdated={this.state.mapUpdated}
-                                setMapUpdate={mapUpdated => this.setMapUpdate(mapUpdated)}
-                            />
-                        </div>
                     </div>
-
+                    {
+                        currentTab === 'traps' &&
+                        <section>
+                            <CustomTableComponent
+                                isSortable={false}
+                                showPagination={false}
+                                columns={this.state.trapsColumns}
+                                defaultSorted={[{ id: 'created_at', desc: false }]}
+                                params={{}}
+                                onRowClicked={() => { }}
+                                multiSort={false}
+                                reduxPage={{
+                                    list: site.traps,
+                                }}
+                                fetchDatas={false}
+                                defaultPath="map"
+                                canSelect={false}
+                                pageSize={100}
+                                disableHeaderFixed
+                            />
+                        </section>
+                    }
                     <div className="align-right">
                         <button
                             className="button"

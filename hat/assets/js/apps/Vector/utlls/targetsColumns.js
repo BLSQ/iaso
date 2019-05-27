@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 
-const targetsColumns = (formatMessage, element) => (
+const targetsColumns = (formatMessage, getDetail) => (
     [
         {
             Header: 'UUID',
@@ -69,11 +69,7 @@ const targetsColumns = (formatMessage, element) => (
                 <section>
                     <button
                         className="button--edit--tiny"
-                        onClick={() => {
-                            element.props.getDetail(settings.original.id, 'targets').then((response) => {
-                                element.editItem('targets', response);
-                            });
-                        }}
+                        onClick={() => getDetail(settings.original.id, 'targets', 'showEditTargetModale')}
                     >
                         <i className="fa fa-pencil-square-o" />
                         <FormattedMessage id="main.label.edit" defaultMessage="Editer" />

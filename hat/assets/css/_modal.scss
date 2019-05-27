@@ -1,4 +1,6 @@
 .ReactModal__Overlay {
+    position: fixed;
+    inset: 0px;
     z-index: 1001;
     display: flex;
     align-items: start;
@@ -7,6 +9,9 @@
     background: rgba(0, 0, 0, 0.5) !important;
     >div {
         top: 15vh !important;
+    }
+    &.transparent-overlay {
+        background: transparent !important;
     }
 }
 
@@ -21,6 +26,9 @@
     min-height: 100px;
     max-width: 80%;
     overflow: visible !important;
+    &.hidden {
+        opacity: 0 !important;
+    }
     .widget__header {
         padding-top: 0;
         margin-left: -20px;

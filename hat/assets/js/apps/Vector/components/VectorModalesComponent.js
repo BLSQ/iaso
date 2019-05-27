@@ -32,14 +32,18 @@ class VectorModalesComponent extends PureComponent {
                 showTarget,
                 showCatches,
             },
+            getDetail,
         } = this.props;
         return (
             <Fragment>
+                {(showCatches || showSite || showTrap || showTarget || showCatch) &&
+                <div className="ReactModal__Overlay" />}
+
                 {
                     showCatches &&
                     <ShowCatchesComponent
                         showModale={showCatches}
-                        toggleModal={() => this.props.toggleModal('showCatchesModale')}
+                        toggleModal={() => this.props.closeModal('showCatchesModale', 'trapEdited')}
                         trap={this.props.trapEdited}
                         params={params}
                         saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
@@ -49,19 +53,21 @@ class VectorModalesComponent extends PureComponent {
                     showSite &&
                     <EditSiteComponent
                         showModale={showSite}
-                        toggleModal={() => this.props.toggleModal('showEditSiteModale')}
+                        toggleModal={() => this.props.closeModal('showEditSiteModale', 'siteEdited')}
                         site={this.props.siteEdited}
                         trapEdited={this.props.trapEdited}
                         saveSite={site => saveSite(site)}
                         saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                         profiles={profiles}
+                        getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
+                        hidden={showTrap}
                     />
                 }
                 {
                     showTrap &&
                     <EditTrapComponent
                         showModale={showTrap}
-                        toggleModal={() => this.props.toggleModal('showEditTrapsModale')}
+                        toggleModal={() => this.props.closeModal('showEditTrapsModale', 'trapEdited')}
                         trap={this.props.trapEdited}
                         habitats={habitats}
                         saveTrap={site => saveTrap(site)}
@@ -71,7 +77,7 @@ class VectorModalesComponent extends PureComponent {
                     showTarget &&
                     <EditTargetComponent
                         showModale={showTarget}
-                        toggleModal={() => this.props.toggleModal('showEditTargetModale')}
+                        toggleModal={() => this.props.closeModal('showEditTargetModale', 'targetEdited')}
                         target={this.props.targetEdited}
                         profiles={profiles}
                         saveTarget={target => saveTarget(target)}
@@ -81,7 +87,7 @@ class VectorModalesComponent extends PureComponent {
                     showCatch &&
                     <CatchDetailComponent
                         showModale={showCatch}
-                        toggleModal={() => this.props.toggleModal('showEditCatchesModale')}
+                        toggleModal={() => this.props.closeModal('showEditCatchesModale', 'catchEdited')}
                         catch={this.props.catchEdited}
                     />
                 }
@@ -90,6 +96,13 @@ class VectorModalesComponent extends PureComponent {
     }
 }
 
+VectorModalesComponent.defaultProps = {
+    siteEdited: null,
+    trapEdited: null,
+    targetEdited: null,
+    catchEdited: null,
+};
+
 VectorModalesComponent.propTypes = {
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
@@ -97,12 +110,13 @@ VectorModalesComponent.propTypes = {
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
-    toggleModal: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
     showModale: PropTypes.object.isRequired,
-    targetEdited: PropTypes.object.isRequired,
-    catchEdited: PropTypes.object.isRequired,
-    trapEdited: PropTypes.object.isRequired,
-    siteEdited: PropTypes.object.isRequired,
+    targetEdited: PropTypes.object,
+    catchEdited: PropTypes.object,
+    trapEdited: PropTypes.object,
+    siteEdited: PropTypes.object,
+    getDetail: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = () => ({});

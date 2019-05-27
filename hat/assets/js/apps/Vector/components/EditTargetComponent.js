@@ -52,6 +52,7 @@ class EditTargetComponent extends Component {
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
+                overlayClassName="transparent-overlay"
             >
                 <div className="widget__header">
                     <FormattedMessage id="vector.modale.Target.title" defaultMessage="Ecran" />

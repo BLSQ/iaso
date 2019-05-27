@@ -41,10 +41,10 @@ export class Vector extends Component {
             nonEndemicVillages: {},
             endemicVillages: {},
             currentTab: props.params.tab,
-            sitesColumns: sitesColumns(props.intl.formatMessage, this),
-            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, this),
-            targetsColumns: targetsColumns(props.intl.formatMessage, this),
-            catchesColumns: catchesColumns(props.intl.formatMessage, this),
+            sitesColumns: sitesColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
+            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
+            targetsColumns: targetsColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
+            catchesColumns: catchesColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
             showEditTrapsModale: false,
             showEditSiteModale: false,
             showEditTargetModale: false,
@@ -134,6 +134,12 @@ export class Vector extends Component {
         return url;
     }
 
+    getDetail(id, urlKey, key) {
+        this.props.getDetail(id, urlKey).then((response) => {
+            this.editItem(key, response);
+        });
+    }
+
     showItems(newItemsToShow) {
         const tempParams = {
             ...this.props.params,
@@ -150,17 +156,15 @@ export class Vector extends Component {
     }
 
     editItem(type, data = undefined) {
-        this.setState({
-            showEditSiteModale: type === 'sites',
-            showEditTrapsModale: type === 'traps',
-            showEditTargetModale: type === 'targets',
-            showEditCatchesModale: type === 'catches',
-            showCatchesModale: false,
-            siteEdited: type === 'sites' ? data : {},
-            trapEdited: type === 'traps' ? data : {},
-            targetEdited: type === 'targets' ? data : {},
-            catchEdited: type === 'catches' ? data : {},
-        });
+        const newState = {
+            ...this.state,
+            siteEdited: type === 'showEditSiteModale' ? data : this.state.siteEdited,
+            trapEdited: type === 'showEditTrapsModale' || type === 'showCatchesModale' ? data : this.state.trapEdited,
+            targetEdited: type === 'showEditTargetModale' ? data : this.state.targetEdited,
+            catchEdited: type === 'showEditCatchesModale' ? data : this.state.catchEdited,
+        };
+        newState[type] = true;
+        this.setState(newState);
     }
 
     selectResponsible(site, responsibleId) {
@@ -169,44 +173,21 @@ export class Vector extends Component {
         this.props.saveSite(s);
     }
 
-    editSite(data) {
-        this.props.getDetail(data.id, 'new_sites').then((res) => {
-            const newState = {
-                showCatchesModale: false,
-                showEditSiteModale: true,
-                showEditTrapsModale: false,
-                showEditTargetModale: false,
-                showEditCatchesModale: false,
-                siteEdited: res,
-            };
-            this.setState(newState);
-        });
-    }
-
-    displayCatches(data = undefined, fetchDetails = false) {
-        const newState = {
-            showCatchesModale: true,
-            showEditSiteModale: false,
-            showEditTrapsModale: false,
-            showEditTargetModale: false,
-            showEditCatchesModale: false,
-            trapEdited: data,
-        };
-        if (!fetchDetails) {
-            this.setState(newState);
-        } else {
-            this.props.getDetail(data.id, 'traps').then((res) => {
-                newState.trapEdited = res;
-                this.setState(newState);
-            });
-        }
-    }
-
     toggleModal(key) {
         const newState = {
             ...this.state,
         };
         newState[key] = !newState[key];
+        this.setState(newState);
+    }
+
+
+    closeModal(key, dataKey) {
+        const newState = {
+            ...this.state,
+        };
+        newState[key] = false;
+        newState[dataKey] = {};
         this.setState(newState);
     }
 
@@ -260,7 +241,7 @@ export class Vector extends Component {
                     />
                 }
                 <VectorModalesComponent
-                    toggleModal={key => this.toggleModal(key)}
+                    closeModal={(key, dataKey) => this.closeModal(key, dataKey)}
                     showModale={{
                         showCatch: showEditCatchesModale,
                         showSite: showEditSiteModale,
@@ -276,6 +257,7 @@ export class Vector extends Component {
                     saveSite={site => saveSite(site)}
                     saveTrap={site => saveTrap(site)}
                     saveTarget={target => saveTarget(target)}
+                    getDetail={(id, urlKey, key) => this.getDetail(id, urlKey, key)}
                 />
                 <VectorFiltersComponent onSearch={() => this.props.onSearch()} params={params} />
                 <TabsComponent
@@ -430,6 +412,13 @@ export class Vector extends Component {
     }
 }
 
+Vector.defaultProps = {
+    siteEdited: null,
+    trapEdited: null,
+    targetEdited: null,
+    catchEdited: null,
+};
+
 Vector.propTypes = {
     getDetail: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
@@ -447,10 +436,10 @@ Vector.propTypes = {
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
-    siteEdited: PropTypes.object.isRequired,
-    trapEdited: PropTypes.object.isRequired,
-    targetEdited: PropTypes.object.isRequired,
-    catchEdited: PropTypes.object.isRequired,
+    siteEdited: PropTypes.object,
+    trapEdited: PropTypes.object,
+    targetEdited: PropTypes.object,
+    catchEdited: PropTypes.object,
     onSearch: PropTypes.func.isRequired,
 };
 

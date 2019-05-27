@@ -16,7 +16,6 @@ import { itemsEditSitesToShow, MESSAGES } from '../../utlls/vectorMapUtils';
 import CustomTableComponent from '../../../../components/CustomTableComponent';
 import trapsColumns from '../../utlls/trapsColumns';
 
-
 const LOCAL_MESSAGES = defineMessages({
     none: {
         defaultMessage: 'Aucun',
@@ -41,7 +40,13 @@ class EditSiteComponent extends Component {
         const itemsToShow = itemsEditSitesToShow.slice();
         this.state = {
             showModale: props.showModale,
-            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, this),
+            trapsColumns: trapsColumns(
+                props.intl.formatMessage,
+                MESSAGES,
+                (id, urlKey, key) => {
+                    props.getDetail(id, urlKey, key);
+                },
+            ),
             site: props.site,
             isChanged: false,
             currentTab: 'infos',
@@ -97,12 +102,16 @@ class EditSiteComponent extends Component {
             trapEdited,
             isTrapUpdated,
             trapUpdated,
+            getDetail,
+            hidden,
         } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.toggleModal()}
+                overlayClassName="transparent-overlay"
+                className={hidden ? 'hidden' : ''}
             >
                 <div className="widget__header">
                     <FormattedMessage id="vector.modale.site.title" defaultMessage="Site" />:
@@ -159,6 +168,7 @@ class EditSiteComponent extends Component {
                                     itemsToShow={this.state.itemsToShow}
                                     mapUpdated={this.state.mapUpdated}
                                     setMapUpdate={mapUpdated => this.setMapUpdate(mapUpdated)}
+                                    getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
                                 />
                             </div>
                         </div>
@@ -216,6 +226,7 @@ EditSiteComponent.defaultProps = {
 };
 EditSiteComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
+    hidden: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     site: PropTypes.object,
     trapEdited: PropTypes.object,
@@ -228,6 +239,7 @@ EditSiteComponent.propTypes = {
     saveTrap: PropTypes.func.isRequired,
     isTrapUpdated: PropTypes.bool.isRequired,
     trapUpdated: PropTypes.func.isRequired,
+    getDetail: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

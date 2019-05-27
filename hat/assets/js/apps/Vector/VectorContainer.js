@@ -30,10 +30,10 @@ class VectorContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            siteEdited: {},
-            trapEdited: {},
-            targetEdited: {},
-            catchEdited: {},
+            siteEdited: null,
+            trapEdited: null,
+            targetEdited: null,
+            catchEdited: null,
         };
     }
 

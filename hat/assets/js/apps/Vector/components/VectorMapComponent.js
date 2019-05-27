@@ -149,7 +149,20 @@ class VectorMapComponent extends Component {
             marker.on('click', () => {
                 this.props.selectMarker(item.id, key === 'sites' ? 'new_sites' : key)
                     .then((response) => {
-                        this.props.editItem(key, response);
+                        let editKey;
+                        if (key === 'sites') {
+                            editKey = 'showEditSiteModale';
+                        }
+                        if (key === 'traps') {
+                            editKey = 'showEditTrapsModale';
+                        }
+                        if (key === 'targets') {
+                            editKey = 'showEditTargetModale';
+                        }
+                        if (key === 'catches') {
+                            editKey = 'showEditCatchesModale';
+                        }
+                        this.props.editItem(editKey, response);
                     });
             })
                 .on('mouseover', () => {

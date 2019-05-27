@@ -200,19 +200,20 @@ class TrapsMap extends Component {
                         },
                     );
                     trapCircle.addTo(this.trapsGroup)
-                        .on('click', (event) => {
-                            const popUp = event.target.getPopup();
-                            popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
-                            setTimeout(() => {
-                                const selectedSelect = document.getElementById('selected-trap-select');
-                                if (selectedSelect) {
-                                    selectedSelect.addEventListener('change', (e) => {
-                                        this.props.saveTrap(trapItem, e.target.checked);
-                                    });
-                                }
-                            }, 500);
+                        .on('click', () => {
+                            this.props.getDetail(trapItem.id, 'traps', 'showEditTrapsModale');
+                            // const popUp = event.target.getPopup();
+                            // popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
+                            // setTimeout(() => {
+                            //     const selectedSelect = document.getElementById('selected-trap-select');
+                            //     if (selectedSelect) {
+                            //         selectedSelect.addEventListener('change', (e) => {
+                            //             this.props.saveTrap(trapItem, e.target.checked);
+                            //         });
+                            //     }
+                            // }, 500);
                         })
-                        .bindPopup()
+                        // .bindPopup()
                         .on('mouseover', () => {
                             const lat = trapItem.latitude;
                             const lng = trapItem.longitude;
@@ -310,6 +311,7 @@ TrapsMap.propTypes = {
     mapUpdated: PropTypes.bool.isRequired,
     itemsToShow: PropTypes.array.isRequired,
     setMapUpdate: PropTypes.func.isRequired,
+    getDetail: PropTypes.func.isRequired,
 };
 
 export default injectIntl(TrapsMap);

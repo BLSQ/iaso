@@ -18,7 +18,7 @@ import {
     defaultFitToBound,
     genericMap,
     zooms,
-} from '../../../utils/mapUtils';
+} from '../../../utils//map/mapUtils';
 
 const shapeOptions = (type, element) => ({
     pane: 'custom-pane-shapes',

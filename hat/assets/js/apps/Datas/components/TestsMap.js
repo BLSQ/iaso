@@ -25,7 +25,7 @@ import {
     renderVillageIcon,
     mapCasesToVillages,
     mapCasesToTests,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 
 let exportControl;
 

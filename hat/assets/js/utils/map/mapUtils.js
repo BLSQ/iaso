@@ -2,8 +2,8 @@
 import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 import moment from 'moment';
-import geoUtils from './geo';
-import { isCaseLocalised } from './index';
+import geoUtils from '../geo';
+import { isCaseLocalised } from '../index';
 
 export const genericMap = mapNode => L.map(mapNode, {
     attributionControl: false,
@@ -316,4 +316,3 @@ export const renderVillageIcon = (village, formatMessage) => {
         iconSize: L.point(1, 1),
     });
 };
-

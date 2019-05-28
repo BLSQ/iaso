@@ -19,7 +19,7 @@ import {
     includeControlsInMap,
     genericMap,
     zooms,
-} from '../../../utils/mapUtils';
+} from '../../../utils//map/mapUtils';
 
 let exportControl;
 

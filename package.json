@@ -97,6 +97,7 @@
     ]
   },
   "dependencies": {
+    "leaflet-draw": "^1.0.4",
     "react-beautiful-dnd": "^7.1.0",
     "react-color": "^2.14.1"
   },

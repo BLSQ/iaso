@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import L from 'leaflet';
 
-import { updateBaseLayer } from '../../../utils/mapUtils';
+import { updateBaseLayer } from '../../../utils//map/mapUtils';
 
 const mapZonesDatas = (zones, geoZones) => {
     const geoZonesTemp = {

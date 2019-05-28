@@ -4,6 +4,8 @@ import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
 import { renderVillagesPopup } from '../utlls/vectorMapUtils';
 import 'leaflet.markercluster'; // eslint-disable-line
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
@@ -16,7 +18,9 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
+
+import { includeDrawShapes, getMarkersInShape } from '../../../utils/map/drawMapUtils';
 
 let exportControl;
 
@@ -35,6 +39,7 @@ class VectorMapComponent extends Component {
                 zone: false,
                 area: false,
             },
+            selectedMarkers: [],
             containers: {},
         };
     }
@@ -42,6 +47,7 @@ class VectorMapComponent extends Component {
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
+
         this.sitesGroup = new L.FeatureGroup();
         this.map.addLayer(this.sitesGroup);
 
@@ -61,6 +67,7 @@ class VectorMapComponent extends Component {
         this.map.addLayer(this.endemicVillagesGroup);
 
         includeDefaultLayersInMap(this);
+        includeDrawShapes(this.map, this.props.intl.formatMessage, shape => this.onShapeClick(shape));
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
@@ -114,6 +121,12 @@ class VectorMapComponent extends Component {
         exportControl = onResizeMap(width, height, exportControl, map, 'Contrôle de vecteur');
     }
 
+    onShapeClick(shape) {
+        this.setState({
+            selectedMarkers: getMarkersInShape(shape, this.props.sites),
+        });
+    }
+
     /* ***************************************************************************
    * CREATE MAP
    *************************************************************************** */
@@ -124,7 +137,7 @@ class VectorMapComponent extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-markers');
+        map.createPane('custom-markers');
         this.map = map;
     }
 
@@ -140,6 +153,7 @@ class VectorMapComponent extends Component {
         } = this.props;
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
+            clusterPane: 'custom-markers',
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), key, 40),
         });
         group.clearLayers();
@@ -147,7 +161,7 @@ class VectorMapComponent extends Component {
         items.forEach((item) => {
             const marker = L.marker(
                 [item.latitude, item.longitude],
-                { icon: renderDivIcon('', `${key} small bordered`, 30) },
+                { icon: renderDivIcon('', `${key} small bordered`, 30), pane: 'custom-markers' },
             );
             marker.on('click', () => {
                 this.props.selectMarker(item.id, key === 'sites' ? 'new_sites' : key)
@@ -198,6 +212,7 @@ class VectorMapComponent extends Component {
         const group = isEndemic ? this.endemicVillagesGroup : this.nonEndemicVillagesGroup;
         const markersVillages = L.markerClusterGroup({
             maxClusterRadius: 50,
+            clusterPane: 'custom-markers',
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), isEndemic ? 'villages-with-cases' : 'villages', 40),
         });
 
@@ -208,7 +223,10 @@ class VectorMapComponent extends Component {
             if (village) {
                 const newMarker = L.marker(
                     [village.latitude, village.longitude],
-                    { icon: renderDivIcon('', isEndemic ? 'villages-with-cases small bordered' : 'villages small bordered', 30) },
+                    {
+                        icon: renderDivIcon('', isEndemic ? 'villages-with-cases small bordered' : 'villages small bordered', 30),
+                        pane: 'custom-markers',
+                    },
                 )
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
@@ -295,6 +313,7 @@ class VectorMapComponent extends Component {
 
     render() {
         const { formatMessage } = this.props.intl;
+        console.log(this.state.selectedMarkers);
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">

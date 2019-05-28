@@ -20,7 +20,7 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
+} from '../../../utils//map/mapUtils';
 
 
 let exportControl;

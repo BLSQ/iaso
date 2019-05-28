@@ -17,7 +17,7 @@ import {
     defaultFitToBound,
     includeControlsInMap,
     includeDefaultLayersInMap,
-} from '../../../../utils/mapUtils';
+} from '../../../../utils//map/mapUtils';
 
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';

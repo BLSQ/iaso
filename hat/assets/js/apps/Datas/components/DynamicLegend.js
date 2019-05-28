@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
-import { mapCasesToVillages } from '../../../utils/mapUtils';
+import { mapCasesToVillages } from '../../../utils/map/mapUtils';
 
 class DynamicLegend extends Component {
     toggleDisplayed(villageId, testId) {

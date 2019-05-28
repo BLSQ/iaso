@@ -48,7 +48,7 @@ class VillageMapComponent extends Component {
                     </div>
                     <div>
                         <label
-                            htmlFor={`name-${this.state.village.latitude}`}
+                            htmlFor={`latitude-${this.state.village.id}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -61,15 +61,15 @@ class VillageMapComponent extends Component {
                             step=".001"
                             name="latitude"
                             placeholder="0.00000"
-                            id={`name-${this.state.village.latitude}`}
+                            id={`latitude-${this.state.village.id}`}
                             className={!this.state.village.latitude ? 'form-error' : ''}
-                            value={this.state.village.latitude}
+                            value={this.state.village.latitude ? this.state.village.latitude : 0}
                             onChange={event => updateVillageField('latitude', event.currentTarget.value)}
                         />
                     </div>
                     <div>
                         <label
-                            htmlFor={`name-${this.state.village.longitude}`}
+                            htmlFor={`longitude-${this.state.village.id}`}
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
@@ -82,8 +82,8 @@ class VillageMapComponent extends Component {
                             step=".001"
                             placeholder="0.00000"
                             name="longitude"
-                            id={`name-${this.state.village.longitude}`}
-                            value={this.state.village.longitude}
+                            id={`longitude-${this.state.village.id}`}
+                            value={this.state.village.longitude ? this.state.village.longitude : 0}
                             className={!this.state.village.longitude ? 'form-error' : ''}
                             onChange={event => updateVillageField('longitude', event.currentTarget.value)}
                         />

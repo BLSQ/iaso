@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
@@ -27,11 +27,15 @@ class CatchDetailComponent extends Component {
 
     render() {
         const { catchItem } = this.state;
+        const {
+            getDetail,
+            toggleModal,
+        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
-                onRequestClose={() => this.props.toggleModal()}
+                onRequestClose={() => toggleModal()}
                 overlayClassName="transparent-overlay"
             >
                 <div className="widget__header">
@@ -46,6 +50,34 @@ class CatchDetailComponent extends Component {
                                         <th>UUID</th>
                                         <td className="small">
                                             {catchItem.uuid}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <FormattedMessage
+                                                id="vector.label.site"
+                                                defaultMessage="Site"
+                                            />
+                                        </th>
+                                        <td >
+                                            {
+                                                catchItem.trap &&
+                                                <Fragment>
+                                                    {catchItem.trap.name}
+                                                    <button
+                                                        className="button--tiny margin-left"
+                                                        id="edit-button"
+                                                        onClick={() => {
+                                                            toggleModal();
+                                                            setTimeout(() => {
+                                                                getDetail(catchItem.trap.id, 'traps', 'showEditTrapsModale');
+                                                            }, 100);
+                                                        }}
+                                                    >
+                                                        <i className="fa fa-pencil-square-o" />
+                                                    </button>
+                                                </Fragment>
+                                            }
                                         </td>
                                     </tr>
                                     <tr>
@@ -189,7 +221,7 @@ class CatchDetailComponent extends Component {
                     <div className="align-right">
                         <button
                             className="button"
-                            onClick={() => this.props.toggleModal()}
+                            onClick={() => toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
                             <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
@@ -205,6 +237,7 @@ CatchDetailComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     catch: PropTypes.object.isRequired,
+    getDetail: PropTypes.func.isRequired,
 };
 
 export default CatchDetailComponent;

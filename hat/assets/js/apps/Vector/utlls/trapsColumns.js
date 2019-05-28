@@ -108,16 +108,6 @@ const trapsColumns = (formatMessage, messages, getDetail) => (
             width: 220,
             Cell: settings => (
                 <section>
-                    {
-                        settings.original.catches_count > 0 &&
-                        <button
-                            className="button--edit--tiny margin-right"
-                            onClick={() => getDetail(settings.original.id, 'traps', 'showCatchesModale')}
-                        >
-                            <i className="fa fa-eye" />
-                            <FormattedMessage id="main.label.catches" defaultMessage="Déploiements" />
-                        </button>
-                    }
                     <button
                         className="button--edit--tiny"
                         onClick={() => getDetail(settings.original.id, 'traps', 'showEditTrapsModale')}

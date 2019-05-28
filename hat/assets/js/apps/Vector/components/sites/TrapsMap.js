@@ -9,10 +9,7 @@ import { injectIntl, intlShape } from 'react-intl';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 
-import {
-    renderSitesPopup,
-    renderTrapsPopup,
-} from '../../utlls/vectorMapUtils';
+import { renderSitesPopup } from '../../utlls/vectorMapUtils';
 
 import {
     MESSAGES,
@@ -96,10 +93,6 @@ class TrapsMap extends Component {
                 this.updateSites();
                 this.updateTraps();
             }
-            if (this.props.isTrapUpdated && this.props.trapEdited) {
-                this.props.trapUpdated(false);
-                this.updateTraps(false, this.props.trapEdited);
-            }
         });
     }
 
@@ -166,7 +159,7 @@ class TrapsMap extends Component {
                     const lat = site.latitude;
                     const lng = site.longitude;
                     const item = {
-                        label: `${formatMessage(MESSAGES.site)} ${site.name} `,
+                        label: `${formatMessage(MESSAGES.site)}: ${site.name} `,
                     };
                     this.updateTooltipSmall(item, lat, lng);
                 })
@@ -175,7 +168,7 @@ class TrapsMap extends Component {
                 });
         }
     }
-    updateTraps(fiitToBound = true, trapEdited = this.props.trapEdited) {
+    updateTraps(fiitToBound = true) {
         const {
             site,
             intl: {
@@ -202,32 +195,18 @@ class TrapsMap extends Component {
                     trapCircle.addTo(this.trapsGroup)
                         .on('click', () => {
                             this.props.getDetail(trapItem.id, 'traps', 'showEditTrapsModale');
-                            // const popUp = event.target.getPopup();
-                            // popUp.setContent(renderTrapsPopup(trapItem, formatMessage, false));
-                            // setTimeout(() => {
-                            //     const selectedSelect = document.getElementById('selected-trap-select');
-                            //     if (selectedSelect) {
-                            //         selectedSelect.addEventListener('change', (e) => {
-                            //             this.props.saveTrap(trapItem, e.target.checked);
-                            //         });
-                            //     }
-                            // }, 500);
                         })
-                        // .bindPopup()
                         .on('mouseover', () => {
                             const lat = trapItem.latitude;
                             const lng = trapItem.longitude;
                             const item = {
-                                label: `${formatMessage(MESSAGES.trap)}-${trapItem.id} `,
+                                label: `${formatMessage(MESSAGES.trap)}: ${trapItem.name} `,
                             };
                             this.updateTooltipSmall(item, lat, lng);
                         })
                         .on('mouseout', () => {
                             this.updateTooltipSmall();
                         });
-                    if (trapEdited && (trapEdited.id === trapItem.id)) {
-                        trapCircle.fire('click');
-                    }
                 }
             });
             if (fiitToBound) {
@@ -296,18 +275,11 @@ class TrapsMap extends Component {
     }
 }
 
-TrapsMap.defaultProps = {
-    trapEdited: undefined,
-};
 TrapsMap.propTypes = {
     baseLayer: PropTypes.string.isRequired,
     site: PropTypes.object.isRequired,
-    saveTrap: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
-    trapEdited: PropTypes.object,
-    trapUpdated: PropTypes.func.isRequired,
-    isTrapUpdated: PropTypes.bool.isRequired,
     mapUpdated: PropTypes.bool.isRequired,
     itemsToShow: PropTypes.array.isRequired,
     setMapUpdate: PropTypes.func.isRequired,

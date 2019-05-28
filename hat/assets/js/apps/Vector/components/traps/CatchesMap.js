@@ -8,10 +8,7 @@ import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
-import {
-    renderCatchesPopup,
-    renderTrapsPopup,
-} from '../utlls/vectorMapUtils';
+import { renderTrapsPopup } from '../../utlls/vectorMapUtils';
 
 import {
     MESSAGES,
@@ -20,7 +17,7 @@ import {
     defaultFitToBound,
     includeControlsInMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
+} from '../../../../utils/mapUtils';
 
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -174,11 +171,7 @@ class CatchesMap extends Component {
                     },
                 );
                 catchCircle.addTo(this.catchesGroup)
-                    .on('click', (event) => {
-                        const popUp = event.target.getPopup();
-                        popUp.setContent(renderCatchesPopup(catchItem, formatMessage));
-                    })
-                    .bindPopup()
+                    .on('click', () => this.props.getDetail(catchItem.id, 'catches', 'showEditCatchesModale'))
                     .on('mouseover', () => {
                         const lat = catchItem.latitude;
                         const lng = catchItem.longitude;
@@ -263,6 +256,7 @@ CatchesMap.propTypes = {
     intl: intlShape.isRequired,
     saveTrap: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
+    getDetail: PropTypes.func.isRequired,
 };
 
 export default injectIntl(CatchesMap);

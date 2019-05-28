@@ -134,6 +134,9 @@ class VectorMapComponent extends Component {
     updateMarkers(key, group, items) {
         const {
             withCluster,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
@@ -166,7 +169,7 @@ class VectorMapComponent extends Component {
                     });
             })
                 .on('mouseover', () => {
-                    this.updateTooltipSmall(item);
+                    this.updateTooltipSmall(item, formatMessage(MESSAGES[key]));
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
@@ -216,7 +219,7 @@ class VectorMapComponent extends Component {
                             });
                     })
                     .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
+                        this.updateTooltipSmall(village, formatMessage(MESSAGES.villages));
                     })
                     .on('mouseout', () => {
                         this.updateTooltipSmall();
@@ -235,10 +238,14 @@ class VectorMapComponent extends Component {
         }
     }
 
-    updateTooltipSmall(item) {
-        if (item && (item.label || item.name)) {
+    updateTooltipSmall(item, title) {
+        if (item && title) {
+            let label = item.label ? item.label : item.name;
+            if (!label) {
+                label = item.uuid ? item.uuid : item.id;
+            }
             this.state.containers.tooltipSmall.innerHTML =
-                item.label ? item.label : item.name;
+                `${title}: ${label}`;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }

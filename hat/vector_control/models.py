@@ -284,7 +284,10 @@ class Catch(models.Model):
         return {
             "id": self.id,
             "uuid": self.uuid,
-            "trap": self.trap.id,
+            "trap": {
+                "id": self.trap.id,
+                "name": self.trap.name,
+            },
             "male_count": self.male_count,
             "female_count": self.female_count,
             "unknown_count": self.unknown_count,

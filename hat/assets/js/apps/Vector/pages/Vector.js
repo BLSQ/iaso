@@ -14,7 +14,7 @@ import {
 } from '../utlls/vectorMapUtils';
 
 import VectorMapComponent from '../components/VectorMapComponent';
-import VectorModalesComponent from '../components/VectorModalesComponent';
+import VectorModalsComponent from '../components/VectorModalsComponent';
 import VectorFiltersComponent from '../components/VectorFiltersComponent';
 import ClusterSwitchComponent from '../../../components/ClusterSwitchComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
@@ -49,7 +49,6 @@ export class Vector extends Component {
             showEditSiteModale: false,
             showEditTargetModale: false,
             showEditCatchesModale: false,
-            showCatchesModale: false,
             siteEdited: props.siteEdited,
             trapEdited: props.trapEdited,
             targetEdited: props.targetEdited,
@@ -159,7 +158,7 @@ export class Vector extends Component {
         const newState = {
             ...this.state,
             siteEdited: type === 'showEditSiteModale' ? data : this.state.siteEdited,
-            trapEdited: type === 'showEditTrapsModale' || type === 'showCatchesModale' ? data : this.state.trapEdited,
+            trapEdited: type === 'showEditTrapsModale' ? data : this.state.trapEdited,
             targetEdited: type === 'showEditTargetModale' ? data : this.state.targetEdited,
             catchEdited: type === 'showEditCatchesModale' ? data : this.state.catchEdited,
         };
@@ -188,6 +187,13 @@ export class Vector extends Component {
         };
         newState[key] = false;
         newState[dataKey] = {};
+        if (dataKey === 'trapEdited') {
+            newState.catchEdited = {};
+        }
+        if (dataKey === 'siteEdited') {
+            newState.trapEdited = {};
+            newState.catchEdited = {};
+        }
         this.setState(newState);
     }
 
@@ -225,7 +231,6 @@ export class Vector extends Component {
             showEditSiteModale,
             showEditTrapsModale,
             showEditTargetModale,
-            showCatchesModale,
             trapEdited,
             siteEdited,
             targetEdited,
@@ -240,14 +245,13 @@ export class Vector extends Component {
                     })}
                     />
                 }
-                <VectorModalesComponent
+                <VectorModalsComponent
                     closeModal={(key, dataKey) => this.closeModal(key, dataKey)}
                     showModale={{
                         showCatch: showEditCatchesModale,
                         showSite: showEditSiteModale,
                         showTrap: showEditTrapsModale,
                         showTarget: showEditTargetModale,
-                        showCatches: showCatchesModale,
                     }}
                     trapEdited={trapEdited}
                     siteEdited={siteEdited}
@@ -268,8 +272,8 @@ export class Vector extends Component {
                         { label: formatMessage(MESSAGES.map), key: baseUrl },
                         { label: formatMessage(MESSAGES.sites), key: 'sites' },
                         { label: formatMessage(MESSAGES.traps), key: 'traps' },
-                        { label: formatMessage(MESSAGES.targets), key: 'targets' },
                         { label: formatMessage(MESSAGES.catches), key: 'catches' },
+                        { label: formatMessage(MESSAGES.targets), key: 'targets' },
                     ]}
                     defaultSelect={currentTab}
                 />

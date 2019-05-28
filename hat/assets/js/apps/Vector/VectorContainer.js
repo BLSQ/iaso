@@ -213,8 +213,7 @@ class VectorContainer extends Component {
             trapEdited: trap,
         });
         const { params, dispatch } = this.props;
-        this.props.saveTrapRequest(trap).then(() => {
-            this.props.trapUpdated(true);
+        return this.props.saveTrapRequest(trap).then(() => {
             if (params.traps) {
                 fetchTraps(dispatch, params);
             }
@@ -265,7 +264,6 @@ VectorContainer.propTypes = {
     saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
-    trapUpdated: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
@@ -284,7 +282,6 @@ const MapDispatchToProps = dispatch => ({
     saveTrapRequest: trap => saveTrap(dispatch, trap),
     saveSiteRequest: site => saveSite(dispatch, site),
     saveTargetRequest: target => saveTarget(dispatch, target),
-    trapUpdated: isUpdated => dispatch(vectorActions.trapUpdated(isUpdated)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 

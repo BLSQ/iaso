@@ -4,60 +4,45 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
 
-import EditTrapComponent from './EditTrapComponent';
+import EditTrapComponent from './traps/EditTrapComponent';
 import EditSiteComponent from './sites/EditSiteComponent';
-import ShowCatchesComponent from './ShowCatchesComponent';
 import EditTargetComponent from './EditTargetComponent';
 import CatchDetailComponent from './CatchDetailComponent';
 
-class VectorModalesComponent extends PureComponent {
-    saveTrap(trap, selectedValue) {
-        const t = trap;
-        t.is_selected = selectedValue;
-        this.props.saveTrap(t);
+class VectorModalsComponent extends PureComponent {
+    saveTrap(trap) {
+        this.props.saveTrap(trap).then(() => {
+            if (this.props.showModale.showSite) {
+                this.props.getDetail(this.props.siteEdited.id, 'new_sites', 'showEditSiteModale');
+            }
+        });
     }
 
     render() {
         const {
-            params,
             habitats,
             profiles,
             saveSite,
             saveTarget,
-            saveTrap,
             showModale: {
                 showCatch,
                 showSite,
                 showTrap,
                 showTarget,
-                showCatches,
             },
             getDetail,
         } = this.props;
         return (
             <Fragment>
-                {(showCatches || showSite || showTrap || showTarget || showCatch) &&
+                {(showSite || showTrap || showTarget || showCatch) &&
                 <div className="ReactModal__Overlay" />}
-
-                {
-                    showCatches &&
-                    <ShowCatchesComponent
-                        showModale={showCatches}
-                        toggleModal={() => this.props.closeModal('showCatchesModale', 'trapEdited')}
-                        trap={this.props.trapEdited}
-                        params={params}
-                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
-                    />
-                }
                 {
                     showSite &&
                     <EditSiteComponent
                         showModale={showSite}
                         toggleModal={() => this.props.closeModal('showEditSiteModale', 'siteEdited')}
                         site={this.props.siteEdited}
-                        trapEdited={this.props.trapEdited}
                         saveSite={site => saveSite(site)}
-                        saveTrap={(trap, selectedValue) => this.saveTrap(trap, selectedValue)}
                         profiles={profiles}
                         getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
                         hidden={showTrap}
@@ -70,7 +55,18 @@ class VectorModalesComponent extends PureComponent {
                         toggleModal={() => this.props.closeModal('showEditTrapsModale', 'trapEdited')}
                         trap={this.props.trapEdited}
                         habitats={habitats}
-                        saveTrap={site => saveTrap(site)}
+                        saveTrap={trap => this.saveTrap(trap)}
+                        getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
+                        hidden={showCatch}
+                    />
+                }
+                {
+                    showCatch &&
+                    <CatchDetailComponent
+                        showModale={showCatch}
+                        toggleModal={() => this.props.closeModal('showEditCatchesModale', 'catchEdited')}
+                        catch={this.props.catchEdited}
+                        getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
                     />
                 }
                 {
@@ -83,30 +79,21 @@ class VectorModalesComponent extends PureComponent {
                         saveTarget={target => saveTarget(target)}
                     />
                 }
-                {
-                    showCatch &&
-                    <CatchDetailComponent
-                        showModale={showCatch}
-                        toggleModal={() => this.props.closeModal('showEditCatchesModale', 'catchEdited')}
-                        catch={this.props.catchEdited}
-                    />
-                }
             </Fragment>
         );
     }
 }
 
-VectorModalesComponent.defaultProps = {
+VectorModalsComponent.defaultProps = {
     siteEdited: null,
     trapEdited: null,
     targetEdited: null,
     catchEdited: null,
 };
 
-VectorModalesComponent.propTypes = {
+VectorModalsComponent.propTypes = {
     profiles: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
-    params: PropTypes.object.isRequired,
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
@@ -127,4 +114,4 @@ const MapStateToProps = state => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(VectorModalesComponent));
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(VectorModalsComponent));

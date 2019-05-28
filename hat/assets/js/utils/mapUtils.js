@@ -59,6 +59,26 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Piège',
         id: 'locator.label.trap',
     },
+    sites: {
+        defaultMessage: 'Site',
+        id: 'details.label.site',
+    },
+    traps: {
+        defaultMessage: 'Piège',
+        id: 'details.label.trap',
+    },
+    targets: {
+        defaultMessage: 'Ecran',
+        id: 'details.label.target',
+    },
+    catches: {
+        defaultMessage: 'Déploiement',
+        id: 'details.label.catche',
+    },
+    villages: {
+        defaultMessage: 'Village',
+        id: 'details.label.village',
+    },
 });
 
 export const onResizeMap = (width, height, exportControl, currentMap, filename) => {

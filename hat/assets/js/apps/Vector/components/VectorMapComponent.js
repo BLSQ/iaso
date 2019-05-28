@@ -39,8 +39,8 @@ class VectorMapComponent extends Component {
                 zone: false,
                 area: false,
             },
-            selectedMarkers: [],
             containers: {},
+            drawEnabled: false,
         };
     }
 
@@ -96,6 +96,9 @@ class VectorMapComponent extends Component {
                 this.updateVillages(true);
             }
             if (hasChanged(prevProps, this.props, 'sites')) {
+                this.setState({
+                    drawEnabled: this.props.sites.length > 0,
+                });
                 this.updateMarkers('sites', this.sitesGroup, this.props.sites);
             }
             if (hasChanged(prevProps, this.props, 'traps')) {
@@ -122,9 +125,8 @@ class VectorMapComponent extends Component {
     }
 
     onShapeClick(shape) {
-        this.setState({
-            selectedMarkers: getMarkersInShape(shape, this.props.sites),
-        });
+        const selectedMarkers = getMarkersInShape(shape, this.props.sites);
+        console.log('SHOW modal selectedMarkers', selectedMarkers);
     }
 
     /* ***************************************************************************
@@ -313,11 +315,10 @@ class VectorMapComponent extends Component {
 
     render() {
         const { formatMessage } = this.props.intl;
-        console.log(this.state.selectedMarkers);
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
-                    <div ref={(node) => { this.mapNode = node; }} className="map-container" />
+                    <div ref={(node) => { this.mapNode = node; }} className={`map-container ${!this.state.drawEnabled ? 'without-draw' : ''}`} />
                     {
                         (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
                         <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />

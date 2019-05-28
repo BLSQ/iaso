@@ -93,6 +93,11 @@ $color in $types {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    &.without-draw {
+        .leaflet-draw.leaflet-control, .leaflet-custom-draw-pane {
+            display: none;
+        }
+    }
 }
 
 .leaflet-container {

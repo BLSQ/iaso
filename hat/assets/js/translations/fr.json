@@ -124,7 +124,4 @@
     "microplanning.tooltip.village.type.official": "Z.S.",
     "microplanning.tooltip.village.type.other": "non-Z.S.",
     "microplanning.tooltip.village.type.unknown": "visible du satellite",
-    "main.label.onlySelectedTraps": "Sites sélectionnés",
-    "main.label.onlyIgnoredTargets": "Ecrans ignorés",
-    "main.label.onlyIgnoredTraps": "Sites ignorés"
 }

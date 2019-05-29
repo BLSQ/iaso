@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl, FormattedMessage, defineMessages } from 'react-intl';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
@@ -15,9 +15,9 @@ import {
     provinces,
     zones,
     aires,
-    onlySelectedTraps,
-    onlyIgnoredTraps,
-    onlyIgnoredTargets,
+    sites,
+    traps,
+    targets,
 } from '../../../utils/constants/filters';
 import { MESSAGES } from '../utlls/vectorMapUtils';
 
@@ -71,9 +71,9 @@ class VectorFiltersComponent extends PureComponent {
                             params={this.props.params}
                             baseUrl={baseUrl}
                             filters={[
-                                onlySelectedTraps(),
-                                onlyIgnoredTraps(),
-                                onlyIgnoredTargets(),
+                                sites(formatMessage, defineMessages),
+                                traps(formatMessage, defineMessages),
+                                targets(formatMessage, defineMessages),
                             ]}
                         />
                     </div>

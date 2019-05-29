@@ -10,7 +10,6 @@ import TrapsMap from './TrapsMap';
 import LayersComponent from '../../../../components/LayersComponent';
 import { getRequest } from '../../../../utils/fetchData';
 import { mapActions } from '../../redux/mapReducer';
-import { vectorActions } from '../../redux/vectorReducer';
 import RadiosComponent from '../../../../components/RadiosComponent';
 import { itemsEditSitesToShow, MESSAGES } from '../../utlls/vectorMapUtils';
 import CustomTableComponent from '../../../../components/CustomTableComponent';

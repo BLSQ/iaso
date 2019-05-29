@@ -99,6 +99,30 @@ export const MESSAGES = {
         defaultMessage: 'Sans vidéos',
         id: 'main.label.without_videos',
     },
+    ignored: {
+        defaultMessage: 'Ignorés',
+        id: 'main.label.ignored',
+    },
+    not_ignored: {
+        defaultMessage: 'Non ignorés',
+        id: 'main.label.not_ignored',
+    },
+    assigned: {
+        defaultMessage: 'Assignés',
+        id: 'main.label.assigned',
+    },
+    not_assigned: {
+        defaultMessage: 'Non assignés',
+        id: 'main.label.not_assigned',
+    },
+    selected: {
+        defaultMessage: 'Sélectionné',
+        id: 'main.label.selected',
+    },
+    not_selected: {
+        defaultMessage: 'Non sélectionné',
+        id: 'main.label.not_selected',
+    },
 };
 
 const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
@@ -163,7 +187,6 @@ const testType = (formatMessage, defineMessages) => (
     }
 );
 
-
 const testTypeImage = () => (
     {
         name: 'test_type_image',
@@ -191,7 +214,6 @@ const testTypeImage = () => (
         type: 'select',
     }
 );
-
 
 const testTypeVideo = () => (
     {
@@ -228,6 +250,7 @@ const testTypeVideo = () => (
         type: 'select',
     }
 );
+
 const screeningResult = (formatMessage, defineMessages) => (
     {
         name: 'screening_result',
@@ -327,7 +350,6 @@ const source = (formatMessage, defineMessages) => (
         type: 'select',
     }
 );
-
 
 const teams = (teamsList, isMultiSelect = true) => (
     {
@@ -571,7 +593,6 @@ const aires = (areasList, props, urlKey) => (
     }
 );
 
-
 const villages = villagesList => (
     {
         name: 'village_id',
@@ -660,41 +681,109 @@ const habitats = (formatMessage, messages, habitatsList) => (
     }
 );
 
-const onlySelectedTraps = () => (
+const sites = (formatMessage, defineMessages) => (
     {
-        name: 'onlySelectedTraps',
-        urlKey: 'onlySelectedTraps',
-        label: {
-            id: 'main.label.onlySelectedTraps',
-            defaultMessage: 'Pièges sélectionnés',
+        name: 'sitesFilter',
+        urlKey: 'sitesFilter',
+        hideEmpty: true,
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                value: 'ignored',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                value: 'not_ignored',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'assigned')),
+                value: 'assigned',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_assigned')),
+                value: 'not_assigned',
+            },
+        ],
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
         },
-        type: 'checkbox',
+        label: {
+            id: 'vector.label.sites',
+            defaultMessage: 'Sites',
+        },
+        type: 'select',
     }
 );
 
-const onlyIgnoredTraps = () => (
+const traps = (formatMessage, defineMessages) => (
     {
-        name: 'onlyIgnoredTraps',
-        urlKey: 'onlyIgnoredTraps',
-        label: {
-            id: 'main.label.onlyIgnoredTraps',
-            defaultMessage: 'Pièges ignorés',
+        name: 'trapsFilter',
+        urlKey: 'trapsFilter',
+        hideEmpty: true,
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                value: 'ignored',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                value: 'not_ignored',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'selected')),
+                value: 'selected',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_selected')),
+                value: 'not_selected',
+            },
+        ],
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
         },
-        type: 'checkbox',
+        label: {
+            id: 'vector.label.traps',
+            defaultMessage: 'Pièges',
+        },
+        type: 'select',
     }
 );
 
-const onlyIgnoredTargets = () => (
+const targets = (formatMessage, defineMessages) => (
     {
-        name: 'onlyIgnoredTargets',
-        urlKey: 'onlyIgnoredTargets',
-        label: {
-            id: 'main.label.onlyIgnoredTargets',
-            defaultMessage: 'Ecrans ignorés',
+        name: 'targetsFilter',
+        urlKey: 'targetsFilter',
+        hideEmpty: true,
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                value: 'ignored',
+            },
+            {
+                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                value: 'not_ignored',
+            },
+        ],
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
         },
-        type: 'checkbox',
+        label: {
+            id: 'vector.label.targets',
+            defaultMessage: 'Ecrans',
+        },
+        type: 'select',
     }
 );
+
 
 const medecine = formatMessage => (
     {
@@ -984,9 +1073,9 @@ export {
     onlyDupes,
     users,
     habitats,
-    onlySelectedTraps,
-    onlyIgnoredTraps,
-    onlyIgnoredTargets,
+    sites,
+    traps,
+    targets,
     medecine,
     onlyTreatedPatients,
     onlyDead,

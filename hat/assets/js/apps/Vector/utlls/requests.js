@@ -11,6 +11,7 @@ export const fetchSites = (dispatch, params) => {
         dateFrom,
         dateTo,
         userId,
+        sitesFilter,
         province_id,
         zs_id,
         as_id,
@@ -28,6 +29,9 @@ export const fetchSites = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (sitesFilter) {
+        url += `&sites_filter=${sitesFilter}`;
+    }
     return req
         .get(url)
         .then((result) => {
@@ -44,8 +48,7 @@ export const fetchTraps = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTraps,
+        trapsFilter,
         province_id,
         zs_id,
         as_id,
@@ -57,11 +60,8 @@ export const fetchTraps = (dispatch, params) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTraps) {
-        url += '&onlyIgnoredTraps=True';
+    if (trapsFilter) {
+        url += `&traps_filter=${trapsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -88,7 +88,7 @@ export const fetchTargets = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlyIgnoredTargets,
+        targetsFilter,
         province_id,
         zs_id,
         as_id,
@@ -109,8 +109,8 @@ export const fetchTargets = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
-    if (onlyIgnoredTargets) {
-        url += '&onlyIgnoredTargets=True';
+    if (targetsFilter) {
+        url += `&targets_filter=${targetsFilter}`;
     }
     return req
         .get(url)
@@ -163,6 +163,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         dateFrom,
         dateTo,
         userId,
+        sitesFilter,
         province_id,
         zs_id,
         as_id,
@@ -183,6 +184,9 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (sitesFilter) {
+        url += `&sites_filter=${sitesFilter}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -199,8 +203,7 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTraps,
+        trapsFilter,
         province_id,
         zs_id,
         as_id,
@@ -215,11 +218,8 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTraps) {
-        url += '&onlyIgnoredTraps=True';
+    if (trapsFilter) {
+        url += `&traps_filter=${trapsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -246,8 +246,7 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTargets,
+        targetsFilter,
         province_id,
         zs_id,
         as_id,
@@ -262,11 +261,8 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTargets) {
-        url += '&onlyIgnoredTargets=True';
+    if (targetsFilter) {
+        url += `&targetsFilter=${targetsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;

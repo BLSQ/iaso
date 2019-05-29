@@ -53,8 +53,7 @@ class TrapsViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
-        only_selected_traps = request.GET.get("onlySelectedTraps", False)
-        only_ignored_traps = request.GET.get("onlyIgnoredTraps", False)
+        filters = request.GET.get("traps_filter", False)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
@@ -78,12 +77,15 @@ class TrapsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
             queryset = queryset.filter(habitat__in=habitats.split(","))
-        if only_selected_traps:
-            queryset = queryset.filter(is_selected=True)
-        if only_ignored_traps:
-            queryset = queryset.filter(ignore=True)
-        else:
-            queryset = queryset.filter(ignore=False)
+        if filters:
+            if filters == "selected":
+                queryset = queryset.filter(is_selected=True)
+            if filters == "not_selected":
+                queryset = queryset.filter(is_selected=False)
+            if filters == "ignored":
+                queryset = queryset.filter(ignore=True)
+            if filters == "not_ignored":
+                queryset = queryset.filter(ignore=False)
 
         if request.user.profile.province_scope.count() != 0:
             user_prov_subquery = (

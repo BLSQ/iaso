@@ -32,9 +32,9 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
             '(/catchesPage/:catchesPage)(/catchesPageSize/:catchesPageSize)(/orderCatches/:orderCatches)' +
             '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)(/teams/:teams)' +
+            '(/habitats/:habitats)(/teams/:teams)' +
             '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/assignedToUser/:assignedToUser)' +
-            '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
+            '(/sitesFilter/:sitesFilter)(/targetsFilter/:targetsFilter)(/trapsFilter/:trapsFilter)'}
             component={VectorContainer}
         />,
         <Route

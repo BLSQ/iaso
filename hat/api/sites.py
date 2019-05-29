@@ -57,7 +57,17 @@ class SitesViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         responsible = request.GET.get("responsible", False)
+        filters = request.GET.get("sites_filter", False)
         queryset = Site.objects.all()
+        if filters:
+            if filters == "assigned":
+                queryset = queryset.filter(responsible__isnull=False)
+            if filters == "not_assigned":
+                queryset = queryset.filter(responsible__isnull=True)
+            if filters == "ignored":
+                queryset = queryset.filter(ignore=True)
+            if filters == "not_ignored":
+                queryset = queryset.filter(ignore=False)
 
         if from_date is not None:
             trap_subquery = Trap.objects.filter(created_at__date__gte=from_date)
@@ -265,6 +275,7 @@ class SitesViewSet(viewsets.ViewSet):
                 new_site.habitat = site.get("habitat", None)
                 new_site.accuracy = site.get("accuracy", None)
                 new_site.description = site.get("description", None)
+                new_site.ignore = request.data.get("ignore", False)
                 t = site.get("time", None)
                 if t:
                     new_site.created_at = timestamp_to_utc_datetime(int(t))

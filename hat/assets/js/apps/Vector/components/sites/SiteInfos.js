@@ -113,6 +113,54 @@ class SiteInfos extends Component {
                         </tbody>
                     </table>
                 </div>
+                <div>
+                    <div className="flex-container">
+                        <label
+                            className="filter__container__select__label"
+                        >
+                            <FormattedMessage
+                                id="verctor.label.ignore"
+                                defaultMessage="Ignorer"
+                            />:
+                        </label>
+                        <section className="check-box-container">
+                            <input
+                                id={`ignore-${site.id}`}
+                                type="radio"
+                                name="ignore"
+                                checked={site.ignore ? 'checked' : ''}
+                                value={site.ignore}
+                                onChange={() => updateSiteField('ignore', true)}
+                            />
+                            <label
+                                htmlFor={`ignore-${site.id}`}
+                                className="checkbox-label"
+                            >
+                                <FormattedMessage
+                                    id="verctor.label.yes"
+                                    defaultMessage="Oui"
+                                />
+                            </label>
+                            <input
+                                id={`ignore-${site.id}-false`}
+                                type="radio"
+                                name="ignore"
+                                checked={!site.ignore ? 'checked' : ''}
+                                value={site.ignore}
+                                onChange={() => updateSiteField('ignore', false)}
+                            />
+                            <label
+                                htmlFor={`ignore-${site.id}-false`}
+                                className="checkbox-label"
+                            >
+                                <FormattedMessage
+                                    id="verctor.label.no"
+                                    defaultMessage="Non"
+                                />
+                            </label>
+                        </section>
+                    </div>
+                </div>
             </section>
         );
     }

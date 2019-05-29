@@ -26,8 +26,7 @@ table {
         background-color: transparent;
         >tbody,
         >tbody>tr,
-        >tbody>tr>td,
-            {
+        >tbody>tr>td {
             border: none !important;
             background-color: transparent;
             padding: 0;
@@ -354,5 +353,11 @@ tr:first-child td {
     }
     .chevron {
         float: right;
+    }
+}
+
+tr.center {
+    td, th {
+        text-align: center;
     }
 }

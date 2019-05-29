@@ -2,7 +2,7 @@ import L from 'leaflet';
 import setDrawMessages from './drawMapMessages';
 
 
-export const includeDrawShapes = (map, formatMessage, onShapeClick) => {
+export const includeDrawTools = (map, formatMessage, onShapeClick) => {
     map.createPane('custom-draw');
     const shapeOptions = {
         pane: 'custom-draw',
@@ -41,13 +41,6 @@ export const includeDrawShapes = (map, formatMessage, onShapeClick) => {
 
     map.on('draw:created', (e) => {
         onShapeClick(e.layer);
-    });
-
-    map.on('draw:edited', (e) => {
-        const { layers } = e;
-        layers.eachLayer((layer) => {
-            onShapeClick(layer);
-        });
     });
 
     shapesLayer.on('click', (e) => {

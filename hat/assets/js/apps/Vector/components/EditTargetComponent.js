@@ -1,16 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 
 
-const MESSAGES = defineMessages({
-    none: {
-        defaultMessage: 'Aucun',
-        id: 'vector.labels.none',
-    },
-});
 class EditTargetComponent extends Component {
     constructor(props) {
         super(props);
@@ -178,18 +171,18 @@ class EditTargetComponent extends Component {
         );
     }
 }
+
 EditTargetComponent.defaultProps = {
     target: {
         id: 0,
         name: '',
     },
 };
+
 EditTargetComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     target: PropTypes.object,
-    intl: PropTypes.object.isRequired,
-    profiles: PropTypes.array.isRequired,
     saveTarget: PropTypes.func.isRequired,
 };
 

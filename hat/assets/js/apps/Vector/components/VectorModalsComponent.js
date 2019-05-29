@@ -8,6 +8,7 @@ import EditTrapComponent from './traps/EditTrapComponent';
 import EditSiteComponent from './sites/EditSiteComponent';
 import EditTargetComponent from './EditTargetComponent';
 import CatchDetailComponent from './CatchDetailComponent';
+import ShapeSelectionComponent from './ShapeSelectionComponent';
 
 class VectorModalsComponent extends PureComponent {
     saveTrap(trap) {
@@ -24,11 +25,13 @@ class VectorModalsComponent extends PureComponent {
             profiles,
             saveSite,
             saveTarget,
+            shapeMarkers,
             showModale: {
                 showCatch,
                 showSite,
                 showTrap,
                 showTarget,
+                showShapeSelection,
             },
             getDetail,
         } = this.props;
@@ -75,8 +78,16 @@ class VectorModalsComponent extends PureComponent {
                         showModale={showTarget}
                         toggleModal={() => this.props.closeModal('showEditTargetModale', 'targetEdited')}
                         target={this.props.targetEdited}
-                        profiles={profiles}
                         saveTarget={target => saveTarget(target)}
+                    />
+                }
+                {
+                    showShapeSelection &&
+                    <ShapeSelectionComponent
+                        showModale={showShapeSelection}
+                        toggleModal={() => this.props.closeModal('showShapeSelectionModale', 'shapeMarkers')}
+                        sites={shapeMarkers}
+                        profiles={profiles}
                     />
                 }
             </Fragment>
@@ -103,6 +114,7 @@ VectorModalsComponent.propTypes = {
     catchEdited: PropTypes.object,
     trapEdited: PropTypes.object,
     siteEdited: PropTypes.object,
+    shapeMarkers: PropTypes.array.isRequired,
     getDetail: PropTypes.func.isRequired,
 };
 

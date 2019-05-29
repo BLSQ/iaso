@@ -49,10 +49,12 @@ export class Vector extends Component {
             showEditSiteModale: false,
             showEditTargetModale: false,
             showEditCatchesModale: false,
+            showShapeSelectionModale: false,
             siteEdited: props.siteEdited,
             trapEdited: props.trapEdited,
             targetEdited: props.targetEdited,
             catchEdited: props.catchEdited,
+            shapeMarkers: [],
         };
     }
 
@@ -161,6 +163,7 @@ export class Vector extends Component {
             trapEdited: type === 'showEditTrapsModale' ? data : this.state.trapEdited,
             targetEdited: type === 'showEditTargetModale' ? data : this.state.targetEdited,
             catchEdited: type === 'showEditCatchesModale' ? data : this.state.catchEdited,
+            shapeMarkers: type === 'showShapeSelectionModale' ? data : this.state.shapeMarkers,
         };
         newState[type] = true;
         this.setState(newState);
@@ -193,6 +196,9 @@ export class Vector extends Component {
         if (dataKey === 'siteEdited') {
             newState.trapEdited = {};
             newState.catchEdited = {};
+        }
+        if (dataKey === 'shapeMarkers') {
+            newState.shapeMarkers = [];
         }
         this.setState(newState);
     }
@@ -231,10 +237,12 @@ export class Vector extends Component {
             showEditSiteModale,
             showEditTrapsModale,
             showEditTargetModale,
+            showShapeSelectionModale,
             trapEdited,
             siteEdited,
             targetEdited,
             catchEdited,
+            shapeMarkers,
         } = this.state;
         return (
             <section className="vectors-container">
@@ -252,11 +260,13 @@ export class Vector extends Component {
                         showSite: showEditSiteModale,
                         showTrap: showEditTrapsModale,
                         showTarget: showEditTargetModale,
+                        showShapeSelection: showShapeSelectionModale,
                     }}
                     trapEdited={trapEdited}
                     siteEdited={siteEdited}
                     targetEdited={targetEdited}
                     catchEdited={catchEdited}
+                    shapeMarkers={shapeMarkers}
                     params={params}
                     saveSite={site => saveSite(site)}
                     saveTrap={site => saveTrap(site)}

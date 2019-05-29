@@ -20,7 +20,7 @@ import {
     includeDefaultLayersInMap,
 } from '../../../utils/map/mapUtils';
 
-import { includeDrawShapes, getMarkersInShape } from '../../../utils/map/drawMapUtils';
+import { includeDrawTools, getMarkersInShape } from '../../../utils/map/drawMapUtils';
 
 let exportControl;
 
@@ -67,7 +67,7 @@ class VectorMapComponent extends Component {
         this.map.addLayer(this.endemicVillagesGroup);
 
         includeDefaultLayersInMap(this);
-        includeDrawShapes(this.map, this.props.intl.formatMessage, shape => this.onShapeClick(shape));
+        includeDrawTools(this.map, this.props.intl.formatMessage, shape => this.onShapeClick(shape));
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
@@ -126,7 +126,7 @@ class VectorMapComponent extends Component {
 
     onShapeClick(shape) {
         const selectedMarkers = getMarkersInShape(shape, this.props.sites);
-        console.log('SHOW modal selectedMarkers', selectedMarkers);
+        this.props.editItem('showShapeSelectionModale', selectedMarkers);
     }
 
     /* ***************************************************************************

@@ -131,11 +131,11 @@ const setDrawMessages = (formatMessage) => {
                     },
                 },
                 polyline: {
-                    error: '<strong>Error:</strong> shape edges cannot cross!',
+                    error: '',
                     tooltip: {
-                        start: 'Click to start drawing line.',
-                        cont: 'Click to continue drawing line.',
-                        end: 'Click last point to finish line.',
+                        start: '',
+                        cont: '',
+                        end: '',
                     },
                 },
                 rectangle: {
@@ -145,7 +145,7 @@ const setDrawMessages = (formatMessage) => {
                 },
                 simpleshape: {
                     tooltip: {
-                        end: 'Release mouse to finish drawing.',
+                        end: '',
                     },
                 },
             },

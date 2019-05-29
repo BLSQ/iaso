@@ -54,7 +54,7 @@ export class Vector extends Component {
             trapEdited: props.trapEdited,
             targetEdited: props.targetEdited,
             catchEdited: props.catchEdited,
-            shapeMarkers: [],
+            shapeMarkers: props.shapeMarkers,
         };
     }
 
@@ -69,6 +69,7 @@ export class Vector extends Component {
             trapEdited: newProps.trapEdited || this.state.trapEdited,
             targetEdited: newProps.targetEdited || this.state.targetEdited,
             catchEdited: newProps.catchEdited || this.state.catchEdited,
+            shapeMarkers: newProps.shapeMarkers || this.state.shapeMarkers,
             sites: newProps.params.sites ? newProps.vectors.sites : [],
             traps: newProps.params.traps ? newProps.vectors.traps : [],
             targets: newProps.params.targets ? newProps.vectors.targets : [],
@@ -224,6 +225,7 @@ export class Vector extends Component {
             saveSite,
             saveTrap,
             saveTarget,
+            saveAssignations,
         } = this.props;
         const {
             currentTab,
@@ -271,6 +273,7 @@ export class Vector extends Component {
                     saveSite={site => saveSite(site)}
                     saveTrap={site => saveTrap(site)}
                     saveTarget={target => saveTarget(target)}
+                    saveAssignations={(sitesList, responsibleId) => saveAssignations(sitesList, responsibleId)}
                     getDetail={(id, urlKey, key) => this.getDetail(id, urlKey, key)}
                 />
                 <VectorFiltersComponent onSearch={() => this.props.onSearch()} params={params} />
@@ -450,10 +453,12 @@ Vector.propTypes = {
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
+    saveAssignations: PropTypes.func.isRequired,
     siteEdited: PropTypes.object,
     trapEdited: PropTypes.object,
     targetEdited: PropTypes.object,
     catchEdited: PropTypes.object,
+    shapeMarkers: PropTypes.array.isRequired,
     onSearch: PropTypes.func.isRequired,
 };
 

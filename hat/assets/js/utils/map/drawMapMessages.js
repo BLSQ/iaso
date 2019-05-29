@@ -82,6 +82,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cliquez sur une forme pour l\'effacer',
         id: 'map.draw.label.removeTooltip',
     },
+    radius: {
+        defaultMessage: 'Rayon',
+        id: 'map.draw.label.radius',
+    },
 });
 
 const setDrawMessages = (formatMessage) => {
@@ -111,7 +115,7 @@ const setDrawMessages = (formatMessage) => {
                     tooltip: {
                         start: formatMessage(MESSAGES.circleTooltip),
                     },
-                    radius: 'RADIUS',
+                    radius: formatMessage(MESSAGES.radius),
                 },
                 circlemarker: {
                     tooltip: {

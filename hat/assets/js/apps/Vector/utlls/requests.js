@@ -401,14 +401,14 @@ export const saveTrap = (dispatch, trap) => {
         .catch(err => (console.error(`Error while saving trap ${err}`))));
 };
 
-export const saveSite = (dispatch, site) => {
-    dispatch(loadActions.startLoading());
+export const saveSite = (dispatch, site, dispatchLoad = true) => {
+    if (dispatchLoad) dispatch(loadActions.startLoading());
     return (req
         .put(`/api/new_sites/${site.id}/`)
         .set('Content-Type', 'application/json')
         .send(site)
         .then(() => {
-            dispatch(loadActions.successLoadingNoData());
+            if (dispatchLoad) dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while saving site ${err}`))));
 };

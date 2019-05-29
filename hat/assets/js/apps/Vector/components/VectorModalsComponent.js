@@ -25,6 +25,7 @@ class VectorModalsComponent extends PureComponent {
             profiles,
             saveSite,
             saveTarget,
+            saveAssignations,
             shapeMarkers,
             showModale: {
                 showCatch,
@@ -88,6 +89,7 @@ class VectorModalsComponent extends PureComponent {
                         toggleModal={() => this.props.closeModal('showShapeSelectionModale', 'shapeMarkers')}
                         sites={shapeMarkers}
                         profiles={profiles}
+                        saveAssignations={(sites, responsibleId) => saveAssignations(sites, responsibleId)}
                     />
                 }
             </Fragment>
@@ -108,6 +110,7 @@ VectorModalsComponent.propTypes = {
     saveSite: PropTypes.func.isRequired,
     saveTrap: PropTypes.func.isRequired,
     saveTarget: PropTypes.func.isRequired,
+    saveAssignations: PropTypes.func.isRequired,
     closeModal: PropTypes.func.isRequired,
     showModale: PropTypes.object.isRequired,
     targetEdited: PropTypes.object,

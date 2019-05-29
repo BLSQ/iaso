@@ -186,4 +186,4 @@ EditTargetComponent.propTypes = {
     saveTarget: PropTypes.func.isRequired,
 };
 
-export default injectIntl(EditTargetComponent);
+export default EditTargetComponent;

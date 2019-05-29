@@ -18,6 +18,7 @@ import {
     saveTrap,
     saveTarget,
     saveSite,
+    saveAssignations,
     fetchPaginatedSites,
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
@@ -34,6 +35,7 @@ class VectorContainer extends Component {
             trapEdited: null,
             targetEdited: null,
             catchEdited: null,
+            shapeMarkers: [],
         };
     }
 
@@ -234,6 +236,37 @@ class VectorContainer extends Component {
         });
     }
 
+    saveAssignations(sitesList, responsibleId) {
+        const { dispatch, profiles } = this.props;
+        dispatch(loadActions.startLoading());
+        const promises = [];
+        const shapeMarkers = [];
+        const responsibleProfile = profiles.find(p => p.id === responsibleId);
+        sitesList.forEach((site) => {
+            const newSite = {
+                ...site,
+                responsible_id: responsibleProfile.id,
+                responsible: responsibleProfile.user__username,
+            };
+            shapeMarkers.push(newSite);
+            promises.push(this.props.saveSiteRequest(newSite, false));
+        });
+
+        Promise.all(promises).then(() => {
+            const { params } = this.props;
+            if (params.sites) {
+                fetchSites(dispatch, params);
+            }
+            fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+            this.setState({
+                shapeMarkers,
+            });
+            dispatch(loadActions.successLoadingNoData());
+        }).catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    }
+
     render() {
         return (
             <VectorDashboard
@@ -241,10 +274,12 @@ class VectorContainer extends Component {
                 saveSite={site => this.saveSite(site)}
                 saveTrap={trap => this.saveTrap(trap)}
                 saveTarget={target => this.saveTarget(target)}
+                saveAssignations={(sitesIds, responsibleId) => this.saveAssignations(sitesIds, responsibleId)}
                 siteEdited={this.state.siteEdited}
                 trapEdited={this.state.trapEdited}
                 targetEdited={this.state.targetEdited}
                 catchEdited={this.state.catchEdited}
+                shapeMarkers={this.state.shapeMarkers}
                 onSearch={() => this.onSearch()}
             />
         );
@@ -265,12 +300,14 @@ VectorContainer.propTypes = {
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    profiles: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     infos: state.infos,
     vectors: state.vectors,
+    profiles: state.vectors.profiles,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -280,7 +317,7 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId, removeLoading)),
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
     saveTrapRequest: trap => saveTrap(dispatch, trap),
-    saveSiteRequest: site => saveSite(dispatch, site),
+    saveSiteRequest: (site, dispatchLoad) => saveSite(dispatch, site, dispatchLoad),
     saveTargetRequest: target => saveTarget(dispatch, target),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });

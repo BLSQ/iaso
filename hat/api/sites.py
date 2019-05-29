@@ -14,6 +14,7 @@ from hat.vector_control.models import Site, APIImport, Trap, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
+from django.contrib.auth.models import User
 
 
 class SitesViewSet(viewsets.ViewSet):
@@ -320,3 +321,14 @@ class SitesViewSet(viewsets.ViewSet):
             return Response(new_site.as_dict())
         else:
             return Response("Unauthorized", status=401)
+
+
+    def partial_update(self, request):
+        site_ids = request.data.get("sites", None)
+        responsible_id = request.data.get("responsible_id", None)
+        user = User.objects.get(id=responsible_id)
+        if site_ids:
+            for site_id in site_ids:
+                current_site = get_object_or_404(Site, pk=site_id)
+                current_site.user = user
+                current_site.save()

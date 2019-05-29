@@ -96,6 +96,7 @@ class Site(models.Model):
             "updated_at": self.updated_at,
             "responsible": responsible,
             "responsible_id": self.responsible.profile.id if self.responsible else None,
+            "responsible_user_id": self.responsible.id if self.responsible else None,
             "creator": creator,
             "creator_id": self.creator.profile.id if self.creator else None,
             "uuid": self.uuid,

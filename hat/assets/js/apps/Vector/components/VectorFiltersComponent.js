@@ -8,7 +8,17 @@ import FiltersComponent from '../../../components/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
 import SearchButton from '../../../components/SearchButton';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
-import { filtersVectors, filtersVectors2, filtersVectorsGeo } from '../constants/vectorFilters';
+import {
+    users,
+    teams,
+    habitats,
+    provinces,
+    zones,
+    aires,
+    onlySelectedTraps,
+    onlyIgnoredTraps,
+    onlyIgnoredTargets,
+} from '../../../utils/constants/filters';
 import { MESSAGES } from '../utlls/vectorMapUtils';
 
 const baseUrl = 'map';
@@ -18,17 +28,11 @@ class VectorFiltersComponent extends PureComponent {
         const {
             params,
             redirectTo,
-            habitats,
             profiles,
-            teams,
             intl: {
                 formatMessage,
             },
-            filters: {
-                provinces,
-                zones,
-                areas,
-            },
+            filters,
         } = this.props;
         return (
             <div className="widget__container">
@@ -55,27 +59,33 @@ class VectorFiltersComponent extends PureComponent {
                         <FiltersComponent
                             params={this.props.params}
                             baseUrl={baseUrl}
-                            filters={filtersVectors(formatMessage, MESSAGES, profiles, teams, habitats)}
+                            filters={[
+                                users(profiles),
+                                teams(this.props.teams),
+                                habitats(formatMessage, MESSAGES, this.props.habitats),
+                            ]}
                         />
                     </div>
                     <div>
                         <FiltersComponent
                             params={this.props.params}
                             baseUrl={baseUrl}
-                            filters={filtersVectors2()}
+                            filters={[
+                                onlySelectedTraps(),
+                                onlyIgnoredTraps(),
+                                onlyIgnoredTargets(),
+                            ]}
                         />
                     </div>
                     <div>
                         <FiltersComponent
                             params={this.props.params}
                             baseUrl={baseUrl}
-                            filters={filtersVectorsGeo(
-                                provinces || [],
-                                zones || [],
-                                areas || [],
-                                this.props,
-                                baseUrl,
-                            )}
+                            filters={[
+                                provinces(filters.provinces || [], this.props, baseUrl),
+                                zones(filters.zones || [], this.props, baseUrl),
+                                aires(filters.areas || [], this.props, baseUrl),
+                            ]}
                         />
                     </div>
                 </div>

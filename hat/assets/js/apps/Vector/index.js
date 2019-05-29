@@ -33,7 +33,7 @@ export default function vectorApp(appConfig, element, baseUrl) {
             '(/catchesPage/:catchesPage)(/catchesPageSize/:catchesPageSize)(/orderCatches/:orderCatches)' +
             '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
             '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)(/teams/:teams)' +
-            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
+            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/assignedToUser/:assignedToUser)' +
             '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
             component={VectorContainer}
         />,

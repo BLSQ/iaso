@@ -604,10 +604,19 @@ const onlyDupes = () => (
     }
 );
 
-const users = (usersList, mainLabel = {
-    id: 'main.label.user',
-    defaultMessage: 'Utilisateurs',
-}, isMultiSelect = true, urlKey = 'userId') => (
+const users = (
+    usersList,
+    mainLabel = {
+        id: 'main.label.user',
+        defaultMessage: 'Utilisateurs',
+    },
+    isMultiSelect = true,
+    urlKey = 'userId',
+    placeholderLabel = {
+        id: 'main.label.allMale',
+        defaultMessage: 'Tous',
+    },
+) => (
     {
         name: urlKey,
         urlKey,
@@ -624,10 +633,7 @@ const users = (usersList, mainLabel = {
                 value: p.user__id,
             });
         }),
-        placeholder: {
-            id: 'main.label.allMale',
-            defaultMessage: 'Tous',
-        },
+        placeholder: placeholderLabel,
         label: mainLabel,
         type: 'select',
     }

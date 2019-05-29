@@ -17,6 +17,7 @@ import VectorMapComponent from '../components/VectorMapComponent';
 import VectorModalsComponent from '../components/VectorModalsComponent';
 import VectorFiltersComponent from '../components/VectorFiltersComponent';
 import ClusterSwitchComponent from '../../../components/ClusterSwitchComponent';
+import HighlightAssignedSiteComponent from '../components/HighlightAssignedSiteComponent';
 import RadiosComponent from '../../../components/RadiosComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -226,6 +227,7 @@ export class Vector extends Component {
             saveTrap,
             saveTarget,
             saveAssignations,
+            profiles,
         } = this.props;
         const {
             currentTab,
@@ -297,6 +299,11 @@ export class Vector extends Component {
                                 showItems={items => this.showItems(items)}
                                 items={this.state.itemsToShow}
                             />
+                            <HighlightAssignedSiteComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                profiles={profiles}
+                            />
                             <div className="margin-top">
                                 <ClusterSwitchComponent
                                     withCluster={withCluster}
@@ -324,6 +331,7 @@ export class Vector extends Component {
                                 selectMarker={(itemId, key) => getDetail(itemId, key)}
                                 editItem={(type, data) => this.editItem(type, data)}
                                 withCluster={withCluster}
+                                params={params}
                             />
                         </div>
                     </div>
@@ -460,6 +468,7 @@ Vector.propTypes = {
     catchEdited: PropTypes.object,
     shapeMarkers: PropTypes.array.isRequired,
     onSearch: PropTypes.func.isRequired,
+    profiles: PropTypes.array.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -478,6 +487,7 @@ const MapStateToProps = state => ({
     reduxTrapsPage: state.vectors.trapsPage,
     reduxTargetsPage: state.vectors.targetsPage,
     reduxCatchesPage: state.vectors.catchesPage,
+    profiles: state.vectors.profiles,
 });
 const VectorWithIntl = injectIntl(Vector);
 

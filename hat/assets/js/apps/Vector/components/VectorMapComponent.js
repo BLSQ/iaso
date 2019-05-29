@@ -95,7 +95,8 @@ class VectorMapComponent extends Component {
             if (hasChanged(prevProps, this.props, 'endemicVillages')) {
                 this.updateVillages(true);
             }
-            if (hasChanged(prevProps, this.props, 'sites')) {
+            if (hasChanged(prevProps, this.props, 'sites') ||
+                prevProps.params.assignedToUser !== this.props.params.assignedToUser) {
                 this.setState({
                     drawEnabled: this.props.sites.length > 0,
                 });
@@ -152,6 +153,7 @@ class VectorMapComponent extends Component {
             intl: {
                 formatMessage,
             },
+            params,
         } = this.props;
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
@@ -161,9 +163,25 @@ class VectorMapComponent extends Component {
         group.clearLayers();
 
         items.forEach((item) => {
+            let extraClass = '';
+            if (key === 'sites' &&
+                params.assignedToUser) {
+                if (item.responsible_user_id === parseInt(params.assignedToUser, 10)) {
+                    extraClass = 'current';
+                }
+                if (item.responsible_user_id && item.responsible_user_id !== parseInt(params.assignedToUser, 10)) {
+                    extraClass = 'other';
+                }
+                if (!item.responsible_user_id) {
+                    extraClass = 'not-assigned';
+                }
+            }
             const marker = L.marker(
                 [item.latitude, item.longitude],
-                { icon: renderDivIcon('', `${key} small bordered`, 30), pane: 'custom-markers' },
+                {
+                    icon: renderDivIcon('', `${key} small bordered ${extraClass}`, 30),
+                    pane: 'custom-markers',
+                },
             );
             marker.on('click', () => {
                 this.props.selectMarker(item.id, key === 'sites' ? 'new_sites' : key)
@@ -342,6 +360,7 @@ VectorMapComponent.propTypes = {
     getShape: PropTypes.func.isRequired,
     editItem: PropTypes.func.isRequired,
     withCluster: PropTypes.bool.isRequired,
+    params: PropTypes.object.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

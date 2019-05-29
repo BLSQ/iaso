@@ -313,6 +313,8 @@ class SitesViewSet(viewsets.ViewSet):
             if profile_id:
                 profile = get_object_or_404(Profile, pk=profile_id)
                 new_site.responsible = profile.user
+            else:
+                 new_site.responsible = None
             new_site.name = request.data.get("name", "")
             new_site.description = request.data.get("description", "")
             new_site.ignore = request.data.get("ignore", False)
@@ -323,12 +325,12 @@ class SitesViewSet(viewsets.ViewSet):
             return Response("Unauthorized", status=401)
 
 
-    def partial_update(self, request):
-        site_ids = request.data.get("sites", None)
-        responsible_id = request.data.get("responsible_id", None)
-        user = User.objects.get(id=responsible_id)
-        if site_ids:
-            for site_id in site_ids:
-                current_site = get_object_or_404(Site, pk=site_id)
-                current_site.user = user
-                current_site.save()
+    # def partial_update(self, request):
+    #     site_ids = request.data.get("sites", None)
+    #     responsible_id = request.data.get("responsible_id", None)
+    #     user = User.objects.get(id=responsible_id)
+    #     if site_ids:
+    #         for site_id in site_ids:
+    #             current_site = get_object_or_404(Site, pk=site_id)
+    #             current_site.user = user
+    #             current_site.save()

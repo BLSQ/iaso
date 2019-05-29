@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
 import moment from 'moment';
 
@@ -144,4 +144,4 @@ ShapeSelectionComponent.propTypes = {
     saveAssignations: PropTypes.func.isRequired,
 };
 
-export default injectIntl(ShapeSelectionComponent);
+export default ShapeSelectionComponent;

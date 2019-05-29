@@ -24,7 +24,7 @@ class RadiosComponent extends Component {
                             radioContainerClassName += ' checked';
                         }
                         return (
-                            <div className={`custom-radio-component${radioContainerClassName}`} key={index}>
+                            <div className={`custom-radio-component${radioContainerClassName}`} key={item.id}>
                                 <input
                                     type="radio"
                                     name={`radio-${item.id}`}

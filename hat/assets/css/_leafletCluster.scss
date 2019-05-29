@@ -66,6 +66,15 @@
     div {
         background-color: yellow;
     }
+    &.current {
+        background-color: $green;
+    }
+    &.other {
+        background-color: $blue;
+    }
+    &.not-assigned {
+        background-color: red;
+    }
     &.warning {
         div {
             background-color: orange;

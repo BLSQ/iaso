@@ -287,50 +287,52 @@ class SitesViewSet(viewsets.ViewSet):
         return Response([site.as_dict() for site in new_sites])
 
     def update(self, request, pk=None):
-        new_site = get_object_or_404(Site, pk=pk)
-        province = (
-            Province.objects.filter(geom__contains=new_site.location).first()
-            if Province.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        zone = (
-            ZS.objects.filter(geom__contains=new_site.location).first()
-            if ZS.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        area = (
-            AS.objects.filter(geom__contains=new_site.location).first()
-            if AS.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        is_authorized = (province is None and zone is None and area is None) or (
-            (province is not None and zone is not None and area is not None)
-            and is_authorized_user(request.user, province.id, zone.id, area.id)
-        )
+        site_ids = request.data.get("sites", None)
+        if not site_ids:
+            new_site = get_object_or_404(Site, pk=pk)
+            province = (
+                Province.objects.filter(geom__contains=new_site.location).first()
+                if Province.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            zone = (
+                ZS.objects.filter(geom__contains=new_site.location).first()
+                if ZS.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            area = (
+                AS.objects.filter(geom__contains=new_site.location).first()
+                if AS.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            is_authorized = (province is None and zone is None and area is None) or (
+                (province is not None and zone is not None and area is not None)
+                and is_authorized_user(request.user, province.id, zone.id, area.id)
+            )
 
-        if is_authorized:
-            profile_id = request.data.get("responsible_id", None)
-            if profile_id:
-                profile = get_object_or_404(Profile, pk=profile_id)
-                new_site.responsible = profile.user
+            if is_authorized:
+                profile_id = request.data.get("responsible_id", None)
+                if profile_id:
+                    profile = get_object_or_404(Profile, pk=profile_id)
+                    new_site.responsible = profile.user
+                else:
+                    new_site.responsible = None
+                new_site.name = request.data.get("name", "")
+                new_site.description = request.data.get("description", "")
+                new_site.ignore = request.data.get("ignore", False)
+
+                new_site.save()
+                return Response(new_site.as_dict())
             else:
-                 new_site.responsible = None
-            new_site.name = request.data.get("name", "")
-            new_site.description = request.data.get("description", "")
-            new_site.ignore = request.data.get("ignore", False)
-
-            new_site.save()
-            return Response(new_site.as_dict())
+                return Response("Unauthorized", status=401)
         else:
-            return Response("Unauthorized", status=401)
+            profile_id = request.data.get("responsibleId", None)
+            user = get_object_or_404(User, profile__id=profile_id)
+            if site_ids:
+                for site_id in site_ids:
+                    current_site = get_object_or_404(Site, pk=site_id)
+                    current_site.responsible = user
+                    current_site.save()
+                return Response("done")
 
 
-    # def partial_update(self, request):
-    #     site_ids = request.data.get("sites", None)
-    #     responsible_id = request.data.get("responsible_id", None)
-    #     user = User.objects.get(id=responsible_id)
-    #     if site_ids:
-    #         for site_id in site_ids:
-    #             current_site = get_object_or_404(Site, pk=site_id)
-    #             current_site.user = user
-    #             current_site.save()

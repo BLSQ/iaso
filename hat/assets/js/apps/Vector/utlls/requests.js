@@ -424,3 +424,19 @@ export const saveTarget = (dispatch, target) => {
         })
         .catch(err => (console.error(`Error while saving target ${err}`))));
 };
+
+export const saveAssignations = (dispatch, sites, responsibleId) => {
+    dispatch(loadActions.startLoading());
+    const data = {
+        sites,
+        responsibleId,
+    };
+    return (req
+        .put('/api/new_sites/0/')
+        .set('Content-Type', 'application/json')
+        .send(data)
+        .then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch(err => (console.error(`Error while saving assingations ${err}`))));
+};

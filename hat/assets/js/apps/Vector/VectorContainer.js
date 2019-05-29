@@ -23,7 +23,6 @@ import {
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
-import { vectorActions } from './redux/vectorReducer';
 import { currentUserActions } from '../../redux/currentUserReducer';
 
 
@@ -239,9 +238,9 @@ class VectorContainer extends Component {
     saveAssignations(sitesList, responsibleId) {
         const { dispatch, profiles } = this.props;
         dispatch(loadActions.startLoading());
-        const promises = [];
-        const shapeMarkers = [];
         const responsibleProfile = profiles.find(p => p.id === responsibleId);
+        const shapeMarkers = [];
+        const sitesIds = [];
         sitesList.forEach((site) => {
             const newSite = {
                 ...site,
@@ -249,10 +248,9 @@ class VectorContainer extends Component {
                 responsible: responsibleProfile.user__username,
             };
             shapeMarkers.push(newSite);
-            promises.push(this.props.saveSiteRequest(newSite, false));
+            sitesIds.push(site.id);
         });
-
-        Promise.all(promises).then(() => {
+        this.props.saveAssignationsRequest(sitesIds, responsibleId).then(() => {
             const { params } = this.props;
             if (params.sites) {
                 fetchSites(dispatch, params);
@@ -299,6 +297,7 @@ VectorContainer.propTypes = {
     saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
+    saveAssignationsRequest: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
 };
@@ -318,6 +317,7 @@ const MapDispatchToProps = dispatch => ({
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
     saveTrapRequest: trap => saveTrap(dispatch, trap),
     saveSiteRequest: (site, dispatchLoad) => saveSite(dispatch, site, dispatchLoad),
+    saveAssignationsRequest: (sites, responsibleId) => saveAssignations(dispatch, sites, responsibleId),
     saveTargetRequest: target => saveTarget(dispatch, target),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });

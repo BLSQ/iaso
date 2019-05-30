@@ -1,3 +1,4 @@
+import { defineMessages } from 'react-intl';
 import {
     selectWorkZone,
     selectProvince,
@@ -125,9 +126,9 @@ export const MESSAGES = {
     },
 };
 
-const getMessage = (defineMessages, key) => defineMessages(MESSAGES[key]);
+const getMessage = key => defineMessages(MESSAGES[key]);
 
-const testType = (formatMessage, defineMessages) => (
+const testType = formatMessage => (
     {
         name: 'test_type',
         urlKey: 'test_type',
@@ -155,11 +156,11 @@ const testType = (formatMessage, defineMessages) => (
             //     value: 'lcr',
             // },
             // {
-            //     label: formatMessage(getMessage(defineMessages, 'test_lymph_node_puncture')),
+            //     label: formatMessage(getMessage('test_lymph_node_puncture')),
             //     value: 'lnp',
             // },
             // {
-            //     label: formatMessage(getMessage(defineMessages, 'sf')),
+            //     label: formatMessage(getMessage('sf')),
             //     value: 'sf',
             // },
             {
@@ -251,7 +252,7 @@ const testTypeVideo = () => (
     }
 );
 
-const screeningResult = (formatMessage, defineMessages) => (
+const screeningResult = formatMessage => (
     {
         name: 'screening_result',
         urlKey: 'screening_result',
@@ -259,15 +260,15 @@ const screeningResult = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'positive')),
+                label: formatMessage(getMessage('positive')),
                 value: 'true',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'negative')),
+                label: formatMessage(getMessage('negative')),
                 value: 'false',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_done')),
+                label: formatMessage(getMessage('not_done')),
                 value: 'not_done',
             },
         ],
@@ -283,7 +284,7 @@ const screeningResult = (formatMessage, defineMessages) => (
     }
 );
 
-const confirmationResult = (formatMessage, defineMessages) => (
+const confirmationResult = formatMessage => (
     {
         name: 'confirmation_result',
         urlKey: 'confirmation_result',
@@ -291,15 +292,15 @@ const confirmationResult = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'positive')),
+                label: formatMessage(getMessage('positive')),
                 value: 'true',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'negative')),
+                label: formatMessage(getMessage('negative')),
                 value: 'false',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_done')),
+                label: formatMessage(getMessage('not_done')),
                 value: 'not_done',
             },
         ],
@@ -315,7 +316,7 @@ const confirmationResult = (formatMessage, defineMessages) => (
     }
 );
 
-const source = (formatMessage, defineMessages) => (
+const source = formatMessage => (
     {
         name: 'source',
         urlKey: 'source',
@@ -323,19 +324,19 @@ const source = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'mobile_sync')),
+                label: formatMessage(getMessage('mobile_sync')),
                 value: 'mobile_sync',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'mobile_backup')),
+                label: formatMessage(getMessage('mobile_backup')),
                 value: 'mobile_backup',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'historic')),
+                label: formatMessage(getMessage('historic')),
                 value: 'historic',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'pv')),
+                label: formatMessage(getMessage('pv')),
                 value: 'pv',
             },
         ],
@@ -370,7 +371,7 @@ const teams = (teamsList, isMultiSelect = true) => (
     }
 );
 
-const located = (formatMessage, defineMessages) => (
+const located = formatMessage => (
     {
         name: 'located',
         urlKey: 'located',
@@ -378,15 +379,15 @@ const located = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'located')),
+                label: formatMessage(getMessage('located')),
                 value: 'only_located',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'notLocated')),
+                label: formatMessage(getMessage('notLocated')),
                 value: 'only_not_located',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'notLocatedNotFound')),
+                label: formatMessage(getMessage('notLocatedNotFound')),
                 value: 'only_not_located_and_not_found',
             },
         ],
@@ -660,7 +661,7 @@ const users = (
     }
 );
 
-const habitats = (formatMessage, messages, habitatsList) => (
+const habitats = (formatMessage, habitatsList) => (
     {
         name: 'habitats',
         urlKey: 'habitats',
@@ -668,7 +669,13 @@ const habitats = (formatMessage, messages, habitatsList) => (
         isMultiSelect: true,
         isClearable: true,
         options: habitatsList.map(h =>
-            ({ label: formatMessage(messages[h[0]]), value: h[0] })),
+            ({
+                label: formatMessage({
+                    defaultMessage: h[1],
+                    id: `vectors.label.${h[0]}`,
+                }),
+                value: h[0],
+            })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'Tous',
@@ -681,7 +688,7 @@ const habitats = (formatMessage, messages, habitatsList) => (
     }
 );
 
-const sites = (formatMessage, defineMessages) => (
+const sites = formatMessage => (
     {
         name: 'sitesFilter',
         urlKey: 'sitesFilter',
@@ -690,19 +697,19 @@ const sites = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                label: formatMessage(getMessage('ignored')),
                 value: 'ignored',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                label: formatMessage(getMessage('not_ignored')),
                 value: 'not_ignored',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'assigned')),
+                label: formatMessage(getMessage('assigned')),
                 value: 'assigned',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_assigned')),
+                label: formatMessage(getMessage('not_assigned')),
                 value: 'not_assigned',
             },
         ],
@@ -718,7 +725,7 @@ const sites = (formatMessage, defineMessages) => (
     }
 );
 
-const traps = (formatMessage, defineMessages) => (
+const traps = formatMessage => (
     {
         name: 'trapsFilter',
         urlKey: 'trapsFilter',
@@ -727,19 +734,19 @@ const traps = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                label: formatMessage(getMessage('ignored')),
                 value: 'ignored',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                label: formatMessage(getMessage('not_ignored')),
                 value: 'not_ignored',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'selected')),
+                label: formatMessage(getMessage('selected')),
                 value: 'selected',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_selected')),
+                label: formatMessage(getMessage('not_selected')),
                 value: 'not_selected',
             },
         ],
@@ -755,7 +762,7 @@ const traps = (formatMessage, defineMessages) => (
     }
 );
 
-const targets = (formatMessage, defineMessages) => (
+const targets = formatMessage => (
     {
         name: 'targetsFilter',
         urlKey: 'targetsFilter',
@@ -764,11 +771,11 @@ const targets = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'ignored')),
+                label: formatMessage(getMessage('ignored')),
                 value: 'ignored',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'not_ignored')),
+                label: formatMessage(getMessage('not_ignored')),
                 value: 'not_ignored',
             },
         ],
@@ -831,7 +838,7 @@ const onlyDead = () => (
     }
 );
 
-const testerType = (formatMessage, defineMessages) => (
+const testerType = formatMessage => (
     {
         name: 'tester_type',
         urlKey: 'tester_type',
@@ -839,11 +846,11 @@ const testerType = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'screener')),
+                label: formatMessage(getMessage('screener')),
                 value: 'screener',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'confirmer')),
+                label: formatMessage(getMessage('confirmer')),
                 value: 'confirmer',
             },
         ],
@@ -893,7 +900,7 @@ const device = devicesList => (
     }
 );
 
-const images = (formatMessage, defineMessages) => (
+const images = formatMessage => (
     {
         name: 'pictures',
         urlKey: 'pictures',
@@ -901,19 +908,19 @@ const images = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'with_pictures')),
+                label: formatMessage(getMessage('with_pictures')),
                 value: 'with_pictures',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'with_pictures_uploaded')),
+                label: formatMessage(getMessage('with_pictures_uploaded')),
                 value: 'with_pictures_uploaded',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'without_pictures_uploaded')),
+                label: formatMessage(getMessage('without_pictures_uploaded')),
                 value: 'without_pictures_uploaded',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'without_pictures')),
+                label: formatMessage(getMessage('without_pictures')),
                 value: 'without_pictures',
             },
         ],
@@ -930,7 +937,7 @@ const images = (formatMessage, defineMessages) => (
 );
 
 
-const videos = (formatMessage, defineMessages) => (
+const videos = formatMessage => (
     {
         name: 'videos',
         urlKey: 'videos',
@@ -938,19 +945,19 @@ const videos = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'with_videos')),
+                label: formatMessage(getMessage('with_videos')),
                 value: 'with_videos',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'with_videos_uploaded')),
+                label: formatMessage(getMessage('with_videos_uploaded')),
                 value: 'with_videos_uploaded',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'without_videos_uploaded')),
+                label: formatMessage(getMessage('without_videos_uploaded')),
                 value: 'without_videos_uploaded',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'without_videos')),
+                label: formatMessage(getMessage('without_videos')),
                 value: 'without_videos',
             },
         ],
@@ -978,7 +985,7 @@ const onlyCheckedTests = () => (
     }
 );
 
-const teamType = (formatMessage, defineMessages, teamTypeList, label = {
+const teamType = (formatMessage, teamTypeList, label = {
     id: 'main.label.team_type',
     defaultMessage: 'Type d\'équipe',
 }, placeholder = {
@@ -1051,6 +1058,32 @@ const institutions = (institutionsList, isMultiSelect = false) => (
     }
 );
 
+const problems = (formatMessage, problemsList) => (
+    {
+        name: 'problems',
+        urlKey: 'problems',
+        isMultiSelect: true,
+        isClearable: true,
+        options: problemsList.map(h =>
+            ({
+                label: formatMessage({
+                    defaultMessage: h[1],
+                    id: `vectors.label.${h[0]}`,
+                }),
+                value: h[0],
+            })),
+        placeholder: {
+            id: 'cases.label.none',
+            defaultMessage: 'Aucun',
+        },
+        label: {
+            id: 'cases.label.problems',
+            defaultMessage: 'Problèmes (déploiements uniquement)',
+        },
+        type: 'select',
+    }
+);
+
 export {
     testType,
     testTypeImage,
@@ -1089,4 +1122,5 @@ export {
     teamType,
     screenTeamType,
     institutions,
+    problems,
 };

@@ -148,6 +148,9 @@ export const fetchCatches = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
     return req
         .get(url)
         .then((result) => {
@@ -167,6 +170,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         province_id,
         zs_id,
         as_id,
+        creator,
     } = params;
     let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -382,6 +386,15 @@ export const fetchHabitats = dispatch => req
     })
     .catch((err) => {
         console.error('Error when fetching habitats', err);
+    });
+
+export const fetchProblems = dispatch => req
+    .get('/api/catchesProblems')
+    .then((result) => {
+        dispatch(vectorActions.loadProblems(result.body));
+    })
+    .catch((err) => {
+        console.error('Error when fetching catches problems', err);
     });
 
 

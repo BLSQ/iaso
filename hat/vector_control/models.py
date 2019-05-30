@@ -20,6 +20,15 @@ HABITAT_CHOICES = (
     ("stream", "Ruisseau"),
 )
 
+PROBLEMS_CHOICES = (
+    ("ants", "Fourmis"),
+    ("damaged", "Endommagé"),
+    ("fallen", "Tombé"),
+    ("flood", "Innondé"),
+    ("missing", "Manquant"),
+    ("moved", "Bougé"),
+)
+
 IMPORT_TYPE = (
     ("trap", "Trap"),
     ("site", "Site"),
@@ -250,7 +259,9 @@ class Catch(models.Model):
     start_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     end_accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     api_import = models.ForeignKey(APIImport, null=True, on_delete=CASCADE)
-    problem = models.TextField(null=True, blank=True)
+    problem = models.TextField(
+        max_length=255, choices=PROBLEMS_CHOICES, null=True, blank=True
+    )
 
     class Meta:
         verbose_name_plural = "catches"

@@ -227,7 +227,7 @@ class ManagementTeams extends React.Component {
                                 params={params}
                                 baseUrl={baseUrl}
                                 filters={[
-                                    teamType(formatMessage, defineMessages, teamTypes),
+                                    teamType(formatMessage, teamTypes),
                                 ]}
                             />
                         </div>

@@ -40,6 +40,7 @@ from .current_user import CurrentUserViewSet
 from .user_levels import UserLevelsViewSet
 from .home import HomeViewSet
 from .team_types import TeamTypeViewSet
+from .problems import ProblemsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -82,5 +83,6 @@ router.register(r"currentuser", CurrentUserViewSet, base_name="currentuser")
 router.register(r"userlevels", UserLevelsViewSet, base_name="userlevels")
 router.register(r"home", HomeViewSet, base_name="home")
 router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
+router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
 
 urlpatterns = [url(r"^", include(router.urls))]

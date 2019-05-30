@@ -65,6 +65,7 @@ class CatchesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
+        problems = request.GET.get("problems", None)
 
         queryset = Catch.objects.all()
 
@@ -73,6 +74,9 @@ class CatchesViewSet(viewsets.ViewSet):
         if to_date is not None:
             queryset = queryset.filter(setup_date__date__lte=to_date)
         queryset = queryset
+
+        if problems is not None:
+            queryset = queryset.filter(problem__in=problems.split(","))
 
         if province_ids:
             province_list = province_ids.split(",")

@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { injectIntl, FormattedMessage, defineMessages } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 
 import FiltersComponent from '../../../components/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
@@ -18,8 +18,8 @@ import {
     sites,
     traps,
     targets,
+    problems,
 } from '../../../utils/constants/filters';
-import { MESSAGES } from '../utlls/vectorMapUtils';
 
 const baseUrl = 'map';
 
@@ -57,29 +57,30 @@ class VectorFiltersComponent extends PureComponent {
                 <div className="widget__content--tier">
                     <div>
                         <FiltersComponent
-                            params={this.props.params}
+                            params={params}
                             baseUrl={baseUrl}
                             filters={[
                                 users(profiles),
                                 teams(this.props.teams),
-                                habitats(formatMessage, MESSAGES, this.props.habitats),
+                                habitats(formatMessage, this.props.habitats),
+                                problems(formatMessage, this.props.problems),
                             ]}
                         />
                     </div>
                     <div>
                         <FiltersComponent
-                            params={this.props.params}
+                            params={params}
                             baseUrl={baseUrl}
                             filters={[
-                                sites(formatMessage, defineMessages),
-                                traps(formatMessage, defineMessages),
-                                targets(formatMessage, defineMessages),
+                                sites(formatMessage),
+                                traps(formatMessage),
+                                targets(formatMessage),
                             ]}
                         />
                     </div>
                     <div>
                         <FiltersComponent
-                            params={this.props.params}
+                            params={params}
                             baseUrl={baseUrl}
                             filters={[
                                 provinces(filters.provinces || [], this.props, baseUrl),
@@ -102,6 +103,7 @@ VectorFiltersComponent.propTypes = {
     profiles: PropTypes.array.isRequired,
     teams: PropTypes.array.isRequired,
     habitats: PropTypes.array.isRequired,
+    problems: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
     filters: PropTypes.object.isRequired,
 };
@@ -115,6 +117,7 @@ const MapStateToProps = state => ({
     profiles: state.vectors.profiles,
     teams: state.vectors.teams,
     habitats: state.vectors.habitats,
+    problems: state.vectors.problems,
     filters: state.geoFilters,
 });
 

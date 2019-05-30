@@ -26,38 +26,6 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Inconnu',
         id: 'vectors.label.unknown',
     },
-    bush: {
-        defaultMessage: 'Buisson',
-        id: 'vectors.label.bush',
-    },
-    fish_pond: {
-        defaultMessage: 'Etang à poissons',
-        id: 'vectors.label.fish_pond',
-    },
-    farm: {
-        defaultMessage: 'Ferme',
-        id: 'vectors.label.farm',
-    },
-    forest: {
-        defaultMessage: 'Forêt',
-        id: 'vectors.label.forest',
-    },
-    lake: {
-        defaultMessage: 'Lac',
-        id: 'vectors.label.lake',
-    },
-    river: {
-        defaultMessage: 'Rivière',
-        id: 'vectors.label.river',
-    },
-    stream: {
-        defaultMessage: 'Ruisseau',
-        id: 'vectors.label.stream',
-    },
-    road: {
-        defaultMessage: 'Route',
-        id: 'vectors.label.road',
-    },
     cluster_title: {
         defaultMessage: 'Regroupement',
         id: 'vectors.labels.cluster_title',

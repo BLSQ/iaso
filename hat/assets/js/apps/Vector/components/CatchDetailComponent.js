@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 import moment from 'moment';
 
@@ -24,13 +25,24 @@ class CatchDetailComponent extends Component {
         });
     }
 
-
     render() {
         const { catchItem } = this.state;
         const {
             getDetail,
             toggleModal,
+            problems,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
+        let problemLabel = '--';
+        if (catchItem.problem && !!problems.length) {
+            const problemItem = problems.find(p => p[0] === catchItem.problem);
+            problemLabel = problemItem ? formatMessage({
+                defaultMessage: problemItem[1],
+                id: problemItem[0],
+            }) : '--';
+        }
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -193,7 +205,7 @@ class CatchDetailComponent extends Component {
                                                 defaultMessage="Problème"
                                             />
                                         </th>
-                                        <td>{catchItem.problem}</td>
+                                        <td>{problemLabel}</td>
                                     </tr>
                                     <tr>
                                         <th>
@@ -238,6 +250,17 @@ CatchDetailComponent.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     catch: PropTypes.object.isRequired,
     getDetail: PropTypes.func.isRequired,
+    problems: PropTypes.array.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
-export default CatchDetailComponent;
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+});
+
+const MapStateToProps = state => ({
+    problems: state.vectors.problems,
+});
+
+
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(CatchDetailComponent));

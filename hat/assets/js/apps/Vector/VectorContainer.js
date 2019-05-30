@@ -15,6 +15,7 @@ import {
     fetchProfiles,
     fetchTeams,
     fetchHabitats,
+    fetchProblems,
     saveTrap,
     saveTarget,
     saveSite,
@@ -45,6 +46,7 @@ class VectorContainer extends Component {
             fetchProfiles(dispatch),
             fetchTeams(dispatch),
             fetchHabitats(dispatch),
+            fetchProblems(dispatch),
             this.props.fetchCurrentUserInfos(),
         ];
         if (params.sites && params.tab === 'map') {

@@ -66,8 +66,13 @@ class CatchesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         problems = request.GET.get("problems", None)
-
+        search_uuid = request.GET.get("search_uuid", None)
         queryset = Catch.objects.all()
+
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
 
         if from_date is not None:
             queryset = queryset.filter(setup_date__date__gte=from_date)

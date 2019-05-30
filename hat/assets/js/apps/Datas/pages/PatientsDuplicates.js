@@ -151,7 +151,7 @@ class PatientsDuplicates extends Component {
             reduxPage,
             setDuplicatePatientList,
         } = this.props;
-        const filters1 = filtersPatients(formatMessage, defineMessages);
+        const filters1 = filtersPatients(formatMessage);
         const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
         const search = filtersDuplicatesPatientsSearch(this);
         const geo = filtersPatientsGeo(

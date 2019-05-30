@@ -487,6 +487,27 @@ const searchMotherName = component => (
     }
 );
 
+const searchUuid = component => (
+    {
+        name: 'searchUuid',
+        urlKey: 'searchUuid',
+        allowEmptySearch: true,
+        showResetSearch: true,
+        displayResults: false,
+        displayIcon: false,
+        placeholder: {
+            id: 'main.label.search',
+            defaultMessage: 'Recherche',
+        },
+        label: {
+            id: 'cases.label.searchByUuid',
+            defaultMessage: 'Recherche par Uid',
+        },
+        type: 'search',
+        onKeyPressed: () => component.onSearch(),
+    }
+);
+
 const coordinations = (coordinationsList, isMultiSelect = true) => (
     {
         name: 'coordination_id',
@@ -1096,6 +1117,7 @@ export {
     searchLastname,
     searchName,
     searchPrename,
+    searchUuid,
     coordinations,
     workZones,
     provinces,

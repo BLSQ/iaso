@@ -57,7 +57,14 @@ class TrapsViewSet(viewsets.ViewSet):
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
+        search_uuid = request.GET.get("search_uuid", None)
         queryset = Trap.objects.all()
+
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
+
         if from_date is not None:
             catch_subquery = Catch.objects.filter(setup_date__date__gte=from_date)
             trapsCatchs = [catch.trap.id for catch in catch_subquery]

@@ -39,7 +39,13 @@ class TargetsViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         queryset = Target.objects.all().order_by(*orders)
+        search_uuid = request.GET.get("search_uuid", None)
         filters = request.GET.get("targets_filter", False)
+
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
 
         if from_date is not None:
             queryset = queryset.filter(date_time__date__gte=from_date)

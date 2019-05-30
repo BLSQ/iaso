@@ -38,7 +38,6 @@ const filtersCases = (formatMessage, devices) => (
 
 const filtersCases2 = (
     formatMessage,
-    defineMessages,
     coordinationsList,
     teamsList,
 ) => (

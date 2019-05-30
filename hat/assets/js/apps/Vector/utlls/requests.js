@@ -15,6 +15,7 @@ export const fetchSites = (dispatch, params) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -31,6 +32,9 @@ export const fetchSites = (dispatch, params) => {
     }
     if (sitesFilter) {
         url += `&sites_filter=${sitesFilter}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return req
         .get(url)
@@ -52,6 +56,7 @@ export const fetchTraps = (dispatch, params) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/traps?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -71,6 +76,9 @@ export const fetchTraps = (dispatch, params) => {
     }
     if (as_id) {
         url += `&as_id=${as_id}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return req
         .get(url)
@@ -92,6 +100,7 @@ export const fetchTargets = (dispatch, params) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -112,6 +121,9 @@ export const fetchTargets = (dispatch, params) => {
     if (targetsFilter) {
         url += `&targets_filter=${targetsFilter}`;
     }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return req
         .get(url)
         .then((result) => {
@@ -131,6 +143,7 @@ export const fetchCatches = (dispatch, params) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/catches?as_location=true&from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -151,6 +164,9 @@ export const fetchCatches = (dispatch, params) => {
     if (problems) {
         url += `&problems=${problems}`;
     }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return req
         .get(url)
         .then((result) => {
@@ -170,7 +186,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         province_id,
         zs_id,
         as_id,
-        creator,
+        searchUuid,
     } = params;
     let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -190,6 +206,9 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     }
     if (sitesFilter) {
         url += `&sites_filter=${sitesFilter}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return (req
         .get(url)
@@ -211,6 +230,7 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/traps?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -234,6 +254,9 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -254,6 +277,7 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -277,6 +301,9 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -296,6 +323,7 @@ export const fetchPaginatedCatches = (dispatch, params, limit, page, order) => {
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/catches?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -315,6 +343,9 @@ export const fetchPaginatedCatches = (dispatch, params, limit, page, order) => {
     }
     if (problems) {
         url += `&problems=${problems}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return (req
         .get(url)

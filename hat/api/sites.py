@@ -58,7 +58,14 @@ class SitesViewSet(viewsets.ViewSet):
         as_ids = request.GET.get("as_id", None)
         responsible = request.GET.get("responsible", False)
         filters = request.GET.get("sites_filter", False)
+        search_uuid = request.GET.get("search_uuid", None)
         queryset = Site.objects.all()
+
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
+
         if filters:
             if filters == "assigned":
                 queryset = queryset.filter(responsible__isnull=False)

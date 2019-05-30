@@ -19,11 +19,17 @@ import {
     traps,
     targets,
     problems,
+    searchUuid,
 } from '../../../utils/constants/filters';
 
 const baseUrl = 'map';
 
 class VectorFiltersComponent extends PureComponent {
+
+    onSearch() {
+        this.props.onSearch();
+    }
+
     render() {
         const {
             params,
@@ -72,6 +78,7 @@ class VectorFiltersComponent extends PureComponent {
                             params={params}
                             baseUrl={baseUrl}
                             filters={[
+                                searchUuid(this),
                                 sites(formatMessage),
                                 traps(formatMessage),
                                 targets(formatMessage),

@@ -146,7 +146,7 @@ class Patients extends Component {
             params,
             reduxPage,
         } = this.props;
-        const filters = filtersPatients2(formatMessage, defineMessages);
+        const filters = filtersPatients2(formatMessage);
         const search = filtersPatientsSearch(devices, this);
         const geo = filtersPatientsGeo(
             workzones,

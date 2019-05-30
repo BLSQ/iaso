@@ -179,7 +179,7 @@ class SitesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(map(lambda x: x.as_dict(additional_fields), queryset))
+                return Response(map(lambda x: x.as_location(additional_fields), queryset))
         else:
             if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
                     "menupermissions.x_datas_download")) and

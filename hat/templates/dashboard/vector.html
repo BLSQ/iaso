@@ -6,6 +6,11 @@
   <h1 class="header__title">Contrôle du Vecteur</h1>
 {% endblock %}
 
+{% block extrajs %}
+    <script type="text/javascript">
+        var STATIC_URL = "{{ STATIC_URL }}";
+    </script>
+{% endblock %}
 {% block content %}
 
   <div class="content">

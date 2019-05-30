@@ -340,16 +340,16 @@ export const itemsToShow = params => [
         iconClass: 'map__option__icon--traps',
     },
     {
-        id: 'targets',
-        defaultMessage: 'Ecrans',
-        isActive: params.targets === 'true',
-        iconClass: 'map__option__icon--targets',
-    },
-    {
         id: 'catches',
         defaultMessage: 'Déploiements',
         isActive: params.catches === 'true',
         iconClass: 'map__option__icon--catches',
+    },
+    {
+        id: 'targets',
+        defaultMessage: 'Ecrans',
+        isActive: params.targets === 'true',
+        iconClass: 'map__option__icon--targets',
     },
     {
         id: 'nonEndemicVillages',

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.contrib.gis.db.models.fields import PointField
 from django.db import models
 import uuid
@@ -128,12 +129,20 @@ class Site(models.Model):
         return res
 
     def as_location(self, additional_fields):
+        flies_count = 0
+        for trap in self.trap_set.all():
+            trap_dict = trap.as_dict()
+            flies_count = flies_count + trap_dict["catches_count_total"]
         res = {
             "id": self.id,
             "name": self.name,
             "uuid": self.uuid,
             "latitude": self.location.y,
             "longitude": self.location.x,
+            "flies_count": flies_count,
+            "responsible": self.responsible.username if self.responsible else None,
+            "responsible_id": self.responsible.profile.id if self.responsible else None,
+            "responsible_user_id": self.responsible.id if self.responsible else None,
         }
 
         # include fields that were added through annotate
@@ -212,6 +221,9 @@ class Trap(models.Model):
                 "id": self.site.id,
                 "name": self.site.name,
             }
+        catches =Catch.objects.filter(trap_id=self.id)
+        catches_count = catches.count()
+        flies_count = catches.aggregate(total=Sum('male_count') + Sum('female_count') + Sum('unknown_count'))
         res = {
             "id": self.id,
             "name": self.name,
@@ -232,6 +244,8 @@ class Trap(models.Model):
             "is_selected": self.is_selected,
             "uuid": self.uuid,
             "river": self.river,
+            "catches_count": catches_count,
+            "catches_count_total": flies_count["total"] if flies_count["total"] else 0,
         }
 
         # include fields that were added through annotate

@@ -339,7 +339,7 @@ class TrapsViewSet(viewsets.ViewSet):
                 new_traps.append(new_trap)
                 new_trap.save()
 
-        return Response([trap.as_dict() for trap in new_traps])
+        return Response([trap.as_location() for trap in new_traps])
 
     def update(self, request, pk=None):
         new_trap = get_object_or_404(Trap, pk=pk)

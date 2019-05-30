@@ -562,6 +562,7 @@ class Map extends Component {
         );
     }
 }
+
 Map.defaultProps = {
     planningId: '',
     baseLayer: '',

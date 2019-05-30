@@ -129,7 +129,7 @@ class CatchesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
 
-            return Response(map(lambda x: x.as_dict(), queryset))
+            return Response(map(lambda x: x.as_location(), queryset))
         else:
             if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
                     "menupermissions.x_datas_download")) and

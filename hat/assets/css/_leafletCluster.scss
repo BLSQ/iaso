@@ -240,6 +240,34 @@
 .marker-custom {
     background-clip: padding-box;
     border-radius: 100%;
+    &.with-icon {
+        img {
+            width: 20px;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+            margin-bottom: -10px;
+        }
+        >div {
+            width: 35px !important;
+            height: 35px !important;
+            text-align: center;
+            font-size: 9px;
+        }
+        &.small {
+            img {
+                margin-bottom: -5px;
+            }
+            >div {
+                font-size: 10px;
+            }
+        }
+        &.big-icon {
+            img {
+                width: 25px;
+            }
+        }
+    }
 }
 
 .marker-cluster div,

@@ -1,3 +1,4 @@
+/* globals STATIC_URL */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
@@ -24,10 +25,11 @@ import { includeDrawTools, getMarkersInShape } from '../../../utils/map/drawMapU
 
 let exportControl;
 
-const renderDivIcon = (content, key, size) => L.divIcon({
+const renderDivIcon = (content, key, size, count = null) => L.divIcon({
     html: `<div><span>${content}</span></div>`,
     className: `marker-cluster marker-cluster-${key}`,
     iconSize: L.point(size, size),
+    count,
 });
 
 class VectorMapComponent extends Component {
@@ -147,6 +149,8 @@ class VectorMapComponent extends Component {
     /* ***************************************************************************
    * UPDATE STATE
    *************************************************************************** */
+
+
     updateMarkers(key, group, items) {
         const {
             withCluster,
@@ -158,7 +162,22 @@ class VectorMapComponent extends Component {
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
             clusterPane: 'custom-markers',
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), key, 40),
+            iconCreateFunction: (cluster) => {
+                if (key === 'sites') {
+                    const markers = cluster.getAllChildMarkers();
+                    let fliesCount = 0;
+                    markers.forEach((m) => {
+                        fliesCount += m.options.icon.options.count;
+                    });
+                    return renderDivIcon(
+                        `<span><img src="${STATIC_URL}images/flies.png" alt="" />${fliesCount} </span>`,
+                        `${key} with-icon big-icon`,
+                        45,
+                        fliesCount,
+                    );
+                }
+                return renderDivIcon(cluster.getChildCount(), key, 40);
+            },
         });
         group.clearLayers();
 
@@ -176,10 +195,19 @@ class VectorMapComponent extends Component {
                     extraClass = 'not-assigned';
                 }
             }
+            let icon = renderDivIcon('', `${key} small bordered ${extraClass}`, 30);
+            if (key === 'sites') {
+                icon = renderDivIcon(
+                    `<span><img src="${STATIC_URL}images/favicon.png" alt="" />${item.flies_count} </span>`,
+                    `${key} small bordered ${extraClass} with-icon`,
+                    45,
+                    item.flies_count,
+                );
+            }
             const marker = L.marker(
                 [item.latitude, item.longitude],
                 {
-                    icon: renderDivIcon('', `${key} small bordered ${extraClass}`, 30),
+                    icon,
                     pane: 'custom-markers',
                 },
             );

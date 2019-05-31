@@ -2,6 +2,7 @@ import moment from 'moment';
 
 export const FETCH_ACTION = 'hat/home/FETCH_ACTION';
 export const SET_GEO_ZONES = 'hat/home/SET_GEO_ZONES';
+export const SET_GEO_PROVINCES = 'hat/home/SET_GSET_GEO_PROVINCESEO_ZONES';
 export const SET_ZONES = 'hat/home/SET_ZONES';
 export const SET_BAR_CHART_DATAS = 'hat/home/SET_BAR_CHART_DATAS';
 
@@ -9,6 +10,11 @@ const req = require('superagent');
 
 const setGeoZones = payload => ({
     type: SET_GEO_ZONES,
+    payload,
+});
+
+const setGeoProvinces = payload => ({
+    type: SET_GEO_PROVINCES,
     payload,
 });
 
@@ -23,11 +29,11 @@ const setBarChartDatas = payload => ({
 });
 
 
-export const fetchGeoZones = (dispatch) => {
+export const fetchGeoJson = (dispatch) => {
     const currentYear = new Date().getFullYear() - 1;
     const years = [1, 2, 3].map(i => currentYear - i);
     req
-        .get(`/api/home/?map=true&years=${years}&with_geo_json=true`)
+        .get(`/api/home/?map=true&years=${years}`)
         .set('Content-Type', 'application/json')
         .then((res) => {
             dispatch(setZones(res.body));
@@ -35,10 +41,11 @@ export const fetchGeoZones = (dispatch) => {
                 .get('/api/home/?map=true&geojson=true')
                 .set('Content-Type', 'application/json')
                 .then((resGoe) => {
-                    dispatch(setGeoZones(resGoe.body));
+                    dispatch(setGeoZones(resGoe.body.zones));
+                    dispatch(setGeoProvinces(resGoe.body.provinces));
                 })
                 .catch((err) => {
-                    console.error(`Error while loading geo zones: ${err}`);
+                    console.error(`Error while loading geo json: ${err}`);
                 });
         })
         .catch((err) => {
@@ -79,12 +86,13 @@ export const fetchChartBarDatas = (dispatch) => {
 
 export const homeInitialState = {
     geoZones: null,
+    geoProvinces: null,
     zones: [],
     barChartDatas: [],
 };
 
 export const homeActions = {
-    fetchGeoZones,
+    fetchGeoJson,
     fetchChartBarDatas,
 };
 
@@ -102,6 +110,14 @@ export const homeReducer = (state = homeInitialState, action = {}) => {
             return {
                 ...state,
                 geoZones,
+            };
+        }
+
+        case SET_GEO_PROVINCES: {
+            const geoProvinces = action.payload;
+            return {
+                ...state,
+                geoProvinces,
             };
         }
 

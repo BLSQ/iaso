@@ -1217,12 +1217,12 @@ button {
 
 #home-map {
     position: relative;
-    width: 700px !important;
+    width: 800px !important;
     .map-container {
         height: 720px;
     }
     .map-parent-container {
-        width: 700px !important;
+        width: 800px !important;
         .leaflet-control-attribution {
             display: none;
         }
@@ -1397,10 +1397,6 @@ $filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
             filter: $filter;
         }
     }
-}
-
-.home-zones {
-    cursor: default ! important;
 }
 
 .legend {

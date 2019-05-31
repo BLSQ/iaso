@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import ZS
+from hat.geo.models import ZS, Province
 from django.db.models import Q
 from django.db.models import Count
 from hat.cases.models import RES_POSITIVE
@@ -54,10 +54,17 @@ class HomeViewSet(viewsets.ViewSet):
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values.append('nr_positive_cases')
             if as_geo_json:
-                queryset = queryset.filter(geom__isnull=False)
-                geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
-                cache.set(absolute_url, geo_json, cacheValue)
-                return Response(geo_json)
+                zones = queryset.filter(geom__isnull=False)
+                zones_provinces_ids = zones.values('province_id').distinct('province_id')
+                provinces = Province.objects.all().exclude(id__in=zones_provinces_ids).filter(geom__isnull=False)
+                zones_geo_json = geojson_queryset(zones, geometry_field='simplified_geom', fields=['name', 'province'])
+                provinces_geo_json = geojson_queryset(provinces, geometry_field='simplified_geom', fields=['name'])
+                cache.set(absolute_url, zones_geo_json, cacheValue)
+                cache.set(absolute_url, provinces_geo_json, cacheValue)
+                return Response({
+                    "zones": zones_geo_json,
+                    "provinces": provinces_geo_json,
+                })
             else:
                 cache.set(absolute_url, queryset.values(*values).order_by('name'), cacheValue)
                 return Response(queryset.values(*values).order_by('name'))

@@ -12,7 +12,7 @@ import HomeBarChart from '../components/HomeBarChart';
 class Home extends Component {
     componentWillMount() {
         this.props.fetchCurrentUserInfos();
-        this.props.fetchGeoZones();
+        this.props.fetchGeoJson();
         this.props.fetchChartBarDatas();
     }
 
@@ -23,6 +23,7 @@ class Home extends Component {
             },
             currentUser,
             geoZones,
+            geoProvinces,
             zones,
             barChartDatas,
         } = this.props;
@@ -46,18 +47,46 @@ class Home extends Component {
                                 <img src={`${STATIC_URL}images/pnltha-logo.png`} alt="PNLTHA logo" />
                             </div>
                             <p>
-                                <FormattedMessage id="home.titleText" defaultMessage="Republique Democratique du Congo, Ministere de la Santé Publique, Programme National de Lutte contre la THA (PNLTHA)." />
+                                <FormattedMessage
+                                    id="home.titleText"
+                                    defaultMessage="Republique Democratique du Congo, Ministere de la Santé Publique, Programme National de Lutte contre la THA (PNLTHA)."
+                                />
                             </p>
                         </div>
                     </div>
                 </section>
                 <section className="section--feature--pilot-area">
                     <div className="section__content--pilot-area">
-                        <h2><FormattedMessage id="home.subTitle" defaultMessage="Mission du Programme" /></h2>
-                        <p><FormattedMessage id="home.text" defaultMessage="Coordonner et Organiser la lutte contre la THA en R.D.Congo" /></p>
-                        <h2><FormattedMessage id="home.subTitle2" defaultMessage="Objectif du Programme" /></h2>
-                        <p><FormattedMessage id="home.text2" defaultMessage="Réduire la morbidité et la mortalité due au THA à un niveau compatible avec une vie productive normale pour les habitants des zones où la maladie est endémique (1 cas par 10000 habitants)" /></p>
-                        <h2><FormattedMessage id="home.subTitle3" defaultMessage="Organisation du Programme" /></h2>
+                        <h2>
+                            <FormattedMessage
+                                id="home.subTitle"
+                                defaultMessage="Mission du Programme"
+                            />
+                        </h2>
+                        <p>
+                            <FormattedMessage
+                                id="home.text"
+                                defaultMessage="Coordonner et Organiser la lutte contre la THA en R.D.Congo"
+                            />
+                        </p>
+                        <h2>
+                            <FormattedMessage
+                                id="home.subTitle2"
+                                defaultMessage="Objectif du Programme"
+                            />
+                        </h2>
+                        <p>
+                            <FormattedMessage
+                                id="home.text2"
+                                defaultMessage="Réduire la morbidité et la mortalité due au THA à un niveau compatible avec une vie productive normale pour les habitants des zones où la maladie est endémique (1 cas par 10000 habitants)"
+                            />
+                        </p>
+                        <h2>
+                            <FormattedMessage
+                                id="home.subTitle3"
+                                defaultMessage="Organisation du Programme"
+                            />
+                        </h2>
                         <p>
                             <strong><FormattedMessage id="home.text3Strong" defaultMessage="Niveau Central" />: </strong>
                             <FormattedMessage id="home.text3" defaultMessage="Normatif et élaborer des stratégies et appui technique au niveau provincial" />:
@@ -80,10 +109,11 @@ class Home extends Component {
                     </div>
                     <div className="section__content__image--pilot-area" id="home-map">
                         {
-                            geoZones &&
+                            geoZones && geoProvinces &&
                             <HomeMap
                                 overlays={{ labels: false }}
                                 geoZones={geoZones}
+                                geoProvinces={geoProvinces}
                                 zones={zones}
                             />
                         }
@@ -122,10 +152,16 @@ class Home extends Component {
                     </div>
                     <div className="section__content--reports">
                         <h2>
-                            <FormattedMessage id="home.subTitle4" defaultMessage="Voir les rapports de campagne mensuels" />
+                            <FormattedMessage
+                                id="home.subTitle4"
+                                defaultMessage="Voir les rapports de campagne mensuels"
+                            />
                         </h2>
                         <p>
-                            <FormattedMessage id="home.text6" defaultMessage="Rapport montrant les statistiques mensuel et annuel sur les dépistages actifs et passifs de la THA, les statistiques comprenent le nombre de cas suspects confirmé, la PTR, la PTE et plus encore." />
+                            <FormattedMessage
+                                id="home.text6"
+                                defaultMessage="Rapport montrant les statistiques mensuel et annuel sur les dépistages actifs et passifs de la THA, les statistiques comprenent le nombre de cas suspects confirmé, la PTR, la PTE et plus encore."
+                            />
                         </p>
                         {
                             userHasPermission(currentUser.permissions, currentUser.user, 'x_stats_reports') &&
@@ -146,7 +182,8 @@ class Home extends Component {
                             <p>
                                 <FormattedMessage
                                     id="home.text7"
-                                    defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."/>
+                                    defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."
+                                />
                             </p>
 
                             <a href="/dashboard/datas/tests?suspect=true" className="button--bright">
@@ -175,15 +212,17 @@ class Home extends Component {
 }
 Home.defaultProps = {
     geoZones: null,
+    geoProvinces: null,
 };
 
 Home.propTypes = {
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
-    fetchGeoZones: PropTypes.func.isRequired,
+    fetchGeoJson: PropTypes.func.isRequired,
     fetchChartBarDatas: PropTypes.func.isRequired,
     geoZones: PropTypes.object,
+    geoProvinces: PropTypes.object,
     barChartDatas: PropTypes.array.isRequired,
     zones: PropTypes.array.isRequired,
 };
@@ -191,6 +230,7 @@ Home.propTypes = {
 const MapStateToProps = state => ({
     currentUser: state.currentUser,
     geoZones: state.home.geoZones,
+    geoProvinces: state.home.geoProvinces,
     barChartDatas: state.home.barChartDatas,
     zones: state.home.zones,
     isAreasloading: state.home.isAreasloading,
@@ -198,7 +238,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch, true)),
-    fetchGeoZones: () => dispatch(homeActions.fetchGeoZones(dispatch)),
+    fetchGeoJson: () => dispatch(homeActions.fetchGeoJson(dispatch)),
     fetchChartBarDatas: () => dispatch(homeActions.fetchChartBarDatas(dispatch)),
 });
 

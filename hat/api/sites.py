@@ -1,12 +1,16 @@
+import operator
+from functools import reduce
+
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import OuterRef, Exists, Count
+from django.db.models import Q
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-from django.db.models import Q
 
 from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user, Profile
@@ -14,7 +18,6 @@ from hat.vector_control.models import Site, APIImport, Trap, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
-from django.contrib.auth.models import User
 
 
 class SitesViewSet(viewsets.ViewSet):
@@ -76,25 +79,25 @@ class SitesViewSet(viewsets.ViewSet):
             if filters == "not_ignored":
                 queryset = queryset.filter(ignore=False)
 
-        if from_date is not None:
-            trap_subquery = Trap.objects.filter(created_at__date__gte=from_date)
-            sitesTraps = [trap.site.id for trap in trap_subquery]
-            catch_subquery = Catch.objects.filter(setup_date__date__gte=from_date)
-            sitesCatchs = [catch.trap.site.id for catch in catch_subquery]
+        if from_date is not None or to_date is not None:
+            trap_subquery = Trap.objects.filter(site_id=OuterRef("id"))
+            catch_subquery = Catch.objects.filter(trap__site_id=OuterRef("id"))
+            site_conditions = []
+            if from_date is not None:
+                trap_subquery = trap_subquery.filter(created_at__date__gte=from_date)
+                catch_subquery = catch_subquery.filter(setup_date__date__gte=from_date)
+                site_conditions.append(Q(created_at__date__gte=from_date))
+            if to_date is not None:
+                trap_subquery = trap_subquery.filter(created_at__date__lte=to_date)
+                catch_subquery = catch_subquery.filter(setup_date__date__lte=to_date)
+                site_conditions.append(Q(created_at__date__lte=to_date))
+
+            queryset = queryset.annotate(trap_in_date_range=Exists(trap_subquery))
+            queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
             queryset = queryset.filter(
-                Q(created_at__date__gte=from_date)
-                | Q(id__in=sitesTraps)
-                | Q(id__in=sitesCatchs)
-            )
-        if to_date is not None:
-            trap_subquery = Trap.objects.filter(created_at__date__lte=to_date)
-            sitesTraps = [trap.site.id for trap in trap_subquery]
-            catch_subquery = Catch.objects.filter(setup_date__date__lte=to_date)
-            sitesCatchs = [catch.trap.site.id for catch in catch_subquery]
-            queryset = queryset.filter(
-                Q(created_at__date__lte=to_date)
-                | Q(id__in=sitesTraps)
-                | Q(id__in=sitesCatchs)
+                (reduce(operator.and_, site_conditions)
+                 | Q(trap_in_date_range=True)
+                 | Q(catch_in_date_range=True))
             )
 
         if user_ids is not None:
@@ -157,6 +160,7 @@ class SitesViewSet(viewsets.ViewSet):
         additional_fields = ["traps_count"]
         queryset = queryset.annotate(traps_count=Count("trap"))
         queryset = queryset.order_by(*orders)
+        queryset = queryset.prefetch_related("trap_set")
 
         if csv_format is None and xlsx_format is None:
             if limit:

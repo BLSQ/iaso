@@ -1,3 +1,6 @@
+import operator
+from functools import reduce
+
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import OuterRef, Exists, Count, Sum
@@ -65,21 +68,22 @@ class TrapsViewSet(viewsets.ViewSet):
                 Q(uuid__icontains=search_uuid)
             )
 
-        if from_date is not None:
-            catch_subquery = Catch.objects.filter(setup_date__date__gte=from_date)
-            trapsCatchs = [catch.trap.id for catch in catch_subquery]
+        if from_date is not None or to_date is not None:
+            catch_subquery = Catch.objects.filter(trap_id=OuterRef("id"))
+            trap_conditions = []
+            if from_date is not None:
+                catch_subquery = catch_subquery.filter(setup_date__date__gte=from_date)
+                trap_conditions.append(Q(created_at__date__gte=from_date))
+            if to_date is not None:
+                catch_subquery = catch_subquery.filter(setup_date__date__lte=to_date)
+                trap_conditions.append(Q(created_at__date__lte=to_date))
+
+            queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
             queryset = queryset.filter(
-                Q(created_at__date__gte=from_date)
-                | Q(id__in=trapsCatchs)
+                (reduce(operator.and_, trap_conditions)
+                 | Q(catch_in_date_range=True))
             )
-        if to_date is not None:
-            queryset = queryset.filter(created_at__date__lte=to_date)
-            catch_subquery = Catch.objects.filter(setup_date__date__lte=to_date)
-            trapsCatchs = [catch.trap.id for catch in catch_subquery]
-            queryset = queryset.filter(
-                Q(created_at__date__lte=to_date)
-                | Q(id__in=trapsCatchs)
-            )
+
         if user_ids is not None:
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
@@ -162,6 +166,7 @@ class TrapsViewSet(viewsets.ViewSet):
             + Sum("catch__female_count")
         )
         queryset = queryset.order_by(*orders)
+        queryset = queryset.prefetch_related("catch_set")
 
         if csv_format is None and xlsx_format is None:
             if limit:

@@ -63,8 +63,8 @@ class CatchesViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        orders = request.GET.get("order", "created_at").split(",")
-        user_ids = request.GET.get("userId", None)
+        orders = request.GET.get("order", "collect_date,setup_date").split(",")
+        # user_ids = request.GET.get("userId", None)
         problems = request.GET.get("problems", None)
         search_uuid = request.GET.get("search_uuid", None)
         queryset = Catch.objects.all()
@@ -104,6 +104,8 @@ class CatchesViewSet(viewsets.ViewSet):
             )
             queryset = queryset.annotate(in_as=Exists(as_subquery)).filter(in_as=True)
 
+        queryset = queryset.order_by(*orders)
+        queryset = queryset.prefetch_related("trap")
 
         if csv_format is None and xlsx_format is None:
             if as_location:

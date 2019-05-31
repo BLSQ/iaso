@@ -53,8 +53,13 @@ class HomeMap extends Component {
     }
 
     createMap() {
-        const map = L.map(this.mapNode, { zoomControl: false, dragging: false });
-        map.createPane('custom-pane-shapes');
+        const map = L.map(this.mapNode, {
+            zoomControl: false,
+            dragging: false,
+            zoomSnap: 0.1,
+        });
+        map.createPane('custom-pane-provinces');
+        map.createPane('custom-pane-zones');
         this.map = map;
     }
 
@@ -87,14 +92,23 @@ class HomeMap extends Component {
         const { map } = this;
         this.zonesGroup = new L.FeatureGroup();
         map.addLayer(this.zonesGroup);
+        this.provincesGroup = new L.FeatureGroup();
+        map.addLayer(this.provincesGroup);
     }
 
     updateShapes() {
-        const { zones, geoZones } = this.props;
+        const { zones, geoZones, geoProvinces } = this.props;
+        this.provincesGroup.clearLayers();
+        const provincesShapes = L.geoJSON(geoProvinces, {
+            pane: 'custom-pane-provinces',
+            className: 'home-provinces',
+        });
+        provincesShapes.addTo(this.provincesGroup);
+
         const mappedGeoZones = mapZonesDatas(zones, geoZones);
         this.zonesGroup.clearLayers();
         const zonesShapes = L.geoJSON(mappedGeoZones, {
-            pane: 'custom-pane-shapes',
+            pane: 'custom-pane-zones',
             className: 'home-zones',
             style(feature) {
                 const tempStyle = {
@@ -108,10 +122,11 @@ class HomeMap extends Component {
 
     fitToBounds() {
         const { map } = this;
-        const bounds = this.zonesGroup.getBounds();
+        const group = new L.FeatureGroup([this.zonesGroup, this.provincesGroup]);
+        const bounds = group.getBounds();
         setTimeout(() => {
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { maxZoom: 20, padding: [5, 5] });
+                map.fitBounds(group.getBounds(), { maxZoom: 20, padding: [-10, -10] });
             }
             map.invalidateSize();
         }, 1);
@@ -128,6 +143,7 @@ class HomeMap extends Component {
 
 HomeMap.propTypes = {
     geoZones: PropTypes.object.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
     zones: PropTypes.array.isRequired,
     intl: intlShape.isRequired,
 };

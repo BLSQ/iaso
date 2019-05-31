@@ -250,6 +250,10 @@ $directions: left right top bottom;
     padding-top: $padding-unit/2;
 }
 
+.small-padding-top {
+    padding-top: $padding-unit/4;
+}
+
 .padding-right {
     padding-right: $padding-unit/2;
 }
@@ -285,6 +289,15 @@ $directions: left right top bottom;
 .margin-top {
     margin-top: $padding-unit/2;
 }
+
+.inline-block {
+    display: inline-block !important;
+}
+
+.width-auto {
+    width: auto !important;
+}
+
 
 .text-padding-left {
     display: inline-block;
@@ -366,4 +379,11 @@ $directions: left right top bottom;
 .success-text {
     background: transparent;
     color: green;
+}
+
+.bordered {
+    border: 1px solid $gray;
+    &.round {
+        border-radius: 5px;
+    }
 }

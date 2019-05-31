@@ -1,6 +1,11 @@
+import operator
+from functools import reduce
+
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import OuterRef, Exists, Count
+from django.db.models import Q
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -9,7 +14,7 @@ from rest_framework.response import Response
 
 from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user, Profile
-from hat.vector_control.models import Site, APIImport, Trap
+from hat.vector_control.models import Site, APIImport, Trap, Catch
 from .authentication import CsrfExemptSessionAuthentication
 from .catches import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
@@ -55,12 +60,46 @@ class SitesViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         responsible = request.GET.get("responsible", False)
+        filters = request.GET.get("sites_filter", False)
+        search_uuid = request.GET.get("search_uuid", None)
         queryset = Site.objects.all()
 
-        if from_date is not None:
-            queryset = queryset.filter(created_at__date__gte=from_date)
-        if to_date is not None:
-            queryset = queryset.filter(created_at__date__lte=to_date)
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
+
+        if filters:
+            if filters == "assigned":
+                queryset = queryset.filter(responsible__isnull=False)
+            if filters == "not_assigned":
+                queryset = queryset.filter(responsible__isnull=True)
+            if filters == "ignored":
+                queryset = queryset.filter(ignore=True)
+            if filters == "not_ignored":
+                queryset = queryset.filter(ignore=False)
+
+        if from_date is not None or to_date is not None:
+            trap_subquery = Trap.objects.filter(site_id=OuterRef("id"))
+            catch_subquery = Catch.objects.filter(trap__site_id=OuterRef("id"))
+            site_conditions = []
+            if from_date is not None:
+                trap_subquery = trap_subquery.filter(created_at__date__gte=from_date)
+                catch_subquery = catch_subquery.filter(setup_date__date__gte=from_date)
+                site_conditions.append(Q(created_at__date__gte=from_date))
+            if to_date is not None:
+                trap_subquery = trap_subquery.filter(created_at__date__lte=to_date)
+                catch_subquery = catch_subquery.filter(setup_date__date__lte=to_date)
+                site_conditions.append(Q(created_at__date__lte=to_date))
+
+            queryset = queryset.annotate(trap_in_date_range=Exists(trap_subquery))
+            queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
+            queryset = queryset.filter(
+                (reduce(operator.and_, site_conditions)
+                 | Q(trap_in_date_range=True)
+                 | Q(catch_in_date_range=True))
+            )
+
         if user_ids is not None:
             queryset = queryset.filter(creator_id__in=user_ids.split(","))
 
@@ -121,6 +160,7 @@ class SitesViewSet(viewsets.ViewSet):
         additional_fields = ["traps_count"]
         queryset = queryset.annotate(traps_count=Count("trap"))
         queryset = queryset.order_by(*orders)
+        queryset = queryset.prefetch_related("trap_set")
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -143,7 +183,7 @@ class SitesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(map(lambda x: x.as_dict(additional_fields), queryset))
+                return Response(map(lambda x: x.as_location(additional_fields), queryset))
         else:
             if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
                     "menupermissions.x_datas_download")) and
@@ -254,6 +294,7 @@ class SitesViewSet(viewsets.ViewSet):
                 new_site.habitat = site.get("habitat", None)
                 new_site.accuracy = site.get("accuracy", None)
                 new_site.description = site.get("description", None)
+                new_site.ignore = request.data.get("ignore", False)
                 t = site.get("time", None)
                 if t:
                     new_site.created_at = timestamp_to_utc_datetime(int(t))
@@ -276,37 +317,52 @@ class SitesViewSet(viewsets.ViewSet):
         return Response([site.as_dict() for site in new_sites])
 
     def update(self, request, pk=None):
-        new_site = get_object_or_404(Site, pk=pk)
-        province = (
-            Province.objects.filter(geom__contains=new_site.location).first()
-            if Province.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        zone = (
-            ZS.objects.filter(geom__contains=new_site.location).first()
-            if ZS.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        area = (
-            AS.objects.filter(geom__contains=new_site.location).first()
-            if AS.objects.filter(geom__contains=new_site.location).count() > 0
-            else None
-        )
-        is_authorized = (province is None and zone is None and area is None) or (
-            (province is not None and zone is not None and area is not None)
-            and is_authorized_user(request.user, province.id, zone.id, area.id)
-        )
+        site_ids = request.data.get("sites", None)
+        if not site_ids:
+            new_site = get_object_or_404(Site, pk=pk)
+            province = (
+                Province.objects.filter(geom__contains=new_site.location).first()
+                if Province.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            zone = (
+                ZS.objects.filter(geom__contains=new_site.location).first()
+                if ZS.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            area = (
+                AS.objects.filter(geom__contains=new_site.location).first()
+                if AS.objects.filter(geom__contains=new_site.location).count() > 0
+                else None
+            )
+            is_authorized = (province is None and zone is None and area is None) or (
+                (province is not None and zone is not None and area is not None)
+                and is_authorized_user(request.user, province.id, zone.id, area.id)
+            )
 
-        if is_authorized:
-            profile_id = request.data.get("responsible_id", None)
-            if profile_id:
-                profile = get_object_or_404(Profile, pk=profile_id)
-                new_site.responsible = profile.user
-            new_site.name = request.data.get("name", "")
-            new_site.description = request.data.get("description", "")
-            new_site.ignore = request.data.get("ignore", False)
+            if is_authorized:
+                profile_id = request.data.get("responsible_id", None)
+                if profile_id:
+                    profile = get_object_or_404(Profile, pk=profile_id)
+                    new_site.responsible = profile.user
+                else:
+                    new_site.responsible = None
+                new_site.name = request.data.get("name", "")
+                new_site.description = request.data.get("description", "")
+                new_site.ignore = request.data.get("ignore", False)
 
-            new_site.save()
-            return Response(new_site.as_dict())
+                new_site.save()
+                return Response(new_site.as_dict())
+            else:
+                return Response("Unauthorized", status=401)
         else:
-            return Response("Unauthorized", status=401)
+            profile_id = request.data.get("responsibleId", None)
+            user = get_object_or_404(User, profile__id=profile_id)
+            if site_ids:
+                for site_id in site_ids:
+                    current_site = get_object_or_404(Site, pk=site_id)
+                    current_site.responsible = user
+                    current_site.save()
+                return Response("done")
+
+

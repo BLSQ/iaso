@@ -26,27 +26,26 @@ import {
 } from '../../../utils/constants/filters';
 
 // CASES
-const filtersCases = (formatMessage, defineMessages, devices) => (
+const filtersCases = (formatMessage, devices) => (
     [
-        testType(formatMessage, defineMessages),
-        screeningResult(formatMessage, defineMessages),
-        confirmationResult(formatMessage, defineMessages),
-        source(formatMessage, defineMessages),
+        testType(formatMessage),
+        screeningResult(formatMessage),
+        confirmationResult(formatMessage),
+        source(formatMessage),
         device(devices),
     ]
 );
 
 const filtersCases2 = (
     formatMessage,
-    defineMessages,
     coordinationsList,
     teamsList,
 ) => (
     [
         coordinations(coordinationsList),
         teams(teamsList),
-        located(formatMessage, defineMessages),
-        testerType(formatMessage, defineMessages),
+        located(formatMessage),
+        testerType(formatMessage),
     ]
 );
 
@@ -71,32 +70,29 @@ const filtersCasesGeo = (
 
 // PATIENTS
 
-const filtersPatients = (formatMessage, defineMessages) => (
+const filtersPatients = formatMessage => (
     [
-        testType(formatMessage, defineMessages),
-        screeningResult(formatMessage, defineMessages),
-        confirmationResult(formatMessage, defineMessages),
+        testType(formatMessage),
+        screeningResult(formatMessage),
+        confirmationResult(formatMessage),
     ]
 );
 
-const filtersPatients2 = (
-    formatMessage,
-    defineMessages,
-) => (
+const filtersPatients2 = formatMessage => (
     [
-        testType(formatMessage, defineMessages),
-        screeningResult(formatMessage, defineMessages),
-        confirmationResult(formatMessage, defineMessages),
-        images(formatMessage, defineMessages),
-        videos(formatMessage, defineMessages),
+        testType(formatMessage),
+        screeningResult(formatMessage),
+        confirmationResult(formatMessage),
+        images(formatMessage),
+        videos(formatMessage),
     ]
 );
 
-const filtersPatientsTreatments = (teamsList, formatMessage, defineMessages) => (
+const filtersPatientsTreatments = (teamsList, formatMessage) => (
     [
         teams(teamsList),
         medecine(formatMessage),
-        testerType(formatMessage, defineMessages),
+        testerType(formatMessage),
         onlyTreatedPatients(),
         onlyDead(),
         onlyDupes(),
@@ -113,14 +109,14 @@ const filtersPatientsDuplicates = (
     ]
 );
 
-const filtersCasesSearch = (formatMessage, defineMessages, component) => (
+const filtersCasesSearch = (formatMessage, component) => (
     [
         searchLastname(component),
         searchName(component),
         searchPrename(component),
         searchMotherName(component),
-        images(formatMessage, defineMessages),
-        videos(formatMessage, defineMessages),
+        images(formatMessage),
+        videos(formatMessage),
     ]
 );
 

@@ -175,7 +175,7 @@ def locator(request: HttpRequest) -> HttpResponse:
 @permission_required('menupermissions.x_vectorcontrol')
 @require_http_methods(['GET'])
 def vector(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector"))})
+    return render(request, 'dashboard/vector.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:vector"))})
 
 @is_user_authorized
 @login_required()

@@ -2,12 +2,13 @@ import moment from 'moment';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
-const trapsColumns = (formatMessage, messages, element) => (
+const trapsColumns = (formatMessage, messages, getDetail) => (
     [
         {
             Header: 'UUID',
             className: 'small',
             accessor: 'uuid',
+            width: 250,
         },
         {
             Header: formatMessage({
@@ -108,22 +109,12 @@ const trapsColumns = (formatMessage, messages, element) => (
             width: 220,
             Cell: settings => (
                 <section>
-                    {
-                        settings.original.catches_count > 0 &&
-                        <button
-                            className="button--edit--tiny margin-right"
-                            onClick={() => element.displayCatches(settings.original, true)}
-                        >
-                            <i className="fa fa-eye" />
-                            <FormattedMessage id="main.label.catches" defaultMessage="Déploiements" />
-                        </button>
-                    }
                     <button
                         className="button--edit--tiny"
-                        onClick={() => element.editItem('trap', settings.original)}
+                        onClick={() => getDetail(settings.original.id, 'traps', 'showEditTrapsModale')}
                     >
                         <i className="fa fa-pencil-square-o" />
-                        <FormattedMessage id="main.label.detail" defaultMessage="Détails" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
                     </button>
                 </section>
             ),
@@ -131,4 +122,3 @@ const trapsColumns = (formatMessage, messages, element) => (
     ]
 );
 export default trapsColumns;
-

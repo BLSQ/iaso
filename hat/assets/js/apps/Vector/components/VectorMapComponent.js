@@ -1,9 +1,12 @@
+/* globals STATIC_URL */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
 import { renderVillagesPopup } from '../utlls/vectorMapUtils';
 import 'leaflet.markercluster'; // eslint-disable-line
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
@@ -16,14 +19,17 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
+
+import { includeDrawTools, getMarkersInShape } from '../../../utils/map/drawMapUtils';
 
 let exportControl;
 
-const renderDivIcon = (content, key, size) => L.divIcon({
+const renderDivIcon = (content, key, size, count = null) => L.divIcon({
     html: `<div><span>${content}</span></div>`,
     className: `marker-cluster marker-cluster-${key}`,
     iconSize: L.point(size, size),
+    count,
 });
 
 class VectorMapComponent extends Component {
@@ -36,12 +42,14 @@ class VectorMapComponent extends Component {
                 area: false,
             },
             containers: {},
+            drawEnabled: false,
         };
     }
 
     componentDidMount() {
         this.createMap();
         includeControlsInMap(this, this.map, true);
+
         this.sitesGroup = new L.FeatureGroup();
         this.map.addLayer(this.sitesGroup);
 
@@ -51,6 +59,9 @@ class VectorMapComponent extends Component {
         this.targetsGroup = new L.FeatureGroup();
         this.map.addLayer(this.targetsGroup);
 
+        this.catchesGroup = new L.FeatureGroup();
+        this.map.addLayer(this.catchesGroup);
+
         this.nonEndemicVillagesGroup = new L.FeatureGroup();
         this.map.addLayer(this.nonEndemicVillagesGroup);
 
@@ -58,6 +69,7 @@ class VectorMapComponent extends Component {
         this.map.addLayer(this.endemicVillagesGroup);
 
         includeDefaultLayersInMap(this);
+        includeDrawTools(this.map, this.props.intl.formatMessage, shape => this.onShapeClick(shape));
         updateBaseLayer(this.map, this.props.baseLayer);
         this.fitToBounds();
     }
@@ -76,6 +88,7 @@ class VectorMapComponent extends Component {
                 this.updateMarkers('sites', this.sitesGroup, this.props.sites);
                 this.updateMarkers('targets', this.targetsGroup, this.props.targets);
                 this.updateMarkers('traps', this.trapsGroup, this.props.traps);
+                this.updateMarkers('catches', this.catchesGroup, this.props.catches);
             }
 
             if (hasChanged(prevProps, this.props, 'nonEndemicVillages')) {
@@ -84,7 +97,11 @@ class VectorMapComponent extends Component {
             if (hasChanged(prevProps, this.props, 'endemicVillages')) {
                 this.updateVillages(true);
             }
-            if (hasChanged(prevProps, this.props, 'sites')) {
+            if (hasChanged(prevProps, this.props, 'sites') ||
+                prevProps.params.assignedToUser !== this.props.params.assignedToUser) {
+                this.setState({
+                    drawEnabled: this.props.sites.length > 0,
+                });
                 this.updateMarkers('sites', this.sitesGroup, this.props.sites);
             }
             if (hasChanged(prevProps, this.props, 'traps')) {
@@ -92,6 +109,9 @@ class VectorMapComponent extends Component {
             }
             if (hasChanged(prevProps, this.props, 'targets')) {
                 this.updateMarkers('targets', this.targetsGroup, this.props.targets);
+            }
+            if (hasChanged(prevProps, this.props, 'catches')) {
+                this.updateMarkers('catches', this.catchesGroup, this.props.catches);
             }
         });
     }
@@ -107,6 +127,11 @@ class VectorMapComponent extends Component {
         exportControl = onResizeMap(width, height, exportControl, map, 'Contrôle de vecteur');
     }
 
+    onShapeClick(shape) {
+        const selectedMarkers = getMarkersInShape(shape, this.props.sites);
+        this.props.editItem('showShapeSelectionModale', selectedMarkers);
+    }
+
     /* ***************************************************************************
    * CREATE MAP
    *************************************************************************** */
@@ -117,36 +142,96 @@ class VectorMapComponent extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-pane-selected');
-        map.createPane('custom-pane-markers');
+        map.createPane('custom-markers');
         this.map = map;
     }
 
     /* ***************************************************************************
    * UPDATE STATE
    *************************************************************************** */
+
+
     updateMarkers(key, group, items) {
         const {
             withCluster,
+            intl: {
+                formatMessage,
+            },
+            params,
         } = this.props;
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
-            iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), key, 40),
+            clusterPane: 'custom-markers',
+            iconCreateFunction: (cluster) => {
+                if (key === 'sites') {
+                    const markers = cluster.getAllChildMarkers();
+                    let fliesCount = 0;
+                    markers.forEach((m) => {
+                        fliesCount += m.options.icon.options.count;
+                    });
+                    return renderDivIcon(
+                        `<span><img src="${STATIC_URL}images/flies.png" alt="" />${fliesCount} </span>`,
+                        `${key} with-icon big-icon`,
+                        45,
+                        fliesCount,
+                    );
+                }
+                return renderDivIcon(cluster.getChildCount(), key, 40);
+            },
         });
         group.clearLayers();
 
         items.forEach((item) => {
+            let extraClass = '';
+            if (key === 'sites' &&
+                params.assignedToUser) {
+                if (item.responsible_user_id === parseInt(params.assignedToUser, 10)) {
+                    extraClass = 'current';
+                }
+                if (item.responsible_user_id && item.responsible_user_id !== parseInt(params.assignedToUser, 10)) {
+                    extraClass = 'other';
+                }
+                if (!item.responsible_user_id) {
+                    extraClass = 'not-assigned';
+                }
+            }
+            let icon = renderDivIcon('', `${key} small bordered ${extraClass}`, 30);
+            if (key === 'sites') {
+                icon = renderDivIcon(
+                    `<span><img src="${STATIC_URL}images/favicon.png" alt="" />${item.flies_count} </span>`,
+                    `${key} small bordered ${extraClass} with-icon`,
+                    45,
+                    item.flies_count,
+                );
+            }
             const marker = L.marker(
                 [item.latitude, item.longitude],
-                { icon: renderDivIcon('', `${key} small bordered`, 30) },
+                {
+                    icon,
+                    pane: 'custom-markers',
+                },
             );
             marker.on('click', () => {
                 this.props.selectMarker(item.id, key === 'sites' ? 'new_sites' : key)
                     .then((response) => {
-                        this.props.editItem(key.slice(0, -1), response);
+                        let editKey;
+                        if (key === 'sites') {
+                            editKey = 'showEditSiteModale';
+                        }
+                        if (key === 'traps') {
+                            editKey = 'showEditTrapsModale';
+                        }
+                        if (key === 'targets') {
+                            editKey = 'showEditTargetModale';
+                        }
+                        if (key === 'catches') {
+                            editKey = 'showEditCatchesModale';
+                        }
+                        this.props.editItem(editKey, response);
                     });
             })
                 .on('mouseover', () => {
-                    this.updateTooltipSmall(item);
+                    this.updateTooltipSmall(item, formatMessage(MESSAGES[key]));
                 })
                 .on('mouseout', () => {
                     this.updateTooltipSmall();
@@ -175,6 +260,7 @@ class VectorMapComponent extends Component {
         const group = isEndemic ? this.endemicVillagesGroup : this.nonEndemicVillagesGroup;
         const markersVillages = L.markerClusterGroup({
             maxClusterRadius: 50,
+            clusterPane: 'custom-markers',
             iconCreateFunction: cluster => renderDivIcon(cluster.getChildCount(), isEndemic ? 'villages-with-cases' : 'villages', 40),
         });
 
@@ -185,7 +271,10 @@ class VectorMapComponent extends Component {
             if (village) {
                 const newMarker = L.marker(
                     [village.latitude, village.longitude],
-                    { icon: renderDivIcon('', isEndemic ? 'villages-with-cases small bordered' : 'villages small bordered', 30) },
+                    {
+                        icon: renderDivIcon('', isEndemic ? 'villages-with-cases small bordered' : 'villages small bordered', 30),
+                        pane: 'custom-markers',
+                    },
                 )
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
@@ -196,7 +285,7 @@ class VectorMapComponent extends Component {
                             });
                     })
                     .on('mouseover', () => {
-                        this.updateTooltipSmall(village);
+                        this.updateTooltipSmall(village, formatMessage(MESSAGES.villages));
                     })
                     .on('mouseout', () => {
                         this.updateTooltipSmall();
@@ -215,10 +304,14 @@ class VectorMapComponent extends Component {
         }
     }
 
-    updateTooltipSmall(item) {
-        if (item && (item.label || item.name)) {
+    updateTooltipSmall(item, title) {
+        if (item && title) {
+            let label = item.label ? item.label : item.name;
+            if (!label) {
+                label = item.uuid ? item.uuid : item.id;
+            }
             this.state.containers.tooltipSmall.innerHTML =
-                item.label ? item.label : item.name;
+                `${title}: ${label}`;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -231,7 +324,14 @@ class VectorMapComponent extends Component {
 
     fitToBounds() {
         const { map } = this;
-        const group = new L.FeatureGroup([this.sitesGroup, this.trapsGroup, this.targetsGroup, this.endemicVillagesGroup, this.nonEndemicVillagesGroup]);
+        const group = new L.FeatureGroup([
+            this.sitesGroup,
+            this.trapsGroup,
+            this.targetsGroup,
+            this.catchesGroup,
+            this.endemicVillagesGroup,
+            this.nonEndemicVillagesGroup,
+        ]);
         defaultFitToBound(map, group.getBounds(), 13);
     }
 
@@ -264,7 +364,7 @@ class VectorMapComponent extends Component {
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
-                    <div ref={(node) => { this.mapNode = node; }} className="map-container" />
+                    <div ref={(node) => { this.mapNode = node; }} className={`map-container ${!this.state.drawEnabled ? 'without-draw' : ''}`} />
                     {
                         (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
                         <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
@@ -281,12 +381,14 @@ VectorMapComponent.propTypes = {
     sites: PropTypes.arrayOf(PropTypes.object).isRequired,
     traps: PropTypes.arrayOf(PropTypes.object).isRequired,
     targets: PropTypes.arrayOf(PropTypes.object).isRequired,
+    catches: PropTypes.arrayOf(PropTypes.object).isRequired,
     nonEndemicVillages: PropTypes.object.isRequired,
     endemicVillages: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     getShape: PropTypes.func.isRequired,
     editItem: PropTypes.func.isRequired,
     withCluster: PropTypes.bool.isRequired,
+    params: PropTypes.object.isRequired,
 };
 
 export default injectIntl(VectorMapComponent);

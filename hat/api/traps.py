@@ -1,3 +1,6 @@
+import operator
+from functools import reduce
+
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db.models import OuterRef, Exists, Count, Sum
@@ -6,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+from django.db.models import Q
 
 from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -52,26 +56,47 @@ class TrapsViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         habitats = request.GET.get("habitats", None)
-        only_selected_traps = request.GET.get("onlySelectedTraps", False)
-        only_ignored_traps = request.GET.get("onlyIgnoredTraps", False)
+        filters = request.GET.get("traps_filter", False)
         province_ids = request.GET.get("province_id", None)
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
+        search_uuid = request.GET.get("search_uuid", None)
         queryset = Trap.objects.all()
-        if from_date is not None:
-            queryset = queryset.filter(created_at__date__gte=from_date)
-        if to_date is not None:
-            queryset = queryset.filter(created_at__date__lte=to_date)
+
+        if search_uuid:
+            queryset = queryset.filter(
+                Q(uuid__icontains=search_uuid)
+            )
+
+        if from_date is not None or to_date is not None:
+            catch_subquery = Catch.objects.filter(trap_id=OuterRef("id"))
+            trap_conditions = []
+            if from_date is not None:
+                catch_subquery = catch_subquery.filter(setup_date__date__gte=from_date)
+                trap_conditions.append(Q(created_at__date__gte=from_date))
+            if to_date is not None:
+                catch_subquery = catch_subquery.filter(setup_date__date__lte=to_date)
+                trap_conditions.append(Q(created_at__date__lte=to_date))
+
+            queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
+            queryset = queryset.filter(
+                (reduce(operator.and_, trap_conditions)
+                 | Q(catch_in_date_range=True))
+            )
+
         if user_ids is not None:
             queryset = queryset.filter(user_id__in=user_ids.split(","))
         if habitats is not None:
             queryset = queryset.filter(habitat__in=habitats.split(","))
-        if only_selected_traps:
-            queryset = queryset.filter(is_selected=True)
-        if only_ignored_traps:
-            queryset = queryset.filter(ignore=True)
-        else:
-            queryset = queryset.filter(ignore=False)
+        if filters:
+            if filters == "selected":
+                queryset = queryset.filter(is_selected=True)
+            if filters == "not_selected":
+                queryset = queryset.filter(is_selected=False)
+            if filters == "ignored":
+                queryset = queryset.filter(ignore=True)
+            if filters == "not_ignored":
+                queryset = queryset.filter(ignore=False)
 
         if request.user.profile.province_scope.count() != 0:
             user_prov_subquery = (
@@ -141,6 +166,7 @@ class TrapsViewSet(viewsets.ViewSet):
             + Sum("catch__female_count")
         )
         queryset = queryset.order_by(*orders)
+        queryset = queryset.prefetch_related("catch_set")
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -331,7 +357,7 @@ class TrapsViewSet(viewsets.ViewSet):
                 new_traps.append(new_trap)
                 new_trap.save()
 
-        return Response([trap.as_dict() for trap in new_traps])
+        return Response([trap.as_location() for trap in new_traps])
 
     def update(self, request, pk=None):
         new_trap = get_object_or_404(Trap, pk=pk)

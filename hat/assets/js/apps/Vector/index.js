@@ -25,15 +25,16 @@ export default function vectorApp(appConfig, element, baseUrl) {
     const routes = [
         <Route
             path={'/map/dateFrom/:dateFrom/dateTo/:dateTo(/sites/:sites)' +
-            '(/traps/:traps)(/targets/:targets)(/endemicVillages/:endemicVillages)' +
+            '(/traps/:traps)(/targets/:targets)(/catches/:catches)(/endemicVillages/:endemicVillages)' +
             '(/nonEndemicVillages/:nonEndemicVillages)(/tab/:tab)' +
             '(/sitesPage/:sitesPage)(/sitesPageSize/:sitesPageSize)' +
             '(/trapsPage/:trapsPage)(/trapsPageSize/:trapsPageSize)' +
             '(/targetsPage/:targetsPage)(/targetsPageSize/:targetsPageSize)' +
+            '(/catchesPage/:catchesPage)(/catchesPageSize/:catchesPageSize)(/orderCatches/:orderCatches)' +
             '(/orderSites/:orderSites)(/orderTraps/:orderTraps)(/orderTargets/:orderTargets)(/userId/:userId)' +
-            '(/habitats/:habitats)(/onlySelectedTraps/:onlySelectedTraps)(/teams/:teams)' +
-            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
-            '(/onlyIgnoredTraps/:onlyIgnoredTraps)(/onlyIgnoredTargets/:onlyIgnoredTargets)'}
+            '(/problems/:problems)(/habitats/:habitats)(/teams/:teams)(/searchUuid/:searchUuid)' +
+            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/assignedToUser/:assignedToUser)' +
+            '(/sitesFilter/:sitesFilter)(/targetsFilter/:targetsFilter)(/trapsFilter/:trapsFilter)'}
             component={VectorContainer}
         />,
         <Route

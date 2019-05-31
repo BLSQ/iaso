@@ -2,25 +2,28 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import VectorElement from './pages/Vector';
+import VectorDashboard from './pages/Vector';
 import {
     fetchSites,
     fetchTraps,
     fetchTargets,
+    fetchCatches,
     fetchPaginatedTraps,
     fetchPaginatedTargets,
+    fetchPaginatedCatches,
     fetchVillages,
     fetchProfiles,
     fetchTeams,
     fetchHabitats,
+    fetchProblems,
     saveTrap,
     saveTarget,
     saveSite,
+    saveAssignations,
     fetchPaginatedSites,
 } from './utlls/requests';
 import { loadActions } from '../../redux/load';
 import { filterActions } from '../../redux/filtersRedux';
-import { vectorActions } from './redux/vectorReducer';
 import { currentUserActions } from '../../redux/currentUserReducer';
 
 
@@ -28,9 +31,11 @@ class VectorContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            siteEdited: undefined,
-            trapEdited: undefined,
-            targetEdited: undefined,
+            siteEdited: null,
+            trapEdited: null,
+            targetEdited: null,
+            catchEdited: null,
+            shapeMarkers: [],
         };
     }
 
@@ -41,6 +46,7 @@ class VectorContainer extends Component {
             fetchProfiles(dispatch),
             fetchTeams(dispatch),
             fetchHabitats(dispatch),
+            fetchProblems(dispatch),
             this.props.fetchCurrentUserInfos(),
         ];
         if (params.sites && params.tab === 'map') {
@@ -51,6 +57,9 @@ class VectorContainer extends Component {
         }
         if (params.targets && params.tab === 'map') {
             promises.push(fetchTargets(dispatch, params));
+        }
+        if (params.catches && params.tab === 'map') {
+            promises.push(fetchCatches(dispatch, params));
         }
         if (params.endemicVillages === 'true' && params.tab === 'map') {
             promises.push(fetchVillages(dispatch, params, true));
@@ -66,6 +75,9 @@ class VectorContainer extends Component {
         }
         if (params.tab === 'targets') {
             promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
+        }
+        if (params.tab === 'catches') {
+            promises.push(fetchPaginatedCatches(dispatch, params, params.catchesPageSize, params.catchesPage, params.ordercatches));
         }
         dispatch(loadActions.startLoading());
         Promise.all(promises).then(() => {
@@ -106,6 +118,9 @@ class VectorContainer extends Component {
             const targetsTableChanged = hasChanged(this.props.params, newProps.params, 'targetsPage') ||
                 hasChanged(this.props.params, newProps.params, 'targetsPageSize') ||
                 hasChanged(this.props.params, newProps.params, 'orderTargets');
+            const catchesTableChanged = hasChanged(this.props.params, newProps.params, 'catchesPage') ||
+                hasChanged(this.props.params, newProps.params, 'catchesPageSize') ||
+                hasChanged(this.props.params, newProps.params, 'orderCatches');
             if (newProps.params.sites && !this.props.vectors.sites && newProps.params.tab === 'map') {
                 promises.push(fetchSites(dispatch, newProps.params));
             }
@@ -114,6 +129,9 @@ class VectorContainer extends Component {
             }
             if (newProps.params.targets && !this.props.vectors.targets && newProps.params.tab === 'map') {
                 promises.push(fetchTargets(dispatch, newProps.params));
+            }
+            if (newProps.params.catches && !this.props.vectors.catches && newProps.params.tab === 'map') {
+                promises.push(fetchCatches(dispatch, newProps.params));
             }
             if (newProps.params.endemicVillages && !this.props.vectors.endemicVillages && newProps.params.tab === 'map') {
                 promises.push(fetchVillages(dispatch, newProps.params, true));
@@ -130,6 +148,9 @@ class VectorContainer extends Component {
             }
             if ((targetsTableChanged || !this.props.vectors.targetsPage.list) && newProps.params.tab === 'targets') {
                 promises.push(fetchPaginatedTargets(dispatch, newProps.params, newProps.params.targetsPageSize, newProps.params.targetsPage, newProps.params.orderTargets));
+            }
+            if ((catchesTableChanged || !this.props.vectors.catchesPage.list) && newProps.params.tab === 'catches') {
+                promises.push(fetchPaginatedCatches(dispatch, newProps.params, newProps.params.catchesPageSize, newProps.params.catchesPage, newProps.params.ordercCatches));
             }
             if (promises.length > 0) {
                 dispatch(loadActions.startLoading());
@@ -155,6 +176,9 @@ class VectorContainer extends Component {
             if (params.targets) {
                 promises.push(fetchTargets(dispatch, params));
             }
+            if (params.catches) {
+                promises.push(fetchCatches(dispatch, params));
+            }
             if (params.endemicVillages) {
                 promises.push(fetchVillages(dispatch, params, true));
             }
@@ -164,6 +188,7 @@ class VectorContainer extends Component {
             promises.push(fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites));
             promises.push(fetchPaginatedTraps(dispatch, params, params.trapsPageSize, params.trapsPage, params.orderTraps));
             promises.push(fetchPaginatedTargets(dispatch, params, params.targetsPageSize, params.targetsPage, params.orderTargets));
+            promises.push(fetchPaginatedCatches(dispatch, params, params.catchesPageSize, params.catchesPage, params.orderCatches));
             dispatch(loadActions.startLoading());
             Promise.all(promises).then(() => {
                 dispatch(loadActions.successLoadingNoData());
@@ -191,8 +216,7 @@ class VectorContainer extends Component {
             trapEdited: trap,
         });
         const { params, dispatch } = this.props;
-        this.props.saveTrapRequest(trap).then(() => {
-            this.props.trapUpdated(true);
+        return this.props.saveTrapRequest(trap).then(() => {
             if (params.traps) {
                 fetchTraps(dispatch, params);
             }
@@ -213,16 +237,49 @@ class VectorContainer extends Component {
         });
     }
 
+    saveAssignations(sitesList, responsibleId) {
+        const { dispatch, profiles } = this.props;
+        dispatch(loadActions.startLoading());
+        const responsibleProfile = profiles.find(p => p.id === responsibleId);
+        const shapeMarkers = [];
+        const sitesIds = [];
+        sitesList.forEach((site) => {
+            const newSite = {
+                ...site,
+                responsible_id: responsibleProfile.id,
+                responsible: responsibleProfile.user__username,
+            };
+            shapeMarkers.push(newSite);
+            sitesIds.push(site.id);
+        });
+        this.props.saveAssignationsRequest(sitesIds, responsibleId).then(() => {
+            const { params } = this.props;
+            if (params.sites) {
+                fetchSites(dispatch, params);
+            }
+            fetchPaginatedSites(dispatch, params, params.sitesPageSize, params.sitesPage, params.orderSites);
+            this.setState({
+                shapeMarkers,
+            });
+            dispatch(loadActions.successLoadingNoData());
+        }).catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    }
+
     render() {
         return (
-            <VectorElement
+            <VectorDashboard
                 params={this.props.params}
                 saveSite={site => this.saveSite(site)}
                 saveTrap={trap => this.saveTrap(trap)}
                 saveTarget={target => this.saveTarget(target)}
+                saveAssignations={(sitesIds, responsibleId) => this.saveAssignations(sitesIds, responsibleId)}
                 siteEdited={this.state.siteEdited}
                 trapEdited={this.state.trapEdited}
                 targetEdited={this.state.targetEdited}
+                catchEdited={this.state.catchEdited}
+                shapeMarkers={this.state.shapeMarkers}
                 onSearch={() => this.onSearch()}
             />
         );
@@ -242,14 +299,16 @@ VectorContainer.propTypes = {
     saveTrapRequest: PropTypes.func.isRequired,
     saveTargetRequest: PropTypes.func.isRequired,
     saveSiteRequest: PropTypes.func.isRequired,
-    trapUpdated: PropTypes.func.isRequired,
+    saveAssignationsRequest: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    profiles: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     infos: state.infos,
     vectors: state.vectors,
+    profiles: state.vectors.profiles,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -259,9 +318,9 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId, villageId, removeLoading) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId, removeLoading)),
     selectArea: (areaId, villageId, zoneId, removeLoading) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId, removeLoading)),
     saveTrapRequest: trap => saveTrap(dispatch, trap),
-    saveSiteRequest: site => saveSite(dispatch, site),
+    saveSiteRequest: (site, dispatchLoad) => saveSite(dispatch, site, dispatchLoad),
+    saveAssignationsRequest: (sites, responsibleId) => saveAssignations(dispatch, sites, responsibleId),
     saveTargetRequest: target => saveTarget(dispatch, target),
-    trapUpdated: isUpdated => dispatch(vectorActions.trapUpdated(isUpdated)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 

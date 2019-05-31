@@ -18,41 +18,13 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Ecrans',
         id: 'details.label.targets',
     },
+    catches: {
+        defaultMessage: 'Déploiements',
+        id: 'details.label.catches',
+    },
     unknown: {
         defaultMessage: 'Inconnu',
         id: 'vectors.label.unknown',
-    },
-    bush: {
-        defaultMessage: 'Buisson',
-        id: 'vectors.label.bush',
-    },
-    fish_pond: {
-        defaultMessage: 'Etang à poissons',
-        id: 'vectors.label.fish_pond',
-    },
-    farm: {
-        defaultMessage: 'Ferme',
-        id: 'vectors.label.farm',
-    },
-    forest: {
-        defaultMessage: 'Forêt',
-        id: 'vectors.label.forest',
-    },
-    lake: {
-        defaultMessage: 'Lac',
-        id: 'vectors.label.lake',
-    },
-    river: {
-        defaultMessage: 'Rivière',
-        id: 'vectors.label.river',
-    },
-    stream: {
-        defaultMessage: 'Ruisseau',
-        id: 'vectors.label.stream',
-    },
-    road: {
-        defaultMessage: 'Route',
-        id: 'vectors.label.road',
     },
     cluster_title: {
         defaultMessage: 'Regroupement',
@@ -354,119 +326,6 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                 </table>
             </section>`;
 
-
-export const renderCatchesPopup = (catchItem, formatMessage) => `<section class="custom-popup-container">
-            <h6>
-                ${formatMessage({ defaultMessage: 'Déploiement', id: 'vector.labels.catch' })}:
-            </h6>
-            <table>
-                <tbody>
-                    <tr>
-                        <td>UUID</td>
-                        <td>
-                            ${catchItem.uuid}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Dernière collecte', id: 'vector.labels.collect_date' })}
-                        </td>
-                        <td>
-                            ${moment(catchItem.collect_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
-                        </td>
-                        <td>
-                            ${moment(catchItem.setup_date.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
-                        </td>
-                        <td>
-                            ${catchItem.male_count || '0'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
-                        </td>
-                        <td>
-                            ${catchItem.female_count || '0'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
-                        </td>
-                        <td>
-                            ${catchItem.unknown_count || '0'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Source', id: 'vector.labels.source' })}
-                        </td>
-                        <td class="${!catchItem.source ? 'align-center' : ''}">
-                            ${catchItem.source || '/'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
-                        </td>
-                        <td>
-                            ${catchItem.latitude}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
-                        </td>
-                        <td>
-                            ${catchItem.longitude}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
-                        </td>
-                        <td class="${!catchItem.catchItem ? 'align-center' : ''}">
-                            ${catchItem.altitude ? catchItem.altitude : '/'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Utilisateur', id: 'vector.labels.user' })}
-                        </td>
-                        <td>
-                            ${catchItem.username}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Remarques', id: 'vector.labels.remarks' })}
-                        </td>
-                        <td>
-                            ${catchItem.remarks}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${formatMessage({ defaultMessage: 'Problème', id: 'vector.labels.problem' })}
-                        </td>
-                        <td class="${!catchItem.problem ? 'align-center' : ''}">
-                            ${catchItem.problem ? catchItem.problem : '/'}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>`;
-
 export const itemsToShow = params => [
     {
         id: 'sites',
@@ -479,6 +338,12 @@ export const itemsToShow = params => [
         defaultMessage: 'Pièges',
         isActive: params.traps === 'true',
         iconClass: 'map__option__icon--traps',
+    },
+    {
+        id: 'catches',
+        defaultMessage: 'Déploiements',
+        isActive: params.catches === 'true',
+        iconClass: 'map__option__icon--catches',
     },
     {
         id: 'targets',

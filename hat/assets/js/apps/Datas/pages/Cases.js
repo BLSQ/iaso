@@ -140,9 +140,9 @@ class Cases extends Component {
             params,
             setCasesList,
         } = this.props;
-        const filters1 = filtersCases(formatMessage, defineMessages, devices);
-        const filters2 = filtersCases2(formatMessage, defineMessages, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
-        const search = filtersCasesSearch(formatMessage, defineMessages, this);
+        const filters1 = filtersCases(formatMessage, devices);
+        const filters2 = filtersCases2(formatMessage, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
+        const search = filtersCasesSearch(formatMessage, this);
         const geo = filtersCasesGeo(
             workzones,
             provinces || [],

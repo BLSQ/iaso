@@ -14,7 +14,7 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import { fetchProfiles } from '../utlls/requests';
 import { createUrl } from '../../../utils/fetchData';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { filtersVectorsSync } from '../constants/vectorFilters';
+import { users } from '../../../utils/constants/filters';
 
 const baseUrl = 'sync';
 class VectorSync extends React.Component {
@@ -47,7 +47,6 @@ class VectorSync extends React.Component {
         const {
             currentTab,
         } = this.state;
-        const filters = filtersVectorsSync(profiles);
         return (
             <section>
                 {
@@ -84,7 +83,7 @@ class VectorSync extends React.Component {
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={filters}
+                                filters={[users(profiles)]}
                             />
                         </div>
                     </div>

@@ -17,7 +17,7 @@ import {
     onResizeMap,
     defaultFitToBound,
     genericMap,
-} from '../../../utils/mapUtils';
+} from '../../../utils//map/mapUtils';
 
 let exportControl;
 const tileOptions = { keepBuffer: 4 };

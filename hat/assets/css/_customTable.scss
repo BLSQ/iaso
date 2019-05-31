@@ -252,6 +252,12 @@ body {
                     background-color: white;
                 }
             }
+            th {
+                &.small {
+                    padding: 4px;
+                    font-size: 14px;
+                }
+            }
         }
     }
 }

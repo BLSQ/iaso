@@ -50,12 +50,30 @@
     }
 }
 
+.marker-cluster-catches {
+    background-color: rgba(violet, 0.6);
+    z-index: 1000000 !important;
+    div {
+        background-color: violet;
+        color: white;
+    }
+}
+
 .marker-cluster-sites,
 .marker-sites {
     background-color: $gray;
     z-index: 1000000 !important;
     div {
         background-color: yellow;
+    }
+    &.current {
+        background-color: $green;
+    }
+    &.other {
+        background-color: $blue;
+    }
+    &.not-assigned {
+        background-color: red;
     }
     &.warning {
         div {
@@ -100,10 +118,10 @@
     z-index: 2000000 !important;
 }
 .marker-catches {
-    background-color: rgba(orange, 0.6);
+    background-color: rgba(violet, 0.6);
     z-index: 1000000 !important;
     div {
-        background-color: orange;
+        background-color: violet;
     }
 }
 
@@ -222,6 +240,34 @@
 .marker-custom {
     background-clip: padding-box;
     border-radius: 100%;
+    &.with-icon {
+        img {
+            width: 20px;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+            margin-bottom: -10px;
+        }
+        >div {
+            width: 35px !important;
+            height: 35px !important;
+            text-align: center;
+            font-size: 9px;
+        }
+        &.small {
+            img {
+                margin-bottom: -5px;
+            }
+            >div {
+                font-size: 10px;
+            }
+        }
+        &.big-icon {
+            img {
+                width: 25px;
+            }
+        }
+    }
 }
 
 .marker-cluster div,

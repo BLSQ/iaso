@@ -1,56 +1,47 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
+import { connect } from 'react-redux';
 
 import TabsComponent from '../../../../components/TabsComponent';
-import SiteInfos from './SiteInfos';
-import TrapsMap from './TrapsMap';
-import LayersComponent from '../../../../components/LayersComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import TrapInfos from './TrapInfos';
+import catchesColumns from '../../utlls/catchesColumns';
 import { getRequest } from '../../../../utils/fetchData';
 import { mapActions } from '../../redux/mapReducer';
-import RadiosComponent from '../../../../components/RadiosComponent';
-import { itemsEditSitesToShow, MESSAGES } from '../../utlls/vectorMapUtils';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
-import trapsColumns from '../../utlls/trapsColumns';
+import LayersComponent from '../../../../components/LayersComponent';
+import CatchesMap from './CatchesMap';
+
 
 const LOCAL_MESSAGES = defineMessages({
-    none: {
-        defaultMessage: 'Aucun',
-        id: 'vector.labels.none',
-    },
     infos: {
         defaultMessage: 'Infos',
         id: 'vector.labels.infos',
     },
-    traps: {
-        defaultMessage: 'Liste des pièges',
-        id: 'vector.labels.traps',
+    catches: {
+        defaultMessage: 'Liste des déploiements',
+        id: 'vector.labels.catches',
     },
     map: {
         defaultMessage: 'Carte',
         id: 'vector.labels.map',
     },
 });
-class EditSiteComponent extends Component {
+class EditTrapComponent extends Component {
     constructor(props) {
         super(props);
-        const itemsToShow = itemsEditSitesToShow.slice();
         this.state = {
             showModale: props.showModale,
-            trapsColumns: trapsColumns(
+            trap: props.trap,
+            isChanged: false,
+            currentTab: 'infos',
+            catchesColumns: catchesColumns(
                 props.intl.formatMessage,
-                MESSAGES,
                 (id, urlKey, key) => {
                     props.getDetail(id, urlKey, key);
                 },
             ),
-            site: props.site,
-            isChanged: false,
-            currentTab: 'infos',
-            itemsToShow,
-            mapUpdated: false,
         };
     }
 
@@ -61,46 +52,34 @@ class EditSiteComponent extends Component {
     componentWillReceiveProps(nextProps) {
         this.setState({
             showModale: nextProps.showModale,
-            site: nextProps.site,
+            trap: nextProps.trap,
             isChanged: false,
         });
     }
 
-    setMapUpdate(mapUpdated) {
+    updateTrapField(key, value) {
+        const newTrap = Object.assign({}, this.state.trap, { [key]: value });
         this.setState({
-            mapUpdated,
-        });
-    }
-
-    updateSiteField(key, value) {
-        const newSite = Object.assign({}, this.state.site, { [key]: value });
-        this.setState({
-            site: newSite,
+            trap: newTrap,
             isChanged: true,
         });
     }
 
-    toggleItems(itemsToShow) {
-        this.setState({
-            itemsToShow,
-            mapUpdated: true,
-        });
-    }
 
     render() {
-        const { site, currentTab } = this.state;
+        const { formatMessage } = this.props.intl;
+        const { trap } = this.state;
         const {
-            saveSite,
-            intl: {
-                formatMessage,
-            },
+            habitats,
+            saveTrap,
+            hidden,
             map: {
                 baseCatchLayer,
             },
-            changeLayer,
             getDetail,
-            hidden,
+            changeLayer,
         } = this.props;
+        const { currentTab } = this.state;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -110,8 +89,8 @@ class EditSiteComponent extends Component {
                 className={hidden ? 'hidden-modal' : ''}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.site.title" defaultMessage="Site" />:
-                    {' '}{site.name}
+                    <FormattedMessage id="vector.modale.trap.title" defaultMessage="Piège" />:
+                    {' '}{trap.name}
                 </div>
                 <section className="edit-modal large extra-extra">
                     <div className="tabs-relative">
@@ -121,7 +100,7 @@ class EditSiteComponent extends Component {
                             tabs={[
                                 { label: formatMessage(LOCAL_MESSAGES.infos), key: 'infos' },
                                 { label: formatMessage(LOCAL_MESSAGES.map), key: 'map' },
-                                { label: formatMessage(LOCAL_MESSAGES.traps), key: 'traps' },
+                                { label: formatMessage(LOCAL_MESSAGES.catches), key: 'catches' },
                             ]}
                             defaultSelect={currentTab}
                             currentTab={currentTab}
@@ -130,10 +109,12 @@ class EditSiteComponent extends Component {
                     <div className="padding bordered round">
                         {
                             currentTab === 'infos' &&
-                            <SiteInfos
-                                site={site}
-                                updateSiteField={(key, value) => this.updateSiteField(key, value)}
-                                profiles={this.props.profiles}
+                            <TrapInfos
+                                trap={trap}
+                                toggleModal={() => this.props.toggleModal()}
+                                habitats={habitats}
+                                updateTrapField={(key, value) => this.updateTrapField(key, value)}
+                                getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
                             />
                         }
                         <div className={`${currentTab !== 'map' ? 'hidden-opacity' : ''} third-container small-filters`} >
@@ -146,37 +127,41 @@ class EditSiteComponent extends Component {
                                     <span className="map__option__header">
                                         <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
                                     </span>
-                                    <RadiosComponent
-                                        showItems={items => this.toggleItems(items)}
-                                        items={this.state.itemsToShow}
-                                    />
+                                    <ul className="map__option__list legend">
+                                        <li className="map__option__list__item">
+                                            <i className="map__option__icon--site" />
+                                            <FormattedMessage id="vector.modale.catches.legend.trap" defaultMessage="Piège" />
+                                        </li>
+                                        <li className="map__option__list__item">
+                                            <i className="map__option__icon--catches small" />
+                                            <FormattedMessage id="vector.modale.catches.legend.catches" defaultMessage="Déploiements" />
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div className="traps-map-container">
-                                <TrapsMap
+                            <div className="catches-map-container">
+                                <CatchesMap
                                     baseLayer={baseCatchLayer}
-                                    site={site}
+                                    trap={trap}
                                     getShape={type => this.props.getShape(type)}
-                                    itemsToShow={this.state.itemsToShow}
-                                    mapUpdated={this.state.mapUpdated}
-                                    setMapUpdate={mapUpdated => this.setMapUpdate(mapUpdated)}
+                                    saveTrap={this.props.saveTrap}
                                     getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}
                                 />
                             </div>
                         </div>
                         {
-                            currentTab === 'traps' &&
+                            currentTab === 'catches' &&
                             <div>
                                 <CustomTableComponent
                                     isSortable={false}
                                     showPagination={false}
-                                    columns={this.state.trapsColumns}
-                                    defaultSorted={[{ id: 'created_at', desc: false }]}
+                                    columns={this.state.catchesColumns}
+                                    defaultSorted={[{ id: 'collect_date', desc: false }]}
                                     params={{}}
                                     onRowClicked={() => { }}
                                     multiSort={false}
                                     reduxPage={{
-                                        list: site.traps,
+                                        list: trap.catches,
                                         params: {},
                                     }}
                                     fetchDatas={false}
@@ -188,6 +173,7 @@ class EditSiteComponent extends Component {
                             </div>
                         }
                     </div>
+
                     <div className="align-right">
                         <button
                             className="button"
@@ -198,14 +184,14 @@ class EditSiteComponent extends Component {
                         </button>
                         <button
                             disabled={
-                                (site.name === '' ||
+                                (trap.name === '' ||
                                     !this.state.isChanged)
                             }
                             className="button--save"
-                            onClick={() => saveSite(site)}
+                            onClick={() => saveTrap(trap)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="vector.label.savesite" defaultMessage="Sauvegarder le site" />
+                            <FormattedMessage id="vector.label.savetrap" defaultMessage="Sauvegarder le piège" />
                         </button>
                     </div>
                 </section>
@@ -213,21 +199,22 @@ class EditSiteComponent extends Component {
         );
     }
 }
-EditSiteComponent.defaultProps = {
-    site: undefined,
+EditTrapComponent.defaultProps = {
+    trap: undefined,
 };
-EditSiteComponent.propTypes = {
+
+EditTrapComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
-    hidden: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
-    site: PropTypes.object,
+    trap: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    saveSite: PropTypes.func.isRequired,
+    habitats: PropTypes.array.isRequired,
+    saveTrap: PropTypes.func.isRequired,
+    getDetail: PropTypes.func.isRequired,
+    hidden: PropTypes.bool.isRequired,
+    map: PropTypes.object.isRequired,
     getShape: PropTypes.func.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    map: PropTypes.object.isRequired,
-    profiles: PropTypes.array.isRequired,
-    getDetail: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -241,4 +228,4 @@ const MapStateToProps = state => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(EditSiteComponent));
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(EditTrapComponent));

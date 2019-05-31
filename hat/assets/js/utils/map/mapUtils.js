@@ -2,8 +2,8 @@
 import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 import moment from 'moment';
-import geoUtils from './geo';
-import { isCaseLocalised } from './index';
+import geoUtils from '../geo';
+import { isCaseLocalised } from '../index';
 
 export const genericMap = mapNode => L.map(mapNode, {
     attributionControl: false,
@@ -58,6 +58,26 @@ export const MESSAGES = defineMessages({
     trap: {
         defaultMessage: 'Piège',
         id: 'locator.label.trap',
+    },
+    sites: {
+        defaultMessage: 'Site',
+        id: 'details.label.site',
+    },
+    traps: {
+        defaultMessage: 'Piège',
+        id: 'details.label.trap',
+    },
+    targets: {
+        defaultMessage: 'Ecran',
+        id: 'details.label.target',
+    },
+    catches: {
+        defaultMessage: 'Déploiement',
+        id: 'details.label.catche',
+    },
+    villages: {
+        defaultMessage: 'Village',
+        id: 'details.label.village',
     },
 });
 
@@ -296,4 +316,3 @@ export const renderVillageIcon = (village, formatMessage) => {
         iconSize: L.point(1, 1),
     });
 };
-

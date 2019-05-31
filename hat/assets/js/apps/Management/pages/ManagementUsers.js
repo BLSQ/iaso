@@ -281,7 +281,7 @@ class ManagementUsers extends React.Component {
                                 params={this.props.params}
                                 baseUrl={baseUrl}
                                 filters={[
-                                    teamType(formatMessage, defineMessages, teamTypes, {
+                                    teamType(formatMessage, teamTypes, {
                                         id: 'main.label.team_user_type',
                                         defaultMessage: 'Type d\'utilisateur',
                                     }, {

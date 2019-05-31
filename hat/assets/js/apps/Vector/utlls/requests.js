@@ -11,9 +11,11 @@ export const fetchSites = (dispatch, params) => {
         dateFrom,
         dateTo,
         userId,
+        sitesFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -27,6 +29,12 @@ export const fetchSites = (dispatch, params) => {
     }
     if (as_id) {
         url += `&as_id=${as_id}`;
+    }
+    if (sitesFilter) {
+        url += `&sites_filter=${sitesFilter}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return req
         .get(url)
@@ -44,11 +52,11 @@ export const fetchTraps = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTraps,
+        trapsFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/traps?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -57,11 +65,8 @@ export const fetchTraps = (dispatch, params) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTraps) {
-        url += '&onlyIgnoredTraps=True';
+    if (trapsFilter) {
+        url += `&traps_filter=${trapsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -71,6 +76,9 @@ export const fetchTraps = (dispatch, params) => {
     }
     if (as_id) {
         url += `&as_id=${as_id}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return req
         .get(url)
@@ -88,10 +96,11 @@ export const fetchTargets = (dispatch, params) => {
         dateTo,
         userId,
         habitats,
-        onlyIgnoredTargets,
+        targetsFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}`;
     if (userId) {
@@ -109,8 +118,11 @@ export const fetchTargets = (dispatch, params) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
-    if (onlyIgnoredTargets) {
-        url += '&onlyIgnoredTargets=True';
+    if (targetsFilter) {
+        url += `&targets_filter=${targetsFilter}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return req
         .get(url)
@@ -122,14 +134,59 @@ export const fetchTargets = (dispatch, params) => {
         });
 };
 
+export const fetchCatches = (dispatch, params) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        problems,
+        province_id,
+        zs_id,
+        as_id,
+        searchUuid,
+    } = params;
+    let url = `/api/catches?as_location=true&from=${dateFrom}&to=${dateTo}`;
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
+    return req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadCatches(result.body));
+        })
+        .catch((err) => {
+            console.error('Error when fetching catches', err);
+        });
+};
+
 export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     const {
         dateFrom,
         dateTo,
         userId,
+        sitesFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -147,6 +204,12 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (sitesFilter) {
+        url += `&sites_filter=${sitesFilter}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -163,11 +226,11 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTraps,
+        trapsFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/traps?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -179,11 +242,8 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTraps) {
-        url += '&onlyIgnoredTraps=True';
+    if (trapsFilter) {
+        url += `&traps_filter=${trapsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -193,6 +253,9 @@ export const fetchPaginatedTraps = (dispatch, params, limit, page, order) => {
     }
     if (as_id) {
         url += `&as_id=${as_id}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
     }
     return (req
         .get(url)
@@ -210,11 +273,11 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         dateTo,
         userId,
         habitats,
-        onlySelectedTraps,
-        onlyIgnoredTargets,
+        targetsFilter,
         province_id,
         zs_id,
         as_id,
+        searchUuid,
     } = params;
     let url = `/api/targets?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
@@ -226,11 +289,8 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (habitats) {
         url += `&habitats=${habitats}`;
     }
-    if (onlySelectedTraps) {
-        url += '&onlySelectedTraps=True';
-    }
-    if (onlyIgnoredTargets) {
-        url += '&onlyIgnoredTargets=True';
+    if (targetsFilter) {
+        url += `&targetsFilter=${targetsFilter}`;
     }
     if (province_id) {
         url += `&province_id=${province_id}`;
@@ -241,6 +301,9 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
     if (as_id) {
         url += `&as_id=${as_id}`;
     }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
     return (req
         .get(url)
         .then((result) => {
@@ -248,6 +311,49 @@ export const fetchPaginatedTargets = (dispatch, params, limit, page, order) => {
         })
         .catch((err) => {
             console.error('Error when fetching paginated targets', err);
+        }));
+};
+
+export const fetchPaginatedCatches = (dispatch, params, limit, page, order) => {
+    const {
+        dateFrom,
+        dateTo,
+        userId,
+        problems,
+        province_id,
+        zs_id,
+        as_id,
+        searchUuid,
+    } = params;
+    let url = `/api/catches?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    if (order) {
+        url += `&order=${order}`;
+    }
+    if (userId) {
+        url += `&userId=${userId}`;
+    }
+    if (province_id) {
+        url += `&province_id=${province_id}`;
+    }
+    if (zs_id) {
+        url += `&zs_id=${zs_id}`;
+    }
+    if (as_id) {
+        url += `&as_id=${as_id}`;
+    }
+    if (problems) {
+        url += `&problems=${problems}`;
+    }
+    if (searchUuid) {
+        url += `&search_uuid=${searchUuid}`;
+    }
+    return (req
+        .get(url)
+        .then((result) => {
+            dispatch(vectorActions.loadPaginatedCatches(result.body, params));
+        })
+        .catch((err) => {
+            console.error('Error when fetching paginated catches', err);
         }));
 };
 
@@ -313,6 +419,15 @@ export const fetchHabitats = dispatch => req
         console.error('Error when fetching habitats', err);
     });
 
+export const fetchProblems = dispatch => req
+    .get('/api/catchesProblems')
+    .then((result) => {
+        dispatch(vectorActions.loadProblems(result.body));
+    })
+    .catch((err) => {
+        console.error('Error when fetching catches problems', err);
+    });
+
 
 export const saveTrap = (dispatch, trap) => {
     dispatch(loadActions.startLoading());
@@ -326,14 +441,14 @@ export const saveTrap = (dispatch, trap) => {
         .catch(err => (console.error(`Error while saving trap ${err}`))));
 };
 
-export const saveSite = (dispatch, site) => {
-    dispatch(loadActions.startLoading());
+export const saveSite = (dispatch, site, dispatchLoad = true) => {
+    if (dispatchLoad) dispatch(loadActions.startLoading());
     return (req
         .put(`/api/new_sites/${site.id}/`)
         .set('Content-Type', 'application/json')
         .send(site)
         .then(() => {
-            dispatch(loadActions.successLoadingNoData());
+            if (dispatchLoad) dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while saving site ${err}`))));
 };
@@ -348,4 +463,20 @@ export const saveTarget = (dispatch, target) => {
             dispatch(loadActions.successLoadingNoData());
         })
         .catch(err => (console.error(`Error while saving target ${err}`))));
+};
+
+export const saveAssignations = (dispatch, sites, responsibleId) => {
+    dispatch(loadActions.startLoading());
+    const data = {
+        sites,
+        responsibleId,
+    };
+    return (req
+        .put('/api/new_sites/0/')
+        .set('Content-Type', 'application/json')
+        .send(data)
+        .then(() => {
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch(err => (console.error(`Error while saving assingations ${err}`))));
 };

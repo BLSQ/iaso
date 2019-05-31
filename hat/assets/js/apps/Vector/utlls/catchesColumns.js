@@ -1,12 +1,14 @@
 import moment from 'moment';
 import React from 'react';
+import { FormattedMessage } from 'react-intl';
 
-const catchesColumns = formatMessage => (
+const catchesColumns = (formatMessage, getDetail) => (
     [
         {
             Header: 'UUID',
             className: 'small',
             accessor: 'uuid',
+            width: 250,
         },
         {
             Header: formatMessage({
@@ -77,6 +79,25 @@ const catchesColumns = formatMessage => (
             }),
             className: 'small',
             accessor: 'username',
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Actions',
+                id: 'main.actions',
+            }),
+            sortable: false,
+            resizable: false,
+            Cell: settings => (
+                <section>
+                    <button
+                        className="button--edit--tiny"
+                        onClick={() => getDetail(settings.original.id, 'catches', 'showEditCatchesModale')}
+                    >
+                        <i className="fa fa-info-circle" />
+                        <FormattedMessage id="main.label.detail" defaultMessage="Détails" />
+                    </button>
+                </section>
+            ),
         },
     ]
 );

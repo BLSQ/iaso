@@ -163,7 +163,7 @@ class VillageModale extends Component {
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
-                onRequestClose={() => this.props.closeModale()}
+                onRequestClose={() => this.props.closeModal()}
             >
                 <section className="edit-modal large extra">
                     <TabsComponent
@@ -210,7 +210,7 @@ class VillageModale extends Component {
                     <div className="align-right">
                         <button
                             className="button"
-                            onClick={() => this.props.closeModale()}
+                            onClick={() => this.props.closeModal()}
                         >
                             <i className="fa fa-arrow-left" />
                             <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
@@ -236,7 +236,7 @@ VillageModale.defaultProps = {
 VillageModale.propTypes = {
     intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
-    closeModale: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
     village: PropTypes.object,
     saveVillage: PropTypes.func.isRequired,
     updateCurrentVillage: PropTypes.func.isRequired,

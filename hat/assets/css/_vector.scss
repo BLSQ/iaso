@@ -96,3 +96,22 @@
         }
     }
 }
+
+.assignation-legend {
+    list-style-type: none;
+    li {
+        height: 45px;
+        position: relative;
+        padding-left: 35px;
+        i {
+            margin-right: 0;
+            position: absolute;
+            top: 0;
+            left: 0;        }
+        >div {
+            font-size: 0.875rem;
+            display: inline-block;
+            margin-top: 9px;
+        }
+    }
+}

@@ -93,6 +93,11 @@ $color in $types {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    &.without-draw {
+        .leaflet-draw.leaflet-control, .leaflet-custom-draw-pane {
+            display: none;
+        }
+    }
 }
 
 .leaflet-container {
@@ -413,6 +418,21 @@ $color in $types {
         &:before {
             background: rgba($gray, 1);
         }
+        &.current {
+            &:before {
+                background: $green;
+            }
+        }
+        &.other {
+            &:before {
+                background: $blue;
+            }
+        }
+        &.not-assigned {
+            &:before {
+                background: red;
+            }
+        }
         &:after {
             background: yellow;
         }
@@ -440,10 +460,25 @@ $color in $types {
         }
     }
     &--catches {
-        width: 12px;
-        height: 12px;
-        border: 2px solid orange;
-        background: rgba(orange, 0.5);
+        &:before {
+            background: rgba(violet, 0.5);
+        }
+        &:after {
+            background: violet;
+            color: white;
+        }
+        &.small {
+            width: 12px;
+            height: 12px;
+            border: 2px solid violet;
+            background: rgba(violet, 0.5);
+            &:before {
+                display: none;
+            }
+            &:after {
+                display: none;
+            }
+        }
     }
     &--targets {
         &:before {
@@ -1274,11 +1309,11 @@ button {
     margin-bottom: $padding-unit / 2;
     padding: 0 !important;
     .map-container {
-        height: 600px;
+        height: 500px;
     }
     .map-parent-container {
         >div:not(.map-container) {
-            height: 600px !important;
+            height: 500px !important;
         }
     }
 }
@@ -1287,21 +1322,7 @@ button {
     .catches-map-container,
     .traps-map-container {
         .map-container {
-            height: 550px;
-        }
-        .map-parent-container {
-            >div:not(.map-container) {
-                height: 550px !important;
-            }
-        }
-    }
-}
-
-@media (max-height: 880px) {
-    .catches-map-container,
-    .traps-map-container {
-        .map-container {
-            height: 450px;
+            height:450px;
         }
         .map-parent-container {
             >div:not(.map-container) {
@@ -1311,7 +1332,7 @@ button {
     }
 }
 
-@media (max-height: 750px) {
+@media (max-height: 880px) {
     .catches-map-container,
     .traps-map-container {
         .map-container {
@@ -1320,6 +1341,20 @@ button {
         .map-parent-container {
             >div:not(.map-container) {
                 height: 400px !important;
+            }
+        }
+    }
+}
+
+@media (max-height: 750px) {
+    .catches-map-container,
+    .traps-map-container {
+        .map-container {
+            height: 350px;
+        }
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 350px !important;
             }
         }
     }

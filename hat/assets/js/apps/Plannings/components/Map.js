@@ -24,7 +24,7 @@ import {
     includeControlsInMap,
     genericMap,
     zooms,
-} from '../../../utils/mapUtils';
+} from '../../../utils//map/mapUtils';
 
 const radius = 600;
 
@@ -562,6 +562,7 @@ class Map extends Component {
         );
     }
 }
+
 Map.defaultProps = {
     planningId: '',
     baseLayer: '',

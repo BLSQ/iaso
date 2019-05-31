@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 
 export function clone(x) {
     return JSON.parse(JSON.stringify(x));
@@ -273,3 +274,6 @@ export const renderCountCell = (total, value, formatMessage) => {
 
 export const isMediumUser = userLevel => userLevel > 10 && userLevel <= 30;
 export const isSuperUser = userLevel => userLevel >= 40;
+
+
+export const getAgeFromYear = year => moment().format('YYYY') - parseInt(year, 10);

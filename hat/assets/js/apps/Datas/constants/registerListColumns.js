@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import { getAgeFromYear } from '../../../utils/index';
 
 const registerListColumns = formatMessage => (
     [
@@ -79,8 +80,13 @@ const registerListColumns = formatMessage => (
                 defaultMessage: 'Age',
                 id: 'register.label.age',
             }),
-            accessor: 'age',
+            accessor: 'year_of_birth',
             className: 'small',
+            Cell: settings => (
+                <span>
+                    {getAgeFromYear(settings.original.year_of_birth)}
+                </span>
+            ),
         },
         {
             Header: formatMessage({

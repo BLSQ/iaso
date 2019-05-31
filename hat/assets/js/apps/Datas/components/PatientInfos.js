@@ -4,6 +4,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
 import patientInfosMessages from '../constants/patientInfosMessages';
+import { getAgeFromYear } from '../../../utils/index';
 
 
 class PatientInfos extends React.Component {
@@ -112,7 +113,7 @@ class PatientInfos extends React.Component {
                                                 (
                                                     patient.year_of_birth ?
                                                         <span>
-                                                            {`${patient.year_of_birth} (${moment().format('YYYY') - patient.year_of_birth} ${
+                                                            {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)}} ${
                                                                 formatMessage({
                                                                     defaultMessage: 'ans',
                                                                     id: 'patientsinfos.years',

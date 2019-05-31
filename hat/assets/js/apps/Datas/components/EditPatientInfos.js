@@ -4,10 +4,10 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import moment from 'moment';
 import DatePicker from 'react-datepicker';
-import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 
 import patientInfosMessages from '../constants/patientInfosMessages';
 import FiltersComponent from '../../../components/FiltersComponent';
+import { getAgeFromYear } from '../../../utils/index';
 
 import {
     filtersProvinces,
@@ -190,7 +190,7 @@ class EditPatientInfos extends React.Component {
                                                     key === 'year_of_birth' &&
                                                     <span className="years">
                                                         {
-                                                            ` ${moment().format('YYYY') - patient.year_of_birth} ${formatMessage(MESSAGES.years)}`
+                                                            ` ${getAgeFromYear(patient.year_of_birth)} ${formatMessage(MESSAGES.years)}`
                                                         }
                                                     </span>
                                                 }

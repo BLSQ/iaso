@@ -191,13 +191,17 @@ class SitesViewSet(viewsets.ViewSet):
                 return Response('Unauthorized', status=401)
             columns = [
                 {"title": "ID", "width": 5},
+                {"title": "Uid", "width": 5},
                 {"title": "Date de création", "width": 17},
+                {"title": "Date de modification", "width": 17},
                 {"title": "Nom", "width": 15},
                 {"title": "Latitude"},
                 {"title": "Longitude"},
                 {"title": "Altitude"},
                 {"title": "Description"},
                 {"title": "Responsable"},
+                {"title": "Créateur"},
+                {"title": "Ignoré"},
                 {"title": "Nombre de pièges"},
             ]
             filename = "sites"
@@ -206,13 +210,17 @@ class SitesViewSet(viewsets.ViewSet):
                 sdict = site.as_dict(additional_fields)
                 return [
                     sdict.get("id"),
+                    sdict.get("uuid"),
                     site.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    site.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
                     sdict.get("name"),
                     sdict.get("latitude"),
                     sdict.get("longitude"),
                     sdict.get("altitude"),
                     sdict.get("description"),
                     sdict["responsible"],
+                    sdict["creator"],
+                    "Oui" if sdict["ignore"] else "Non",
                     site.traps_count,
                 ]
 

@@ -225,7 +225,10 @@ class VillageMap extends Component {
         this.villageGroup.clearLayers();
         const color = 'blue';
         if (village && village.latitude !== 0 && village.longitude !== 0) {
-            const newVillage = L.circle([village.latitude, village.longitude], {
+            const newVillage = L.circle([
+                village.latitude ? village.latitude : 0,
+                village.longitude ? village.longitude : 0,
+            ], {
                 color,
                 fillColor: color,
                 fillOpacity: 0.5,

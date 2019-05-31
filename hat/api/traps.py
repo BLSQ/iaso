@@ -197,19 +197,26 @@ class TrapsViewSet(viewsets.ViewSet):
                 return Response('Unauthorized', status=401)
             columns = [
                 {"title": "ID", "width": 5},
+                {"title": "Uid", "width": 10},
                 {"title": "Date de création", "width": 17},
+                {"title": "Date de modification", "width": 17},
                 {"title": "Nom", "width": 15},
                 {"title": "Nombre de\ndéploiements", "width": 10},
                 {"title": "Males"},
                 {"title": "Femelles"},
                 {"title": "Inconnus"},
+                {"title": "Total"},
                 {"title": "Latitude"},
                 {"title": "Longitude"},
                 {"title": "Altitude"},
                 {"title": "Habitat"},
                 {"title": "Description"},
                 {"title": "Sélectionné"},
+                {"title": "Ignoré"},
                 {"title": "Utilisateur"},
+                {"title": "Source"},
+                {"title": "Rivière"},
+                {"title": "Site", "width": 30},
             ]
             filename = "traps"
 
@@ -229,22 +236,28 @@ class TrapsViewSet(viewsets.ViewSet):
                     catches_count_male = trap.catches_count_male
                     catches_count_female = trap.catches_count_female
                     catches_count_unknown = trap.catches_count_unknown
-
                 return [
                     sdict.get("id"),
+                    sdict.get("uuid"),
                     trap.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    trap.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
                     sdict.get("name"),
                     trap.catches_count,
                     catches_count_male,
                     catches_count_female,
                     catches_count_unknown,
+                    sdict.get("total"),
                     sdict.get("latitude"),
                     sdict.get("longitude"),
                     sdict.get("altitude"),
                     habitatText,
                     sdict.get("description"),
                     selectedText,
-                    sdict["username"],
+                    "Oui" if sdict["ignore"] else "Non",
+                    sdict.get("username"),
+                    sdict.get("source"),
+                    sdict.get("river"),
+                    sdict.get("site").get("uuid") if  sdict.get("site") else "Inconnu",
                 ]
 
             if xlsx_format:

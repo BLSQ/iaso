@@ -8,6 +8,7 @@ const trapsColumns = (formatMessage, messages, getDetail) => (
             Header: 'UUID',
             className: 'small',
             accessor: 'uuid',
+            width: 250,
         },
         {
             Header: formatMessage({

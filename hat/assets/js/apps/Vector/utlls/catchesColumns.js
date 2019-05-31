@@ -8,6 +8,7 @@ const catchesColumns = (formatMessage, getDetail) => (
             Header: 'UUID',
             className: 'small',
             accessor: 'uuid',
+            width: 250,
         },
         {
             Header: formatMessage({

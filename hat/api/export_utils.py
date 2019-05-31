@@ -90,9 +90,11 @@ class Echo:
     def write(self, value):
         return value
 
-
 def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
     writer = csv.writer(pseudo_buffer)
-    yield writer.writerow(columns)
+    if columns and len(columns) > 0 and type(columns[0]) == dict:
+        yield writer.writerow([c['title'].replace("\n", " ") for c in columns])
+    else:
+        yield writer.writerow(columns)
     for item in queryset_iterator(queryset, chunk_size=chunk_size):
         yield writer.writerow(get_row(item))

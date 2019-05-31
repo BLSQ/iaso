@@ -106,26 +106,40 @@ class TargetsViewSet(viewsets.ViewSet):
                     not request.user.is_superuser):
                 return Response('Unauthorized', status=401)
             columns = [{"title": 'ID', "width": 6},
+                       {"title": 'Uid', "width": 6},
                        {"title": 'Date', "width": 17},
                        {"title": 'Nom', "width": 15},
                        {"title": 'Latitude'},
                        {"title": 'Longitude'},
                        {"title": 'Altitude'},
+                       {"title": "Ignoré"},
                        {"title": 'Déploiement'},
-                       {"title": 'Rivière', "width": 15}]
+                       {"title": 'Import GPS'},
+                       {"title": 'Date import API'},
+                       {"title": 'Utilisateur import API'},
+                       {"title": 'Déploiement'},
+                       {"title": 'Rivière', "width": 15},
+                       {"title": 'Village', "width": 15}]
             filename = 'targets'
 
             def get_row(target, **kwargs):
                 tdict = target.as_dict()
+                print (tdict.get("gps_import"))
                 return [
                             tdict.get("id"),
+                            tdict.get("uuid"),
                             target.date_time.strftime("%Y-%m-%d %H:%M:%S"),
                             tdict.get("name"),
                             tdict.get("latitude"),
                             tdict.get("longitude"),
                             tdict.get("altitude"),
+                            "Oui" if tdict["ignore"] else "Non",
                             tdict.get("deployment"),
+                            tdict.get("gps_import").get("created_at").strftime("%Y-%m-%d %H:%M:%S") if tdict.get("gps_import") else "",
+                            tdict.get("api_import").get("created_at").strftime("%Y-%m-%d %H:%M:%S") if tdict.get("api_import") else "",
+                            tdict.get("api_import").get("user") if tdict.get("api_import") else "",
                             tdict.get("river"),
+                            tdict.get("village"),
                         ]
             if xlsx_format:
                 filename = filename + '.xlsx'

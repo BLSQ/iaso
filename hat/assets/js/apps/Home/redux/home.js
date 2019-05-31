@@ -2,7 +2,7 @@ import moment from 'moment';
 
 export const FETCH_ACTION = 'hat/home/FETCH_ACTION';
 export const SET_GEO_ZONES = 'hat/home/SET_GEO_ZONES';
-export const SET_GEO_PROVINCES = 'hat/home/SET_GSET_GEO_PROVINCESEO_ZONES';
+export const SET_GEO_PROVINCES = 'hat/home/SET_GEO_PROVINCES';
 export const SET_ZONES = 'hat/home/SET_ZONES';
 export const SET_BAR_CHART_DATAS = 'hat/home/SET_BAR_CHART_DATAS';
 

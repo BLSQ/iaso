@@ -13,7 +13,8 @@ from hat.constants import TYPES_CONFIRMATION
 from hat.patient.models import Test
 from django.core.cache import cache
 
-cacheValue = 60 * 60 * 24 * 7
+cacheTTL = 60 * 60 * 24 * 7
+
 
 class HomeViewSet(viewsets.ViewSet):
     """
@@ -59,15 +60,16 @@ class HomeViewSet(viewsets.ViewSet):
                 provinces = Province.objects.all().exclude(id__in=zones_provinces_ids).filter(geom__isnull=False)
                 zones_geo_json = geojson_queryset(zones, geometry_field='simplified_geom', fields=['name', 'province'])
                 provinces_geo_json = geojson_queryset(provinces, geometry_field='simplified_geom', fields=['name'])
-                cache.set(absolute_url, zones_geo_json, cacheValue)
-                cache.set(absolute_url, provinces_geo_json, cacheValue)
-                return Response({
+                result = {
                     "zones": zones_geo_json,
                     "provinces": provinces_geo_json,
-                })
+                }
+                cache.set(absolute_url, result, cacheTTL)
+                return Response(result)
             else:
-                cache.set(absolute_url, queryset.values(*values).order_by('name'), cacheValue)
-                return Response(queryset.values(*values).order_by('name'))
+                result = queryset.values(*values).order_by('name')
+                cache.set(absolute_url, result, cacheTTL)
+                return Response(result)
         if is_chart:
             from_date = request.GET.get("from", None)
             to_date = request.GET.get("to", None)
@@ -91,6 +93,6 @@ class HomeViewSet(viewsets.ViewSet):
 
             grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
 
-            cache.set(absolute_url, grouped_queryset, cacheValue)
+            cache.set(absolute_url, grouped_queryset, cacheTTL)
             return Response(grouped_queryset)
 

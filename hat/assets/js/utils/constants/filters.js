@@ -1113,7 +1113,7 @@ const problems = (formatMessage, problemsList) => (
     }
 );
 
-const screeningType = (formatMessage, defineMessages) => (
+const screeningType = formatMessage => (
     {
         name: 'screening_type',
         urlKey: 'screening_type',
@@ -1121,11 +1121,11 @@ const screeningType = (formatMessage, defineMessages) => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(getMessage(defineMessages, 'active')),
+                label: formatMessage(getMessage('active')),
                 value: 'active',
             },
             {
-                label: formatMessage(getMessage(defineMessages, 'passive')),
+                label: formatMessage(getMessage('passive')),
                 value: 'passive',
             },
         ],

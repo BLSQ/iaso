@@ -47,7 +47,7 @@ const filtersCases2 = (
         teams(teamsList),
         located(formatMessage),
         testerType(formatMessage),
-        screeningType(formatMessage, defineMessages),
+        screeningType(formatMessage),
     ]
 );
 
@@ -95,7 +95,7 @@ const filtersPatientsTreatments = (teamsList, formatMessage) => (
         teams(teamsList),
         medecine(formatMessage),
         testerType(formatMessage),
-        screeningType(formatMessage, defineMessages),
+        screeningType(formatMessage),
         onlyTreatedPatients(),
         onlyDead(),
         onlyDupes(),

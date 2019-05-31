@@ -107,6 +107,7 @@ class Cases extends Component {
         });
         return url;
     }
+
     selectCase(caseItem, event) {
         if (event.currentTarget.children[0] && event.currentTarget.children[0].classList[1] === 'not-located') {
             window.open(`/dashboard/locator/case_id/${caseItem.id}`, '_blank');
@@ -123,6 +124,7 @@ class Cases extends Component {
             this.props.redirectTo('tests/detail', newParams);
         }
     }
+
     render() {
         const { formatMessage } = this.props.intl;
         const {

@@ -84,6 +84,20 @@ class PatientCasesInfo extends React.Component {
                         </tr>
                         <tr>
                             <th>
+                                <FormattedMessage id="patientsCases.screening_type" defaultMessage="Type de dépistage" />
+                            </th>
+                            <td>
+                                {!currentCase.screening_type && '--'}
+                                {currentCase.screening_type === 'active' &&
+                                    <FormattedMessage id="patientsCases.active" defaultMessage="Actif" />
+                                }
+                                {currentCase.screening_type === 'passive' &&
+                                    <FormattedMessage id="patientsCases.passive" defaultMessage="Passif" />
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
                                 <FormattedMessage id="patientsCases.team" defaultMessage="Equipe" />
                             </th>
                             <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>

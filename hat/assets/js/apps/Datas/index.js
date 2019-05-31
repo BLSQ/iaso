@@ -33,7 +33,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/back/:back)' +
+            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/back/:back)(/screening_type/:screening_type)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={CasesPage}
         />,
@@ -44,7 +44,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)' +
             '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)' +
-            '(/videos/:videos)(/tab/:tab)(/anonymous/:anonymous)'}
+            '(/videos/:videos)(/tab/:tab)(/anonymous/:anonymous)(/screening_type/:screening_type)'}
             component={PatientDetailPage}
         />,
         <Route
@@ -53,7 +53,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
             '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
             '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)' +
-            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/back/:back)'}
+            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/back/:back)(/screening_type/:screening_type)'}
             component={PatientsPage}
         />,
         <Route
@@ -61,7 +61,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
             '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/only_dupes/:only_dupes)' +
-            '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)' +
+            '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)(/screening_type/:screening_type)' +
             '(/prov_id/:prov_id)(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={PatientDetailPage}
         />,

@@ -23,6 +23,7 @@ import {
     device,
     images,
     videos,
+    screeningType,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -46,6 +47,7 @@ const filtersCases2 = (
         teams(teamsList),
         located(formatMessage),
         testerType(formatMessage),
+        screeningType(formatMessage, defineMessages),
     ]
 );
 
@@ -93,6 +95,7 @@ const filtersPatientsTreatments = (teamsList, formatMessage) => (
         teams(teamsList),
         medecine(formatMessage),
         testerType(formatMessage),
+        screeningType(formatMessage, defineMessages),
         onlyTreatedPatients(),
         onlyDead(),
         onlyDupes(),

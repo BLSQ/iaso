@@ -4,6 +4,33 @@ const casesListColumns = formatMessage => (
     [
         {
             Header: formatMessage({
+                defaultMessage: 'Type',
+                id: 'casesList.label.screening_type',
+            }),
+            accessor: 'screening_type',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.screening_type === 'active' && formatMessage({
+                            defaultMessage: 'Actif',
+                            id: 'main.label.active',
+                        })
+                    }
+                    {
+                        settings.original.screening_type === 'passive' && formatMessage({
+                            defaultMessage: 'Passif',
+                            id: 'main.label.passive',
+                        })
+                    }
+                    {
+                        !settings.original.screening_type && '--'
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Année',
                 id: 'casesList.label.normalized_year',
             }),

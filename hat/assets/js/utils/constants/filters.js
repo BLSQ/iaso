@@ -124,6 +124,14 @@ export const MESSAGES = {
         defaultMessage: 'Non sélectionné',
         id: 'main.label.not_selected',
     },
+    active: {
+        defaultMessage: 'Actif',
+        id: 'main.label.active',
+    },
+    passive: {
+        defaultMessage: 'Passif',
+        id: 'main.label.passive',
+    },
 };
 
 const getMessage = key => defineMessages(MESSAGES[key]);
@@ -1105,6 +1113,34 @@ const problems = (formatMessage, problemsList) => (
     }
 );
 
+const screeningType = formatMessage => (
+    {
+        name: 'screening_type',
+        urlKey: 'screening_type',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage('active')),
+                value: 'active',
+            },
+            {
+                label: formatMessage(getMessage('passive')),
+                value: 'passive',
+            },
+        ],
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'cases.label.screening_type',
+            defaultMessage: 'Type de dépistage',
+        },
+        type: 'select',
+    }
+);
+
 export {
     testType,
     testTypeImage,
@@ -1144,5 +1180,6 @@ export {
     teamType,
     screenTeamType,
     institutions,
+    screeningType,
     problems,
 };

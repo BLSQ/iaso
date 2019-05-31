@@ -1,4 +1,3 @@
-import { defineMessages } from 'react-intl';
 import {
     selectWorkZone,
     selectProvince,
@@ -134,7 +133,7 @@ export const MESSAGES = {
     },
 };
 
-const getMessage = key => defineMessages(MESSAGES[key]);
+const getMessage = key => MESSAGES[key];
 
 const testType = formatMessage => (
     {

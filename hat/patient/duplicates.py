@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 
 from hat.audit.models import log_modification, PATIENT_API
@@ -49,20 +49,34 @@ def ignore_patient_duplicate(patient_dupe, user):
 
 
 def create_potential_duplicates_for_patient(patient):
+    return create_potential_duplicates_for_patient_id(patient.id)
+
+
+def create_potential_duplicates_for_patient_id(patient_id):
     """
     This method will look for potential duplicates for a (new) patient and store them if appropriate
     """
-    to_insert = []
-    for dupe in PatientDuplicatesView.objects.filter(patient1_id=patient.id):
-        to_insert.append(PatientDuplicatesPair(
-            patient1_id=dupe.patient1_id,
-            patient2_id=dupe.patient2_id,
-            similarity_score=dupe.similarity_score,
-            algorithm=dupe.algorithm,
-        ))
+    # to_insert = []
+    created = 0
+    for dupe in PatientDuplicatesView.objects.filter(patient1_id=patient_id).filter(patient1_id__gt=F('patient2_id')):
+        # to_insert.append(
+        if dupe.patient1_id > dupe.patient2_id:
+            try:
+                PatientDuplicatesPair.objects.create(
+                    patient1_id=dupe.patient1_id,
+                    patient2_id=dupe.patient2_id,
+                    similarity_score=dupe.similarity_score,
+                    algorithm=dupe.algorithm,
+                )
+                created += 1
+            except IntegrityError:
+                # Already exists
+                pass
 
-    PatientDuplicatesPair.objects.bulk_create(to_insert)
-    return len(to_insert)
+    # Bulk_create only supports the ignore_conflicts=True from Django 2.2
+    # PatientDuplicatesPair.objects.bulk_create(to_insert)
+
+    return created
 
 
 def create_potential_duplicates_for_patient_range(low_id, high_id):

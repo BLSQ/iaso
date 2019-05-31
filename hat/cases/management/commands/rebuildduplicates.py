@@ -1,7 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Max
 
-from hat.patient.duplicates import create_potential_duplicates_for_patient_range
+from hat.common.utils import queryset_iterator
+from hat.patient.duplicates import create_potential_duplicates_for_patient_range, \
+    create_potential_duplicates_for_patient_id
 from hat.patient.models import Patient, PatientDuplicatesView, PatientDuplicatesPair
 
 
@@ -60,11 +62,14 @@ class Command(BaseCommand):
 
         chunk = int(options['chunk']) if options['chunk'] else 1000
 
+        id_queryset = Patient.objects.filter(id__gte=min_id).values_list("id", flat=True).order_by("id")
+
         total_created = 0
-        for i in range(min_id, max_id, chunk):
-            amount_created = create_potential_duplicates_for_patient_range(i, i + chunk)
+        for i in queryset_iterator(id_queryset, chunk_size=chunk):
+            amount_created = create_potential_duplicates_for_patient_id(i)
             total_created += amount_created
-            self.stdout.write("\r\x1b[KProgress: {}/{} pairs: {}/{}".format(i, max_id, amount_created, total_created),
+            self.stdout.write("\r\x1b[KProgress: {}/{} pairs: {}/{} in {} sec"
+                              .format(i, max_id, amount_created, total_created, int(time.time()-t_begin)),
                               ending="")
             self.stdout.flush()
 

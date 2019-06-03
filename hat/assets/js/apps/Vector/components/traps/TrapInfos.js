@@ -81,7 +81,13 @@ class TrapInfos extends PureComponent {
                             value={trap.habitat}
                             placeholder={formatMessage(MESSAGES.none)}
                             options={habitats.map(h =>
-                                ({ label: h[1], value: h[0] }))}
+                                ({
+                                    label: formatMessage({
+                                        defaultMessage: h[1],
+                                        id: h[0],
+                                    }),
+                                    value: h[0],
+                                }))}
                             onChange={habitat => updateTrapField('habitat', habitat)}
                         />
                     </div>

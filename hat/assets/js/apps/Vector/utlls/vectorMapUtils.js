@@ -32,42 +32,10 @@ export const MESSAGES = defineMessages({
     },
 });
 
-const editSiteButton = siteId => `<button
-    class="button--tiny"
-    id="edit-button"
-    data-id="${siteId}"
-    data-type="site"
-    >
-    <i class="fa fa-pencil-square-o"> </i>
-    </button>`;
 
-const editTrapButton = trapId => `<button
-        class="button--tiny"
-        id="edit-button"
-        data-id="${trapId}"
-        data-type="trap"
-        >
-        <i class="fa fa-pencil-square-o"> </i>
-        </button>`;
-
-const editCatchButton = (siteId, withAction) => {
-    if (withAction) {
-        return `<button
-        class="button--tiny"
-        id="catches-button"
-        data-id="${siteId}"
-        data-type="catches"
-        >
-        <i class="fa fa-eye"> </i>
-        </button>`;
-    }
-    return '';
-};
-
-export const renderSitesPopup = (site, formatMessage, withActions = true) => `<section class="custom-popup-container">
+export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
                 <h6>
                     ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
-                    ${withActions ? editSiteButton(site.id) : ''}
                 </h6>
 
                 <table>
@@ -122,118 +90,125 @@ export const renderSitesPopup = (site, formatMessage, withActions = true) => `<s
                 </table>
             </section>`;
 
-export const renderTrapsPopup = (trap, formatMessage, withActions = true) => `<section class="custom-popup-container">
-                            <h6>
-                                ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.trap' })}:
-                                ${withActions ? editTrapButton(trap.id) : ''}
-                            </h6>
+export const renderTrapsPopup = (trap, formatMessage, habitats) => {
+    let habitatLabel = formatMessage(MESSAGES.unknown);
+    if (trap.habitat) {
+        const currentHabitat = habitats.find(h => h[0] === trap.habitat);
+        habitatLabel = formatMessage({
+            id: currentHabitat[0],
+            defaultMessage: currentHabitat[1],
+        });
+    }
+    return `<section class="custom-popup-container">
+    <h6>
+        ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.trap' })}:
+    </h6>
 
-                            <table>
-                                <tbody>
-                                    <tr>
-                                        <td>UUID</td>
-                                        <td>
-                                            ${trap.uuid}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
-                                        </td>
-                                        <td>
-                                            ${trap.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Déploiements', id: 'vector.labels.catches' })}
-                                        </td>
-                                        <td>
-                                            ${trap.catches_count !== undefined ? trap.catches_count : '0'}
-                                            ${trap.catches_count > 0 ? editCatchButton(trap.id, withActions) : ''}
-
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
-                                        </td>
-                                        <td>
-                                            ${trap.catches_count_male || '0'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
-                                        </td>
-                                        <td>
-                                            ${trap.catches_count_female || '0'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
-                                        </td>
-                                        <td>
-                                            ${trap.catches_count_unknown || '0'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
-                                        </td>
-                                        <td>
-                                            ${trap.latitude}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
-                                        </td>
-                                        <td>
-                                            ${trap.longitude}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
-                                        </td>
-                                        <td class="${!trap.altitude ? 'align-center' : ''}">
-                                            ${trap.altitude ? trap.altitude : '/'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
-                                        </td>
-                                        <td>
-                                            ${!trap.habitat || trap.habitat === '' ? formatMessage(MESSAGES.unknown) : formatMessage(MESSAGES[trap.habitat])}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
-                                        </td>
-                                        <td>
-                                            ${moment(trap.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
-                                        </td>
-                                        <td>
-                                            <input
-                                                name="isGoing"
-                                                type="checkbox"
-                                                ${trap.is_selected === true ? 'checked' : ''}
-                                                id="selected-trap-select"
-                                                /> 
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>`;
+    <table>
+        <tbody>
+            <tr>
+                <td>UUID</td>
+                <td>
+                    ${trap.uuid}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
+                </td>
+                <td>
+                    ${trap.name}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Déploiements', id: 'vector.labels.catches' })}
+                </td>
+                <td>
+                    ${trap.catches_count !== undefined ? trap.catches_count : '0'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
+                </td>
+                <td>
+                    ${trap.catches_count_male || '0'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
+                </td>
+                <td>
+                    ${trap.catches_count_female || '0'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
+                </td>
+                <td>
+                    ${trap.catches_count_unknown || '0'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
+                </td>
+                <td>
+                    ${trap.latitude}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
+                </td>
+                <td>
+                    ${trap.longitude}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
+                </td>
+                <td class="${!trap.altitude ? 'align-center' : ''}">
+                    ${trap.altitude ? trap.altitude : '/'}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
+                </td>
+                <td>
+                    ${habitatLabel}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
+                </td>
+                <td>
+                    ${moment(trap.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
+                </td>
+                <td>
+                    <input
+                        name="isGoing"
+                        type="checkbox"
+                        ${trap.is_selected === true ? 'checked' : ''}
+                        id="selected-trap-select"
+                        />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>`;
+};
 
 
 export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<section class="custom-popup-container">

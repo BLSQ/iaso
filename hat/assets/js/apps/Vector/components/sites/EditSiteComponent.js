@@ -42,6 +42,7 @@ class EditSiteComponent extends Component {
             trapsColumns: trapsColumns(
                 props.intl.formatMessage,
                 MESSAGES,
+                props.habitats,
                 (id, urlKey, key) => {
                     props.getDetail(id, urlKey, key);
                 },
@@ -63,6 +64,14 @@ class EditSiteComponent extends Component {
             showModale: nextProps.showModale,
             site: nextProps.site,
             isChanged: false,
+            trapsColumns: trapsColumns(
+                this.props.intl.formatMessage,
+                MESSAGES,
+                this.props.habitats,
+                (id, urlKey, key) => {
+                    this.props.getDetail(id, urlKey, key);
+                },
+            ),
         });
     }
 
@@ -228,6 +237,7 @@ EditSiteComponent.propTypes = {
     map: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
     getDetail: PropTypes.func.isRequired,
+    habitats: PropTypes.array.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -238,6 +248,7 @@ const MapDispatchToProps = dispatch => ({
 
 const MapStateToProps = state => ({
     map: state.map,
+    habitats: state.vectors.habitats,
 });
 
 

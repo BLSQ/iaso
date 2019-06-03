@@ -152,7 +152,7 @@ class TrapsMap extends Component {
             siteCircle.addTo(this.siteGroup)
                 .on('click', (event) => {
                     const popUp = event.target.getPopup();
-                    popUp.setContent(renderSitesPopup(site, formatMessage, false));
+                    popUp.setContent(renderSitesPopup(site, formatMessage));
                 })
                 .bindPopup()
                 .on('mouseover', () => {

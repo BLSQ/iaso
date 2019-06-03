@@ -2,7 +2,7 @@ import moment from 'moment';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
-const trapsColumns = (formatMessage, messages, getDetail) => (
+const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
     [
         {
             Header: 'UUID',
@@ -89,15 +89,21 @@ const trapsColumns = (formatMessage, messages, getDetail) => (
             }),
             className: 'small',
             accessor: 'habitat',
-            Cell: settings => (
-                <span>
-                    {
-                        settings.original.habitat ?
-                            formatMessage(messages[settings.original.habitat]) :
-                            formatMessage(messages.unknown)
-                    }
-                </span>
-            ),
+            Cell: (settings) => {
+                const currentHabitat = habitats.find(h => h[0] === settings.original.habitat);
+                return (
+                    <span>
+                        {
+                            currentHabitat ?
+                                formatMessage({
+                                    id: currentHabitat[0],
+                                    defaultMessage: currentHabitat[1],
+                                }) :
+                                formatMessage(messages.unknown)
+                        }
+                    </span>
+                );
+            },
         },
         {
             Header: formatMessage({

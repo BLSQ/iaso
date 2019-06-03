@@ -143,6 +143,7 @@ class EditTrapComponent extends Component {
                                 <CatchesMap
                                     baseLayer={baseCatchLayer}
                                     trap={trap}
+                                    habitatsList={habitats}
                                     getShape={type => this.props.getShape(type)}
                                     saveTrap={this.props.saveTrap}
                                     getDetail={(id, urlKey, key) => getDetail(id, urlKey, key)}

@@ -18,6 +18,7 @@ import {
     includeControlsInMap,
     includeDefaultLayersInMap,
 } from '../../../../utils//map/mapUtils';
+import { habitats } from '../../../../utils/constants/filters';
 
 const tileOptions = { keepBuffer: 4 };
 const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
@@ -125,6 +126,7 @@ class CatchesMap extends Component {
             intl: {
                 formatMessage,
             },
+            habitatsList,
         } = this.props;
         this.catchesGroup.clearLayers();
         this.trapGroup.clearLayers();
@@ -135,7 +137,7 @@ class CatchesMap extends Component {
         trapCircle.addTo(this.trapGroup)
             .on('click', (event) => {
                 const popUp = event.target.getPopup();
-                popUp.setContent(renderTrapsPopup(trap, formatMessage, false));
+                popUp.setContent(renderTrapsPopup(trap, formatMessage, habitatsList));
                 setTimeout(() => {
                     const selectedSelect = document.getElementById('selected-trap-select');
 
@@ -257,6 +259,7 @@ CatchesMap.propTypes = {
     saveTrap: PropTypes.func.isRequired,
     getShape: PropTypes.func.isRequired,
     getDetail: PropTypes.func.isRequired,
+    habitatsList: PropTypes.array.isRequired,
 };
 
 export default injectIntl(CatchesMap);

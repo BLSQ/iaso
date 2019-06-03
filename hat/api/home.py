@@ -40,13 +40,10 @@ class HomeViewSet(viewsets.ViewSet):
         if is_map:
             as_geo_json = request.GET.get("geojson", None)
             years = request.GET.get("years", None)
-            with_geo_json = request.GET.get("with_geo_json", None)
 
             queryset = ZS.objects.all()
 
             values = ['name', 'id', 'province_id']
-            if with_geo_json:
-                queryset = queryset.filter(geom__isnull=False)
             if years:
                 years_array = years.split(",")
                 nr_positive_cases = Count(

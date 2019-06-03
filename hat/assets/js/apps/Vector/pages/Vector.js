@@ -43,7 +43,7 @@ export class Vector extends Component {
             endemicVillages: {},
             currentTab: props.params.tab,
             sitesColumns: sitesColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
-            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
+            trapsColumns: trapsColumns(props.intl.formatMessage, MESSAGES, props.habitats, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
             targetsColumns: targetsColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
             catchesColumns: catchesColumns(props.intl.formatMessage, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
             showEditTrapsModale: false,
@@ -75,6 +75,7 @@ export class Vector extends Component {
             traps: newProps.params.traps ? newProps.vectors.traps : [],
             targets: newProps.params.targets ? newProps.vectors.targets : [],
             catches: newProps.params.catches ? newProps.vectors.catches : [],
+            trapsColumns: trapsColumns(this.props.intl.formatMessage, MESSAGES, this.props.habitats, (id, urlKey, key) => this.getDetail(id, urlKey, key)),
         });
     }
 
@@ -469,6 +470,7 @@ Vector.propTypes = {
     shapeMarkers: PropTypes.array.isRequired,
     onSearch: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
+    habitats: PropTypes.array.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -488,6 +490,7 @@ const MapStateToProps = state => ({
     reduxTargetsPage: state.vectors.targetsPage,
     reduxCatchesPage: state.vectors.catchesPage,
     profiles: state.vectors.profiles,
+    habitats: state.vectors.habitats,
 });
 const VectorWithIntl = injectIntl(Vector);
 

@@ -292,10 +292,8 @@ class TrapsViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=trap.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or (
-            (province is not None and zone is not None and area is not None)
-            and is_authorized_user(request.user, province.id, zone.id, area.id)
-        )
+        is_authorized = (province is None and zone is None and area is None) or \
+            is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             trap_dict = trap.as_dict()
@@ -376,10 +374,8 @@ class TrapsViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=new_trap.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or (
-            (province is not None and zone is not None and area is not None)
-            and is_authorized_user(request.user, province.id, zone.id, area.id)
-        )
+        is_authorized = (province is None and zone is None and area is None) or \
+            is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             new_trap.name = request.data.get("name", "")

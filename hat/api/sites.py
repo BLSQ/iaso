@@ -256,10 +256,8 @@ class SitesViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=site.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or (
-            (province is not None and zone is not None and area is not None)
-            and is_authorized_user(request.user, province.id, zone.id, area.id)
-        )
+        is_authorized = (province is None and zone is None and area is None) or \
+            is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             site_dict = site.as_dict()
@@ -335,10 +333,8 @@ class SitesViewSet(viewsets.ViewSet):
                 if AS.objects.filter(geom__contains=new_site.location).count() > 0
                 else None
             )
-            is_authorized = (province is None and zone is None and area is None) or (
-                (province is not None and zone is not None and area is not None)
-                and is_authorized_user(request.user, province.id, zone.id, area.id)
-            )
+            is_authorized = (province is None and zone is None and area is None) or \
+                is_authorized_user(request.user, province, zone, area)
 
             if is_authorized:
                 profile_id = request.data.get("responsible_id", None)

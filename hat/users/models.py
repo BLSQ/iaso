@@ -39,7 +39,10 @@ def get_user_geo_list(user, key):
     return getattr(user.profile, key).values_list("pk", flat=True)
 
 
-def is_authorized_user(user, province_id, zone_id, area_id):
+def is_authorized_user(user, province, zone, area):
+    province_id = province.id if type(province) is Province else province
+    zone_id = zone.id if type(zone) is ZS else zone
+    area_id = area.id if type(area) is AS else area
     user_as_ids = get_user_geo_list(user, "AS_scope")
     user_zs_ids = get_user_geo_list(user, "ZS_scope")
     user_province_ids = get_user_geo_list(user, "province_scope")

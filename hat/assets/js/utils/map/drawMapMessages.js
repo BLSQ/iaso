@@ -27,7 +27,7 @@ const MESSAGES = defineMessages({
         id: 'map.draw.label.polygonTooltipCont',
     },
     polygonTooltipEnd: {
-        defaultMessage: 'Cliquez sur le premier point pour finir la frome',
+        defaultMessage: 'Cliquez sur le premier point pour finir la forme',
         id: 'map.draw.label.polygonTooltipEnd',
     },
     rectangle: {
@@ -144,7 +144,7 @@ const setDrawMessages = (formatMessage) => {
                 },
                 rectangle: {
                     tooltip: {
-                        start: formatMessage(MESSAGES.circleTooltip),
+                        start: formatMessage(MESSAGES.rectangleTooltip),
                     },
                 },
                 simpleshape: {

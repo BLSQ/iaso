@@ -47,7 +47,8 @@ class HomeViewSet(viewsets.ViewSet):
             if years:
                 years_array = years.split(",")
                 nr_positive_cases = Count(
-                    "as", filter=Q(as__village__caseview__confirmed_case=True, as__village__caseview__normalized_year__in=years_array)
+                    "as", filter=Q(as__village__caseview__confirmed_case=True,
+                                   as__village__caseview__normalized_year__in=years_array)
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values.append('nr_positive_cases')

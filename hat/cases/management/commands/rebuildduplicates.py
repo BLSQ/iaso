@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction, IntegrityError
 from django.db.models import Max
 
 from hat.common.utils import queryset_iterator
@@ -66,8 +67,14 @@ class Command(BaseCommand):
 
         total_created = 0
         for i in queryset_iterator(id_queryset, chunk_size=chunk):
-            amount_created = create_potential_duplicates_for_patient_id(i)
-            total_created += amount_created
+            try:
+                with transaction.atomic():
+                    amount_created = create_potential_duplicates_for_patient_id(i)
+                    total_created += amount_created
+            except Exception as exc:
+                # Documentation insist on catching exceptions here. We don't expect anything though.
+                print(exc)
+                raise exc
             self.stdout.write("\r\x1b[KProgress: {}/{} pairs: {}/{} in {} sec"
                               .format(i, max_id, amount_created, total_created, int(time.time()-t_begin)),
                               ending="")

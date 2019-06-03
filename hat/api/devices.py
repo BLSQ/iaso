@@ -90,7 +90,7 @@ class DevicesViewSet(viewsets.ViewSet):
                 # Fetch user information
                 last_team = ""
                 last_user = ""
-                if device.last_user and device.last_user.profile:
+                if device.last_user and hasattr(device.last_user, 'profile'):
                     last_user = device.last_user.profile.full_name()
                     if device.last_user.profile.team:
                         last_team = device.last_user.profile.team.name

@@ -444,7 +444,7 @@ def get_screening_type(case, ignored_columns):
         return historic_get_screening_type(ignored_columns)
     else:
         device = DeviceDB.objects.filter(device_id=case.device_id).first()
-        if device and device.last_user:
+        if device and device.last_user and hasattr(device.last_user, "profile"):
             return device.last_user.profile.screening_type
         else:
             return None

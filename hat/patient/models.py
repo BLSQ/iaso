@@ -226,7 +226,7 @@ class Test(models.Model):
     device = models.ForeignKey(
         "sync.DeviceDB", on_delete=CASCADE, blank=True, null=True
     )
-    tester = models.ForeignKey(Profile, on_delete=CASCADE, blank=True, null=True)
+    tester = models.ForeignKey(Profile, on_delete=models.PROTECT, blank=True, null=True)
     location = PointField(srid=4326, null=True)
 
     def __str__(self):

@@ -41,7 +41,7 @@ class DeviceDB(models.Model):
     def get_team(self):
         """Returns the team of the last user of this device"""
         if self.last_user is None \
-                or self.last_user.profile is None \
+                or not hasattr(self.last_user, "profile") \
                 or self.last_user.profile.team is None:
             return None
         else:
@@ -69,7 +69,7 @@ class DeviceDB(models.Model):
         if full:
             last_user = ""
             last_team = ""
-            if self.last_user and self.last_user.profile:
+            if self.last_user and hasattr(self.last_user, 'profile'):
                 last_user = self.last_user.profile.full_name()
                 if self.last_user.profile.team:
                     last_team = self.last_user.profile.team.name

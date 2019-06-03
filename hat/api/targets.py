@@ -132,7 +132,6 @@ class TargetsViewSet(viewsets.ViewSet):
 
             def get_row(target, **kwargs):
                 tdict = target.as_dict()
-                print (tdict.get("gps_import"))
                 return [
                             tdict.get("id"),
                             tdict.get("uuid"),

@@ -130,5 +130,7 @@ def get_row_treatments(treatment, **kwargs):
         treatment.device.device_id,
         treatment.device.last_user.username if treatment.device.last_user else '/',
         treatment.device.last_user.profile.team.name if (
-            treatment.device.last_user and treatment.device.last_user.profile.team) else '/',
+            treatment.device.last_user and
+            hasattr(treatment.device.last_user, "profile") and
+            treatment.device.last_user.profile.team) else '/',
     ]

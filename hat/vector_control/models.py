@@ -404,6 +404,6 @@ class Target(models.Model):
             "river": self.river,
             "username": username,
             "ignore": self.ignore,
-            "gps_import": self.gps_import.as_dict(),
-            "api_import": self.api_import.as_dict()
+            "gps_import": self.gps_import.as_dict() if self.gps_import else None,
+            "api_import": self.api_import.as_dict() if self.api_import else None
         }

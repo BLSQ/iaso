@@ -118,7 +118,7 @@ class Home extends Component {
                             />
                         }
                         {
-                            !geoZones &&
+                            (!geoZones || !geoProvinces) &&
                             <div className="loading-small">
                                 <i className="fa fa-spinner" />
                             </div>

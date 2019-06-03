@@ -89,7 +89,8 @@ export class Vector extends Component {
                 orderCatches,
                 userId,
                 habitats,
-                targets_filter,
+                sitesFilter,
+                targetsFilter,
                 trapsFilter,
                 province_id,
                 zs_id,
@@ -104,16 +105,13 @@ export class Vector extends Component {
             url += `&habitats=${habitats}`;
         }
         if (trapsFilter) {
-            url += `&targets_filter=${trapsFilter}`;
-        }
-        if (onlyIgnoredTraps) {
-            url += '&onlyIgnoredTraps=True';
-        }
-        if (onlyIgnoredTargets) {
-            url += '&onlyIgnoredTargets=True';
-        }
-        if (trapsFilter) {
             url += `&traps_filter=${trapsFilter}`;
+        }
+        if (sitesFilter) {
+            url += `&sites_filter=${trapsFilter}`;
+        }
+        if (targetsFilter) {
+            url += `&targets_filter=${trapsFilter}`;
         }
         if (province_id) {
             url += `&province_id=${province_id}`;

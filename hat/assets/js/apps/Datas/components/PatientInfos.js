@@ -113,7 +113,7 @@ class PatientInfos extends React.Component {
                                                 (
                                                     patient.year_of_birth ?
                                                         <span>
-                                                            {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)}} ${
+                                                            {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)} ${
                                                                 formatMessage({
                                                                     defaultMessage: 'ans',
                                                                     id: 'patientsinfos.years',

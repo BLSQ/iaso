@@ -82,6 +82,10 @@ class HomeMap extends Component {
                 defaultMessage: 'Zones de santé non endémiques sur les trois dernières années',
                 id: 'home.labels.nonendemic',
             })}</div>`;
+            innerHTML += `<div class="infos">${formatMessage({
+                defaultMessage: 'Zones endémiques enregistrées dans le système',
+                id: 'home.labels.infosLegend',
+            })}</div>`;
             div.innerHTML = innerHTML;
             return div;
         };

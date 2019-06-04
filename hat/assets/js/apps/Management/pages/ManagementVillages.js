@@ -178,7 +178,7 @@ class ManagementVillages extends React.Component {
                     this.state.showEditModale &&
                     <VillageModaleComponent
                         showModale={this.state.showEditModale}
-                        closeModale={() => selectVillage(null)}
+                        closeModal={() => selectVillage(null)}
                         village={selectedVillage}
                         saveVillage={newVillage => this.saveData(newVillage)}
                         updateCurrentVillage={village => updateCurrentVillage(village)}

@@ -1269,6 +1269,13 @@ button {
                 border-color: green;
             }
         }
+        .infos {
+            font-size: 10px;
+            margin-top: 5px;
+            &:before {
+                display: none;
+            }
+        }
     }
 }
 

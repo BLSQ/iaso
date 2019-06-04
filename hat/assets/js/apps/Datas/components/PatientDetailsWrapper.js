@@ -163,7 +163,6 @@ class PatientDetailsWrapper extends React.Component {
             baseUrl,
             editEnabled,
         } = this.state;
-        console.log(patient.cases);
         return (
             <section>
                 <TabsComponent

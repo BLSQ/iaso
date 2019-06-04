@@ -83,7 +83,7 @@ class HomeMap extends Component {
                 id: 'home.labels.nonendemic',
             })}</div>`;
             innerHTML += `<div class="infos">${formatMessage({
-                defaultMessage: 'Zones endémiques enregistrées dans le système',
+                defaultMessage: 'Données actuellement disponibles uniquement pour les coordinations de Bandundu nord et sud.',
                 id: 'home.labels.infosLegend',
             })}</div>`;
             div.innerHTML = innerHTML;

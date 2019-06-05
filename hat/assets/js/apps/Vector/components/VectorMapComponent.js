@@ -228,7 +228,8 @@ class VectorMapComponent extends Component {
                             editKey = 'showEditCatchesModale';
                         }
                         this.props.editItem(editKey, response);
-                    });
+                    })
+                    .catch(error => console.log('error', error));
             })
                 .on('mouseover', () => {
                     this.updateTooltipSmall(item, formatMessage(MESSAGES[key]));

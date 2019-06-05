@@ -7,6 +7,10 @@
     justify-content: center;
     align-content: center;
     background: rgba(0, 0, 0, 0.5) !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     >div {
         top: 15vh !important;
     }

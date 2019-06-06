@@ -3,6 +3,7 @@ from copy import copy
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -91,7 +92,10 @@ class VillageViewSet(viewsets.ViewSet):
         queryset = Village.objects.all()
 
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            aliases_query = RawSQL("select count(*) from unnest(""geo_village"".aliases) it where it ilike %s",
+                                   (f"%{search}%",))
+            queryset = queryset.annotate(alias_match=aliases_query)
+            queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
             values = values + (
                 "AS__ZS__name",
                 "AS__ZS__id",

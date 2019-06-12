@@ -160,12 +160,12 @@ class Home extends Component {
                         <p>
                             <FormattedMessage
                                 id="home.text6"
-                                defaultMessage="Rapport montrant les statistiques mensuel et annuel sur les dépistages actifs et passifs de la THA, les statistiques comprenent le nombre de cas suspects confirmé, la PTR, la PTE et plus encore."
+                                defaultMessage="Rapport montrant les statistiques mensuelles et annuelles sur les dépistages actifs et passifs de la THA, les statistiques comprenant le nombre de cas suspects confirmés, la PTR, la PTE et plus encore."
                             />
                         </p>
                         {
                             userHasPermission(currentUser.permissions, currentUser.user, 'x_stats_reports') &&
-                            <a href="/dashboard/monthly-report/" className="button--bright">
+                            <a href="/dashboard/stats/reports/" className="button--bright">
                                 <FormattedMessage id="home.monthlyReportLink" defaultMessage="Rapports mensuels" />
                                 <i className="fa fa-arrow-right icon--right" />
                             </a>
@@ -182,7 +182,7 @@ class Home extends Component {
                             <p>
                                 <FormattedMessage
                                     id="home.text7"
-                                    defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés, des confirmés non traités."
+                                    defaultMessage="Télécharger une liste des suspects non examinés, des examinés non confirmés et des confirmés non traités."
                                 />
                             </p>
 

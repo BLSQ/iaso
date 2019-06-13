@@ -1,0 +1,87 @@
+{
+  "_id": "participant-9778fe71d12746e7a4d6518164ba72ff",
+  "_rev": "11-e6157803cd28e3a343e462eb4e03adcb",
+  "type": "participant",
+  "person": {
+    "gender": "Female",
+    "surname": "Suriname",
+    "forename": "Sigismonde",
+    "location": {
+      "area": "111",
+      "zone": "11",
+      "village": "1111"
+    },
+    "postname": "Combustion",
+    "birthYear": "1984",
+    "noBirthYear": false,
+    "mothersSurname": "Theresa"
+  },
+  "deviceId": "c31cf6550b25fbea",
+  "appVersion": "2.0.40",
+  "dateCreated": "2019-05-23T10:39:45.421Z",
+  "participant": {
+    "hatId": "MOMASIF1984N",
+    "version": 5,
+    "memberType": "resident",
+    "screenings": {
+      "pg": {
+        "device": "c31cf6550b25fbea",
+        "result": "notdone",
+        "position": {
+          "accuracy": 10,
+          "latitude": -1.9435481,
+          "longitude": 16.5496354,
+          "timestamp": 1558608257000
+        },
+        "testTime": "2019-05-23T10:42:29.430Z",
+        "creationTime": "2019-05-23T10:42:29.430Z",
+        "shouldAskMedia": false,
+        "shouldAskMediaForNegative": false
+      },
+      "rdt": {
+        "group": "2019-05-22T07:27:43.155Z",
+        "device": "c31cf6550b25fbea",
+        "result": "positive",
+        "position": {
+          "accuracy": 10,
+          "latitude": -1.9435481,
+          "longitude": 16.5496354,
+          "timestamp": 1558608245000
+        },
+        "testTime": "2019-05-23T10:42:17.680Z",
+        "creationTime": "2019-05-23T10:39:45.751Z",
+        "shouldAskMedia": false,
+        "shouldAskMediaForNegative": false,
+        "shouldAskMediaForPositive": false
+      },
+      "maect": {
+        "video": "/storage/emulated/0/Movies/USBCameraTest/2019-05-23-11-44-09.mp4",
+        "device": "c31cf6550b25fbea",
+        "result": "negative",
+        "position": {
+          "accuracy": 14,
+          "latitude": -1.9435466,
+          "longitude": 16.5496348,
+          "timestamp": 1558608405000
+        },
+        "testTime": "2019-05-23T10:44:57.980Z",
+        "uploaded": true,
+        "creationTime": "2019-05-23T10:42:31.498Z",
+        "shouldAskMedia": false,
+        "shouldAskMediaForNegative": false
+      }
+    },
+    "geoLocation": {
+      "accuracy": 10,
+      "latitude": -1.9435476,
+      "longitude": 16.5496347,
+      "timestamp": 1558608093000
+    },
+    "screeningLocation": {
+      "area": "111",
+      "zone": "11",
+      "village": "1111"
+    }
+  },
+  "dateModified": "2019-06-06T11:44:44.112Z"
+}

@@ -17,7 +17,7 @@ export const fetchSites = (dispatch, params) => {
         as_id,
         searchUuid,
     } = params;
-    let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}`;
+    let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&as_location=true`;
     if (userId) {
         url += `&userId=${userId}`;
     }
@@ -188,7 +188,7 @@ export const fetchPaginatedSites = (dispatch, params, limit, page, order) => {
         as_id,
         searchUuid,
     } = params;
-    let url = `/api/new_sites?from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
+    let url = `/api/new_sites?as_location=true&from=${dateFrom}&to=${dateTo}&limit=${limit || '50'}&page=${page || '1'}`;
     if (order) {
         url += `&order=${order}`;
     }

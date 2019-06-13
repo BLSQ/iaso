@@ -62,12 +62,11 @@ class SitesViewSet(viewsets.ViewSet):
         responsible = request.GET.get("responsible", False)
         filters = request.GET.get("sites_filter", False)
         search_uuid = request.GET.get("search_uuid", None)
+        as_location = request.GET.get("as_location", False)
         queryset = Site.objects.all()
 
         if search_uuid:
-            queryset = queryset.filter(
-                Q(uuid__icontains=search_uuid)
-            )
+            queryset = queryset.filter(Q(uuid__icontains=search_uuid))
 
         if filters:
             if filters == "assigned":
@@ -95,9 +94,11 @@ class SitesViewSet(viewsets.ViewSet):
             queryset = queryset.annotate(trap_in_date_range=Exists(trap_subquery))
             queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
             queryset = queryset.filter(
-                (reduce(operator.and_, site_conditions)
-                 | Q(trap_in_date_range=True)
-                 | Q(catch_in_date_range=True))
+                (
+                    reduce(operator.and_, site_conditions)
+                    | Q(trap_in_date_range=True)
+                    | Q(catch_in_date_range=True)
+                )
             )
 
         if user_ids is not None:
@@ -183,12 +184,20 @@ class SitesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(map(lambda x: x.as_location(additional_fields), queryset))
+                if as_location:
+                    return Response(
+                        map(lambda x: x.as_location(additional_fields), queryset)
+                    )
+                else:
+                    return Response(
+                        map(lambda x: x.as_dict(additional_fields), queryset)
+                    )
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
-                    "menupermissions.x_datas_download")) and
-                    not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
             columns = [
                 {"title": "ID", "width": 5},
                 {"title": "Uid", "width": 5},
@@ -256,8 +265,9 @@ class SitesViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=site.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or \
-            is_authorized_user(request.user, province, zone, area)
+        is_authorized = (
+            province is None and zone is None and area is None
+        ) or is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             site_dict = site.as_dict()
@@ -333,8 +343,9 @@ class SitesViewSet(viewsets.ViewSet):
                 if AS.objects.filter(geom__contains=new_site.location).count() > 0
                 else None
             )
-            is_authorized = (province is None and zone is None and area is None) or \
-                is_authorized_user(request.user, province, zone, area)
+            is_authorized = (
+                province is None and zone is None and area is None
+            ) or is_authorized_user(request.user, province, zone, area)
 
             if is_authorized:
                 profile_id = request.data.get("responsible_id", None)
@@ -360,5 +371,3 @@ class SitesViewSet(viewsets.ViewSet):
                     current_site.responsible = user
                     current_site.save()
                 return Response("done")
-
-

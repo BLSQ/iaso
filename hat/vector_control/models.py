@@ -110,9 +110,9 @@ class Site(models.Model):
             "creator": creator,
             "creator_id": self.creator.profile.id if self.creator else None,
             "uuid": self.uuid,
-            "latitude": self.location.y,
-            "longitude": self.location.x,
-            "altitude": self.location.z,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "accuracy": self.accuracy,
             "ignore": self.ignore,
             "traps": [
@@ -137,8 +137,8 @@ class Site(models.Model):
             "id": self.id,
             "name": self.name,
             "uuid": self.uuid,
-            "latitude": self.location.y,
-            "longitude": self.location.x,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "flies_count": flies_count,
             "responsible": self.responsible.username if self.responsible else None,
             "responsible_id": self.responsible.profile.id if self.responsible else None,
@@ -174,7 +174,6 @@ class Trap(models.Model):
     is_selected = models.BooleanField(default=True)
     river = models.TextField(null=True, blank=True)
 
-
     def __str__(self):
         return "%s - %s - %s" % (self.id, self.name, self.location)
 
@@ -190,9 +189,9 @@ class Trap(models.Model):
             latest_catch = None
         return {
             "id": self.id,
-            "latitude": self.location.y,
-            "longitude": self.location.x,
-            "altitude": self.location.z,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "latest_catch": latest_catch,
         }
 
@@ -218,14 +217,12 @@ class Trap(models.Model):
             username = self.user.username
         site = None
         if self.site:
-            site = {
-                "uuid": self.site.uuid,
-                "id": self.site.id,
-                "name": self.site.name,
-            }
-        catches =Catch.objects.filter(trap_id=self.id)
+            site = {"uuid": self.site.uuid, "id": self.site.id, "name": self.site.name}
+        catches = Catch.objects.filter(trap_id=self.id)
         catches_count = catches.count()
-        flies_count = catches.aggregate(total=Sum('male_count') + Sum('female_count') + Sum('unknown_count'))
+        flies_count = catches.aggregate(
+            total=Sum("male_count") + Sum("female_count") + Sum("unknown_count")
+        )
         res = {
             "id": self.id,
             "name": self.name,
@@ -312,10 +309,7 @@ class Catch(models.Model):
         return {
             "id": self.id,
             "uuid": self.uuid,
-            "trap": {
-                "id": self.trap.id,
-                "name": self.trap.name,
-            },
+            "trap": {"id": self.trap.id, "name": self.trap.name},
             "male_count": self.male_count,
             "female_count": self.female_count,
             "unknown_count": self.unknown_count,
@@ -359,6 +353,7 @@ class GpsImport(models.Model):
             "created_at": self.created_at,
             "count": self.count,
         }
+
 
 class Target(models.Model):
     name = models.TextField(null=True, blank=True)
@@ -405,5 +400,5 @@ class Target(models.Model):
             "username": username,
             "ignore": self.ignore,
             "gps_import": self.gps_import.as_dict() if self.gps_import else None,
-            "api_import": self.api_import.as_dict() if self.api_import else None
+            "api_import": self.api_import.as_dict() if self.api_import else None,
         }

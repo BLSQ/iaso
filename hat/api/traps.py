@@ -61,12 +61,12 @@ class TrapsViewSet(viewsets.ViewSet):
         zs_ids = request.GET.get("zs_id", None)
         as_ids = request.GET.get("as_id", None)
         search_uuid = request.GET.get("search_uuid", None)
+        as_location = request.GET.get("as_location", False)
+
         queryset = Trap.objects.all()
 
         if search_uuid:
-            queryset = queryset.filter(
-                Q(uuid__icontains=search_uuid)
-            )
+            queryset = queryset.filter(Q(uuid__icontains=search_uuid))
 
         if from_date is not None or to_date is not None:
             catch_subquery = Catch.objects.filter(trap_id=OuterRef("id"))
@@ -80,8 +80,7 @@ class TrapsViewSet(viewsets.ViewSet):
 
             queryset = queryset.annotate(catch_in_date_range=Exists(catch_subquery))
             queryset = queryset.filter(
-                (reduce(operator.and_, trap_conditions)
-                 | Q(catch_in_date_range=True))
+                (reduce(operator.and_, trap_conditions) | Q(catch_in_date_range=True))
             )
 
         if user_ids is not None:
@@ -189,12 +188,16 @@ class TrapsViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             else:
-                return Response(map(lambda x: x.as_location(), queryset))
+                if as_location:
+                    return Response(map(lambda x: x.as_location(), queryset))
+                else:
+                    return Response(map(lambda x: x.as_dict(), queryset))
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or
-                 not request.user.has_perm("menupermissions.x_datas_download")) and
-                    not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
             columns = [
                 {"title": "ID", "width": 5},
                 {"title": "Uid", "width": 10},
@@ -257,7 +260,7 @@ class TrapsViewSet(viewsets.ViewSet):
                     sdict.get("username"),
                     sdict.get("source"),
                     sdict.get("river"),
-                    sdict.get("site").get("uuid") if  sdict.get("site") else "Inconnu",
+                    sdict.get("site").get("uuid") if sdict.get("site") else "Inconnu",
                 ]
 
             if xlsx_format:
@@ -292,8 +295,9 @@ class TrapsViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=trap.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or \
-            is_authorized_user(request.user, province, zone, area)
+        is_authorized = (
+            province is None and zone is None and area is None
+        ) or is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             trap_dict = trap.as_dict()
@@ -374,8 +378,9 @@ class TrapsViewSet(viewsets.ViewSet):
             if AS.objects.filter(geom__contains=new_trap.location).count() > 0
             else None
         )
-        is_authorized = (province is None and zone is None and area is None) or \
-            is_authorized_user(request.user, province, zone, area)
+        is_authorized = (
+            province is None and zone is None and area is None
+        ) or is_authorized_user(request.user, province, zone, area)
 
         if is_authorized:
             new_trap.name = request.data.get("name", "")

@@ -17,7 +17,7 @@ from .export_utils import Echo, generate_xlsx, iter_items
 
 
 def timestamp_to_utc_datetime(timestamp):
-    return datetime.fromtimestamp(int(timestamp/1000), timezone.utc)
+    return datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
 
 
 class CatchesViewSet(viewsets.ViewSet):
@@ -47,10 +47,9 @@ class CatchesViewSet(viewsets.ViewSet):
 
 
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_required = [
-        'menupermissions.x_vectorcontrol'
-    ]
+    permission_required = ["menupermissions.x_vectorcontrol"]
 
     def list(self, request):
         from_date = request.GET.get("from", None)
@@ -70,9 +69,7 @@ class CatchesViewSet(viewsets.ViewSet):
         queryset = Catch.objects.all()
 
         if search_uuid:
-            queryset = queryset.filter(
-                Q(uuid__icontains=search_uuid)
-            )
+            queryset = queryset.filter(Q(uuid__icontains=search_uuid))
 
         if from_date is not None:
             queryset = queryset.filter(setup_date__date__gte=from_date)
@@ -121,22 +118,23 @@ class CatchesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["list"] = map(
-                    lambda x: x.as_dict(), page.object_list
-                )
+                res["list"] = map(lambda x: x.as_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
                 return Response(res)
-
-            return Response(map(lambda x: x.as_location(), queryset))
+            if as_location:
+                return Response(map(lambda x: x.as_location(), queryset))
+            else:
+                return Response(map(lambda x: x.as_dict(), queryset))
         else:
-            if ((request.user.has_perm("menupermissions.x_anonymous") or not request.user.has_perm(
-                    "menupermissions.x_datas_download")) and
-                    not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
             columns = [
                 {"title": "ID", "width": 5},
                 {"title": "UUID", "width": 15},
@@ -199,11 +197,11 @@ class CatchesViewSet(viewsets.ViewSet):
         new_catches = []
         api_import = APIImport()
         api_import.user = request.user
-        api_import.import_type = 'catch'
-        api_import.json_body =catches
+        api_import.import_type = "catch"
+        api_import.json_body = catches
         api_import.save()
         for catch in catches:
-            uuid = catch.get('uuid', None)
+            uuid = catch.get("uuid", None)
             existing_catches = Catch.objects.filter(uuid=uuid)
 
             if existing_catches:
@@ -212,45 +210,47 @@ class CatchesViewSet(viewsets.ViewSet):
             else:
                 new_catch = Catch()
                 new_catch.uuid = uuid
-                trap_uuid = catch.get('trap_uuid', catch.get('site_uuid', None))
+                trap_uuid = catch.get("trap_uuid", catch.get("site_uuid", None))
                 trap, created = Trap.objects.get_or_create(uuid=trap_uuid)
 
                 new_catch.trap = trap
                 new_catch.api_import = api_import
-                start_time = catch.get('startTime', None)
+                start_time = catch.get("startTime", None)
                 if start_time:
                     new_catch.setup_date = timestamp_to_utc_datetime(int(start_time))
-                start_latitude = catch.get('startLatitude', None)
-                start_longitude = catch.get('startLongitude', None)
-                start_altitude = catch.get('startAltitude', 0)
-                new_catch.start_accuracy = catch.get('startAccuracy', None)
+                start_latitude = catch.get("startLatitude", None)
+                start_longitude = catch.get("startLongitude", None)
+                start_altitude = catch.get("startAltitude", 0)
+                new_catch.start_accuracy = catch.get("startAccuracy", None)
                 new_catch.user = request.user
 
                 if start_latitude and start_longitude:
-                    new_catch.start_location = Point(x=start_longitude, y=start_latitude, z=start_altitude, srid=4326)
+                    new_catch.start_location = Point(
+                        x=start_longitude, y=start_latitude, z=start_altitude, srid=4326
+                    )
 
-            end_time = catch.get('endTime', None)
+            end_time = catch.get("endTime", None)
             if end_time:
                 new_catch.collect_date = timestamp_to_utc_datetime(int(end_time))
 
-            new_catch.male_count = catch.get('maleCount', 0)
-            new_catch.female_count = catch.get('femaleCount', 0)
-            new_catch.unknown_count = catch.get('unknownCount', 0)
-            new_catch.accuracy = catch.get('accuracy', None)
-            new_catch.remarks = catch.get('remarks', '')
+            new_catch.male_count = catch.get("maleCount", 0)
+            new_catch.female_count = catch.get("femaleCount", 0)
+            new_catch.unknown_count = catch.get("unknownCount", 0)
+            new_catch.accuracy = catch.get("accuracy", None)
+            new_catch.remarks = catch.get("remarks", "")
 
-            end_latitude = catch.get('endLatitude', None)
-            end_longitude = catch.get('endLongitude', None)
-            end_altitude = catch.get('endAltitude', 0)
-            new_catch.end_accuracy = catch.get('endAccuracy', None)
-            new_catch.problem = catch.get('problem', None)
+            end_latitude = catch.get("endLatitude", None)
+            end_longitude = catch.get("endLongitude", None)
+            end_altitude = catch.get("endAltitude", 0)
+            new_catch.end_accuracy = catch.get("endAccuracy", None)
+            new_catch.problem = catch.get("problem", None)
             if end_latitude and end_longitude:
-                new_catch.end_location = Point(x=end_longitude, y=end_latitude, z=end_altitude, srid=4326)
+                new_catch.end_location = Point(
+                    x=end_longitude, y=end_latitude, z=end_altitude, srid=4326
+                )
 
-            new_catch.source = 'API'
+            new_catch.source = "API"
             new_catch.save()
             new_catches.append(new_catch)
 
         return Response([catch.as_dict() for catch in new_catches])
-
-

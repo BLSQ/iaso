@@ -302,7 +302,7 @@ class SitesViewSet(viewsets.ViewSet):
                 new_site.habitat = site.get("habitat", None)
                 new_site.accuracy = site.get("accuracy", None)
                 new_site.description = site.get("description", None)
-                new_site.ignore = request.data.get("ignore", False)
+                new_site.ignore = site.get("ignore", False)
                 t = site.get("time", None)
                 if t:
                     new_site.created_at = timestamp_to_utc_datetime(int(t))

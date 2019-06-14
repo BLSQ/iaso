@@ -43,7 +43,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementDevicesPage}
         />,
         <Route
-            path="/detail(/deviceId/:deviceId)(/with_tests_devices/:with_tests_devices)(/coordination_id/:coordination_id)(/teams/:teams)(/profile_id/:profile_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
+            path="/detail(/deviceId/:deviceId)(/with_tests_devices/:with_tests_devices)(/coordination_id/:coordination_id)(/teams/:teams)(/profile_id/:profile_id)(/type/:type)(/deviceOrder/:deviceOrder)(/teamOrder/:teamOrder)(/team_type/:team_type)(/teamId/:teamId)/from/:from/to/:to(/order/:order)(/tab/:tab)"
             component={ManagementDetailsPage}
         />,
         <Route

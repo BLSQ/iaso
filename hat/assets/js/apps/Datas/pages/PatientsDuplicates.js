@@ -46,7 +46,6 @@ class PatientsDuplicates extends Component {
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
             this.props.fetchCoordinations(),
-            this.props.fetchWorkZones(),
             this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
@@ -145,7 +144,6 @@ class PatientsDuplicates extends Component {
                 zones,
                 areas,
                 villages,
-                workzones,
             },
             params,
             reduxPage,
@@ -155,7 +153,6 @@ class PatientsDuplicates extends Component {
         const filters2 = filtersPatientsDuplicates(coordinations || [], teams || []);
         const search = filtersDuplicatesPatientsSearch(this);
         const geo = filtersPatientsGeo(
-            workzones,
             provinces || [],
             zones || [],
             areas || [],
@@ -260,7 +257,6 @@ PatientsDuplicates.propTypes = {
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
-    fetchWorkZones: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -282,7 +278,6 @@ const MapDispatchToProps = dispatch => ({
     fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
     fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchWorkZones: () => dispatch(filterActions.fetchWorkZones(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),

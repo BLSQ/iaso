@@ -41,7 +41,6 @@ class Cases extends Component {
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
             this.props.fetchCoordinations(),
-            this.props.fetchWorkZones(),
             this.props.fetchDevices(),
             this.props.fetchCurrentUserInfos(),
         ]).then(() => {
@@ -135,7 +134,6 @@ class Cases extends Component {
                 zones,
                 areas,
                 villages,
-                workzones,
                 devices,
             },
             reduxPage,
@@ -146,7 +144,6 @@ class Cases extends Component {
         const filters2 = filtersCases2(formatMessage, coordinations || [], teams || [], this.props.params.located === 'only_not_located');
         const search = filtersCasesSearch(formatMessage, this);
         const geo = filtersCasesGeo(
-            workzones,
             provinces || [],
             zones || [],
             areas || [],
@@ -262,7 +259,6 @@ Cases.propTypes = {
     fetchProvinces: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
-    fetchWorkZones: PropTypes.func.isRequired,
     fetchDevices: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
@@ -285,7 +281,6 @@ const MapDispatchToProps = dispatch => ({
     fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
     fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchWorkZones: () => dispatch(filterActions.fetchWorkZones(dispatch)),
     fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId, dispatch)),

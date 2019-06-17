@@ -129,6 +129,7 @@ INSTALLED_APPS = [
     "hat.metrics",
     "hat.audit",
     "hat.menupermissions",
+    "iaso",
 ]
 
 MIDDLEWARE = [

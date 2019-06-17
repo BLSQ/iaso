@@ -42,6 +42,8 @@ from .home import HomeViewSet
 from .team_types import TeamTypeViewSet
 from .problems import ProblemsViewSet
 from .qcdetails import QCDetailsViewSet
+from .structures import StructureViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -94,5 +96,7 @@ router.register(r"home", HomeViewSet, base_name="home")
 router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
 router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
+router.register(r"structures", StructureViewSet, base_name="structures")
+
 
 urlpatterns = [url(r"^", include(router.urls))]

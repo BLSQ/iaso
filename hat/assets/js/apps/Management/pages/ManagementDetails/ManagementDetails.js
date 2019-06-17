@@ -240,6 +240,7 @@ export class ManagementDetails extends Component {
                                         coordination_id: params.coordination_id,
                                         type: params.type,
                                         order: params.teamOrder,
+                                        team_type: params.team_type,
                                     }))}
                                 >
                                     <i className="fa fa-arrow-left" />{' '}

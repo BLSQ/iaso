@@ -12,8 +12,7 @@ import HomeBarChart from '../components/HomeBarChart';
 class Home extends Component {
     componentWillMount() {
         this.props.fetchCurrentUserInfos();
-        this.props.fetchGeoJson();
-        this.props.fetchChartBarDatas();
+        this.props.fetchHomeDatas();
     }
 
     render() {
@@ -219,8 +218,7 @@ Home.propTypes = {
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
-    fetchGeoJson: PropTypes.func.isRequired,
-    fetchChartBarDatas: PropTypes.func.isRequired,
+    fetchHomeDatas: PropTypes.func.isRequired,
     geoZones: PropTypes.object,
     geoProvinces: PropTypes.object,
     barChartDatas: PropTypes.array.isRequired,
@@ -238,8 +236,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch, true)),
-    fetchGeoJson: () => dispatch(homeActions.fetchGeoJson(dispatch)),
-    fetchChartBarDatas: () => dispatch(homeActions.fetchChartBarDatas(dispatch)),
+    fetchHomeDatas: () => dispatch(homeActions.fetchHomeDatas(dispatch)),
 });
 
 const HomeWithIntl = injectIntl(Home);

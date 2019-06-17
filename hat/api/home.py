@@ -18,11 +18,11 @@ cacheTTL = 60 * 60 * 24 * 7
 
 class HomeViewSet(viewsets.ViewSet):
     """
-    list:
-    Returns a list of ZS to build home map
-        /api/zs/
-        /api/zs/?years=2017,2016,2015&with_geo_json=true
-
+    Returns:
+        - a list of ZS
+        - geojson of zones and provinces
+        - stats on tests for the graph
+        /api/zs/?from=2006-06-17&to=2018-06-17&years=2017,2016,2015
     """
 
     authentication_classes = ([])
@@ -35,62 +35,63 @@ class HomeViewSet(viewsets.ViewSet):
         result = cache.get(absolute_url)
         if result:
             return Response(result)
-        is_map = request.GET.get("map", None)
-        is_chart = request.GET.get("chart", None)
-        if is_map:
-            as_geo_json = request.GET.get("geojson", None)
-            years = request.GET.get("years", None)
 
-            queryset = ZS.objects.all()
+        # ZONES
+        years = request.GET.get("years", None)
+        years_array = years.split(",")
+        AllZones = ZS.objects.all()
+        values = ['name', 'id', 'province_id']
+        nr_positive_cases = Count(
+            "as", filter=Q(as__village__caseview__confirmed_case=True,
+                            as__village__caseview__normalized_year__in=years_array)
+        )
+        zones = AllZones.annotate(nr_positive_cases=nr_positive_cases)
+        values.append('nr_positive_cases')
+        zones = zones.values(*values).order_by('name')
 
-            values = ['name', 'id', 'province_id']
-            if years:
-                years_array = years.split(",")
-                nr_positive_cases = Count(
-                    "as", filter=Q(as__village__caseview__confirmed_case=True,
-                                   as__village__caseview__normalized_year__in=years_array)
-                )
-                queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-                values.append('nr_positive_cases')
-            if as_geo_json:
-                zones = queryset.filter(geom__isnull=False)
-                zones_provinces_ids = zones.values('province_id').distinct('province_id')
-                provinces = Province.objects.all().exclude(id__in=zones_provinces_ids).filter(geom__isnull=False)
-                zones_geo_json = geojson_queryset(zones, geometry_field='simplified_geom', fields=['name', 'province'])
-                provinces_geo_json = geojson_queryset(provinces, geometry_field='simplified_geom', fields=['name'])
-                result = {
-                    "zones": zones_geo_json,
-                    "provinces": provinces_geo_json,
-                }
-                cache.set(absolute_url, result, cacheTTL)
-                return Response(result)
-            else:
-                result = queryset.values(*values).order_by('name')
-                cache.set(absolute_url, result, cacheTTL)
-                return Response(result)
-        if is_chart:
-            from_date = request.GET.get("from", None)
-            to_date = request.GET.get("to", None)
-            queryset = Test.objects.extra(select={'date': "date_trunc('year', date) "})
-            if from_date is not None:
-                queryset = queryset.filter(date__gte=from_date)
+        # GEOJSON
+        zones_geo_json = AllZones.filter(geom__isnull=False)
+        zones_provinces_ids = zones_geo_json.values('province_id').distinct('province_id')
+        provinces = Province.objects.all().exclude(id__in=zones_provinces_ids).filter(geom__isnull=False)
+        zones_geo_json = geojson_queryset(zones_geo_json, geometry_field='simplified_geom', fields=['name', 'province'])
+        provinces_geo_json = geojson_queryset(provinces, geometry_field='simplified_geom', fields=['name'])
 
-            if to_date is not None:
-                queryset = queryset.filter(date__lte=to_date)
+        # CHART
+        from_date = request.GET.get("from", None)
+        to_date = request.GET.get("to", None)
+        queryset = Test.objects.extra(select={'date': "date_trunc('year', date) "})
+        queryset = queryset.filter(date__gte=from_date)
+        queryset = queryset.filter(date__gte=from_date)
+        queryset = queryset.filter(date__lte=to_date)
 
-            grouped_queryset = (
-                    queryset
-                    .values("date")
-                    .annotate(positive_confirmation_test_count=Count(
-                        "id",
-                        filter=(Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE))))
-            )
+        chart = (
+            queryset
+            .values("date")
+            .annotate(positive_confirmation_test_count=Count(
+                "id",
+                filter=(Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE))))
+        )
 
-            values = ("date", "positive_confirmation_test_count")
-            orders = "date",
+        values = ("date", "positive_confirmation_test_count")
+        orders = "date",
 
-            grouped_queryset = grouped_queryset.values(*values).order_by(*orders)
+        chart = chart.values(*values).order_by(*orders)
 
-            cache.set(absolute_url, grouped_queryset, cacheTTL)
-            return Response(grouped_queryset)
+
+
+
+
+        result = {
+            "zones": zones,
+            "geojson": {
+                "zones": zones_geo_json,
+                "provinces": provinces_geo_json,
+            },
+            "chart": chart,
+        }
+
+        cache.set(absolute_url, result, cacheTTL)
+        return Response(result)
+
+
 

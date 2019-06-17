@@ -96,6 +96,56 @@ class PatientCasesInfo extends React.Component {
                                 }
                             </td>
                         </tr>
+                        { currentCase.circumstances_da_um &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="Dépistage actif UM"/>
+                                </th>
+                                <td>
+                                    {currentCase.circumstances_da_um}
+                                </td>
+                            </tr>
+                        }
+                        { currentCase.circumstances_dp_um &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="Dépistage passif UM"/>
+                                </th>
+                                <td>
+                                    {currentCase.circumstances_dp_um}
+                                </td>
+                            </tr>
+                        }
+                        { currentCase.circumstances_dp_cdtc &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Dépistage passif CDTC"/>
+                                </th>
+                                <td>
+                                    {currentCase.circumstances_dp_cdtc}
+                                </td>
+                            </tr>
+                        }
+                        { currentCase.circumstances_dp_cs &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="Dépistage passif CS"/>
+                                </th>
+                                <td>
+                                    {currentCase.circumstances_dp_cs}
+                                </td>
+                            </tr>
+                        }
+                        { currentCase.circumstances_dp_hgr &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="Dépistage passif HGR"/>
+                                </th>
+                                <td>
+                                    {currentCase.circumstances_dp_hgr}
+                                </td>
+                            </tr>
+                        }
                         <tr>
                             <th>
                                 <FormattedMessage id="patientsCases.team" defaultMessage="Equipe" />

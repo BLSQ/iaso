@@ -1,19 +1,23 @@
-from django.contrib.gis.db.models.fields import MultiPolygonField, PointField, PolygonField
+from django.contrib.gis.db.models.fields import (
+    MultiPolygonField,
+    PointField,
+    PolygonField,
+)
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
-from django.db.models import SET_NULL
+
 
 GEO_SOURCE_CHOICES = (
-    ('snis', 'SNIS'),
-    ('ucla', 'UCLA'),
-    ('pnltha', 'PNL THA'),
-    ('derivated', 'Derivated from actual data'),
+    ("snis", "SNIS"),
+    ("ucla", "UCLA"),
+    ("pnltha", "PNL THA"),
+    ("derivated", "Derivated from actual data"),
 )
 
 VILLAGE_SOURCE_CHOICES = (
-    ("device", 'Tablettes'),
+    ("device", "Tablettes"),
     ("ucla", "UCLA"),
-    ("manual", "Ajouté par un utilisateur")
+    ("manual", "Ajouté par un utilisateur"),
 )
 
 POPULATION_TYPE_CHOICES = (
@@ -26,10 +30,7 @@ class Province(models.Model):
     name = models.CharField(max_length=255)
     old_name = models.CharField(max_length=255)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
-        size=10,
-        null=True,
-        blank=True,
+        CITextField(max_length=255, blank=True), size=10, null=True, blank=True
     )
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
@@ -43,24 +44,17 @@ class Province(models.Model):
         return self.name
 
     def as_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "old_name": self.old_name
-        }
+        return {"id": self.id, "name": self.name, "old_name": self.old_name}
 
 
 class ZS(models.Model):
     name = models.CharField(max_length=255)
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
-        size=10,
-        null=True,
-        blank=True,
+        CITextField(max_length=255, blank=True), size=10, null=True, blank=True
     )
 
-    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, default='snis')
+    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, default="snis")
     source_ref = models.TextField(null=True)
     geom = PolygonField(srid=4326, null=True)
     simplified_geom = PolygonField(srid=4326, null=True)
@@ -74,21 +68,14 @@ class ZS(models.Model):
         verbose_name_plural = "ZS"
 
     def as_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "province_id": self.province_id
-        }
+        return {"id": self.id, "name": self.name, "province_id": self.province_id}
 
 
 class AS(models.Model):
     name = models.CharField(max_length=255)
     ZS = models.ForeignKey(ZS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
-        size=10,
-        null=True,
-        blank=True,
+        CITextField(max_length=255, blank=True), size=10, null=True, blank=True
     )
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
@@ -132,7 +119,7 @@ class HealthStructure(models.Model):
             "as_id": self.ZS_id,
             "as_name": self.ZS.name,
             "source": self.source,
-            "source_ref": self.source_ref
+            "source_ref": self.source_ref,
         }
 
 
@@ -140,27 +127,30 @@ class Village(models.Model):
     name = models.CharField(max_length=255)
     AS = models.ForeignKey(AS, on_delete=models.CASCADE)
     aliases = ArrayField(
-        CITextField(max_length=255, blank=True),
-        size=10,
-        null=True,
-        blank=True,
+        CITextField(max_length=255, blank=True), size=10, null=True, blank=True
     )
 
     name_alt = models.TextField(null=True)
     village_type = models.TextField(null=True)
     VILLAGE_OFFICIAL_CHOICES = (
-        ('YES', 'Villages from Z.S.'),
-        ('NO', 'Villages not from Z.S.'),
-        ('OTHER', 'Locations where people are found during campaigns'),
-        ('NA', 'Villages from satellite (unknown)'),
+        ("YES", "Villages from Z.S."),
+        ("NO", "Villages not from Z.S."),
+        ("OTHER", "Locations where people are found during campaigns"),
+        ("NA", "Villages from satellite (unknown)"),
     )
     village_official = models.TextField(choices=VILLAGE_OFFICIAL_CHOICES, null=True)
-    village_source = models.TextField(max_length=255, choices=VILLAGE_SOURCE_CHOICES,  null=True, blank=True)
-    creator_device = models.ForeignKey("sync.DeviceDB", null=True, on_delete=models.SET_NULL)
+    village_source = models.TextField(
+        max_length=255, choices=VILLAGE_SOURCE_CHOICES, null=True, blank=True
+    )
+    creator_device = models.ForeignKey(
+        "sync.DeviceDB", null=True, on_delete=models.SET_NULL
+    )
 
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
-    gps_source = models.TextField(null=True)  # much more diverse than above GEO_SOURCE_CHOICES
+    gps_source = models.TextField(
+        null=True
+    )  # much more diverse than above GEO_SOURCE_CHOICES
     location = PointField(srid=4326, null=True)
 
     population = models.PositiveIntegerField(null=True)
@@ -191,7 +181,7 @@ class Village(models.Model):
             "village_source": self.village_source,
             "gps_source": self.gps_source,
             "is_erased": self.is_erased,
-            "aliases": self.aliases
+            "aliases": self.aliases,
         }
 
 
@@ -220,14 +210,23 @@ class PopulationData(models.Model):
     village = models.ForeignKey(to=Village, on_delete=models.DO_NOTHING)
     population = models.IntegerField()
     type = models.TextField(choices=POPULATION_TYPE_CHOICES, default="PTR")
-    source = models.TextField(default="device")  # "device", "ucla" or other source (see Village population source)
-    device = models.ForeignKey(to="sync.DeviceDB", on_delete=models.DO_NOTHING, null=True)
+    source = models.TextField(
+        default="device"
+    )  # "device", "ucla" or other source (see Village population source)
+    device = models.ForeignKey(
+        to="sync.DeviceDB", on_delete=models.DO_NOTHING, null=True
+    )
     population_year = models.IntegerField()
     report_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s -%s -%s" % (self.village.name, self.population, self.source, self.type)
+        return "%s - %s -%s -%s" % (
+            self.village.name,
+            self.population,
+            self.source,
+            self.type,
+        )
 
 
 class GeopodeSettlement(models.Model):
@@ -246,9 +245,15 @@ class GeopodeSettlement(models.Model):
     pop_female = models.IntegerField(null=True, blank=True)
     pop_male = models.IntegerField(null=True, blank=True)
     pop_total = models.IntegerField(null=True, blank=True)
-    normalized_zone = models.ForeignKey(to=ZS, null=True, blank=True, on_delete=models.DO_NOTHING)
-    normalized_area = models.ForeignKey(to=AS, null=True, blank=True, on_delete=models.DO_NOTHING)
-    normalized_village = models.ForeignKey(to=Village, null=True, blank=True, on_delete=models.DO_NOTHING)
+    normalized_zone = models.ForeignKey(
+        to=ZS, null=True, blank=True, on_delete=models.DO_NOTHING
+    )
+    normalized_area = models.ForeignKey(
+        to=AS, null=True, blank=True, on_delete=models.DO_NOTHING
+    )
+    normalized_village = models.ForeignKey(
+        to=Village, null=True, blank=True, on_delete=models.DO_NOTHING
+    )
 
     def __str__(self):
         return str(id)

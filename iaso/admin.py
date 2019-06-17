@@ -4,6 +4,7 @@ from .models import OrgUnitType, OrgLevel, OrgUnit
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
+    list_filter = ("org_level", "org_unit_type")
     search_fields = ("name", "source_ref")
     ordering = ("name",)
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 
 const casesListColumns = formatMessage => (
     [
@@ -31,11 +32,18 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Year',
-                id: 'main.label.year',
+                defaultMessage: 'Date',
+                id: 'casesList.label.latest_test_date',
             }),
-            accessor: 'normalized_year',
+            accessor: 'latest_test_date',
             className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        moment(settings.original.latest_test_date).format('YYYY-MM-DD')
+                    }
+                </span>
+            ),
         },
         {
             Header: formatMessage({

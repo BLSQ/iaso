@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Coalesce, Cast, ExtractYear
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
@@ -558,7 +559,7 @@ class Case(CaseAbstract):
 
         indexes = [models.Index(fields=["device_id"], name="device_id_idx")]
 
-    def as_dict(self, full=False):
+    def as_dict(self, full=False, additional_fields=None):
         # Location
         normalized_as_dict = {
             "normalized_village_not_found": self.normalized_village_not_found
@@ -644,6 +645,12 @@ class Case(CaseAbstract):
             )  # bisect.insort() doesn't play well with lists of dicts
             d["tests"] = tests
 
+        # include fields that were added through annotate
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    d[field] = getattr(self, field)
+
         return d
 
 
@@ -726,9 +733,9 @@ class CaseView(CaseAbstract):
         # ordering = ['-document_date']
         permissions = CASES_PERMISSIONS
 
-    def as_dict(self, full=False):
+    def as_dict(self, full=False, additional_fields=None):
         return dict(
-            Case.as_dict(self, full),
+            Case.as_dict(self, full, additional_fields=additional_fields),
             **{
                 "normalized_year": self.normalized_year,
                 "normalized_province_name": self.normalized_province_name,
@@ -738,6 +745,32 @@ class CaseView(CaseAbstract):
                 "normalized_team_name": self.normalized_team_name,
             }
         )
+
+    caseview_additional_fields=[
+        "normalized_village_name",
+        "normalized_as_name",
+        "normalized_zs_name",
+        "normalized_province_name",
+        "normalized_year",
+        "normalized_team_name",
+    ]
+
+    @staticmethod
+    def add_caseview_fields_to_case_queryset(queryset):
+        result = queryset.annotate(
+            normalized_team_name=Coalesce(Cast("normalized_team__name", models.TextField()), "mobile_unit"))
+        result = result.annotate(
+            normalized_village_name=Coalesce(Cast("normalized_village__name", models.TextField()), "village"))
+        result = result.annotate(
+            normalized_as_name=Coalesce(Cast("normalized_AS__name", models.TextField()), "AS"))
+        result = result.annotate(
+            normalized_zs_name=Coalesce(Cast("normalized_AS__ZS__name", models.TextField()), "ZS"))
+        result = result.annotate(
+            normalized_province_name=Coalesce(Cast("normalized_AS__ZS__province__name", models.TextField()), "province"))
+        result = result.annotate(
+            normalized_year=Coalesce(Cast(ExtractYear("document_date"), models.PositiveSmallIntegerField()),
+                                     "form_year"))
+        return result
 
 
 class Location(models.Model):

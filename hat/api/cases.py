@@ -1,7 +1,9 @@
 from copy import copy
 
 from django.core.paginator import Paginator
-from django.db.models import Q, OuterRef, Exists
+from django.db import models
+from django.db.models import Q, OuterRef, Exists, Max
+from django.db.models.functions import Coalesce, Cast
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
@@ -97,11 +99,11 @@ class CasesViewSet(viewsets.ViewSet):
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
 
         if located == 'all':
-            queryset = CaseView.objects.order_by(*orders)
+            queryset = Case.objects.order_by(*orders)
 
         if is_locator == 'true':
             queryset = (
-                CaseView.objects.filter(confirmed_case=True)
+                Case.objects.filter(confirmed_case=True)
                 .exclude(source="mobile_sync")
                 .exclude(source="mobile_backup")
                 .exclude(province__icontains="kas")
@@ -116,19 +118,19 @@ class CasesViewSet(viewsets.ViewSet):
 
         if located == 'only_not_located':
             queryset = (
-                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=False)
+                Case.objects.filter(normalized_village=None, normalized_village_not_found=False)
                 .order_by(*orders)
             )
 
         if located == 'only_not_located_and_not_found':
             queryset = (
-                CaseView.objects.filter(normalized_village=None, normalized_village_not_found=True)
+                Case.objects.filter(normalized_village=None, normalized_village_not_found=True)
                 .order_by(*orders)
             )
 
         if located == 'only_located':
             queryset = (
-                CaseView.objects.filter(normalized_village__isnull=False)
+                Case.objects.filter(normalized_village__isnull=False)
                 .order_by(*orders)
             )
 
@@ -156,7 +158,7 @@ class CasesViewSet(viewsets.ViewSet):
             else:
                 if as_ids:
                     queryset = queryset.filter(normalized_AS_id__in=as_ids.split(","))
- 
+
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:
@@ -164,9 +166,9 @@ class CasesViewSet(viewsets.ViewSet):
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
         if from_date:
-            queryset = queryset.filter(normalized_date__gte=from_date)
+            queryset = queryset.filter(Q(document_date__gte=from_date) | (Q(document_date__isnull=True) & Q(form_year__gte=from_date[:4])))
         if to_date:
-            queryset = queryset.filter(normalized_date__lte=to_date)
+            queryset = queryset.filter(Q(document_date__lte=to_date) | (Q(document_date__isnull=True) & Q(form_year__lte=to_date[:4])))
 
         if source:
             queryset = queryset.filter(source=source)
@@ -295,6 +297,9 @@ class CasesViewSet(viewsets.ViewSet):
                 queryset = queryset.annotate(has_unuploaded_videos=Exists(has_unuploaded_videos))\
                     .filter(has_unuploaded_videos=True)
 
+        queryset = queryset.annotate(latest_test_date=Max("test__date"))
+        queryset = CaseView.add_caseview_fields_to_case_queryset(queryset)
+
         # Performance prefetch
         queryset = queryset.prefetch_related("normalized_AS")
         queryset = queryset.prefetch_related("normalized_AS__ZS")
@@ -319,7 +324,9 @@ class CasesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["cases"] = list(map(lambda x: x.as_dict(), page.object_list))  # just the map breaks the tests
+            res["cases"] = list(
+                map(lambda x: x.as_dict(additional_fields=["latest_test_date"] + CaseView.caseview_additional_fields),
+                    page.object_list))  # just the map breaks the tests
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

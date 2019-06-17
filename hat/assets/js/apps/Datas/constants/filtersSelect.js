@@ -9,7 +9,6 @@ import {
     searchLastname,
     searchName,
     searchPrename,
-    workZones,
     provinces,
     zones,
     aires,
@@ -52,7 +51,6 @@ const filtersCases2 = (
 );
 
 const filtersCasesGeo = (
-    workzonesList,
     provincesList,
     zoneslist,
     areasList,
@@ -61,7 +59,6 @@ const filtersCasesGeo = (
     urlKey,
 ) => (
     [
-        workZones(workzonesList, props, urlKey),
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
@@ -142,7 +139,6 @@ const filtersDuplicatesPatientsSearch = component => (
 );
 
 const filtersPatientsGeo = (
-    workzonesList,
     provincesList,
     zoneslist,
     areasList,
@@ -153,7 +149,6 @@ const filtersPatientsGeo = (
 ) => {
     const geoFiltersArray =
     [
-        workZones(workzonesList, props, urlKey),
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),

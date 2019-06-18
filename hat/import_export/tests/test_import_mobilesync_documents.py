@@ -13,10 +13,14 @@ from hat.sync.tests import clean_couch
 from ..import_synced import import_synced_devices
 
 
-def load_document(filename, username=None):
-    device_db_name = filename + str(uuid.uuid4())
+def load_document(filename, username=None, device_db_name=None):
     user = User.objects.get(username=username) if username else None
-    device_db = DeviceDB.objects.create(device_id=device_db_name, creator=user, last_user=user)
+    if device_db_name:
+        device_db = DeviceDB.objects.get(device_id=device_db_name, creator=user, last_user=user)
+    else:
+        device_db_name = filename + str(uuid.uuid4())
+        device_db = DeviceDB.objects.create(device_id=device_db_name, creator=user, last_user=user)
+
     with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
         document = json.load(f)
         document['_id'] = str(uuid.uuid4())  # Avoid updates in couch
@@ -435,3 +439,46 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(case.test_set.count(), 1, "There should only be 1 test")
         catt_test = case.test_set.get(type="CATT")
         self.assertEqual(catt_test.level, 2)
+
+    def test_sleep_539(self):
+        doc_1, device_db_1 = load_document("sequence_test_1.json", "supervisor")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db_1.db_name, json=doc_1).json()
+        self.assertEqual(doc_1['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db_1.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=device_db_1.device_id)
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        self.assertEquals(case.test_set.count(), 2, "There should be 2 tests")
+
+        doc_2, _ = load_document("sequence_test_2.json", "supervisor", device_db_name=device_db_1.device_id)
+
+        # create documents in device db and sync
+        p2 = api.post(device_db_1.db_name, json=doc_2).json()
+        self.assertEqual(doc_2['_id'], p2['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db_1.refresh_from_db()
+
+        doc_3, device_db_3 = load_document("sequence_test_3.json", "supervisor")
+
+        # create documents in device db and sync
+        p3 = api.post(device_db_3.db_name, json=doc_3).json()
+        self.assertEqual(doc_3['_id'], p3['id'])
+
+        response = import_synced_devices()
+        device_db_3.refresh_from_db()
+
+        self.assertEquals(case.test_set.count(), 3, "There should be 3 tests after the third document")
+        maect_test = case.test_set.get(type="MAECT")
+        self.assertIsNotNone(maect_test)

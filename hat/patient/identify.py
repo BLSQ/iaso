@@ -160,7 +160,7 @@ def create_test_data(case: Case, patient_area, raw):
         PARASIT: "test_parasit",
     }
     for test_type, test_field in test_types.items():
-        test_result = getattr(case, test_field, None)
+        test_result = getattr(raw, test_field, None)
         if test_result is not None:
             test_date = raw.get(f"{test_field}_test_time", None)
             # CATT and RDT tests with confirmation tests and another screening tests within 90 days

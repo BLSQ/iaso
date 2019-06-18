@@ -29,8 +29,8 @@ const qualityColumns = formatMessage => (
             accessor: 'tester__user__username',
             Cell: settings => (
                 <span>
-                    {settings.original.tester.userName}
-                    {` (${settings.original.tester.firstName}${settings.original.tester.lastName ? `${settings.original.tester.lastName}` : ''})`}
+                    {settings.original.tester ? settings.original.tester.userName : formatMessage({defaultMessage: '*Inconnu*', id: 'quality.label.testerUnknown'})}
+                    {settings.original.tester && ` (${settings.original.tester.firstName}${settings.original.tester.lastName ? `${settings.original.tester.lastName}` : ''})`}
                 </span>
             ),
         },

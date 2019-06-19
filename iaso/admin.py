@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import OrgUnitType, OrgLevel, OrgUnit
+from .models import OrgUnitType, OrgLevel, OrgUnit, Form
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
@@ -27,3 +27,11 @@ class OrgUnitTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
+
+
+class FormAdmin(admin.ModelAdmin):
+    search_fields = ("name", "form_id")
+    ordering = ("name",)
+
+
+admin.site.register(Form, FormAdmin)

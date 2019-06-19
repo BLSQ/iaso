@@ -33,6 +33,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     permission_required = [
         "menupermissions.x_management_users",
         "menupermissions.x_vectorcontrol",
+        "menupermissions.x_qualitycontrol",
     ]
 
     def list(self, request):

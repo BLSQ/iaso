@@ -26,14 +26,6 @@ class ZSViewSet(viewsets.ViewSet):
 
     """
 
-    permission_required = [
-        'menupermissions.x_management_coordinations',
-        'menupermissions.x_management_users',
-        'menupermissions.x_plannings_microplanning',
-        'menupermissions.x_locator',
-        'menupermissions.x_vectorcontrol'
-    ]
-
     @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         province_ids = request.GET.get("province_id", None)

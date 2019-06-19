@@ -12,11 +12,6 @@ class ProvinceViewSet(viewsets.ViewSet):
     """
     Api to list all provinces, or retrieve information about just one.
     """
-    permission_required = [
-        'menupermissions.x_management_users',
-        'menupermissions.x_locator',
-        'menupermissions.x_vectorcontrol'
-    ]
 
     @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):

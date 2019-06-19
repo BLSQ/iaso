@@ -228,9 +228,10 @@ export const userHasPermission = (
         permissions.length > 0
     ) {
         const currentPermission = permissions.find(p => p.codename === permissionKey);
+        // TODO: the API is now filtering the user permissions list so the second .find below is unnecessary
         if (
             (currentUser.is_superuser && allowSuperUser) ||
-            currentUser.permissions.find(p => p === currentPermission.id)
+            (currentPermission && currentUser.permissions.find(p => p === currentPermission.id))
         ) {
             hasPermission = true;
         }

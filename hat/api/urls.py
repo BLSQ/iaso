@@ -46,6 +46,7 @@ from .qcdetails import QCDetailsViewSet
 from .structures import StructureViewSet
 from .org_units import OrgUnitViewSet
 from .org_levels import OrgLevelViewSet
+from .org_unit_types import OrgUnitTypeViewSet
 from .forms import FormsViewSet
 
 router = routers.DefaultRouter()
@@ -101,6 +102,7 @@ router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems"
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 router.register(r"structures", StructureViewSet, base_name="structures")
 router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
+router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
 router.register(r"orglevels", OrgLevelViewSet, base_name="orglevels")
 router.register(r"forms", FormsViewSet, base_name="forms")
 

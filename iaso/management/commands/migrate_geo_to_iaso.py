@@ -38,12 +38,31 @@ class Command(BaseCommand):
         province_level, created = OrgLevel.objects.get_or_create(
             name="Province", short_name="Prov.", level=1
         )
-        geo_type, created = OrgUnitType.objects.get_or_create(
-            name="Geo", short_name="Geo"
+
+        province_type, created = OrgUnitType.objects.get_or_create(
+            name="Province", short_name="Prov"
         )
-        inconnu_type, created = OrgUnitType.objects.get_or_create(
-            name="Inconnu", short_name="Inc"
+
+        zs_type, created = OrgUnitType.objects.get_or_create(
+            name="Zone de santé", short_name="ZS"
         )
+
+        as_type, created = OrgUnitType.objects.get_or_create(
+            name="Aire de santé", short_name="AS"
+        )
+
+        hospital_type, created = OrgUnitType.objects.get_or_create(
+            name="Hôpital", short_name="Hosp."
+        )
+
+        center_type, created = OrgUnitType.objects.get_or_create(
+            name="Centre de Santé", short_name="CDS"
+        )
+
+        ssc_type, created = OrgUnitType.objects.get_or_create(
+            name="Site de santé communautaire", short_name="SSC"
+        )
+
         zs_level, created = OrgLevel.objects.get_or_create(
             name="Zone de Santé", short_name="Zone", level=2
         )
@@ -58,7 +77,7 @@ class Command(BaseCommand):
         province_id_dict = {}
         for province in provinces:
             print("p: ", province)
-            org_unit = copy_to_org_unit(province, province_level, geo_type)
+            org_unit = copy_to_org_unit(province, province_level, province_type)
             org_unit.save()
             province_id_dict[province.id] = org_unit.id
 
@@ -66,7 +85,7 @@ class Command(BaseCommand):
         zone_id_dict = {}
         for zone in zones:
             print("z: ", zone)
-            org_unit = copy_to_org_unit(zone, zs_level, geo_type)
+            org_unit = copy_to_org_unit(zone, zs_level, zs_type)
             org_unit.parent_id = province_id_dict[zone.province_id]
             org_unit.save()
             zone_id_dict[zone.id] = org_unit.id
@@ -75,7 +94,7 @@ class Command(BaseCommand):
         area_id_dict = {}
         for area in areas:
             print("a: ", area)
-            org_unit = copy_to_org_unit(area, as_level, geo_type)
+            org_unit = copy_to_org_unit(area, as_level, as_type)
             org_unit.parent_id = zone_id_dict[area.ZS_id]
             org_unit.save()
             area_id_dict[area.id] = org_unit.id
@@ -84,7 +103,7 @@ class Command(BaseCommand):
             print("s: ", structure)
             org_unit = OrgUnit()
             org_unit.org_level = struct_level
-            org_unit.org_unit_type = inconnu_type
+            org_unit.org_unit_type = center_type
             org_unit.name = structure.name
             org_unit.parent_id = area_id_dict[structure.AS_id]
             org_unit.source = structure.source

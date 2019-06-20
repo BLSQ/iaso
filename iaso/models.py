@@ -125,7 +125,7 @@ class Form(models.Model):
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
 
     def __str__(self):
-        return "%s %s %s " % (self.name, self.form_id)
+        return "%s %s " % (self.name, self.form_id)
 
     def as_dict(self):
         return {

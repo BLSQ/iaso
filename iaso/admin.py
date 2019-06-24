@@ -1,24 +1,15 @@
 from django.contrib import admin
 
-from .models import OrgUnitType, OrgLevel, OrgUnit, Form
+from .models import OrgUnitType, OrgUnit, Form
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
-    list_filter = ("org_level", "org_unit_type")
+    list_filter = ("org_unit_type",)
     search_fields = ("name", "source_ref")
     ordering = ("name",)
 
 
 admin.site.register(OrgUnit, OrgUnitAdmin)
-
-
-class OrgLevelAdmin(admin.ModelAdmin):
-    list_filter = ("level",)
-    search_fields = ("name",)
-    ordering = ("name",)
-
-
-admin.site.register(OrgLevel, OrgLevelAdmin)
 
 
 class OrgUnitTypeAdmin(admin.ModelAdmin):

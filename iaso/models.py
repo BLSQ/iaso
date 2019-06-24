@@ -19,45 +19,25 @@ class OrgUnitType(models.Model):
     short_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    sub_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
 
     def __str__(self):
         return "%s" % (self.name)
 
-    def as_dict(self):
-        return {
+    def as_dict(self, sub_units=True):
+        res = {
             "id": self.id,
             "name": self.name,
             "short_name": self.short_name,
             "created_at": self.created_at.timestamp(),
             "updated_at": self.updated_at.timestamp(),
         }
-
-
-class OrgLevel(models.Model):
-    name = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=255)
-    level = models.IntegerField()
-    parent = models.ForeignKey(
-        "OrgLevel", on_delete=models.CASCADE, null=True, blank=True
-    )
-    org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s" % (self.name)
-
-    def as_dict(self):
-        return {
-            "name": self.name,
-            "short_name": self.short_name,
-            "id": self.id,
-            "parent_id": self.parent_id,
-            "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
-            "level": self.level,
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
-        }
+        if sub_units:
+            sub_units = [
+                unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
+            ]
+            res["sub_units"] = sub_units
+        return res
 
 
 class OrgUnit(models.Model):
@@ -71,10 +51,6 @@ class OrgUnit(models.Model):
 
     org_unit_type = models.ForeignKey(
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
-    )
-
-    org_level = models.ForeignKey(
-        OrgLevel, on_delete=models.CASCADE, null=True, blank=True
     )
 
     source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
@@ -98,7 +74,7 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s %s " % (self.org_level, self.org_unit_type, self.name)
+        return "%s %s " % (self.org_unit_type, self.name)
 
     def as_dict(self):
         return {
@@ -108,7 +84,6 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_level_id": self.org_level_id,
             "created_at": self.created_at.timestamp(),
             "updated_at": self.updated_at.timestamp(),
             "aliases": self.aliases,

@@ -19,7 +19,9 @@ class OrgUnitType(models.Model):
     short_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    sub_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
+    sub_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="super_types", blank=True
+    )
 
     def __str__(self):
         return "%s" % (self.name)
@@ -33,10 +35,10 @@ class OrgUnitType(models.Model):
             "updated_at": self.updated_at.timestamp(),
         }
         if sub_units:
-            sub_units = [
+            sub_unit_types = [
                 unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
             ]
-            res["sub_units"] = sub_units
+            res["sub_unit_types"] = sub_unit_types
         return res
 
 

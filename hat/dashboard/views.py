@@ -165,6 +165,20 @@ def villages_management(request: HttpRequest) -> HttpResponse:
 
 @is_user_authorized
 @login_required()
+@permission_required('menupermissions.x_management_zones')
+@require_http_methods(['GET'])
+def zones_management(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_zone"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_management_areas')
+@require_http_methods(['GET'])
+def areas_management(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_area"))})
+
+@is_user_authorized
+@login_required()
 @permission_required('menupermissions.x_modifications')
 @require_http_methods(['GET'])
 def logs(request: HttpRequest) -> HttpResponse:

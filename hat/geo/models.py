@@ -68,7 +68,11 @@ class ZS(models.Model):
         verbose_name_plural = "ZS"
 
     def as_dict(self):
-        return {"id": self.id, "name": self.name, "province_id": self.province_id}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "province_id": self.province_id,
+        }
 
 
 class AS(models.Model):

@@ -114,6 +114,16 @@ def get_menu(user, active_link):
                     "perms": "x_management_villages"
                 },
                 {
+                    "name": "Zones de santé",
+                    "url_key": reverse("dashboard:management_zone"),
+                    "perms": "x_management_zones"
+                },
+                {
+                    "name": "Aires de santé",
+                    "url_key": reverse("dashboard:management_area"),
+                    "perms": "x_management_areas"
+                },
+                {
                     "name": "Modifications",
                     "url_key": reverse("dashboard:logs"),
                     "perms": "x_modifications"

@@ -20,6 +20,8 @@ WORKZONES = _("Work zones")
 TEAMS = _("Teams")
 USERS = _("Users")
 VILLAGES = _("Villages")
+ZONES = _("Zones")
+AREAS = _("Areas")
 LOCATOR = _("Locator")
 VECTOR_CONTROL = _("Vector control")
 VECTOR_CONTROL_UPLOAD = _("Vector control import Gpx")
@@ -64,4 +66,6 @@ class CustomPermissionSupport(models.Model):
             ("x_datas_patient_edition", EDIT_PATIENT),
             ("x_datas_download", DOWNLOAD_DATAS),
             ("x_duplicates", DUPLICATES),
+            ('x_management_zones', ZONES),
+            ('x_management_areas', AREAS),
         )

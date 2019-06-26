@@ -5,7 +5,7 @@ from iaso.models import Form
 
 class FormsViewSet(viewsets.ViewSet):
     """
-    API to allow retrieval of targets.
+    API to allow retrieval of forms.
 
     """
 

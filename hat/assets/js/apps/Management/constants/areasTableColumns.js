@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 const areasTableColumns = (
     formatMessage,
     component,
     userCanEditOrDelete,
+    userCanEditShape,
 ) => {
     const tableColumns = [
         {
@@ -49,7 +50,7 @@ const areasTableColumns = (
             accessor: 'source',
         },
     ];
-    if (userCanEditOrDelete) {
+    if (userCanEditOrDelete || userCanEditShape) {
         tableColumns.push({
             Header: formatMessage({
                 defaultMessage: 'Actions',
@@ -57,38 +58,57 @@ const areasTableColumns = (
             }),
             sortable: false,
             resizable: false,
-            width: 200,
+            width: userCanEditShape && userCanEditShape ? 300 : 200,
             Cell: settings => (
                 <section>
-                    <button
-                        className="button--edit--tiny  margin-right"
-                        onClick={() =>
-                            component.props.selectArea(settings.original)}
-                    >
-                        <i className="fa fa-pencil-square-o" />
-                        {
-                            formatMessage({
-                                defaultMessage: 'Editer',
-                                id: 'main.label.edit',
-                            })
-                        }
-                    </button>
-                    <button
-                        className="button--delete--tiny"
-                        onClick={() =>
-                            component.setState({
-                                showDeleteModale: true,
-                                dataDeleted: settings.original,
-                            })}
-                    >
-                        <i className="fa fa-trash" />
-                        {
-                            formatMessage({
-                                defaultMessage: 'Effacer',
-                                id: 'main.label.delete',
-                            })
-                        }
-                    </button>
+                    {
+                        userCanEditShape &&
+                            <button
+                                className="button--edit--tiny  margin-right"
+                                onClick={() =>
+                                    component.editShape(settings.original)}
+                            >
+                                <i className="fa fa-map-o" />
+                                {
+                                    formatMessage({
+                                        defaultMessage: 'Editer la surface',
+                                        id: 'main.label.editMap',
+                                    })
+                                }
+                            </button>
+                    }
+                    {userCanEditOrDelete &&
+                    <Fragment>
+                        <button
+                            className="button--edit--tiny  margin-right"
+                            onClick={() =>
+                                component.props.selectArea(settings.original)}
+                        >
+                            <i className="fa fa-pencil-square-o" />
+                            {
+                                formatMessage({
+                                    defaultMessage: 'Editer',
+                                    id: 'main.label.edit',
+                                })
+                            }
+                        </button>
+                        <button
+                            className="button--delete--tiny"
+                            onClick={() =>
+                                component.setState({
+                                    showDeleteModale: true,
+                                    dataDeleted: settings.original,
+                                })}
+                        >
+                            <i className="fa fa-trash" />
+                            {
+                                formatMessage({
+                                    defaultMessage: 'Effacer',
+                                    id: 'main.label.delete',
+                                })
+                            }
+                        </button>
+                    </Fragment>}
                 </section>
             ),
         });

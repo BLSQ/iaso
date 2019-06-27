@@ -94,7 +94,7 @@ class ZoneModale extends Component {
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
-                            <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village sauvegardé" />
+                            <FormattedMessage id="main.label.zoneUpdated" defaultMessage="Zone de santé sauvegardée" />
                         </div>
                     }
                     {

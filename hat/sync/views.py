@@ -6,7 +6,7 @@ from rest_framework.decorators import (
     api_view,
     permission_classes,
     authentication_classes,
-    throttle_classes
+    throttle_classes,
 )
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
@@ -15,22 +15,29 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, get_object_or_404 ,redirect
+from django.shortcuts import render, get_object_or_404, redirect
 
 from hat.patient.identify import find_tests_by_image, find_tests_by_video
-from .models import ImageUpload, ImageUploadForm, VideoUpload, VideoUploadForm, DeviceEventForm
+from .models import (
+    ImageUpload,
+    ImageUploadForm,
+    VideoUpload,
+    VideoUploadForm,
+    DeviceEventForm,
+)
 from ..cases.models import TestGroup
 
 import logging
 
 from .couchdb_helpers import create_or_update_user
 from .models import MobileUser, DeviceDB
+from iaso.models import Instance
 
 logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-@api_view(http_method_names=['POST'])
+@api_view(http_method_names=["POST"])
 @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
@@ -66,8 +73,8 @@ def user_signin(request: HttpRequest) -> HttpResponse:
         * ``url`` -- CouchDB device database url.
 
     """
-    device_id = request.data.get('deviceId', '')
-    if device_id == '':
+    device_id = request.data.get("deviceId", "")
+    if device_id == "":
         msg = 'No "deviceId" sent'
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
@@ -103,7 +110,9 @@ def user_signin(request: HttpRequest) -> HttpResponse:
         couchdb_config = create_or_update_user(username, device_id)
     except ValueError as err:
         logger.exception(str(err))
-        return Response('Creating credentials failed', status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            "Creating credentials failed", status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     # Get/Create the device db record and couchdb db
     try:
@@ -117,10 +126,10 @@ def user_signin(request: HttpRequest) -> HttpResponse:
         device_db.save()
 
     payload = {
-        'username': couchdb_config['username'],
-        'password': couchdb_config['password'],
+        "username": couchdb_config["username"],
+        "password": couchdb_config["password"],
         # Send the url of the couchdb device-db for replication
-        'url': request.build_absolute_uri('/_couchdb/' + device_db.db_name)
+        "url": request.build_absolute_uri("/_couchdb/" + device_db.db_name),
     }
     return Response(payload, status.HTTP_201_CREATED)
 
@@ -129,12 +138,12 @@ def user_signin(request: HttpRequest) -> HttpResponse:
 # Needs to be open since the mobile app doesn't have any creds
 # is throttled
 @csrf_exempt
-@api_view(http_method_names=['POST'])
+@api_view(http_method_names=["POST"])
 @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def signin(request: HttpRequest) -> HttpResponse:
-    '''
+    """
     Sync credentials endpoint.
     Allows only **POST** http method.
     `It's throttled. <http://www.django-rest-framework.org/api-guide/throttling/>`__
@@ -188,20 +197,20 @@ def signin(request: HttpRequest) -> HttpResponse:
         * ``password`` -- CouchDB credentials: password.
         * ``url`` -- CouchDB device database url.
 
-    '''
-    if settings.GOOGLE_CLIENT_ID == '':
-        msg = 'Server is missing google client id'
+    """
+    if settings.GOOGLE_CLIENT_ID == "":
+        msg = "Server is missing google client id"
         logger.error(msg)
         return Response(msg, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    token = request.data.get('idToken', '')
-    if token == '':
+    token = request.data.get("idToken", "")
+    if token == "":
         msg = 'No "idToken" sent'
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
-    device_id = request.data.get('deviceId', '')
-    if device_id == '':
+    device_id = request.data.get("deviceId", "")
+    if device_id == "":
         msg = 'No "deviceId" sent'
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
@@ -210,21 +219,20 @@ def signin(request: HttpRequest) -> HttpResponse:
     # check signature against google's certs
     # checks that the token was generated for our clientId
     try:
-        user_data = client.verify_id_token(
-            token,
-            settings.GOOGLE_CLIENT_ID
-        )
+        user_data = client.verify_id_token(token, settings.GOOGLE_CLIENT_ID)
     except client.VerifyJwtTokenError as err:
         logger.exception(str(err))
-        return Response('Could not verify ID token', status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            "Could not verify ID token", status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     except crypt.AppIdentityError:
-        msg = 'Invalid ID Token'
+        msg = "Invalid ID Token"
         logger.error(msg)
         return Response(msg, status.HTTP_401_UNAUTHORIZED)
 
-    email = user_data.get('email', '')
-    if email == '':
-        msg = 'User data are missing email'
+    email = user_data.get("email", "")
+    if email == "":
+        msg = "User data are missing email"
         logger.error(msg)
         return Response(msg, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -234,7 +242,7 @@ def signin(request: HttpRequest) -> HttpResponse:
     except MobileUser.DoesNotExist:
         # This is a user that comes from our app, but is not added to MobileUser list
         # That should trigger a different error message on the device
-        msg = 'Mobile user does not exist'
+        msg = "Mobile user does not exist"
         logger.error(msg)
         return Response(msg, status.HTTP_403_FORBIDDEN)
 
@@ -243,28 +251,49 @@ def signin(request: HttpRequest) -> HttpResponse:
         couchdb_config = create_or_update_user(email, device_id)
     except ValueError as err:
         logger.exception(str(err))
-        return Response('Creating credentials failed', status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            "Creating credentials failed", status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     # Get/Create the device db record and couchdb db
     try:
         device_db = DeviceDB.objects.get(device_id=device_id)
     except DeviceDB.DoesNotExist:
-        logger.info('Creating db for device {}'.format(device_id))
-        device_db = DeviceDB(device_id=device_id, creator=request.user, last_user=request.user)
+        logger.info("Creating db for device {}".format(device_id))
+        device_db = DeviceDB(
+            device_id=device_id, creator=request.user, last_user=request.user
+        )
         device_db.save()
 
     payload = {
-        'username': couchdb_config['username'],
-        'password': couchdb_config['password'],
+        "username": couchdb_config["username"],
+        "password": couchdb_config["password"],
         # Send the url of the couchdb device-db for replication
-        'url': request.build_absolute_uri('/_couchdb/' + device_db.db_name)
+        "url": request.build_absolute_uri("/_couchdb/" + device_db.db_name),
     }
     return Response(payload, status.HTTP_201_CREATED)
 
 
 @csrf_exempt
-@api_view(http_method_names=['POST'])
-#@throttle_classes([AnonRateThrottle])
+@api_view(http_method_names=["POST"])
+# @throttle_classes([AnonRateThrottle])
+@authentication_classes([])
+@permission_classes([])
+def form_upload(request: HttpRequest) -> HttpResponse:
+
+    print("request", request)
+    print("request.POST", request.POST)
+    print("request.FILES", request.FILES)
+
+    i = Instance()
+    i.file = request.FILES["xml_submission_file"]
+    i.save()
+    return JsonResponse({"brol": "coucou"}, status=201)
+
+
+@csrf_exempt
+@api_view(http_method_names=["POST"])
+# @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def image_upload(request: HttpRequest) -> HttpResponse:
@@ -273,26 +302,30 @@ def image_upload(request: HttpRequest) -> HttpResponse:
         try:
             img = img_form.save()
             if img.group_id:
-                test_group, created = TestGroup.objects.get_or_create(group_id=img.group_id)
+                test_group, created = TestGroup.objects.get_or_create(
+                    group_id=img.group_id
+                )
                 if created:
                     test_group.type = img.type
                     test_group.save()
             # Try to associate the image with a test
-            tests = find_tests_by_image(request.FILES['image'].name, img.type, False)
+            tests = find_tests_by_image(request.FILES["image"].name, img.type, False)
             for test in tests:
                 test.image = img
                 test.save()
             return JsonResponse({"Result": "Upload ok"})
         except:
-            logger.error("Error saving picture %s", request.FILES['image'].name, exc_info=1)
+            logger.error(
+                "Error saving picture %s", request.FILES["image"].name, exc_info=1
+            )
             return JsonResponse({}, status=500)
     else:
         return JsonResponse(img_form.errors, status=400)
 
 
 @csrf_exempt
-@api_view(http_method_names=['POST'])
-#@throttle_classes([AnonRateThrottle])
+@api_view(http_method_names=["POST"])
+# @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def video_upload(request: HttpRequest) -> HttpResponse:
@@ -300,7 +333,7 @@ def video_upload(request: HttpRequest) -> HttpResponse:
     if video_form.is_valid():
         video = video_form.save()
         # Try to associate the image with a test
-        tests = find_tests_by_video(request.FILES['video'].name, video.type, False)
+        tests = find_tests_by_video(request.FILES["video"].name, video.type, False)
         for test in tests:
             test.video = video
             test.save()
@@ -325,9 +358,6 @@ def device_event_form(request: HttpRequest, device_id) -> HttpResponse:
             return JsonResponse(form.errors, status=400)
     else:
         form = DeviceEventForm()
-    return render(request, 'devices/device_event_form.html',
-                              {'user': request.user, 'form': form}
-                              )
-
-
-
+    return render(
+        request, "devices/device_event_form.html", {"user": request.user, "form": form}
+    )

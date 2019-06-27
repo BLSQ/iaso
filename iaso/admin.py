@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import OrgUnitType, OrgUnit, Form
+from .models import OrgUnitType, OrgUnit, Form, Instance
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
@@ -26,3 +26,4 @@ class FormAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Form, FormAdmin)
+admin.site.register(Instance)

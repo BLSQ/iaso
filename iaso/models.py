@@ -93,16 +93,46 @@ class OrgUnit(models.Model):
 
 
 class Form(models.Model):
-    UPLOADED_TO = "forms/"
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
     form_id = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    name = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return "%s %s " % (self.name, self.form_id)
+
+    def as_dict(self):
+        return {
+            "form_id": self.form_id,
+            "name": self.name,
+            "id": self.id,
+            "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "file": self.file.url if self.file else None,
+        }
+
+
+class FormVersion(models.Model):
+    UPLOADED_TO = "forms/"
+    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    version_id = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class Instance(models.Model):
+    UPLOADED_TO = "instances/"
+    org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
+    form = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
 
     def __str__(self):
-        return "%s %s " % (self.name, self.form_id)
+        return "%s " % (self.name,)
 
     def as_dict(self):
         return {

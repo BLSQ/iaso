@@ -6,18 +6,22 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
 import AreaModaleComponent from '../components/AreaModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import areasTableColumns from '../constants/areasTableColumns';
-import { areaActions } from '../redux/areas';
-import { filterActions } from '../../../redux/filtersRedux';
+import ShapeModaleComponent from '../components/ShapeModaleComponent';
+import SearchButton from '../../../components/SearchButton';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { filtersSearch, filtersGeo } from '../constants/areasFilters';
+
+import { areaActions } from '../redux/areas';
+import { filterActions } from '../../../redux/filtersRedux';
 import { currentUserActions } from '../../../redux/currentUserReducer';
-import SearchButton from '../../../components/SearchButton';
+
+import { filtersSearch, filtersGeo } from '../constants/areasFilters';
+
 import { userHasPermission } from '../../../utils';
+import { createUrl } from '../../../utils/fetchData';
 
 const baseUrl = 'areas';
 
@@ -28,6 +32,7 @@ class ManagementAreas extends React.Component {
             tableColumns: [],
             showEditModale: false,
             showDeleteModale: false,
+            showEditShape: false,
             dataDeleted: undefined,
             tableUrl: null,
         };
@@ -53,16 +58,16 @@ class ManagementAreas extends React.Component {
         if (nextProps.currentUser.id &&
             permissions.length > 0 &&
             this.state.tableColumns.length === 0) {
-            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_areas', true);
+            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_areas');
+            const userCanEditShape = userHasPermission(permissions, currentUser, 'x_management_edit_shape_areas');
             this.setState({
-                tableColumns: areasTableColumns(formatMessage, this, userCanEditOrDelete),
+                tableColumns: areasTableColumns(formatMessage, this, userCanEditOrDelete, userCanEditShape),
             });
         }
         if (nextProps.params.province_id !== this.props.params.province_id) {
             this.props.selectProvince(nextProps.params.province_id);
         }
     }
-
 
     onSearch() {
         this.setState({
@@ -129,6 +134,13 @@ class ManagementAreas extends React.Component {
         dispatch(areaActions.deleteArea(dispatch, element));
     }
 
+    editShape(area) {
+        console.log(area);
+        this.setState({
+            showEditShape: true,
+        });
+    }
+
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
@@ -138,6 +150,7 @@ class ManagementAreas extends React.Component {
             isUpdated,
             load,
             selectArea,
+            selectedShape,
             geoProvinces,
             geoFilters: {
                 provinces,
@@ -165,6 +178,17 @@ class ManagementAreas extends React.Component {
                         error={load.error}
                         params={this.props.params}
                         geoProvinces={geoProvinces}
+                    />
+                }
+                {
+                    this.state.showEditShape &&
+                    <ShapeModaleComponent
+                        showModale={this.state.showEditShape}
+                        closeModal={() => this.setState({ showEditShape: false })}
+                        shape={sele}
+                        saveShape={newShape => console.log(newShape)}
+                        isUpdated={isUpdated}
+                        error={load.error}
                     />
                 }
                 {
@@ -251,6 +275,7 @@ class ManagementAreas extends React.Component {
 
 ManagementAreas.defaultProps = {
     selectedArea: null,
+    selectedShape: null,
 };
 
 ManagementAreas.propTypes = {
@@ -273,6 +298,7 @@ ManagementAreas.propTypes = {
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    selectedShape: PropTypes.object,
 };
 
 const ManagementAreasIntl = injectIntl(ManagementAreas);

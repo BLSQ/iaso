@@ -91,20 +91,13 @@ class ZSViewSet(viewsets.ViewSet):
             if page_offset:
                 page_offset = int(page_offset)
                 queryset = queryset.order_by(*orders)
-                values = (
-                    'name',
-                    'id',
-                    'province_id',
-                    'province__name',
-                    "aliases",
-                    "source",
-                )
-                paginator = Paginator(queryset.values(*values), limit)
+                paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-                res["zones"] = page.object_list
+
+                res["zones"] = map(lambda x: x.as_full_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

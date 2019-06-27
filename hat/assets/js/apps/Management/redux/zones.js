@@ -9,6 +9,8 @@ export const UPDATE_CURRENT_ZONE = 'hat/management/zones/UPDATE_CURRENT_ZONE';
 export const SET_GEO_PROVINCES = 'hat/management/zones/SET_GEO_PROVINCES';
 export const SET_GEO_ZONES = 'hat/management/zones/SET_GEO_ZONES';
 export const SET_GEO_AREAS = 'hat/management/zones/SET_GEO_AREAS';
+export const SET_ZONE_SHAPE = 'hat/management/zones/SET_ZONE_SHAPE';
+export const RESET_SHAPE_ITEM = 'hat/management/zones/RESET_SHAPE_ITEM';
 
 const req = require('superagent');
 
@@ -34,6 +36,11 @@ export const selectZone = payload => ({
     payload,
 });
 
+export const setZoneShape = payload => ({
+    type: SET_ZONE_SHAPE,
+    payload,
+});
+
 export const setGeoProvinces = payload => ({
     type: SET_GEO_PROVINCES,
     payload,
@@ -49,6 +56,10 @@ export const setGeoZones = payload => ({
 export const setGeoAreas = payload => ({
     type: SET_GEO_AREAS,
     payload,
+});
+
+export const resetShapeItem = () => ({
+    type: RESET_SHAPE_ITEM,
 });
 
 export const updateZone = (dispatch, zone) => {
@@ -94,6 +105,24 @@ export const deleteZone = (dispatch, zone) => {
     });
 };
 
+export const fetchZoneDetail = (dispatch, zoneId) => {
+    dispatch(loadActions.startLoading());
+    req
+        .get(`/api/zs/${zoneId}/`)
+        .set('Content-Type', 'application/json')
+        .then((res) => {
+            dispatch(setZoneShape(res.body));
+            console.log(res.body);
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 
 export const fetchGeoDatas = (dispatch) => {
     req
@@ -132,6 +161,7 @@ export const zonesInitialState = {
     isUpdated: false,
     list: [],
     current: null,
+    selectedShapeItem: null,
     geoProvinces: {},
     geoZones: {},
     geoAreas: {},
@@ -145,6 +175,8 @@ export const zoneActions = {
     selectZone,
     updateCurrentZone,
     fetchGeoDatas,
+    fetchZoneDetail,
+    resetShapeItem,
 };
 
 
@@ -215,6 +247,21 @@ export const zoneReducer = (state = zonesInitialState, action = {}) => {
             return {
                 ...state,
                 geoAreas,
+            };
+        }
+
+        case SET_ZONE_SHAPE: {
+            const selectedShapeItem = action.payload;
+            return {
+                ...state,
+                selectedShapeItem,
+            };
+        }
+
+        case RESET_SHAPE_ITEM: {
+            return {
+                ...state,
+                selectedShapeItem: null,
             };
         }
 

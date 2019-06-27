@@ -6,18 +6,22 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
 import ZoneModaleComponent from '../components/ZoneModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
-import zonesTableColumns from '../constants/zonesTableColumns';
-import { zoneActions } from '../redux/zones';
-import { filterActions } from '../../../redux/filtersRedux';
+import ShapeModaleComponent from '../components/ShapeModaleComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { filtersSearch, filtersGeo } from '../constants/zonesFilters';
-import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+
+import zonesTableColumns from '../constants/zonesTableColumns';
+import { filtersSearch, filtersGeo } from '../constants/zonesFilters';
+
+import { zoneActions } from '../redux/zones';
+import { filterActions } from '../../../redux/filtersRedux';
+import { currentUserActions } from '../../../redux/currentUserReducer';
+
 import { userHasPermission } from '../../../utils';
+import { createUrl } from '../../../utils/fetchData';
 
 
 const baseUrl = 'zones';
@@ -29,6 +33,7 @@ class ManagementZones extends React.Component {
             tableColumns: [],
             showEditModale: false,
             showDeleteModale: false,
+            showEditShape: false,
             dataDeleted: undefined,
             tableUrl: null,
         };
@@ -54,10 +59,11 @@ class ManagementZones extends React.Component {
         if (nextProps.currentUser.id &&
             permissions.length > 0 &&
             this.state.tableColumns.length === 0) {
-            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_zones', true);
+            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_zones');
+            const userCanEditShape = userHasPermission(permissions, currentUser, 'x_management_edit_shape_zones');
 
             this.setState({
-                tableColumns: zonesTableColumns(formatMessage, this, userCanEditOrDelete),
+                tableColumns: zonesTableColumns(formatMessage, this, userCanEditOrDelete, userCanEditShape),
             });
         }
         if (nextProps.params.province_id !== this.props.params.province_id) {
@@ -130,6 +136,21 @@ class ManagementZones extends React.Component {
         dispatch(zoneActions.deleteZone(dispatch, element));
     }
 
+    editShape(zone) {
+        console.log(zone.id);
+        this.setState({
+            showEditShape: true,
+        });
+        this.props.fetchZoneDetail(zone.id);
+    }
+
+    closeShapeModal() {
+        this.setState({
+            showEditShape: false,
+        });
+        this.props.resetShapeItem();
+    }
+
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
@@ -139,6 +160,7 @@ class ManagementZones extends React.Component {
             isUpdated,
             load,
             selectZone,
+            selectedShapeItem,
             geoProvinces,
             geoFilters: {
                 provinces,
@@ -150,6 +172,7 @@ class ManagementZones extends React.Component {
             baseUrl,
         );
         const search = filtersSearch(this);
+        console.log(selectedShapeItem);
         return (
             <section>
                 {
@@ -164,6 +187,18 @@ class ManagementZones extends React.Component {
                         error={load.error}
                         params={this.props.params}
                         geoProvinces={geoProvinces}
+                    />
+                }
+                {
+                    this.state.showEditShape &&
+                    selectedShapeItem &&
+                    <ShapeModaleComponent
+                        showModale={this.state.showEditShape}
+                        closeModal={() => this.closeShapeModal()}
+                        item={selectedShapeItem}
+                        saveShape={newShape => console.log(newShape)}
+                        isUpdated={isUpdated}
+                        error={load.error}
                     />
                 }
                 {
@@ -250,6 +285,7 @@ class ManagementZones extends React.Component {
 
 ManagementZones.defaultProps = {
     selectedZone: null,
+    selectedShapeItem: null,
 };
 
 ManagementZones.propTypes = {
@@ -262,6 +298,7 @@ ManagementZones.propTypes = {
     zoneUpdated: PropTypes.func.isRequired,
     updateCurrentZone: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
+    selectedShapeItem: PropTypes.object,
     isUpdated: PropTypes.bool.isRequired,
     selectedZone: PropTypes.object,
     fetchProvinces: PropTypes.func.isRequired,
@@ -272,6 +309,8 @@ ManagementZones.propTypes = {
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
+    fetchZoneDetail: PropTypes.func.isRequired,
+    resetShapeItem: PropTypes.func.isRequired,
 };
 
 const ManagementZonesIntl = injectIntl(ManagementZones);
@@ -280,6 +319,7 @@ const MapStateToProps = state => ({
     load: state.load,
     isUpdated: state.zones.isUpdated,
     selectedZone: state.zones.current,
+    selectedShapeItem: state.zones.selectedShapeItem,
     geoFilters: state.geoFilters,
     geoProvinces: state.zones.geoProvinces,
     currentUser: state.currentUser.user,
@@ -293,6 +333,8 @@ const MapDispatchToProps = dispatch => ({
     zoneUpdated: isUpdated => dispatch(zoneActions.zoneUpdated(isUpdated)),
     updateCurrentZone: zoneId => dispatch(zoneActions.updateCurrentZone(zoneId)),
     selectZone: zone => dispatch(zoneActions.selectZone(zone)),
+    fetchZoneDetail: zoneId => dispatch(zoneActions.fetchZoneDetail(dispatch, zoneId)),
+    resetShapeItem: () => dispatch(zoneActions.resetShapeItem()),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchGeoDatas: () => dispatch(zoneActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),

@@ -52,11 +52,11 @@ const zonesTableColumns = (
             }),
             sortable: false,
             resizable: false,
-            width: userCanEditShape && userCanEditShape ? 300 : 200,
+            width: 300,
             Cell: settings => (
                 <section>
                     {
-                        userCanEditShape &&
+                        userCanEditShape && settings.original.has_shape &&
                             <button
                                 className="button--edit--tiny  margin-right"
                                 onClick={() =>

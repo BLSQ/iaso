@@ -75,6 +75,17 @@ class ZS(models.Model):
             "province_id": self.province_id,
         }
 
+    def as_full_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "province_id": self.province_id,
+            "province__name": self.province.name,
+            "aliases": self.aliases,
+            "source": self.source,
+            "has_shape": False if self.simplified_geom is None else True,
+        }
+
 
 class AS(models.Model):
     name = models.CharField(max_length=255)

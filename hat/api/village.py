@@ -91,6 +91,8 @@ class VillageViewSet(viewsets.ViewSet):
 
         queryset = Village.objects.all()
 
+        queryset = queryset.filter(is_erased=is_erased)
+
         if search:
             aliases_query = RawSQL("select count(*) from unnest(""geo_village"".aliases) it where it ilike %s",
                                    (f"%{search}%",))
@@ -154,9 +156,6 @@ class VillageViewSet(viewsets.ViewSet):
 
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
-
-        if is_erased:
-            queryset = queryset.filter(is_erased=is_erased)
 
         if population:
             if population == "populationOk":

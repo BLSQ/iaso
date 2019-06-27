@@ -1,4 +1,5 @@
 import json
+from copy import copy
 
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_control
@@ -10,10 +11,13 @@ from hat.geo.geojson import geojson_queryset
 from hat.geo.models import ZS, AS
 from django.db.models import Q
 from django.db.models import Count
-from hat.users.models import get_user_geo_list
+from hat.users.models import get_user_geo_list, is_authorized_user
 from django.db.models.expressions import RawSQL
 from django.http import StreamingHttpResponse, HttpResponse
 from .export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, ZONE_API
+from rest_framework.authentication import BasicAuthentication
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class ZSViewSet(viewsets.ViewSet):
@@ -30,7 +34,9 @@ class ZSViewSet(viewsets.ViewSet):
 
     """
 
-    @cache_control(max_age=24 * 60 * 60, public=True)
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+
+    # @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         as_geo_json = request.GET.get("geojson", None)
@@ -44,8 +50,11 @@ class ZSViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        is_erased = request.GET.get("is_erased", False)
 
         queryset = ZS.objects.all()
+
+        queryset = queryset.filter(is_erased=is_erased)
 
         if search:
             aliases_query = RawSQL("select count(*) from unnest(""geo_zs"".aliases) it where it ilike %s",
@@ -173,3 +182,22 @@ class ZSViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response('Unauthorized', status=401)
+
+    def partial_update(self, request, pk=None):
+        zone = get_object_or_404(ZS, id=pk)
+        is_authorized = is_authorized_user(
+            request.user, zone.province.id, zone.id, None
+        ) and (request.user.has_perm("menupermissions.x_management_edit_zones") or request.user.is_superuser)
+        if is_authorized:
+            original_zone = copy(zone)
+            zone.name = request.data.get("name", "")
+            zone.source = request.data.get("source", None)
+            zone.aliases = request.data.get("aliases", "")
+            zone.is_erased = request.data.get("is_erased", False)
+
+
+            zone.save()
+            log_modification(original_zone, zone, ZONE_API, request.user)
+            return Response(zone.as_dict())
+        else:
+            return Response("Unauthorized", status=401)

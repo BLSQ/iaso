@@ -69,26 +69,6 @@ export const updateZone = (dispatch, zone) => {
     });
 };
 
-export const createZone = (dispatch, zone) => {
-    dispatch(loadActions.startLoading());
-    req
-        .post('/api/zs/')
-        .set('Content-Type', 'application/json')
-        .send(zone)
-        .then((res) => {
-            dispatch(zoneUpdated(true));
-            dispatch(selectZone(res.body));
-            dispatch(loadActions.successLoadingNoData());
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when creating zone', err);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
 // Delete action will only mark it as erased
 
 export const deleteZone = (dispatch, zone) => {
@@ -162,7 +142,6 @@ export const zoneActions = {
     setZones,
     zoneUpdated,
     deleteZone,
-    createZone,
     selectZone,
     updateCurrentZone,
     fetchGeoDatas,

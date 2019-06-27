@@ -69,26 +69,6 @@ export const updateArea = (dispatch, area) => {
     });
 };
 
-export const createArea = (dispatch, area) => {
-    dispatch(loadActions.startLoading());
-    req
-        .post('/api/as/')
-        .set('Content-Type', 'application/json')
-        .send(area)
-        .then((res) => {
-            dispatch(areaUpdated(true));
-            dispatch(selectArea(res.body));
-            dispatch(loadActions.successLoadingNoData());
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when creating area', err);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
 // Delete action will only mark it as erased
 
 export const deleteArea = (dispatch, area) => {
@@ -162,7 +142,6 @@ export const areaActions = {
     setAreas,
     areaUpdated,
     deleteArea,
-    createArea,
     selectArea,
     updateCurrentArea,
     fetchGeoDatas,

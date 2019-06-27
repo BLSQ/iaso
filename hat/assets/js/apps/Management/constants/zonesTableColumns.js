@@ -3,7 +3,9 @@ import React from 'react';
 const zonesTableColumns = (
     formatMessage,
     component,
-) => (
+    userCanEditOrDelete,
+) => {
+    const tableColumn =
     [
         {
             Header: formatMessage({
@@ -29,7 +31,7 @@ const zonesTableColumns = (
             Cell: settings => (
                 <section>
                     {settings.original.aliases && settings.original.aliases.map(a => (<span key={a}>{a}<br /></span>))}
-                    {!settings.original.aliases && '/'}
+                    {(!settings.original.aliases || settings.original.aliases.length === 0) && '/'}
                 </section>
             ),
         },
@@ -40,7 +42,9 @@ const zonesTableColumns = (
             }),
             accessor: 'source',
         },
-        {
+    ];
+    if (userCanEditOrDelete) {
+        tableColumn.push({
             Header: formatMessage({
                 defaultMessage: 'Actions',
                 id: 'main.actions',
@@ -53,7 +57,7 @@ const zonesTableColumns = (
                     <button
                         className="button--edit--tiny  margin-right"
                         onClick={() =>
-                            component.props.selectVillage(settings.original)}
+                            component.props.selectZone(settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
                         {
@@ -81,7 +85,8 @@ const zonesTableColumns = (
                     </button>
                 </section>
             ),
-        },
-    ]
-);
+        });
+    }
+    return tableColumn;
+};
 export default zonesTableColumns;

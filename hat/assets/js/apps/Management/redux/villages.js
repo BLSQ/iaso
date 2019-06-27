@@ -77,7 +77,7 @@ export const createVillage = (dispatch, village) => {
         .send(village)
         .then((res) => {
             dispatch(villageUpdated(true));
-            dispatch(selectVillage(res.body));
+            // dispatch(selectVillage(res.body));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {

@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
-import ZoneModaleComponent from '../components/ZoneModaleComponent';
+import AreaModaleComponent from '../components/AreaModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import areasTableColumns from '../constants/areasTableColumns';
 import { areaActions } from '../redux/areas';
@@ -17,22 +17,15 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import { filtersSearch, filtersGeo } from '../constants/areasFilters';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
-
-const newItem = {
-    id: 0,
-    name: '',
-    latitude: 0.0000,
-    longitude: 0.0000,
-};
+import { userHasPermission } from '../../../utils';
 
 const baseUrl = 'areas';
 
 class ManagementAreas extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
         this.state = {
-            tableColumns: areasTableColumns(formatMessage, this),
+            tableColumns: [],
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -54,8 +47,17 @@ class ManagementAreas extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            showEditModale: nextProps.selectedZone !== null,
+            showEditModale: nextProps.selectedArea !== null,
         });
+        const { intl: { formatMessage }, permissions, currentUser } = nextProps;
+        if (nextProps.currentUser.id &&
+            permissions.length > 0 &&
+            this.state.tableColumns.length === 0) {
+            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_areas', true);
+            this.setState({
+                tableColumns: areasTableColumns(formatMessage, this, userCanEditOrDelete),
+            });
+        }
         if (nextProps.params.province_id !== this.props.params.province_id) {
             this.props.selectProvince(nextProps.params.province_id);
         }
@@ -131,8 +133,8 @@ class ManagementAreas extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
-            updateCurrentZone,
-            selectedZone,
+            updateCurrentArea,
+            selectedArea,
             isUpdated,
             load,
             selectArea,
@@ -153,12 +155,12 @@ class ManagementAreas extends React.Component {
             <section>
                 {
                     this.state.showEditModale &&
-                    <ZoneModaleComponent
+                    <AreaModaleComponent
                         showModale={this.state.showEditModale}
                         closeModal={() => selectArea(null)}
-                        zone={selectedZone}
-                        saveZone={newZone => this.saveData(newZone)}
-                        updateCurrentZone={zone => updateCurrentZone(zone)}
+                        area={selectedArea}
+                        saveArea={newArea => this.saveData(newArea)}
+                        updateCurrentArea={area => updateCurrentArea(area)}
                         isUpdated={isUpdated}
                         error={load.error}
                         params={this.props.params}
@@ -229,7 +231,7 @@ class ManagementAreas extends React.Component {
                                 params={this.props.params}
                                 defaultPath={baseUrl}
                                 dataKey={baseUrl}
-                                onDataLoaded={zonesList => (this.props.setAreas(zonesList))}
+                                onDataLoaded={areasList => (this.props.setAreas(areasList))}
                                 onDataUpdated={isDataUpdated => (this.props.areaUpdated(isDataUpdated))}
                                 isUpdated={isUpdated}
                                 canSelect={false}
@@ -239,13 +241,6 @@ class ManagementAreas extends React.Component {
                                     csvUrl={this.getEndpointUrl(true, 'csv')}
                                     xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                                 />
-                                <button
-                                    className="button--add"
-                                    onClick={() => this.props.selectArea(newItem)}
-                                >
-                                    <i className="fa fa-plus" />
-                                    <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
-                                </button>
                             </div>
                         </section>
                     }
@@ -255,7 +250,7 @@ class ManagementAreas extends React.Component {
 }
 
 ManagementAreas.defaultProps = {
-    selectedZone: null,
+    selectedArea: null,
 };
 
 ManagementAreas.propTypes = {
@@ -266,15 +261,17 @@ ManagementAreas.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setAreas: PropTypes.func.isRequired,
     areaUpdated: PropTypes.func.isRequired,
-    updateCurrentZone: PropTypes.func.isRequired,
+    updateCurrentArea: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
-    selectedZone: PropTypes.object,
+    selectedArea: PropTypes.object,
     fetchProvinces: PropTypes.func.isRequired,
     fetchGeoDatas: PropTypes.func.isRequired,
     geoFilters: PropTypes.object.isRequired,
     geoProvinces: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
@@ -282,19 +279,21 @@ const ManagementAreasIntl = injectIntl(ManagementAreas);
 
 const MapStateToProps = state => ({
     load: state.load,
-    isUpdated: state.zones.isUpdated,
-    selectedZone: state.zones.current,
+    isUpdated: state.areas.isUpdated,
+    selectedArea: state.areas.current,
     geoFilters: state.geoFilters,
-    geoProvinces: state.zones.geoProvinces,
+    geoProvinces: state.areas.geoProvinces,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setAreas: zones => dispatch(areaActions.setAreas(zones)),
+    setAreas: areas => dispatch(areaActions.setAreas(areas)),
     areaUpdated: isUpdated => dispatch(areaActions.areaUpdated(isUpdated)),
-    updateCurrentZone: zoneId => dispatch(areaActions.updateCurrentZone(zoneId)),
-    selectArea: zone => dispatch(areaActions.selectArea(zone)),
+    updateCurrentArea: areaId => dispatch(areaActions.updateCurrentArea(areaId)),
+    selectArea: area => dispatch(areaActions.selectArea(area)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchGeoDatas: () => dispatch(areaActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),

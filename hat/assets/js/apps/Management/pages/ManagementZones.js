@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -17,22 +17,16 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import { filtersSearch, filtersGeo } from '../constants/zonesFilters';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+import { userHasPermission } from '../../../utils';
 
-const newItem = {
-    id: 0,
-    name: '',
-    latitude: 0.0000,
-    longitude: 0.0000,
-};
 
 const baseUrl = 'zones';
 
 class ManagementZones extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
         this.state = {
-            tableColumns: zonesTableColumns(formatMessage, this),
+            tableColumns: [],
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -56,6 +50,16 @@ class ManagementZones extends React.Component {
         this.setState({
             showEditModale: nextProps.selectedZone !== null,
         });
+        const { intl: { formatMessage }, permissions, currentUser } = nextProps;
+        if (nextProps.currentUser.id &&
+            permissions.length > 0 &&
+            this.state.tableColumns.length === 0) {
+            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_zones', true);
+
+            this.setState({
+                tableColumns: zonesTableColumns(formatMessage, this, userCanEditOrDelete),
+            });
+        }
         if (nextProps.params.province_id !== this.props.params.province_id) {
             this.props.selectProvince(nextProps.params.province_id);
         }
@@ -236,13 +240,6 @@ class ManagementZones extends React.Component {
                                     csvUrl={this.getEndpointUrl(true, 'csv')}
                                     xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                                 />
-                                <button
-                                    className="button--add"
-                                    onClick={() => this.props.selectZone(newItem)}
-                                >
-                                    <i className="fa fa-plus" />
-                                    <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
-                                </button>
                             </div>
                         </section>
                     }
@@ -273,6 +270,8 @@ ManagementZones.propTypes = {
     geoProvinces: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
 };
 
 const ManagementZonesIntl = injectIntl(ManagementZones);
@@ -283,6 +282,8 @@ const MapStateToProps = state => ({
     selectedZone: state.zones.current,
     geoFilters: state.geoFilters,
     geoProvinces: state.zones.geoProvinces,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
 });
 
 const MapDispatchToProps = dispatch => ({

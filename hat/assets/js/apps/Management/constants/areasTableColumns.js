@@ -3,8 +3,9 @@ import React from 'react';
 const areasTableColumns = (
     formatMessage,
     component,
-) => (
-    [
+    userCanEditOrDelete,
+) => {
+    const tableColumns = [
         {
             Header: formatMessage({
                 defaultMessage: 'Nom',
@@ -36,7 +37,7 @@ const areasTableColumns = (
             Cell: settings => (
                 <section>
                     {settings.original.aliases && settings.original.aliases.map(a => (<span key={a}>{a}<br /></span>))}
-                    {!settings.original.aliases && '/'}
+                    {(!settings.original.aliases || settings.original.aliases.length === 0) && '/'}
                 </section>
             ),
         },
@@ -47,7 +48,9 @@ const areasTableColumns = (
             }),
             accessor: 'source',
         },
-        {
+    ];
+    if (userCanEditOrDelete) {
+        tableColumns.push({
             Header: formatMessage({
                 defaultMessage: 'Actions',
                 id: 'main.actions',
@@ -60,7 +63,7 @@ const areasTableColumns = (
                     <button
                         className="button--edit--tiny  margin-right"
                         onClick={() =>
-                            component.props.selectVillage(settings.original)}
+                            component.props.selectArea(settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
                         {
@@ -88,7 +91,8 @@ const areasTableColumns = (
                     </button>
                 </section>
             ),
-        },
-    ]
-);
+        });
+    }
+    return tableColumns;
+};
 export default areasTableColumns;

@@ -7,7 +7,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
-import VillageModaleComponent from '../components/ZoneModaleComponent';
+import VillageModaleComponent from '../components/VillageModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
@@ -21,8 +21,9 @@ import SearchButton from '../../../components/SearchButton';
 const newItem = {
     id: 0,
     name: '',
-    latitude: 0.0000,
-    longitude: 0.0000,
+    latitude: 0,
+    longitude: 0,
+    aliases: [],
 };
 
 const baseUrl = 'villages';
@@ -89,7 +90,7 @@ class ManagementVillages extends React.Component {
     }
 
     getEndpointUrl(toExport = false, exportType = 'csv') {
-        let newEndPointUrl = '/api/villages/?is_erased=False';
+        let newEndPointUrl = '/api/villages/?';
         const {
             params,
         } = this.props;
@@ -243,7 +244,15 @@ class ManagementVillages extends React.Component {
                             />
                         </div>
                     </div>
-                    <SearchButton onSearch={() => this.onSearch()} />
+                    <SearchButton onSearch={() => this.onSearch()} >
+                        <button
+                            className="button--save--tiny margin-right"
+                            onClick={() => this.props.selectVillage(newItem)}
+                        >
+                            <i className="fa fa-plus" />
+                            <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                        </button>
+                    </SearchButton>
                 </div>
                 <div className="widget__container management-control">
                     {

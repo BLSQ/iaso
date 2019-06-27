@@ -1,3 +1,5 @@
+from copy import copy
+
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.db.models import Q
@@ -12,11 +14,12 @@ from hat.geo.models import AS
 from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
 from hat.users.models import Team
-from hat.users.models import get_user_geo_list
+from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from django.db.models.expressions import RawSQL
 from django.http import StreamingHttpResponse, HttpResponse
 from .export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, AREA_API
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -37,7 +40,7 @@ class ASViewSet(viewsets.ViewSet):
         'menupermissions.x_locator'
     ]
 
-    @cache_control(max_age=24*60*60, public=True)
+    # @cache_control(max_age=24*60*60, public=True)
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         as_geo_json = request.GET.get("geojson", None)
@@ -52,8 +55,11 @@ class ASViewSet(viewsets.ViewSet):
         zone_ids = request.GET.get("zone_id", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        is_erased = request.GET.get("is_erased", False)
 
         queryset = AS.objects.all()
+
+        queryset = queryset.filter(is_erased=is_erased)
         if search:
             aliases_query = RawSQL("select count(*) from unnest(""geo_as"".aliases) it where it ilike %s",
                                    (f"%{search}%",))
@@ -226,7 +232,24 @@ class ASViewSet(viewsets.ViewSet):
 
         return Response(area.as_dict())
 
+    def partial_update(self, request, pk=None):
+        area = get_object_or_404(AS, id=pk)
+        is_authorized = is_authorized_user(
+            request.user, area.ZS.province.id, area.ZS.id, area.id
+        ) and (request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser)
+        if is_authorized:
+            original_area = copy(area)
+            area.name = request.data.get("name", "")
+            area.source = request.data.get("source", None)
+            area.aliases = request.data.get("aliases", "")
+            area.is_erased = request.data.get("is_erased", False)
 
+
+            area.save()
+            log_modification(original_area, area, AREA_API, request.user)
+            return Response(area.as_dict())
+        else:
+            return Response("Unauthorized", status=401)
 
 
 

@@ -60,6 +60,7 @@ class ZS(models.Model):
     simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -88,6 +89,7 @@ class AS(models.Model):
     simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "AS"

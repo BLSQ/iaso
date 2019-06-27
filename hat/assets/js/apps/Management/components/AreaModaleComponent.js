@@ -6,17 +6,17 @@ import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
 import { createUrl } from '../../../utils/fetchData';
 import { deepEqual } from '../../../utils';
-import ZoneInfosComponent from './ZoneInfosComponent';
+import AreaInfosComponent from './AreaInfosComponent';
 
 let timerSuccess;
 let timerError;
 
-class ZoneModale extends Component {
+class AreaModale extends Component {
     constructor(props) {
         super(props);
         this.state = {
             showModale: props.showModale,
-            zone: props.zone,
+            area: props.area,
             isChanged: false,
             isUpdated: false,
             error: false,
@@ -29,7 +29,7 @@ class ZoneModale extends Component {
 
     componentWillReceiveProps(nextProps) {
         let newState = {};
-        newState.zone = nextProps.zone;
+        newState.area = nextProps.area;
         if (nextProps.isUpdated) {
             newState.isUpdated = nextProps.isUpdated;
             newState.error = false;
@@ -39,8 +39,8 @@ class ZoneModale extends Component {
                 });
             }, 10000);
         }
-        if (!deepEqual(nextProps.zone, this.props.zone, true)) {
-            newState.zone = nextProps.zone;
+        if (!deepEqual(nextProps.area, this.props.area, true)) {
+            newState.area = nextProps.area;
         } else if (nextProps.error) {
             newState = {
                 error: nextProps.error,
@@ -65,18 +65,18 @@ class ZoneModale extends Component {
         }
     }
 
-    updateZoneField(key, value) {
-        const newZone = Object.assign({}, this.state.zone, { [key]: value });
-        this.props.updateCurrentZone(newZone);
+    updateAreaField(key, value) {
+        const newArea = Object.assign({}, this.state.area, { [key]: value });
+        this.props.updateCurrentArea(newArea);
         this.setState({
             isChanged: true,
         });
     }
 
     isSavedDisabled() {
-        return (this.state.zone.name === '' ||
-            !this.state.zone.name ||
-            (!this.state.isChanged && this.state.zone.id !== 0));
+        return (this.state.area.name === '' ||
+            !this.state.area.name ||
+            (!this.state.isChanged && this.state.area.id !== 0));
     }
 
     render() {
@@ -86,10 +86,10 @@ class ZoneModale extends Component {
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.closeModal()}
             >
-                <section className="edit-modal">
-                    <ZoneInfosComponent
-                        zone={this.state.zone}
-                        updateZoneField={(key, value) => this.updateZoneField(key, value)}
+                <section className="edit-modal large extra">
+                    <AreaInfosComponent
+                        area={this.state.area}
+                        updateAreaField={(key, value) => this.updateAreaField(key, value)}
                     />
                     {
                         this.state.isUpdated &&
@@ -114,10 +114,10 @@ class ZoneModale extends Component {
                         <button
                             disabled={this.isSavedDisabled()}
                             className="button--save"
-                            onClick={() => this.props.saveZone(this.state.zone)}
+                            onClick={() => this.props.saveArea(this.state.area)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveZone" defaultMessage="Sauvegarder le zone" />
+                            <FormattedMessage id="mangement.label.saveArea" defaultMessage="Sauvegarder l'aire" />
                         </button>
                     </div>
                 </section>
@@ -125,16 +125,17 @@ class ZoneModale extends Component {
         );
     }
 }
-ZoneModale.defaultProps = {
-    zone: null,
+AreaModale.defaultProps = {
+    area: null,
     error: null,
 };
-ZoneModale.propTypes = {
+AreaModale.propTypes = {
+    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
-    zone: PropTypes.object,
-    saveZone: PropTypes.func.isRequired,
-    updateCurrentZone: PropTypes.func.isRequired,
+    area: PropTypes.object,
+    saveArea: PropTypes.func.isRequired,
+    updateCurrentArea: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
     error: PropTypes.any,
 };
@@ -147,4 +148,4 @@ const MapDispatchToProps = dispatch => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(ZoneModale);
+export default connect(MapStateToProps, MapDispatchToProps)(AreaModale);

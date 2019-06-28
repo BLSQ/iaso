@@ -88,11 +88,11 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementLogsDetails}
         />,
         <Route
-            path="/zones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)"
+            path="/zones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/shapes/:shapes)"
             component={ManagementZonesPage}
         />,
         <Route
-            path="/areas(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)"
+            path="/areas(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/shapes/:shapes)"
             component={ManagementAreasPage}
         />,
         <Redirect path="/logs" to={defaultLogsTests} />,

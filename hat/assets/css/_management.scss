@@ -36,6 +36,21 @@
     }
 }
 
+.shape-map-container {
+    height: 500px;
+    flex-basis: 75% !important;
+    padding-right: 0 !important;
+    position: relative;
+    .fa-spinner {
+        position: absolute;
+        top: 48%;
+        left: 45%;
+    }
+    .map-container {
+        height: 500px;
+    }
+}
+
 .village-map-layers-container {
     text-align: left;
     width: 100%;

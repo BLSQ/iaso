@@ -58,11 +58,11 @@ const areasTableColumns = (
             }),
             sortable: false,
             resizable: false,
-            width: userCanEditShape && userCanEditShape ? 300 : 200,
+            width: 300,
             Cell: settings => (
                 <section>
                     {
-                        userCanEditShape &&
+                        userCanEditShape && settings.original.has_shape &&
                             <button
                                 className="button--edit--tiny  margin-right"
                                 onClick={() =>
@@ -71,7 +71,7 @@ const areasTableColumns = (
                                 <i className="fa fa-map-o" />
                                 {
                                     formatMessage({
-                                        defaultMessage: 'Editer la surface',
+                                        defaultMessage: 'Editer la forme',
                                         id: 'main.label.editMap',
                                     })
                                 }

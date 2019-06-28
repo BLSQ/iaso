@@ -86,7 +86,7 @@ class AreaModale extends Component {
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.closeModal()}
             >
-                <section className="edit-modal large extra">
+                <section className="edit-modal">
                     <AreaInfosComponent
                         area={this.state.area}
                         updateAreaField={(key, value) => this.updateAreaField(key, value)}
@@ -130,7 +130,6 @@ AreaModale.defaultProps = {
     error: null,
 };
 AreaModale.propTypes = {
-    intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
     area: PropTypes.object,

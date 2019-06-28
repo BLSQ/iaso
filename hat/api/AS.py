@@ -56,6 +56,7 @@ class ASViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_erased = request.GET.get("is_erased", False)
+        shapes = request.GET.get("shapes", None)
 
         queryset = AS.objects.all()
 
@@ -66,6 +67,10 @@ class ASViewSet(viewsets.ViewSet):
             queryset = queryset.annotate(alias_match=aliases_query)
             queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
 
+        if shapes == "with":
+            queryset = queryset.filter(simplified_geom__isnull=False)
+        if shapes == "without":
+            queryset = queryset.filter(simplified_geom__isnull=True)
         if province_ids:
             queryset = queryset.filter(ZS__province_id__in=province_ids.split(','))
         if zone_ids:
@@ -108,12 +113,12 @@ class ASViewSet(viewsets.ViewSet):
                     "aliases",
                     "source",
                 )
-                paginator = Paginator(queryset.values(*values), limit)
+                paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-                res["areas"] = page.object_list
+                res["areas"] = map(lambda x: x.as_full_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -185,7 +190,7 @@ class ASViewSet(viewsets.ViewSet):
                 is_authorized = True
             if aire.id in user_as_ids:
                 is_authorized = True
-        res = aire.as_dict()
+        res = aire.as_full_dict()
         if aire.simplified_geom:
             queryset = AS.objects.all().filter(id=aire.id)
             res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
@@ -243,6 +248,10 @@ class ASViewSet(viewsets.ViewSet):
             area.source = request.data.get("source", None)
             area.aliases = request.data.get("aliases", "")
             area.is_erased = request.data.get("is_erased", False)
+            geo_json = request.data.get("geo_json", None)
+            if geo_json:
+                # area.simplified_geom = geo_json
+                print("TO-DO save geojson to polygonfield")
 
 
             area.save()

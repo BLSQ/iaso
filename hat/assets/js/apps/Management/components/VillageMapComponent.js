@@ -140,9 +140,9 @@ VillageMapComponent.propTypes = {
 const MapStateToProps = state => ({
     map: state.map,
     load: state.load,
-    geoProvinces: state.villages.geoProvinces,
-    geoZones: state.villages.geoZones,
-    geoAreas: state.villages.geoAreas,
+    geoProvinces: state.map.geoProvinces,
+    geoZones: state.map.geoZones,
+    geoAreas: state.map.geoAreas,
 });
 
 const MapDispatchToProps = dispatch => ({

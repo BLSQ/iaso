@@ -11,6 +11,7 @@ import VillageModaleComponent from '../components/VillageModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
+import { mapActions } from '../redux/mapReducer';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
@@ -337,7 +338,7 @@ const MapStateToProps = state => ({
     isUpdated: state.villages.isUpdated,
     selectedVillage: state.villages.current,
     geoFilters: state.geoFilters,
-    geoProvinces: state.villages.geoProvinces,
+    geoProvinces: state.map.geoProvinces,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -348,7 +349,7 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentVillage: villageId => dispatch(villageActions.updateCurrentVillage(villageId)),
     selectVillage: village => dispatch(villageActions.selectVillage(village)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(villageActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),

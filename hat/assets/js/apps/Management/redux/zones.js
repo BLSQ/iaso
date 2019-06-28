@@ -6,9 +6,6 @@ export const SET_ZONES = 'hat/management/zones/SET_ZONES';
 export const ZONE_UPDATED = 'hat/management/zones/ZONE_UPDATED';
 export const SELECT_ZONE = 'hat/management/zones/SELECT_ZONE';
 export const UPDATE_CURRENT_ZONE = 'hat/management/zones/UPDATE_CURRENT_ZONE';
-export const SET_GEO_PROVINCES = 'hat/management/zones/SET_GEO_PROVINCES';
-export const SET_GEO_ZONES = 'hat/management/zones/SET_GEO_ZONES';
-export const SET_GEO_AREAS = 'hat/management/zones/SET_GEO_AREAS';
 export const SET_ZONE_SHAPE = 'hat/management/zones/SET_ZONE_SHAPE';
 export const RESET_SHAPE_ITEM = 'hat/management/zones/RESET_SHAPE_ITEM';
 
@@ -38,23 +35,6 @@ export const selectZone = payload => ({
 
 export const setZoneShape = payload => ({
     type: SET_ZONE_SHAPE,
-    payload,
-});
-
-export const setGeoProvinces = payload => ({
-    type: SET_GEO_PROVINCES,
-    payload,
-});
-
-
-export const setGeoZones = payload => ({
-    type: SET_GEO_ZONES,
-    payload,
-});
-
-
-export const setGeoAreas = payload => ({
-    type: SET_GEO_AREAS,
     payload,
 });
 
@@ -112,7 +92,6 @@ export const fetchZoneDetail = (dispatch, zoneId) => {
         .set('Content-Type', 'application/json')
         .then((res) => {
             dispatch(setZoneShape(res.body));
-            console.log(res.body);
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -124,47 +103,11 @@ export const fetchZoneDetail = (dispatch, zoneId) => {
 };
 
 
-export const fetchGeoDatas = (dispatch) => {
-    req
-        .get('/api/provinces/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoProvinces(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    req
-        .get('/api/zs/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoZones(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    req
-        .get('/api/as/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoAreas(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
 export const zonesInitialState = {
     isUpdated: false,
     list: [],
     current: null,
     selectedShapeItem: null,
-    geoProvinces: {},
-    geoZones: {},
-    geoAreas: {},
 };
 
 export const zoneActions = {
@@ -174,7 +117,6 @@ export const zoneActions = {
     deleteZone,
     selectZone,
     updateCurrentZone,
-    fetchGeoDatas,
     fetchZoneDetail,
     resetShapeItem,
 };
@@ -223,30 +165,6 @@ export const zoneReducer = (state = zonesInitialState, action = {}) => {
             return {
                 ...state,
                 current,
-            };
-        }
-
-        case SET_GEO_PROVINCES: {
-            const geoProvinces = action.payload;
-            return {
-                ...state,
-                geoProvinces,
-            };
-        }
-
-        case SET_GEO_ZONES: {
-            const geoZones = action.payload;
-            return {
-                ...state,
-                geoZones,
-            };
-        }
-
-        case SET_GEO_AREAS: {
-            const geoAreas = action.payload;
-            return {
-                ...state,
-                geoAreas,
             };
         }
 

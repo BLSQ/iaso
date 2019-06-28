@@ -17,8 +17,9 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import { areaActions } from '../redux/areas';
 import { filterActions } from '../../../redux/filtersRedux';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import { mapActions } from '../redux/mapReducer';
 
-import { filtersSearch, filtersGeo } from '../constants/areasFilters';
+import { filtersSearch, filtersGeo, filtersShapes } from '../constants/areasFilters';
 
 import { userHasPermission } from '../../../utils';
 import { createUrl } from '../../../utils/fetchData';
@@ -91,6 +92,7 @@ class ManagementAreas extends React.Component {
             province_id: params.province_id,
             zs_id: params.zs_id,
             search: params.search,
+            shapes: params.shapes,
             as_list: true,
         };
 
@@ -135,10 +137,17 @@ class ManagementAreas extends React.Component {
     }
 
     editShape(area) {
-        console.log(area);
         this.setState({
             showEditShape: true,
         });
+        this.props.fetchAreaDetail(area.id);
+    }
+
+    closeShapeModal() {
+        this.setState({
+            showEditShape: false,
+        });
+        this.props.resetShapeItem();
     }
 
     render() {
@@ -150,7 +159,7 @@ class ManagementAreas extends React.Component {
             isUpdated,
             load,
             selectArea,
-            selectedShape,
+            selectedShapeItem,
             geoProvinces,
             geoFilters: {
                 provinces,
@@ -163,7 +172,8 @@ class ManagementAreas extends React.Component {
             this.props,
             baseUrl,
         );
-        const search = filtersSearch(this);
+        const search = filtersSearch(this, formatMessage);
+        const shapes = filtersShapes(formatMessage);
         return (
             <section>
                 {
@@ -182,11 +192,12 @@ class ManagementAreas extends React.Component {
                 }
                 {
                     this.state.showEditShape &&
+                    selectedShapeItem &&
                     <ShapeModaleComponent
                         showModale={this.state.showEditShape}
-                        closeModal={() => this.setState({ showEditShape: false })}
-                        shape={sele}
-                        saveShape={newShape => console.log(newShape)}
+                        closeModal={() => this.closeShapeModal()}
+                        item={selectedShapeItem}
+                        saveShape={newArea => this.saveData(newArea)}
                         isUpdated={isUpdated}
                         error={load.error}
                     />
@@ -213,7 +224,7 @@ class ManagementAreas extends React.Component {
                     </div>
                 </div>
                 <div className="widget__container ">
-                    <div className="widget__content--quarter">
+                    <div className="widget__content--tier">
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
@@ -226,6 +237,13 @@ class ManagementAreas extends React.Component {
                                 params={this.props.params}
                                 baseUrl={baseUrl}
                                 filters={geo}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={shapes}
                             />
                         </div>
                     </div>
@@ -275,7 +293,7 @@ class ManagementAreas extends React.Component {
 
 ManagementAreas.defaultProps = {
     selectedArea: null,
-    selectedShape: null,
+    selectedShapeItem: null,
 };
 
 ManagementAreas.propTypes = {
@@ -298,7 +316,9 @@ ManagementAreas.propTypes = {
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
-    selectedShape: PropTypes.object,
+    selectedShapeItem: PropTypes.object,
+    fetchAreaDetail: PropTypes.func.isRequired,
+    resetShapeItem: PropTypes.func.isRequired,
 };
 
 const ManagementAreasIntl = injectIntl(ManagementAreas);
@@ -308,9 +328,10 @@ const MapStateToProps = state => ({
     isUpdated: state.areas.isUpdated,
     selectedArea: state.areas.current,
     geoFilters: state.geoFilters,
-    geoProvinces: state.areas.geoProvinces,
+    geoProvinces: state.map.geoProvinces,
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
+    selectedShapeItem: state.areas.selectedShapeItem,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -321,9 +342,11 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentArea: areaId => dispatch(areaActions.updateCurrentArea(areaId)),
     selectArea: area => dispatch(areaActions.selectArea(area)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(areaActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    fetchAreaDetail: areaId => dispatch(areaActions.fetchAreaDetail(dispatch, areaId)),
+    resetShapeItem: () => dispatch(areaActions.resetShapeItem()),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementAreasIntl);

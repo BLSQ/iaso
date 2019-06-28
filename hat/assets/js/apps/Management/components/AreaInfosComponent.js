@@ -27,63 +27,60 @@ class AreaInfosComponent extends Component {
         } = this.props;
         const { area } = this.state;
         return (
-            <section className="half-container" >
-                <div />
-                <div >
-                    <div>
-                        <label
-                            htmlFor={`name-${area.id}`}
-                            className="filter__container__select__label"
-                        >
-                            <FormattedMessage
-                                id="main.label.name"
-                                defaultMessage="Nom"
-                            />:
-                        </label>
-                        <input
-                            type="text"
-                            name="name"
-                            id={`name-${area.id}`}
-                            className={(!area.name || area.name === '') ? 'form-error' : ''}
-                            value={area.name}
-                            onChange={event => updateAreaField('name', event.currentTarget.value)}
-                        />
-                    </div>
-                    <div>
-                        <label
-                            htmlFor={`aliases-${area.id}`}
-                            className="filter__container__select__label"
-                        >
-                            <FormattedMessage
-                                id="main.label.aliases"
-                                defaultMessage="Alias"
-                            />:
-                        </label>
-                        <ArrayFieldInput
-                            fieldList={area.aliases}
-                            name={`aliases-${area.id}`}
-                            baseId={`alias-${area.id}`}
-                            updateList={list => updateAreaField('aliases', list)}
-                        />
-                    </div>
-                    <div>
-                        <label
-                            htmlFor={`source-${area.id}`}
-                            className="filter__container__select__label"
-                        >
-                            <FormattedMessage
-                                id="main.label.source"
-                                defaultMessage="Source du village"
-                            />:
-                        </label>
-                        <input
-                            type="text"
-                            name="source"
-                            id={`source-${area.id}`}
-                            value={area.source}
-                            onChange={event => updateAreaField('source', event.currentTarget.value)}
-                        />
-                    </div>
+            <section >
+                <div>
+                    <label
+                        htmlFor={`name-${area.id}`}
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.name"
+                            defaultMessage="Nom"
+                        />:
+                    </label>
+                    <input
+                        type="text"
+                        name="name"
+                        id={`name-${area.id}`}
+                        className={(!area.name || area.name === '') ? 'form-error' : ''}
+                        value={area.name}
+                        onChange={event => updateAreaField('name', event.currentTarget.value)}
+                    />
+                </div>
+                <div className="display-flex">
+                    <label
+                        htmlFor={`aliases-${area.id}`}
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.aliases"
+                            defaultMessage="Alias"
+                        />:
+                    </label>
+                    <ArrayFieldInput
+                        fieldList={area.aliases}
+                        name={`aliases-${area.id}`}
+                        baseId={`alias-${area.id}`}
+                        updateList={list => updateAreaField('aliases', list)}
+                    />
+                </div>
+                <div>
+                    <label
+                        htmlFor={`source-${area.id}`}
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.source"
+                            defaultMessage="Source du village"
+                        />:
+                    </label>
+                    <input
+                        type="text"
+                        name="source"
+                        id={`source-${area.id}`}
+                        value={area.source}
+                        onChange={event => updateAreaField('source', event.currentTarget.value)}
+                    />
                 </div>
             </section>
         );

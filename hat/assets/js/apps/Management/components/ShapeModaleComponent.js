@@ -3,7 +3,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
+
 import { deepEqual } from '../../../utils';
+import { mapActions } from '../redux/mapReducer';
+
+import ShapeMap from './ShapeMap';
+
+import LayersComponent from '../../../components/LayersComponent';
 
 
 let timerSuccess;
@@ -17,6 +23,7 @@ class ShapeModale extends Component {
             isChanged: false,
             isUpdated: false,
             error: false,
+            item: props.item,
         };
     }
 
@@ -62,20 +69,59 @@ class ShapeModale extends Component {
         }
     }
 
+    updateItem(item) {
+        this.setState({
+            item,
+            isChanged: true,
+        });
+    }
+
     render() {
-        console.log(this.props.item);
+        const {
+            geoProvinces,
+            geoZones,
+            geoAreas,
+            map: {
+                baseLayer,
+            },
+        } = this.props;
+        const { item } = this.state;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.closeModal()}
             >
-                <section className="edit-modal large extra">
-                    CARTE
+                <div className="widget__header">
+                    {item.name}
+                </div>
+                <section className="edit-modal large extra-extra">
+                    <section className="third-container small">
+                        <div>
+                            <div className="village-map-layers-container">
+                                <LayersComponent
+                                    base={baseLayer}
+                                    change={(type, key) => this.props.changeLayer(type, key)}
+                                />
+                            </div>
+                        </div>
+                        <div className="shape-map-container">
+                            <ShapeMap
+                                shapeItem={item}
+                                baseLayer={baseLayer}
+                                geoJson={{
+                                    provinces: geoProvinces,
+                                    zs: geoZones,
+                                    as: geoAreas,
+                                }}
+                                updateShape={newItem => this.updateItem(newItem)}
+                            />
+                        </div>
+                    </section>
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
-                            <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Surface sauvegardée" />
+                            <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Forme sauvegardée" />
                         </div>
                     }
                     {
@@ -95,7 +141,7 @@ class ShapeModale extends Component {
                         <button
                             disabled={!this.state.isChanged}
                             className="button--save"
-                            onClick={() => this.props.saveShape()}
+                            onClick={() => this.props.saveShape(item)}
                         >
                             <i className="fa fa-save" />
                             <FormattedMessage id="mangement.label.save" defaultMessage="Sauvegarder" />
@@ -117,14 +163,23 @@ ShapeModale.propTypes = {
     isUpdated: PropTypes.bool.isRequired,
     error: PropTypes.any,
     saveShape: PropTypes.func.isRequired,
+    map: PropTypes.object.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
+    geoZones: PropTypes.object.isRequired,
+    geoAreas: PropTypes.object.isRequired,
+    changeLayer: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
-    geoFiltersModale: state.geoFiltersModale,
+    map: state.map,
+    geoProvinces: state.map.geoProvinces,
+    geoZones: state.map.geoZones,
+    geoAreas: state.map.geoAreas,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
 });
 
 

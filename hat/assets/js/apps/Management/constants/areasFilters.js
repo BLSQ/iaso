@@ -24,6 +24,43 @@ const filtersSearch = component => (
     ]
 );
 
+const filtersShapes = formatMessage => (
+    [
+        {
+            name: 'shapes',
+            urlKey: 'shapes',
+            hideEmpty: true,
+            isMultiSelect: false,
+            isClearable: true,
+            options: [
+                {
+                    label: formatMessage({
+                        defaultMessage: 'Avec',
+                        id: 'main.label.with',
+                    }),
+                    value: 'with',
+                },
+                {
+                    label: formatMessage({
+                        defaultMessage: 'Sans',
+                        id: 'main.label.without',
+                    }),
+                    value: 'without',
+                },
+            ],
+            placeholder: {
+                id: 'main.label.allMale',
+                defaultMessage: 'Tous',
+            },
+            label: {
+                id: 'main.label.shapes',
+                defaultMessage: 'Formes',
+            },
+            type: 'select',
+        },
+    ]
+);
+
 const filtersGeo = (
     provinces,
     zones,
@@ -72,5 +109,6 @@ const filtersGeo = (
 export {
     filtersSearch,
     filtersGeo,
+    filtersShapes,
 };
 

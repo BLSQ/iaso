@@ -65,7 +65,7 @@ const zonesTableColumns = (
                                 <i className="fa fa-map-o" />
                                 {
                                     formatMessage({
-                                        defaultMessage: 'Editer la surface',
+                                        defaultMessage: 'Editer la forme',
                                         id: 'main.label.editMap',
                                     })
                                 }

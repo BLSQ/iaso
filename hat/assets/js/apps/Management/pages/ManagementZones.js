@@ -14,11 +14,12 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import SearchButton from '../../../components/SearchButton';
 
 import zonesTableColumns from '../constants/zonesTableColumns';
-import { filtersSearch, filtersGeo } from '../constants/zonesFilters';
+import { filtersSearch, filtersGeo, filtersShapes } from '../constants/zonesFilters';
 
 import { zoneActions } from '../redux/zones';
 import { filterActions } from '../../../redux/filtersRedux';
 import { currentUserActions } from '../../../redux/currentUserReducer';
+import { mapActions } from '../redux/mapReducer';
 
 import { userHasPermission } from '../../../utils';
 import { createUrl } from '../../../utils/fetchData';
@@ -93,6 +94,7 @@ class ManagementZones extends React.Component {
         const urlParams = {
             province_id: params.province_id,
             search: params.search,
+            shapes: params.shapes,
             as_list: true,
         };
 
@@ -137,7 +139,6 @@ class ManagementZones extends React.Component {
     }
 
     editShape(zone) {
-        console.log(zone.id);
         this.setState({
             showEditShape: true,
         });
@@ -172,7 +173,7 @@ class ManagementZones extends React.Component {
             baseUrl,
         );
         const search = filtersSearch(this);
-        console.log(selectedShapeItem);
+        const shapes = filtersShapes(formatMessage);
         return (
             <section>
                 {
@@ -196,7 +197,7 @@ class ManagementZones extends React.Component {
                         showModale={this.state.showEditShape}
                         closeModal={() => this.closeShapeModal()}
                         item={selectedShapeItem}
-                        saveShape={newShape => console.log(newShape)}
+                        saveShape={newZone => this.saveData(newZone)}
                         isUpdated={isUpdated}
                         error={load.error}
                     />
@@ -223,7 +224,7 @@ class ManagementZones extends React.Component {
                     </div>
                 </div>
                 <div className="widget__container ">
-                    <div className="widget__content--quarter">
+                    <div className="widget__content--tier">
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
@@ -236,6 +237,13 @@ class ManagementZones extends React.Component {
                                 params={this.props.params}
                                 baseUrl={baseUrl}
                                 filters={geo}
+                            />
+                        </div>
+                        <div>
+                            <FiltersComponent
+                                params={this.props.params}
+                                baseUrl={baseUrl}
+                                filters={shapes}
                             />
                         </div>
                     </div>
@@ -321,7 +329,7 @@ const MapStateToProps = state => ({
     selectedZone: state.zones.current,
     selectedShapeItem: state.zones.selectedShapeItem,
     geoFilters: state.geoFilters,
-    geoProvinces: state.zones.geoProvinces,
+    geoProvinces: state.map.geoProvinces,
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
 });
@@ -336,7 +344,7 @@ const MapDispatchToProps = dispatch => ({
     fetchZoneDetail: zoneId => dispatch(zoneActions.fetchZoneDetail(dispatch, zoneId)),
     resetShapeItem: () => dispatch(zoneActions.resetShapeItem()),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(zoneActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });

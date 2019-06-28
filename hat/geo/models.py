@@ -118,6 +118,19 @@ class AS(models.Model):
             "province_name": self.ZS.province.name,
         }
 
+    def as_full_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "ZS_id": self.ZS_id,
+            "ZS__name": self.ZS.name,
+            "ZS__province_id": self.ZS.province_id,
+            "ZS__province_id": self.ZS.province.name,
+            "aliases": self.aliases,
+            "source": self.source,
+            "has_shape": False if self.simplified_geom is None else True,
+        }
+
 
 class HealthStructure(models.Model):
     name = models.TextField()

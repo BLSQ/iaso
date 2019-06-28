@@ -182,6 +182,14 @@
         }
         .map-container {
             width: 560px;
+            &.full {
+                width: 100%;
+            }
+        }
+        &.small {
+            >div {
+                flex-basis: 25%;
+            }
         }
     }
 }

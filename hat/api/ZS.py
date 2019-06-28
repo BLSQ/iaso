@@ -51,6 +51,7 @@ class ZSViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_erased = request.GET.get("is_erased", False)
+        shapes = request.GET.get("shapes", None)
 
         queryset = ZS.objects.all()
 
@@ -70,6 +71,10 @@ class ZSViewSet(viewsets.ViewSet):
             zs_from_as = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope'))\
                 .values_list("ZS_id", flat=True).distinct()
             queryset = queryset.filter(id__in=zs_from_as)
+        if shapes == "with":
+            queryset = queryset.filter(simplified_geom__isnull=False)
+        if shapes == "without":
+            queryset = queryset.filter(simplified_geom__isnull=True)
         if province_ids:
             queryset = queryset.filter(province_id__in=province_ids.split(','))
 
@@ -167,7 +172,7 @@ class ZSViewSet(viewsets.ViewSet):
                 is_authorized = True
             if zs.id in user_as_zs_ids:
                 is_authorized = True
-        res = zs.as_dict()
+        res = zs.as_full_dict()
         if zs.simplified_geom:
             queryset = ZS.objects.all().filter(id=zs.id)
             res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
@@ -187,6 +192,10 @@ class ZSViewSet(viewsets.ViewSet):
             zone.source = request.data.get("source", None)
             zone.aliases = request.data.get("aliases", "")
             zone.is_erased = request.data.get("is_erased", False)
+            geo_json = request.data.get("geo_json", None)
+            if geo_json:
+                # zone.simplified_geom = geo_json
+                print("TO-DO save geojson to polygonfield")
 
 
             zone.save()

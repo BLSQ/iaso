@@ -8,18 +8,11 @@ class Migration(migrations.Migration):
     dependencies = [("iaso", "0006_auto_20190624_0938")]
 
     operations = [
-        migrations.AddField(
-            model_name="orgunittype",
-            name="sub_unit_types_allowed_for_creation",
-            field=models.ManyToManyField(
-                related_name="super_types_allowed_for_creation", to="iaso.OrgUnitType"
-            ),
-        ),
         migrations.AlterField(
             model_name="orgunittype",
             name="sub_unit_types",
             field=models.ManyToManyField(
                 related_name="super_types", to="iaso.OrgUnitType"
             ),
-        ),
+        )
     ]

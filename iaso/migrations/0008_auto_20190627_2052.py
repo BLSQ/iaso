@@ -49,9 +49,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.RemoveField(model_name="form", name="file"),
-        migrations.RemoveField(
-            model_name="orgunittype", name="sub_unit_types_allowed_for_creation"
-        ),
         migrations.AlterField(
             model_name="orgunittype",
             name="sub_unit_types",

@@ -14,7 +14,6 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def create(self, request):
         instances = request.data
-        print("request.data", request.data)
         new_instances = []
         api_import = APIImport()
         if not request.user.is_anonymous:
@@ -25,7 +24,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         for instance in instances:
             file_name = ntpath.basename(instance.get("file", None))
-            print("file_name", file_name)
+
             latitude = instance.get("latitude", None)
             longitude = instance.get("longitude", None)
             altitude = instance.get("altitude", 0)
@@ -36,7 +35,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     x=longitude, y=latitude, z=altitude, srid=4326
                 )
             instanceDB, created = Instance.objects.get_or_create(file_name=file_name)
-            print("created", file_name)
+
             instanceDB.name = instance.get("name", None)
             instanceDB.accuracy = instance.get("accuracy", None)
             instanceDB.parent_id = instance.get("parentId", None)

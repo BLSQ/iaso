@@ -44,6 +44,9 @@ class OrgUnitType(models.Model):
 
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
+    uuid = models.TextField(null=True, blank=True)
+    custom = models.BooleanField(default=False)
+    validated = models.BooleanField(default=True)
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -110,7 +113,6 @@ class Form(models.Model):
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
             "created_at": self.created_at.timestamp(),
             "updated_at": self.updated_at.timestamp(),
-            "file": self.file.url if self.file else None,
         }
 
 
@@ -124,8 +126,28 @@ class FormVersion(models.Model):
 
 class Instance(models.Model):
     UPLOADED_TO = "instances/"
-    org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    form = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    file_name = models.TextField(null=True, blank=True)
+    location = PointField(srid=4326, null=True)
+    org_unit = models.ForeignKey(
+        OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
+    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+
+    def __str__(self):
+        return "%s " % (self.form,)
+
+    def as_dict(self):
+        return {"name": self.name, "id": self.id}
+
+
+class InstanceFile(models.Model):
+    UPLOADED_TO = "instancefiles/"
+    instance = models.ForeignKey(
+        Instance, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)

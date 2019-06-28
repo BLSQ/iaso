@@ -31,7 +31,7 @@ import logging
 
 from .couchdb_helpers import create_or_update_user
 from .models import MobileUser, DeviceDB
-from iaso.models import Instance
+from iaso.models import Instance, InstanceFile
 
 logger = logging.getLogger(__name__)
 
@@ -280,15 +280,20 @@ def signin(request: HttpRequest) -> HttpResponse:
 @authentication_classes([])
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
-
-    print("request", request)
-    print("request.POST", request.POST)
-    print("request.FILES", request.FILES)
-
-    i = Instance()
+    main_file = request.FILES["xml_submission_file"]
+    i, created = Instance.objects.get_or_create(file_name=main_file.name)
     i.file = request.FILES["xml_submission_file"]
     i.save()
-    return JsonResponse({"brol": "coucou"}, status=201)
+
+    for file_name in request.FILES:
+        if file_name != "xml_submission_file":
+            fi = InstanceFile()
+            fi.file = request.FILES[file_name]
+            fi.instance_id = i.id
+            fi.name = file_name
+            fi.save()
+
+    return JsonResponse({"result": "success"}, status=201)
 
 
 @csrf_exempt

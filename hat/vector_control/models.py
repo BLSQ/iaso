@@ -35,6 +35,8 @@ IMPORT_TYPE = (
     ("site", "Site"),
     ("catch", "Catch"),
     ("target", "Target"),
+    ("orgUnit", "Org Unit"),
+    ("instance", "Form instance"),
 )
 
 

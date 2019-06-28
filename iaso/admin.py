@@ -1,10 +1,11 @@
 from django.contrib import admin
 
-from .models import OrgUnitType, OrgUnit, Form, Instance
+from .models import OrgUnitType, OrgUnit, Form, Instance, InstanceFile
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
-    list_filter = ("org_unit_type",)
+    raw_id_fields = ("parent",)
+    list_filter = ("org_unit_type", "custom", "validated")
     search_fields = ("name", "source_ref")
     ordering = ("name",)
 
@@ -25,5 +26,10 @@ class FormAdmin(admin.ModelAdmin):
     ordering = ("name",)
 
 
+class InstanceAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit",)
+
+
 admin.site.register(Form, FormAdmin)
-admin.site.register(Instance)
+admin.site.register(Instance, InstanceAdmin)
+admin.site.register(InstanceFile)

@@ -1,14 +1,12 @@
+from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from hat.sync.models import ImageUpload
+from hat.common.utils import get_request_as_array
 from hat.patient.models import Test
-from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS
-from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4
-from django.core.paginator import Paginator
-from django.db.models import Q
+from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, get_authorized_geo
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -22,7 +20,7 @@ class QCTestsViewSet(viewsets.ViewSet):
            checked: if true, get tests that have already been checked, if false: get tests without check yet
            (only tests with images or videos allowing a check)
     """
-    
+
     permission_required = [
         'menupermissions.x_qualitycontrol'
     ]
@@ -37,10 +35,10 @@ class QCTestsViewSet(viewsets.ViewSet):
         test_types = request.GET.get("type", None)
         media_type = request.GET.get("media_type", '"image')
         user_ids = request.GET.get("user_ids", None)
-        province_ids = request.GET.get("province_ids", None)
-        zs_ids = request.GET.get("zs_ids", None)
-        as_ids = request.GET.get("as_ids", None)
         checked = request.GET.get("checked", False)
+        province_ids = get_authorized_geo(request.user, "province", get_request_as_array(request.GET, "province_ids", None))
+        zs_ids = get_authorized_geo(request.user, "ZS", get_request_as_array(request.GET, "zs_ids", None))
+        as_ids = get_authorized_geo(request.user, "AS", get_request_as_array(request.GET, "as_ids", None))
 
         qs = Test.objects.all()
 
@@ -50,7 +48,6 @@ class QCTestsViewSet(viewsets.ViewSet):
             qs = qs.filter(date__date__lte=to_date)
 
         qs = qs.annotate(num_checks=Count("check"))
-
 
         if user_level == LEVEL_2:
             qs = qs.filter(check__level=LEVEL_1).exclude(check__level=LEVEL_2)
@@ -72,13 +69,29 @@ class QCTestsViewSet(viewsets.ViewSet):
         if media_type == "video":
             qs = qs.exclude(video=None)
         if province_ids:
-            qs = qs.filter(village__AS__ZS__province_id__in=province_ids.split(","))
+            if len(province_ids) == 0:
+                return Response({"error": "not province allowed in this request for this user"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            qs = qs.filter(village__AS__ZS__province_id__in=province_ids)
         if zs_ids:
-            qs = qs.filter(village__AS__ZS_id__in=zs_ids.split(","))
+            if len(zs_ids) == 0:
+                return Response({"error": "not ZS allowed in this request for this user"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            qs = qs.filter(village__AS__ZS_id__in=zs_ids)
         if as_ids:
-            qs = qs.filter(village__AS_id__in=as_ids.split(","))
+            if len(as_ids) == 0:
+                return Response({"error": "not AS allowed in this request for this user"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            qs = qs.filter(village__AS_id__in=as_ids)
 
         qs = qs.order_by(*orders)
+
+        qs = qs.prefetch_related("form")
+        qs = qs.prefetch_related("team")
+        qs = qs.prefetch_related("village")
+        qs = qs.prefetch_related("tester")
+        qs = qs.prefetch_related("village__AS__ZS__province")
+
         limit = int(limit)
         paginator = Paginator(qs, limit)
         res = {"count": paginator.count}
@@ -94,6 +107,7 @@ class QCTestsViewSet(viewsets.ViewSet):
         return Response(res)
 
     def retrieve(self, request, pk):
+        # TODO check geographical limits
         test = get_object_or_404(Test, id=pk)
         res = test.as_dict(with_checks=True)
         if test.type == "CATT":

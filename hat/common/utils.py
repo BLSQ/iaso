@@ -130,4 +130,12 @@ def sns_notify(message):
         return None
 
 
+def get_request_as_array(request_get_or_post, item, default_list=[]):
+    param = request_get_or_post.get(item, None)
+    if param is None:
+        return default_list
+    else:
+        return [int(x) for x in param.split(',')]
+
+
 ANONYMOUS_PLACEHOLDER = "•••••••••••"

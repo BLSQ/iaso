@@ -63,6 +63,20 @@ def is_authorized_user(user, province, zone, area):
     return is_authorized
 
 
+def get_authorized_geo(user, geo_type='province', requested_ids=None):
+    key = geo_type + "_scope" if "_scope" not in geo_type else geo_type
+    allowed_ids = get_user_geo_list(user, key)
+    if allowed_ids is None or len(allowed_ids) == 0:
+        return requested_ids
+    if requested_ids is None:
+        if allowed_ids.count() == 0:
+            return None
+        else:
+            return allowed_ids
+    return [x for x in requested_ids if x in allowed_ids]
+    # equivalent to: return list(set(allowed_ids) & set(requested_ids))
+
+
 def disable_for_loaddata(signal_handler: Callable) -> Callable:
     # Disable signal handler when model is created by `manage loaddata`.
     # When loading fixtures, all models are already defined in the

@@ -74,27 +74,27 @@ def user_signin(request: HttpRequest) -> HttpResponse:
 
     username = request.data.get('username', '')
     if username == '':
-        msg = 'No "username" sent'
+        msg = 'No "username" sent for device_id {}'.format(device_id)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
     password = request.data.get('password', '')
     if password == '':
-        msg = 'No "password" sent'
+        msg = 'No "password" sent (username {})'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        msg = 'Username unknown'
+        msg = 'Username unknown: {}'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
     password_ok = user.check_password(password)
 
     if not password_ok:
-        msg = 'Bad password'
+        msg = 'Bad password for username: {}'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
@@ -112,7 +112,7 @@ def user_signin(request: HttpRequest) -> HttpResponse:
             device_db.last_user = user
             device_db.save()
     except DeviceDB.DoesNotExist:
-        logger.info('Creating db for device {}'.format(device_id))
+        logger.info('Creating db for device {} and user {} ({})'.format(device_id, username, user.id))
         device_db = DeviceDB(device_id=device_id, creator=user, last_user=user)
         device_db.save()
 

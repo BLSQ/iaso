@@ -47,11 +47,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         as_list = request.GET.get("as_list", False)
         team_id = request.GET.get("team_id", False)
 
+        include_inactive = request.GET.get("include_inactive", False)
+
         screening_type = request.GET.get("screening_type", None)
         team_type = request.GET.get("team_type", "tester")
 
-
         queryset = Profile.objects.all()
+
+        if not include_inactive:
+            queryset = queryset.filter(user__is_active=True)
 
         if institution_id:
             queryset = queryset.filter(institution_id=institution_id)
@@ -72,11 +76,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
             queryset = queryset.filter(screening_type=screening_type)
 
-
         if team_type != "all":
             queryset = queryset.filter(team__team_type=team_type)
-
-
 
         matchings = {
             "userName": "user__username",
@@ -207,78 +208,84 @@ class ProfilesViewSet(viewsets.ViewSet):
     def create(self, request):
         username = request.data.get("userName")
         existing_profile = Profile.objects.filter(user__username=username).first()
-        if existing_profile:
+        if existing_profile and existing_profile.user.is_active:
             return return_error("Nom d'utlisateur existant", 400)
+
+        if existing_profile:
+            user = existing_profile.user
+            user.is_active = True
         else:
             user = User()
-            user.first_name = request.data.get("firstName", "")
-            user.last_name = request.data.get("lastName", "")
-            user.username = username
-            user.email = request.data.get("email", "")
-            password = request.data.get("password", None)
-            provinces = request.data.get("province", None)
-            zones = request.data.get("ZS", [])
-            areas = request.data.get("AS", [])
-            permissions = request.data.get("permissions", [])
-            if password:
-                user.set_password(password)
-            user.save()
-            institution = request.data.get("institution", None)
-            user_type = request.data.get("userType", None)
-            tester_type = request.data.get("testerType", request.data.get("tester_type", None))
-            screening_type = request.data.get("screening_type", None)
-            team = request.data.get("team", None)
 
-            if institution:
-                institution = get_object_or_404(Institution, id=institution.get("id"))
-                user.profile.institution = institution
-            if team:
-                new_team = get_object_or_404(Team, id=team)
-                user.profile.team = new_team
+        user.first_name = request.data.get("firstName", "")
+        user.last_name = request.data.get("lastName", "")
+        user.username = username
+        user.email = request.data.get("email", "")
+        password = request.data.get("password", None)
+        provinces = request.data.get("province", None)
+        zones = request.data.get("ZS", [])
+        areas = request.data.get("AS", [])
+        permissions = request.data.get("permissions", [])
+        if password:
+            user.set_password(password)
+        user.save()
+        institution = request.data.get("institution", None)
+        user_type = request.data.get("userType", None)
+        tester_type = request.data.get("testerType", request.data.get("tester_type", None))
+        screening_type = request.data.get("screening_type", None)
+        team = request.data.get("team", None)
 
-            if user_type:
-                new_user_type = get_object_or_404(UserType, id=user_type.get("id"))
-                user.profile.userType = new_user_type
+        if institution:
+            institution = get_object_or_404(Institution, id=institution.get("id"))
+            user.profile.institution = institution
+        if team:
+            new_team = get_object_or_404(Team, id=team)
+            user.profile.team = new_team
 
-            if tester_type:
-                if tester_type not in [x[0] for x in TESTER_TYPE_CHOICES]:
-                    return Response(f"Invalid tester_type, should be {TESTER_TYPE_CHOICES}",
-                                    status=status.HTTP_400_BAD_REQUEST)
-                user.profile.tester_type = tester_type
+        if user_type:
+            new_user_type = get_object_or_404(UserType, id=user_type.get("id"))
+            user.profile.userType = new_user_type
 
-            if screening_type:
-                if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                    return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                    status=status.HTTP_400_BAD_REQUEST)
-                user.profile.screening_type = screening_type
+        if tester_type:
+            if tester_type not in [x[0] for x in TESTER_TYPE_CHOICES]:
+                return Response(f"Invalid tester_type, should be {TESTER_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.profile.tester_type = tester_type
 
-            user.profile.phone = request.data.get("phone", "")
+        if screening_type:
+            if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
+                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.profile.screening_type = screening_type
 
-            if provinces:
-                for province in provinces:
-                    new_province = get_object_or_404(Province, id=province)
-                    user.profile.province_scope.add(new_province)
+        user.profile.phone = request.data.get("phone", "")
 
-            if zones:
-                for zone in zones:
-                    new_zone = get_object_or_404(ZS, id=zone)
-                    user.profile.ZS_scope.add(new_zone)
+        if provinces:
+            for province in provinces:
+                new_province = get_object_or_404(Province, id=province)
+                user.profile.province_scope.add(new_province)
 
-            if areas:
-                for area in areas:
-                    new_area = get_object_or_404(AS, id=area)
-                    user.profile.AS_scope.add(new_area)
+        if zones:
+            for zone in zones:
+                new_zone = get_object_or_404(ZS, id=zone)
+                user.profile.ZS_scope.add(new_zone)
 
-            if permissions:
-                for permission_id in permissions:
-                    permission = get_object_or_404(Permission, pk=permission_id)
-                    user.user_permissions.add(permission)
-            user.profile.save()
-            log_modification(None, user, PROFILE_API, request.user)
-            return Response(user.profile.as_dict())
+        if areas:
+            for area in areas:
+                new_area = get_object_or_404(AS, id=area)
+                user.profile.AS_scope.add(new_area)
+
+        if permissions:
+            for permission_id in permissions:
+                permission = get_object_or_404(Permission, pk=permission_id)
+                user.user_permissions.add(permission)
+        user.profile.save()
+        log_modification(None, user, PROFILE_API, request.user)
+        return Response(user.profile.as_dict())
 
     def delete(self, request, pk):
         profile = get_object_or_404(Profile, id=pk)
         log_modification(profile.user, None, PROFILE_API, request.user)
-        profile.delete()
+        profile.user.is_active = False
+        profile.user.save()
         return Response("ok")

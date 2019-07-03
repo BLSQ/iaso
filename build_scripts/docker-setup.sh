@@ -16,7 +16,7 @@ export DUMB_INIT=1.2.0
 
 # https://nodejs.org
 export NPM_CONFIG_LOGLEVEL=info
-export NODE_VERSION=8.4.0
+export NODE_VERSION=10.15.0
 
 
 ################################################################################

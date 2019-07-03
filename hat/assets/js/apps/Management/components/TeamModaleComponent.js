@@ -61,28 +61,31 @@ class TeamModale extends Component {
                             <FormattedMessage
                                 id="main.label.team_type"
                                 defaultMessage="Type"
-                            />:
+                            />
+                            :
                         </label>
                         {
-                            teamTypes.length > 0 &&
-                            <Select
-                                id={`team-type-${this.state.team.id}`}
-                                className={!this.state.team.team_type ? 'form-error' : ''}
-                                simpleValue
-                                name="team_type"
-                                value={this.state.team.team_type}
-                                options={[
-                                    {
-                                        label: teamTypes.find(type => type.value === 'tester').label,
-                                        value: 'tester',
-                                    },
-                                    {
-                                        label: teamTypes.find(type => type.value === 'vector').label,
-                                        value: 'vector',
-                                    },
-                                ]}
-                                onChange={teamType => this.updateTeamField('team_type', teamType)}
-                            />
+                            teamTypes.length > 0
+                            && (
+                                <Select
+                                    id={`team-type-${this.state.team.id}`}
+                                    className={!this.state.team.team_type ? 'form-error' : ''}
+                                    simpleValue
+                                    name="team_type"
+                                    value={this.state.team.team_type}
+                                    options={[
+                                        {
+                                            label: teamTypes.find(type => type.value === 'tester').label,
+                                            value: 'tester',
+                                        },
+                                        {
+                                            label: teamTypes.find(type => type.value === 'vector').label,
+                                            value: 'vector',
+                                        },
+                                    ]}
+                                    onChange={teamType => this.updateTeamField('team_type', teamType)}
+                                />
+                            )
                         }
                     </div>
                     <div>
@@ -93,7 +96,8 @@ class TeamModale extends Component {
                             <FormattedMessage
                                 id="main.label.coordination"
                                 defaultMessage="Coordination"
-                            />:
+                            />
+                            :
                         </label>
                         <Select
                             id={`coordination-${this.state.team.id}`}
@@ -101,8 +105,7 @@ class TeamModale extends Component {
                             simpleValue
                             name="team_coordination_id"
                             value={this.state.team.coordination_id}
-                            options={this.props.coordinations.map(coordination =>
-                                ({ label: coordination.name, value: coordination.id }))}
+                            options={this.props.coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
                             onChange={coordinationId => this.updateTeamField('coordination_id', parseInt(coordinationId, 10))}
                         />
                     </div>
@@ -114,7 +117,8 @@ class TeamModale extends Component {
                             <FormattedMessage
                                 id="main.label.name"
                                 defaultMessage="Nom"
-                            />:
+                            />
+                            :
                         </label>
                         <input
                             type="text"
@@ -133,7 +137,8 @@ class TeamModale extends Component {
                             <FormattedMessage
                                 id="main.label.capacity"
                                 defaultMessage="Capacité"
-                            />:
+                            />
+                            :
                         </label>
                         <input
                             type={this.state.team.capacity ? 'number' : 'text'}
@@ -146,42 +151,45 @@ class TeamModale extends Component {
                         />
                     </div>
                     {
-                        this.state.team.team_type === 'tester' &&
-                        <div>
-                            <label
-                                htmlFor={`type-${this.state.team.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.teamtype"
-                                    defaultMessage="Type d'unité"
-                                />:
-                            </label>
-                            <section
-                                onClick={() => this.changeOption('UM')}
-                                role="button"
-                                tabIndex={0}
-                            >
-                                <input
-                                    id={`type-${this.state.team.id}`}
-                                    type="radio"
-                                    name="type"
-                                    checked={this.state.team.UM ? 'checked' : ''}
-                                    value={this.state.team.UM}
-                                    onChange={() => this.changeOption('UM')}
-                                />
-                                <span>UM</span>
-                                <input
-                                    id={`type-${this.state.team.id}-false`}
-                                    type="radio"
-                                    name="type"
-                                    checked={!this.state.team.UM ? 'checked' : ''}
-                                    value={this.state.team.UM}
-                                    onChange={() => this.changeOption('UM')}
-                                />
-                                <span>MUM</span>
-                            </section>
-                        </div>
+                        this.state.team.team_type === 'tester'
+                        && (
+                            <div>
+                                <label
+                                    htmlFor={`type-${this.state.team.id}`}
+                                    className="filter__container__select__label"
+                                >
+                                    <FormattedMessage
+                                        id="main.label.teamtype"
+                                        defaultMessage="Type d'unité"
+                                    />
+                                    :
+                                </label>
+                                <section
+                                    onClick={() => this.changeOption('UM')}
+                                    role="button"
+                                    tabIndex={0}
+                                >
+                                    <input
+                                        id={`type-${this.state.team.id}`}
+                                        type="radio"
+                                        name="type"
+                                        checked={this.state.team.UM ? 'checked' : ''}
+                                        value={this.state.team.UM}
+                                        onChange={() => this.changeOption('UM')}
+                                    />
+                                    <span>UM</span>
+                                    <input
+                                        id={`type-${this.state.team.id}-false`}
+                                        type="radio"
+                                        name="type"
+                                        checked={!this.state.team.UM ? 'checked' : ''}
+                                        value={this.state.team.UM}
+                                        onChange={() => this.changeOption('UM')}
+                                    />
+                                    <span>MUM</span>
+                                </section>
+                            </div>
+                        )
                     }
                     <div className="align-right">
                         <button
@@ -193,10 +201,10 @@ class TeamModale extends Component {
                         </button>
                         <button
                             disabled={
-                                ((!this.state.team.coordination_id ||
-                                    this.state.team.name === '' ||
-                                    !this.state.team.capacity) ||
-                                    (!this.state.isChanged && this.state.team.id !== 0))
+                                ((!this.state.team.coordination_id
+                                    || this.state.team.name === ''
+                                    || !this.state.team.capacity)
+                                    || (!this.state.isChanged && this.state.team.id !== 0))
                             }
                             className="button--save"
                             onClick={() => this.props.saveTeam(this.state.team)}

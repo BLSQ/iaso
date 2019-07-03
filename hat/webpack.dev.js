@@ -9,6 +9,7 @@ var WEBPACK_URL = 'https://localhost:3000'
 
 module.exports = {
   context: __dirname,
+  mode: 'development',
   entry: {
     // use same settings as in Prod
     'home': [
@@ -102,12 +103,6 @@ module.exports = {
           { loader: 'react-hot-loader/webpack' },
           {
             loader: 'babel-loader',
-            options: {
-              presets: ['es2015', 'react', 'stage-2'],
-              minified: false,
-              sourceMaps: true,
-              sourceType: 'module'
-            }
           }
         ]
       },

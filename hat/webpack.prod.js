@@ -12,6 +12,7 @@ module.exports = {
   // fail the entire build on 'module not found'
   bail: true,
   context: __dirname,
+  mode: 'production',
 
   entry: {
     'home': './assets/js/apps/Home/index',
@@ -79,11 +80,6 @@ module.exports = {
           {
             loader: 'babel-loader',
             options: {
-              presets: [
-                'es2015',
-                'react',
-                'stage-2'
-              ],
               plugins: [
                 ['react-intl', {
                   'messagesDir': path.join(__dirname, '/assets/messages')

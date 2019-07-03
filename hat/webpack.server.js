@@ -4,8 +4,8 @@ var config = require('./webpack.dev')
 
 new WebpackDevServer(webpack(config), {
   publicPath: config.output.publicPath,
-  hot: true,
-  inline: true,
+  hot: false,
+  inline: false,
   historyApiFallback: true,
   https: true,
   // It suppress error shown in console, so it has to be set to false.

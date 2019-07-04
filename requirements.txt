@@ -38,6 +38,7 @@ xlrd==1.0.0
 
 # exporting tools
 xlsxwriter==1.1.5
+beautifulsoup4==4.7.1
 
 # Documentation
 Sphinx==1.5.4

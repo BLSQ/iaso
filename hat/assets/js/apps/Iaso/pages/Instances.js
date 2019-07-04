@@ -20,6 +20,7 @@ import instancesTableColumns from '../constants/instancesTableColumns';
 import TopBar from '../components/TopBar';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
+
 const baseUrl = 'instances';
 
 const styles = theme => ({
@@ -91,6 +92,14 @@ class Instances extends Component {
                 formatMessage,
             },
         } = this.props;
+        console.log(reduxPage);
+        if (reduxPage && reduxPage.list) {
+            const i = reduxPage.list[0];
+            if (i.file_content) {
+                console.log(i.file_content);
+                // console.log(parser.toJson(i.file_content[0]));
+            }
+        }
         return (
             <Fragment>
                 <TopBar
@@ -135,7 +144,7 @@ Instances.propTypes = {
 };
 
 const MapStateToProps = state => ({
-    reduxPage: state.instances.formsPage,
+    reduxPage: state.instances.instancesPage,
     currentForm: state.forms.current,
 });
 

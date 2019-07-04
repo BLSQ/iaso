@@ -6,6 +6,9 @@ from django.contrib.gis.db.models.fields import (
 )
 from django.contrib.postgres.fields import ArrayField, CITextField
 
+from iaso.utils import parseXMLFile
+
+
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
     ("ucla", "UCLA"),
@@ -143,9 +146,13 @@ class Instance(models.Model):
         return "%s " % (self.form,)
 
     def as_dict(self):
+        file_content = ""
+        if self.file_name:
+            file_content = parseXMLFile(self.file)
         return {
             "file_name": self.file_name,
-            "file": self.file.url,
+            "file_content": file_content,
+            "file_url": self.file.url,
             "id": self.id,
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp(),

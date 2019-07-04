@@ -1,0 +1,1 @@
+var HAT="object"==typeof HAT?HAT:{};HAT.common=(window.webpackJsonp=window.webpackJsonp||[]).push([[2],[function(n,o){},function(n,o){},function(n,o){},function(n,o,e){e("../node_modules/react/index.js"),e("../node_modules/react-dom/index.js"),n.exports=e("../node_modules/react-intl/lib/index.es.js")}],[[3,10,0]]]);

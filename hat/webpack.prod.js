@@ -1,8 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 var BundleTracker = require('webpack-bundle-tracker')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var CommonsPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
@@ -49,11 +48,7 @@ module.exports = {
       path: __dirname,
       filename: './assets/webpack/webpack-stats-prod.json'
     }),
-    new ExtractTextPlugin({filename: '[name]-[chunkhash].css'}),
-    new CommonsPlugin({
-      minChunks: 3,
-      name: 'common'
-    }),
+    new MiniCssExtractPlugin({filename: '[name]-[chunkhash].css'}),
     new webpack.DefinePlugin({
       'process.env': {
         // This has effect on the react lib size
@@ -64,11 +59,20 @@ module.exports = {
       '__LOCALE': JSON.stringify(LOCALE)
     }),
     // Minification
-    new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
     new webpack.LoaderOptionsPlugin({ minimize: true }),
     // XLSX
     new webpack.IgnorePlugin(/cptable/)
   ],
+
+  optimization: {
+    minimize: true, // old UglifyJsPlugin
+    namedModules: true, // old NamedModulesPlugin()
+    splitChunks: {      // old CommonsChunkPlugin
+      chunks: 'all'
+    },
+    runtimeChunk: true,
+    concatenateModules: true // old ModuleConcatenationPlugin
+  },
 
   module: {
     rules: [
@@ -93,20 +97,11 @@ module.exports = {
       // Extract Sass files
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            { loader: 'css-loader' },
-            { loader: 'sass-loader' }
-          ]
-        })
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: 'css-loader'
-        })
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       },
       // font files
       {

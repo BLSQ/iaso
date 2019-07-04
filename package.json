@@ -27,7 +27,8 @@
   "devDependencies": {
     "leaflet-draw": "^1.0.4",
     "react-beautiful-dnd": "^11.0.4",
-    "react-color": "^2.17.3"
+    "react-color": "^2.17.3",
+    "webpack-cli": "^3.3.5"
   },
   "standard": {
     "ignore": [
@@ -52,7 +53,6 @@
     "eslint-loader": "^2.1.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.2",
-    "extract-text-webpack-plugin": "^3.0.2",
     "fetch-mock": "^7.3.3",
     "file-loader": "^4.0.0",
     "font-awesome": "^4.7.0",
@@ -64,6 +64,7 @@
     "leaflet.markercluster": "^1.4.1",
     "lint-staged": "^9.0.1",
     "metrics-graphics": "^2.15.6",
+    "mini-css-extract-plugin": "^0.7.0",
     "mocha": "^6.1.4",
     "moment": "^2.20.1",
     "nock": "^10.0.6",

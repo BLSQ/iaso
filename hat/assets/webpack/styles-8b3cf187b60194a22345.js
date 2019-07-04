@@ -1,1 +1,0 @@
-var HAT="object"==typeof HAT?HAT:{};HAT.styles=(window.webpackJsonp=window.webpackJsonp||[]).push([[22],{"./assets/css/index.scss":function(s,e,c){}},[["./assets/css/index.scss",19,24]]]);

@@ -66,12 +66,18 @@ module.exports = {
 
   optimization: {
     minimize: true, // old UglifyJsPlugin
-    namedModules: true, // old NamedModulesPlugin()
-    splitChunks: {      // old CommonsChunkPlugin
-      chunks: 'all'
-    },
-    runtimeChunk: true,
-    concatenateModules: true // old ModuleConcatenationPlugin
+    // namedModules: true, // old NamedModulesPlugin()
+    splitChunks: { // old CommonsChunkPlugin
+      cacheGroups: {
+        commons: {
+          name: 'commons',
+          chunks: 'initial',
+          minChunks: 3
+        }
+      }
+    }
+    // runtimeChunk: true,
+    // concatenateModules: true // old ModuleConcatenationPlugin
   },
 
   module: {

@@ -72,29 +72,29 @@ def user_signin(request: HttpRequest) -> HttpResponse:
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
-    username = request.data.get('username', '')
+    username = request.data.get('username', '').rstrip()
     if username == '':
         msg = 'No "username" sent for device_id {}'.format(device_id)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
-    password = request.data.get('password', '')
+    password = request.data.get('password', '').rstrip()
     if password == '':
-        msg = 'No "password" sent (username {})'.format(username)
+        msg = 'No "password" sent (username "{}")'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        msg = 'Username unknown: {}'.format(username)
+        msg = 'Username unknown: "{}"'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
     password_ok = user.check_password(password)
 
     if not password_ok:
-        msg = 'Bad password for username: {}'.format(username)
+        msg = 'Bad password for username: "{}"'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 

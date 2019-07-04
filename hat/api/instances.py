@@ -5,12 +5,45 @@ from rest_framework.response import Response
 from hat.vector_control.models import APIImport
 from .catches import timestamp_to_utc_datetime
 from iaso.models import Instance
-import ntpath
 
+from django.core.paginator import Paginator
+import ntpath
 
 class InstancesViewSet(viewsets.ViewSet):
     authentication_classes = []
     permission_classes = []
+
+    def list(self, request):
+        queryset = Instance.objects.order_by("id")
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "updated_at").split(",")
+        form_id = request.GET.get("form_id", None)
+
+        queryset = queryset.order_by(*orders)
+
+        if form_id:
+            queryset = queryset.filter(form_id=form_id)
+
+        if limit:
+            limit = int(limit)
+            page_offset = int(page_offset)
+
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+
+            res["instances"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response({"instances": [form.as_dict() for form in queryset]})
 
     def create(self, request):
         instances = request.data

@@ -269,3 +269,16 @@ def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
 
 
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_case_cases')
+@require_http_methods(['GET'])
+def monitoring(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:monitoring"))})
+
+
+@login_required(login_url='/login-iaso/')
+@require_http_methods(['GET'])
+def iaso(request: HttpRequest) -> HttpResponse:
+    return render(request, 'iaso/index.html')
+

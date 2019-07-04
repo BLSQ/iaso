@@ -106,11 +106,14 @@ class Form(models.Model):
         return "%s %s " % (self.name, self.form_id)
 
     def as_dict(self):
+        instancesCount = Instance.objects.filter(form_id=self.id).count()
+        print(instancesCount)
         return {
             "form_id": self.form_id,
             "name": self.name,
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
+            "instancesCount": instancesCount,
             "created_at": self.created_at.timestamp(),
             "updated_at": self.updated_at.timestamp(),
         }
@@ -140,7 +143,15 @@ class Instance(models.Model):
         return "%s " % (self.form,)
 
     def as_dict(self):
-        return {"name": self.name, "id": self.id}
+        return {
+            "file_name": self.file_name,
+            "file": self.file.url,
+            "id": self.id,
+            "form_id": self.form_id,
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "org_unit" : self.org_unit.as_dict()
+        }
 
 
 class InstanceFile(models.Model):

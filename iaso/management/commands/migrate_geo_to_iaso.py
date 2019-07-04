@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from hat.geo.models import Province, ZS, AS, HealthStructure
-from iaso.models import OrgUnit, OrgLevel, OrgUnitType
+from iaso.models import OrgUnit, OrgUnitType
 
 
 from datetime import datetime
@@ -15,9 +15,8 @@ def c(s):
     return s
 
 
-def copy_to_org_unit(obj, level, geo_type):
+def copy_to_org_unit(obj, geo_type):
     org_unit = OrgUnit()
-    org_unit.org_level = level
     org_unit.org_unit_type = geo_type
     org_unit.name = obj.name
     org_unit.aliases = obj.aliases
@@ -35,9 +34,6 @@ class Command(BaseCommand):
     help = "Province"
 
     def handle(self, *args, **options):
-        province_level, created = OrgLevel.objects.get_or_create(
-            name="Province", short_name="Prov.", level=1
-        )
 
         province_type, created = OrgUnitType.objects.get_or_create(
             name="Province", short_name="Prov"
@@ -63,21 +59,12 @@ class Command(BaseCommand):
             name="Site de santé communautaire", short_name="SSC"
         )
 
-        zs_level, created = OrgLevel.objects.get_or_create(
-            name="Zone de Santé", short_name="Zone", level=2
-        )
-        as_level, created = OrgLevel.objects.get_or_create(
-            name="Aire de Santé", short_name="Aire", level=3
-        )
-        struct_level, created = OrgLevel.objects.get_or_create(
-            name="Structure", short_name="Struct.", level=4
-        )
         OrgUnit.objects.all().delete()
         provinces = Province.objects.all()
         province_id_dict = {}
         for province in provinces:
             print("p: ", province)
-            org_unit = copy_to_org_unit(province, province_level, province_type)
+            org_unit = copy_to_org_unit(province, province_type)
             org_unit.save()
             province_id_dict[province.id] = org_unit.id
 
@@ -85,7 +72,7 @@ class Command(BaseCommand):
         zone_id_dict = {}
         for zone in zones:
             print("z: ", zone)
-            org_unit = copy_to_org_unit(zone, zs_level, zs_type)
+            org_unit = copy_to_org_unit(zone, zs_type)
             org_unit.parent_id = province_id_dict[zone.province_id]
             org_unit.save()
             zone_id_dict[zone.id] = org_unit.id
@@ -94,7 +81,7 @@ class Command(BaseCommand):
         area_id_dict = {}
         for area in areas:
             print("a: ", area)
-            org_unit = copy_to_org_unit(area, as_level, as_type)
+            org_unit = copy_to_org_unit(area, as_type)
             org_unit.parent_id = zone_id_dict[area.ZS_id]
             org_unit.save()
             area_id_dict[area.id] = org_unit.id
@@ -102,7 +89,6 @@ class Command(BaseCommand):
         for structure in HealthStructure.objects.all():
             print("s: ", structure)
             org_unit = OrgUnit()
-            org_unit.org_level = struct_level
             org_unit.org_unit_type = center_type
             org_unit.name = structure.name
             org_unit.parent_id = area_id_dict[structure.AS_id]

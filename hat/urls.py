@@ -9,9 +9,14 @@ admin.site.site_title = "Trypelim"
 admin.site.index_title = "Administration de Trypelim.org"
 
 urlpatterns = [
+    # url(
+    #     r"^$",
+    #     RedirectView.as_view(pattern_name="dashboard:home", permanent=False),
+    #     name="index",
+    # ),
     url(
         r"^$",
-        RedirectView.as_view(pattern_name="dashboard:home", permanent=False),
+        RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False),
         name="index",
     ),
     url(r"^accounts/", include("django.contrib.auth.urls")),
@@ -20,10 +25,16 @@ urlpatterns = [
     url(r"^cases/", include("hat.cases.urls")),
     url(r"^dashboard/", include("hat.dashboard.urls")),
     url(
-        r"^login",
+        r"^login/",
         auth.views.LoginView.as_view(template_name="login.html"),
         name="login",
     ),
+    url(
+        r"^login-iaso/",
+        auth.views.LoginView.as_view(template_name="iaso/login.html"),
+        name="login-iaso",
+    ),
+    url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login-iaso"), name="logout-iaso"),
     url(r"^logout", auth.views.LogoutView.as_view(next_page="login"), name="logout"),
     url(r"^maintenance/", include("hat.maintenance.urls")),
     url(r"^quality/", include("hat.quality.urls")),

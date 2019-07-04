@@ -51,13 +51,13 @@ class CustomTableComponent extends React.Component {
 
     componentWillReceiveProps(newProps) {
         this.handleScroll();
-        if (((newProps.endPointUrl !== this.props.endPointUrl) ||
-            (newProps.params[newProps.pageSizeKey] !== this.props.params[this.props.pageSizeKey]) ||
-            (newProps.params[newProps.pageKey] !== this.props.params[this.props.pageKey]) ||
-            (newProps.params[newProps.orderKey] !== this.props.params[newProps.orderKey]) ||
-            newProps.isUpdated) && newProps.fetchDatas) {
-            const orderArray = newProps.params[newProps.orderKey] ?
-                getOrderArray(newProps.params[newProps.orderKey]) : this.props.defaultSorted;
+        if (((newProps.endPointUrl !== this.props.endPointUrl)
+            || (newProps.params[newProps.pageSizeKey] !== this.props.params[this.props.pageSizeKey])
+            || (newProps.params[newProps.pageKey] !== this.props.params[this.props.pageKey])
+            || (newProps.params[newProps.orderKey] !== this.props.params[newProps.orderKey])
+            || newProps.isUpdated) && newProps.fetchDatas) {
+            const orderArray = newProps.params[newProps.orderKey]
+                ? getOrderArray(newProps.params[newProps.orderKey]) : this.props.defaultSorted;
             this.onFetchData({
                 sorted: orderArray,
                 page: newProps.params[newProps.pageKey] ? parseInt(newProps.params[newProps.pageKey], 10) : parseInt(this.props.page, 10),
@@ -214,8 +214,8 @@ class CustomTableComponent extends React.Component {
 
     render() {
         const data = this.state.reduxDatas ? this.state.reduxDatas : this.state.data;
-        let currentPageSize = this.state.showPagination ||
-            (!this.state.showPagination && data.length === 0)
+        let currentPageSize = this.state.showPagination
+            || (!this.state.showPagination && data.length === 0)
             ? this.state.pageSize : data.length;
         if (data.length === 0) {
             currentPageSize = 2;
@@ -224,10 +224,10 @@ class CustomTableComponent extends React.Component {
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section
                     id={this.state.tableId}
-                    className={`custom-table-container ${this.props.selectable ?
-                        'selectable' : ''} ${!this.state.showPagination && this.state.count ?
-                        'no-pagination' : ''} ${this.state.isHeaderFixed ?
-                        'header-fixed' : ''} `}
+                    className={`custom-table-container ${this.props.selectable
+                        ? 'selectable' : ''} ${!this.state.showPagination && this.state.count
+                        ? 'no-pagination' : ''} ${this.state.isHeaderFixed
+                        ? 'header-fixed' : ''} `}
                 >
                     <ReactTable
                         manual
@@ -250,14 +250,16 @@ class CustomTableComponent extends React.Component {
                         pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
                     />
                     <div className="count-container">
-                        {this.state.count !== undefined && this.state.count > 0 &&
-                            <div>
-                                {`${formatThousand(this.state.count)} `}
-                                <FormattedMessage
-                                    id="locator.list.result"
-                                    defaultMessage="résultat(s)"
-                                />
-                            </div>
+                        {this.state.count !== undefined && this.state.count > 0
+                            && (
+                                <div>
+                                    {`${formatThousand(this.state.count)} `}
+                                    <FormattedMessage
+                                        id="locator.list.result"
+                                        defaultMessage="résultat(s)"
+                                    />
+                                </div>
+                            )
                         }
                     </div>
                 </section>

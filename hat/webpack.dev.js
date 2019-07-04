@@ -57,6 +57,11 @@ module.exports = {
       'webpack-dev-server/client?' + WEBPACK_URL,
       'webpack/hot/only-dev-server',
       './assets/js/apps/Datas/index'
+    ],
+    'iaso': [
+      'webpack-dev-server/client?' + WEBPACK_URL,
+      'webpack/hot/only-dev-server',
+      './assets/js/apps/Iaso/index'
     ]
   },
 

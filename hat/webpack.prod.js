@@ -25,6 +25,7 @@ module.exports = {
     'quality_control': './assets/js/apps/QualityControl/index',
     'vector': './assets/js/apps/Vector/index',
     'datas': './assets/js/apps/Datas/index',
+    'iaso': './assets/js/apps/Iaso/index',
   },
 
   output: {

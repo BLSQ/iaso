@@ -66,12 +66,12 @@ module.exports = {
 
   optimization: {
     minimize: true, // old UglifyJsPlugin
-    // namedModules: true, // old NamedModulesPlugin()
+    namedModules: true, // old NamedModulesPlugin()
     splitChunks: { // old CommonsChunkPlugin
       cacheGroups: {
         commons: {
-          name: 'commons',
-          chunks: 'initial',
+          // name: 'commons',
+          // chunks: 'initial',
           minChunks: 3
         }
       }

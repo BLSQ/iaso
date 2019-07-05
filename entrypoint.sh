@@ -75,7 +75,7 @@ case "$1" in
       ./scripts/wait_for_dbs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
-      npm run webpack
+      npm run webpack-prod
       ./manage.py collectstatic --noinput
       ./scripts/start_web.sh
     else

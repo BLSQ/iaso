@@ -281,7 +281,7 @@ WEBPACK_LOADER = {
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
             "assets/webpack",
-            "webpack-stats.json" if DEBUG else "webpack-stats-prod.json",
+            "webpack-stats.json" if DEBUG and not os.environ.get("TEST_PROD", None) else "webpack-stats-prod.json",
         ),
     }
 }

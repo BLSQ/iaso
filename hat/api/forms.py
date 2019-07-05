@@ -18,7 +18,7 @@ class FormsViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        queryset = Form.objects.order_by("id")
+        queryset = Form.objects.order_by("-updated_at")
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")

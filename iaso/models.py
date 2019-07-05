@@ -34,8 +34,8 @@ class OrgUnitType(models.Model):
             "id": self.id,
             "name": self.name,
             "short_name": self.short_name,
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
         if sub_units:
             sub_unit_types = [
@@ -92,8 +92,8 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
         }
 
@@ -116,8 +116,8 @@ class Form(models.Model):
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
             "instancesCount": instancesCount,
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
 
@@ -158,9 +158,9 @@ class Instance(models.Model):
             "file_url": self.file.url,
             "id": self.id,
             "form_id": self.form_id,
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
-            "org_unit" : self.org_unit.as_dict(),
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "org_unit" : self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
@@ -186,7 +186,7 @@ class InstanceFile(models.Model):
             "name": self.name,
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
-            "created_at": self.created_at.timestamp(),
-            "updated_at": self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "file": self.file.url if self.file else None,
         }

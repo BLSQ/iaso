@@ -97,6 +97,7 @@ class Instances extends Component {
             limit: params.pageSize ? params.pageSize : 50,
             order: params.order ? params.order : 'updated_at',
             page: params.page ? params.page : 1,
+            form_id: params.formId,
         };
         if (toExport) {
             urlParams[exportType] = true;

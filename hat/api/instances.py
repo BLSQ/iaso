@@ -41,7 +41,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["instances"] = map(lambda x: x.as_dict(), page.object_list)
+                res["instances"] = map(lambda x: x.as_dict(True), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -12,6 +14,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from .export_utils import Echo, generate_xlsx, iter_items
 from iaso.utils import timestamp_to_datetime
 import ntpath
+
 
 class InstancesViewSet(viewsets.ViewSet):
     authentication_classes = []
@@ -59,23 +62,25 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Date de modification", "width": 20},
             ]
             file_content_template = queryset.first().as_dict(True)["file_content"]
-            for key, value in file_content_template.items():
-                columns.append({"title": key, "width": 50})
+            for title in file_content_template:
+                columns.append({"title": title, "width": 50})
             filename = "instances"
+
             def get_row(instance, **kwargs):
                 idict = instance.as_dict(True)
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
-                instanceValues = [
+                instance_values = [
                     idict.get("form_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
                     created_at,
                     updated_at,
                 ]
-                for key, value in file_content_template.items():
-                    instanceValues.append(value)
-                return instanceValues
+
+                for k in file_content_template:
+                    instance_values.append(idict["file_content"][k])
+                return instance_values
 
             if xlsx_format:
                 filename = filename + ".xlsx"
@@ -91,7 +96,6 @@ class InstancesViewSet(viewsets.ViewSet):
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
-
 
     def create(self, request):
         instances = request.data

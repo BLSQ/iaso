@@ -58,8 +58,8 @@ class FormsViewSet(viewsets.ViewSet):
             ]
             filename = "forms"
 
-            def get_row(form, **kwargs):
-                fdict = form.as_dict()
+            def get_row(qsform, **kwargs):
+                fdict = qsform.as_dict()
                 created_at = timestamp_to_datetime(fdict.get("created_at"))
                 updated_at = timestamp_to_datetime(fdict.get("updated_at"))
                 org_unit_types = ", ".join([o['name'] for o in fdict.get("org_unit_types") if o is not None])

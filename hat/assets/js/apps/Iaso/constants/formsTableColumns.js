@@ -1,7 +1,10 @@
 import React from 'react';
 import moment from 'moment';
+import { FormattedMessage } from 'react-intl';
+import Button from '@material-ui/core/Button';
+import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 
-const formsTableColumns = formatMessage => (
+const formsTableColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
@@ -36,10 +39,49 @@ const formsTableColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Type',
+                id: 'iaso.form.type',
+            }),
+            sortable: false,
+            accessor: 'org_unit_types',
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.org_unit_types.map((o, index) => `${index > 0 ? ', ' : ''}${o.short_name}`)
+                    }
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Enregistrement(s)',
                 id: 'iaso.form.records',
             }),
-            accessor: 'instancesCount',
+            sortable: false,
+            resizable: false,
+            width: 250,
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.instancesCount > 0
+                        && (
+                            <Button
+                                size="small"
+                                variant="contained"
+                                color="primary"
+                                onClick={() => component.selectForm(settings.original)}
+                            >
+                                <RemoveRedEye className={component.props.classes.tableIcon} fontSize="small" />
+                                {settings.original.instancesCount}
+                            </Button>
+                        )}
+                    {
+                        settings.original.instancesCount === 0
+                        && (
+                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="Aucun enregistrement" />
+                        )}
+                </section>
+            ),
         },
     ]
 );

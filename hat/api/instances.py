@@ -7,6 +7,10 @@ from .catches import timestamp_to_utc_datetime
 from iaso.models import Instance
 
 from django.core.paginator import Paginator
+
+from django.http import StreamingHttpResponse, HttpResponse
+from .export_utils import Echo, generate_xlsx, iter_items
+from iaso.utils import timestamp_to_datetime
 import ntpath
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -19,31 +23,75 @@ class InstancesViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")
         form_id = request.GET.get("form_id", None)
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
 
         queryset = queryset.order_by(*orders)
-
         if form_id:
             queryset = queryset.filter(form_id=form_id)
+        if csv_format is None and xlsx_format is None:
 
-        if limit:
-            limit = int(limit)
-            page_offset = int(page_offset)
+            if limit:
+                limit = int(limit)
+                page_offset = int(page_offset)
 
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
 
-            res["instances"] = map(lambda x: x.as_dict(), page.object_list)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
+                res["instances"] = map(lambda x: x.as_dict(), page.object_list)
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+            else:
+                return Response({"instances": [form.as_dict() for form in queryset]})
         else:
-            return Response({"instances": [form.as_dict() for form in queryset]})
+            columns = [
+                {"title": "ID du formulaire", "width": 20},
+                {"title": "Latitude", "width": 40},
+                {"title": "Longitude", "width": 20},
+                {"title": "Date de création", "width": 20},
+                {"title": "Date de modification", "width": 20},
+            ]
+            file_content_template = queryset.first().as_dict(True)["file_content"]
+            for key, value in file_content_template.items():
+                columns.append({"title": key, "width": 50})
+            filename = "instances"
+            def get_row(instance, **kwargs):
+                idict = instance.as_dict(True)
+                created_at = timestamp_to_datetime(idict.get("created_at"))
+                updated_at = timestamp_to_datetime(idict.get("updated_at"))
+                instanceValues = [
+                    idict.get("form_id"),
+                    idict.get("latitude"),
+                    idict.get("longitude"),
+                    created_at,
+                    updated_at,
+                ]
+                for key, value in file_content_template.items():
+                    instanceValues.append(value)
+                return instanceValues
+
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Forms", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type="text/csv",
+                )
+                filename = filename + ".csv"
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
+
 
     def create(self, request):
         instances = request.data

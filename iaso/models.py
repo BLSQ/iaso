@@ -156,7 +156,10 @@ class Instance(models.Model):
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp(),
             "updated_at": self.updated_at.timestamp(),
-            "org_unit" : self.org_unit.as_dict()
+            "org_unit" : self.org_unit.as_dict(),
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
         }
 
 

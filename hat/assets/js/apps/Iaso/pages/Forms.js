@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
@@ -15,6 +15,7 @@ import formsTableColumns from '../constants/formsTableColumns';
 import { createUrl } from '../../../utils/fetchData';
 
 import TopBar from '../components/TopBar';
+import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 const baseUrl = 'forms';
@@ -23,13 +24,18 @@ const styles = theme => ({
     container: {
         marginTop: theme.spacing(2),
     },
+    tableIcon: {
+        marginRight: theme.spacing(1),
+        width: 15,
+        height: 15,
+    },
 });
 
 class Forms extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: formsTableColumns(props.intl.formatMessage),
+            tableColumns: formsTableColumns(props.intl.formatMessage, this),
         };
     }
 
@@ -72,7 +78,7 @@ class Forms extends Component {
             },
         } = this.props;
         return (
-            <Fragment>
+            <section className="iaso-table">
                 <TopBar title={formatMessage({
                     defaultMessage: 'Formulaires',
                     id: 'iaso.form.title',
@@ -83,19 +89,26 @@ class Forms extends Component {
                         isSortable
                         pageSize={50}
                         showPagination
-                        endPointUrl="/api/forms/?"
+                        endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'updated_at', desc: false }]}
                         params={params}
                         defaultPath={baseUrl}
                         dataKey="forms"
-                        onRowClicked={formItem => this.selectForm(formItem)}
+                        canSelect={false}
                         multiSort
                         onDataLoaded={(newFormsList, count, pages) => this.props.setForms(newFormsList, true, params, count, pages)}
                         reduxPage={reduxPage}
                     />
                 </Container>
-            </Fragment>
+                {reduxPage.list
+                    && (
+                        <DownloadButtonsComponent
+                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        />
+                    )}
+            </section>
         );
     }
 }

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
@@ -18,6 +18,7 @@ import getInstancesColumns from '../utils/instancesUtils';
 
 import TopBar from '../components/TopBar';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
 
 
 const baseUrl = 'instances';
@@ -52,6 +53,18 @@ class Instances extends Component {
         this.fetchInstances();
     }
 
+    componentDidUpdate(prevProps) {
+        const {
+            params,
+        } = this.props;
+        if (params.pageSize !== prevProps.params.pageSize
+            || params.formId !== prevProps.params.formId
+            || params.order !== prevProps.params.order
+            || params.page !== prevProps.params.page) {
+            this.fetchInstances();
+        }
+    }
+
     getTopBarTitle() {
         const {
             params,
@@ -81,9 +94,10 @@ class Instances extends Component {
             params,
         } = this.props;
         const urlParams = {
-            ...params,
+            limit: params.pageSize ? params.pageSize : 50,
+            order: params.order ? params.order : 'updated_at',
+            page: params.page ? params.page : 1,
         };
-
         if (toExport) {
             urlParams[exportType] = true;
         }
@@ -107,22 +121,12 @@ class Instances extends Component {
 
     fetchInstances() {
         const {
-            params: {
-                formId,
-                order,
-                limit,
-                page,
-            },
+            params,
             intl: {
                 formatMessage,
             },
         } = this.props;
-        const { params } = this.props;
-        let url = '/api/instances/?';
-        if (formId) {
-            url = `${url}&form_id=${formId}`;
-        }
-        url = `${url}&order=${!order ? 'updated_at' : order}&limit=${!limit ? '50' : limit}&page=${!page ? '1' : page}`;
+        const url = this.getEndpointUrl();
         getRequest(url).then((data) => {
             const instances = {
                 ...data.instances,
@@ -141,9 +145,8 @@ class Instances extends Component {
             reduxPage,
             fetching,
         } = this.props;
-        console.log('reduxPage.list', reduxPage.list);
         return (
-            <Fragment>
+            <section className="iaso-table">
                 <TopBar
                     title={this.getTopBarTitle()}
                     showGoBack={Boolean(params.formId)}
@@ -156,13 +159,11 @@ class Instances extends Component {
                                 isSortable
                                 pageSize={50}
                                 showPagination
-                                endPointUrl="/api/instances/?"
                                 columns={this.state.tableColumns}
                                 defaultSorted={[{ id: 'updated_at', desc: false }]}
                                 params={params}
                                 defaultPath={baseUrl}
                                 dataKey="instances"
-                                onRowClicked={instanceItem => console.log(instanceItem)}
                                 multiSort
                                 fetchDatas={false}
                                 canSelect={false}
@@ -171,7 +172,14 @@ class Instances extends Component {
                         </Container>
                     )
                 }
-            </Fragment>
+                {!fetching
+                    && (
+                        <DownloadButtonsComponent
+                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        />
+                    )}
+            </section>
         );
     }
 }

@@ -1,4 +1,10 @@
 from bs4 import BeautifulSoup as Soup
+from datetime import datetime
+from django.utils import timezone
+
+def timestamp_to_datetime(timestamp):
+    date = datetime.fromtimestamp(timestamp)
+    return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def getflatChildrenTree(el, flatXmlDict):
@@ -26,5 +32,4 @@ def flatParseXMLFile(file):
     soup = Soup(file.read(), features="html.parser")
     flatXmlDict = {}
     getflatChildrenTree(soup, flatXmlDict)
-    print (flatXmlDict)
     return flatXmlDict

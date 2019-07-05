@@ -7,7 +7,7 @@ from django.contrib.gis.db.models.fields import (
 from django.contrib.postgres.fields import ArrayField, CITextField
 
 from iaso.utils import parseXMLFile, flatParseXMLFile
-
+from urllib.request import urlopen
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -147,7 +147,11 @@ class Instance(models.Model):
     def as_dict(self, isFlat = False):
         file_content = ""
         if self.file_name:
-            file_content = parseXMLFile(self.file) if not isFlat else flatParseXMLFile(self.file)
+            if "amazonaws" in  self.file.url:
+                file = urlopen(self.file.url)
+            else:
+                file = self.file
+            file_content = parseXMLFile(file) if not isFlat else flatParseXMLFile(file)
         return {
             "file_name": self.file_name,
             "file_content": file_content,

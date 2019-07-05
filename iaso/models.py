@@ -6,7 +6,7 @@ from django.contrib.gis.db.models.fields import (
 )
 from django.contrib.postgres.fields import ArrayField, CITextField
 
-from iaso.utils import parseXMLFile
+from iaso.utils import parseXMLFile, flatParseXMLFile
 
 
 GEO_SOURCE_CHOICES = (
@@ -110,7 +110,6 @@ class Form(models.Model):
 
     def as_dict(self):
         instancesCount = Instance.objects.filter(form_id=self.id).count()
-        print(instancesCount)
         return {
             "form_id": self.form_id,
             "name": self.name,
@@ -145,10 +144,10 @@ class Instance(models.Model):
     def __str__(self):
         return "%s " % (self.form,)
 
-    def as_dict(self):
+    def as_dict(self, isFlat = False):
         file_content = ""
         if self.file_name:
-            file_content = parseXMLFile(self.file)
+            file_content = parseXMLFile(self.file) if not isFlat else flatParseXMLFile(self.file)
         return {
             "file_name": self.file_name,
             "file_content": file_content,

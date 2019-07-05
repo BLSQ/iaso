@@ -14,6 +14,7 @@ export const setInstances = (list, showPagination, params, count, pages) => ({
 
 
 export const instancesInitialState = {
+    fetching: true,
     instancesPage: {
         list: null,
         showPagination: false,
@@ -31,6 +32,7 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
             } = action.payload;
             return {
                 ...state,
+                fetching: false,
                 instancesPage: {
                     list,
                     showPagination,

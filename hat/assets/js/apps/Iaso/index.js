@@ -13,8 +13,8 @@ import theme from './utils/theme';
 import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
-import { formsReducer, formsInitialState } from './redux/forms';
-import { instancesReducer, instancesInitialState } from './redux/instances';
+import { formsReducer, formsInitialState } from './redux/formsReducer';
+import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
 
 import App from '../App';
 
@@ -24,11 +24,11 @@ import Instances from './pages/Instances';
 export default function datasApp(element, baseUrl) {
     const routes = [
         <Route
-            path="/forms"
+            path="/forms(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={Forms}
         />,
         <Route
-            path="/instances(/formId/:formId)"
+            path="/instances(/order/:order)(/pageSize/:pageSize)(/page/:page)(/formId/:formId)"
             component={Instances}
         />,
         <Redirect path="*" to="/forms" />,

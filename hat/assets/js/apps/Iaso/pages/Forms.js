@@ -8,7 +8,7 @@ import Container from '@material-ui/core/Container';
 
 import PropTypes from 'prop-types';
 
-import { setForms, setCurrentForm } from '../redux/forms';
+import { setForms, setCurrentForm } from '../redux/formsReducer';
 
 import formsTableColumns from '../constants/formsTableColumns';
 
@@ -17,7 +17,7 @@ import { createUrl } from '../../../utils/fetchData';
 import TopBar from '../components/TopBar';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
-const baseUrl = 'home';
+const baseUrl = 'forms';
 
 const styles = theme => ({
     container: {
@@ -33,11 +33,34 @@ class Forms extends Component {
         };
     }
 
+    getEndpointUrl(toExport, exportType = 'csv') {
+        let url = '/api/forms/?';
+        const {
+            params,
+        } = this.props;
+        const urlParams = {
+            ...params,
+        };
+
+        if (toExport) {
+            urlParams[exportType] = true;
+        }
+
+        Object.keys(urlParams).forEach((key) => {
+            const value = urlParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
+        });
+        return url;
+    }
+
     selectForm(form) {
         const { redirectTo } = this.props;
         this.props.setCurrentForm(form);
         redirectTo('instances', { formId: form.id });
     }
+
 
     render() {
         const {
@@ -58,6 +81,7 @@ class Forms extends Component {
                 <Container maxWidth={false} className={classes.container}>
                     <CustomTableComponent
                         isSortable
+                        pageSize={50}
                         showPagination
                         endPointUrl="/api/forms/?"
                         columns={this.state.tableColumns}
@@ -95,7 +119,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
-    setForms: forms => dispatch(setForms(forms)),
+    setForms: (forms, showPagination, params, count, pages) => dispatch(setForms(forms, showPagination, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

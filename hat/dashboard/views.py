@@ -280,5 +280,5 @@ def monitoring(request: HttpRequest) -> HttpResponse:
 @login_required(login_url='/login-iaso/')
 @require_http_methods(['GET'])
 def iaso(request: HttpRequest) -> HttpResponse:
-    return render(request, 'iaso/index.html')
+    return render(request, 'iaso/index.html', {'STATIC_URL': settings.STATIC_URL})
 

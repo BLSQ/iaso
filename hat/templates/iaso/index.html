@@ -1,6 +1,11 @@
 {% extends 'iaso/base.html' %}
 {% load i18n %}
-{% load render_bundle from webpack_loader %}
+{% load render_bundle f
+{% block extrajs %}
+    <script type="text/javascript">
+        var STATIC_URL = "{{ STATIC_URL }}";
+    </script>
+{% endblock %}rom webpack_loader %}
 
 {% block body %}
     <section>

@@ -1,6 +1,7 @@
 $fa-font-path: "~font-awesome/fonts";
 @import "~font-awesome/scss/font-awesome";
-@import "~leaflet/dist/leaflet.css";
+// @import "~leaflet/dist/leaflet.css";
+@import url('https://unpkg.com/leaflet@1.5.1/dist/leaflet.css');
 @import "~react-select/dist/react-select.css";
 @import '~react-table/react-table.css';
 @import "~video.js/dist/video-js.css";
@@ -48,6 +49,8 @@ $fa-font-path: "~font-awesome/fonts";
 @import "dynamicLegend";
 @import "radioComponent";
 @import "manualDuplicates";
+@import "iaso";
+
 
 body {
   background-color: $background-gray;

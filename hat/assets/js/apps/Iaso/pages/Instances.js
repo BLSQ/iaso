@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 import PropTypes from 'prop-types';
 
@@ -19,6 +21,7 @@ import getInstancesColumns from '../utils/instancesUtils';
 import TopBar from '../components/TopBar';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
+import InstancesMap from '../components/InstancesMap';
 
 
 const baseUrl = 'instances';
@@ -35,6 +38,7 @@ class Instances extends Component {
         super(props);
         this.state = {
             tableColumns: [],
+            tab: 'list',
         };
     }
 
@@ -112,6 +116,12 @@ class Instances extends Component {
         return url;
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
 
     goBack() {
         const { redirectTo, params } = this.props;
@@ -145,41 +155,74 @@ class Instances extends Component {
             params,
             reduxPage,
             fetching,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
+        const {
+            tab,
+        } = this.state;
         return (
-            <section className="iaso-table">
+            <section className="iaso">
                 <TopBar
                     title={this.getTopBarTitle()}
                     showGoBack={Boolean(params.formId)}
                     goBack={() => this.goBack()}
                 />
-                {
-                    !fetching && (
-                        <Container maxWidth={false} className={classes.container}>
-                            <CustomTableComponent
-                                isSortable
-                                pageSize={50}
-                                showPagination
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'updated_at', desc: true }]}
-                                params={params}
-                                defaultPath={baseUrl}
-                                dataKey="instances"
-                                multiSort
-                                fetchDatas={false}
-                                canSelect={false}
-                                reduxPage={reduxPage}
-                            />
-                        </Container>
-                    )
-                }
                 {!fetching
                     && (
-                        <DownloadButtonsComponent
-                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                        />
-                    )}
+                        <Fragment>
+                            <Container maxWidth={false} className={classes.container}>
+                                <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
+                                    <Tab
+                                        value="list"
+                                        label={formatMessage({
+                                            defaultMessage: 'Liste',
+                                            id: 'iaso.instande.list',
+                                        })}
+                                    />
+                                    <Tab
+                                        value="map"
+                                        label={formatMessage({
+                                            defaultMessage: 'Carte',
+                                            id: 'iaso.instande.map',
+                                        })}
+                                    />
+                                </Tabs>
+                                {
+                                    tab === 'list' && (
+                                        <CustomTableComponent
+                                            isSortable
+                                            pageSize={50}
+                                            showPagination
+                                            columns={this.state.tableColumns}
+                                            defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                            params={params}
+                                            defaultPath={baseUrl}
+                                            dataKey="instances"
+                                            multiSort
+                                            fetchDatas={false}
+                                            canSelect={false}
+                                            reduxPage={reduxPage}
+                                        />
+                                    )
+                                }
+                                {
+                                    tab === 'map' && (
+                                        <InstancesMap />
+                                    )
+                                }
+                            </Container>
+                            {tab === 'list'
+                                && (
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(true, 'csv')}
+                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                    />
+                                )}
+                        </Fragment>
+                    )
+                }
             </section>
         );
     }

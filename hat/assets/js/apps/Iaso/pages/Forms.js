@@ -78,7 +78,7 @@ class Forms extends Component {
             },
         } = this.props;
         return (
-            <section className="iaso-table">
+            <section className="iaso">
                 <TopBar title={formatMessage({
                     defaultMessage: 'Formulaires',
                     id: 'iaso.form.title',

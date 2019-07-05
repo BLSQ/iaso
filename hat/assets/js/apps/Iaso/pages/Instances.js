@@ -95,7 +95,7 @@ class Instances extends Component {
         } = this.props;
         const urlParams = {
             limit: params.pageSize ? params.pageSize : 50,
-            order: params.order ? params.order : 'updated_at',
+            order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
             form_id: params.formId,
         };
@@ -161,7 +161,7 @@ class Instances extends Component {
                                 pageSize={50}
                                 showPagination
                                 columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                defaultSorted={[{ id: 'updated_at', desc: true }]}
                                 params={params}
                                 defaultPath={baseUrl}
                                 dataKey="instances"

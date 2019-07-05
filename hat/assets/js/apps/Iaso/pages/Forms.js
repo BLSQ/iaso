@@ -91,7 +91,7 @@ class Forms extends Component {
                         showPagination
                         endPointUrl={this.getEndpointUrl()}
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'updated_at', desc: false }]}
+                        defaultSorted={[{ id: 'updated_at', desc: true }]}
                         params={params}
                         defaultPath={baseUrl}
                         dataKey="forms"

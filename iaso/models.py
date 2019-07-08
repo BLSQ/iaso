@@ -166,6 +166,20 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
         }
 
+    def as_location(self):
+        return {
+            "id": self.id,
+            "file_name": self.file_name,
+            "file_url": self.file.url,
+            "form_id": self.form_id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "org_unit" : self.org_unit.as_dict() if self.org_unit else None,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
+        }
+
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"

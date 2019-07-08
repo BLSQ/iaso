@@ -23,6 +23,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Instance.objects.order_by("id")
         limit = request.GET.get("limit", None)
+        as_location = request.GET.get("as_location", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")
         form_id = request.GET.get("form_id", None)
@@ -51,8 +52,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
                 return Response(res)
+            elif as_location:
+                return Response([instance.as_location() for instance in queryset])
             else:
-                return Response({"instances": [form.as_dict() for form in queryset]})
+                return Response({"instances": [instance.as_dict() for instance in queryset]})
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},

@@ -10,7 +10,7 @@ import Tab from '@material-ui/core/Tab';
 
 import PropTypes from 'prop-types';
 
-import { setInstances } from '../redux/instancesReducer';
+import { setInstances, setInstancesLocations } from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 
 import { getRequest } from '../libs/Api';
@@ -30,6 +30,11 @@ const styles = theme => ({
     container: {
         marginTop: theme.spacing(2),
     },
+    tableIcon: {
+        marginRight: theme.spacing(1),
+        width: 15,
+        height: 15,
+    },
 });
 
 
@@ -38,7 +43,7 @@ class Instances extends Component {
         super(props);
         this.state = {
             tableColumns: [],
-            tab: 'list',
+            tab: props.params.tab ? props.params.tab : 'list',
         };
     }
 
@@ -67,6 +72,9 @@ class Instances extends Component {
             || params.page !== prevProps.params.page) {
             this.fetchInstances();
         }
+        if (params.tab !== prevProps.params.tab) {
+            this.handleChangeTab(params.tab, false);
+        }
     }
 
     getTopBarTitle() {
@@ -92,7 +100,7 @@ class Instances extends Component {
         return topBarTitle;
     }
 
-    getEndpointUrl(toExport, exportType = 'csv') {
+    getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
         let url = '/api/instances/?';
         const {
             params,
@@ -106,6 +114,11 @@ class Instances extends Component {
         if (toExport) {
             urlParams[exportType] = true;
         }
+        if (asLocation) {
+            urlParams.as_location = true;
+            delete urlParams.limit;
+            delete urlParams.page;
+        }
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
@@ -116,7 +129,15 @@ class Instances extends Component {
         return url;
     }
 
-    handleChangeTab(tab) {
+    handleChangeTab(tab, redirect = true) {
+        if (redirect) {
+            const { redirectTo, params } = this.props;
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectTo('instances', newParams);
+        }
         this.setState({
             tab,
         });
@@ -143,10 +164,13 @@ class Instances extends Component {
                 ...data.instances,
             };
             this.setState({
-                tableColumns: getInstancesColumns(formatMessage, instances),
+                tableColumns: getInstancesColumns(formatMessage, instances, this),
             });
             this.props.setInstances(data.instances, true, params, data.count, data.pages);
         });
+
+        const urlLocation = this.getEndpointUrl(false, '', true);
+        getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
     }
 
     render() {
@@ -154,6 +178,7 @@ class Instances extends Component {
             classes,
             params,
             reduxPage,
+            instancesLocations,
             fetching,
             intl: {
                 formatMessage,
@@ -173,7 +198,7 @@ class Instances extends Component {
                     && (
                         <Fragment>
                             <Container maxWidth={false} className={classes.container}>
-                                <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
+                                {/* <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
                                     <Tab
                                         value="list"
                                         label={formatMessage({
@@ -188,7 +213,7 @@ class Instances extends Component {
                                             id: 'iaso.instande.map',
                                         })}
                                     />
-                                </Tabs>
+                                </Tabs> */}
                                 {
                                     tab === 'list' && (
                                         <CustomTableComponent
@@ -209,7 +234,7 @@ class Instances extends Component {
                                 }
                                 {
                                     tab === 'map' && (
-                                        <InstancesMap />
+                                        <InstancesMap instances={instancesLocations} />
                                     )
                                 }
                             </Container>
@@ -236,8 +261,10 @@ Instances.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
+    instancesLocations: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
     setInstances: PropTypes.func.isRequired,
+    setInstancesLocations: PropTypes.func.isRequired,
     setCurrentForm: PropTypes.func.isRequired,
     currentForm: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
@@ -246,6 +273,7 @@ Instances.propTypes = {
 
 const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
+    instancesLocations: state.instances.instancesLocations,
     fetching: state.instances.fetching,
     currentForm: state.forms.current,
 });
@@ -253,6 +281,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setInstances: (instances, showPagination, params, count, pages) => dispatch(setInstances(instances, showPagination, params, count, pages)),
+    setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

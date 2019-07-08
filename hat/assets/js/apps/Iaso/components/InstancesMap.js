@@ -1,85 +1,88 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import {
     Map, TileLayer, Marker, Popup,
 } from 'react-leaflet';
-import L from 'leaflet';
+import { FormattedMessage } from 'react-intl';
 
+import { withStyles } from '@material-ui/core';
 
-const positions = [
-    [-23.568767, -46.649907],
-    [-23.565972, -46.650859],
-    [-23.563703, -46.653542],
-    [-23.616359, -46.664749],
-    [-23.624203, -46.683369],
-    [-23.565972, -46.650859],
-    [-23.572424, -46.65384],
-    [-23.610235, -46.69591],
-    [-23.609215, -46.69753],
-    [-23.608786, -46.697448],
-    [-23.617262, -46.674802],
-    [-23.620757, -46.673658],
-    [-23.625349, -46.692239],
-    [-23.565972, -46.650859],
-    [-23.564909, -46.654558],
-    [-23.642676, -46.672727],
-    [-23.608786, -46.697448],
-    [-23.610652, -46.686046],
-    [-23.573285, -46.689102],
-    [-23.609215, -46.667182],
-    [-23.609215, -46.667182],
-    [-23.60997, -46.667902],
-    [-23.584718, -46.675473],
-    [-23.584718, -46.675473],
-    [-23.607909, -46.692784],
-    [-23.594718, -46.635473],
-    [-23.564552, -46.654713],
-    [-23.573263, -46.695077],
-    [-23.633372, -46.680053],
-    [-23.64717, -46.727572],
-    [-23.576715, -46.68747],
-    [-23.609215, -46.667182],
-    [-23.609215, -46.667182],
-    [-23.52631, -46.616194],
-    [-23.614064, -46.668883],
-    [-23.608786, -46.697448],
-    [-23.587921, -46.6767],
-    [-23.573691, -46.643678],
-    [-23.573691, -46.643678],
-    [-23.627158, -46.675183],
-    [-23.573263, -46.695077],
-    [-23.573263, -46.695077],
-    [-23.572269, -46.689863],
-    [-23.573263, -46.695077],
-    [-23.628932, -46.665837],
-    [-23.61506, -46.659242],
-    [-23.528071, -46.586955],
-    [-23.595269, -46.669645],
-    [-23.596066, -46.686917],
-    [-23.627158, -46.675183],
-];
+import PropTypes from 'prop-types';
+import moment from 'moment';
 
-const getLatLngBounds = () => {
-    const latLngs = positions.map(position => L.latLng(position[0], position[1]));
-    const bounds = L.latLngBounds(latLngs);
-    return bounds;
-};
+import { getLatLngBounds, isValidCoordinate } from '../utils/mapUtils';
+
+const styles = () => ({
+    link: {
+        wordBreak: 'break-all',
+    },
+});
 
 class InstancesMap extends Component {
     render() {
-        const { instances } = this.props;
+        const { instances, classes } = this.props;
         return (
-
-            <Map bounds={getLatLngBounds()} zoom={13}>
+            <Map
+                bounds={getLatLngBounds(instances)}
+                boundsOptions={{ padding: [50, 50] }}
+                zoom={13}
+            >
                 <TileLayer attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
                 {
-                    positions.map((i) => {
-                        // const position = [i.latitutide, i.longitude];
-                        const position = [i[0], i[1]];
+                    instances.map((i) => {
+                        if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
                         return (
-                            <Marker position={position}>
+
+                            <Marker position={[i.latitude, i.longitude]} key={i.id}>
                                 <Popup>
-                                    Expected: This popup can get out of the maps viewport
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.latitude" defaultMessage="Latitude" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                    {i.latitude}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.longitude" defaultMessage="Longitude" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                    {i.longitude}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.updated_at" defaultMessage="Mise à jour" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                    {moment.unix(i.updated_at).format('DD/MM/YYYY HH:mm')}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.created_at" defaultMessage="Création" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                    {moment.unix(i.created_at).format('DD/MM/YYYY HH:mm')}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.file" defaultMessage="Fichier" />
+                                                    :
+                                                </td>
+                                                <td className={classes.link}>
+                                                    <a target="_blank" rel="noopener noreferrer" href={i.file_url}>{i.file_name}</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </Popup>
                             </Marker>
                         );
@@ -90,13 +93,10 @@ class InstancesMap extends Component {
     }
 }
 
-InstancesMap.defaultProps = {
-    instances: [],
-};
-
 InstancesMap.propTypes = {
-    instances: PropTypes.array,
+    classes: PropTypes.object.isRequired,
+    instances: PropTypes.array.isRequired,
 };
 
 
-export default InstancesMap;
+export default withStyles(styles)(InstancesMap);

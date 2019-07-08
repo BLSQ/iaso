@@ -28,7 +28,7 @@ export default function datasApp(element, baseUrl) {
             component={Forms}
         />,
         <Route
-            path="/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)"
             component={Instances}
         />,
         <Redirect path="*" to="/forms" />,

@@ -79,7 +79,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 ]
 
                 for k in file_content_template:
-                    instance_values.append(idict["file_content"][k])
+                    instance_values.append(idict["file_content"].get(k, None))
                 return instance_values
 
             if xlsx_format:

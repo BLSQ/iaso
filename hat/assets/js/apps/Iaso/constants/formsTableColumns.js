@@ -79,7 +79,7 @@ const formsTableColumns = (formatMessage, component) => (
                             </Button>
                         )}
                     {
-                        !settings.original.instances_count
+                        settings.original.instances_count === 0
                         && (
                             <FormattedMessage id='iaso.forms.noInstance' defaultMessage='Aucun enregistrement' />
                         )}

@@ -8,4 +8,9 @@
     .leaflet-container {
         height: 80vh;
     }
+    &.instances {
+        .ReactTable .rt-tbody {
+            padding-bottom: 16px;
+        }
+    }
 }

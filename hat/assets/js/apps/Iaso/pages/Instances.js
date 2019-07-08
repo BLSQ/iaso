@@ -188,7 +188,7 @@ class Instances extends Component {
             tab,
         } = this.state;
         return (
-            <section className="iaso">
+            <section className="iaso instances">
                 <TopBar
                     title={this.getTopBarTitle()}
                     showGoBack={Boolean(params.formId)}
@@ -225,7 +225,7 @@ class Instances extends Component {
                                             params={params}
                                             defaultPath={baseUrl}
                                             dataKey="instances"
-                                            multiSort
+                                            multiSort={false}
                                             fetchDatas={false}
                                             canSelect={false}
                                             reduxPage={reduxPage}

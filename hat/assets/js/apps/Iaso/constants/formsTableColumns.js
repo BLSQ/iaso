@@ -18,10 +18,13 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Mise à jour',
                 id: 'iaso.form.updated_at',
             }),
-            accessor: 'updated_at',
+            accessor: 'instance__updated_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
+                    {settings.original.instance__updated_at
+                        && moment(settings.original.instance__updated_at).format('DD/MM/YYYY HH:mm')}
+                    {!settings.original.instance__updated_at
+                        && '/'}
                 </section>
             ),
         },
@@ -57,13 +60,13 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Enregistrement(s)',
                 id: 'iaso.form.records',
             }),
-            sortable: false,
             resizable: false,
             width: 250,
+            accessor: 'instances_count',
             Cell: settings => (
                 <section>
                     {
-                        settings.original.instancesCount > 0
+                        settings.original.instances_count
                         && (
                             <Button
                                 size="small"
@@ -72,11 +75,11 @@ const formsTableColumns = (formatMessage, component) => (
                                 onClick={() => component.selectForm(settings.original)}
                             >
                                 <RemoveRedEye className={component.props.classes.tableIcon} fontSize="small" />
-                                {settings.original.instancesCount}
+                                {settings.original.instances_count}
                             </Button>
                         )}
                     {
-                        settings.original.instancesCount === 0
+                        !settings.original.instances_count
                         && (
                             <FormattedMessage id="iaso.forms.noInstance" defaultMessage="Aucun enregistrement" />
                         )}

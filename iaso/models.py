@@ -4,6 +4,7 @@ from django.contrib.gis.db.models.fields import (
     PointField,
     PolygonField,
 )
+from django.db.models import Max
 from django.contrib.postgres.fields import ArrayField, CITextField
 
 from iaso.utils import parseXMLFile, flatParseXMLFile
@@ -108,17 +109,19 @@ class Form(models.Model):
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
 
-    def as_dict(self):
-        instancesCount = Instance.objects.filter(form_id=self.id).count()
-        return {
+    def as_dict(self, additional_fields=None):
+        res = {
             "form_id": self.form_id,
             "name": self.name,
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
-            "instancesCount": instancesCount,
             "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+        if additional_fields:
+            for field in additional_fields:
+                if hasattr(self, field):
+                    res[field] = getattr(self, field)
+        return res
 
 
 class FormVersion(models.Model):

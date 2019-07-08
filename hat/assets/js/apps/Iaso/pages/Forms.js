@@ -39,18 +39,16 @@ class Forms extends Component {
         };
     }
 
-    getEndpointUrl(toExport, exportType = 'csv') {
+    getExportUrl(exportType = 'csv') {
         let url = '/api/forms/?';
         const {
             params,
         } = this.props;
         const urlParams = {
-            ...params,
+            order: params.order,
         };
 
-        if (toExport) {
-            urlParams[exportType] = true;
-        }
+        urlParams[exportType] = true;
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
@@ -89,9 +87,9 @@ class Forms extends Component {
                         isSortable
                         pageSize={50}
                         showPagination
-                        endPointUrl={this.getEndpointUrl()}
+                        endPointUrl="/api/forms/?"
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'updated_at', desc: true }]}
+                        defaultSorted={[{ id: 'instance__updated_at', desc: false }]}
                         params={params}
                         defaultPath={baseUrl}
                         dataKey="forms"
@@ -104,8 +102,8 @@ class Forms extends Component {
                 {reduxPage.list
                     && (
                         <DownloadButtonsComponent
-                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                            csvUrl={this.getExportUrl('csv')}
+                            xlsxUrl={this.getExportUrl('xlsx')}
                         />
                     )}
             </section>

@@ -18,12 +18,12 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Mise à jour',
                 id: 'iaso.form.updated_at',
             }),
-            accessor: 'instance__updated_at',
+            accessor: 'instance_updated_at',
             Cell: settings => (
                 <section>
-                    {settings.original.instance__updated_at
-                        && moment(settings.original.instance__updated_at).format('DD/MM/YYYY HH:mm')}
-                    {!settings.original.instance__updated_at
+                    {settings.original.instance_updated_at
+                        && moment(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')}
+                    {!settings.original.instance_updated_at
                         && '/'}
                 </section>
             ),
@@ -81,7 +81,7 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         !settings.original.instances_count
                         && (
-                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="Aucun enregistrement" />
+                            <FormattedMessage id='iaso.forms.noInstance' defaultMessage='Aucun enregistrement' />
                         )}
                 </section>
             ),

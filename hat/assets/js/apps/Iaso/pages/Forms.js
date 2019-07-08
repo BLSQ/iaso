@@ -119,7 +119,7 @@ class Forms extends Component {
                         showPagination
                         endPointUrl={`/api/forms/?date_from=${params.date_from}&date_to=${params.date_to}`}
                         columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'instance__updated_at', desc: false }]}
+                        defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
                         params={params}
                         defaultPath={baseUrl}
                         dataKey="forms"

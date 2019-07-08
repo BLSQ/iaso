@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from iaso.models import Form, Instance
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
-from django.db.models import Max, Sum
+from django.db.models import Max, Sum, Q
 
 from django.http import StreamingHttpResponse, HttpResponse
 from .export_utils import Echo, generate_xlsx, iter_items
@@ -23,12 +23,20 @@ class FormsViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "instance__updated_at").split(",")
+        from_date = request.GET.get("date_from", None)
+        to_date = request.GET.get("date_to", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         queryset = queryset.annotate(instance__updated_at=Max("instance__updated_at"))
         queryset = queryset.annotate(instances_count=Sum("instance"))
         additional_fields = ["instance__updated_at", "instances_count"]
         queryset = queryset.order_by(*order)
+        if from_date:
+            queryset = queryset.filter(Q(instance__updated_at__gte=from_date) | Q(created_at__gte=from_date) | Q(updated_at__gte=from_date))
+
+        if to_date:
+            queryset = queryset.filter(Q(instance__updated_at__lte=to_date) | Q(created_at__lte=to_date) | Q(updated_at__lte=to_date))
+
 
         if csv_format is None and xlsx_format is None:
             if limit:

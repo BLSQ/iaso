@@ -51,7 +51,7 @@ class PeriodSelectorComponent extends React.Component {
                         <i className="fa fa-calendar" />
                         <FormattedMessage
                             id="statspage.label.datefrom"
-                            defaultMessage="From"
+                            defaultMessage="De"
                         />
                     </label>
                     <DatePicker
@@ -71,7 +71,7 @@ class PeriodSelectorComponent extends React.Component {
                         <i className="fa fa-calendar" />
                         <FormattedMessage
                             id="statspage.label.dateto"
-                            defaultMessage="To"
+                            defaultMessage="À"
                         />
                     </label>
                     <DatePicker
@@ -83,20 +83,21 @@ class PeriodSelectorComponent extends React.Component {
                     />
                 </div>
                 {
-                    this.props.showApplybutton &&
-                    <button
-                        onClick={() =>
-                            this.props.onChangeDate(
+                    this.props.showApplybutton
+                    && (
+                        <button
+                            onClick={() => this.props.onChangeDate(
                                 moment(this.state.dateFrom).format(this.state.dateFormat),
                                 moment(this.state.dateTo).format(this.state.dateFormat),
                             )}
-                        className="button--save--tiny"
-                    >
-                        <FormattedMessage
-                            id="PeriodSelectorComponent.label.apply"
-                            defaultMessage="Appliquer"
-                        />
-                    </button>
+                            className="button--save--tiny"
+                        >
+                            <FormattedMessage
+                                id="PeriodSelectorComponent.label.apply"
+                                defaultMessage="Appliquer"
+                            />
+                        </button>
+                    )
                 }
             </section>
         );

@@ -17,10 +17,18 @@ import { createUrl } from '../../../utils/fetchData';
 import TopBar from '../components/TopBar';
 import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 
 const baseUrl = 'forms';
 
 const styles = theme => ({
+    filterContainer: {
+        margin: theme.spacing(4),
+        backgroundColor: 'white',
+        padding: theme.spacing(2),
+        width: 'auto',
+        border: '1px solid #ccc',
+    },
     container: {
         marginTop: theme.spacing(2),
     },
@@ -60,9 +68,19 @@ class Forms extends Component {
     }
 
     selectForm(form) {
-        const { redirectTo } = this.props;
+        const { redirectTo, params } = this.props;
         this.props.setCurrentForm(form);
-        redirectTo('instances', { formId: form.id });
+        const newParams = {
+            formId: form.id,
+            ...params,
+            formOrder: params.order,
+            formPageSize: params.pageSize,
+            formPage: params.page,
+        };
+        delete newParams.page;
+        delete newParams.pageSize;
+        delete newParams.order;
+        redirectTo('instances', newParams);
     }
 
 
@@ -71,6 +89,7 @@ class Forms extends Component {
             classes,
             params,
             reduxPage,
+            redirectTo,
             intl: {
                 formatMessage,
             },
@@ -82,12 +101,23 @@ class Forms extends Component {
                     id: 'iaso.form.title',
                 })}
                 />
+                <Container maxWidth={false} className={classes.filterContainer}>
+                    <PeriodSelectorComponent
+                        dateFrom={params.date_from}
+                        dateTo={params.date_to}
+                        onChangeDate={(dateFrom, dateTo) => redirectTo(baseUrl, {
+                            ...this.props.params,
+                            date_from: dateFrom,
+                            date_to: dateTo,
+                        })}
+                    />
+                </Container>
                 <Container maxWidth={false} className={classes.container}>
                     <CustomTableComponent
                         isSortable
                         pageSize={50}
                         showPagination
-                        endPointUrl="/api/forms/?"
+                        endPointUrl={`/api/forms/?date_from=${params.date_from}&date_to=${params.date_to}`}
                         columns={this.state.tableColumns}
                         defaultSorted={[{ id: 'instance__updated_at', desc: false }]}
                         params={params}

@@ -28,7 +28,7 @@ const baseUrl = 'instances';
 
 const styles = theme => ({
     container: {
-        marginTop: theme.spacing(2),
+        marginTop: theme.spacing(4),
     },
     tableIcon: {
         marginRight: theme.spacing(1),
@@ -148,7 +148,13 @@ class Instances extends Component {
         const { redirectTo, params } = this.props;
         this.props.setCurrentForm(undefined);
         this.props.setInstances([], true, params, 0, 0);
-        redirectTo('forms', {});
+        redirectTo('forms', {
+            date_from: params.date_from,
+            date_to: params.date_to,
+            order: params.formOrder,
+            pageSize: params.formPageSize,
+            page: params.formPage,
+        });
     }
 
     fetchInstances() {

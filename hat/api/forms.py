@@ -76,7 +76,7 @@ class FormsViewSet(viewsets.ViewSet):
                 fdict = qsform.as_dict(additional_fields)
                 created_at = timestamp_to_datetime(fdict.get("created_at"))
                 updated_at = fdict.get("instance_updated_at").strftime("%Y-%m-%d %H:%M:%S") if fdict.get(
-                    "instance_updated_at") else None
+                    "instance_updated_at") else "2019-01-01 00:00:00"
                 org_unit_types = ", ".join([o['name'] for o in fdict.get("org_unit_types") if o is not None])
                 return [
                     fdict.get("form_id"),

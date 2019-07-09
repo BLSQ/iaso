@@ -116,11 +116,13 @@ class Form(models.Model):
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else self.created_at.timestamp(),
         }
         if additional_fields:
             for field in additional_fields:
                 if hasattr(self, field):
                     res[field] = getattr(self, field)
+
         return res
 
 
@@ -147,10 +149,10 @@ class Instance(models.Model):
     def __str__(self):
         return "%s " % (self.form,)
 
-    def as_dict(self, isFlat = False):
+    def as_dict(self, isFlat=False):
         file_content = ""
         if self.file_name:
-            if "amazonaws" in  self.file.url:
+            if "amazonaws" in self.file.url:
                 file = urlopen(self.file.url)
             else:
                 file = self.file

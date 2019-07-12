@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from hat.cases.models import CaseView, RES_POSITIVE
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.patient.duplicates import merge_patient_duplicate, ignore_patient_duplicate
-from hat.patient.models import PatientDuplicatesPair, Test
+from hat.patient.models import PatientDuplicatesPair, Test, Patient
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, PATIENT_API
 
 
 class PatientDuplicatesViewSet(viewsets.ViewSet):
@@ -391,4 +392,23 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
                 return Response(ignored_pair.as_dict(), status=status.HTTP_201_CREATED)
         else:
             return Response('Unauthorized', status=401)
+
+    def create(self, request):
+        patientA = request.data.get('patientA', None)
+        patientB = request.data.get('patientB', None)
+
+        newPatientDuplicatesPair = PatientDuplicatesPair()
+        if patientA and patientB:
+
+            patient1 = get_object_or_404(Patient, pk=patientA["id"])
+            patient2 = get_object_or_404(Patient, pk=patientB["id"])
+            newPatientDuplicatesPair.patient1 = patient1
+            newPatientDuplicatesPair.patient2 = patient2
+            newPatientDuplicatesPair.similarity_score = 0
+            newPatientDuplicatesPair.algorithm = "manual"
+            newPatientDuplicatesPair.save()
+            log_modification(None, newPatientDuplicatesPair, PATIENT_API, request.user)
+            return Response(newPatientDuplicatesPair.as_dict())
+
+        return Response('One patient is missing', status=500)
 

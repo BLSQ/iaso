@@ -1,0 +1,60 @@
+.manual-duplicate__button {
+    outline: none;
+    box-shadow: none;
+    cursor: pointer;
+    &.disabled {
+        color:  rgba($dark-blue, 0.07);
+        cursor: not-allowed;
+    }
+}
+
+.manual-duplicate__icon {
+    font-size: 17px;
+
+    &.on {
+        color: $green;
+    }
+    &.disabled {
+        color:  rgba($dark-blue, 0.08);
+    }
+}
+
+.manual-duplicate_container {
+    display: flex;
+}
+
+.manual-duplicate_container--duplicates {
+    flex-basis: 90%;
+    display: flex;
+    >div {
+        width: calc(50% - #{$padding-unit / 2});
+        margin-right: $padding-unit !important;
+        position: relative;
+        &.no-patient {
+            background-color: $background-highlight-gray;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid $light-gray;
+            display: flex;
+            min-height: 300px;
+        }
+    }
+}
+.manual-duplicate_container--actions {
+    flex-basis: 10%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.manual-duplicate_container--delete-button {
+    position: absolute;
+    right: $padding-unit / 2;
+    top: 7px;
+    z-index: 10;
+    outline: none;
+    box-shadow: none;
+}
+
+.manual-duplicate_container--delete-icon {
+    margin-right: 0 !important;
+}

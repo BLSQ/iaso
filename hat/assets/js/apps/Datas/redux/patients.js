@@ -15,6 +15,8 @@ const GET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/GET_MANUAL_MERGED_PATIENT'
 const SET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/SET_MANUAL_MERGED_PATIENT';
 const SET_ERROR_ON_UPDATED = 'hat/patient/detail/SET_ERROR_ON_UPDATED';
 const SET_IS_UPDATED = 'hat/patient/detail/SET_IS_UPDATED';
+const LOAD_MANUAL_DUPLICATE = 'hat/patient/duplicate/LOAD_MANUAL_DUPLICATE';
+const EMPTY_MANUAL_DUPLICATE = 'hat/patient/duplicate/EMPTY_MANUAL_DUPLICATE';
 
 
 const req = require('superagent');
@@ -32,10 +34,17 @@ const loadCurrentDuplicatesDetail = (current, duplicateCurrent) => ({
     },
 });
 
+
+const loadManualDuplicate = manualDuplicate => ({
+    type: LOAD_MANUAL_DUPLICATE,
+    payload: manualDuplicate,
+});
+
 const loadTestMapping = payload => ({
     type: LOAD_TEST_MAPPING,
     payload,
 });
+
 
 const setPatientList = (list, showPagination, params, count, pages) => ({
     type: SET_PATIENTS_LIST,
@@ -61,6 +70,10 @@ const setDuplicatePatientList = (list, showPagination, params, count, pages) => 
 
 const emptyPatientList = () => ({
     type: EMPTY_PATIENTS_LIST,
+});
+
+const emptyManualDuplicate = () => ({
+    type: EMPTY_MANUAL_DUPLICATE,
 });
 
 const emptyDuplicatePatientList = () => ({
@@ -176,6 +189,33 @@ const mergeDuplicates = (
     });
 };
 
+const saveManualDuplicate = (
+    dispatch,
+    patientA,
+    patientB,
+) => {
+    const data = {
+        patientA,
+        patientB,
+    };
+    dispatch(loadActions.startLoading());
+    req
+        .post('/api/patientduplicates/')
+        .set('Content-Type', 'application/json')
+        .send(data)
+        .then(() => {
+            dispatch(emptyManualDuplicate());
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while saving manual duplicate ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, element) => {
     dispatch(loadActions.startLoading());
     req
@@ -242,12 +282,18 @@ export const patientsActions = {
     savePatient,
     setErrorOnUpdated,
     setIsUpdated,
+    loadManualDuplicate,
+    saveManualDuplicate,
 };
 
 export const patientsInitialState = {
     current: {},
     duplicateCurrent: {},
     testsMapping: {},
+    manualDuplicate: {
+        patientA: null,
+        patientB: null,
+    },
     patientsPage: {
         list: null,
         showPagination: false,
@@ -275,6 +321,12 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
             return { ...state, current };
         }
 
+        case LOAD_MANUAL_DUPLICATE: {
+            const manualDuplicate = action.payload;
+            console.log('LOAD_MANUAL_DUPLICATE', { ...state, manualDuplicate });
+            return { ...state, manualDuplicate };
+        }
+
         case LOAD_CURRENT_DUPLICATE_DETAIL: {
             const { current, duplicateCurrent } = action.payload;
             return { ...state, current, duplicateCurrent };
@@ -300,6 +352,16 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
                 },
             };
         }
+        case EMPTY_MANUAL_DUPLICATE: {
+            return {
+                ...state,
+                manualDuplicate: {
+                    patientA: null,
+                    patientB: null,
+                },
+            };
+        }
+
         case EMPTY_PATIENTS_LIST: {
             return {
                 ...state,

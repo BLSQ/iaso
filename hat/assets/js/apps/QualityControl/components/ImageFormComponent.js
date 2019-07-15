@@ -187,6 +187,7 @@ class ImageFormComponent extends React.Component {
 
 ImageFormComponent.defaultProps = {
     error: null,
+    testsMapping: null,
 };
 
 ImageFormComponent.propTypes = {
@@ -195,7 +196,7 @@ ImageFormComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
     userLevel: PropTypes.number.isRequired,
     fetchTestMapping: PropTypes.func.isRequired,
-    testsMapping: PropTypes.object.isRequired,
+    testsMapping: PropTypes.object,
 };
 
 const ImageFormComponentIntl = injectIntl(ImageFormComponent);

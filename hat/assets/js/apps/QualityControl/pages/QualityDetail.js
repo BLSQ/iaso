@@ -47,7 +47,7 @@ class QualityDetail extends React.Component {
 
     saveImageItem(test, comment) {
         const promisesArray = [];
-        if (test.other_catt) {
+        if (test.other_catt && test.other_catt.length > 0) {
             test.other_catt.forEach((item) => {
                 promisesArray.push(saveTest({ result: item.result, test_id: item.id }, this.props.dispatch));
             });

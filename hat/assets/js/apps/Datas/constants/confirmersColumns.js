@@ -125,7 +125,7 @@ const confirmersColumns = formatMessage => (
                         <span>
                             {
                                 settings.original.confirmation_video_count ?
-                                    (settings.original.checked_ko + " (" + settings.original.checked_ko / (settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    (settings.original.checked_ko + " (" + (settings.original.checked_ko / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>

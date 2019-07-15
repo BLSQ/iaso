@@ -78,8 +78,6 @@ class Patients extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        const { patientA } = this.props;
-        console.log("componentWillReceiveProps patientA", patientA);
         const {
             params,
             selectProvince,
@@ -255,9 +253,13 @@ class Patients extends Component {
                     </div>
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
-                <ManualDuplicate
-                    toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
-                />
+                {
+                    reduxPage.list &&
+                    <ManualDuplicate
+                        toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
+                        params={params}
+                    />
+                }
                 {
                     tableUrl
                     && (

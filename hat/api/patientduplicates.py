@@ -75,6 +75,8 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         test_types = request.GET.get("test_type", None)
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
+        patientId1 = request.GET.get("patientId1", None)
+        patientId2 = request.GET.get("patientId2", None)
 
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
@@ -209,6 +211,10 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
         if similarity:
             queryset = queryset.filter(similarity_score__lte=similarity)
+
+        if patientId1 and patientId2:
+            queryset = queryset.filter((Q(patient1_id=patientId1) & Q(patient2_id=patientId2))
+                                        | (Q(patient1_id=patientId2) & Q(patient2_id=patientId1)))
 
         # When fully rendering, prefetch subobjects for performance
         if full:
@@ -394,21 +400,37 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
             return Response('Unauthorized', status=401)
 
     def create(self, request):
+        #  check rights to save it
         patientA = request.data.get('patientA', None)
         patientB = request.data.get('patientB', None)
 
         newPatientDuplicatesPair = PatientDuplicatesPair()
         if patientA and patientB:
-
             patient1 = get_object_or_404(Patient, pk=patientA["id"])
             patient2 = get_object_or_404(Patient, pk=patientB["id"])
-            newPatientDuplicatesPair.patient1 = patient1
-            newPatientDuplicatesPair.patient2 = patient2
-            newPatientDuplicatesPair.similarity_score = 0
-            newPatientDuplicatesPair.algorithm = "manual"
-            newPatientDuplicatesPair.save()
-            log_modification(None, newPatientDuplicatesPair, PATIENT_API, request.user)
-            return Response(newPatientDuplicatesPair.as_dict())
+            is_authorized = (
+                                    (not patient1.origin_area)
+                                    or is_authorized_user(request.user,
+                                                        patient1.origin_area.ZS.province.id,
+                                                        patient1.origin_area.ZS.id,
+                                                        patient1.origin_area.id)
+                            ) and (
+                                    (not patient2.origin_area)
+                                    or is_authorized_user(request.user,
+                                                        patient2.origin_area.ZS.province.id,
+                                                        patient2.origin_area.ZS.id,
+                                                        patient2.origin_area.id)
+                            )
+            if is_authorized:
+                newPatientDuplicatesPair.patient1 = patient1
+                newPatientDuplicatesPair.patient2 = patient2
+                newPatientDuplicatesPair.similarity_score = 0
+                newPatientDuplicatesPair.algorithm = "manual"
+                newPatientDuplicatesPair.save()
+                log_modification(None, newPatientDuplicatesPair, PATIENT_API, request.user)
+                return Response(newPatientDuplicatesPair.as_dict())
+            else:
+                return Response('Unauthorized', status=401)
 
         return Response('One patient is missing', status=500)
 

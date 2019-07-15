@@ -16,7 +16,8 @@ const SET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/SET_MANUAL_MERGED_PATIENT'
 const SET_ERROR_ON_UPDATED = 'hat/patient/detail/SET_ERROR_ON_UPDATED';
 const SET_IS_UPDATED = 'hat/patient/detail/SET_IS_UPDATED';
 const LOAD_MANUAL_DUPLICATE = 'hat/patient/duplicate/LOAD_MANUAL_DUPLICATE';
-const EMPTY_MANUAL_DUPLICATE = 'hat/patient/duplicate/EMPTY_MANUAL_DUPLICATE';
+const SET_MANUAL_DUPLICATE_ID = 'hat/patient/duplicate/SET_MANUAL_DUPLICATE_ID';
+const SET_IS_FETCHING_DUPLICATE_PAIR = 'hat/patient/duplicate/SET_IS_FETCHING_DUPLICATE_PAIR';
 
 
 const req = require('superagent');
@@ -72,10 +73,10 @@ const emptyPatientList = () => ({
     type: EMPTY_PATIENTS_LIST,
 });
 
-const emptyManualDuplicate = () => ({
-    type: EMPTY_MANUAL_DUPLICATE,
+const setManualDuplicateId = duplicateId => ({
+    type: SET_MANUAL_DUPLICATE_ID,
+    payload: duplicateId,
 });
-
 const emptyDuplicatePatientList = () => ({
     type: EMPTY_DUPLICATE_PATIENTS_LIST,
 });
@@ -155,6 +156,33 @@ const fetchDuplicatesDetails = (dispatch, patientId, patientId2) => {
     });
 };
 
+const setIsFetchincgDuplicatePair = payload => ({
+    type: SET_IS_FETCHING_DUPLICATE_PAIR,
+    payload,
+});
+
+
+const fetchDuplicatePair = (dispatch, patientId1, patientId2) => {
+    dispatch(setIsFetchincgDuplicatePair(true));
+    req
+        .get(`/api/patientduplicates?patientId1=${patientId1}&patientId2=${patientId2}`)
+        .then((result) => {
+            dispatch(setIsFetchincgDuplicatePair(false));
+            let duplicateId;
+            if (result.body.count > 0) {
+                duplicateId = result.body.patientduplicatepairs[0].id;
+            }
+            dispatch(setManualDuplicateId(duplicateId));
+        })
+        .catch((err) => {
+            dispatch(setIsFetchincgDuplicatePair(false));
+            console.error(`Error while fetching duplicates pair ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 const mergeDuplicates = (
     dispatch,
     duplicateId,
@@ -191,23 +219,24 @@ const mergeDuplicates = (
 
 const saveManualDuplicate = (
     dispatch,
-    patientA,
-    patientB,
+    patient1,
+    patient2,
 ) => {
     const data = {
-        patientA,
-        patientB,
+        patientA: patient1.id > patient2.id ? patient1 : patient2,
+        patientB: patient1.id > patient2.id ? patient2 : patient1,
     };
     dispatch(loadActions.startLoading());
     req
         .post('/api/patientduplicates/')
         .set('Content-Type', 'application/json')
         .send(data)
-        .then(() => {
-            dispatch(emptyManualDuplicate());
+        .then((result) => {
+            dispatch(setManualDuplicateId(result.body.id));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
+            dispatch(setManualDuplicateId(null));
             dispatch(loadActions.errorLoading(err));
             console.error(`Error while saving manual duplicate ${err}`);
         });
@@ -284,6 +313,7 @@ export const patientsActions = {
     setIsUpdated,
     loadManualDuplicate,
     saveManualDuplicate,
+    fetchDuplicatePair,
 };
 
 export const patientsInitialState = {
@@ -293,6 +323,8 @@ export const patientsInitialState = {
     manualDuplicate: {
         patientA: null,
         patientB: null,
+        duplicateId: 0,
+        fetchingPair: false,
     },
     patientsPage: {
         list: null,
@@ -321,10 +353,26 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
             return { ...state, current };
         }
 
+        case SET_IS_FETCHING_DUPLICATE_PAIR: {
+            const fetchingPair = action.payload;
+            return {
+                ...state,
+                manualDuplicate: {
+                    ...state.manualDuplicate,
+                    fetchingPair,
+                },
+            };
+        }
+
         case LOAD_MANUAL_DUPLICATE: {
             const manualDuplicate = action.payload;
-            console.log('LOAD_MANUAL_DUPLICATE', { ...state, manualDuplicate });
-            return { ...state, manualDuplicate };
+            return {
+                ...state,
+                manualDuplicate: {
+                    ...manualDuplicate,
+                    duplicateId: 0,
+                },
+            };
         }
 
         case LOAD_CURRENT_DUPLICATE_DETAIL: {
@@ -335,6 +383,17 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
         case LOAD_TEST_MAPPING: {
             const testsMapping = action.payload;
             return { ...state, testsMapping };
+        }
+
+        case SET_MANUAL_DUPLICATE_ID: {
+            const duplicateId = action.payload;
+            return {
+                ...state,
+                manualDuplicate: {
+                    ...state.manualDuplicate,
+                    duplicateId,
+                },
+            };
         }
 
         case SET_PATIENTS_LIST: {
@@ -349,15 +408,6 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
                     params,
                     count,
                     pages,
-                },
-            };
-        }
-        case EMPTY_MANUAL_DUPLICATE: {
-            return {
-                ...state,
-                manualDuplicate: {
-                    patientA: null,
-                    patientB: null,
                 },
             };
         }

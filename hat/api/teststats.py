@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.core.cache import cache
-from django.db.models import Count, Min, Max, TextField
+from django.db.models import Count, Min, Max, TextField, F
 from django.db.models import Q
 from django.db.models.functions import Coalesce, Cast
 from django.http import HttpResponse
@@ -11,7 +11,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.cases.models import RES_POSITIVE
-from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION
+from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION, TYPES_WITH_IMAGES
 from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
 from .authentication import CsrfExemptSessionAuthentication
@@ -56,6 +56,7 @@ class TestStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         absolute_url = request.build_absolute_uri()
+        user_level = request.user.profile.level if request.user.profile.level else 10
 
         result = cache.get(absolute_url)
         device_id = request.GET.get("device_id", None)
@@ -312,10 +313,32 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "pg_count_positive",
                     "ctcwoo_count_positive",
                     "maect_count_positive",
+                    "checked",
+                    "checked_ok",
+                    "checked_ko",
+                    "checked_unreadable",
                 )
+
                 if tester_type == "screener":
                     grouped_queryset = (
                         grouped_queryset.annotate(
+                            checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=TYPES_WITH_IMAGES)))
+                        )
+                        .annotate(
+                            checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
+                                check__result=F("result")) & Q(type__in=TYPES_WITH_IMAGES)))
+                        )
+                        .annotate(
+                            checked_ko=Count("check",
+                                             filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
+                                                 type__in=TYPES_WITH_IMAGES)))
+                        )
+                        .annotate(
+                            checked_unreadable=Count("check",
+                                                     filter=(Q(check__level=user_level) & Q(check__is_clear=False) & Q(
+                                                         type__in=TYPES_WITH_IMAGES)))
+                        )
+                        .annotate(
                             rdt_test_pictures=Count(
                                 "id", filter=Q(image__isnull=False) & Q(type=RDT)
                             )
@@ -370,17 +393,30 @@ class TestStatsViewSet(viewsets.ViewSet):
                     grouped_queryset = grouped_queryset.annotate(
                         confirmation_video_count=Count(
                             "id",
-                            filter=Q(type__in=TYPES_CONFIRMATION)
-                            & Q(video__isnull=False),
+                            filter=(Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False)),
                         )
                     ).annotate(
                         confirmation_positive_video_count=Count(
                             "id",
-                            filter=Q(type__in=TYPES_CONFIRMATION)
+                            filter=(Q(type__in=TYPES_CONFIRMATION)
                             & Q(video__isnull=False)
-                            & Q(result__gte=RES_POSITIVE),
+                            & Q(result__gte=RES_POSITIVE)),
                         )
+                    ).annotate(
+                        checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=TYPES_CONFIRMATION)))
+                    ).annotate(
+                        checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
+                            check__result=F("result")) & Q(type__in=TYPES_CONFIRMATION)))
+                    ).annotate(
+                        checked_ko=Count("check",
+                                         filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
+                                             type__in=TYPES_CONFIRMATION)))
+                    ).annotate(
+                        checked_unreadable=Count("check",
+                                                 filter=(Q(check__level=user_level) & Q(check__is_clear=False) & Q(
+                                                     type__in=TYPES_CONFIRMATION)))
                     )
+
                     values = values + (
                         "confirmation_video_count",
                         "confirmation_positive_video_count",

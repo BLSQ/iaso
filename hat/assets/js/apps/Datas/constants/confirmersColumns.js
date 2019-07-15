@@ -74,6 +74,80 @@ const confirmersColumns = formatMessage => (
             Cell: settings =>
                 renderCountCell(settings.original.confirmation_video_count, settings.original.confirmation_positive_video_count, formatMessage),
         },
+                {
+            Header: formatMessage({
+                defaultMessage: 'QC',
+                id: 'monitoring.label.qc',
+            }),
+            columns: [
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Vérifiés',
+                        id: 'monitoring.label.checked',
+                    }),
+                    accessor: 'checked',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked + " (" + (settings.original.checked / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Conformes',
+                        id: 'monitoring.label.checkedOk',
+                    }),
+                    accessor: 'checked',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked_ok + " (" + (settings.original.checked_ok / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Non conformes',
+                        id: 'monitoring.label.checkedKo',
+                    }),
+                    accessor: 'checked',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked_ko + " (" + settings.original.checked_ko / (settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                // {
+                //     Header: formatMessage({
+                //         defaultMessage: 'Illisibles',
+                //         id: 'monitoring.label.checkedUnreadable',
+                //     }),
+                //     accessor: 'checked',
+                //     class: 'small',
+                //     Cell: settings => (
+                //         <span>
+                //             {
+                //                 settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.confirmation_video_count * 100).toFixed(1) + "%)"
+                //             }
+                //         </span>
+                //     ),
+                // },
+            ],
+        },
     ]
 );
 export default confirmersColumns;

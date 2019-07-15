@@ -66,7 +66,6 @@ class PlanningViewSet(viewsets.ViewSet):
                 res['can_make_template'] = False
             return Response(res)
 
-
     def retrieve(self, request, pk=None):
         planning = get_object_or_404(Planning, pk=pk)
 

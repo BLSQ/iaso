@@ -23,7 +23,7 @@ const getImgProps = (imageObj, maxWidth, maxHeight) => {
 
 const maxValue = 800;
 
-const initiaState = {
+const initialState = {
     imgLoaded: false,
     imgSize: {
         width: 0,
@@ -37,13 +37,13 @@ class ImageComponent extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = initiaState;
+        this.state = initialState;
     }
 
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.imageItem.id !== this.props.imageItem.id) {
-            this.setState(initiaState);
+            this.setState(initialState);
             ReactDOM.unmountComponentAtNode(document.getElementById(`img-${this.props.imageItem.id}`));
             const img = new Image();
             img.onload = () => {

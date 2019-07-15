@@ -30,7 +30,9 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
 
-        queryset = queryset.order_by(*orders)
+        queryset = queryset.exclude(file="").order_by(
+            *orders
+        )  ## quickfix to avoid updating the front, but here, we should also display entries without xml
         if form_id:
             queryset = queryset.filter(form_id=form_id)
         if csv_format is None and xlsx_format is None:
@@ -55,7 +57,9 @@ class InstancesViewSet(viewsets.ViewSet):
             elif as_location:
                 return Response([instance.as_location() for instance in queryset])
             else:
-                return Response({"instances": [instance.as_dict() for instance in queryset]})
+                return Response(
+                    {"instances": [instance.as_dict() for instance in queryset]}
+                )
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},

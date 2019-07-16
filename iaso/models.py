@@ -98,6 +98,15 @@ class OrgUnit(models.Model):
             "aliases": self.aliases,
         }
 
+    def as_dict_for_csv(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "source_ref": self.source_ref,
+            "parent_id": self.parent_id,
+            "org_unit_type": self.org_unit_type.name,
+        }
+
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)

@@ -46,11 +46,27 @@ class PatientDuplicateDetails extends React.Component {
         delete tempParams.duplicate_id;
         delete tempParams.manual_merge;
         tempParams.back = true;
+        let url;
+        if (params.register) {
+            delete tempParams.register;
+            url = 'register/list';
+        } else {
+            url = 'register/duplicates';
+        }
+        if (!tempParams.order) {
+            tempParams.order = 'id';
+        }
+        if (!tempParams.pageSize) {
+            tempParams.pageSize = '50';
+        }
+        if (!tempParams.page) {
+            tempParams.page = '1';
+        }
         this.setState({
             patient: null,
             duplicatePatient: null,
         });
-        this.props.redirectTo('register/duplicates', {
+        this.props.redirectTo(url, {
             ...tempParams,
         });
     }

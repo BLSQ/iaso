@@ -24,6 +24,8 @@ import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
 import { anonymous } from '../../../utils/constants/filters';
 
+import ManualDuplicate from '../components/ManualDuplicate';
+
 export const urls = [];
 
 const baseUrl = 'register/list';
@@ -32,46 +34,65 @@ class Patients extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: registerListColumns(props.intl.formatMessage),
+            tableColumns: registerListColumns(props.intl.formatMessage, this),
             tableUrl: null,
         };
     }
 
     componentWillMount() {
-        if (this.props.params.back) {
+        const {
+            params,
+            redirectTo,
+            fetchProvinces,
+            fetchTeams,
+            fetchCoordinations,
+            fetchDevices,
+            fetchCurrentUserInfos,
+            selectProvince,
+            selectZone,
+            selectArea,
+            selectVillage,
+        } = this.props;
+        if (params.back) {
             this.onSearch();
-            const { params } = this.props;
             delete params.back;
-            this.props.redirectTo(baseUrl, params);
+            redirectTo(baseUrl, params);
         }
         Promise.all([
-            this.props.fetchProvinces(),
-            this.props.fetchTeams(),
-            this.props.fetchCoordinations(),
-            this.props.fetchDevices(),
-            this.props.fetchCurrentUserInfos(),
+            fetchProvinces(),
+            fetchTeams(),
+            fetchCoordinations(),
+            fetchDevices(),
+            fetchCurrentUserInfos(),
         ]).then(() => {
-            if (this.props.params.province_id) {
-                this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
-            } else if (this.props.params.zs_id) {
-                this.props.selectZone(this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
-            } else if (this.props.params.as_id) {
-                this.props.selectArea(this.props.params.as_id, this.props.params.village_id, this.props.params.zs_id);
-            } else if (this.props.params.village_id) {
-                this.props.selectVillage(this.props.params.village_id);
+            if (params.province_id) {
+                selectProvince(params.province_id, params.zs_id, params.as_id, params.village_id);
+            } else if (params.zs_id) {
+                selectZone(params.zs_id, params.as_id, params.village_id);
+            } else if (params.as_id) {
+                selectArea(params.as_id, params.village_id, params.zs_id);
+            } else if (params.village_id) {
+                selectVillage(params.village_id);
             }
         });
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.params.province_id !== this.props.params.province_id) {
-            this.props.selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
-        } else if (newProps.params.zs_id !== this.props.params.zs_id) {
-            this.props.selectZone(newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
-        } else if (newProps.params.as_id !== this.props.params.as_id) {
-            this.props.selectArea(newProps.params.as_id, newProps.params.village_id, newProps.params.zs_id);
-        } else if (newProps.params.village_id !== this.props.params.village_id) {
-            this.props.selectVillage(newProps.params.village_id);
+        const {
+            params,
+            selectProvince,
+            selectZone,
+            selectArea,
+            selectVillage,
+        } = this.props;
+        if (newProps.params.province_id !== params.province_id) {
+            selectProvince(newProps.params.province_id, newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
+        } else if (newProps.params.zs_id !== params.zs_id) {
+            selectZone(newProps.params.zs_id, newProps.params.as_id, newProps.params.village_id);
+        } else if (newProps.params.as_id !== params.as_id) {
+            selectArea(newProps.params.as_id, newProps.params.village_id, newProps.params.zs_id);
+        } else if (newProps.params.village_id !== params.village_id) {
+            selectVillage(newProps.params.village_id);
         }
     }
 
@@ -118,19 +139,38 @@ class Patients extends Component {
     }
 
     selectPatient(patient) {
-        const { params } = this.props;
+        const { params, redirectTo } = this.props;
 
         const newParams = {
             patient_id: patient.id,
             ...params,
         };
 
-        this.props.redirectTo('register/detail', newParams);
+        redirectTo('register/detail', newParams);
+    }
+
+    toggleManualDuplicate(patient) {
+        const { patientA, patientB, loadManualDuplicate } = this.props;
+        const manualDuplicate = {
+            patientA,
+            patientB,
+        };
+        if (manualDuplicate.patientA && manualDuplicate.patientA.id === patient.id) {
+            manualDuplicate.patientA = null;
+        } else if (manualDuplicate.patientB && manualDuplicate.patientB.id === patient.id) {
+            manualDuplicate.patientB = null;
+        } else if (!manualDuplicate.patientA) {
+            manualDuplicate.patientA = patient;
+        } else if (!manualDuplicate.patientB) {
+            manualDuplicate.patientB = patient;
+        }
+        loadManualDuplicate(manualDuplicate);
     }
 
     render() {
-        const { formatMessage } = this.props.intl;
         const {
+            intl: { formatMessage },
+            load,
             patientsFilters: {
                 teams,
                 coordinations,
@@ -143,7 +183,9 @@ class Patients extends Component {
             setPatientList,
             params,
             reduxPage,
+            redirectTo,
         } = this.props;
+        const { tableUrl, tableColumns } = this.state;
         const filters = filtersPatients2(formatMessage);
         const search = filtersPatientsSearch(devices, this);
         const geo = filtersPatientsGeo(
@@ -158,11 +200,13 @@ class Patients extends Component {
         return (
             <section className="cases-list-container">
                 {
-                    this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
-                    })}
-                    />
+                    load.loading && (
+                        <LoadingSpinner message={formatMessage({
+                            defaultMessage: 'Chargement en cours',
+                            id: 'microplanning.labels.loading',
+                        })}
+                        />
+                    )
                 }
 
                 <div className="widget__container ">
@@ -171,37 +215,37 @@ class Patients extends Component {
                     </div>
                     <div className="border-bottom">
                         <ChoosePeriodSelectorComponent
-                            params={this.props.params}
+                            params={params}
                             baseUrl={baseUrl}
-                            redirectTo={this.props.redirectTo}
+                            redirectTo={redirectTo}
                             showApplybutton={false}
                         />
                     </div>
                     <div className="widget__content--quarter">
                         <div>
                             <FiltersComponent
-                                params={this.props.params}
+                                params={params}
                                 baseUrl={baseUrl}
                                 filters={geo}
                             />
                         </div>
                         <div>
                             <FiltersComponent
-                                params={this.props.params}
+                                params={params}
                                 baseUrl={baseUrl}
                                 filters={search}
                             />
                         </div>
                         <div>
                             <FiltersComponent
-                                params={this.props.params}
+                                params={params}
                                 baseUrl={baseUrl}
                                 filters={filters}
                             />
                         </div>
                         <div>
                             <FiltersComponent
-                                params={this.props.params}
+                                params={params}
                                 baseUrl={baseUrl}
                                 filters={filtersPatientsTreatments(teams || [], formatMessage, defineMessages)}
                             />
@@ -210,36 +254,45 @@ class Patients extends Component {
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 {
-                    this.state.tableUrl &&
-                    <div className="widget__container  no-border">
-                        <CustomTableComponent
-                            isSortable
-                            showPagination
-                            endPointUrl={this.state.tableUrl}
-                            columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'last_name', desc: false }]}
-                            params={params}
-                            defaultPath={baseUrl}
-                            dataKey="patient"
-                            onRowClicked={patientItem => this.selectPatient(patientItem)}
-                            multiSort
-                            onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
-                            reduxPage={reduxPage}
-                        />
-                        <div className="align-right">
-                            <div className="display-inline-block">
-                                <FiltersComponent
-                                    params={this.props.params}
-                                    baseUrl={baseUrl}
-                                    filters={[anonymous()]}
+                    reduxPage.list &&
+                    <ManualDuplicate
+                        toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
+                        params={params}
+                    />
+                }
+                {
+                    tableUrl
+                    && (
+                        <div className="widget__container  no-border">
+                            <CustomTableComponent
+                                isSortable
+                                showPagination
+                                endPointUrl={tableUrl}
+                                columns={tableColumns}
+                                defaultSorted={[{ id: 'last_name', desc: false }]}
+                                params={params}
+                                defaultPath={baseUrl}
+                                dataKey="patient"
+                                multiSort
+                                canSelect={false}
+                                onDataLoaded={(newPatientList, count, pages) => setPatientList(newPatientList, true, params, count, pages)}
+                                reduxPage={reduxPage}
+                            />
+                            <div className="align-right">
+                                <div className="display-inline-block">
+                                    <FiltersComponent
+                                        params={params}
+                                        baseUrl={baseUrl}
+                                        filters={[anonymous()]}
+                                    />
+                                </div>
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getEndpointUrl(true, 'csv')}
+                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                                 />
                             </div>
-                            <DownloadButtonsComponent
-                                csvUrl={this.getEndpointUrl(true, 'csv')}
-                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                            />
                         </div>
-                    </div>
+                    )
                 }
             </section>
         );
@@ -247,6 +300,8 @@ class Patients extends Component {
 }
 Patients.defaultProps = {
     reduxPage: undefined,
+    patientA: null,
+    patientB: null,
 };
 
 Patients.propTypes = {
@@ -266,6 +321,9 @@ Patients.propTypes = {
     setPatientList: PropTypes.func.isRequired,
     reduxPage: PropTypes.object,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    loadManualDuplicate: PropTypes.func.isRequired,
+    patientA: PropTypes.object,
+    patientB: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -273,6 +331,8 @@ const MapStateToProps = state => ({
     patientsFilters: state.patientsFilters,
     filters: state.filters,
     reduxPage: state.patients.patientsPage,
+    patientA: state.patients.manualDuplicate.patientA,
+    patientB: state.patients.manualDuplicate.patientB,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -288,6 +348,7 @@ const MapDispatchToProps = dispatch => ({
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
     setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    loadManualDuplicate: manualDuplicate => dispatch(patientsActions.loadManualDuplicate(manualDuplicate)),
 });
 
 const PatientsWithIntl = injectIntl(Patients);

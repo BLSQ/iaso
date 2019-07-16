@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { getAgeFromYear } from '../../../utils/index';
 
-const registerListColumns = formatMessage => (
+const registerListColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
@@ -59,15 +59,15 @@ const registerListColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.sex === 'female' &&
-                        formatMessage({
+                        settings.original.sex === 'female'
+                        && formatMessage({
                             defaultMessage: 'Femme',
                             id: 'main.label.female',
                         })
                     }
                     {
-                        settings.original.sex === 'male' &&
-                        formatMessage({
+                        settings.original.sex === 'male'
+                        && formatMessage({
                             defaultMessage: 'Homme',
                             id: 'main.label.male',
                         })
@@ -98,8 +98,8 @@ const registerListColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.province &&
                         settings.original.province
+                        && settings.original.province
                     }
                 </span>
             ),
@@ -114,8 +114,8 @@ const registerListColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.ZS &&
                         settings.original.ZS
+                        && settings.original.ZS
                     }
                 </span>
             ),
@@ -130,8 +130,8 @@ const registerListColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.AS &&
                         settings.original.AS
+                        && settings.original.AS
                     }
                 </span>
             ),
@@ -146,10 +146,72 @@ const registerListColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        settings.original.village &&
                         settings.original.village
+                        && settings.original.village
                     }
                 </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Doublons',
+                id: 'register.label.duplicate',
+            }),
+            sortable: false,
+            resizable: false,
+            className: 'small',
+            width: 100,
+            Cell: (settings) => {
+                const { patientA, patientB } = component.props;
+                const checked = (patientA && patientA.id === settings.original.id)
+                || (patientB && patientB.id === settings.original.id);
+                const disabled = !checked && patientA && patientB;
+                return (
+                    <div
+                        className={`manual-duplicate__button ${disabled ? 'disabled' : ''}`}
+                        tabIndex={0}
+                        role="button"
+                        onClick={() => {
+                            if (disabled) {
+                                return null;
+                            }
+                            return component.toggleManualDuplicate(settings.original);
+                        }}
+                    >
+                        {
+                            checked
+                            && <i className="fa fa-check-square-o manual-duplicate__icon on" />
+                        }
+                        {
+                            !checked
+                            && <i className={`fa fa-square-o manual-duplicate__icon ${disabled ? 'disabled' : ''}`} />
+                        }
+                    </div>
+                );
+            },
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Actions',
+                id: 'main.actions',
+            }),
+            sortable: false,
+            resizable: false,
+            width: 120,
+            Cell: settings => (
+                <section>
+                    <button
+                        type="button"
+                        className="button--edit--tiny margin-right"
+                        onClick={() => component.selectPatient(settings.original)}
+                    >
+                        <i className="fa fa-pencil-square-o" />
+                        {formatMessage({
+                            defaultMessage: 'Editer',
+                            id: 'main.label.edit',
+                        })}
+                    </button>
+                </section>
             ),
         },
     ]

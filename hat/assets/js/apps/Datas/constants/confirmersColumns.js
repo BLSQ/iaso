@@ -102,7 +102,7 @@ const confirmersColumns = formatMessage => (
                         defaultMessage: 'Conformes',
                         id: 'monitoring.label.checkedOk',
                     }),
-                    accessor: 'checked',
+                    accessor: 'checked_ok',
                     class: 'small',
                     Cell: settings => (
                         <span>
@@ -119,7 +119,7 @@ const confirmersColumns = formatMessage => (
                         defaultMessage: 'Non conformes',
                         id: 'monitoring.label.checkedKo',
                     }),
-                    accessor: 'checked',
+                    accessor: 'checked_ko',
                     class: 'small',
                     Cell: settings => (
                         <span>
@@ -131,21 +131,57 @@ const confirmersColumns = formatMessage => (
                         </span>
                     ),
                 },
-                // {
-                //     Header: formatMessage({
-                //         defaultMessage: 'Illisibles',
-                //         id: 'monitoring.label.checkedUnreadable',
-                //     }),
-                //     accessor: 'checked',
-                //     class: 'small',
-                //     Cell: settings => (
-                //         <span>
-                //             {
-                //                 settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.confirmation_video_count * 100).toFixed(1) + "%)"
-                //             }
-                //         </span>
-                //     ),
-                // },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Discordants',
+                        id: 'monitoring.label.checkedMismatch',
+                    }),
+                    accessor: 'checked_mismatch',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Illisibles',
+                        id: 'monitoring.label.checkedUnreadable',
+                    }),
+                    accessor: 'checked_unreadable',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Invalides',
+                        id: 'monitoring.label.checkedInvalid',
+                    }),
+                    accessor: 'checked_invalid',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                settings.original.confirmation_video_count ?
+                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
             ],
         },
     ]

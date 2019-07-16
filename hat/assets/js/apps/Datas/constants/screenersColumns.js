@@ -137,21 +137,57 @@ const screenersColumns = formatMessage => (
                         </span>
                     ),
                 },
-                // {
-                //     Header: formatMessage({
-                //         defaultMessage: 'Illisibles',
-                //         id: 'monitoring.label.checkedUnreadable',
-                //     }),
-                //     accessor: 'checked',
-                //     class: 'small',
-                //     Cell: settings => (
-                //         <span>
-                //             {
-                //                 settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)"
-                //             }
-                //         </span>
-                //     ),
-                // },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Discordants',
+                        id: 'monitoring.label.checkedMismatch',
+                    }),
+                    accessor: 'checked',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
+                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Illisibles',
+                        id: 'monitoring.label.checkedUnreadable',
+                    }),
+                    accessor: 'checked_unreadable',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
+                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Invalides',
+                        id: 'monitoring.label.checkedInvalid',
+                    }),
+                    accessor: 'checked_invalid',
+                    class: 'small',
+                    Cell: settings => (
+                        <span>
+                            {
+                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
+                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                    : "-"
+                            }
+                        </span>
+                    ),
+                },
             ],
         },
     ]

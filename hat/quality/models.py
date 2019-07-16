@@ -14,6 +14,7 @@ class Check(models.Model):
         null=True,
         blank=True,
         default=RES_UNUSED,
+        db_index=True,
     )
     level = models.IntegerField(
         choices=LEVEL_CHOICES, null=True, blank=True, default=LEVEL_1

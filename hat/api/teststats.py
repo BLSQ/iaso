@@ -10,7 +10,7 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import RES_POSITIVE
+from hat.cases.models import RES_POSITIVE, RES_UNREADABLE, RES_NEGATIVE, RES_MISSING, RES_ABSENT, RES_UNSURE, RES_UNUSED
 from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION, TYPES_WITH_IMAGES
 from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
@@ -316,29 +316,15 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "checked",
                     "checked_ok",
                     "checked_ko",
+                    "checked_mismatch",
                     "checked_unreadable",
+                    "checked_invalid",
                 )
 
                 if tester_type == "screener":
+                    test_types = TYPES_WITH_IMAGES
                     grouped_queryset = (
                         grouped_queryset.annotate(
-                            checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=TYPES_WITH_IMAGES)))
-                        )
-                        .annotate(
-                            checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
-                                check__result=F("result")) & Q(type__in=TYPES_WITH_IMAGES)))
-                        )
-                        .annotate(
-                            checked_ko=Count("check",
-                                             filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
-                                                 type__in=TYPES_WITH_IMAGES)))
-                        )
-                        .annotate(
-                            checked_unreadable=Count("check",
-                                                     filter=(Q(check__level=user_level) & Q(check__is_clear=False) & Q(
-                                                         type__in=TYPES_WITH_IMAGES)))
-                        )
-                        .annotate(
                             rdt_test_pictures=Count(
                                 "id", filter=Q(image__isnull=False) & Q(type=RDT)
                             )
@@ -402,25 +388,49 @@ class TestStatsViewSet(viewsets.ViewSet):
                             & Q(video__isnull=False)
                             & Q(result__gte=RES_POSITIVE)),
                         )
-                    ).annotate(
-                        checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=TYPES_CONFIRMATION)))
-                    ).annotate(
-                        checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
-                            check__result=F("result")) & Q(type__in=TYPES_CONFIRMATION)))
-                    ).annotate(
-                        checked_ko=Count("check",
-                                         filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
-                                             type__in=TYPES_CONFIRMATION)))
-                    ).annotate(
-                        checked_unreadable=Count("check",
-                                                 filter=(Q(check__level=user_level) & Q(check__is_clear=False) & Q(
-                                                     type__in=TYPES_CONFIRMATION)))
                     )
 
+                    test_types = TYPES_CONFIRMATION
                     values = values + (
                         "confirmation_video_count",
                         "confirmation_positive_video_count",
                     )
+
+                grouped_queryset = grouped_queryset.annotate(
+                    checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=test_types)))
+                ).annotate(
+                    checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
+                        check__result=F("result")) & Q(type__in=test_types)))
+                ).annotate(
+                    checked_ko=Count("check",
+                                     filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
+                                         type__in=test_types)))
+                ).annotate(
+                    checked_mismatch=Count("check",
+                                           filter=(Q(check__level=user_level) &
+                                                   (
+                                                           (Q(check__result=RES_NEGATIVE) & Q(
+                                                               result__gte=RES_POSITIVE)) |
+                                                           (Q(check__result__gte=RES_POSITIVE) & Q(
+                                                               result=RES_NEGATIVE))
+                                                   ) &
+                                                   Q(type__in=test_types)))
+                ).annotate(
+                    checked_unreadable=Count("check",
+                                             filter=(Q(check__level__lte=user_level) & Q(
+                                                 check__result=RES_UNREADABLE) & Q(
+                                                 type__in=test_types)))
+                ).annotate(
+                    checked_invalid=Count("check",
+                                          filter=(Q(check__level__lte=user_level) &
+                                                  (
+                                                          Q(check__result=RES_MISSING) |
+                                                          Q(check__result=RES_ABSENT) |
+                                                          Q(check__result=RES_UNSURE) |
+                                                          Q(check__result=RES_UNUSED)
+                                                  ) &
+                                                  Q(type__in=test_types)))
+                )
                 orders = ("tester__user__last_name",)
 
             values = values + (

@@ -18,6 +18,7 @@ const SET_IS_UPDATED = 'hat/patient/detail/SET_IS_UPDATED';
 const LOAD_MANUAL_DUPLICATE = 'hat/patient/duplicate/LOAD_MANUAL_DUPLICATE';
 const SET_MANUAL_DUPLICATE_ID = 'hat/patient/duplicate/SET_MANUAL_DUPLICATE_ID';
 const SET_IS_FETCHING_DUPLICATE_PAIR = 'hat/patient/duplicate/SET_IS_FETCHING_DUPLICATE_PAIR';
+const EMPTY_MANUAL_DUPLICATE = 'hat/patient/duplicate/EMPTY_MANUAL_DUPLICATE';
 
 
 const req = require('superagent');
@@ -76,6 +77,9 @@ const emptyPatientList = () => ({
 const setManualDuplicateId = duplicateId => ({
     type: SET_MANUAL_DUPLICATE_ID,
     payload: duplicateId,
+});
+const emptyManualDuplicate = () => ({
+    type: EMPTY_MANUAL_DUPLICATE,
 });
 const emptyDuplicatePatientList = () => ({
     type: EMPTY_DUPLICATE_PATIENTS_LIST,
@@ -183,6 +187,25 @@ const fetchDuplicatePair = (dispatch, patientId1, patientId2) => {
     });
 };
 
+
+const fetchPatients = (dispatch, url, params) => {
+    dispatch(loadActions.startLoading());
+    req
+        .get(url)
+        .then((result) => {
+            dispatch(loadActions.successLoadingNoData());
+            dispatch(setPatientList(result.body.patient, true, params, result.body.count, result.body.pages));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error(`Error while fetching patients ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+
 const mergeDuplicates = (
     dispatch,
     duplicateId,
@@ -206,7 +229,7 @@ const mergeDuplicates = (
         .then(() => {
             dispatch(emptyDuplicatePatientList());
             dispatch(loadActions.successLoadingNoData());
-            element.goBack();
+            element.goBack(true);
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
@@ -314,6 +337,8 @@ export const patientsActions = {
     loadManualDuplicate,
     saveManualDuplicate,
     fetchDuplicatePair,
+    emptyManualDuplicate,
+    fetchPatients,
 };
 
 export const patientsInitialState = {
@@ -444,6 +469,13 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
                     ...state.patientsDuplicatePage,
                     list: null,
                 },
+            };
+        }
+
+        case EMPTY_MANUAL_DUPLICATE: {
+            return {
+                ...state,
+                manualDuplicate: patientsInitialState.manualDuplicate,
             };
         }
 

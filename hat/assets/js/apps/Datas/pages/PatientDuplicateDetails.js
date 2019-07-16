@@ -36,7 +36,7 @@ class PatientDuplicateDetails extends React.Component {
         });
     }
 
-    goBack() {
+    goBack(isMerged = false) {
         const { params } = this.props;
         const tempParams = {
             ...params,
@@ -61,6 +61,9 @@ class PatientDuplicateDetails extends React.Component {
         }
         if (!tempParams.page) {
             tempParams.page = '1';
+        }
+        if (isMerged) {
+            tempParams.merged = true;
         }
         this.setState({
             patient: null,

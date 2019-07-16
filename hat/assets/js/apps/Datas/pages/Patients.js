@@ -8,6 +8,7 @@ import ChoosePeriodSelectorComponent from '../../../components/ChoosePeriodSelec
 import { createUrl } from '../../../utils/fetchData';
 import { filterActions } from '../../../redux/filtersRedux';
 
+
 import registerListColumns from '../constants/registerListColumns';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
@@ -52,10 +53,17 @@ class Patients extends Component {
             selectZone,
             selectArea,
             selectVillage,
+            emptyManualDuplicate,
         } = this.props;
         if (params.back) {
-            this.onSearch();
             delete params.back;
+            this.onSearch();
+            redirectTo(baseUrl, params);
+        }
+        if (params.merged) {
+            delete params.merged;
+            emptyManualDuplicate();
+            this.forcePatientsReload();
             redirectTo(baseUrl, params);
         }
         Promise.all([
@@ -165,6 +173,14 @@ class Patients extends Component {
             manualDuplicate.patientB = patient;
         }
         loadManualDuplicate(manualDuplicate);
+    }
+
+    forcePatientsReload() {
+        const {
+            params, fetchPatients,
+        } = this.props;
+        const url = `${this.getEndpointUrl()}&order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
+        fetchPatients(url, params);
     }
 
     render() {
@@ -324,6 +340,8 @@ Patients.propTypes = {
     loadManualDuplicate: PropTypes.func.isRequired,
     patientA: PropTypes.object,
     patientB: PropTypes.object,
+    fetchPatients: PropTypes.func.isRequired,
+    emptyManualDuplicate: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -348,7 +366,9 @@ const MapDispatchToProps = dispatch => ({
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
     setPatientList: (patientList, showPagination, params, count, pages) => dispatch(patientsActions.setPatientList(patientList, showPagination, params, count, pages)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    fetchPatients: (url, params) => dispatch(patientsActions.fetchPatients(dispatch, url, params)),
     loadManualDuplicate: manualDuplicate => dispatch(patientsActions.loadManualDuplicate(manualDuplicate)),
+    emptyManualDuplicate: () => dispatch(patientsActions.emptyManualDuplicate()),
 });
 
 const PatientsWithIntl = injectIntl(Patients);

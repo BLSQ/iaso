@@ -21,14 +21,6 @@ class ManualDuplicate extends Component {
             isOpen: false,
         };
     }
-    componentWillMount() {
-        const {
-            patientA, patientB, duplicateId, fetchDuplicatePair,
-        } = this.props;
-        if (patientA && patientB && duplicateId) {
-            fetchDuplicatePair(patientA, patientB);
-        }
-    }
 
     componentDidUpdate(prevProps) {
         const {
@@ -152,6 +144,7 @@ ManualDuplicate.defaultProps = {
     patientA: null,
     patientB: null,
     fetchingPair: false,
+    duplicateId: null,
 };
 
 ManualDuplicate.propTypes = {
@@ -159,7 +152,7 @@ ManualDuplicate.propTypes = {
     saveManualDuplicate: PropTypes.func.isRequired,
     patientA: PropTypes.object,
     patientB: PropTypes.object,
-    duplicateId: PropTypes.number.isRequired,
+    duplicateId: PropTypes.number,
     redirectTo: PropTypes.func.isRequired,
     fetchDuplicatePair: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
@@ -177,7 +170,6 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     saveManualDuplicate: (patientA, patientB) => dispatch(patientsActions.saveManualDuplicate(dispatch, patientA, patientB)),
-    emptyManualDuplicate: () => dispatch(patientsActions.emptyManualDuplicate()),
     fetchDuplicatePair: (patientA, patientB) => dispatch(patientsActions.fetchDuplicatePair(dispatch, patientA.id, patientB.id)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });

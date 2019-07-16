@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from hat.vector_control.models import APIImport
 from .catches import timestamp_to_utc_datetime
-from iaso.models import Instance
+from iaso.models import Instance, OrgUnit
 
 from django.core.paginator import Paginator
 
@@ -131,8 +131,15 @@ class InstancesViewSet(viewsets.ViewSet):
             instanceDB.name = instance.get("name", None)
             instanceDB.accuracy = instance.get("accuracy", None)
             instanceDB.parent_id = instance.get("parentId", None)
-            instanceDB.org_unit_id = instance.get("orgUnitId", None)
+            tentative_org_unit_id = instance.get("orgUnitId", None)
+            if tentative_org_unit_id.isdigit():
+                instanceDB.org_unit_id = tentative_org_unit_id
+            else:
+                org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
+                instanceDB.org_unit = org_unit
+
             instanceDB.form_id = instance.get("formId")
+
             t = instance.get("created_at", None)
             if t:
                 instanceDB.created_at = timestamp_to_utc_datetime(int(t))

@@ -28,34 +28,6 @@ const setBarChartDatas = payload => ({
     payload,
 });
 
-
-export const fetchGeoJson = (dispatch) => {
-    const currentYear = new Date().getFullYear() - 1;
-    const years = [1, 2, 3].map(i => currentYear - i);
-    req
-        .get(`/api/home/?id=1&map=true&years=${years}`)
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setZones(res.body));
-            req
-                .get('/api/home/?id=1&map=true&geojson=true')
-                .set('Content-Type', 'application/json')
-                .then((resGoe) => {
-                    dispatch(setGeoZones(resGoe.body.zones));
-                    dispatch(setGeoProvinces(resGoe.body.provinces));
-                })
-                .catch((err) => {
-                    console.error(`Error while loading geo json: ${err}`);
-                });
-        })
-        .catch((err) => {
-            console.error(`Error while loading zones: ${err}`);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
 const mapBarChartDatas = (datas) => {
     const mappedDatas = [];
     datas.forEach((d) => {
@@ -67,17 +39,24 @@ const mapBarChartDatas = (datas) => {
     return mappedDatas;
 };
 
-export const fetchChartBarDatas = (dispatch) => {
+
+export const fetchHomeDatas = (dispatch) => {
     const dateFrom = moment().subtract(13, 'year').format('YYYY-MM-DD');
     const dateTo = moment().subtract(1, 'year').format('YYYY-MM-DD');
+
+    const currentYear = new Date().getFullYear() - 1;
+    const years = [1, 2, 3].map(i => currentYear - i);
     req
-        .get(`/api/home/?chart=true&from=${dateFrom}&to=${dateTo}`)
+        .get(`/api/home/?from=${dateFrom}&to=${dateTo}&years=${years}`)
         .set('Content-Type', 'application/json')
         .then((res) => {
-            dispatch(setBarChartDatas(mapBarChartDatas(res.body)));
+            dispatch(setZones(res.body.zones));
+            dispatch(setBarChartDatas(mapBarChartDatas(res.body.chart)));
+            dispatch(setGeoZones(res.body.geojson.zones));
+            dispatch(setGeoProvinces(res.body.geojson.provinces));
         })
         .catch((err) => {
-            console.error(`Error while bar chart datas: ${err}`);
+            console.error(`Error while loading home datas: ${err}`);
         });
     return ({
         type: FETCH_ACTION,
@@ -92,8 +71,7 @@ export const homeInitialState = {
 };
 
 export const homeActions = {
-    fetchGeoJson,
-    fetchChartBarDatas,
+    fetchHomeDatas,
 };
 
 

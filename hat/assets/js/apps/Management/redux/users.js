@@ -255,6 +255,60 @@ export const fetchTeams = (dispatch) => {
 };
 
 
+export const createUserType = (dispatch, userType, permissions, component) => {
+    dispatch(loadActions.startLoading());
+    const data = {
+        name: userType,
+        permissions,
+    };
+    req
+        .post('/api/usertypes/')
+        .set('Content-Type', 'application/json')
+        .send(data)
+        .then((res) => {
+            const newUserTypes = res.body;
+            dispatch(setUserTypes(newUserTypes));
+            component.toggleAddUserType(false);
+            const addedRole = newUserTypes.find(t => t.name === data.name);
+            if (addedRole) {
+                component.onChangeUserType(addedRole.id);
+            }
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((error) => {
+            component.errorOnSaveUserType(true);
+            dispatch(loadActions.errorLoading(error.response.body));
+            console.error('Error when creating user type', error.response.body.message || error);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+export const deleteUserType = (dispatch, userTypeId, component) => {
+    dispatch(loadActions.startLoading());
+    req
+        .patch(`/api/usertypes/${userTypeId}/`)
+        .set('Content-Type', 'application/json')
+        .send({
+            is_erased: true,
+        })
+        .then((res) => {
+            const newUserTypes = res.body;
+            dispatch(setUserTypes(newUserTypes));
+            component.onChangeUserType(null);
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when deleting user type', err);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+
 export const updateUser = (dispatch, user) => {
     dispatch(loadActions.startLoading());
     req
@@ -346,6 +400,8 @@ export const userActions = {
     fetchTeams,
     fetchTesterTypes,
     fetchUserLevels,
+    createUserType,
+    deleteUserType,
 };
 
 

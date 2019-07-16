@@ -7,6 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from hat.menupermissions.models import CustomPermissionSupport
 from django.utils.translation import gettext as _
 
+from operator import itemgetter
+
 
 class PermissionsViewSet(viewsets.ViewSet):
     """
@@ -32,5 +34,5 @@ class PermissionsViewSet(viewsets.ViewSet):
                 "codename": permission.codename
             })
 
-        return Response(result)
+        return Response(sorted(result, key=itemgetter('name')))
 

@@ -935,48 +935,6 @@ path.map-marker {
     }
 }
 
-.button--export {
-    padding: $padding-unit/4;
-    width: ($map-sidebar-width - $padding-unit*2);
-    font-size: $font-size-xs;
-}
-
-.button--print {
-    margin-top: 4px;
-    width: ($map-sidebar-width - 50);
-    font-size: $font-size-xs;
-}
-
-.button--small {
-    font-size: $font-size-xs;
-}
-
-.button--save,
-.button--edit {
-    margin-bottom: 4px;
-    width: ($map-sidebar-width - 50);
-    font-size: $font-size-xs;
-    &.small {
-        width: auto;
-        display: inline-block;
-        margin-left: 10px;
-        padding-left: 10px;
-        padding-right: 4px;
-    }
-    &:disabled {
-        background-color: #007fff !important;
-        cursor: default;
-        opacity: 0.6;
-    }
-}
-
-button {
-    &:disabled {
-        background-color: #007fff !important;
-        cursor: default;
-        opacity: 0.6;
-    }
-}
 
 /******************************************************************************
  * map selection controls

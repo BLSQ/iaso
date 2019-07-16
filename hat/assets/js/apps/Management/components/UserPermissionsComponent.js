@@ -1,10 +1,13 @@
 
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component, Fragment } from 'react';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import Select from 'react-select';
-
 import Switch from 'react-switch';
+import { connect } from 'react-redux';
+
+import PropTypes from 'prop-types';
+
+import { userActions } from '../redux/users';
 
 const MESSAGES = defineMessages({
     none: {
@@ -12,6 +15,24 @@ const MESSAGES = defineMessages({
         id: 'management.none.masc',
     },
 });
+
+const getUserType = (userPermissions, userTypes) => {
+    let userType;
+    userTypes.forEach((t) => {
+        if (t.permissions.length === userPermissions.length && !userType) {
+            userType = t;
+            t.permissions.forEach((p) => {
+                const hasPermission = Boolean(userPermissions.find(perm => perm === p));
+                if (!hasPermission) {
+                    userType = undefined;
+                }
+            });
+        }
+    });
+    console.log('userType', userType);
+    return userType;
+};
+
 class UserPermissionsComponent extends Component {
     constructor(props) {
         super(props);
@@ -20,6 +41,10 @@ class UserPermissionsComponent extends Component {
             userType,
             permissions,
             userPermissions,
+            isAddingUserType: false,
+            newUserType: '',
+            userTypeAlreadyExist: false,
+            errorOnSaveUserType: false,
         };
     }
 
@@ -40,7 +65,8 @@ class UserPermissionsComponent extends Component {
         } else {
             newUserPermissions.splice(permissionIndex, 1);
         }
-        this.props.updatePermissions(newUserPermissions);
+        const userType = getUserType(newUserPermissions, this.props.userTypes);
+        this.props.updatePermissions(newUserPermissions, userType);
     }
 
     onChangeUserType(userTypeId) {
@@ -53,12 +79,57 @@ class UserPermissionsComponent extends Component {
         this.props.updatePermissions(newUserPermissions, userType);
     }
 
+    onSaveUserType() {
+        const {
+            userPermissions,
+            newUserType,
+        } = this.state;
+        this.props.createUserType(newUserType, userPermissions, this);
+    }
+
+    toggleAddUserType(isAddingUserType) {
+        this.setState({
+            isAddingUserType,
+            newUserType: '',
+            errorOnSaveUserType: false,
+        });
+    }
+
+    errorOnSaveUserType(errorOnSaveUserType) {
+        this.setState({
+            errorOnSaveUserType,
+        });
+    }
+
+    updateNewUserType(newUserType) {
+        const { userTypes } = this.props;
+        const userTypeAlreadyExist = Boolean(userTypes.find(t => t.name === newUserType));
+        this.setState({
+            newUserType,
+            userTypeAlreadyExist,
+        });
+    }
+
     render() {
-        const { formatMessage } = this.props.intl;
-        const { permissions, userPermissions } = this.state;
+        const {
+            intl: {
+                formatMessage,
+            },
+            userTypes,
+            deleteUserType,
+        } = this.props;
+        const {
+            permissions,
+            userPermissions,
+            isAddingUserType,
+            userTypeAlreadyExist,
+            userType,
+            newUserType,
+            errorOnSaveUserType,
+        } = this.state;
         return (
             <section className="permission-tabs">
-                <div>
+                <div className="permission-select-user-type">
                     <label
                         htmlFor="userType"
                         className="filter__container__select__label"
@@ -68,15 +139,94 @@ class UserPermissionsComponent extends Component {
                             defaultMessage="Type de rôle"
                         />:
                     </label>
-                    <Select
-                        simpleValue
-                        name="userType"
-                        value={this.state.userType ? this.state.userType.id : null}
-                        placeholder={formatMessage(MESSAGES.none)}
-                        options={this.props.userTypes.map(userType =>
-                            ({ label: userType.name, value: userType.id }))}
-                        onChange={userTypeId => this.onChangeUserType(userTypeId)}
-                    />
+                    {
+                        !isAddingUserType &&
+                        <Select
+                            simpleValue
+                            name="userType"
+                            value={userType ? userType.id : null}
+                            placeholder={formatMessage(MESSAGES.none)}
+                            options={userTypes.map(t =>
+                                ({
+                                    label: t.name,
+                                    value: t.id,
+                                }))}
+                            onChange={userTypeId => this.onChangeUserType(userTypeId)}
+                        />
+                    }
+                    {
+                        isAddingUserType &&
+                        <div>
+                            <input
+                                type="text"
+                                name="user-type"
+                                id="user-type"
+                                className={`permission-select-user-type__input${userTypeAlreadyExist ? ' form-error' : ''}`}
+                                value={newUserType}
+                                onChange={event => this.updateNewUserType(event.currentTarget.value)}
+                            />
+                            {
+                                userTypeAlreadyExist &&
+                                <span className="permission-select-user-type__error error-text">
+                                    <FormattedMessage
+                                        id="mangement.userType.label.userTypeAlreadyExist"
+                                        defaultMessage="Ce type de rôle existe déjà"
+                                    />
+                                </span>
+                            }
+                            {
+                                errorOnSaveUserType &&
+                                <span className="permission-select-user-type__error error-text">
+                                    <FormattedMessage
+                                        id="mangement.userType.label.errorOnSaveUserType"
+                                        defaultMessage="Une erreur est survenue lors de la sauvegarde"
+                                    />
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+                <div className="permission-add-user-type">
+                    {
+                        !isAddingUserType &&
+                        <Fragment>
+                            <button
+                                disabled={!userType}
+                                className="button--delete--tiny margin-right--tiny"
+                                onClick={() => deleteUserType(userType.id, this)}
+                            >
+                                <i className="fa fa-trash" />
+                                <FormattedMessage id="mangement.userType.label.delete" defaultMessage="Effacer ce rôle" />
+                            </button>
+                            <button
+                                disabled={Boolean(userType) || userPermissions.length === 0}
+                                className="button--tiny"
+                                onClick={() => this.toggleAddUserType(true)}
+                            >
+                                <i className="fa fa-plus" />
+                                <FormattedMessage id="mangement.userType.label.add" defaultMessage="Ajouter un rôle" />
+                            </button>
+                        </Fragment>
+                    }
+                    {
+                        isAddingUserType &&
+                        <Fragment>
+                            <button
+                                className="button--tiny margin-right--tiny"
+                                onClick={() => this.toggleAddUserType(false)}
+                            >
+                                <FormattedMessage id="mangement.userType.label.cancel" defaultMessage="Annuler" />
+                            </button>
+                            <button
+                                disabled={newUserType === ''}
+                                className="button--tiny"
+                                onClick={() => this.onSaveUserType()}
+                            >
+                                <i className="fa fa-save" />
+                                <FormattedMessage id="mangement.userType.label.save" defaultMessage="Sauver" />
+                            </button>
+                        </Fragment>
+                    }
                 </div>
                 <section className="permission-container">
                     {
@@ -117,6 +267,17 @@ UserPermissionsComponent.propTypes = {
     permissions: PropTypes.array.isRequired,
     userPermissions: PropTypes.array.isRequired,
     updatePermissions: PropTypes.func.isRequired,
+    createUserType: PropTypes.func.isRequired,
+    deleteUserType: PropTypes.func.isRequired,
 };
 
-export default injectIntl(UserPermissionsComponent);
+
+const MapStateToProps = () => ({});
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    createUserType: (userType, permissions, component) => dispatch(userActions.createUserType(dispatch, userType, permissions, component)),
+    deleteUserType: (userTypeId, component) => dispatch(userActions.deleteUserType(dispatch, userTypeId, component)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(UserPermissionsComponent));

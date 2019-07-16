@@ -124,8 +124,10 @@ class UserModale extends Component {
     }
 
     render() {
-        const { formatMessage } = this.props.intl;
         const {
+            intl: {
+                formatMessage,
+            },
             institutions,
             userTypes,
             userLevels,
@@ -136,9 +138,19 @@ class UserModale extends Component {
             permissions,
             testerTypes,
         } = this.props;
+
+        const {
+            currentTab,
+            showModale,
+            password,
+            user,
+            isUpdated,
+            error,
+            isChanged,
+        } = this.state;
         return (
             <ReactModal
-                isOpen={this.state.showModale}
+                isOpen={showModale}
                 shouldCloseOnOverlayClick
                 onRequestClose={() => this.props.closeModal()}
                 className="with-tabs"
@@ -147,58 +159,58 @@ class UserModale extends Component {
                     <TabsComponent
                         selectTab={key => (this.setState({ currentTab: key }))}
                         isRedirecting={false}
-                        currentTab={this.state.currentTab}
+                        currentTab={currentTab}
                         tabs={[
                             { label: formatMessage(MESSAGES.infos), key: 'infos' },
                             { label: formatMessage(MESSAGES.geo), key: 'geo' },
                             { label: formatMessage(MESSAGES.permissions), key: 'permissions' },
                         ]}
-                        defaultSelect={this.state.currentTab}
+                        defaultSelect={currentTab}
                     />
                     {
-                        this.state.currentTab === 'infos' &&
+                        currentTab === 'infos' &&
                         <UserInfosComponent
-                            password={this.state.password}
+                            password={password}
                             institutions={institutions}
                             teams={teams}
-                            user={this.state.user}
-                            updatePassword={password => this.updatePassword(password)}
+                            user={user}
+                            updatePassword={newPassword => this.updatePassword(newPassword)}
                             updateUserField={(key, value) => this.updateUserField(key, value)}
                             testerTypes={testerTypes}
                             userLevels={userLevels}
                         />
                     }
                     {
-                        this.state.currentTab === 'geo' &&
+                        currentTab === 'geo' &&
                         <UserGeoComponent
                             provinces={provinces}
                             zones={zones}
                             areas={areas}
-                            user={this.state.user}
+                            user={user}
                             updateUserField={(key, value) => this.updateUserField(key, value)}
                         />
                     }
                     {
-                        this.state.currentTab === 'permissions' &&
+                        currentTab === 'permissions' &&
                         <UserPermissionsComponent
                             userTypes={userTypes}
                             permissions={permissions}
-                            userPermissions={this.state.user.permissions}
-                            userType={this.state.user.userType}
+                            userPermissions={user.permissions}
+                            userType={user.userType}
                             updatePermissions={(newPermissions, newUserType) => this.updatePermissions(newPermissions, newUserType)}
                         />
                     }
                     {
-                        this.state.isUpdated &&
+                        isUpdated &&
                         <div className="align-right text--success">
                             <FormattedMessage id="main.label.userupdated" defaultMessage="Utilisateur sauvegardé" />
                         </div>
                     }
                     {
-                        this.state.error &&
+                        error &&
                         <div className="align-right text--error">
                             {
-                                this.state.error.message ||
+                                error.message ||
                                 <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
                             }
                         </div>
@@ -212,16 +224,16 @@ class UserModale extends Component {
                         </button>
                         <button
                             disabled={
-                                (this.state.user.userName === '' ||
-                                    (!this.state.isChanged && this.state.user.id !== 0) ||
-                                    (this.state.user.id === 0 &&
-                                        (this.state.user.userName === '' || this.state.password === '')))
+                                (user.userName === '' ||
+                                    (!isChanged && user.id !== 0) ||
+                                    (user.id === 0 &&
+                                        (user.userName === '' || password === '')))
                             }
                             className="button--save"
                             onClick={() => this.onSave()}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveUser" defaultMessage="Sauvegarder l'utilisateur" />
+                            <FormattedMessage id="mangement.label.saveUser" defaultMessage="Sauvegarder" />
                         </button>
                     </div>
                 </section>

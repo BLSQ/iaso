@@ -12,25 +12,6 @@
     }
 }
 
-.button--delete {
-    background-color: $red ! important;
-    &--tiny {
-        padding: 0.5em;
-        font-size: $font-size-xs;
-    }
-}
-
-
-.button--edit--tiny {
-    padding: 0.5em;
-    font-size: $font-size-xs;
-}
-
-.button--delete--tiny {
-    background-color: $red ! important;
-    padding: 0.5em;
-    font-size: $font-size-xs;
-}
 
 .full-div {
     padding: 0 !important;

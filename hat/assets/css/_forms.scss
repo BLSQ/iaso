@@ -1,4 +1,5 @@
 $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
+
 input[type="text"],
 input[type="number"],
 input[type="email"],
@@ -15,19 +16,23 @@ input[type="date"] {
     font-size: $font-size-standard;
     color: $dark-blue;
     line-height: 1;
+
     &:focus {
         outline: 0;
         border: 1px solid $blue;
         box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
     }
-    &:disabled{
+
+    &:disabled {
         background-color: $gray !important;
         opacity: 0.8;
     }
+
     &.form-error {
         border-color: $red;
     }
 }
+
 textarea {
     min-height: 100px;
 }
@@ -50,6 +55,7 @@ label {
     font-size: $font-size-s;
     font-weight: bold;
     margin-bottom: $padding-unit/4;
+
     &.inline {
         display: inline-block;
     }
@@ -77,16 +83,96 @@ input.small {
     &.is-open {
         z-index: 1001;
     }
+
     &.only-one {
         .Select-value-icon {
             display: none;
         }
+
         .Select-value {
             padding-left: 5px;
             padding-right: 5px;
         }
     }
+
     &.form-error .Select-control {
         border-color: $red !important;
+    }
+}
+
+.button--export {
+    padding: $padding-unit/4;
+    width: ($map-sidebar-width - $padding-unit*2);
+    font-size: $font-size-xs;
+}
+
+.button--print {
+    margin-top: 4px;
+    width: ($map-sidebar-width - 50);
+    font-size: $font-size-xs;
+}
+
+.button--small {
+    font-size: $font-size-xs;
+}
+
+.button--save,
+.button--edit {
+    margin-bottom: 4px;
+    width: ($map-sidebar-width - 50);
+    font-size: $font-size-xs;
+
+    &.small {
+        width: auto;
+        display: inline-block;
+        margin-left: 10px;
+        padding-left: 10px;
+        padding-right: 4px;
+    }
+
+    &:disabled {
+        background-color: #007fff !important;
+        cursor: default;
+        opacity: 0.6;
+    }
+}
+
+.button--delete {
+    background-color: $red !important;
+
+    &--tiny {
+        padding: 0.5em;
+        font-size: $font-size-xs;
+        &:disabled {
+            background-color: $red !important;
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+
+    &:disabled {
+        background-color: $red !important;
+        cursor: default;
+        opacity: 0.6;
+    }
+}
+
+
+.button--edit--tiny {
+    padding: 0.5em;
+    font-size: $font-size-xs;
+}
+
+.button--delete--tiny {
+    background-color: $red ! important;
+    padding: 0.5em;
+    font-size: $font-size-xs;
+}
+
+button {
+    &:disabled {
+        background-color: #007fff !important;
+        cursor: default;
+        opacity: 0.6;
     }
 }

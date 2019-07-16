@@ -119,7 +119,7 @@
     </style>
   </div>
   <div id="banner--warning"
-    onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true');">
+    onclick="document.getElementById('banner--warning').classList.toggle('closed');Cookies.set('banner-closed', 'true', { expires: 7 });">
     <span>
       {% blocktrans %}
       Ceci est la base de données de surveillance de la maladie du sommeil en RDC. Les données sont la propriété du

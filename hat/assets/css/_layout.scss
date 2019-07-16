@@ -35,7 +35,7 @@ article {
     -webkit-font-smoothing: antialiased;
     -webkit-transition: top 0.5s ease-in-out;
     transition: top 0.5s ease-in-out;
-
+    z-index: 1002;
     a {
         color: white;
     }
@@ -272,6 +272,10 @@ $directions: left right top bottom;
 
 .margin-right {
     margin-right: $padding-unit/2;
+}
+
+.margin-right--tiny {
+    margin-right: $padding-unit/4;
 }
 
 .margin-left {

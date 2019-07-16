@@ -194,6 +194,7 @@ class Institution(models.Model):
 class UserType(models.Model):
     name = models.CharField(max_length=255)
     permissions = models.ManyToManyField(Permission)
+    is_erased = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -203,6 +204,7 @@ class UserType(models.Model):
             "name": self.name,
             "id": self.id,
             "permissions": map(lambda a: a.id, self.permissions.all()),
+            "is_erased": self.is_erased,
         }
 
 
@@ -260,7 +262,7 @@ class Profile(models.Model):
         if self.institution:
             institution = {"name": self.institution.name, "id": self.institution.id}
         userType = None
-        if self.userType:
+        if self.userType and not self.userType.is_erased:
             userType = self.userType.as_dict()
         team = None
         if self.team:

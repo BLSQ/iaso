@@ -46,6 +46,8 @@ class DevicesViewSet(viewsets.ViewSet):
             devices = devices.filter(last_user__profile__team__id__in=teams.split(","))
         if profile_ids:
             devices = devices.filter(last_user__id__in=profile_ids.split(","))
+
+
         res = []
 
         if as_list:
@@ -53,6 +55,12 @@ class DevicesViewSet(viewsets.ViewSet):
             cache.set(absolute_url, res, 30 * 60)
             return Response(res)
         else:
+            orders = request.GET.get("order", "-days_since_sync")
+
+            if "last_synced_date" in orders:
+                devices = devices.order_by("last_synced_date")
+            if "-last_synced_date" in orders:
+                devices = devices.order_by("-last_synced_date")
             for device in devices:
                 # Add stats about pictures and videos
                 device_stats = Test.objects.all().select_related('form').filter(form__device_id=device.device_id)\
@@ -106,31 +114,27 @@ class DevicesViewSet(viewsets.ViewSet):
                     "last_user": last_user,
                     "last_team": last_team,
                     "id": device.id,
-                    **device_stats
+                    # **device_stats
                 }
                 if with_tests_devices:
                     device_dict['is_test'] = device.is_test
 
                 res.append(device_dict)
 
-            orders = request.GET.get("order", "-days_since_sync").split(",")
-            orders = [w.replace("last_synced_date", "days_since_sync") for w in orders]
-            orders = [w.replace("-last_synced_date", "-days_since_sync") for w in orders]
-
+            orders = orders.split(",")
             orders.reverse()
-
             for order in orders:
                 key = order
                 invert = False
                 if order.startswith("-"):
                     key = order[1:]
                     invert = True
-
-                res = sorted(
-                    res,
-                    key=lambda d: (d.get(key, "").lower() if isinstance(d.get(key, ""), str) else d.get(key, "")),
-                    reverse=invert,
-                )
+                if not key == "last_synced_date":
+                    res = sorted(
+                        res,
+                        key=lambda d: (d.get(key, "").lower() if isinstance(d.get(key, ""), str) else d.get(key, "")),
+                        reverse=invert,
+                    )
 
             cache.set(absolute_url, res, 30 * 60)
             return Response(res)

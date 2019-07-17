@@ -178,7 +178,7 @@ export class ManagementDevices extends Component {
                             showPagination={false}
                             endPointUrl={this.state.tableUrl}
                             columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'last_synced_date', desc: false }]}
+                            defaultSorted={[{ id: 'last_synced_date', desc: true }]}
                             params={this.props.params}
                             defaultPath={baseUrl}
                             canSelect={false}

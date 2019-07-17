@@ -10,7 +10,7 @@ const screenersColumns = formatMessage => (
                 id: 'monitoring.label.name',
             }),
             accessor: 'tester__user__last_name',
-            class: 'small',
+            className: 'small',
             Cell: settings => <span>{`${settings.original.tester__user__first_name} ${settings.original.tester__user__last_name}`}</span>,
         },
         {
@@ -19,21 +19,21 @@ const screenersColumns = formatMessage => (
                 id: 'monitoring.label.screening_count',
             }),
             accessor: 'screening_count',
-            class: 'small',
+            className: 'small',
             Cell: settings =>
                 renderCountCell(settings.original.screening_count, settings.original.positive_screening_test_count, formatMessage),
         },
         {
             Header: 'CATT',
             accessor: 'catt_count',
-            class: 'small',
+            className: 'small',
             Cell: settings =>
                 renderCountCell(settings.original.catt_count, settings.original.positive_catt_count, formatMessage),
         },
         {
             Header: 'RDT',
             accessor: 'rdt_count',
-            class: 'small',
+            className: 'small',
             Cell: settings =>
                 renderCountCell(settings.original.rdt_count, settings.original.positive_rdt_count, formatMessage),
         },
@@ -46,22 +46,22 @@ const screenersColumns = formatMessage => (
                 {
                     Header: 'CATT +',
                     accessor: 'catt_test_positive_pictures',
-                    class: 'small',
+                    className: 'small',
                 },
                 {
                     Header: 'CATT -',
                     accessor: 'catt_test_negative_pictures',
-                    class: 'small',
+                    className: 'small',
                 },
                 {
                     Header: 'RDT +',
                     accessor: 'rdt_test_positive_pictures',
-                    class: 'small',
+                    className: 'small',
                 },
                 {
                     Header: 'RDT -',
                     accessor: 'rdt_test_negative_pictures',
-                    class: 'small',
+                    className: 'small',
                 },
                 {
                     Header: formatMessage({
@@ -69,7 +69,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.picturesTotal',
                     }),
                     accessor: 'rdt_count',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -92,7 +92,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checked',
                     }),
                     accessor: 'checked',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -109,7 +109,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedOk',
                     }),
                     accessor: 'checked',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -126,7 +126,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedKo',
                     }),
                     accessor: 'checked',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -143,7 +143,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedMismatch',
                     }),
                     accessor: 'checked',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -160,7 +160,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedUnreadable',
                     }),
                     accessor: 'checked_unreadable',
-                    class: 'small',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {
@@ -177,7 +177,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedInvalid',
                     }),
                     accessor: 'checked_invalid',
-                    class: 'small',
+                    className: 'smaller',
                     Cell: settings => (
                         <span>
                             {

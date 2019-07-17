@@ -263,7 +263,7 @@ def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
+@permission_required('menupermissions.x_qualitycontrol')
 @require_http_methods(['GET'])
 def monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:monitoring"))})
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})

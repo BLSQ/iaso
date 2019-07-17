@@ -12,6 +12,7 @@ import App from '../App';
 import QualityDetail from './pages/QualityDetail';
 import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
+import MonitoringPAge from './pages/Monitoring';
 import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { testReducer, testInitialState } from './redux/test';
@@ -22,6 +23,8 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     const dateTo = moment().format('YYYY-MM-DD');
     const defaultPath = `dashboard/date_from/${dateFrom}/date_to/${dateTo}/imagePageSize/50/imagePage/1/videoPageSize/50/videoPage/1`;
     const defaulStatsPath = `/stats/date_from/${dateFrom}/date_to/${dateTo}/order/id`;
+    const defaultMonitoringPath = `/monitoring/screenerOrder/tester__user__last_name/confirmerOrder/tester__user__last_name/date_from/${dateFrom}/date_to/${dateTo}`;
+
     const routes = [
         <Route
             path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
@@ -51,8 +54,13 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             path="/stats/date_from/:date_from/date_to/:date_to/order/:order(/coordination_id/:coordination_id)(/type/:type)(/pageSize/:pageSize)(/page/:page)"
             component={QualityStats}
         />,
+        <Route
+            path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
+            component={MonitoringPAge}
+        />,
         <Redirect exact path="/dashboard" to={defaultPath} />,
         <Redirect path="/stats" to={defaulStatsPath} />,
+        <Redirect path="/monitoring" to={defaultMonitoringPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

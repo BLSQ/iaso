@@ -1,6 +1,6 @@
 from django.db import models
 from hat.geo.models import Village
-from hat.cases.models import CaseAbstract, RES_UNUSED
+from hat.cases.models import CaseAbstract, RES_INVALID
 from hat.patient.models import Test
 from django.contrib.auth.models import User
 from hat.users.models import LEVEL_1, LEVEL_CHOICES
@@ -13,7 +13,7 @@ class Check(models.Model):
         choices=CaseAbstract.GENERAL_TEST_RESULT_CHOICES,
         null=True,
         blank=True,
-        default=RES_UNUSED,
+        default=RES_INVALID,
         db_index=True,
     )
     level = models.IntegerField(

@@ -10,7 +10,7 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.models import RES_POSITIVE, RES_UNREADABLE, RES_NEGATIVE, RES_MISSING, RES_ABSENT, RES_UNSURE, RES_UNUSED
+from hat.cases.models import RES_POSITIVE, RES_UNREADABLE, RES_NEGATIVE, RES_MISSING, RES_ABSENT, RES_UNSURE, RES_INVALID
 from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION, TYPES_WITH_IMAGES
 from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
@@ -427,7 +427,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                                                           Q(check__result=RES_MISSING) |
                                                           Q(check__result=RES_ABSENT) |
                                                           Q(check__result=RES_UNSURE) |
-                                                          Q(check__result=RES_UNUSED)
+                                                          Q(check__result=RES_INVALID)
                                                   ) &
                                                   Q(type__in=test_types)))
                 )

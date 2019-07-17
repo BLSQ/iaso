@@ -16,7 +16,7 @@ from hat.cases.models import (
     RES_ABSENT,
     RES_MISSING,
     RES_UNREADABLE,
-    RES_UNUSED,
+    RES_INVALID,
     RES_UNSURE,
     testResultString,
 )
@@ -39,7 +39,7 @@ class TestsMappingViewSet(viewsets.ViewSet):
             RES_ABSENT: testResultString(RES_ABSENT),
             RES_MISSING: testResultString(RES_MISSING),
             RES_UNREADABLE: testResultString(RES_UNREADABLE),
-            RES_UNUSED: testResultString(RES_UNUSED),
+            RES_INVALID: testResultString(RES_INVALID),
         }
 
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)

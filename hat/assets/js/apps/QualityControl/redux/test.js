@@ -45,15 +45,18 @@ const fetchTestMapping = (dispatch) => {
         .then((result) => {
             const testMapping = result.body;
             const cattTypeConstant = [];
+            const cattValues = [-3, -2, 0, 1, 2, 3, 4];
             const rdtTypeConstant = [];
-            const rdtValues = [-2, -1, 0, 1, 2];
+            const rdtValues = [-3, -2, 0, 1, 2];
 
             Object.keys(testMapping).forEach((key) => {
                 const mappedItem = {
                     value: parseInt(key, 10),
                     label: testMapping[key],
                 };
-                cattTypeConstant.push(mappedItem);
+                if (cattValues.indexOf(parseInt(key, 10)) !== -1) {
+                    cattTypeConstant.push(mappedItem);
+                }
                 if (rdtValues.indexOf(parseInt(key, 10)) !== -1) {
                     rdtTypeConstant.push(mappedItem);
                 }

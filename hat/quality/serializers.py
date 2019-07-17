@@ -2,7 +2,7 @@ import sys
 from rest_framework import serializers
 
 from hat.quality.models import Check
-from hat.cases.models import RES_UNUSED
+from hat.cases.models import RES_INVALID
 
 
 class CheckSerializer(serializers.Serializer):
@@ -20,7 +20,7 @@ class CheckSerializer(serializers.Serializer):
         validator = self.context["request"].user
         level = self.context["request"].user.profile.level
         check = Check(
-            result=validated_data.get("result", RES_UNUSED),
+            result=validated_data.get("result", RES_INVALID),
             validator=validator,
             test_id=validated_data.get("test_id"),
             comment=validated_data.get("comment"),

@@ -56,8 +56,8 @@ def testResultString(value):
         return "Manquant"
     if value == RES_UNREADABLE:
         return "Non lisible"
-    if value == RES_UNUSED:
-        return "Non utlisé"
+    if value == RES_INVALID:
+        return "Invalide"
     if value == RES_UNSURE:
         return "Incertain +/-"
     return "/"
@@ -70,7 +70,7 @@ RES_NEGATIVE = 1
 RES_ABSENT = 0
 RES_MISSING = -1
 RES_UNREADABLE = -2
-RES_UNUSED = -3
+RES_INVALID = -3
 RES_UNSURE = -4
 
 SESSION_TYPE_DOOR_TO_DOOR = "doorToDoor"
@@ -322,7 +322,7 @@ class CaseAbstract(models.Model):
         (RES_ABSENT, "Absent"),
         (RES_MISSING, "Manquant"),
         (RES_UNREADABLE, "Illisible"),
-        (RES_UNUSED, "Inutilisé"),
+        (RES_INVALID, "Invalide"),
         (RES_UNSURE, "Pas certain"),
     )
 

@@ -27,7 +27,7 @@ from hat.cases.models import (
     RES_ABSENT,
     RES_MISSING,
     RES_UNREADABLE,
-    RES_UNUSED,
+    RES_INVALID,
     RES_UNSURE,
 )
 

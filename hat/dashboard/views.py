@@ -216,6 +216,13 @@ def quality_control_image(request: HttpRequest) -> HttpResponse:
 @login_required()
 @permission_required('menupermissions.x_qualitycontrol')
 @require_http_methods(['GET'])
+def quality_control_monitoring(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control-monitoring"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_qualitycontrol')
+@require_http_methods(['GET'])
 def quality_control_video(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
 
@@ -261,9 +268,4 @@ def register_duplicates(request: HttpRequest) -> HttpResponse:
 def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
 
-@is_user_authorized
-@login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
-def monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+

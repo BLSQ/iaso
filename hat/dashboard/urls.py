@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^quality-control/stats.*$', views.quality_control_stats, name='quality-control-stats'),
     url(r'^quality-control/image.*$', views.quality_control_image, name='quality-control-image'),
     url(r'^quality-control/video.*$', views.quality_control_video, name='quality-control-video'),
+    url(r'^quality-control/monitoring.*$', views.quality_control_monitoring, name='quality-control-monitoring'),
     url(r'^password/$', views.change_password, name='change_password'),
     url(r'^datas/tests.*$', views.cases_list, name='cases_list'),
     url(r'^datas/tests/detail.*$', views.cases_detail, name='cases_detail'),
@@ -38,5 +39,4 @@ urlpatterns = [
     url(r'^datas/register/detail.*$', views.register_detail, name='register_detail'),
     url(r'^datas/register/duplicates/detail.*$', views.register_duplicates_detail, name='register_duplicates_detail'),
     url(r'^datas/register/duplicates.*$', views.register_duplicates, name='register_duplicates'),
-    url(r'^quality_control/monitoring.*$', views.monitoring, name='monitoring'),
 ]

@@ -177,7 +177,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Monitorage",
-                    "url_key": reverse("dashboard:monitoring"),
+                    "url_key": reverse("dashboard:quality-control-monitoring"),
                     "perms": "x_qualitycontrol"
                 },
             ],

@@ -71,11 +71,6 @@ def get_menu(user, active_link):
                     "url_key": reverse("dashboard:register_duplicates"),
                     "perms": "x_case_cases"
                 },
-                {
-                    "name": "Monitorage",
-                    "url_key": reverse("dashboard:monitoring"),
-                    "perms": "x_case_cases"
-                }
             ],
             "perms": None
         },
@@ -174,7 +169,18 @@ def get_menu(user, active_link):
         {
             "name": "Contrôle de qualité",
             "url_key": reverse("dashboard:quality-control"),
-            # "items": [
+            "items": [
+                {
+                    "name": "Contrôle",
+                    "url_key": reverse("dashboard:quality-control"),
+                    "perms": "x_qualitycontrol"
+                },
+                {
+                    "name": "Monitorage",
+                    "url_key": reverse("dashboard:monitoring"),
+                    "perms": "x_qualitycontrol"
+                },
+            ],
             #     {
             #         "name": "Images/videos",
             #         "url_key": reverse("dashboard:quality-control"),
@@ -187,7 +193,6 @@ def get_menu(user, active_link):
             #     },
             # ],
             # "perms": None
-            "items": [],
             "perms": "x_qualitycontrol"
         }
     ]

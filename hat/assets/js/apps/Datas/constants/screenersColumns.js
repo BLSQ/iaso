@@ -147,8 +147,8 @@ const screenersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                (settings.original.checked_ko) ?
+                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>
@@ -164,8 +164,8 @@ const screenersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                (settings.original.checked_ko) ?
+                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>
@@ -181,8 +181,8 @@ const screenersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
+                                (settings.original.checked_ko) ?
+                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>

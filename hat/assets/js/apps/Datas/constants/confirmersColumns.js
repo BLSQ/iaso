@@ -141,8 +141,8 @@ const confirmersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                settings.original.checked_ko ?
+                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / settings.original.checked_ko * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>
@@ -158,8 +158,8 @@ const confirmersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                settings.original.checked_ko ?
+                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.checked_ko * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>
@@ -175,8 +175,8 @@ const confirmersColumns = formatMessage => (
                     Cell: settings => (
                         <span>
                             {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                                settings.original.checked_ko ?
+                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / settings.original.checked_ko * 100).toFixed(1) + "%)")
                                     : "-"
                             }
                         </span>

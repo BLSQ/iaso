@@ -7,6 +7,17 @@ from rest_framework.response import Response
 from hat.common.utils import get_request_as_array
 from hat.patient.models import Test
 from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, get_authorized_geo
+from hat.cases.models import (
+    RES_POSITIVE,
+    RES_UNREADABLE,
+    RES_NEGATIVE,
+    RES_MISSING,
+    RES_ABSENT,
+    RES_UNSURE,
+    RES_INVALID,
+)
+
+from django.db.models import Q
 
 
 class QCTestsViewSet(viewsets.ViewSet):
@@ -21,9 +32,7 @@ class QCTestsViewSet(viewsets.ViewSet):
            (only tests with images or videos allowing a check)
     """
 
-    permission_required = [
-        'menupermissions.x_qualitycontrol'
-    ]
+    permission_required = ["menupermissions.x_qualitycontrol"]
 
     def list(self, request):
         user_level = request.user.profile.level
@@ -36,9 +45,17 @@ class QCTestsViewSet(viewsets.ViewSet):
         media_type = request.GET.get("media_type", '"image')
         user_ids = request.GET.get("user_ids", None)
         checked = request.GET.get("checked", False)
-        province_ids = get_authorized_geo(request.user, "province", get_request_as_array(request.GET, "province_ids", None))
-        zs_ids = get_authorized_geo(request.user, "ZS", get_request_as_array(request.GET, "zs_ids", None))
-        as_ids = get_authorized_geo(request.user, "AS", get_request_as_array(request.GET, "as_ids", None))
+        province_ids = get_authorized_geo(
+            request.user,
+            "province",
+            get_request_as_array(request.GET, "province_ids", None),
+        )
+        zs_ids = get_authorized_geo(
+            request.user, "ZS", get_request_as_array(request.GET, "zs_ids", None)
+        )
+        as_ids = get_authorized_geo(
+            request.user, "AS", get_request_as_array(request.GET, "as_ids", None)
+        )
 
         qs = Test.objects.all()
 
@@ -50,10 +67,17 @@ class QCTestsViewSet(viewsets.ViewSet):
         qs = qs.annotate(num_checks=Count("check"))
 
         if user_level == LEVEL_2:
-            qs = qs.filter(check__level=LEVEL_1).exclude(check__level=LEVEL_2)
+            qs = qs.exclude(check__level=LEVEL_2)
 
         if user_level == LEVEL_3:
-            qs = qs.filter(check__level=LEVEL_2).exclude(check__level=LEVEL_3)
+            qs = (
+                qs.filter(check__level=LEVEL_2)
+                .exclude(check__level=LEVEL_3)
+                .filter(
+                    (Q(check__result=RES_NEGATIVE) & Q(result__gte=RES_POSITIVE))
+                    | (Q(check__result__gte=RES_POSITIVE) & Q(result=RES_NEGATIVE))
+                )
+            )
 
         if user_level == LEVEL_4 and checked:
             qs = qs.filter(check__level=LEVEL_3)
@@ -65,23 +89,29 @@ class QCTestsViewSet(viewsets.ViewSet):
         if user_ids is not None:
             qs = qs.filter(tester__user_id__in=user_ids.split(","))
         if media_type == "image":
-            qs = qs.exclude(image=None)
+            qs = qs.exclude(image__isnull=True)
         if media_type == "video":
-            qs = qs.exclude(video=None)
+            qs = qs.exclude(video__isnull=True)
         if province_ids:
             if len(province_ids) == 0:
-                return Response({"error": "not province allowed in this request for this user"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "not province allowed in this request for this user"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = qs.filter(village__AS__ZS__province_id__in=province_ids)
         if zs_ids:
             if len(zs_ids) == 0:
-                return Response({"error": "not ZS allowed in this request for this user"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "not ZS allowed in this request for this user"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = qs.filter(village__AS__ZS_id__in=zs_ids)
         if as_ids:
             if len(as_ids) == 0:
-                return Response({"error": "not AS allowed in this request for this user"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "not AS allowed in this request for this user"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = qs.filter(village__AS_id__in=as_ids)
 
         qs = qs.order_by(*orders)
@@ -91,7 +121,6 @@ class QCTestsViewSet(viewsets.ViewSet):
         qs = qs.prefetch_related("village")
         qs = qs.prefetch_related("tester")
         qs = qs.prefetch_related("village__AS__ZS__province")
-
         limit = int(limit)
         paginator = Paginator(qs, limit)
         res = {"count": paginator.count}

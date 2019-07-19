@@ -9,9 +9,26 @@ from pg_utils import DistinctSum
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-
-from hat.cases.models import RES_POSITIVE, RES_UNREADABLE, RES_NEGATIVE, RES_MISSING, RES_ABSENT, RES_UNSURE, RES_INVALID
-from hat.constants import CATT, PG, PL, CTCWOO, MAECT, RDT, TYPES_CONFIRMATION, TYPES_WITH_IMAGES
+from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4
+from hat.cases.models import (
+    RES_POSITIVE,
+    RES_UNREADABLE,
+    RES_NEGATIVE,
+    RES_MISSING,
+    RES_ABSENT,
+    RES_UNSURE,
+    RES_INVALID,
+)
+from hat.constants import (
+    CATT,
+    PG,
+    PL,
+    CTCWOO,
+    MAECT,
+    RDT,
+    TYPES_CONFIRMATION,
+    TYPES_WITH_IMAGES,
+)
 from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
 from .authentication import CsrfExemptSessionAuthentication
@@ -57,6 +74,10 @@ class TestStatsViewSet(viewsets.ViewSet):
     def list(self, request):
         absolute_url = request.build_absolute_uri()
         user_level = request.user.profile.level if request.user.profile.level else 10
+        current_level = 0
+        current_level = LEVEL_2 if user_level == LEVEL_2 else current_level
+        current_level = LEVEL_3 if user_level == LEVEL_3 else current_level
+        current_level = LEVEL_3 if user_level == LEVEL_4 else current_level
 
         result = cache.get(absolute_url)
         device_id = request.GET.get("device_id", None)
@@ -274,9 +295,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "positive_catt_count",
                     "positive_rdt_count",
                 )
-                orders = (Coalesce(
-                        Cast("village__name", TextField()), "form__village"
-                    ),)
+                orders = (
+                    Coalesce(Cast("village__name", TextField()), "form__village"),
+                )
             elif grouping == "villageyear":
                 grouped_queryset = grouped_queryset.annotate(
                     village__name=Coalesce(
@@ -379,14 +400,18 @@ class TestStatsViewSet(viewsets.ViewSet):
                     grouped_queryset = grouped_queryset.annotate(
                         confirmation_video_count=Count(
                             "id",
-                            filter=(Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False)),
+                            filter=(
+                                Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False)
+                            ),
                         )
                     ).annotate(
                         confirmation_positive_video_count=Count(
                             "id",
-                            filter=(Q(type__in=TYPES_CONFIRMATION)
-                            & Q(video__isnull=False)
-                            & Q(result__gte=RES_POSITIVE)),
+                            filter=(
+                                Q(type__in=TYPES_CONFIRMATION)
+                                & Q(video__isnull=False)
+                                & Q(result__gte=RES_POSITIVE)
+                            ),
                         )
                     )
 
@@ -396,40 +421,79 @@ class TestStatsViewSet(viewsets.ViewSet):
                         "confirmation_positive_video_count",
                     )
 
-                grouped_queryset = grouped_queryset.annotate(
-                    checked=Count("check", filter=(Q(check__level=user_level) & Q(type__in=test_types)))
-                ).annotate(
-                    checked_ok=Count("check", filter=(Q(check__level=user_level) & Q(
-                        check__result=F("result")) & Q(type__in=test_types)))
-                ).annotate(
-                    checked_ko=Count("check",
-                                     filter=(Q(check__level=user_level) & ~Q(check__result=F("result")) & Q(
-                                         type__in=test_types)))
-                ).annotate(
-                    checked_mismatch=Count("check",
-                                           filter=(Q(check__level=user_level) &
-                                                   (
-                                                           (Q(check__result=RES_NEGATIVE) & Q(
-                                                               result__gte=RES_POSITIVE)) |
-                                                           (Q(check__result__gte=RES_POSITIVE) & Q(
-                                                               result=RES_NEGATIVE))
-                                                   ) &
-                                                   Q(type__in=test_types)))
-                ).annotate(
-                    checked_unreadable=Count("check",
-                                             filter=(Q(check__level__lte=user_level) & Q(
-                                                 check__result=RES_UNREADABLE) & Q(
-                                                 type__in=test_types)))
-                ).annotate(
-                    checked_invalid=Count("check",
-                                          filter=(Q(check__level__lte=user_level) &
-                                                  (
-                                                          Q(check__result=RES_MISSING) |
-                                                          Q(check__result=RES_ABSENT) |
-                                                          Q(check__result=RES_UNSURE) |
-                                                          Q(check__result=RES_INVALID)
-                                                  ) &
-                                                  Q(type__in=test_types)))
+                grouped_queryset = (
+                    grouped_queryset.annotate(
+                        checked=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=current_level) & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_ok=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=current_level)
+                                & Q(check__result=F("result"))
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_ko=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=current_level)
+                                & ~Q(check__result=F("result"))
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_mismatch=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=current_level)
+                                & (
+                                    (
+                                        Q(check__result=RES_NEGATIVE)
+                                        & Q(result__gte=RES_POSITIVE)
+                                    )
+                                    | (
+                                        Q(check__result__gte=RES_POSITIVE)
+                                        & Q(result=RES_NEGATIVE)
+                                    )
+                                )
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_unreadable=Count(
+                            "check",
+                            filter=(
+                                Q(check__level__lte=current_level)
+                                & Q(check__result=RES_UNREADABLE)
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_invalid=Count(
+                            "check",
+                            filter=(
+                                Q(check__level__lte=current_level)
+                                & (
+                                    Q(check__result=RES_MISSING)
+                                    | Q(check__result=RES_ABSENT)
+                                    | Q(check__result=RES_UNSURE)
+                                    | Q(check__result=RES_INVALID)
+                                )
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
                 )
                 orders = ("tester__user__last_name",)
 
@@ -521,7 +585,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
             filename = f"TrypelimStats_{grouping}_{from_date}-{to_date}_{str(datetime.today())[:10]}.xlsx"
-            response['Content-Disposition'] = f"attachment; filename={filename}"
+            response["Content-Disposition"] = f"attachment; filename={filename}"
             return response
         else:
             return Response(result)

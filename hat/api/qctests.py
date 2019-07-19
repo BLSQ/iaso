@@ -66,6 +66,9 @@ class QCTestsViewSet(viewsets.ViewSet):
 
         qs = qs.annotate(num_checks=Count("check"))
 
+        if user_level == LEVEL_1:
+            qs = qs.exclude(id__gte=0)
+
         if user_level == LEVEL_2:
             qs = qs.exclude(check__level=LEVEL_2)
 

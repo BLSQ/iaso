@@ -177,7 +177,7 @@ const screenersColumns = formatMessage => (
                         id: 'monitoring.label.checkedInvalid',
                     }),
                     accessor: 'checked_invalid',
-                    className: 'smaller',
+                    className: 'small',
                     Cell: settings => (
                         <span>
                             {

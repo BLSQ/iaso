@@ -73,14 +73,24 @@ class QCTestsViewSet(viewsets.ViewSet):
             qs = qs.exclude(check__level=LEVEL_2)
 
         if user_level == LEVEL_3:
-            qs = (
-                qs.filter(check__level=LEVEL_2)
-                .exclude(check__level=LEVEL_3)
-                .filter(
-                    (Q(check__result=RES_NEGATIVE) & Q(result__gte=RES_POSITIVE))
-                    | (Q(check__result__gte=RES_POSITIVE) & Q(result=RES_NEGATIVE))
+            if media_type == "image":
+                qs = (
+                    qs.filter(check__level=LEVEL_2)
+                    .exclude(check__level=LEVEL_3)
+                    .filter(
+                        (Q(check__result=RES_NEGATIVE) & Q(result__gte=RES_POSITIVE))
+                        | (Q(check__result__gte=RES_POSITIVE) & Q(result=RES_NEGATIVE))
+                    )
                 )
-            )
+            else:  # video
+                qs = (
+                    qs.filter(check__level=LEVEL_2)
+                    .exclude(check__level=LEVEL_3)
+                    .exclude(
+                        (Q(check__result=RES_POSITIVE) & Q(result=RES_POSITIVE))
+                        | (Q(check__result=RES_NEGATIVE) & Q(result=RES_NEGATIVE))
+                    )
+                )
 
         if user_level == LEVEL_4 and checked:
             qs = qs.filter(check__level=LEVEL_3)

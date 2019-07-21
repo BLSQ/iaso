@@ -78,7 +78,8 @@ class TestStatsViewSet(viewsets.ViewSet):
         current_level = LEVEL_2 if user_level == LEVEL_2 else current_level
         current_level = LEVEL_3 if user_level == LEVEL_3 else current_level
         current_level = LEVEL_3 if user_level == LEVEL_4 else current_level
-
+        province_level = LEVEL_2
+        central_level = LEVEL_3
         result = cache.get(absolute_url)
         device_id = request.GET.get("device_id", None)
         team_id = request.GET.get("team_id", None)
@@ -320,6 +321,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "tester_id",
                     "tester__user__last_name",
                     "tester__user__first_name",
+                    "tester__team__coordination__name",
                     "screening_count",
                     "rdt_count",
                     "catt_count",
@@ -335,6 +337,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "ctcwoo_count_positive",
                     "maect_count_positive",
                     "checked",
+                    "checked_ok_central",
+                    "checked_ko_central",
                     "checked_ok",
                     "checked_ko",
                     "checked_mismatch",
@@ -349,6 +353,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                             rdt_test_pictures=Count(
                                 "id", filter=Q(image__isnull=False) & Q(type=RDT)
                             )
+                        )
+                        .annotate(
+                            test_pictures=Count("id", filter=Q(image__isnull=False))
                         )
                         .annotate(
                             rdt_test_positive_pictures=Count(
@@ -389,6 +396,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                     )
                     values = values + (
+                        "test_pictures",
                         "rdt_test_pictures",
                         "rdt_test_positive_pictures",
                         "rdt_test_negative_pictures",
@@ -426,7 +434,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked=Count(
                             "check",
                             filter=(
-                                Q(check__level=current_level) & Q(type__in=test_types)
+                                Q(check__level=province_level) & Q(type__in=test_types)
                             ),
                         )
                     )
@@ -434,7 +442,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked_ok=Count(
                             "check",
                             filter=(
-                                Q(check__level=current_level)
+                                Q(check__level=province_level)
                                 & Q(check__result=F("result"))
                                 & Q(type__in=test_types)
                             ),
@@ -444,7 +452,27 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked_ko=Count(
                             "check",
                             filter=(
-                                Q(check__level=current_level)
+                                Q(check__level=province_level)
+                                & ~Q(check__result=F("result"))
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_ok_central=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=central_level)
+                                & Q(check__result=F("result"))
+                                & Q(type__in=test_types)
+                            ),
+                        )
+                    )
+                    .annotate(
+                        checked_ko_central=Count(
+                            "check",
+                            filter=(
+                                Q(check__level=central_level)
                                 & ~Q(check__result=F("result"))
                                 & Q(type__in=test_types)
                             ),
@@ -454,7 +482,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked_mismatch=Count(
                             "check",
                             filter=(
-                                Q(check__level=current_level)
+                                Q(check__level=province_level)
                                 & (
                                     (
                                         Q(check__result=RES_NEGATIVE)
@@ -473,7 +501,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked_unreadable=Count(
                             "check",
                             filter=(
-                                Q(check__level__lte=current_level)
+                                Q(check__level__lte=province_level)
                                 & Q(check__result=RES_UNREADABLE)
                                 & Q(type__in=test_types)
                             ),
@@ -483,7 +511,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         checked_invalid=Count(
                             "check",
                             filter=(
-                                Q(check__level__lte=current_level)
+                                Q(check__level__lte=province_level)
                                 & (
                                     Q(check__result=RES_MISSING)
                                     | Q(check__result=RES_ABSENT)

@@ -15,6 +15,15 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Coordination',
+                id: 'monitoring.label.coordination',
+            }),
+            className: 'small',
+            accessor: 'tester__team__coordination__name',
+            Cell: settings => <span>{`${settings.original.tester__team__coordination__name === null ? '--' : settings.original.tester__team__coordination__name}`}</span>,
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Tests de confirmation',
                 id: 'monitoring.label.confirmation_count',
             }),
@@ -73,116 +82,6 @@ const confirmersColumns = formatMessage => (
             className: 'small',
             Cell: settings =>
                 renderCountCell(settings.original.confirmation_video_count, settings.original.confirmation_positive_video_count, formatMessage),
-        },
-                {
-            Header: formatMessage({
-                defaultMessage: 'QC',
-                id: 'monitoring.label.qc',
-            }),
-            columns: [
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Vérifiés',
-                        id: 'monitoring.label.checked',
-                    }),
-                    accessor: 'checked',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked + " (" + (settings.original.checked / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Conformes',
-                        id: 'monitoring.label.checkedOk',
-                    }),
-                    accessor: 'checked_ok',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked_ok + " (" + (settings.original.checked_ok / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Non conformes',
-                        id: 'monitoring.label.checkedKo',
-                    }),
-                    accessor: 'checked_ko',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.confirmation_video_count ?
-                                    (settings.original.checked_ko + " (" + (settings.original.checked_ko / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Discordants',
-                        id: 'monitoring.label.checkedMismatch',
-                    }),
-                    accessor: 'checked_mismatch',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.checked_ko ?
-                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / settings.original.checked_ko * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Illisibles',
-                        id: 'monitoring.label.checkedUnreadable',
-                    }),
-                    accessor: 'checked_unreadable',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.checked_ko ?
-                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.checked_ko * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Invalides',
-                        id: 'monitoring.label.checkedInvalid',
-                    }),
-                    accessor: 'checked_invalid',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.checked_ko ?
-                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / settings.original.checked_ko * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-            ],
         },
     ]
 );

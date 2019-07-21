@@ -11,17 +11,38 @@ import TabsComponent from '../../../components/TabsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import screenersColumns from '../constants/screenersColumns';
 import confirmersColumns from '../constants/confirmersColumns';
+import screenersqaColumns from '../constants/screenersqaColumns';
+import confirmersqaColumns from '../constants/confirmersqaColumns';
+import screenerscentralqaColumns from '../constants/screenerscentralqaColumns';
+import confirmerscentralqaColumns from '../constants/confirmerscentralqaColumns';
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 export const baseUrl = 'monitoring';
 
 const MESSAGES = defineMessages({
     screener: {
-        defaultMessage: 'Dépisteur',
+        defaultMessage: 'Stats Dép.',
         id: 'management.monitoring.screener',
     },
     confirmer: {
-        defaultMessage: 'Confirmateur',
+        defaultMessage: 'Stats Conf.',
         id: 'management.monitoring.confirmer',
+    },
+    screenerqa: {
+        defaultMessage: '🖼 Coordination',
+        id: 'management.monitoring.screenerqa',
+    },
+    confirmerqa: {
+        defaultMessage: '🎦 Coordination',
+        id: 'management.monitoring.confirmerqa',
+    },
+    screenercentralqa: {
+        defaultMessage: '🖼 Central',
+        id: 'management.monitoring.screenercentralqa',
+    },
+    confirmercentralqa: {
+        defaultMessage: '🎦 Central',
+        id: 'management.monitoring.confirmercentralqa',
     },
 });
 
@@ -32,10 +53,17 @@ class Cases extends Component {
             currentTab: 'screener',
             screenersColumns: screenersColumns(props.intl.formatMessage),
             confirmersColumns: confirmersColumns(props.intl.formatMessage),
+            screenersqaColumns: screenersqaColumns(props.intl.formatMessage),
+            confirmersqaColumns: confirmersqaColumns(props.intl.formatMessage),
+            screenerscentralqaColumns: screenerscentralqaColumns(props.intl.formatMessage),
+            confirmerscentralqaColumns: confirmerscentralqaColumns(props.intl.formatMessage),
         };
     }
-
-    getEndpointUrl(type, toExport = false, exportType = 'csv') {
+    componentWillMount() {
+        this.props.fetchCurrentUserInfos();
+    }
+    getEndpointUrl(tabType, toExport = false, exportType = 'csv') {
+        const type = tabType.startsWith('screener') ? 'screener' : 'confirmer'
         let url = `/api/teststats/?grouping=tester&testertype=${type}`;
         const {
             params,
@@ -44,6 +72,7 @@ class Cases extends Component {
             from: params.date_from,
             to: params.date_to,
             order: type === 'screener' ? params.screenerOrder : params.confirmerOrder,
+            level: (type.indexOf('central') !== -1) ? 'central' : 'coordination',
         };
 
         if (toExport) {
@@ -65,9 +94,29 @@ class Cases extends Component {
                 formatMessage,
             },
             params,
+            currentUser,
         } = this.props;
 
         const { currentTab } = this.state;
+        let tabs = [
+            { label: formatMessage(MESSAGES.screener), key: 'screener' },
+            { label: formatMessage(MESSAGES.confirmer), key: 'confirmer' },
+        ];
+
+        if (currentUser) {
+            if (currentUser.level >= 20) {
+                tabs = tabs.concat([
+                    { label: formatMessage(MESSAGES.screenerqa), key: 'screenerqa' },
+                    { label: formatMessage(MESSAGES.confirmerqa), key: 'confirmerqa' },
+                ]);
+            }
+            if (currentUser.level >= 30) {
+                tabs = tabs.concat([
+                    { label: formatMessage(MESSAGES.screenercentralqa), key: 'screenercentralqa' },
+                    { label: formatMessage(MESSAGES.confirmercentralqa), key: 'confirmercentralqa' },
+                ]);
+            }
+        }
         return (
             <section className="cases-list-container">
                 {
@@ -99,10 +148,7 @@ class Cases extends Component {
                     selectTab={key => (this.setState({ currentTab: key }))}
                     params={params}
                     defaultPath={baseUrl}
-                    tabs={[
-                        { label: formatMessage(MESSAGES.screener), key: 'screener' },
-                        { label: formatMessage(MESSAGES.confirmer), key: 'confirmer' },
-                    ]}
+                    tabs={tabs}
                     defaultSelect={currentTab}
                 />
                 <div className={`widget__container no-border ${this.state.currentTab !== 'screener' ? 'hidden' : ''}`} >
@@ -137,6 +183,70 @@ class Cases extends Component {
                         dataKey="result"
                     />
                 </div>
+                <div className={`widget__container no-border ${this.state.currentTab !== 'screenerqa' ? 'hidden' : ''}`} >
+                    <CustomTableComponent
+                        showPagination={false}
+                        endPointUrl={this.getEndpointUrl('screenerqa')}
+                        columns={this.state.screenersqaColumns}
+                        defaultSorted={[{ id: 'tester__user__last_name', desc: false }]}
+                        params={this.props.params}
+                        defaultPath={baseUrl}
+                        orderKey="screenerOrder"
+                        multiSort
+                        withBorder={false}
+                        isSortable={false}
+                        canSelect={false}
+                        dataKey="result"
+                    />
+                </div>
+                <div className={`widget__container no-border ${this.state.currentTab !== 'confirmerqa' ? 'hidden' : ''}`}>
+                    <CustomTableComponent
+                        showPagination={false}
+                        endPointUrl={this.getEndpointUrl('confirmerqa')}
+                        columns={this.state.confirmersqaColumns}
+                        defaultSorted={[{ id: 'tester__user__last_name', desc: false }]}
+                        params={this.props.params}
+                        defaultPath={baseUrl}
+                        orderKey="confirmerOrder"
+                        multiSort
+                        withBorder={false}
+                        isSortable={false}
+                        canSelect={false}
+                        dataKey="result"
+                    />
+                </div>
+                <div className={`widget__container no-border ${this.state.currentTab !== 'screenercentralqa' ? 'hidden' : ''}`} >
+                    <CustomTableComponent
+                        showPagination={false}
+                        endPointUrl={this.getEndpointUrl('screenercentralqa')}
+                        columns={this.state.screenerscentralqaColumns}
+                        defaultSorted={[{ id: 'tester__user__last_name', desc: false }]}
+                        params={this.props.params}
+                        defaultPath={baseUrl}
+                        orderKey="screenerOrder"
+                        multiSort
+                        withBorder={false}
+                        isSortable={false}
+                        canSelect={false}
+                        dataKey="result"
+                    />
+                </div>
+                <div className={`widget__container no-border ${this.state.currentTab !== 'confirmercentralqa' ? 'hidden' : ''}`}>
+                    <CustomTableComponent
+                        showPagination={false}
+                        endPointUrl={this.getEndpointUrl('confirmercentralqa')}
+                        columns={this.state.confirmerscentralqaColumns}
+                        defaultSorted={[{ id: 'tester__user__last_name', desc: false }]}
+                        params={this.props.params}
+                        defaultPath={baseUrl}
+                        orderKey="confirmerOrder"
+                        multiSort
+                        withBorder={false}
+                        isSortable={false}
+                        canSelect={false}
+                        dataKey="result"
+                    />
+                </div>
             </section>
         );
     }
@@ -147,15 +257,18 @@ Cases.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
+    currentUser: state.currentUser.user,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
 const CasesWithIntl = injectIntl(Cases);

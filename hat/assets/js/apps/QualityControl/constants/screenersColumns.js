@@ -15,6 +15,15 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Coordination',
+                id: 'monitoring.label.coordination',
+            }),
+            className: 'small',
+            accessor: 'tester__team__coordination__name',
+            Cell: settings => <span>{`${settings.original.tester__team__coordination__name === null ? '--' : settings.original.tester__team__coordination__name}`}</span>,
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Tests de dépistage',
                 id: 'monitoring.label.screening_count',
             }),
@@ -38,157 +47,39 @@ const screenersColumns = formatMessage => (
                 renderCountCell(settings.original.rdt_count, settings.original.positive_rdt_count, formatMessage),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Photos',
-                id: 'monitoring.label.pictures',
-            }),
-            columns: [
-                {
-                    Header: 'CATT +',
-                    accessor: 'catt_test_positive_pictures',
-                    className: 'small',
-                },
-                {
-                    Header: 'CATT -',
-                    accessor: 'catt_test_negative_pictures',
-                    className: 'small',
-                },
-                {
-                    Header: 'RDT +',
-                    accessor: 'rdt_test_positive_pictures',
-                    className: 'small',
-                },
-                {
-                    Header: 'RDT -',
-                    accessor: 'rdt_test_negative_pictures',
-                    className: 'small',
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Total',
-                        id: 'monitoring.label.picturesTotal',
-                    }),
-                    accessor: 'rdt_count',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                settings.original.rdt_test_pictures + settings.original.catt_test_pictures
-                            }
-                        </span>
-                    ),
-                },
-            ],
+            Header: 'CATT +',
+            accessor: 'catt_test_positive_pictures',
+            className: 'small',
+        },
+        {
+            Header: 'CATT -',
+            accessor: 'catt_test_negative_pictures',
+            className: 'small',
+        },
+        {
+            Header: 'RDT +',
+            accessor: 'rdt_test_positive_pictures',
+            className: 'small',
+        },
+        {
+            Header: 'RDT -',
+            accessor: 'rdt_test_negative_pictures',
+            className: 'small',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'QC',
-                id: 'monitoring.label.qc',
+                defaultMessage: 'Total',
+                id: 'monitoring.label.picturesTotal',
             }),
-            columns: [
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Vérifiés',
-                        id: 'monitoring.label.checked',
-                    }),
-                    accessor: 'checked',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked + " (" + (settings.original.checked / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Conformes',
-                        id: 'monitoring.label.checkedOk',
-                    }),
-                    accessor: 'checked',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked_ok + " (" + (settings.original.checked_ok / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Non conformes',
-                        id: 'monitoring.label.checkedKo',
-                    }),
-                    accessor: 'checked',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) ?
-                                    (settings.original.checked_ko + " (" + (settings.original.checked_ko / (settings.original.rdt_test_pictures + settings.original.catt_test_pictures) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Discordants',
-                        id: 'monitoring.label.checkedMismatch',
-                    }),
-                    accessor: 'checked',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.checked_ko) ?
-                                    (settings.original.checked_mismatch + " (" + (settings.original.checked_mismatch / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Illisibles',
-                        id: 'monitoring.label.checkedUnreadable',
-                    }),
-                    accessor: 'checked_unreadable',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.checked_ko) ?
-                                    (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Invalides',
-                        id: 'monitoring.label.checkedInvalid',
-                    }),
-                    accessor: 'checked_invalid',
-                    className: 'small',
-                    Cell: settings => (
-                        <span>
-                            {
-                                (settings.original.checked_ko) ?
-                                    (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
-                                    : "-"
-                            }
-                        </span>
-                    ),
-                },
-            ],
+            accessor: 'rdt_count',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.rdt_test_pictures + settings.original.catt_test_pictures
+                    }
+                </span>
+            ),
         },
     ]
 );

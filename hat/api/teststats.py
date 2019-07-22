@@ -90,7 +90,7 @@ class TestStatsViewSet(viewsets.ViewSet):
         tester_type = request.GET.get("testertype", None)
         xlsx_format = request.GET.get("xlsx", None)
 
-        if result is None:
+        if result is None or grouping == "tester":
             if grouping == "villageday":
                 grouping_fields = ("village_id", "date")
                 queryset = Test.objects.extra(select={"date": "date( date )"})

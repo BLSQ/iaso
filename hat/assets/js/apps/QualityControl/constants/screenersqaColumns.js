@@ -2,6 +2,14 @@ import React from 'react';
 
 import { renderCountCell } from '../../../utils';
 
+function formatPercentage(value) {
+    if (isNaN(value)) {
+        return 0;
+    } else {
+        return value;
+    }
+}
+
 const screenersColumns = formatMessage => (
     [
         {
@@ -48,7 +56,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked)) ?
-                            (settings.original.checked + " (" + (settings.original.checked / (settings.original.test_pictures) * 100).toFixed(1) + "%)")
+                            (settings.original.checked + " (" + formatPercentage(settings.original.checked / (settings.original.test_pictures) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -65,41 +73,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ok)) ?
-                            (settings.original.checked_ok + " (" + (settings.original.checked_ok / (settings.original.checked) * 100).toFixed(1) + "%)")
-                            : "-"
-                    }
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Non concordants',
-                id: 'monitoring.label.checkedKo',
-            }),
-            accessor: 'checked',
-            className: 'small',
-            Cell: settings => (
-                <span>
-                    {
-                        (!isNaN(settings.original.checked_ko)) ?
-                            (settings.original.checked_ko + " (" + (settings.original.checked_ko / (settings.original.checked) * 100).toFixed(1) + "%)")
-                            : "-"
-                    }
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Illisibles',
-                id: 'monitoring.label.checkedUnreadable',
-            }),
-            accessor: 'checked_unreadable',
-            className: 'small',
-            Cell: settings => (
-                <span>
-                    {
-                        (!isNaN(settings.original.checked_unreadable)) ?
-                            (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / (settings.original.checked_invalid) * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ok + " (" + formatPercentage(settings.original.checked_ok / (settings.original.checked) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -116,12 +90,63 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_invalid)) ?
-                            (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
+                            ((settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch) + " (" + formatPercentage((settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch) / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
             ),
         },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Illisible',
+                id: 'monitoring.label.checked_unreadable',
+            }),
+            accessor: 'checked_unreadable',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        (!isNaN(settings.original.checked_unreadable)) ?
+                            (settings.original.checked_unreadable + " (" + formatPercentage(settings.original.checked_unreadable / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
+                            : "-"
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Invalide',
+                id: 'monitoring.label.checkedInvalid',
+            }),
+            accessor: 'checked_invalid',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        (!isNaN(settings.original.checked_invalid)) ?
+                            (settings.original.checked_invalid + " (" + formatPercentage(settings.original.checked_invalid / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
+                            : '-'
+                    }
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Non concordants',
+                id: 'monitoring.label.checked_mismatch',
+            }),
+            accessor: 'checked',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {
+                        (!isNaN(settings.original.checked_mismatch)) ?
+                            (settings.original.checked_mismatch + " (" + formatPercentage(settings.original.checked_mismatch / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            : "-"
+                    }
+                </span>
+            ),
+        }
     ]
 );
 export default screenersColumns;

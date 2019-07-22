@@ -73,11 +73,6 @@ class TestStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         absolute_url = request.build_absolute_uri()
-        user_level = request.user.profile.level if request.user.profile.level else 10
-        current_level = 1
-        current_level = LEVEL_2 if user_level == LEVEL_2 else current_level
-        current_level = LEVEL_3 if user_level == LEVEL_3 else current_level
-        current_level = LEVEL_3 if user_level == LEVEL_4 else current_level
         province_level = LEVEL_2
         central_level = LEVEL_3
         result = cache.get(absolute_url)

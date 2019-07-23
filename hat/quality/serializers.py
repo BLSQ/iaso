@@ -2,17 +2,8 @@ import sys
 from rest_framework import serializers
 
 from hat.quality.models import Check
-from hat.cases.models import RES_INVALID
 
-from hat.cases.models import (
-    RES_POSITIVE,
-    RES_UNREADABLE,
-    RES_NEGATIVE,
-    RES_MISSING,
-    RES_ABSENT,
-    RES_UNSURE,
-    RES_INVALID,
-)
+from hat.cases.models import RES_POSITIVE, RES_NEGATIVE
 
 
 class CheckSerializer(serializers.Serializer):
@@ -29,11 +20,16 @@ class CheckSerializer(serializers.Serializer):
     def create(self, validated_data):
         validator = self.context["request"].user
         level = self.context["request"].user.profile.level
-        result = (
-            RES_POSITIVE
-            if validated_data.get("is_confirmed_case", False)
-            else RES_NEGATIVE
-        )
+        result = validated_data.get("result", None)
+        if (
+            result is None
+        ):  # results for videos are handled differently, this is a way to identify them
+            result = (
+                RES_POSITIVE
+                if validated_data.get("is_confirmed_case", False)
+                else RES_NEGATIVE
+            )
+
         check = Check(
             result=result,
             validator=validator,

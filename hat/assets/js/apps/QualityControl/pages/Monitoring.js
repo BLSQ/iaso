@@ -104,7 +104,7 @@ class Cases extends Component {
         ];
 
         if (currentUser) {
-            if (currentUser.level >= 20) {
+            if (currentUser.level >= 20 && currentUser.level < 30) {
                 tabs = tabs.concat([
                     { label: formatMessage(MESSAGES.screenerqa), key: 'screenerqa' },
                     { label: formatMessage(MESSAGES.confirmerqa), key: 'confirmerqa' },

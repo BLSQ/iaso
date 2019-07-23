@@ -4,7 +4,7 @@ import { renderCountCell } from '../../../utils';
 
 const screenersColumns = formatMessage => (
     [
-        {
+        { 
             Header: formatMessage({
                 defaultMessage: 'Nom',
                 id: 'monitoring.label.name',

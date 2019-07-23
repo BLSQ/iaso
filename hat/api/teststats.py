@@ -239,7 +239,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                     is_clear=Count(
                         "id",
                         filter=(
-                            Q(type__in=TYPES_CONFIRMATION) & Q(check__is_clear=True)
+                            Q(check__level=province_level)
+                            & Q(type__in=TYPES_CONFIRMATION)
+                            & Q(check__is_clear=True)
                         ),
                     )
                 )
@@ -247,7 +249,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     is_good_place=Count(
                         "id",
                         filter=(
-                            Q(type__in=TYPES_CONFIRMATION)
+                            Q(check__level=province_level)
+                            & Q(type__in=TYPES_CONFIRMATION)
                             & Q(check__is_good_place=True)
                         ),
                     )

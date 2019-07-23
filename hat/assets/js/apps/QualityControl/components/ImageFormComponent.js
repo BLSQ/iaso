@@ -51,11 +51,13 @@ class ImageFormComponent extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         const tempGroupedCattTests = !isMediumUser(nextProps.userLevel) && !isSuperUser(nextProps.userLevel) && nextProps.currentTest.type === 'CATT' ? groupCattTests(nextProps.currentTest) : [];
+        const check = {
+            ...nextProps.currentTest,
+        };
+        check.result = -10;
         this.setState({
             currentTest: nextProps.currentTest,
-            currentCheck: {
-                ...nextProps.currentTest,
-            },
+            currentCheck: check,
             groupedCattTests: tempGroupedCattTests,
             isFullCatt: this.isFullCatt(nextProps.currentTest, tempGroupedCattTests),
         });

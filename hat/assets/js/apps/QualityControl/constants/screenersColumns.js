@@ -48,27 +48,27 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: 'CATT +',
-            accessor: 'catt_test_positive_pictures',
+            accessor: 'positive_catt_count',
             className: 'small',
         },
         {
             Header: 'CATT -',
-            accessor: 'catt_test_negative_pictures',
+            accessor: 'negative_catt_count',
             className: 'small',
         },
         {
             Header: 'RDT +',
-            accessor: 'rdt_test_positive_pictures',
+            accessor: 'positive_rdt_count',
             className: 'small',
         },
         {
             Header: 'RDT -',
-            accessor: 'rdt_test_negative_pictures',
+            accessor: 'negative_rdt_count',
             className: 'small',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Total',
+                defaultMessage: 'Total Images',
                 id: 'monitoring.label.picturesTotal',
             }),
             accessor: 'rdt_count',

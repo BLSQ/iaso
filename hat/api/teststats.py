@@ -211,6 +211,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                 )
                 .annotate(
+                    negative_catt_count=Count(
+                        "id", filter=Q(type=CATT) & Q(result=RES_NEGATIVE)
+                    )
+                )
+                .annotate(
+                    negative_rdt_count=Count(
+                        "id", filter=Q(type=RDT) & Q(result=RES_NEGATIVE)
+                    )
+                )
+                .annotate(
                     positive_screening_test_count=Count(
                         "id",
                         filter=(Q(type=RDT) & Q(result__gte=RES_POSITIVE))
@@ -225,6 +235,23 @@ class TestStatsViewSet(viewsets.ViewSet):
                         ),
                     )
                 )
+                .annotate(
+                    is_clear=Count(
+                        "id",
+                        filter=(
+                            Q(type__in=TYPES_CONFIRMATION) & Q(check__is_clear=True)
+                        ),
+                    )
+                )
+                .annotate(
+                    is_good_place=Count(
+                        "id",
+                        filter=(
+                            Q(type__in=TYPES_CONFIRMATION)
+                            & Q(check__is_good_place=True)
+                        ),
+                    )
+                )
                 .annotate(first_test_date=Min("date"))
                 .annotate(last_test_date=Max("date"))
                 .annotate(total_population=DistinctSum("village__population"))
@@ -235,7 +262,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "date",
                     "confirmation_count",
                     "positive_catt_count",
-                    "positive_rdt_count",
+                    "negative_rdt_count",
                     "positive_screening_test_count",
                     "pl_count_stage1",
                     "pl_count_stage2",
@@ -322,6 +349,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "catt_count",
                     "positive_catt_count",
                     "positive_rdt_count",
+                    "negative_catt_count",
+                    "negative_rdt_count",
                     "positive_screening_test_count",
                     "confirmation_count",
                     "positive_confirmation_test_count",
@@ -339,6 +368,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "checked_mismatch",
                     "checked_unreadable",
                     "checked_invalid",
+                    "is_clear",
+                    "is_good_place",
                 )
 
                 if tester_type == "screener":

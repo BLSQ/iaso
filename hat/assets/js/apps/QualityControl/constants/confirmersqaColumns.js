@@ -2,6 +2,14 @@ import React from 'react';
 
 import { renderCountCell } from '../../../utils';
 
+function formatPercentage(value) {
+    if (isNaN(value)) {
+        return 0;
+    } else {
+        return value;
+    }
+}
+
 const confirmersColumns = formatMessage => (
     [
         {
@@ -43,7 +51,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         !isNaN(settings.original.checked) ?
-                            (settings.original.checked + " (" + (settings.original.checked / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
+                            (settings.original.checked + " (" + formatPercentage(settings.original.checked / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -60,7 +68,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ok)) ?
-                            (settings.original.checked_ok + " (" + (settings.original.checked_ok / settings.original.checked * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ok + " (" + formatPercentage(settings.original.checked_ok / settings.original.checked * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -77,7 +85,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ko)) ?
-                            (settings.original.checked_ko + " (" + (settings.original.checked_ko / settings.original.checked * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ko + " (" + formatPercentage(settings.original.checked_ko / settings.original.checked * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -85,34 +93,34 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Illisibles',
-                id: 'monitoring.label.checkedUnreadable',
+                defaultMessage: 'Netteté',
+                id: 'monitoring.label.checkedIsClear',
             }),
-            accessor: 'checked_unreadable',
+            accessor: 'is_clear',
             className: 'small',
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_unreadable)) ?
-                            (settings.original.checked_unreadable + " (" + (settings.original.checked_unreadable / settings.original.checked_ko * 100).toFixed(1) + "%)")
-                            : "-"
+                        (!isNaN(settings.original.is_clear)) ?
+                            (settings.original.is_clear + ' (' + formatPercentage(settings.original.is_clear / settings.original.checked * 100).toFixed(1) + '%)')
+                            : '-'
                     }
                 </span>
             ),
         },
         {
             Header: formatMessage({
-                defaultMessage: 'A problème',
-                id: 'monitoring.label.checkedInvalid',
+                defaultMessage: 'Champ de vision correct',
+                id: 'monitoring.label.checkedGoodPlace',
             }),
-            accessor: 'checked_invalid',
+            accessor: 'is_good_place',
             className: 'small',
             Cell: settings => (
                 <span>
                     {
-                        !isNaN(settings.original.checked_invalid) ?
-                            (settings.original.checked_invalid + " (" + (settings.original.checked_invalid / settings.original.checked_ko * 100).toFixed(1) + "%)")
-                            : "-"
+                        !isNaN(settings.original.is_good_place) ?
+                            (settings.original.is_good_place + ' (' + formatPercentage(settings.original.is_good_place / settings.original.checked * 100).toFixed(1) + '%)')
+                            : '-'
                     }
                 </span>
             ),
@@ -120,9 +128,3 @@ const confirmersColumns = formatMessage => (
     ]
 );
 export default confirmersColumns;
-
-// settings.original.pg_count,
-// settings.original.pl_count_positive,
-// settings.original.pl_count_stage1,
-// settings.original.pl_count_stage2,
-// formatMessage,

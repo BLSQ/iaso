@@ -2,6 +2,15 @@ import React from 'react';
 
 import { renderCountCell } from '../../../utils';
 
+function formatPercentage(value) {
+    if (isNaN(value)) {
+        return 0;
+    } else {
+        return value;
+    }
+}
+
+
 const screenersColumns = formatMessage => (
     [
         {
@@ -50,7 +59,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked)) ?
-                            (settings.original.checked + " (" + (settings.original.checked / (settings.original.test_pictures) * 100).toFixed(1) + "%)")
+                            (settings.original.checked + " (" + formatPercentage(settings.original.checked / (settings.original.test_pictures) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -67,8 +76,8 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ok_central)) ?
-                            (settings.original.checked_ok_central + ' (' + (settings.original.checked_ok_central / (settings.original.checked) * 100).toFixed(1) + "%)")
-                            : "-"
+                            (settings.original.checked_ok_central + ' (' + formatPercentage(settings.original.checked_ok_central / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            : '-'
                     }
                 </span>
             ),
@@ -84,7 +93,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ok)) ?
-                            (settings.original.checked_ok + " (" + (settings.original.checked_ok / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ok + " (" + formatPercentage(settings.original.checked_ok / (settings.original.checked) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>
@@ -101,7 +110,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ko_central)) ?
-                            (settings.original.checked_ko_central + " (" + (settings.original.checked_ko_central / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ko_central + ' (' + formatPercentage(settings.original.checked_ko_central / (settings.original.checked) * 100).toFixed(1) + '%)')
                             : "-"
                     }
                 </span>
@@ -118,7 +127,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_ko)) ?
-                            (settings.original.checked_ko + " (" + (settings.original.checked_ko / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            (settings.original.checked_ko + ' (' + formatPercentage(settings.original.checked_ko / (settings.original.checked) * 100).toFixed(1) + '%)')
                             : "-"
                     }
                 </span>

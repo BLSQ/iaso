@@ -53,69 +53,66 @@ class TestVideoComponent extends React.Component {
                         <FormattedMessage id="main.submit.no" defaultMessage="Non" />
                     </div>
                 </section>
-                {
-                    isClear &&
-                    <section>
-                        <div className="quality-label inline">
-                            <FormattedMessage
-                                id="quality.main.search"
-                                defaultMessage="Recherche parasite au bon endroit"
-                            />:
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isGoodPlace"
-                                value={isGoodPlace}
-                                checked={isGoodPlace ? 'checked' : ''}
-                                onChange={() => changeOption('isGoodPlace')}
-                            />
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isGoodPlace"
-                                value={isGoodPlace}
-                                checked={!isGoodPlace ? 'checked' : ''}
-                                onChange={() => changeOption('isGoodPlace')}
-                            />
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />
-                        </div>
-                    </section>
-                }
 
-                {
-                    isClear &&
-                    <section>
-                        <div className="quality-label inline">
-                            <FormattedMessage
-                                id="quality.main.confirm"
-                                defaultMessage="Confirmation vue trypanosome"
-                            />:
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isConfirmedCase"
-                                value={isConfirmedCase}
-                                checked={isConfirmedCase ? 'checked' : ''}
-                                onChange={() => changeOption('isConfirmedCase')}
-                            />
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
-                        </div>
-                        <div className="quality-radio">
-                            <input
-                                type="radio"
-                                name="isConfirmedCase"
-                                value={isConfirmedCase}
-                                checked={!isConfirmedCase ? 'checked' : ''}
-                                onChange={() => changeOption('isConfirmedCase')}
-                            />
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />
-                        </div>
-                    </section>
-                }
+                <section>
+                    <div className="quality-label inline">
+                        <FormattedMessage
+                            id="quality.main.search"
+                            defaultMessage="Recherche parasite au bon endroit"
+                        />:
+                    </div>
+                    <div className="quality-radio">
+                        <input
+                            type="radio"
+                            name="isGoodPlace"
+                            value={isGoodPlace}
+                            checked={isGoodPlace ? 'checked' : ''}
+                            onChange={() => changeOption('isGoodPlace')}
+                        />
+                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                    </div>
+                    <div className="quality-radio">
+                        <input
+                            type="radio"
+                            name="isGoodPlace"
+                            value={isGoodPlace}
+                            checked={!isGoodPlace ? 'checked' : ''}
+                            onChange={() => changeOption('isGoodPlace')}
+                        />
+                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                    </div>
+                </section>
+
+
+
+                <section>
+                    <div className="quality-label inline">
+                        <FormattedMessage
+                            id="quality.main.confirm"
+                            defaultMessage="Confirmation vue trypanosome"
+                        />:
+                    </div>
+                    <div className="quality-radio">
+                        <input
+                            type="radio"
+                            name="isConfirmedCase"
+                            value={isConfirmedCase}
+                            checked={isConfirmedCase ? 'checked' : ''}
+                            onChange={() => changeOption('isConfirmedCase')}
+                        />
+                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                    </div>
+                    <div className="quality-radio">
+                        <input
+                            type="radio"
+                            name="isConfirmedCase"
+                            value={isConfirmedCase}
+                            checked={!isConfirmedCase ? 'checked' : ''}
+                            onChange={() => changeOption('isConfirmedCase')}
+                        />
+                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                    </div>
+                </section>
 
                 <section>
                     <div className="quality-label inline">

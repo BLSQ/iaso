@@ -88,6 +88,17 @@ class Cases extends Component {
         return url;
     }
 
+    selectTester(testerItem, event) {
+        const { params } = this.props;
+        const newParams = {
+            userId: testerItem.tester_id,
+            date_from: params.date_from,
+            date_to: params.date_to,
+        };
+
+        this.props.redirectTo('monitoring/detail', newParams);
+    }
+
     render() {
         const {
             intl: {
@@ -229,6 +240,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmercentralqa' ? 'hidden' : ''}`}>

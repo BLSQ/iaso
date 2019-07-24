@@ -41,6 +41,7 @@ from .user_levels import UserLevelsViewSet
 from .home import HomeViewSet
 from .team_types import TeamTypeViewSet
 from .problems import ProblemsViewSet
+from .qcdetails import QCDetailsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -58,7 +59,9 @@ router.register(r"qctests", QCTestsViewSet, base_name="qctests")
 router.register(r"checks", QCChecksViewSet, base_name="checks")
 router.register(r"qccheckstats", QCCheckStatsViewSet, base_name="qc_check_stats")
 router.register(r"traps", TrapsViewSet, base_name="traps")
-router.register(r"sites", TrapsViewSet, base_name="traps_as_sites") #for compatibility with existing mobile application
+router.register(
+    r"sites", TrapsViewSet, base_name="traps_as_sites"
+)  # for compatibility with existing mobile application
 router.register(r"new_sites", SitesViewSet, base_name="sites")
 router.register(r"targets", TargetsViewSet, base_name="targets")
 router.register(r"catches", CatchesViewSet, base_name="catches")
@@ -71,18 +74,25 @@ router.register(r"permissions", PermissionsViewSet, base_name="permissions")
 router.register(r"usertypes", UserTypeViewSet, base_name="usertypes")
 router.register(r"stats", StatsViewSet, base_name="stats")
 router.register(r"patients", PatientsViewSet, base_name="patients")
-router.register(r"patientduplicates", PatientDuplicatesViewSet, base_name="patientduplicates")
+router.register(
+    r"patientduplicates", PatientDuplicatesViewSet, base_name="patientduplicates"
+)
 router.register(r"villagetypes", VillageTypeViewSet, base_name="village_types")
 router.register(r"devices", DevicesViewSet, base_name="devices")
 router.register(r"testsmapping", TestsMappingViewSet, base_name="tests_mapping")
 router.register(r"habitats", HabitatsViewSet, base_name="habitats")
-router.register(r"vectorapiimports", VectorApiImportViewSet, base_name="vectorapiimports")
-router.register(r"vectorgpsimports", VectorGpsImportViewSet, base_name="vectorgpsimports")
+router.register(
+    r"vectorapiimports", VectorApiImportViewSet, base_name="vectorapiimports"
+)
+router.register(
+    r"vectorgpsimports", VectorGpsImportViewSet, base_name="vectorgpsimports"
+)
 router.register(r"testertypes", TesterTypeViewSet, base_name="testertypes")
 router.register(r"currentuser", CurrentUserViewSet, base_name="currentuser")
 router.register(r"userlevels", UserLevelsViewSet, base_name="userlevels")
 router.register(r"home", HomeViewSet, base_name="home")
 router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
 router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
+router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 
 urlpatterns = [url(r"^", include(router.urls))]

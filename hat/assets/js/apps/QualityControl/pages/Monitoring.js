@@ -176,6 +176,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmer' ? 'hidden' : ''}`}>
@@ -192,6 +193,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'screenerqa' ? 'hidden' : ''}`} >
@@ -208,6 +210,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmerqa' ? 'hidden' : ''}`}>
@@ -224,6 +227,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'screenercentralqa' ? 'hidden' : ''}`} >
@@ -257,6 +261,7 @@ class Cases extends Component {
                         isSortable={false}
                         canSelect={false}
                         dataKey="result"
+                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
                     />
                 </div>
             </section>

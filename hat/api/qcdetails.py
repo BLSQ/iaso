@@ -40,7 +40,7 @@ class QCDetailsViewSet(viewsets.ViewSet):
             tests = tests.filter(date__date__lte=to_date)
 
         res = {}
-        res["tester"] = tester.full_name() + " - " + tester.team.name
+        res["tester"] = tester.full_name()
         test_array = []
 
         for test in tests:

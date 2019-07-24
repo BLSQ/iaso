@@ -8,8 +8,8 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import ImageComponent from '../components/ImageComponent';
-import VideoComponent from '../../../components/VideoComponent'
+import VideoComponent from '../../../components/VideoComponent';
+import ImgModal from '../../../components/ImgModal';
 
 const detailsColumns = formatMessage => (
     [
@@ -59,9 +59,23 @@ const detailsColumns = formatMessage => (
             accessor: 'media_url',
             Cell: (settings) => {
                 if (settings.original.media_type === 'image') {
-                    return <span><ImageComponent imageItem={{ id: settings.original.id, image: settings.original.media_url }} /></span>;
+                    return (
+                        <span>
+                            <ImgModal
+                                imgPath={settings.original.media_url}
+                                altText={formatMessage({
+                                    defaultMessage: 'Résultat test dépistage',
+                                    id: 'main.screening.result',
+                                })}
+                            />
+                        </span>);
                 }
-                return <span><VideoComponent videoItem={{ id: settings.original.id, image: settings.original.media_url }} /></span>;
+                return (<VideoComponent videoItem={
+                    {
+                        video: settings.original.media_url,
+                    }
+                }
+                />);
             },
         },
     ]

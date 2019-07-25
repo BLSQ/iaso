@@ -154,7 +154,7 @@ const casesListColumns = formatMessage => (
                         >
                             <i className="fa fa-thumb-tack" />
                             {formatMessage({
-                                defaultMessage: 'Localiser',
+                                defaultMessage: 'Localiser ',
                                 id: 'main.label.locateCase',
                             })}
                         </button>

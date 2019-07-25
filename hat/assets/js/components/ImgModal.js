@@ -125,18 +125,24 @@ class ImgModal extends React.Component {
                 </ReactResizeDetector>
             );
         }
+        const style = {
+            width: imgProps.orientation === 'landscape' ? '100%' : 'auto',
+            height: imgProps.orientation === 'portrait' ? '100%' : 'auto',
+            maxHeight: '400px',
+            cursor: 'pointer',
+        };
+
+        if (this.props.smallPreview) {
+            style.maxHeight = '100px';
+        }
+
         return (
             <img
                 src={imgPath}
                 alt={altText || imgPath}
                 className={imgProps.orientation}
                 onClick={() => this.toggleModal()}
-                style={{
-                    width: imgProps.orientation === 'landscape' ? '100%' : 'auto',
-                    height: imgProps.orientation === 'portrait' ? '100%' : 'auto',
-                    maxHeight: '400px',
-                    cursor: 'pointer',
-                }}
+                style={style}
             />
         );
     }
@@ -144,11 +150,13 @@ class ImgModal extends React.Component {
 
 ImgModal.defaultProps = {
     altText: null,
+    smallPreview: false,
 };
 
 ImgModal.propTypes = {
     imgPath: PropTypes.string.isRequired,
     altText: PropTypes.string,
+    smallPreview: PropTypes.bool,
 };
 
 export default ImgModal;

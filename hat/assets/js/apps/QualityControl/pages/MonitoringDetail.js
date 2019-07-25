@@ -63,6 +63,7 @@ const detailsColumns = formatMessage => (
                         <div style={{ 'max-width': '100px', 'max-height': '100px' }}>
                             <ImgModal
                                 imgPath={settings.original.media_url}
+                                smallPreview
                                 altText={formatMessage({
                                     defaultMessage: 'Résultat test dépistage',
                                     id: 'main.screening.result',
@@ -70,7 +71,7 @@ const detailsColumns = formatMessage => (
                             />
                         </div>);
                 }
-                return <a href={settings.original.media_url} target="_blank">Voir la vidéo</a>;
+                return <a href={settings.original.media_url}>Voir la vidéo</a>;
             },
         },
     ]

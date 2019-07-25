@@ -8,7 +8,6 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import { createUrl } from '../../../utils/fetchData';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import VideoComponent from '../../../components/VideoComponent';
 import ImgModal from '../../../components/ImgModal';
 
 const detailsColumns = formatMessage => (
@@ -139,10 +138,10 @@ class QualityDetail extends React.Component {
                 </section>
                 <CustomTableComponent
                     showPagination={false}
-                    endPointUrl={'/api/qcdetails/'+ userId + '/?'}
+                    endPointUrl={'/api/qcdetails/'+ userId + '/?date_from=' + params.date_from + '&date_to=' + params.date_to}
                     columns={detailsColumns(this.props.intl.formatMessage)}
                     defaultSorted={[{ id: 'created_at', desc: false }]}
-                    params={this.props.params}
+                    params={params}
                     orderKey="created_at"
                     multiSort
                     withBorder={false}

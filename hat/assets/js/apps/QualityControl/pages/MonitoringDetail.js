@@ -71,7 +71,7 @@ const detailsColumns = formatMessage => (
                             />
                         </div>);
                 }
-                return <a href={settings.original.media_url}>Voir la vidéo</a>;
+                return <a href={settings.original.media_url} onClick={() => window.open(settings.original.media_url)}>Voir la vidéo</a>;
             },
         },
     ]

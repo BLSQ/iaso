@@ -102,7 +102,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.is_clear)) ?
-                            (settings.original.is_clear + ' (' + formatPercentage(100 - ((settings.original.is_clear / settings.original.checked) * 100)).toFixed(1) + '%)')
+                            ((settings.original.checked - settings.original.is_clear) + ' (' + formatPercentage(100 - ((settings.original.is_clear / settings.original.checked) * 100)).toFixed(1) + '%)')
                             : '-'
                     }
                 </span>
@@ -119,7 +119,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         !isNaN(settings.original.is_good_place) ?
-                            (settings.original.is_good_place + ' (' + formatPercentage(100 - ((settings.original.is_good_place / settings.original.checked) * 100)).toFixed(1) + '%)')
+                            ((settings.original.checked - settings.original.is_good_place) + ' (' + formatPercentage(100 - ((settings.original.is_good_place / settings.original.checked) * 100)).toFixed(1) + '%)')
                             : '-'
                     }
                 </span>

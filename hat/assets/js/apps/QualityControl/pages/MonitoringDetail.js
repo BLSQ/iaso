@@ -28,7 +28,7 @@ const detailsColumns = formatMessage => (
             }),
             accessor: 'result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.result }</strong> <br />({ settings.original.check_20_validator })</span>,
+            Cell: settings => <span><strong>{ settings.original.result }</strong> <br />({ settings.original.tester })</span>,
 
         },
         {
@@ -38,7 +38,7 @@ const detailsColumns = formatMessage => (
             }),
             accessor: 'check_20_result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.check_20_result }</strong> <br />({ settings.original.check_20_validator })</span>,
+            Cell: settings => <span><strong>{ settings.original.check_20_result } </strong> <br /> <span>{`${settings.original.check_20_validator ?  settings.original.check_20_validator : '--' }` } </span></span>,
         },
         {
             Header: formatMessage({
@@ -138,7 +138,7 @@ class QualityDetail extends React.Component {
                 </section>
                 <CustomTableComponent
                     showPagination={false}
-                    endPointUrl={'/api/qcdetails/'+ userId + '/?date_from=' + params.date_from + '&date_to=' + params.date_to}
+                    endPointUrl={'/api/qcdetails/'+ userId + '/?from=' + params.date_from + '&to=' + params.date_to}
                     columns={detailsColumns(this.props.intl.formatMessage)}
                     defaultSorted={[{ id: 'created_at', desc: false }]}
                     params={params}

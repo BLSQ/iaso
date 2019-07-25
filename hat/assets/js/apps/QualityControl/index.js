@@ -20,7 +20,7 @@ import { testReducer, testInitialState } from './redux/test';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
-    const dateFrom = moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD');
+    const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
     const defaultPath = `dashboard/date_from/${dateFrom}/date_to/${dateTo}/imagePageSize/50/imagePage/1/videoPageSize/50/videoPage/1`;
     const defaulStatsPath = `/stats/date_from/${dateFrom}/date_to/${dateTo}/order/id`;

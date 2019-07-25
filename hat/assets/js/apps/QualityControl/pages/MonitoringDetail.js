@@ -70,7 +70,7 @@ const detailsColumns = formatMessage => (
                             />
                         </div>);
                 }
-                return <a href={settings.original.media_url} target="_blank">Voir la vidéo </a>;
+                return <a href={settings.original.media_url} target="_blank">Voir la vidéo</a>;
             },
         },
     ]

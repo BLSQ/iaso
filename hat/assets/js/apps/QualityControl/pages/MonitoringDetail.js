@@ -62,7 +62,7 @@ const detailsColumns = formatMessage => (
                     return (
                         <div style={{ 'max-width': '100px', 'max-height': '100px' }}>
                             <ImgModal
-                                imgPath="https://d2dmtfkh3yisi8.cloudfront.net/images/e94215fa-3fc5-4c8e-aa1c-836a802f9239.jpg"
+                                imgPath={settings.original.media_url}
                                 altText={formatMessage({
                                     defaultMessage: 'Résultat test dépistage',
                                     id: 'main.screening.result',
@@ -70,14 +70,7 @@ const detailsColumns = formatMessage => (
                             />
                         </div>);
                 }
-                return (
-                    <div style={{ width: '100px', height: '75px' }}><VideoComponent videoItem={
-                        {
-                            video: settings.original.media_url,
-                        }
-                    }
-                    />
-                    </div>);
+                return <a href={settings.original.media_url} target="_blank">Voir la vidéo </a>;
             },
         },
     ]

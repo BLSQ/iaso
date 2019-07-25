@@ -48,7 +48,7 @@ const detailsColumns = formatMessage => (
             }),
             accessor: 'check_30_result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.check_30_result }</strong> <br /> <span>{`${settings.original.check_30_validator ?  settings.original.check_30_validator : '--' }` } </span></span>,
+            Cell: settings => <span><strong>{ settings.original.check_30_result } </strong> <br /> <span>{`${settings.original.check_30_validator ?  settings.original.check_30_validator : '--' }` } </span></span>,
         },
         {
             Header: formatMessage({
@@ -60,22 +60,24 @@ const detailsColumns = formatMessage => (
             Cell: (settings) => {
                 if (settings.original.media_type === 'image') {
                     return (
-                        <span>
+                        <div style={{ 'max-width': '100px', 'max-height': '100px' }}>
                             <ImgModal
-                                imgPath={settings.original.media_url}
+                                imgPath="https://d2dmtfkh3yisi8.cloudfront.net/images/e94215fa-3fc5-4c8e-aa1c-836a802f9239.jpg"
                                 altText={formatMessage({
                                     defaultMessage: 'Résultat test dépistage',
                                     id: 'main.screening.result',
                                 })}
                             />
-                        </span>);
+                        </div>);
                 }
-                return (<VideoComponent videoItem={
-                    {
-                        video: settings.original.media_url,
+                return (
+                    <div style={{ width: '100px', height: '75px' }}><VideoComponent videoItem={
+                        {
+                            video: settings.original.media_url,
+                        }
                     }
-                }
-                />);
+                    />
+                    </div>);
             },
         },
     ]

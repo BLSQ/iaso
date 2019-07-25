@@ -141,7 +141,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (!isNaN(settings.original.checked_mismatch)) ?
-                            (settings.original.checked_mismatch + " (" + formatPercentage(settings.original.checked_mismatch / (settings.original.checked) * 100).toFixed(1) + "%)")
+                            (settings.original.checked_mismatch + " (" + formatPercentage(settings.original.checked_mismatch / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
                             : "-"
                     }
                 </span>

@@ -191,7 +191,7 @@ class UserModale extends Component {
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
-                            <FormattedMessage id="main.label.userupdated" defaultMessage="Utlisateur sauvegardé" />
+                            <FormattedMessage id="main.label.userupdated" defaultMessage="Utilisateur sauvegardé" />
                         </div>
                     }
                     {

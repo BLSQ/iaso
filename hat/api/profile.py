@@ -7,7 +7,14 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, PROFILE_API
-from hat.users.models import Profile, Institution, UserType, Team, SCREENING_TYPE_CHOICES, TESTER_TYPE_CHOICES
+from hat.users.models import (
+    Profile,
+    Institution,
+    UserType,
+    Team,
+    SCREENING_TYPE_CHOICES,
+    TESTER_TYPE_CHOICES,
+)
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 
@@ -43,7 +50,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
         limit = int(limit)
         page_offset = int(page_offset)
-        institution_id = request.GET.get("institutionId", request.GET.get("institution_id", None))
+        institution_id = request.GET.get(
+            "institutionId", request.GET.get("institution_id", None)
+        )
         as_list = request.GET.get("as_list", False)
         team_id = request.GET.get("team_id", False)
 
@@ -72,8 +81,10 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if screening_type is not None:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             queryset = queryset.filter(screening_type=screening_type)
 
         if team_type != "all":
@@ -193,8 +204,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.tester_type = tester_type
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             profile.screening_type = screening_type
         if level:
             profile.level = level
@@ -209,7 +222,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         username = request.data.get("userName")
         existing_profile = Profile.objects.filter(user__username=username).first()
         if existing_profile and existing_profile.user.is_active:
-            return return_error("Nom d'utlisateur existant", 400)
+            return return_error("Nom d'utilisateur existant", 400)
 
         if existing_profile:
             user = existing_profile.user
@@ -231,7 +244,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         institution = request.data.get("institution", None)
         user_type = request.data.get("userType", None)
-        tester_type = request.data.get("testerType", request.data.get("tester_type", None))
+        tester_type = request.data.get(
+            "testerType", request.data.get("tester_type", None)
+        )
         screening_type = request.data.get("screening_type", None)
         team = request.data.get("team", None)
 
@@ -248,14 +263,18 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if tester_type:
             if tester_type not in [x[0] for x in TESTER_TYPE_CHOICES]:
-                return Response(f"Invalid tester_type, should be {TESTER_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid tester_type, should be {TESTER_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             user.profile.tester_type = tester_type
 
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             user.profile.screening_type = screening_type
 
         user.profile.phone = request.data.get("phone", "")

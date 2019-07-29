@@ -12,7 +12,7 @@ import App from '../App';
 import QualityDetail from './pages/QualityDetail';
 import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
-import MonitoringPAge from './pages/Monitoring';
+import MonitoringPage from './pages/Monitoring';
 import MonitoringDetail from './pages/MonitoringDetail';
 import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
@@ -57,7 +57,7 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
         />,
         <Route
             path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
-            component={MonitoringPAge}
+            component={MonitoringPage}
         />,
         <Route
             path="monitoring/detail/userId/:userId/date_from/:date_from/date_to/:date_to"

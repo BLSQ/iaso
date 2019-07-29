@@ -22,7 +22,12 @@ const detailMonitoringColumns = formatMessage => (
             }),
             accessor: 'result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.result }</strong> <br />({ settings.original.tester })</span>,
+            Cell: settings => (
+                <span>
+                    <strong>{settings.original.result}</strong>
+                    <br />({settings.original.tester})
+                </span>
+            ),
 
         },
         {
@@ -32,7 +37,13 @@ const detailMonitoringColumns = formatMessage => (
             }),
             accessor: 'check_20_result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.check_20_result } </strong> <br /> <span>{`${settings.original.check_20_validator ? settings.original.check_20_validator : '--'}` } </span></span>,
+            Cell: settings => (
+                <span>
+                    <strong>{settings.original.check_20_result} </strong>
+                    <br />
+                    <span>{`${settings.original.check_20_validator ? settings.original.check_20_validator : '--'}`} </span>
+                </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -41,7 +52,11 @@ const detailMonitoringColumns = formatMessage => (
             }),
             accessor: 'check_30_result',
             className: 'small',
-            Cell: settings => <span><strong>{ settings.original.check_30_result } </strong> <br /> <span>{`${settings.original.check_30_validator ? settings.original.check_30_validator : '--'}` } </span></span>,
+            Cell: settings => (
+                <span>
+                    <strong>{settings.original.check_30_result} </strong> <br /> <span>{`${settings.original.check_30_validator ? settings.original.check_30_validator : '--'}`} </span>
+                </span>
+            ),
         },
         {
             Header: formatMessage({
@@ -64,7 +79,14 @@ const detailMonitoringColumns = formatMessage => (
                             />
                         </div>);
                 }
-                return <a href={settings.original.media_url} onClick={() => window.open(settings.original.media_url)}>Voir la vidéo</a>;
+                return (
+                    <a href={settings.original.media_url} onClick={() => window.open(settings.original.media_url)}>
+                        {formatMessage({
+                            defaultMessage: 'Voir la vidéo',
+                            id: 'main.label.seeVidei',
+                        })}
+                    </a>
+                );
             },
         },
     ]

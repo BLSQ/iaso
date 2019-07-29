@@ -1,14 +1,7 @@
 import React from 'react';
 
 import { renderCountCell } from '../../../utils';
-
-function formatPercentage(value) {
-    if (isNaN(value)) {
-        return 0;
-    } else {
-        return value;
-    }
-}
+import formatPercentage from '../utils';
 
 const confirmersColumns = formatMessage => (
     [
@@ -50,9 +43,9 @@ const confirmersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        !isNaN(settings.original.checked) ?
-                            (settings.original.checked + " (" + formatPercentage(settings.original.checked / settings.original.confirmation_video_count * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked !== undefined) ?
+                            `'${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.confirmation_video_count)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -67,9 +60,9 @@ const confirmersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_ok)) ?
-                            (settings.original.checked_ok + " (" + formatPercentage(settings.original.checked_ok / settings.original.checked * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked_ok !== undefined) ?
+                            `'${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -84,9 +77,9 @@ const confirmersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_ko)) ?
-                            (settings.original.checked_ko + " (" + formatPercentage(settings.original.checked_ko / settings.original.checked * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked_ko !== undefined) ?
+                            `'${settings.original.checked_ko} (${formatPercentage(settings.original.checked_ko, settings.original.checked)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -101,8 +94,8 @@ const confirmersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.is_clear)) ?
-                            ((settings.original.checked - settings.original.is_clear) + ' (' + formatPercentage(100 - ((settings.original.is_clear / settings.original.checked) * 100)).toFixed(1) + '%)')
+                        (settings.original.is_clear !== undefined) ?
+                            `'${(settings.original.checked - settings.original.is_clear)} (${formatPercentage(settings.original.is_clear, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -118,8 +111,8 @@ const confirmersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        !isNaN(settings.original.is_good_place) ?
-                            ((settings.original.checked - settings.original.is_good_place) + ' (' + formatPercentage(100 - ((settings.original.is_good_place / settings.original.checked) * 100)).toFixed(1) + '%)')
+                        (settings.original.is_good_place !== undefined) ?
+                            `'${(settings.original.checked - settings.original.is_good_place)} (${formatPercentage(settings.original.is_good_place, settings.original.checked)})`
                             : '-'
                     }
                 </span>

@@ -63,7 +63,7 @@ class Cases extends Component {
         this.props.fetchCurrentUserInfos();
     }
     getEndpointUrl(tabType, toExport = false, exportType = 'csv') {
-        const type = tabType.startsWith('screener') ? 'screener' : 'confirmer'
+        const type = tabType.startsWith('screener') ? 'screener' : 'confirmer';
         let url = `/api/teststats/?grouping=tester&testertype=${type}`;
         const {
             params,
@@ -88,7 +88,7 @@ class Cases extends Component {
         return url;
     }
 
-    selectTester(testerItem, event) {
+    selectTester(testerItem) {
         const { params } = this.props;
         const newParams = {
             userId: testerItem.tester_id,
@@ -174,9 +174,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmer' ? 'hidden' : ''}`}>
@@ -191,9 +190,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'screenerqa' ? 'hidden' : ''}`} >
@@ -208,9 +206,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmerqa' ? 'hidden' : ''}`}>
@@ -225,9 +222,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'screenercentralqa' ? 'hidden' : ''}`} >
@@ -242,9 +238,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
                 <div className={`widget__container no-border ${this.state.currentTab !== 'confirmercentralqa' ? 'hidden' : ''}`}>
@@ -259,9 +254,8 @@ class Cases extends Component {
                         multiSort
                         withBorder={false}
                         isSortable={false}
-                        canSelect={false}
                         dataKey="result"
-                        onRowClicked={(item, state, event) => this.selectTester(item, event)}
+                        onRowClicked={item => this.selectTester(item)}
                     />
                 </div>
             </section>
@@ -275,6 +269,7 @@ Cases.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

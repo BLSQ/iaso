@@ -1,14 +1,6 @@
 import React from 'react';
 
-import { renderCountCell } from '../../../utils';
-
-function formatPercentage(value) {
-    if (isNaN(value)) {
-        return 0;
-    } else {
-        return value;
-    }
-}
+import formatPercentage from '../utils';
 
 const screenersColumns = formatMessage => (
     [
@@ -55,9 +47,9 @@ const screenersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked)) ?
-                            (settings.original.checked + " (" + formatPercentage(settings.original.checked / (settings.original.test_pictures) * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked !== undefined) ?
+                            `'${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.test_pictures)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -72,9 +64,9 @@ const screenersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_ok)) ?
-                            (settings.original.checked_ok + " (" + formatPercentage(settings.original.checked_ok / (settings.original.checked) * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked_ok !== undefined) ?
+                            `'${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -86,15 +78,17 @@ const screenersColumns = formatMessage => (
             }),
             accessor: 'checked_invalid',
             className: 'small',
-            Cell: settings => (
-                <span>
-                    {
-                        (!isNaN(settings.original.checked_invalid)) ?
-                            ((settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch) + " (" + formatPercentage((settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch) / (settings.original.checked) * 100).toFixed(1) + "%)")
-                            : "-"
-                    }
-                </span>
-            ),
+            Cell: (settings) => {
+                if (settings.original.checked_invalid === undefined) {
+                    return '-';
+                }
+                const value = settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch;
+                return (
+                    <span>
+                        {`'${value} (${formatPercentage(value, settings.original.checked)})`}
+                    </span>
+                );
+            },
         },
         {
             Header: formatMessage({
@@ -106,9 +100,9 @@ const screenersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_unreadable)) ?
-                            (settings.original.checked_unreadable + " (" + formatPercentage(settings.original.checked_unreadable / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked_unreadable !== undefined) ?
+                            `'${settings.original.checked_unreadable} (${formatPercentage(settings.original.checked_unreadable, settings.original.checked_ko)})`
+                            : '-'
                     }
                 </span>
             ),
@@ -123,8 +117,8 @@ const screenersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_invalid)) ?
-                            (settings.original.checked_invalid + " (" + formatPercentage(settings.original.checked_invalid / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
+                        (settings.original.checked_invalid !== undefined) ?
+                            `'${settings.original.checked_invalid} (${formatPercentage(settings.original.checked_invalid, settings.original.checked_ko)})`
                             : '-'
                     }
                 </span>
@@ -140,13 +134,13 @@ const screenersColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {
-                        (!isNaN(settings.original.checked_mismatch)) ?
-                            (settings.original.checked_mismatch + " (" + formatPercentage(settings.original.checked_mismatch / (settings.original.checked_ko) * 100).toFixed(1) + "%)")
-                            : "-"
+                        (settings.original.checked_mismatch !== undefined) ?
+                            `'${settings.original.checked_mismatch} (${formatPercentage(settings.original.checked_mismatch, settings.original.checked_ko)})`
+                            : '-'
                     }
                 </span>
             ),
-        }
+        },
     ]
 );
 export default screenersColumns;

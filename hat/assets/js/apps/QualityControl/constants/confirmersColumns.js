@@ -86,9 +86,3 @@ const confirmersColumns = formatMessage => (
     ]
 );
 export default confirmersColumns;
-
-// settings.original.pg_count,
-// settings.original.pl_count_positive,
-// settings.original.pl_count_stage1,
-// settings.original.pl_count_stage2,
-// formatMessage,

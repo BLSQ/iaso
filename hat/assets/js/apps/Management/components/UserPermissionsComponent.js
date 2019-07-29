@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { userActions } from '../redux/users';
+import DeleteModaleComponent from '../components/DeleteModaleComponent';
 
 const MESSAGES = defineMessages({
     none: {
@@ -29,7 +30,6 @@ const getUserType = (userPermissions, userTypes) => {
             });
         }
     });
-    console.log('userType', userType);
     return userType;
 };
 
@@ -45,6 +45,7 @@ class UserPermissionsComponent extends Component {
             newUserType: '',
             userTypeAlreadyExist: false,
             errorOnSaveUserType: false,
+            showDeleteModale: false,
         };
     }
 
@@ -110,6 +111,12 @@ class UserPermissionsComponent extends Component {
         });
     }
 
+    toggleDeleteModale() {
+        this.setState({
+            showDeleteModale: !this.state.showDeleteModale,
+        });
+    }
+
     render() {
         const {
             intl: {
@@ -129,6 +136,18 @@ class UserPermissionsComponent extends Component {
         } = this.state;
         return (
             <section className="permission-tabs">
+                {
+                    this.state.showDeleteModale &&
+                    <DeleteModaleComponent
+                        showModale={this.state.showDeleteModale}
+                        toggleModal={() => this.toggleDeleteModale()}
+                        element={userType}
+                        deleteElement={() => {
+                            this.toggleDeleteModale();
+                            deleteUserType(userType.id, this);
+                        }}
+                    />
+                }
                 <div className="permission-select-user-type">
                     <label
                         htmlFor="userType"
@@ -193,7 +212,7 @@ class UserPermissionsComponent extends Component {
                             <button
                                 disabled={!userType}
                                 className="button--delete--tiny margin-right--tiny"
-                                onClick={() => deleteUserType(userType.id, this)}
+                                onClick={() => this.toggleDeleteModale()}
                             >
                                 <i className="fa fa-trash" />
                                 <FormattedMessage id="mangement.userType.label.delete" defaultMessage="Effacer ce rôle" />

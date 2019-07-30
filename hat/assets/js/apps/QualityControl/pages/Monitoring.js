@@ -187,8 +187,9 @@ class Monitoring extends Component {
                                 multiSort
                                 withBorder={false}
                                 isSortable={false}
+                                canSelect={tab.selectable}
                                 dataKey="result"
-                                onRowClicked={item => this.selectTester(item)}
+                                onRowClicked={item => (tab.selectable ? this.selectTester(item) : null)}
                                 onDataLoaded={(list, count, pages) => setTable(tab.key, list, false, params, count, pages)}
                                 reduxPage={reduxTables[tab.key]}
                             />

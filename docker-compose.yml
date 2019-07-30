@@ -31,6 +31,7 @@ services:
       - redis
     environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
+      FLAVOR: "${FLAVOR}"
       DEBUG: 'true'
       TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret

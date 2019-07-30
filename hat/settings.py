@@ -14,6 +14,7 @@ import os
 
 STAGING = os.environ.get("STAGING", "").lower() == "true"
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+FLAVOR = os.environ.get("FLAVOR", "trypelim")  # alternative is "iaso"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -281,7 +282,9 @@ WEBPACK_LOADER = {
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
             "assets/webpack",
-            "webpack-stats.json" if DEBUG and not os.environ.get("TEST_PROD", None) else "webpack-stats-prod.json",
+            "webpack-stats.json"
+            if DEBUG and not os.environ.get("TEST_PROD", None)
+            else "webpack-stats-prod.json",
         ),
     }
 }

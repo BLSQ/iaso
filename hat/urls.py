@@ -4,43 +4,63 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
-admin.site.site_header = "Administration de Trypelim.org"
-admin.site.site_title = "Trypelim"
-admin.site.index_title = "Administration de Trypelim.org"
+if settings.FLAVOR == "trypelim":
+    admin.site.site_header = "Administration de Trypelim.org"
+    admin.site.site_title = "Trypelim"
+    admin.site.index_title = "Administration de Trypelim.org"
 
-urlpatterns = [
-    # url(
-    #     r"^$",
-    #     RedirectView.as_view(pattern_name="dashboard:home", permanent=False),
-    #     name="index",
-    # ),
-    url(
-        r"^$",
-        RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False),
-        name="index",
-    ),
-    url(r"^accounts/", include("django.contrib.auth.urls")),
-    url(r"^admin/", admin.site.urls),
-    url(r"^api/", include("hat.api.urls")),
-    url(r"^cases/", include("hat.cases.urls")),
-    url(r"^dashboard/", include("hat.dashboard.urls")),
-    url(
-        r"^login/",
-        auth.views.LoginView.as_view(template_name="login.html"),
-        name="login",
-    ),
-    url(
-        r"^login-iaso/",
-        auth.views.LoginView.as_view(template_name="iaso/login.html"),
-        name="login-iaso",
-    ),
-    url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login-iaso"), name="logout-iaso"),
-    url(r"^logout", auth.views.LogoutView.as_view(next_page="login"), name="logout"),
-    url(r"^maintenance/", include("hat.maintenance.urls")),
-    url(r"^quality/", include("hat.quality.urls")),
-    url(r"^rq/", include("django_rq.urls")),
-    url(r"^sync/", include("hat.sync.urls")),
-    url(r"^vector/", include("hat.vector_control.urls")),
-]
+    urlpatterns = [
+        url(
+            r"^$",
+            RedirectView.as_view(pattern_name="dashboard:home", permanent=False),
+            name="index",
+        ),
+        url(r"^accounts/", include("django.contrib.auth.urls")),
+        url(r"^admin/", admin.site.urls),
+        url(r"^api/", include("hat.api.urls")),
+        url(r"^cases/", include("hat.cases.urls")),
+        url(r"^dashboard/", include("hat.dashboard.urls")),
+        url(
+            r"^login/",
+            auth.views.LoginView.as_view(template_name="login.html"),
+            name="login",
+        ),
+        url(
+            r"^logout", auth.views.LogoutView.as_view(next_page="login"), name="logout"
+        ),
+        url(r"^maintenance/", include("hat.maintenance.urls")),
+        url(r"^quality/", include("hat.quality.urls")),
+        url(r"^rq/", include("django_rq.urls")),
+        url(r"^sync/", include("hat.sync.urls")),
+        url(r"^vector/", include("hat.vector_control.urls")),
+    ]
+
+if settings.FLAVOR == "iaso":
+    admin.site.site_header = "Administration de Iaso"
+    admin.site.site_title = "Iaso"
+    admin.site.index_title = "Administration de Iaso"
+
+    urlpatterns = [
+        url(
+            r"^$",
+            RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False),
+            name="index",
+        ),
+        url(r"^accounts/", include("django.contrib.auth.urls")),
+        url(r"^admin/", admin.site.urls),
+        url(r"^api/", include("hat.api.urls")),
+        url(r"^dashboard/", include("hat.dashboard.urls")),
+        url(
+            r"^login-iaso/",
+            auth.views.LoginView.as_view(template_name="iaso/login.html"),
+            name="login-iaso",
+        ),
+        url(
+            r"^logout-iaso",
+            auth.views.LogoutView.as_view(next_page="login-iaso"),
+            name="logout-iaso",
+        ),
+    ]
+
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

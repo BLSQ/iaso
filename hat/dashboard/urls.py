@@ -86,6 +86,11 @@ if settings.FLAVOR == "trypelim":
             r"^datas/register/detail.*$", views.register_detail, name="register_detail"
         ),
         url(
+            r"^quality-control/monitoring.*$",
+            views.quality_control_monitoring,
+            name="quality-control-monitoring",
+        ),
+        url(
             r"^datas/register/duplicates/detail.*$",
             views.register_duplicates_detail,
             name="register_duplicates_detail",
@@ -103,4 +108,3 @@ elif settings.FLAVOR == "iaso":
         url(r"^forms.*$", views.iaso, name="iaso_forms"),
         url(r"^instances.*$", views.iaso, name="iaso_instances"),
     ]
-

@@ -154,6 +154,30 @@ const registerListColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Actions',
+                id: 'main.actions',
+            }),
+            sortable: false,
+            resizable: false,
+            width: 120,
+            Cell: settings => (
+                <section>
+                    <button
+                        type="button"
+                        className="button--edit--tiny margin-right"
+                        onClick={() => component.selectPatient(settings.original)}
+                    >
+                        <i className="fa fa-pencil-square-o" />
+                        {formatMessage({
+                            defaultMessage: 'Editer',
+                            id: 'main.label.edit',
+                        })}
+                    </button>
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Doublons',
                 id: 'register.label.duplicate',
             }),
@@ -189,30 +213,6 @@ const registerListColumns = (formatMessage, component) => (
                     </div>
                 );
             },
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Actions',
-                id: 'main.actions',
-            }),
-            sortable: false,
-            resizable: false,
-            width: 120,
-            Cell: settings => (
-                <section>
-                    <button
-                        type="button"
-                        className="button--edit--tiny margin-right"
-                        onClick={() => component.selectPatient(settings.original)}
-                    >
-                        <i className="fa fa-pencil-square-o" />
-                        {formatMessage({
-                            defaultMessage: 'Editer',
-                            id: 'main.label.edit',
-                        })}
-                    </button>
-                </section>
-            ),
         },
     ]
 );

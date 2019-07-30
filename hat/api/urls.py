@@ -43,7 +43,6 @@ from .team_types import TeamTypeViewSet
 from .problems import ProblemsViewSet
 
 from .qcdetails import QCDetailsViewSet
-from .structures import StructureViewSet
 from .org_units import OrgUnitViewSet
 from .org_unit_types import OrgUnitTypeViewSet
 from .instances import InstancesViewSet
@@ -100,12 +99,11 @@ router.register(r"home", HomeViewSet, base_name="home")
 router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
 router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
-router.register(r"structures", StructureViewSet, base_name="structures")
+
 router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
-
 
 
 urlpatterns = [url(r"^", include(router.urls))]

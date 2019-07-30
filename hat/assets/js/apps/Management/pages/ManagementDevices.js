@@ -183,7 +183,7 @@ export class ManagementDevices extends Component {
                             defaultPath={baseUrl}
                             canSelect={false}
                             onDataLoaded={(newDevicesList, count, pages) => setDevicesList(newDevicesList, false, params, count, pages)}
-                            multiSort
+                            multiSort={false}
                             reduxPage={reduxPage}
                         />
                     </div>

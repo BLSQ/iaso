@@ -14,9 +14,10 @@ import QualityDashboard from './pages/QualityDashboard';
 import QualityStats from './pages/QualityStats';
 import MonitoringPage from './pages/Monitoring';
 import MonitoringDetail from './pages/MonitoringDetail';
-import { dashboardReducer, dashboardInitialStte } from './redux/dashboard';
+import { dashboardReducer, dashboardInitialState } from './redux/dashboard';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { testReducer, testInitialState } from './redux/test';
+import { monitoringReducer, monitoringInitialState } from './redux/monitoring';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
@@ -56,11 +57,12 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             component={QualityStats}
         />,
         <Route
-            path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
+            path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)(/back/:back)"
             component={MonitoringPage}
         />,
         <Route
-            path="monitoring/detail/userId/:userId/date_from/:date_from/date_to/:date_to"
+            // path="monitoring/detail/userId/:userId/date_from/:date_from/date_to/:date_to"
+            path="monitoring/detail/userId/:userId/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
             component={MonitoringDetail}
         />,
         <Redirect exact path="/dashboard" to={defaultPath} />,
@@ -74,14 +76,16 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
     });
 
     const store = createStore({
-        dashboard: dashboardInitialStte,
+        dashboard: dashboardInitialState,
         test: testInitialState,
+        monitoring: monitoringInitialState(),
         currentUser: currentUserInitialState,
         load: {},
         geoFilters: filtersInitialState,
     }, {
         dashboard: dashboardReducer,
         test: testReducer,
+        monitoring: monitoringReducer,
         currentUser: currentUserReducer,
         load: loadReducer,
         geoFilters: filtersReducer,

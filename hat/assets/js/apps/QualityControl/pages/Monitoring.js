@@ -5,18 +5,22 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import { createUrl } from '../../../utils/fetchData';
-import LoadingSpinner from '../../../components/loading-spinner';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
-import TabsComponent from '../../../components/TabsComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
+
 import screenersColumns from '../constants/screenersColumns';
 import confirmersColumns from '../constants/confirmersColumns';
 import screenersqaColumns from '../constants/screenersqaColumns';
 import confirmersqaColumns from '../constants/confirmersqaColumns';
 import screenerscentralqaColumns from '../constants/screenerscentralqaColumns';
 import confirmerscentralqaColumns from '../constants/confirmerscentralqaColumns';
-import { currentUserActions } from '../../../redux/currentUserReducer';
 import monitoringTabs from '../constants/monitoringTabs';
+
+import { currentUserActions } from '../../../redux/currentUserReducer';
+import { monitoringActions } from '../redux/monitoring';
+
+import LoadingSpinner from '../../../components/loading-spinner';
+import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
+import TabsComponent from '../../../components/TabsComponent';
+import CustomTableComponent from '../../../components/CustomTableComponent';
 
 export const baseUrl = 'monitoring';
 
@@ -94,9 +98,9 @@ class Monitoring extends Component {
         const { params } = this.props;
         const newParams = {
             userId: testerItem.tester_id,
-            date_from: params.date_from,
-            date_to: params.date_to,
+            ...params,
         };
+        delete newParams.back;
 
         this.props.redirectTo('monitoring/detail', newParams);
     }
@@ -108,6 +112,8 @@ class Monitoring extends Component {
             },
             params,
             currentUser,
+            reduxTables,
+            setTable,
         } = this.props;
 
         const { currentTab } = this.state;
@@ -130,6 +136,7 @@ class Monitoring extends Component {
                 ]);
             }
         }
+        console.log(reduxTables);
         return (
             <section className="cases-list-container">
                 {
@@ -166,7 +173,10 @@ class Monitoring extends Component {
                 />
                 {
                     monitoringTabs.map(tab => (
-                        <div className={`widget__container no-border ${this.state.currentTab !== tab.key ? 'hidden' : ''}`} >
+                        <div
+                            key={tab.key}
+                            className={`widget__container no-border ${this.state.currentTab !== tab.key ? 'hidden' : ''}`}
+                        >
                             <CustomTableComponent
                                 showPagination={false}
                                 endPointUrl={this.getEndpointUrl(tab.key)}
@@ -180,6 +190,8 @@ class Monitoring extends Component {
                                 isSortable={false}
                                 dataKey="result"
                                 onRowClicked={item => this.selectTester(item)}
+                                onDataLoaded={(list, count, pages) => setTable(tab.key, list, false, params, count, pages)}
+                                reduxPage={reduxTables[tab.key]}
                             />
                         </div>
                     ))
@@ -196,10 +208,13 @@ Monitoring.propTypes = {
     intl: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    reduxTables: PropTypes.object.isRequired,
+    setTable: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
+    reduxTables: state.monitoring.tables,
     currentUser: state.currentUser.user,
 });
 
@@ -207,6 +222,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    setTable: (key, list, showPagination, params, count, pages) => dispatch(monitoringActions.setTable(key, list, showPagination, params, count, pages)),
 });
 
 const MonitoringWithIntl = injectIntl(Monitoring);

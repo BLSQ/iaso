@@ -83,7 +83,7 @@ export const dashboardActions = {
     resetVideosList,
 };
 
-export const dashboardInitialStte = {
+export const dashboardInitialState = {
     testsMapping: {},
     reduxImagePage: {
         list: null,
@@ -102,7 +102,7 @@ export const dashboardInitialStte = {
     profiles: [],
 };
 
-export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
+export const dashboardReducer = (state = dashboardInitialState, action = {}) => {
     switch (action.type) {
         case LOAD_TEST_MAPPING: {
             const testsMapping = action.payload;
@@ -145,14 +145,14 @@ export const dashboardReducer = (state = dashboardInitialStte, action = {}) => {
         case RESET_IMAGES_LIST: {
             return {
                 ...state,
-                reduxImagePage: dashboardInitialStte.reduxImagePage,
+                reduxImagePage: dashboardInitialState.reduxImagePage,
             };
         }
 
         case RESET_VIDEOS_LIST: {
             return {
                 ...state,
-                reduxVideoPage: dashboardInitialStte.reduxVideoPage,
+                reduxVideoPage: dashboardInitialState.reduxVideoPage,
             };
         }
 

@@ -33,6 +33,16 @@ class QualityDetail extends React.Component {
         this.setState(newState);
     }
 
+    goBack() {
+        const newParams = {
+            ...this.props.params,
+        };
+        newParams.back = true;
+        delete newParams.userId;
+        this.props.redirectTo('monitoring', newParams);
+    }
+
+
     render() {
         const {
             load: { loading },
@@ -58,7 +68,7 @@ class QualityDetail extends React.Component {
                         <h2 className="widget__heading">
                             <button
                                 className="button--small"
-                                onClick={() => window.history.back()}
+                                onClick={() => this.goBack()}
                             >
                                 <i className="fa fa-arrow-left" />
                             </button>
@@ -95,6 +105,7 @@ QualityDetail.propTypes = {
     intl: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const QualityDetailIntl = injectIntl(QualityDetail);

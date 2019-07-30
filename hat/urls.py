@@ -60,6 +60,7 @@ if settings.FLAVOR == "iaso":
             auth.views.LogoutView.as_view(next_page="login-iaso"),
             name="logout-iaso",
         ),
+        url(r"^sync/", include("hat.sync.urls")),
     ]
 
 

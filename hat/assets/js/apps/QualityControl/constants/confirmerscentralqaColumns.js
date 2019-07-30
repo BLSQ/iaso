@@ -67,7 +67,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ok_central !== undefined) ?
-                            `'${settings.original.checked_ok_central} (${formatPercentage(settings.original.checked_ok_central, settings.original.checked)})`
+                            `${settings.original.checked_ok_central} (${formatPercentage(settings.original.checked_ok_central, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -84,7 +84,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ok !== undefined) ?
-                            `'${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
+                            `${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -101,7 +101,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ko_central !== undefined) ?
-                            `'${settings.original.checked_ko_central} (${formatPercentage(settings.original.checked_ko_central, settings.original.checked)})`
+                            `${settings.original.checked_ko_central} (${formatPercentage(settings.original.checked_ko_central, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -118,7 +118,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_mismatch !== undefined) ?
-                            `'${settings.original.checked_mismatch} (${formatPercentage(settings.original.checked_mismatch, settings.original.checked)})`
+                            `${settings.original.checked_mismatch} (${formatPercentage(settings.original.checked_mismatch, settings.original.checked)})`
                             : '-'
                     }
                 </span>

@@ -44,7 +44,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked !== undefined) ?
-                            `'${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.confirmation_video_count)})`
+                            `${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.confirmation_video_count)})`
                             : '-'
                     }
                 </span>
@@ -61,7 +61,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ok !== undefined) ?
-                            `'${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
+                            `${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -78,7 +78,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ko !== undefined) ?
-                            `'${settings.original.checked_ko} (${formatPercentage(settings.original.checked_ko, settings.original.checked)})`
+                            `${settings.original.checked_ko} (${formatPercentage(settings.original.checked_ko, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -95,7 +95,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.is_clear !== undefined) ?
-                            `'${(settings.original.checked - settings.original.is_clear)} (${formatPercentage(settings.original.is_clear, settings.original.checked)})`
+                            `${(settings.original.checked - settings.original.is_clear)} (${formatPercentage(settings.original.checked - settings.original.is_clear, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -112,7 +112,7 @@ const confirmersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.is_good_place !== undefined) ?
-                            `'${(settings.original.checked - settings.original.is_good_place)} (${formatPercentage(settings.original.is_good_place, settings.original.checked)})`
+                            `${(settings.original.checked - settings.original.is_good_place)} (${formatPercentage(settings.original.checked - settings.original.is_good_place, settings.original.checked)})`
                             : '-'
                     }
                 </span>

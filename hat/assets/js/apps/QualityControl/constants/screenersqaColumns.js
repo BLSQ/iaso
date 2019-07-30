@@ -48,7 +48,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked !== undefined) ?
-                            `'${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.test_pictures)})`
+                            `${settings.original.checked} (${formatPercentage(settings.original.checked, settings.original.test_pictures)})`
                             : '-'
                     }
                 </span>
@@ -65,7 +65,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ok !== undefined) ?
-                            `'${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
+                            `${settings.original.checked_ok} (${formatPercentage(settings.original.checked_ok, settings.original.checked)})`
                             : '-'
                     }
                 </span>
@@ -85,7 +85,7 @@ const screenersColumns = formatMessage => (
                 const value = settings.original.checked_unreadable + settings.original.checked_invalid + settings.original.checked_mismatch;
                 return (
                     <span>
-                        {`'${value} (${formatPercentage(value, settings.original.checked)})`}
+                        {`${value} (${formatPercentage(value, settings.original.checked)})`}
                     </span>
                 );
             },
@@ -101,7 +101,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_unreadable !== undefined) ?
-                            `'${settings.original.checked_unreadable} (${formatPercentage(settings.original.checked_unreadable, settings.original.checked_ko)})`
+                            `${settings.original.checked_unreadable} (${formatPercentage(settings.original.checked_unreadable, settings.original.checked_ko)})`
                             : '-'
                     }
                 </span>
@@ -118,7 +118,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_invalid !== undefined) ?
-                            `'${settings.original.checked_invalid} (${formatPercentage(settings.original.checked_invalid, settings.original.checked_ko)})`
+                            `${settings.original.checked_invalid} (${formatPercentage(settings.original.checked_invalid, settings.original.checked_ko)})`
                             : '-'
                     }
                 </span>
@@ -135,7 +135,7 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_mismatch !== undefined) ?
-                            `'${settings.original.checked_mismatch} (${formatPercentage(settings.original.checked_mismatch, settings.original.checked_ko)})`
+                            `${settings.original.checked_mismatch} (${formatPercentage(settings.original.checked_mismatch, settings.original.checked_ko)})`
                             : '-'
                     }
                 </span>

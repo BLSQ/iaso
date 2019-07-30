@@ -54,7 +54,22 @@ const detailMonitoringColumns = formatMessage => (
             className: 'small',
             Cell: settings => (
                 <span>
-                    <strong>{settings.original.check_30_result} </strong> <br /> <span>{`${settings.original.check_30_validator ? settings.original.check_30_validator : '--'}`} </span>
+                    <strong>{settings.original.check_30_result} </strong>
+                    <br />
+                    <span>{`${settings.original.check_30_validator ? settings.original.check_30_validator : '--'}`} </span>
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Index',
+                id: 'monitoring.label.index',
+            }),
+            accessor: 'index',
+            className: 'small',
+            Cell: settings => (
+                <span>
+                    {settings.original.index ? settings.original.index : '-'}
                 </span>
             ),
         },
@@ -68,7 +83,7 @@ const detailMonitoringColumns = formatMessage => (
             Cell: (settings) => {
                 if (settings.original.media_type === 'image') {
                     return (
-                        <div style={{ maxWidth: '100px', maxHeight: '100px' }}>
+                        <div className="img-placeholder" >
                             <ImgModal
                                 imgPath={settings.original.media_url}
                                 smallPreview

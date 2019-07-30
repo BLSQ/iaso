@@ -136,7 +136,6 @@ class Monitoring extends Component {
                 ]);
             }
         }
-        console.log(reduxTables);
         return (
             <section className="cases-list-container">
                 {

@@ -106,7 +106,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django.contrib.postgres",
-    "django_rq",
+    # "django_rq",
     "storages",
     "corsheaders",
     "rest_framework",

@@ -16,8 +16,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def list(self, request):
 
-        queryset = OrgUnit.objects.filter(validated=True).order_by("id")
-        print(queryset.count())
+        queryset = (
+            OrgUnit.objects.filter(validated=True)
+            .exclude(org_unit_type=None)
+            .order_by("id")
+        )
 
         return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
 

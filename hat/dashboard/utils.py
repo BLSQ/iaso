@@ -69,7 +69,7 @@ def get_menu(user, active_link):
                 {
                     "name": "Doublons",
                     "url_key": reverse("dashboard:register_duplicates"),
-                    "perms": "x_case_cases"
+                    "perms": "x_duplicates"
                 },
             ],
             "perms": None

@@ -47,7 +47,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
-        'menupermissions.x_case_cases'
+        'menupermissions.x_duplicates'
     ]
 
     def list(self, request):

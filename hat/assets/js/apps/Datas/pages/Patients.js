@@ -6,6 +6,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import ChoosePeriodSelectorComponent from '../../../components/ChoosePeriodSelectorComponent';
 import { createUrl } from '../../../utils/fetchData';
+import { userHasPermission } from '../../../utils';
 import { filterActions } from '../../../redux/filtersRedux';
 
 
@@ -35,7 +36,7 @@ class Patients extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: registerListColumns(props.intl.formatMessage, this),
+            tableColumns: [],
             tableUrl: null,
         };
     }
@@ -101,6 +102,15 @@ class Patients extends Component {
             selectArea(newProps.params.as_id, newProps.params.village_id, newProps.params.zs_id);
         } else if (newProps.params.village_id !== params.village_id) {
             selectVillage(newProps.params.village_id);
+        }
+        if (Boolean(newProps.currentUser.id) && !this.props.currentUser.id) {
+            const {
+                currentUser,
+                permissions,
+            } = newProps;
+            this.setState({
+                tableColumns: registerListColumns(newProps.intl.formatMessage, this, userHasPermission(permissions, currentUser, 'x_duplicates')),
+            });
         }
     }
 
@@ -200,6 +210,8 @@ class Patients extends Component {
             params,
             reduxPage,
             redirectTo,
+            currentUser,
+            permissions,
         } = this.props;
         const { tableUrl, tableColumns } = this.state;
         const filters = filtersPatients2(formatMessage);
@@ -270,7 +282,7 @@ class Patients extends Component {
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 {
-                    reduxPage.list &&
+                    reduxPage.list && userHasPermission(permissions, currentUser, 'x_duplicates') &&
                     <ManualDuplicate
                         toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
                         params={params}
@@ -342,6 +354,8 @@ Patients.propTypes = {
     patientB: PropTypes.object,
     fetchPatients: PropTypes.func.isRequired,
     emptyManualDuplicate: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -351,6 +365,8 @@ const MapStateToProps = state => ({
     reduxPage: state.patients.patientsPage,
     patientA: state.patients.manualDuplicate.patientA,
     patientB: state.patients.manualDuplicate.patientB,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
 });
 
 const MapDispatchToProps = dispatch => ({

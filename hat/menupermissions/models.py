@@ -26,6 +26,7 @@ QUALITY_CONTROL = _("Quality control")
 ANONYMOUS_VIEW = _("Anonymous view")
 EDIT_PATIENT = _("Edition d'un patient")
 DOWNLOAD_DATAS = _("Téléchargement de données")
+DUPLICATES = _("Doublons")
 
 
 class CustomPermissionSupport(models.Model):
@@ -60,4 +61,5 @@ class CustomPermissionSupport(models.Model):
             ('x_anonymous', ANONYMOUS_VIEW),
             ('x_datas_patient_edition', EDIT_PATIENT),
             ('x_datas_download', DOWNLOAD_DATAS),
+            ('x_duplicates', DUPLICATES),
         )

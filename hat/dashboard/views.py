@@ -256,14 +256,14 @@ def register_detail(request: HttpRequest) -> HttpResponse:
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
+@permission_required('menupermissions.x_duplicates')
 @require_http_methods(['GET'])
 def register_duplicates(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
+@permission_required('menupermissions.x_duplicates')
 @require_http_methods(['GET'])
 def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
     return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})

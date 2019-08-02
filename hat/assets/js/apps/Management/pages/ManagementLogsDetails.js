@@ -158,7 +158,7 @@ class LogsDetails extends Component {
                                                     {
                                                         !isDuplicateLog && (
                                                             <FormattedMessage
-                                                                id="logs.label.past_value"
+                                                                id="logs.label.now_value"
                                                                 defaultMessage="Après"
                                                             />
                                                         )

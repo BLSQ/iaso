@@ -16,6 +16,8 @@ import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementPlanningsPage from './pages/ManagementPlannings';
 import ManagementUsersPage from './pages/ManagementUsers';
 import ManagementVillagesPage from './pages/ManagementVillages';
+import ManagementLogs from './pages/ManagementLogs';
+import ManagementLogsDetails from './pages/ManagementLogsDetails';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
@@ -26,6 +28,7 @@ import { villageReducer, villagesInitialState } from './redux/villages';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { devicesReducer, devicesInitialState } from './redux/devices';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
+import { logsReducer, logsInitialState } from './redux/logs';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -37,6 +40,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
   }
   */
 
+    const defaultLogsTests = '/logs/order/-created_at/pageSize/50/page/1/';
     const routes = [
         <Route
             path="/devices(/order/:order)(/with_tests_devices/:with_tests_devices)(/coordination_id/:coordination_id)(/teams/:teams)(/profile_id/:profile_id)(/back/:back)"
@@ -70,7 +74,15 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/villages(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_official/:village_official)(/village_source/:village_source)(/population/:population)(/unlocated/:unlocated)(/results/:results)"
             component={ManagementVillagesPage}
         />,
-        <Redirect path="*" to="/devices" />,
+        <Route
+            path="/logs/order/:order/pageSize/:pageSize/page/:page(/search/:search)(/date_from/:date_from)(/date_to/:date_to)(/userId/:userId)(/back/:back)"
+            component={ManagementLogs}
+        />,
+        <Route
+            path="/logs/detail/log_id/:log_id/order/:order/pageSize/:pageSize/page/:page(/search/:search)(/date_from/:date_from)(/userId/:userId)(/date_to/:date_to)"
+            component={ManagementLogsDetails}
+        />,
+        <Redirect path="/logs" to={defaultLogsTests} />,
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -93,6 +105,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         devices: devicesInitialState,
         currentUser: currentUserInitialState,
         devicesFilters: filtersInitialState,
+        logs: logsInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -108,6 +121,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         devices: devicesReducer,
         currentUser: currentUserReducer,
         devicesFilters: filtersReducer,
+        logs: logsReducer,
     }, [
         routerMiddleware(history),
     ]);

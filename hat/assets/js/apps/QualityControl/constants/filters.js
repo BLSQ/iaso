@@ -14,7 +14,7 @@ const filtersUsers = (usersList, userTitle) => (
     ]
 );
 
-const filtersChecked = (usersList, userTitle) => (
+const filtersChecked = () => (
     [
         onlyCheckedTests(),
     ]

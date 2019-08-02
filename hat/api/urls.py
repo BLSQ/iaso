@@ -47,6 +47,7 @@ from .org_units import OrgUnitViewSet
 from .org_unit_types import OrgUnitTypeViewSet
 from .instances import InstancesViewSet
 from .forms import FormsViewSet
+from .logs import LogsViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -104,6 +105,7 @@ router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
+router.register(r"logs", LogsViewSet, base_name="logs")
 
 
 urlpatterns = [url(r"^", include(router.urls))]

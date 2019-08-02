@@ -165,6 +165,20 @@ def villages_management(request: HttpRequest) -> HttpResponse:
 
 @is_user_authorized
 @login_required()
+@permission_required('menupermissions.x_modifications')
+@require_http_methods(['GET'])
+def logs(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:logs"))})
+
+@is_user_authorized
+@login_required()
+@permission_required('menupermissions.x_modifications')
+@require_http_methods(['GET'])
+def log_detail(request: HttpRequest) -> HttpResponse:
+    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:log_detail"))})
+
+@is_user_authorized
+@login_required()
 @permission_required('menupermissions.x_locator')
 @require_http_methods(['GET'])
 def locator(request: HttpRequest) -> HttpResponse:

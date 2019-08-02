@@ -53,6 +53,16 @@ if settings.FLAVOR == "trypelim":
             views.villages_management,
             name="management_village",
         ),
+        url(
+            r"^management/logs.*$",
+            views.logs,
+            name="logs",
+        ),
+        url(
+            r"^management/logs/detail.*$",
+            views.log_detail,
+            name="log_detail",
+        ),
         url(r"^locator/list.*$", views.locator, name="locator_list"),
         url(r"^locator/case.*$", views.locator, name="locator"),
         url(r"^vector/map.*$", views.vector, name="vector"),

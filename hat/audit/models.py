@@ -25,6 +25,27 @@ class Modification(models.Model):
     def __str__(self):
         return "%s - %d - %s - %s" % (self.content_type, self.object_id, self.user, self.created_at)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "content_type": self.content_type.app_label,
+            "object_id": self.object_id,
+            "past_value": self.past_value,
+            "new_value": self.new_value,
+            "source": self.source,
+            "user": self.user.profile.as_dict(),
+            "created_at": self.created_at,
+        }
+
+    def as_list(self):
+        return {
+            "id": self.id,
+            "content_type": self.content_type.app_label,
+            "object_id": self.object_id,
+            "source": self.source,
+            "user": self.user.profile.as_dict(),
+            "created_at": self.created_at,
+        }
 
 def log_modification(v1, v2, source, user=None):
     modification = Modification()

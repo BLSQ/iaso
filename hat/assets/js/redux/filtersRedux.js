@@ -270,9 +270,9 @@ export const showProfiles = profiles => ({
     payload: profiles,
 });
 
-export const fetchProfiles = (dispatch, teamId) => {
+export const fetchProfiles = (dispatch, teamId, geoScoped = true, teamType = null) => {
     req
-        .get(`/api/profiles/?as_list=True&geo_scoped=true${teamId ? `&team_id=${teamId}` : ''}`)
+        .get(`/api/profiles/?as_list=True${geoScoped ? '&geo_scoped=true' : ''}${teamId ? `&team_id=${teamId}` : ''}${teamType ? `&team_type=${teamType}` : ''}`)
         .then((result) => {
             dispatch(showProfiles(result.body));
         })

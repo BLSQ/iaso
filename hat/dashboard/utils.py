@@ -112,6 +112,11 @@ def get_menu(user, active_link):
                     "name": "Villages",
                     "url_key": reverse("dashboard:management_village") + "/village_official/YES",
                     "perms": "x_management_villages"
+                },
+                {
+                    "name": "Modifications",
+                    "url_key": reverse("dashboard:logs"),
+                    "perms": "x_modifications"
                 }
             ],
             "perms": None

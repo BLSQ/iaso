@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+MODIFICATIONS = _("Modifications")
 UPLOAD_OF_CASE_FILES = _("Upload of cases files")
 UPLOAD_OF_VILLAGES = _("Upload of villages files")
 MACROPLANNING = _("Macroplanning")
@@ -36,6 +37,7 @@ class CustomPermissionSupport(models.Model):
         # will be performed for this model.
 
         permissions = (
+            ('x_modifications', MODIFICATIONS),
             ("x_datasets_datauploads", UPLOAD_OF_CASE_FILES),
             ("x_datasets_villageuploads", UPLOAD_OF_VILLAGES),
             ("x_plannings_macroplanning", MACROPLANNING),

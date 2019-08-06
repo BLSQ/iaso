@@ -21,6 +21,7 @@ export const setCurrentOrgUnit = orgUnit => ({
 
 export const orgUnitsInitialState = {
     current: null,
+    fetchingDetail: true,
     orgUnitsPage: {
         list: null,
         showPagination: false,
@@ -50,7 +51,7 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
 
         case SET_CURRENT_ORG_UNIT: {
             const current = action.payload;
-            return { ...state, current };
+            return { ...state, current, fetchingDetail: false };
         }
         default:
             return state;

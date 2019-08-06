@@ -25,6 +25,7 @@ import App from '../App';
 import Forms from './pages/Forms';
 import Instances from './pages/Instances';
 import OrgUnits from './pages/OrgUnits';
+import OrgUnitDetail from './pages/OrgUnitDetail';
 
 import SidebarMenu from './components/SidebarMenu';
 
@@ -57,6 +58,16 @@ export default function datasApp(element, baseUrl) {
                 <Fragment>
                     <SidebarMenu />
                     <OrgUnits {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitsOrder/:orgUnitsOrder)'
+            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)'}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu />
+                    <OrgUnitDetail {...props} />
                 </Fragment>
             )}
         />,

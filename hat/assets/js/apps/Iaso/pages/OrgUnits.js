@@ -79,7 +79,7 @@ class OrgUnits extends Component {
         delete newParams.page;
         delete newParams.pageSize;
         delete newParams.order;
-        redirectTo('orgunit/detail', newParams);
+        redirectTo('orgunits/detail', newParams);
     }
 
 

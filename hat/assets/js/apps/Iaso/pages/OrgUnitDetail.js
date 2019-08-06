@@ -18,6 +18,7 @@ import { getRequest } from '../libs/Api';
 import { createUrl } from '../../../utils/fetchData';
 
 import TopBar from '../components/TopBarComponent';
+import OrgUnitInfos from '../components/OrgUnitInfosComponent';
 import BackButton from '../components/BackButtonComponent';
 
 import commonStyles from '../styles/common';
@@ -146,7 +147,10 @@ class OrgUnitDetail extends Component {
                                 <Container maxWidth={false} className={classes.whiteContainerNoMargin}>
                                     {
                                         tab === 'infos' && (
-                                            <div>infos</div>
+                                            <OrgUnitInfos
+                                                orgUnit={currentOrgUnit}
+                                                onChangeInfo={(key, value) => console.log(key, value)}
+                                            />
                                         )
                                     }
                                     {

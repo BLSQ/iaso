@@ -117,4 +117,5 @@ elif settings.FLAVOR == "iaso":
         url(r"^$", views.iaso, name="iaso"),
         url(r"^forms.*$", views.iaso, name="iaso_forms"),
         url(r"^instances.*$", views.iaso, name="iaso_instances"),
+        url(r"^orgunits.*$", views.iaso, name="iaso_orgunits"),
     ]

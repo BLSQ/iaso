@@ -1,10 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
+import { withStyles, IconButton } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
+import Toolbar from '@material-ui/core/Toolbar';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
@@ -27,13 +31,17 @@ import InstancesMap from '../components/InstancesMap';
 const baseUrl = 'instances';
 
 const styles = theme => ({
-    container: {
-        marginTop: theme.spacing(4),
-    },
     tableIcon: {
         marginRight: theme.spacing(1),
         width: 15,
         height: 15,
+    },
+    listitem: {
+        width: 'auto',
+        paddingLeft: theme.spacing(1),
+    },
+    backButton: {
+        marginRight: theme.spacing(2),
     },
 });
 
@@ -75,29 +83,6 @@ class Instances extends Component {
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
-    }
-
-    getTopBarTitle() {
-        const {
-            params,
-            currentForm,
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
-        let topBarTitle = '';
-        if (!params.formId) {
-            topBarTitle = formatMessage({
-                defaultMessage: 'Enregistrements',
-                id: 'iaso.instance.title',
-            });
-        } else if (currentForm) {
-            topBarTitle = `${formatMessage({
-                defaultMessage: 'Enregistrement(s) pour le formulaire',
-                id: 'iaso.instance.form',
-            })}: ${currentForm.name}`;
-        }
-        return topBarTitle;
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
@@ -186,6 +171,7 @@ class Instances extends Component {
             reduxPage,
             instancesLocations,
             fetching,
+            currentForm,
             intl: {
                 formatMessage,
             },
@@ -196,14 +182,29 @@ class Instances extends Component {
         return (
             <section className="iaso instances">
                 <TopBar
-                    title={this.getTopBarTitle()}
-                    showGoBack={Boolean(params.formId)}
-                    goBack={() => this.goBack()}
+                    title={`${formatMessage({
+                        defaultMessage: 'Enregistrement(s) pour le formulaire',
+                        id: 'iaso.instance.form',
+                    })}: ${currentForm ? currentForm.name : ''}`}
                 />
                 {!fetching
                     && (
                         <Fragment>
-                            <Container maxWidth={false} className={classes.container}>
+                            <Container maxWidth={false}>
+                                <Toolbar disableGutters>
+                                    <ListItem
+                                        button
+                                        onClick={() => this.goBack()}
+                                        className={classes.listitem}
+                                    >
+                                        <ArrowBackIcon className={classes.backButton} />
+                                        <ListItemText primary={formatMessage({
+                                            defaultMessage: 'Retour aux formulaires',
+                                            id: 'iaso.forms.back',
+                                        })}
+                                        />
+                                    </ListItem>
+                                </Toolbar>
                                 {/* <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
                                     <Tab
                                         value="list"

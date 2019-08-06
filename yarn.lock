@@ -1157,17 +1157,6 @@
   dependencies:
     "@babel/runtime" "^7.2.0"
 
-"@material-ui/lab@^4.0.0-alpha.21":
-  version "4.0.0-alpha.21"
-  resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-4.0.0-alpha.21.tgz#6b736961b6a2d366d97e015d98d129c808e2ccbf"
-  integrity sha512-8AxamsTTiUx1tINORY+F8n+OzEqm+0F8Wa0WUKD0yqc39IRFF996c3ffUgoOFBbpCHnI5TouM0WbAIxsgvNYcA==
-  dependencies:
-    "@babel/runtime" "^7.4.4"
-    "@material-ui/utils" "^4.1.0"
-    clsx "^1.0.4"
-    prop-types "^15.7.2"
-    warning "^4.0.3"
-
 "@material-ui/styles@^4.2.0":
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/@material-ui/styles/-/styles-4.3.0.tgz#27f11fbf061d8a20ad5703acb0dbb0e69cc00345"
@@ -2511,7 +2500,7 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
-classnames@^2.2.4, classnames@^2.2.5:
+classnames@^2.2.4, classnames@^2.2.5, classnames@^2.2.6:
   version "2.2.6"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
   integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
@@ -2573,7 +2562,7 @@ clone-deep@^2.0.1:
     kind-of "^6.0.0"
     shallow-clone "^1.0.0"
 
-clsx@^1.0.2, clsx@^1.0.4:
+clsx@^1.0.2:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.0.4.tgz#0c0171f6d5cb2fe83848463c15fcc26b4df8c2ec"
   integrity sha512-1mQ557MIZTrL/140j+JVdRM6e31/OA4vTYxXgqIIZlndyfjHpyawKZia1Im05Vp9BWmImkcNrNtFYQMyFcgJDg==
@@ -7063,11 +7052,6 @@ obuf@^1.0.0, obuf@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
-
-odiff@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/odiff/-/odiff-1.3.0.tgz#30d8703a3cb0a316c78cf7833406d8bd5d6f67eb"
-  integrity sha512-ewjYOfif0r39w9JB7mCWmXVEQqLu/fUvIa/QqL5YoKyUNePmmIMz5AbMmotSR+wN9y7VUiy7OtTKbgx/B747TQ==
 
 on-finished@~2.3.0:
   version "2.3.0"

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
@@ -16,12 +16,17 @@ import { loadReducer } from '../../redux/load';
 
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './redux/formsReducer';
+import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
 import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
+import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 
 import App from '../App';
 
 import Forms from './pages/Forms';
 import Instances from './pages/Instances';
+import OrgUnits from './pages/OrgUnits';
+
+import SidebarMenu from './components/SidebarMenu';
 
 export default function datasApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
@@ -29,13 +34,35 @@ export default function datasApp(element, baseUrl) {
     const routes = [
         <Route
             path="/forms/date_from/:date_from/date_to/:date_to(/order/:order)(/pageSize/:pageSize)(/page/:page)"
-            component={Forms}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu />
+                    <Forms {...props} />
+                </Fragment>
+            )}
         />,
         <Route
-            path="/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)"
-            component={Instances}
+            path={'/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)'
+            + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)'}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu />
+                    <Instances {...props} />
+                </Fragment>
+            )}
         />,
-        <Redirect path="*" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Route
+            path="/orgunits/validated/:validated(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            component={props => (
+                <Fragment>
+                    <SidebarMenu />
+                    <OrgUnits {...props} />
+                </Fragment>
+            )}
+        />,
+        <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Redirect path="/orgunits" to="/orgunits/validated/true" />,
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -45,12 +72,16 @@ export default function datasApp(element, baseUrl) {
     const store = createStore({
         load: {},
         currentUser: currentUserInitialState,
+        sidebar: sidebarMenuInitialState,
         forms: formsInitialState,
+        orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
+        sidebar: sidebarMenuReducer,
         forms: formsReducer,
+        orgUnits: orgUnitsReducer,
         instances: instancesReducer,
     }, [
         routerMiddleware(history),

@@ -49,6 +49,9 @@ class PatientDuplicateDetails extends React.Component {
         let url;
         if (params.register) {
             delete tempParams.register;
+            if (isMerged) {
+                tempParams.merged = true;
+            }
             url = 'register/list';
         } else {
             url = 'register/duplicates';
@@ -61,9 +64,6 @@ class PatientDuplicateDetails extends React.Component {
         }
         if (!tempParams.page) {
             tempParams.page = '1';
-        }
-        if (isMerged) {
-            tempParams.merged = true;
         }
         this.setState({
             patient: null,

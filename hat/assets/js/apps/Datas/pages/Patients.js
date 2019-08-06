@@ -55,18 +55,10 @@ class Patients extends Component {
             selectArea,
             selectVillage,
             emptyManualDuplicate,
+            intl: { formatMessage },
+            permissions,
+            currentUser,
         } = this.props;
-        if (params.back) {
-            delete params.back;
-            this.onSearch();
-            redirectTo(baseUrl, params);
-        }
-        if (params.merged) {
-            delete params.merged;
-            emptyManualDuplicate();
-            this.forcePatientsReload();
-            redirectTo(baseUrl, params);
-        }
         Promise.all([
             fetchProvinces(),
             fetchTeams(),
@@ -82,6 +74,22 @@ class Patients extends Component {
                 selectArea(params.as_id, params.village_id, params.zs_id);
             } else if (params.village_id) {
                 selectVillage(params.village_id);
+            }
+            if (this.state.tableColumns.length === 0) {
+                this.setState({
+                    tableColumns: registerListColumns(formatMessage, this, userHasPermission(permissions, currentUser, 'x_duplicates')),
+                });
+            }
+            if (params.merged) {
+                delete params.merged;
+                emptyManualDuplicate();
+                this.forcePatientsReload();
+                redirectTo(baseUrl, params);
+            }
+            if (params.back) {
+                delete params.back;
+                this.onSearch();
+                redirectTo(baseUrl, params);
             }
         });
     }

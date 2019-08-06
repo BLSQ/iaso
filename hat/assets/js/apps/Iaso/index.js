@@ -27,7 +27,7 @@ import Instances from './pages/Instances';
 import OrgUnits from './pages/OrgUnits';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
-import SidebarMenu from './components/SidebarMenu';
+import SidebarMenu from './components/SidebarMenuComponent';
 
 export default function datasApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');

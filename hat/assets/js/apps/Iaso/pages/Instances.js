@@ -3,13 +3,12 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles, IconButton } from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
-import Toolbar from '@material-ui/core/Toolbar';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import Button from '@material-ui/core/Button';
 import Tabs from '@material-ui/core/Tabs';
+import AppBar from '@material-ui/core/AppBar';
 import Tab from '@material-ui/core/Tab';
 
 import PropTypes from 'prop-types';
@@ -22,27 +21,19 @@ import { getRequest } from '../libs/Api';
 import { createUrl } from '../../../utils/fetchData';
 import getInstancesColumns from '../utils/instancesUtils';
 
-import TopBar from '../components/TopBar';
+import TopBar from '../components/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
-import InstancesMap from '../components/InstancesMap';
+import InstancesMap from '../components/InstancesMapComponent';
+import BackButton from '../components/BackButtonComponent';
+
+import commonStyles from '../styles/common';
 
 
 const baseUrl = 'instances';
 
 const styles = theme => ({
-    tableIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-    },
-    listitem: {
-        width: 'auto',
-        paddingLeft: theme.spacing(1),
-    },
-    backButton: {
-        marginRight: theme.spacing(2),
-    },
+    ...commonStyles(theme),
 });
 
 
@@ -180,7 +171,7 @@ class Instances extends Component {
             tab,
         } = this.state;
         return (
-            <section className="iaso instances">
+            <section className="instances">
                 <TopBar
                     title={`${formatMessage({
                         defaultMessage: 'Enregistrement(s) pour le formulaire',
@@ -190,37 +181,35 @@ class Instances extends Component {
                 {!fetching
                     && (
                         <Fragment>
-                            <Container maxWidth={false}>
-                                <Toolbar disableGutters>
-                                    <ListItem
-                                        button
-                                        onClick={() => this.goBack()}
-                                        className={classes.listitem}
+                            <Container maxWidth={false} className={classes.whiteContainer}>
+                                <BackButton goBack={() => this.goBack()} />
+                            </Container>
+                            <Container maxWidth={false} className={classes.container}>
+                                {/* <AppBar position="static">
+                                    <Tabs
+                                        value={tab}
+                                        classes={{
+                                            indicator: classes.indicator,
+                                        }}
+                                        onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                        }
                                     >
-                                        <ArrowBackIcon className={classes.backButton} />
-                                        <ListItemText primary={formatMessage({
-                                            defaultMessage: 'Retour aux formulaires',
-                                            id: 'iaso.forms.back',
-                                        })}
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage({
+                                                defaultMessage: 'Liste',
+                                                id: 'iaso.instande.list',
+                                            })}
                                         />
-                                    </ListItem>
-                                </Toolbar>
-                                {/* <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
-                                    <Tab
-                                        value="list"
-                                        label={formatMessage({
-                                            defaultMessage: 'Liste',
-                                            id: 'iaso.instande.list',
-                                        })}
-                                    />
-                                    <Tab
-                                        value="map"
-                                        label={formatMessage({
-                                            defaultMessage: 'Carte',
-                                            id: 'iaso.instande.map',
-                                        })}
-                                    />
-                                </Tabs> */}
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage({
+                                                defaultMessage: 'Carte',
+                                                id: 'iaso.instande.map',
+                                            })}
+                                        />
+                                    </Tabs>
+                                </AppBar> */}
                                 {
                                     tab === 'list' && (
                                         <CustomTableComponent

@@ -5,6 +5,7 @@ from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
 
 
 class OrgUnitViewSet(viewsets.ViewSet):

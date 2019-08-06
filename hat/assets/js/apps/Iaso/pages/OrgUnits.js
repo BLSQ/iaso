@@ -14,9 +14,11 @@ import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
-import TopBar from '../components/TopBar';
+import TopBar from '../components/TopBarComponent';
 import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+
+import commonStyles from '../styles/common';
 
 const baseUrl = 'orgunits';
 
@@ -29,6 +31,7 @@ const styles = theme => ({
         border: '1px solid #ccc',
     },
     container: {
+        ...commonStyles(theme).container,
         marginTop: theme.spacing(2),
     },
     tableIcon: {
@@ -93,7 +96,7 @@ class OrgUnits extends Component {
             },
         } = this.props;
         return (
-            <section className="iaso">
+            <section>
                 <TopBar title={formatMessage({
                     defaultMessage: 'Org units',
                     id: 'iaso.orgUnits.title',

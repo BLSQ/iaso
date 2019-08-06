@@ -1,9 +1,13 @@
 
 .iaso {
+    background-color: $background-gray !important;
     .ReactTable .rt-tbody .rt-td {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    .ReactTable .rt-tr {
+        background-color: white;
     }
     .leaflet-container {
         height: 80vh;

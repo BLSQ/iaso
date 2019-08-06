@@ -14,28 +14,20 @@ import formsTableColumns from '../constants/formsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
-import TopBar from '../components/TopBar';
+import TopBar from '../components/TopBarComponent';
 import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 
+import commonStyles from '../styles/common';
+
 const baseUrl = 'forms';
 
 const styles = theme => ({
-    filterContainer: {
-        margin: theme.spacing(4),
-        backgroundColor: 'white',
-        padding: theme.spacing(2),
-        width: 'auto',
-        border: '1px solid #ccc',
-    },
+    ...commonStyles(theme),
     container: {
+        ...commonStyles(theme).container,
         marginTop: theme.spacing(2),
-    },
-    tableIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
     },
 });
 
@@ -95,13 +87,13 @@ class Forms extends Component {
             },
         } = this.props;
         return (
-            <section className="iaso">
+            <section>
                 <TopBar title={formatMessage({
                     defaultMessage: 'Formulaires',
                     id: 'iaso.form.title',
                 })}
                 />
-                <Container maxWidth={false} className={classes.filterContainer}>
+                <Container maxWidth={false} className={classes.whiteContainer}>
                     <PeriodSelectorComponent
                         dateFrom={params.date_from}
                         dateTo={params.date_to}

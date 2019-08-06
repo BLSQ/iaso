@@ -1,16 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles, IconButton } from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
-import Toolbar from '@material-ui/core/Toolbar';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import AppBar from '@material-ui/core/AppBar';
 
 import PropTypes from 'prop-types';
 
@@ -20,24 +17,16 @@ import { getRequest } from '../libs/Api';
 
 import { createUrl } from '../../../utils/fetchData';
 
-import TopBar from '../components/TopBar';
+import TopBar from '../components/TopBarComponent';
+import BackButton from '../components/BackButtonComponent';
+
+import commonStyles from '../styles/common';
 
 
 const baseUrl = 'orgunits/detail';
 
 const styles = theme => ({
-    tableIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-    },
-    listitem: {
-        width: 'auto',
-        paddingLeft: theme.spacing(1),
-    },
-    backButton: {
-        marginRight: theme.spacing(2),
-    },
+    ...commonStyles(theme),
 });
 
 
@@ -45,7 +34,7 @@ class OrgUnitDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tab: props.params.tab ? props.params.tab : 'list',
+            tab: props.params.tab ? props.params.tab : 'infos',
         };
     }
 
@@ -86,7 +75,7 @@ class OrgUnitDetail extends Component {
                 ...params,
                 tab,
             };
-            redirectTo('baseUrl', newParams);
+            redirectTo(baseUrl, newParams);
         }
         this.setState({
             tab,
@@ -98,6 +87,7 @@ class OrgUnitDetail extends Component {
         const { redirectTo, params } = this.props;
         this.props.setCurrentOrgUnit(undefined);
         redirectTo('orgunits', {
+            validated: params.validated,
             order: params.orgUnitsOrder,
             pageSize: params.orgUnitsPageSize,
             page: params.orgUnitsPage,
@@ -117,57 +107,54 @@ class OrgUnitDetail extends Component {
             tab,
         } = this.state;
         return (
-            <section className="iaso orgunit detail">
+            <section className="orgunit detail">
                 <TopBar
-                    title={`${formatMessage({
-                        defaultMessage: 'Org unit',
-                        id: 'iaso.instance.orgunit',
-                    })}: ${currentOrgUnit ? currentOrgUnit.name : ''}`}
+                    title={currentOrgUnit ? currentOrgUnit.name : ''}
                 />
                 {!fetching
                     && (
                         <Fragment>
-                            <Container maxWidth={false}>
-                                <Toolbar disableGutters>
-                                    <ListItem
-                                        button
-                                        onClick={() => this.goBack()}
-                                        className={classes.listitem}
+                            <Container maxWidth={false} className={classes.whiteContainer}>
+                                <BackButton goBack={() => this.goBack()} />
+                            </Container>
+                            <Container maxWidth={false} className={classes.container}>
+                                <AppBar position="static">
+                                    <Tabs
+                                        value={tab}
+                                        classes={{
+                                            indicator: classes.indicator,
+                                        }}
+                                        onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                        }
                                     >
-                                        <ArrowBackIcon className={classes.backButton} />
-                                        <ListItemText primary={formatMessage({
-                                            defaultMessage: 'Retour aux org units',
-                                            id: 'iaso.orgunits.back',
-                                        })}
+                                        <Tab
+                                            value="infos"
+                                            label={formatMessage({
+                                                defaultMessage: 'Infos',
+                                                id: 'iaso.orgunits.infos',
+                                            })}
                                         />
-                                    </ListItem>
-                                </Toolbar>
-                                <Tabs value={tab} indicatorColor="primary" textColor="primary" onChange={(event, newtab) => this.handleChangeTab(newtab)}>
-                                    <Tab
-                                        value="infos"
-                                        label={formatMessage({
-                                            defaultMessage: 'Infos',
-                                            id: 'iaso.orgunits.infos',
-                                        })}
-                                    />
-                                    <Tab
-                                        value="map"
-                                        label={formatMessage({
-                                            defaultMessage: 'Carte',
-                                            id: 'iaso.orgunits.map',
-                                        })}
-                                    />
-                                </Tabs>
-                                {
-                                    tab === 'infos' && (
-                                        <div>infos</div>
-                                    )
-                                }
-                                {
-                                    tab === 'map' && (
-                                        <div>map</div>
-                                    )
-                                }
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage({
+                                                defaultMessage: 'Carte',
+                                                id: 'iaso.orgunits.map',
+                                            })}
+                                        />
+                                    </Tabs>
+                                </AppBar>
+                                <Container maxWidth={false} className={classes.whiteContainerNoMargin}>
+                                    {
+                                        tab === 'infos' && (
+                                            <div>infos</div>
+                                        )
+                                    }
+                                    {
+                                        tab === 'map' && (
+                                            <div>map</div>
+                                        )
+                                    }
+                                </Container>
                             </Container>
                         </Fragment>
                     )

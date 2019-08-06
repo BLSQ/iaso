@@ -6,9 +6,11 @@ import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core';
 import SaveAlt from '@material-ui/icons/SaveAlt';
+import commonStyles from '../styles/common';
 
 const styles = theme => ({
     container: {
+        ...commonStyles(theme).container,
         textAlign: 'right',
         marginBottom: theme.spacing(4),
         marginTop: theme.spacing(2),

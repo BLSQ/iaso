@@ -23,6 +23,26 @@ const MESSAGES = {
         id: 'forms.updated_at',
         defaultMessage: 'Modification',
     },
+    source: {
+        id: 'forms.source',
+        defaultMessage: 'Source',
+    },
+    snis: {
+        id: 'forms.source.snis',
+        defaultMessage: 'SNIS',
+    },
+    ucla: {
+        id: 'forms.source.ucla',
+        defaultMessage: 'UCLA',
+    },
+    pnltha: {
+        id: 'forms.source.pnltha',
+        defaultMessage: 'PNLTHA',
+    },
+    derivated: {
+        id: 'forms.source.derivated',
+        defaultMessage: 'Dérivé des données actuelles',
+    },
 };
 
 export default MESSAGES;

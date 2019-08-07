@@ -1,6 +1,6 @@
 import React from 'react';
+import { injectIntl } from 'react-intl';
 
-import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
@@ -8,19 +8,17 @@ import moment from 'moment';
 
 import InputComponent from './forms/InputComponent';
 
-import commonStyles from '../styles/common';
-
-
-const styles = theme => ({
-    ...commonStyles(theme),
-});
+import MESSAGES from './forms/messages';
 
 function OrgUnitInfosComponent(props) {
     const {
-        classes,
         orgUnit,
         onChangeInfo,
         orgUnitTypes,
+        sourceTypes,
+        intl: {
+            formatMessage,
+        },
     } = props;
     return (
         <Grid container spacing={4}>
@@ -48,6 +46,18 @@ function OrgUnitInfosComponent(props) {
                         }))
                     }
                 />
+                <InputComponent
+                    keyValue="source"
+                    onChange={onChangeInfo}
+                    value={orgUnit.source}
+                    type="select"
+                    options={
+                        sourceTypes.map(s => ({
+                            label: formatMessage(MESSAGES[s[0]]),
+                            value: s[0],
+                        }))
+                    }
+                />
             </Grid>
             <Grid item xs={5}>
                 <InputComponent
@@ -72,11 +82,12 @@ function OrgUnitInfosComponent(props) {
 }
 
 OrgUnitInfosComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
+    intl: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    sourceTypes: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };
 
 
-export default withStyles(styles)(OrgUnitInfosComponent);
+export default injectIntl(OrgUnitInfosComponent);

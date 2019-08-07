@@ -1,6 +1,7 @@
 const SET_ORG_UNITS = 'SET_ORG_UNITS';
 const SET_CURRENT_ORG_UNIT = 'SET_CURRENT_ORG_UNIT';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
+const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
@@ -24,6 +25,11 @@ export const setOrgUnitTypes = orgUnitTypes => ({
     payload: orgUnitTypes,
 });
 
+export const setSourceTypes = sourceTypes => ({
+    type: SET_SOURCE_TYPES,
+    payload: sourceTypes,
+});
+
 
 export const orgUnitsInitialState = {
     current: null,
@@ -36,6 +42,7 @@ export const orgUnitsInitialState = {
         pages: 0,
     },
     orgUnitTypes: [],
+    sourceTypes: [],
 };
 
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
@@ -64,6 +71,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_ORG_UNIT_TYPES: {
             const orgUnitTypes = action.payload;
             return { ...state, orgUnitTypes };
+        }
+
+        case SET_SOURCE_TYPES: {
+            const sourceTypes = action.payload;
+            return { ...state, sourceTypes };
         }
         default:
             return state;

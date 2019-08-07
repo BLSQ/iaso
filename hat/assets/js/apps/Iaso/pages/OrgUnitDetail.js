@@ -14,12 +14,12 @@ import Cancel from '@material-ui/icons/Cancel';
 
 import PropTypes from 'prop-types';
 
-import { setCurrentOrgUnit, setOrgUnitTypes } from '../redux/orgUnitsReducer';
+import { setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes } from '../redux/orgUnitsReducer';
 
 import { getRequest } from '../libs/Api';
 
 import { createUrl } from '../../../utils/fetchData';
-import { fetchOrgUnitsTypes } from '../utils/requests';
+import { fetchOrgUnitsTypes, fetchSourceTypes } from '../utils/requests';
 
 import TopBar from '../components/TopBarComponent';
 import OrgUnitInfos from '../components/OrgUnitInfosComponent';
@@ -48,6 +48,7 @@ class OrgUnitDetail extends Component {
     componentDidMount() {
         this.fetchDetail();
         fetchOrgUnitsTypes().then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchSourceTypes().then(sourceTypes => this.props.setSourceTypes(sourceTypes));
     }
 
     componentDidUpdate(prevProps) {
@@ -133,6 +134,7 @@ class OrgUnitDetail extends Component {
                 formatMessage,
             },
             orgUnitTypes,
+            sourceTypes,
         } = this.props;
         const {
             tab,
@@ -184,6 +186,7 @@ class OrgUnitDetail extends Component {
                                                 orgUnitModified={orgUnitModified}
                                                 orgUnit={currentOrgUnit}
                                                 orgUnitTypes={orgUnitTypes}
+                                                sourceTypes={sourceTypes}
                                                 onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
                                             />
                                         )
@@ -232,21 +235,25 @@ OrgUnitDetail.propTypes = {
     params: PropTypes.object.isRequired,
     setCurrentOrgUnit: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
+    setSourceTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    sourceTypes: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    sourceTypes: state.orgUnits.sourceTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
+    setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

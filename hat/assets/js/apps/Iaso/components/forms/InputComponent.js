@@ -6,8 +6,6 @@ import { withStyles } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
-// import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 
 import PropTypes from 'prop-types';
 
@@ -95,6 +93,7 @@ class InputComponent extends Component {
             );
         }
         if (type === 'select') {
+            console.log(options);
             return (
                 <FormControl
                     variant="outlined"

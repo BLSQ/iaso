@@ -119,6 +119,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
+            "source": self.source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,

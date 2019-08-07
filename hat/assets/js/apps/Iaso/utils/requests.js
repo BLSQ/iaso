@@ -7,14 +7,14 @@ const fetchOrgUnitsTypes = () => getRequest('/api/orgunittypes')
         return error;
     });
 
-const fetchUsers = () => getRequest('/api/profiles')
-    .then(users => users)
+const fetchSourceTypes = () => getRequest('/api/sourcetypes')
+    .then(soureTypes => soureTypes)
     .catch((error) => {
-        console.error('Error while fetching profiles list:', error);
+        console.error('Error while fetching source types list:', error);
         return error;
     });
 
 export {
     fetchOrgUnitsTypes,
-    fetchUsers,
+    fetchSourceTypes,
 };

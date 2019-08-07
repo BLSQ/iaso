@@ -1,4 +1,5 @@
 import React from 'react';
+import Select from 'react-select';
 
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
@@ -12,11 +13,6 @@ import commonStyles from '../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    inputLabel: {
-        backgroundColor: 'white',
-        paddingLeft: 3,
-        paddingRight: 3,
-    },
 });
 
 function OrgUnitInfosComponent(props) {
@@ -37,6 +33,32 @@ function OrgUnitInfosComponent(props) {
                     keyValue="short_name"
                     onChange={onChangeInfo}
                     value={orgUnit.short_name}
+                />
+                <Select
+                    id="org_unit_type"
+                    simpleValue
+                    name="org_unit_type"
+                    isClearable
+                    value={orgUnit.org_unit_type_id}
+                    options={[
+                        {
+                            label: '1',
+                            value: 1,
+                        },
+                        {
+                            label: '2',
+                            value: 2,
+                        },
+                        {
+                            label: '3',
+                            value: 3,
+                        },
+                        {
+                            label: '4',
+                            value: 4,
+                        },
+                    ]}
+                    onChange={onChangeInfo}
                 />
             </Grid>
         </Grid>

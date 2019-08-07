@@ -71,6 +71,7 @@ export default function datasApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
+        <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to="/orgunits/validated/true" />,

@@ -8,7 +8,7 @@ import Container from '@material-ui/core/Container';
 
 import PropTypes from 'prop-types';
 
-import { setOrgUnits, setCurrentOrgUnit } from '../redux/orgUnitsReducer';
+import { setOrgUnits } from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
@@ -34,7 +34,7 @@ const styles = theme => ({
         ...commonStyles(theme).container,
         marginTop: theme.spacing(2),
     },
-    tableIcon: {
+    icon: {
         marginRight: theme.spacing(1),
         width: 15,
         height: 15,
@@ -71,7 +71,6 @@ class OrgUnits extends Component {
 
     selectOrgUnit(orgUnit) {
         const { redirectTo, params } = this.props;
-        this.props.setCurrentOrgUnit(orgUnit);
         const newParams = {
             orgUnitId: orgUnit.id,
             ...params,
@@ -140,7 +139,6 @@ OrgUnits.propTypes = {
     reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
     setOrgUnits: PropTypes.func.isRequired,
-    setCurrentOrgUnit: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 
@@ -149,7 +147,6 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnits: (orgUnitsList, showPagination, params, count, pages) => dispatch(setOrgUnits(orgUnitsList, showPagination, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });

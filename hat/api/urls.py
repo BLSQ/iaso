@@ -41,13 +41,13 @@ from .user_levels import UserLevelsViewSet
 from .home import HomeViewSet
 from .team_types import TeamTypeViewSet
 from .problems import ProblemsViewSet
-
 from .qcdetails import QCDetailsViewSet
 from .org_units import OrgUnitViewSet
 from .org_unit_types import OrgUnitTypeViewSet
 from .instances import InstancesViewSet
 from .forms import FormsViewSet
 from .logs import LogsViewSet
+from .source_types import SourceTypeViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -106,6 +106,7 @@ router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
 router.register(r"logs", LogsViewSet, base_name="logs")
+router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
 
 
 urlpatterns = [url(r"^", include(router.urls))]

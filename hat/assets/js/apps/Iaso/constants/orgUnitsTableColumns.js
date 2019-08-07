@@ -58,7 +58,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                         color="primary"
                         onClick={() => component.selectOrgUnit(settings.original)}
                     >
-                        <RemoveRedEye className={component.props.classes.tableIcon} fontSize="small" />
+                        <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
                         <FormattedMessage id="iaso.main.label.details" defaultMessage="Details" />
                     </Button>
                 </section>

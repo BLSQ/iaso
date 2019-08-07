@@ -14,14 +14,17 @@ const commonStyles = theme => ({
     whiteContainerNoMargin: {
         margin: 0,
         backgroundColor: 'white',
-        padding: theme.spacing(2),
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        paddingTop: theme.spacing(4),
+        paddingBottom: theme.spacing(4),
         width: 'auto',
         border: '1px solid #ccc',
     },
     indicator: {
         backgroundColor: 'white',
     },
-    tableIcon: {
+    buttonIcon: {
         marginRight: theme.spacing(1),
         width: 15,
         height: 15,
@@ -32,6 +35,19 @@ const commonStyles = theme => ({
     },
     backButton: {
         marginRight: theme.spacing(2),
+    },
+    marginBottom: {
+        marginBottom: theme.spacing(2),
+    },
+    marginLeft: {
+        marginLeft: theme.spacing(2),
+    },
+    marginTop: {
+        marginTop: theme.spacing(2),
+    },
+    justifyFlexEnd: {
+        display: 'flex',
+        justifyContent: 'flex-end',
     },
 });
 

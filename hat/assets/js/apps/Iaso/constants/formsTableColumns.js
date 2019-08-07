@@ -74,7 +74,7 @@ const formsTableColumns = (formatMessage, component) => (
                                 color="primary"
                                 onClick={() => component.selectForm(settings.original)}
                             >
-                                <RemoveRedEye className={component.props.classes.tableIcon} fontSize="small" />
+                                <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
                                 {settings.original.instances_count}
                             </Button>
                         )}

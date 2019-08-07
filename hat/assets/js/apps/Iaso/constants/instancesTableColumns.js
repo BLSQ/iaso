@@ -48,7 +48,7 @@ const instancesTableColumns = (formatMessage, component) => (
                         variant="contained"
                         color="primary"
                     >
-                        <RemoveRedEye className={component.props.classes.tableIcon} fontSize="small" />
+                        <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
                         {formatMessage({
                             defaultMessage: 'XML',
                             id: 'iaso.instance.XML',

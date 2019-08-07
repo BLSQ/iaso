@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
@@ -8,14 +8,18 @@ import Container from '@material-ui/core/Container';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import AppBar from '@material-ui/core/AppBar';
+import Button from '@material-ui/core/Button';
+import Save from '@material-ui/icons/Save';
+import Cancel from '@material-ui/icons/Cancel';
 
 import PropTypes from 'prop-types';
 
-import { setCurrentOrgUnit } from '../redux/orgUnitsReducer';
+import { setCurrentOrgUnit, setOrgUnitTypes } from '../redux/orgUnitsReducer';
 
 import { getRequest } from '../libs/Api';
 
 import { createUrl } from '../../../utils/fetchData';
+import { fetchOrgUnitsTypes } from '../utils/requests';
 
 import TopBar from '../components/TopBarComponent';
 import OrgUnitInfos from '../components/OrgUnitInfosComponent';
@@ -36,11 +40,14 @@ class OrgUnitDetail extends Component {
         super(props);
         this.state = {
             tab: props.params.tab ? props.params.tab : 'infos',
+            currentOrgUnit: undefined,
+            orgUnitModified: false,
         };
     }
 
     componentDidMount() {
         this.fetchDetail();
+        fetchOrgUnitsTypes().then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
     }
 
     componentDidUpdate(prevProps) {
@@ -65,6 +72,9 @@ class OrgUnitDetail extends Component {
         if (orgUnitId && !currentOrgUnit) {
             getRequest(`/api/orgunits/${orgUnitId}`).then((orgUnit) => {
                 this.props.setCurrentOrgUnit(orgUnit);
+                this.setState({
+                    currentOrgUnit: orgUnit,
+                });
             });
         }
     }
@@ -83,6 +93,26 @@ class OrgUnitDetail extends Component {
         });
     }
 
+    handleChangeInfo(key, value) {
+        this.setState({
+            orgUnitModified: true,
+            currentOrgUnit: {
+                ...this.props.currentOrgUnit,
+                [key]: value,
+            },
+        });
+    }
+
+    saveOrgUnit() {
+        console.log('save', this.state.currentOrgUnit);
+    }
+
+    resetOrgUnit() {
+        this.setState({
+            orgUnitModified: false,
+            currentOrgUnit: this.props.currentOrgUnit,
+        });
+    }
 
     goBack() {
         const { redirectTo, params } = this.props;
@@ -99,20 +129,23 @@ class OrgUnitDetail extends Component {
         const {
             classes,
             fetching,
-            currentOrgUnit,
             intl: {
                 formatMessage,
             },
+            orgUnitTypes,
         } = this.props;
         const {
             tab,
+            currentOrgUnit,
+            orgUnitModified,
         } = this.state;
         return (
             <section className="orgunit detail">
                 <TopBar
-                    title={currentOrgUnit ? currentOrgUnit.name : ''}
+                    title={this.props.currentOrgUnit ? this.props.currentOrgUnit.name : ''}
                 />
                 {!fetching
+                    && currentOrgUnit
                     && (
                         <Fragment>
                             <Container maxWidth={false} className={classes.whiteContainer}>
@@ -148,8 +181,10 @@ class OrgUnitDetail extends Component {
                                     {
                                         tab === 'infos' && (
                                             <OrgUnitInfos
+                                                orgUnitModified={orgUnitModified}
                                                 orgUnit={currentOrgUnit}
-                                                onChangeInfo={(key, value) => console.log(key, value)}
+                                                orgUnitTypes={orgUnitTypes}
+                                                onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
                                             />
                                         )
                                     }
@@ -158,6 +193,26 @@ class OrgUnitDetail extends Component {
                                             <div>map</div>
                                         )
                                     }
+                                    <div className={classes.justifyFlexEnd}>
+                                        <Button
+                                            disabled={!orgUnitModified}
+                                            variant="contained"
+                                            onClick={() => this.resetOrgUnit()}
+                                        >
+                                            <Cancel className={classes.buttonIcon} fontSize="small" />
+                                            <FormattedMessage id="iaso.label.cancel" defaultMessage="Annuler" />
+                                        </Button>
+                                        <Button
+                                            disabled={!orgUnitModified}
+                                            variant="contained"
+                                            className={classes.marginLeft}
+                                            color="primary"
+                                            onClick={() => this.saveOrgUnit(currentOrgUnit)}
+                                        >
+                                            <Save className={classes.buttonIcon} fontSize="small" />
+                                            <FormattedMessage id="iaso.label.save" defaultMessage="Sauver" />
+                                        </Button>
+                                    </div>
                                 </Container>
                             </Container>
                         </Fragment>
@@ -176,18 +231,22 @@ OrgUnitDetail.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     setCurrentOrgUnit: PropTypes.func.isRequired,
+    setOrgUnitTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
     currentOrgUnit: state.orgUnits.current,
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
+    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 

@@ -1,10 +1,10 @@
 import React from 'react';
-import Select from 'react-select';
 
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
+import moment from 'moment';
 
 import InputComponent from './forms/InputComponent';
 
@@ -20,10 +20,12 @@ function OrgUnitInfosComponent(props) {
         classes,
         orgUnit,
         onChangeInfo,
+        orgUnitTypes,
     } = props;
     return (
-        <Grid container spacing={0}>
-            <Grid item xs={4}>
+        <Grid container spacing={4}>
+            <Grid item xs={1} />
+            <Grid item xs={5}>
                 <InputComponent
                     keyValue="name"
                     onChange={onChangeInfo}
@@ -34,33 +36,37 @@ function OrgUnitInfosComponent(props) {
                     onChange={onChangeInfo}
                     value={orgUnit.short_name}
                 />
-                <Select
-                    id="org_unit_type"
-                    simpleValue
-                    name="org_unit_type"
-                    isClearable
-                    value={orgUnit.org_unit_type_id}
-                    options={[
-                        {
-                            label: '1',
-                            value: 1,
-                        },
-                        {
-                            label: '2',
-                            value: 2,
-                        },
-                        {
-                            label: '3',
-                            value: 3,
-                        },
-                        {
-                            label: '4',
-                            value: 4,
-                        },
-                    ]}
+                <InputComponent
+                    keyValue="org_unit_type_id"
                     onChange={onChangeInfo}
+                    value={orgUnit.org_unit_type_id}
+                    type="select"
+                    options={
+                        orgUnitTypes.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))
+                    }
                 />
             </Grid>
+            <Grid item xs={5}>
+                <InputComponent
+                    keyValue="source_ref"
+                    value={orgUnit.source_ref}
+                    disabled
+                />
+                <InputComponent
+                    keyValue="created_at"
+                    value={moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm')}
+                    disabled
+                />
+                <InputComponent
+                    keyValue="updated_at"
+                    value={moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm')}
+                    disabled
+                />
+            </Grid>
+            <Grid item xs={1} />
         </Grid>
     );
 }
@@ -68,6 +74,7 @@ function OrgUnitInfosComponent(props) {
 OrgUnitInfosComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };
 

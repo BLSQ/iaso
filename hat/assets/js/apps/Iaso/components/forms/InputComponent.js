@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
+import Select from 'react-select';
 
 import { withStyles } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
+// import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import PropTypes from 'prop-types';
 
@@ -16,58 +19,134 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
     inputLabel: {
-        backgroundColor: 'white',
         paddingLeft: 3,
         paddingRight: 3,
+        transition: theme.transitions.create(['all'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+    },
+    shrink: {
+        fontSize: 20,
+        marginTop: -2,
+        backgroundColor: 'white',
+    },
+    select: {
+        '&:focus': {
+            backgroundColor: 'white !important',
+        },
+    },
+    icon: {
+        right: theme.spacing(2),
     },
 });
 
-function InputComponent(props) {
-    const {
-        classes,
-        type,
-        keyValue,
-        value,
-        onChange,
-        intl: {
-            formatMessage,
-        },
-    } = props;
-    const labelRef = React.useRef(null);
-    if (type === 'text') {
-        return (
-            <FormControl className={classes.formControl} variant="outlined">
-                <InputLabel
-                    ref={labelRef}
-                    htmlFor={`input-text-${keyValue}`}
-                    className={classes.inputLabel}
-                >
-                    {
-                        formatMessage(MESSAGES[keyValue])
-                    }
-                </InputLabel>
-                <OutlinedInput
-                    id={`input-text-${keyValue}`}
-                    value={value}
-                    onChange={newValue => onChange(keyValue, newValue)}
-                />
-            </FormControl>
-        );
+class InputComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectInputValue: '',
+        };
     }
-    return null;
+
+    onSelectInputChange(selectInputValue) {
+        this.setState({
+            selectInputValue,
+        });
+    }
+
+    render() {
+        const {
+            classes,
+            type,
+            keyValue,
+            value,
+            onChange,
+            options,
+            intl: {
+                formatMessage,
+            },
+            disabled,
+        } = this.props;
+        const {
+            selectInputValue,
+        } = this.state;
+        if (type === 'text') {
+            return (
+                <FormControl className={classes.formControl} variant="outlined">
+                    <InputLabel
+                        htmlFor={`input-text-${keyValue}`}
+                        classes={{
+                            shrink: classes.shrink,
+                        }}
+                        className={classes.inputLabel}
+                    >
+                        {
+                            formatMessage(MESSAGES[keyValue])
+                        }
+                    </InputLabel>
+                    <OutlinedInput
+                        disabled={disabled}
+                        id={`input-text-${keyValue}`}
+                        value={value}
+                        onChange={event => onChange(keyValue, event.target.value)}
+                    />
+                </FormControl>
+            );
+        }
+        if (type === 'select') {
+            return (
+                <FormControl
+                    variant="outlined"
+                    className={classes.formControl}
+                >
+                    <InputLabel
+                        classes={{
+                            shrink: classes.shrink,
+                        }}
+                        shrink={Boolean(value) || selectInputValue !== ''}
+                        className={classes.inputLabel}
+                        htmlFor={`input-select-${keyValue}`}
+                    >
+                        {
+                            formatMessage(MESSAGES[keyValue])
+                        }
+                    </InputLabel>
+                    <Select
+                        multi={false}
+                        clearable
+                        simpleValue
+                        onInputChange={newValue => this.onSelectInputChange(newValue)}
+                        name={keyValue}
+                        value={value}
+                        placeholder=""
+                        options={options}
+                        onChange={newValue => onChange(keyValue, newValue)}
+                    />
+                </FormControl>
+            );
+        }
+        return null;
+    }
 }
 
 InputComponent.defaultProps = {
     type: 'text',
+    value: undefined,
+    options: [],
+    onChange: () => null,
+    disabled: false,
 };
 
 InputComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     type: PropTypes.string,
     keyValue: PropTypes.string.isRequired,
-    value: PropTypes.any.isRequired,
-    onChange: PropTypes.func.isRequired,
+    value: PropTypes.any,
+    onChange: PropTypes.func,
     intl: PropTypes.object.isRequired,
+    options: PropTypes.array,
+    disabled: PropTypes.bool,
 };
 
 

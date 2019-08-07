@@ -1,14 +1,11 @@
 from django.db import models
-from django.contrib.gis.db.models.fields import (
-    MultiPolygonField,
-    PointField,
-    PolygonField,
-)
-from django.db.models import Max
+from django.contrib.gis.db.models.fields import PointField, PolygonField
+
 from django.contrib.postgres.fields import ArrayField, CITextField
 
-from iaso.utils import parseXMLFile, flatParseXMLFile
+from iaso.utils import parse_xml_file, flat_parse_xml_file
 from urllib.request import urlopen
+from django.contrib.auth.models import User
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -167,7 +164,9 @@ class Instance(models.Model):
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            file_content = parseXMLFile(file) if not isFlat else flatParseXMLFile(file)
+            file_content = (
+                parse_xml_file(file) if not isFlat else flat_parse_xml_file(file)
+            )
         return {
             "file_name": self.file_name,
             "file_content": file_content,
@@ -220,3 +219,48 @@ class InstanceFile(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "file": self.file.url if self.file else None,
         }
+
+
+class Account(models.Model):
+    name = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    users = models.ManyToManyField(User, blank=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+
+class Project(models.Model):
+    name = models.TextField(null=True, blank=True)
+    forms = models.ManyToManyField(Form, blank=True)
+    account = models.ForeignKey(
+        Account, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
+    app_id = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+
+class Device(models.Model):
+    imei = models.CharField(max_length=20, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s " % (self.imei,)
+
+
+class DeviceOwnership(models.Model):
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start = models.DateTimeField(auto_now_add=True)
+    end = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.device, self.user)

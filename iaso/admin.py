@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import OrgUnitType, OrgUnit, Form, Instance, InstanceFile
+from .models import (
+    OrgUnitType,
+    OrgUnit,
+    Form,
+    Instance,
+    InstanceFile,
+    Account,
+    Project,
+    Device,
+    DeviceOwnership,
+)
 
 
 class OrgUnitAdmin(admin.ModelAdmin):
@@ -33,3 +43,7 @@ class InstanceAdmin(admin.ModelAdmin):
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile)
+admin.site.register(Account)
+admin.site.register(Project)
+admin.site.register(Device)
+admin.site.register(DeviceOwnership)

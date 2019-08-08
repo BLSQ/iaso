@@ -146,6 +146,8 @@ class Instance(models.Model):
     UPLOADED_TO = "instances/"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    uuid = models.TextField(null=True, blank=True)
+    name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(srid=4326, null=True)

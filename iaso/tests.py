@@ -3,11 +3,14 @@ from .models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType
 from math import floor
 from rest_framework.test import APIClient
 import json
+from iaso.utils import timestamp_to_datetime
 
 
-class OrgUnitsTestCase(TestCase):
+class BasicAPITestCase(TestCase):
     def setUp(self):
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
+        unit_type.save()
+        unit_type = OrgUnitType(name="CDS", short_name="CDS")
         unit_type.save()
 
     def test_org_unit_insertion(self):
@@ -59,3 +62,57 @@ class OrgUnitsTestCase(TestCase):
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
         self.assertEqual(velpo_json["id"], velpo_model.id)
+
+    def test_instance_insertion(self):
+        """Creating Instance Units through the API"""
+        c = APIClient()
+        cds_unit_type = OrgUnitType.objects.get(name="CDS")
+
+        uuid = "f6ec1671-aa59-4fb2-a4a0-4af80573e2ae"
+        name = "Hopital Velpo"
+        unit_body = {
+            "id": uuid,
+            "latitude": 0,
+            "created_at": 1565194077692,
+            "updated_at": 1565194077693,
+            "orgUnitTypeId": cds_unit_type.id,
+            "parentId": None,
+            "longitude": 0,
+            "accuracy": 0,
+            "altitude": 0,
+            "time": 0,
+            "name": name,
+        }
+
+        c.post("/api/orgunits/", data=[unit_body], format="json")
+        velpo_model = OrgUnit.objects.get(uuid=uuid)
+        uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
+        name = "Questionnaire CDS"
+
+        form = Form(name="CDS FORM")
+        form.save()
+        instance_body = [
+            {
+                "id": uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": velpo_model.id,
+                "formId": form.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": name,
+            }
+        ]
+
+        response = c.post("/api/instances/", data=instance_body, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        instance = Instance.objects.get(uuid=uuid)
+
+        self.assertEqual(instance.name, name)
+        self.assertEqual(instance.org_unit_id, velpo_model.id)
+        self.assertEqual(instance.form_id, form.id)
+        self.assertEqual(floor(instance.location.x), floor(4.4))

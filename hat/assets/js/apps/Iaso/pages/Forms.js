@@ -14,8 +14,8 @@ import formsTableColumns from '../constants/formsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
-import TopBar from '../components/TopBarComponent';
-import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
+import TopBar from '../components/nav/TopBarComponent';
+import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 

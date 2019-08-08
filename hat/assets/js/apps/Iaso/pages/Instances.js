@@ -21,11 +21,11 @@ import { getRequest } from '../libs/Api';
 import { createUrl } from '../../../utils/fetchData';
 import getInstancesColumns from '../utils/instancesUtils';
 
-import TopBar from '../components/TopBarComponent';
+import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
-import InstancesMap from '../components/InstancesMapComponent';
-import BackButton from '../components/BackButtonComponent';
+import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
+import InstancesMap from '../components/maps/InstancesMapComponent';
+import BackButton from '../components/buttons/BackButtonComponent';
 
 import commonStyles from '../styles/common';
 

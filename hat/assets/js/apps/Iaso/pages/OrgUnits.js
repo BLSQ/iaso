@@ -14,8 +14,8 @@ import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
-import TopBar from '../components/TopBarComponent';
-import DownloadButtonsComponent from '../components/DownloadButtonsComponent';
+import TopBar from '../components/nav/TopBarComponent';
+import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 
 import commonStyles from '../styles/common';
@@ -34,7 +34,7 @@ const styles = theme => ({
         ...commonStyles(theme).container,
         marginTop: theme.spacing(2),
     },
-    icon: {
+    buttonIcon: {
         marginRight: theme.spacing(1),
         width: 15,
         height: 15,

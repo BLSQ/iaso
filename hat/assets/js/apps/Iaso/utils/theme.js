@@ -4,6 +4,7 @@ const theme = createMuiTheme({
     typography: {
         useNextVariants: true,
     },
+    textColor: '#333',
     palette: {
         primary: {
             main: '#2372BA',

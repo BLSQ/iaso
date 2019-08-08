@@ -11,7 +11,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import PropTypes from 'prop-types';
 
-import { toggleSidebarMenu } from '../redux/sidebarMenuReducer';
+import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
 const styles = theme => ({
     button: {

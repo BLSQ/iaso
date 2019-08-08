@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import { getLatLngBounds, isValidCoordinate } from '../utils/mapUtils';
+import { getLatLngBounds, isValidCoordinate } from '../../utils/mapUtils';
 
 const styles = () => ({
     link: {

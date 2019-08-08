@@ -13,9 +13,9 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import PropTypes from 'prop-types';
 
-import { toggleSidebarMenu } from '../redux/sidebarMenuReducer';
+import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
-import logo from '../images/iaso-dark-logo.svg';
+import logo from '../../images/iaso-dark-logo.svg';
 
 const SIDEBAR_WIDTH = 250;
 

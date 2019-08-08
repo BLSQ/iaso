@@ -16,3 +16,13 @@ export const postRequest = (url, data) => req
     .catch((error) => {
         console.error(`Error when posting ${url}: ${error}`);
     });
+
+
+export const patchRequest = (url, data) => req
+    .patch(url)
+    .set('Content-Type', 'application/json')
+    .send(data)
+    .then(result => result.body)
+    .catch((error) => {
+        console.error(`Error when patching ${url}: ${error}`);
+    });

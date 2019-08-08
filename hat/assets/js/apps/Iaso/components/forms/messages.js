@@ -43,6 +43,22 @@ const MESSAGES = {
         id: 'forms.source.derivated',
         defaultMessage: 'Dérivé des données actuelles',
     },
+    aliases: {
+        id: 'forms.aliases',
+        defaultMessage: 'Alias',
+    },
+    status: {
+        id: 'forms.status',
+        defaultMessage: 'Status',
+    },
+    validated: {
+        id: 'forms.validated',
+        defaultMessage: 'Validé',
+    },
+    notValidated: {
+        id: 'forms.notValidated',
+        defaultMessage: 'Non validé',
+    },
 };
 
 export default MESSAGES;

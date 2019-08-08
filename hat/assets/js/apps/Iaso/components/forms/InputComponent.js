@@ -10,6 +10,7 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import PropTypes from 'prop-types';
 
 import MESSAGES from './messages';
+import ArrayFieldInput from './ArrayFieldInput';
 
 const styles = theme => ({
     formControl: {
@@ -65,6 +66,7 @@ class InputComponent extends Component {
                 formatMessage,
             },
             disabled,
+            isClearable,
         } = this.props;
         const {
             selectInputValue,
@@ -73,6 +75,7 @@ class InputComponent extends Component {
             return (
                 <FormControl className={classes.formControl} variant="outlined">
                     <InputLabel
+                        name={keyValue}
                         htmlFor={`input-text-${keyValue}`}
                         classes={{
                             shrink: classes.shrink,
@@ -93,7 +96,6 @@ class InputComponent extends Component {
             );
         }
         if (type === 'select') {
-            console.log(options);
             return (
                 <FormControl
                     variant="outlined"
@@ -103,7 +105,7 @@ class InputComponent extends Component {
                         classes={{
                             shrink: classes.shrink,
                         }}
-                        shrink={Boolean(value) || selectInputValue !== ''}
+                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
                         className={classes.inputLabel}
                         htmlFor={`input-select-${keyValue}`}
                     >
@@ -113,7 +115,7 @@ class InputComponent extends Component {
                     </InputLabel>
                     <Select
                         multi={false}
-                        clearable
+                        clearable={isClearable}
                         simpleValue
                         onInputChange={newValue => this.onSelectInputChange(newValue)}
                         name={keyValue}
@@ -123,6 +125,17 @@ class InputComponent extends Component {
                         onChange={newValue => onChange(keyValue, newValue)}
                     />
                 </FormControl>
+            );
+        }
+        if (type === 'arrayInput') {
+            return (
+                <ArrayFieldInput
+                    label={formatMessage(MESSAGES[keyValue])}
+                    fieldList={value}
+                    name={keyValue}
+                    baseId={keyValue}
+                    updateList={list => onChange(keyValue, list)}
+                />
             );
         }
         return null;
@@ -135,6 +148,7 @@ InputComponent.defaultProps = {
     options: [],
     onChange: () => null,
     disabled: false,
+    isClearable: true,
 };
 
 InputComponent.propTypes = {
@@ -146,6 +160,7 @@ InputComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     options: PropTypes.array,
     disabled: PropTypes.bool,
+    isClearable: PropTypes.bool,
 };
 
 

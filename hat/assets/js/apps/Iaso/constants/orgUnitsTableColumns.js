@@ -33,7 +33,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Création',
-                id: 'iaso.form.created_at',
+                id: 'iaso.orgUnit.created_at',
             }),
             accessor: 'created_at',
             Cell: settings => (
@@ -44,8 +44,8 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Enregistrement(s)',
-                id: 'iaso.form.records',
+                defaultMessage: 'Action',
+                id: 'iaso.orgUnit.actions',
             }),
             resizable: false,
             width: 250,

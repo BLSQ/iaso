@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from iaso.models import OrgUnit, Project
+from iaso.models import OrgUnit, Project, OrgUnitType
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
@@ -30,7 +30,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             validated = False
 
         queryset = (
-            OrgUnit.objects.filter(validated=True)
+            OrgUnit.objects.filter(validated=validated)
             .exclude(org_unit_type=None)
             .filter(org_unit_type__projects__app_id=app_id)
             .order_by(*order)

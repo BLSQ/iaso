@@ -25,10 +25,6 @@
         width: 75px;
     }
 
-    // .Select {
-    //     z-index: 10;
-    // }
-
     .Select-control {
         height: 55px;
 
@@ -49,5 +45,8 @@
             margin-top: -5px;
             margin-right: 5px;
         }
+    }
+    .Select-menu-outer {
+        z-index: 10;
     }
 }

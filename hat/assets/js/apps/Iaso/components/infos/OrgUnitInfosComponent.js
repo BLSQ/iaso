@@ -6,9 +6,9 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import InputComponent from './forms/InputComponent';
+import InputComponent from '../forms/InputComponent';
 
-import MESSAGES from './forms/messages';
+import MESSAGES from '../forms/messages';
 
 function OrgUnitInfosComponent(props) {
     const {
@@ -30,9 +30,10 @@ function OrgUnitInfosComponent(props) {
                     value={orgUnit.name}
                 />
                 <InputComponent
-                    keyValue="short_name"
+                    keyValue="aliases"
                     onChange={onChangeInfo}
-                    value={orgUnit.short_name}
+                    value={orgUnit.aliases}
+                    type="arrayInput"
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
@@ -56,6 +57,25 @@ function OrgUnitInfosComponent(props) {
                             label: formatMessage(MESSAGES[s[0]]),
                             value: s[0],
                         }))
+                    }
+                />
+                <InputComponent
+                    keyValue="status"
+                    isClearable={false}
+                    onChange={onChangeInfo}
+                    value={orgUnit.status}
+                    type="select"
+                    options={
+                        [
+                            {
+                                label: formatMessage(MESSAGES.validated),
+                                value: true,
+                            },
+                            {
+                                label: formatMessage(MESSAGES.notValidated),
+                                value: false,
+                            },
+                        ]
                     }
                 />
             </Grid>

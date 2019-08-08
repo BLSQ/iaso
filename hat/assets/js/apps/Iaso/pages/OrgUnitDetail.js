@@ -16,14 +16,18 @@ import PropTypes from 'prop-types';
 
 import { setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes } from '../redux/orgUnitsReducer';
 
-import { getRequest } from '../libs/Api';
-
 import { createUrl } from '../../../utils/fetchData';
-import { fetchOrgUnitsTypes, fetchSourceTypes } from '../utils/requests';
+import {
+    fetchOrgUnitsTypes,
+    fetchSourceTypes,
+    fetchOrgUnitDetail,
+    saveOrgUnit,
+} from '../utils/requests';
 
-import TopBar from '../components/TopBarComponent';
-import OrgUnitInfos from '../components/OrgUnitInfosComponent';
-import BackButton from '../components/BackButtonComponent';
+import TopBar from '../components/nav/TopBarComponent';
+import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
+import BackButton from '../components/buttons/BackButtonComponent';
+import OrgUnitMap from '../components/maps/OrgUnitMapComponent';
 
 import commonStyles from '../styles/common';
 
@@ -71,7 +75,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
         } = this.props;
         if (orgUnitId && !currentOrgUnit) {
-            getRequest(`/api/orgunits/${orgUnitId}`).then((orgUnit) => {
+            fetchOrgUnitDetail(orgUnitId).then((orgUnit) => {
                 this.props.setCurrentOrgUnit(orgUnit);
                 this.setState({
                     currentOrgUnit: orgUnit,
@@ -98,14 +102,22 @@ class OrgUnitDetail extends Component {
         this.setState({
             orgUnitModified: true,
             currentOrgUnit: {
-                ...this.props.currentOrgUnit,
+                ...this.state.currentOrgUnit,
                 [key]: value,
             },
         });
     }
 
     saveOrgUnit() {
-        console.log('save', this.state.currentOrgUnit);
+        saveOrgUnit(this.state.currentOrgUnit).then(
+            (currentOrgUnit) => {
+                this.setState({
+                    orgUnitModified: false,
+                    currentOrgUnit,
+                });
+                this.props.setCurrentOrgUnit(currentOrgUnit);
+            },
+        );
     }
 
     resetOrgUnit() {
@@ -193,7 +205,7 @@ class OrgUnitDetail extends Component {
                                     }
                                     {
                                         tab === 'map' && (
-                                            <div>map</div>
+                                            <OrgUnitMap />
                                         )
                                     }
                                     <div className={classes.justifyFlexEnd}>

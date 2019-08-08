@@ -7,7 +7,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../styles/common';
+import commonStyles from '../../styles/common';
 
 
 const styles = theme => ({

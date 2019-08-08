@@ -19,6 +19,7 @@ import { formsReducer, formsInitialState } from './redux/formsReducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
 import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
+import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 
 import App from '../App';
 
@@ -88,6 +89,7 @@ export default function datasApp(element, baseUrl) {
         forms: formsInitialState,
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
+        snackBar: snackBarsInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -95,6 +97,7 @@ export default function datasApp(element, baseUrl) {
         forms: formsReducer,
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
+        snackBar: snackBarsReducer,
     }, [
         routerMiddleware(history),
     ]);

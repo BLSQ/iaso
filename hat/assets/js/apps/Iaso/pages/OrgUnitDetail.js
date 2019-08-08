@@ -109,7 +109,7 @@ class OrgUnitDetail extends Component {
     }
 
     saveOrgUnit() {
-        saveOrgUnit(this.state.currentOrgUnit).then(
+        saveOrgUnit(this.state.currentOrgUnit, this.props.dispatch).then(
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,
@@ -253,6 +253,7 @@ OrgUnitDetail.propTypes = {
     fetching: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -263,6 +264,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
+    dispatch,
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),

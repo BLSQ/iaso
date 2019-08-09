@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 class OrgUnitViewSet(viewsets.ViewSet):
@@ -21,6 +22,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         limit = request.GET.get("limit", None)
         validated = request.GET.get("validated", True)
+        search = request.GET.get("search", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "id").split(",")
 
@@ -35,6 +37,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             .filter(org_unit_type__projects__app_id=app_id)
             .order_by(*order)
         )
+
+        if search:
+            queryset = queryset.filter(
+                | Q(aliases__contains=[search])
+                Q(name__icontains=search)
+            )
 
         if limit:
             limit = int(limit)
@@ -62,6 +70,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
         org_unit.validated = request.data.get("status", True)
+        org_unit.aliases = request.data.get("aliases", "")
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         if org_unit_type_id:

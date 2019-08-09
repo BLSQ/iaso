@@ -54,7 +54,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path="/orgunits/validated/:validated(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path="/orgunits/validated/:validated(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/back/:back)"
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -64,7 +64,7 @@ export default function datasApp(element, baseUrl) {
         />,
         <Route
             path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitsOrder/:orgUnitsOrder)'
-            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)'}
+            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)(/search/:search)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />

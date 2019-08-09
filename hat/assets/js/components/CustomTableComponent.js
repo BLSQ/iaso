@@ -71,7 +71,7 @@ class CustomTableComponent extends React.Component {
             if (newProps.reduxPage.count) {
                 showPagination = newProps.showPagination && (newProps.reduxPage.count > pageSize);
             }
-            if (!newProps.reduxPage.pages) {
+            if (!newProps.reduxPage.pages || newProps.reduxPage.count === 0) {
                 showPagination = false;
             }
             this.setState({

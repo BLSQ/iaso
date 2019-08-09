@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Project
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
@@ -15,10 +15,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-
+        app_id = request.GET.get("app_id", "com.bluesquarehub.iaso")
         queryset = (
             OrgUnit.objects.filter(validated=True)
             .exclude(org_unit_type=None)
+            .filter(org_unit_type__projects__app_id=app_id)
             .order_by("id")
         )
 

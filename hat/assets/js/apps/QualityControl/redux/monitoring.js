@@ -29,7 +29,6 @@ const resetTable = key => ({
 
 export const monitoringActions = {
     setTable,
-    resetTable,
 };
 
 const tableInitialState = {

@@ -15,6 +15,30 @@ GEO_SOURCE_CHOICES = (
 )
 
 
+class Account(models.Model):
+    name = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    users = models.ManyToManyField(User, blank=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+
+class Project(models.Model):
+    name = models.TextField(null=True, blank=True)
+    forms = models.ManyToManyField("Form", blank=True)
+    account = models.ForeignKey(
+        Account, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
+    app_id = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+
 class OrgUnitType(models.Model):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)
@@ -23,6 +47,8 @@ class OrgUnitType(models.Model):
     sub_unit_types = models.ManyToManyField(
         "OrgUnitType", related_name="super_types", blank=True
     )
+
+    projects = models.ManyToManyField(Project, related_name="unit_types", blank=True)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -107,6 +133,7 @@ class OrgUnit(models.Model):
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
+    projects = models.ManyToManyField(Project, blank=True)
     form_id = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -221,30 +248,6 @@ class InstanceFile(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "file": self.file.url if self.file else None,
         }
-
-
-class Account(models.Model):
-    name = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    users = models.ManyToManyField(User, blank=True)
-
-    def __str__(self):
-        return "%s " % (self.name,)
-
-
-class Project(models.Model):
-    name = models.TextField(null=True, blank=True)
-    forms = models.ManyToManyField(Form, blank=True)
-    account = models.ForeignKey(
-        Account, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
-    app_id = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s " % (self.name,)
 
 
 class Device(models.Model):

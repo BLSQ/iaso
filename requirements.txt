@@ -1,5 +1,5 @@
 # django
-django==2.2.4
+django==2.1.11
 django-cors-headers==2.0.2
 django-debug-toolbar==1.7
 django-rq==0.9.5

@@ -113,59 +113,61 @@ class InstancesViewSet(viewsets.ViewSet):
         api_import.import_type = "instance"
         api_import.json_body = instances
         api_import.save()
+        try:
+            for instance in instances:
+                file_name = ntpath.basename(instance.get("file", None))
+                uuid = instance.get("id", None)
+                latitude = instance.get("latitude", None)
+                longitude = instance.get("longitude", None)
+                altitude = instance.get("altitude", 0)
+                org_unit_location = None
 
-        for instance in instances:
-            file_name = ntpath.basename(instance.get("file", None))
-            uuid = instance.get("id", None)
-            latitude = instance.get("latitude", None)
-            longitude = instance.get("longitude", None)
-            altitude = instance.get("altitude", 0)
-            org_unit_location = None
+                if latitude and longitude:
+                    org_unit_location = Point(x=longitude, y=latitude, srid=4326)
 
-            if latitude and longitude:
-                org_unit_location = Point(x=longitude, y=latitude, srid=4326)
+                instances = Instance.objects.filter(uuid=uuid)
+                if len(instances) == 1:
+                    instance_db = instances[0]
+                    instance_db.file_name = file_name
+                elif len(instances) == 0:
+                    instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
+                    instance_db.uuid = uuid
+                else:
+                    return Response(
+                        {"res": "Problem: multiple instances exist with that uuid"}
+                    )
+                instance_db.name = instance.get("name", None)
+                instance_db.accuracy = instance.get("accuracy", None)
+                instance_db.parent_id = instance.get("parentId", None)
+                tentative_org_unit_id = instance.get("orgUnitId", None)
+                if str(tentative_org_unit_id).isdigit():
+                    instance_db.org_unit_id = tentative_org_unit_id
+                else:
+                    org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
+                    instance_db.org_unit = org_unit
 
-            instances = Instance.objects.filter(uuid=uuid)
-            if len(instances) == 1:
-                instance_db = instances[0]
-                instance_db.file_name = file_name
-            elif len(instances) == 0:
-                instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
-                instance_db.uuid = uuid
-            else:
-                return Response(
-                    {"res": "Problem: multiple instances exist with that uuid"}
-                )
-            instance_db.name = instance.get("name", None)
-            instance_db.accuracy = instance.get("accuracy", None)
-            instance_db.parent_id = instance.get("parentId", None)
-            tentative_org_unit_id = instance.get("orgUnitId", None)
-            if str(tentative_org_unit_id).isdigit():
-                instance_db.org_unit_id = tentative_org_unit_id
-            else:
-                org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
-                instance_db.org_unit = org_unit
+                instance_db.form_id = instance.get("formId")
 
-            instance_db.form_id = instance.get("formId")
+                t = instance.get("created_at", None)
+                if t:
+                    instance_db.created_at = timestamp_to_utc_datetime(int(t))
+                else:
+                    instance_db.created_at = instance.get("created_at", None)
 
-            t = instance.get("created_at", None)
-            if t:
-                instance_db.created_at = timestamp_to_utc_datetime(int(t))
-            else:
-                instance_db.created_at = instance.get("created_at", None)
+                t = instance.get("updated_at", None)
+                if t:
+                    instance_db.updated_at = timestamp_to_utc_datetime(int(t))
+                else:
+                    instance_db.updated_at = instance.get("created_at", None)
 
-            t = instance.get("updated_at", None)
-            if t:
-                instance_db.updated_at = timestamp_to_utc_datetime(int(t))
-            else:
-                instance_db.updated_at = instance.get("created_at", None)
+                instance_db.source = "API"
+                instance_db.api_import = api_import
+                if org_unit_location:
+                    instance_db.location = org_unit_location
 
-            instance_db.source = "API"
-            instance_db.api_import = api_import
-            if org_unit_location:
-                instance_db.location = org_unit_location
+                new_instances.append(instance_db)
+                instance_db.save()
 
-            new_instances.append(instance_db)
-            instance_db.save()
-
-        return Response([org_unit.as_dict() for org_unit in new_instances])
+            return Response([org_unit.as_dict() for org_unit in new_instances])
+        except:
+            return Response({"result": "ok"})

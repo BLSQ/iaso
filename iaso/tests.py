@@ -17,10 +17,11 @@ class BasicAPITestCase(TestCase):
         unit_type.save()
         self.project.unit_types.add(unit_type)
 
-        unit_type = OrgUnitType(name="CDS", short_name="CDS")
-        unit_type.save()
+        unit_type_2 = OrgUnitType(name="CDS", short_name="CDS")
+        unit_type_2.save()
 
-        self.project.unit_types.add(unit_type)
+        self.project.unit_types.add(unit_type_2)
+        unit_type.sub_unit_types.add(unit_type_2)
 
     def test_org_unit_insertion(self):
         """Creating Org Units through the API"""
@@ -59,8 +60,11 @@ class BasicAPITestCase(TestCase):
         velpo_model.validated = True
         velpo_model.save()
 
-        response = c.get("/api/orgunits/", accept="application/json")
+        response = c.get(
+            "/api/orgunits/", accept="application/json"
+        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
 
+        content_1 = response.content
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
@@ -71,6 +75,18 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
         self.assertEqual(velpo_json["id"], velpo_model.id)
+
+        response = c.get(
+            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+        )  # this should be the same result as without the app_id
+        content_2 = response.content
+        self.assertEqual(content_1, content_2)
+
+        response = c.get(
+            "/api/orgunits/?app_id=com.pascallegitimus.iaso", accept="application/json"
+        )  # this should have 0 result
+        json_response = json.loads(response.content)
+        self.assertEqual(len(json_response["orgUnits"]), 0)
 
     def test_instance_insertion(self):
         """Creating Instance Units through the API"""
@@ -125,3 +141,31 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(instance.org_unit_id, velpo_model.id)
         self.assertEqual(instance.form_id, form.id)
         self.assertEqual(floor(instance.location.x), floor(4.4))
+
+    def test_fetch_org_unit_type(self):
+        """Fetch Org Unit Types through the API"""
+        c = APIClient()
+
+        response = c.get(
+            "/api/orgunittypes/?app_id=com.pascallegitimus.iaso",
+            accept="application/json",
+        )  # this should have 0 result
+        json_response = json.loads(response.content)
+        self.assertEqual(len(json_response["orgUnitTypes"]), 0)
+
+        response = c.get(
+            "/api/orgunittypes/?app_id=org.bluesquarehub.iaso",
+            accept="application/json",
+        )  # this should have 2 results
+        json_response = json.loads(response.content)
+        org_unit_types = json_response["orgUnitTypes"]
+        self.assertEqual(len(org_unit_types), 2)
+
+        org_unit_type = org_unit_types[0]
+
+        print(org_unit_type)
+        # {'id': 1, 'name': 'Hospital', 'short_name': 'Hosp', 'created_at': 1565542769.836227, 'updated_at': 1565542769.83625, 'sub_unit_types': []}
+        self.assertEqual(org_unit_type["id"], 1)
+        self.assertEqual(org_unit_type["name"], "Hospital")
+        self.assertTrue(org_unit_type["created_at"] < org_unit_type["updated_at"])
+        self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)

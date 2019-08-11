@@ -1,17 +1,26 @@
 from django.test import TestCase
-from .models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType
+from .models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
 from math import floor
 from rest_framework.test import APIClient
 import json
-from iaso.utils import timestamp_to_datetime
 
 
 class BasicAPITestCase(TestCase):
     def setUp(self):
+        account = Account(name="Les Inconnus")
+        account.save()
+
+        self.project = Project(name="Le spectacle", app_id="org.bluesquarehub.iaso")
+        self.project.save()
+
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
         unit_type.save()
+        self.project.unit_types.add(unit_type)
+
         unit_type = OrgUnitType(name="CDS", short_name="CDS")
         unit_type.save()
+
+        self.project.unit_types.add(unit_type)
 
     def test_org_unit_insertion(self):
         """Creating Org Units through the API"""

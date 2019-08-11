@@ -20,7 +20,7 @@ class FormsViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        app_id = request.GET.get("app_id", "com.bluesquarehub.iaso")
+        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
         queryset = Form.objects.filter(projects__app_id=app_id)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

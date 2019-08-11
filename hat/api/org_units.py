@@ -15,15 +15,60 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        app_id = request.GET.get("app_id", "com.bluesquarehub.iaso")
+        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+
+        limit = request.GET.get("limit", None)
+        validated = request.GET.get("validated", True)
+        page_offset = request.GET.get("page", 1)
+        order = request.GET.get("order", "id").split(",")
+
+        if validated == "true":
+            validated = True
+        if validated == "false":
+            validated = False
+
         queryset = (
             OrgUnit.objects.filter(validated=True)
             .exclude(org_unit_type=None)
             .filter(org_unit_type__projects__app_id=app_id)
-            .order_by("id")
+            .order_by(*order)
         )
 
-        return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
+        if limit:
+            limit = int(limit)
+            page_offset = int(page_offset)
+
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+
+            res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
+
+    def partial_update(self, request, pk=None):
+        org_unit = get_object_or_404(OrgUnit, id=pk)
+        org_unit.name = request.data.get("name", "")
+        org_unit.short_name = request.data.get("short_name", "")
+        org_unit.source = request.data.get("source", "")
+        org_unit.validated = request.data.get("status", True)
+
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+        if org_unit_type_id:
+            org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
+            org_unit.org_unit_type = org_unit_type
+
+        org_unit.save()
+
+        return Response(org_unit.as_dict())
 
     def create(self, request):
         org_units = request.data
@@ -83,3 +128,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return Response([org_unit.as_dict() for org_unit in new_org_units])
         except:
             return Response({"res": "a problem happened, but your data was saved"})
+
+    def retrieve(self, request, pk=None):
+        org_unit = get_object_or_404(OrgUnit, pk=pk)
+        res = org_unit.as_dict()
+        return Response(res)

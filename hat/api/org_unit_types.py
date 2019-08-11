@@ -12,7 +12,9 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        app_id = request.GET.get("app_id", "com.bluesquarehub.iaso")
+        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
         queryset = OrgUnitType.objects.filter(projects__app_id=app_id).order_by("id")
 
-        return Response({"orgUnitTypes": [unit.as_dict() for unit in queryset]})
+        return Response(
+            {"orgUnitTypes": [unit.as_dict(app_id=app_id) for unit in queryset]}
+        )

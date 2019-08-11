@@ -53,7 +53,7 @@ class OrgUnitType(models.Model):
     def __str__(self):
         return "%s" % (self.name)
 
-    def as_dict(self, sub_units=True):
+    def as_dict(self, sub_units=True, app_id=None):
         res = {
             "id": self.id,
             "name": self.name,
@@ -62,9 +62,15 @@ class OrgUnitType(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
         if sub_units:
-            sub_unit_types = [
-                unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
-            ]
+            if not app_id:
+                sub_unit_types = [
+                    unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
+                ]
+            else:
+                sub_unit_types = [
+                    unit.as_dict(sub_units=False)
+                    for unit in self.sub_unit_types.filter(projects__app_id=app_id)
+                ]
             res["sub_unit_types"] = sub_unit_types
         return res
 
@@ -119,6 +125,9 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
+            "status": self.validated
+            if self.validated == True or self.validated == False
+            else False,
         }
 
     def as_dict_for_csv(self):

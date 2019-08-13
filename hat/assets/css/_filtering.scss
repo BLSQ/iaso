@@ -83,17 +83,17 @@ $select-width: 120px;
 .filter__container__select__label {
     background: #F0F4F5;
     border-right: 1px solid $light-gray;
-    display: inline-block;
+    display: inline-block !important;
     vertical-align: middle;
     width: auto;
     height: $filter-container-height;
     line-height: $filter-container-height;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin: 0;
-    font-weight: normal;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    margin: 0 !important;
+    font-weight: normal !important;
     color: $mid-gray;
-    font-size: $font-size-s;
+    font-size: $font-size-s !important;
     .fa {
         margin-right: 0.4em;
     }
@@ -109,14 +109,14 @@ $select-width: 120px;
 
 @mixin filter-select-style {
     @include text--standard;
-    padding: 0 10px;
-    border: 0;
-    background: white;
+    padding: 0 10px !important;
+    border: 0 !important;
+    background: white !important;
     -webkit-appearance: none;
-    font-size: $font-size-s;
+    font-size: $font-size-s !important;
     &:focus {
-        outline: #E0E5EB auto 4px;
-        outline-offset: -3px;
+        outline: #E0E5EB auto 4px !important;
+        outline-offset: -3px !important;
     }
 }
 
@@ -254,10 +254,10 @@ input.input--minimised {
     input[type="text"] {
         @include filter-select-style;
         /* some stuff to override text input styles: */
-        box-sizing: border-box;
+        box-sizing: border-box !important;;
         width: 200px;
         height: $filter-container-height;
-        box-shadow: none;
+        box-shadow: none !important;
     }
 }
 

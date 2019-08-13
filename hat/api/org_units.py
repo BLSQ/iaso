@@ -40,8 +40,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if search:
             queryset = queryset.filter(
-                Q(name__icontains=search)
-                | Q(aliases__contains=[search])
+                Q(name__icontains=search) | Q(aliases__contains=[search])
             )
 
         if limit:
@@ -103,8 +102,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit_location = Point(
                         x=longitude, y=latitude, z=altitude, srid=4326
                     )
-                org_unit_db, creat
-                ed = OrgUnit.objects.get_or_create(uuid=uuid)
+                org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
 
                 if created:
                     org_unit_db.custom = True

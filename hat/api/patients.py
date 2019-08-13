@@ -174,7 +174,7 @@ class PatientsViewSet(viewsets.ViewSet):
         if confirmation_result is not None:
             if confirmation_result == 'not_done':
                 none_confirmed_case = CaseView.objects\
-                    .filter(confirmed_case__isnull=True)\
+                    .filter(confirmation_result__isnull=True)\
                     .filter(normalized_patient_id=OuterRef('id'))
                 queryset = queryset\
                     .annotate(has_none_confirmed_case=Exists(none_confirmed_case))\

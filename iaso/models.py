@@ -123,7 +123,7 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.as_dict().get("name"),
+            "org_unit_type_name": self.org_unit_type.name,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,

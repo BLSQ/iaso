@@ -27,12 +27,6 @@ export class ListLocator extends Component {
     }
 
     componentWillMount() {
-        if (this.props.params.back) {
-            this.onSearch();
-            const { params } = this.props;
-            delete params.back;
-            this.props.redirectTo(baseUrl, params);
-        }
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
@@ -43,6 +37,12 @@ export class ListLocator extends Component {
                 this.props.selectZone(this.props.params.zs_id, this.props.params.as_id);
             } else if (this.props.params.as_id) {
                 this.props.selectArea(this.props.params.as_id, this.props.params.zs_id);
+            }
+            if (this.props.params.back) {
+                this.onSearch();
+                const { params } = this.props;
+                delete params.back;
+                this.props.redirectTo(baseUrl, params);
             }
         });
     }
@@ -58,8 +58,9 @@ export class ListLocator extends Component {
     }
 
     onSearch() {
+        console.log('search');
         this.setState({
-            tableUrl: this.getEndpointUrl('image'),
+            tableUrl: this.getEndpointUrl(),
         });
     }
 

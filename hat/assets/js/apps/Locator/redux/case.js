@@ -7,6 +7,7 @@ const req = require('superagent');
 export const SET_CASE = 'hat/locator/cases/SET_CASE';
 export const SET_LIST = 'hat/locator/cases/SET_LIST';
 export const SET_CASES_LIST = 'hat/patient/detail/SET_CASES_LIST';
+export const RESET_CASES_LIST = 'hat/patient/detail/RESET_CASES_LIST';
 
 
 export const setList = list => ({
@@ -28,6 +29,10 @@ export const setCasesList = (list, showPagination, params, count, pages) => ({
         count,
         pages,
     },
+});
+
+export const resetCasesList = () => ({
+    type: RESET_CASES_LIST,
 });
 
 export const fetchCase = (dispatch, caseId) => {
@@ -63,6 +68,7 @@ export const caseActions = {
     setList,
     fetchCase,
     setCasesList,
+    resetCasesList,
 };
 
 export const caseInitialState = {
@@ -102,6 +108,12 @@ export const caseReducer = (state = caseInitialState, action = {}) => {
                     count,
                     pages,
                 },
+            };
+        }
+        case RESET_CASES_LIST: {
+            return {
+                ...state,
+                casesPage: caseInitialState.casesPage,
             };
         }
         default:

@@ -1,6 +1,7 @@
 
 import { push } from 'react-router-redux';
 import { loadActions } from '../../../redux/load';
+import { caseActions } from './case';
 import { FETCH_ACTION } from './locator';
 import { createUrl } from '../../../utils/fetchData';
 
@@ -24,12 +25,14 @@ export const selectVillage = villageId => ({
 export const saveVillage = (kaseId, villageObj, params, dispatch) => {
     dispatch(loadActions.startLoading());
     const tempParams = params;
+    tempParams.back = true;
     delete tempParams.case_id;
     req
         .patch(`/api/cases/${kaseId}/`)
         .set('Content-Type', 'application/json')
         .send(villageObj)
         .then(() => {
+            dispatch(caseActions.resetCasesList());
             dispatch(push(`list${createUrl(tempParams, '')}`));
         })
         .catch((err) => {

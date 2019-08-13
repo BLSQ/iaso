@@ -127,9 +127,7 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "status": self.validated
-            if self.validated == True or self.validated == False
-            else False,
+            "status": False if self.validated is None else self.validated,
         }
 
     def as_dict_for_csv(self):

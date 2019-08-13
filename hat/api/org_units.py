@@ -61,6 +61,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
+            queryset = queryset.select_related("org_unit_type")
             return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
 
     def partial_update(self, request, pk=None):

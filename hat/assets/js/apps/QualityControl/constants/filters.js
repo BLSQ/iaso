@@ -14,6 +14,12 @@ const filtersUsers = (usersList, userTitle) => (
     ]
 );
 
+const filtersValidators = (usersList, userTitle) => (
+    [
+        users(usersList, userTitle, false, 'validatorId'),
+    ]
+);
+
 const filtersChecked = () => (
     [
         onlyCheckedTests(),
@@ -90,4 +96,5 @@ export {
     filtersUsers,
     filtersGeo,
     filtersChecked,
+    filtersValidators,
 };

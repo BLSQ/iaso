@@ -76,7 +76,7 @@ const screenersColumns = formatMessage => (
                 defaultMessage: 'A problème',
                 id: 'monitoring.label.checkedInvalid',
             }),
-            accessor: 'checked_invalid',
+            accessor: 'with_problem',
             className: 'small',
             Cell: (settings) => {
                 if (settings.original.checked_invalid === undefined) {
@@ -129,7 +129,7 @@ const screenersColumns = formatMessage => (
                 defaultMessage: 'Non concordants',
                 id: 'monitoring.label.checked_mismatch',
             }),
-            accessor: 'checked',
+            accessor: 'checked_mismatch',
             className: 'small',
             Cell: settings => (
                 <span>

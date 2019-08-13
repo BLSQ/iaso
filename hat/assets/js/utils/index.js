@@ -254,11 +254,11 @@ export const renderCountCell = (total, value, formatMessage) => {
                 total !== 0 &&
                 <span>
                     <br />
-                    <span style={{fontSize: "85%"}}>
+                    <span style={{ fontSize: '85%' }}>
                     ({parseFloat(pourcentage).toFixed(2)}% {formatMessage({
-                        defaultMessage: 'positifs',
-                        id: 'monitoring.label.positive',
-                    })})
+                            defaultMessage: 'positifs',
+                            id: 'monitoring.label.positive',
+                        })})
                     </span>
                 </span>
             }
@@ -267,11 +267,11 @@ export const renderCountCell = (total, value, formatMessage) => {
                 total !== 0 &&
                 <span>
                     <br />
-                    <span style={{fontSize: "85%"}}>
+                    <span style={{ fontSize: '85%' }}>
                     ({formatMessage({
-                        defaultMessage: '0 positif',
-                        id: 'monitoring.label.no_positve',
-                    })})
+                            defaultMessage: '0 positif',
+                            id: 'monitoring.label.no_positve',
+                        })})
                     </span>
                 </span>
             }

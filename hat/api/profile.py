@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from hat.audit.models import log_modification, PROFILE_API
 from hat.users.models import (
+    LEVEL_1,
     Profile,
     Institution,
     UserType,
@@ -48,6 +49,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", 50)
         page_offset = request.GET.get("page", 1)
         search = request.GET.get("search", None)
+        is_validator = request.GET.get("is_validator", None)
         limit = int(limit)
         page_offset = int(page_offset)
         institution_id = request.GET.get(
@@ -78,6 +80,9 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if team_id:
             queryset = queryset.filter(team_id=team_id)
+
+        if is_validator:
+            queryset = queryset.filter(level__gt=LEVEL_1)
 
         if screening_type is not None:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:

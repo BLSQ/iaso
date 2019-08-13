@@ -31,6 +31,7 @@ from hat.constants import (
 )
 from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
+from hat.patient.teststats_quality import generate_stats_xlsx
 from .authentication import CsrfExemptSessionAuthentication
 
 
@@ -83,7 +84,9 @@ class TestStatsViewSet(viewsets.ViewSet):
         to_date = request.GET.get("to", None)
         orders = request.GET.get("order", "date").split(",")
         tester_type = request.GET.get("testertype", None)
+        current_stats = request.GET.get("currentStats", None)
         xlsx_format = request.GET.get("xlsx", None)
+        validator_ids = request.GET.get("validator_id", None)
 
         if result is None or grouping == "tester":
             if grouping == "villageday":
@@ -152,6 +155,9 @@ class TestStatsViewSet(viewsets.ViewSet):
 
             if tester_type:
                 queryset = queryset.filter(tester__tester_type=tester_type)
+
+            if validator_ids:
+                queryset = queryset.filter(check__validator__id__in=validator_ids.split(","))
 
             grouped_queryset = (
                 queryset.values(*grouping_fields)
@@ -637,12 +643,21 @@ class TestStatsViewSet(viewsets.ViewSet):
         # end of data fetch if not in cache
 
         if xlsx_format is not None:
-            response = HttpResponse(
-                generate_report(grouping, result["result"], result["total"]),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            filename = f"TrypelimStats_{grouping}_{from_date}-{to_date}_{str(datetime.today())[:10]}.xlsx"
-            response["Content-Disposition"] = f"attachment; filename={filename}"
-            return response
+            if not grouping == "tester":
+                response = HttpResponse(
+                    generate_report(grouping, result["result"], result["total"]),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+                filename = f"TrypelimStats_{grouping}_{from_date}-{to_date}_{str(datetime.today())[:10]}.xlsx"
+                response["Content-Disposition"] = f"attachment; filename={filename}"
+                return response
+            else:
+                response = HttpResponse(
+                    generate_stats_xlsx(current_stats, result["result"]),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+                filename = f"TrypelimStats_quality_{from_date}-{to_date}_{str(datetime.today())[:10]}.xlsx"
+                response["Content-Disposition"] = f"attachment; filename={filename}"
+                return response
         else:
             return Response(result)

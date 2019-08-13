@@ -316,6 +316,10 @@ $directions: left right top bottom;
     margin: $padding-unit/2 !important;
 }
 
+.no-margin {
+    margin: 0 !important;
+}
+
 .bold-subtitle {
     font-weight: bold;
     color: $mid-gray;

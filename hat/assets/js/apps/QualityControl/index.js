@@ -57,12 +57,11 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
             component={QualityStats}
         />,
         <Route
-            path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)(/back/:back)"
+            path="monitoring/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)(/validatorId/:validatorId)(/back/:back)"
             component={MonitoringPage}
         />,
         <Route
-            // path="monitoring/detail/userId/:userId/date_from/:date_from/date_to/:date_to"
-            path="monitoring/detail/userId/:userId/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)"
+            path="monitoring/detail/userId/:userId/screenerOrder/:screenerOrder/confirmerOrder/:confirmerOrder/date_from/:date_from/date_to/:date_to(/tab/:tab)(/validatorId/:validatorId)"
             component={MonitoringDetail}
         />,
         <Redirect exact path="/dashboard" to={defaultPath} />,

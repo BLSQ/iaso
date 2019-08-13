@@ -71,7 +71,7 @@ const screenersColumns = formatMessage => (
                 defaultMessage: 'Total Images',
                 id: 'monitoring.label.picturesTotal',
             }),
-            accessor: 'rdt_count',
+            accessor: 'test_pictures',
             className: 'small',
             Cell: settings => (
                 <span>

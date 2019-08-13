@@ -131,6 +131,18 @@ export const MESSAGES = {
         defaultMessage: 'Passif',
         id: 'main.label.passive',
     },
+    stage1: {
+        defaultMessage: 'Stade 1',
+        id: 'main.label.stage1',
+    },
+    stage2: {
+        defaultMessage: 'Stade 2',
+        id: 'main.label.stage2',
+    },
+    unknown: {
+        defaultMessage: 'Inconnu',
+        id: 'main.label.unknown',
+    },
 };
 
 const getMessage = key => MESSAGES[key];
@@ -1140,6 +1152,38 @@ const screeningType = formatMessage => (
     }
 );
 
+const stade = formatMessage => (
+    {
+        name: 'stage',
+        urlKey: 'stage',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(getMessage('stage1')),
+                value: 'stage1',
+            },
+            {
+                label: formatMessage(getMessage('stage2')),
+                value: 'stage2',
+            },
+            {
+                label: formatMessage(getMessage('unknown')),
+                value: 'unknown',
+            },
+        ],
+        placeholder: {
+            id: 'cases.label.allMale',
+            defaultMessage: 'Tous',
+        },
+        label: {
+            id: 'patients.label.stage',
+            defaultMessage: 'Stade',
+        },
+        type: 'select',
+    }
+);
+
 export {
     testType,
     testTypeImage,
@@ -1181,4 +1225,5 @@ export {
     institutions,
     screeningType,
     problems,
+    stade,
 };

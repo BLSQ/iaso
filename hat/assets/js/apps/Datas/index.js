@@ -51,7 +51,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
             '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
             '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)' +
-            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/back/:back)(/merged/:merged)'}
+            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/stage/:stage)(/back/:back)(/merged/:merged)'}
             component={PatientsPage}
         />,
         <Route
@@ -59,7 +59,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
             '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
             '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/only_dupes/:only_dupes)' +
-            '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)(/screening_type/:screening_type)' +
+            '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)(/screening_type/:screening_type)(/stage/:stage)' +
             '(/prov_id/:prov_id)(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={PatientDetailPage}
         />,

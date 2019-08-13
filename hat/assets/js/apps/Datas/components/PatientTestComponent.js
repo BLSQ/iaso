@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
@@ -45,8 +45,12 @@ class PatientTestComponent extends React.Component {
                                     <strong><FormattedMessage id="patientsCasesTests.screening" defaultMessage="Dépistage" /></strong>
                                 }
                                 {
-                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
+                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL') &&
                                     <strong><FormattedMessage id="patientsCasesTests.confirmation" defaultMessage="Confirmation" /></strong>
+                                }
+                                {
+                                    test.type && test.type === 'PL' &&
+                                    <strong><FormattedMessage id="patientsCasesTests.stade" defaultMessage="Détermination du stade" /></strong>
                                 }
                                 {
                                     test.hidden &&
@@ -100,7 +104,14 @@ class PatientTestComponent extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
+                                {
+                                    test.type && test.type === 'PL' &&
+                                    <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
+                                }
+                                {
+                                    test.type && test.type !== 'PL' &&
+                                    <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
+                                }
                             </th>
                             <td className={`${similarTest && (similarTest.result !== test.result) ? 'error' : ''}`}>
                                 {test.result && testsMapping[test.result] ? testsMapping[test.result] : ''}
@@ -214,68 +225,78 @@ class PatientTestComponent extends React.Component {
                         }
                         {
                             test.type === 'PL' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumine" />
-                                </th>
-                                <td>
-                                    {
-                                        currentCase.test_pl_albumine ? currentCase.test_pl_albumine : '--'
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
-                            test.type === 'PL' &&
-                            <tr>
-                                <th>
-                                    <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="Globules blancs/mm&sup3;" />
-                                </th>
-                                <td>
-                                    {
-                                        currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
-                            test.type === 'PL' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
-                                </th>
-                                <td>
-                                    {
-                                        currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
-                            test.type === 'PL' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.test_pl_trypanosome" defaultMessage="Trypanosome" />
-                                </th>
-                                <td>
-                                    {
-                                        currentCase.test_pl_trypanosome ? currentCase.test_pl_trypanosome : '--'
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
-                            test.type === 'PL' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.test_pl_comments" defaultMessage="Commentaires" />
-                                </th>
-                                <td>
-                                    {
-                                        currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
-                                    }
-                                </td>
-                            </tr>
+                            <Fragment>
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumine" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_albumine ? currentCase.test_pl_albumine : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="Globules blancs/mm&sup3;" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_result" defaultMessage="Stade" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_result === 'stage1' ? '1' : ''
+                                        }
+                                        {
+                                            currentCase.test_pl_result === 'stage2' ? '2' : ''
+                                        }
+                                        {
+                                            !currentCase.test_pl_result ? '--' : ''
+                                        }
+                                        {
+                                            currentCase.test_pl_result === 'unknown' ?
+                                                <FormattedMessage id="patientsCasesTests.test_pl_result.unknown" defaultMessage="Inconnu" /> : ''
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.test_pl_trypanosome" defaultMessage="Trypanosome" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_trypanosome ? currentCase.test_pl_trypanosome : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.test_pl_comments" defaultMessage="Commentaires" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
+                                        }
+                                    </td>
+                                </tr>
+                            </Fragment>
                         }
                         <tr>
                             <th>

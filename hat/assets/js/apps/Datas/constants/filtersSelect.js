@@ -23,6 +23,7 @@ import {
     images,
     videos,
     screeningType,
+    stade,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -82,6 +83,7 @@ const filtersPatients2 = formatMessage => (
         testType(formatMessage),
         screeningResult(formatMessage),
         confirmationResult(formatMessage),
+        stade(formatMessage),
         images(formatMessage),
         videos(formatMessage),
     ]

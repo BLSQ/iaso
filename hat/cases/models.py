@@ -592,6 +592,7 @@ class Case(CaseAbstract):
             "test_catt_session_type": self.test_catt_session_type,
             "test_pl_albumine": self.test_pl_albumine,
             "test_pl_gb_mm3": self.test_pl_gb_mm3,
+            "test_pl_result": self.test_pl_result,
             "test_pl_lcr": self.test_pl_lcr,
             "test_pl_trypanosome": self.test_pl_trypanosome,
             "test_pl_comments": self.test_pl_comments,

@@ -83,6 +83,7 @@ class PatientsViewSet(viewsets.ViewSet):
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
         anonymous_request = request.GET.get("anonymous", None)
+        stage = request.GET.get("stage", None)
         anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
 
         csv_format = request.GET.get("csv", None)  # default will be json
@@ -150,6 +151,14 @@ class PatientsViewSet(viewsets.ViewSet):
                 queryset = queryset\
                     .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
                     .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
+
+        if stage is not None:
+            stage_query = CaseView.objects\
+                .filter(test_pl_result=stage)\
+                .filter(normalized_patient_id=OuterRef('id'))
+            queryset = queryset\
+                .annotate(has_stage=Exists(stage_query))\
+                .filter(has_stage=True)
 
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:

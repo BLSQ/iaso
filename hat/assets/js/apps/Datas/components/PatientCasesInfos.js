@@ -96,50 +96,70 @@ class PatientCasesInfo extends React.Component {
                                 }
                             </td>
                         </tr>
-                        { currentCase.circumstances_da_um &&
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCasesTests.test_pl_result" defaultMessage="Stade" />
+                            </th>
+                            <td>
+                                {
+                                    currentCase.test_pl_result === 'stage1' ? '1' : ''
+                                }
+                                {
+                                    currentCase.test_pl_result === 'stage2' ? '2' : ''
+                                }
+                                {
+                                    !currentCase.test_pl_result ? '--' : ''
+                                }
+                                {
+                                    currentCase.test_pl_result === 'unknown' ?
+                                        <FormattedMessage id="patientsCasesTests.test_pl_result.unknown" defaultMessage="Inconnu" /> : ''
+                                }
+                            </td>
+                        </tr>
+                        {currentCase.circumstances_da_um &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="Dépistage actif UM"/>
+                                    <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="Dépistage actif UM" />
                                 </th>
                                 <td>
                                     {currentCase.circumstances_da_um}
                                 </td>
                             </tr>
                         }
-                        { currentCase.circumstances_dp_um &&
+                        {currentCase.circumstances_dp_um &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="Dépistage passif UM"/>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="Dépistage passif UM" />
                                 </th>
                                 <td>
                                     {currentCase.circumstances_dp_um}
                                 </td>
                             </tr>
                         }
-                        { currentCase.circumstances_dp_cdtc &&
+                        {currentCase.circumstances_dp_cdtc &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Dépistage passif CDTC"/>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Dépistage passif CDTC" />
                                 </th>
                                 <td>
                                     {currentCase.circumstances_dp_cdtc}
                                 </td>
                             </tr>
                         }
-                        { currentCase.circumstances_dp_cs &&
+                        {currentCase.circumstances_dp_cs &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="Dépistage passif CS"/>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="Dépistage passif CS" />
                                 </th>
                                 <td>
                                     {currentCase.circumstances_dp_cs}
                                 </td>
                             </tr>
                         }
-                        { currentCase.circumstances_dp_hgr &&
+                        {currentCase.circumstances_dp_hgr &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="Dépistage passif HGR"/>
+                                    <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="Dépistage passif HGR" />
                                 </th>
                                 <td>
                                     {currentCase.circumstances_dp_hgr}
@@ -153,7 +173,7 @@ class PatientCasesInfo extends React.Component {
                             <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>
                                 {
                                     !currentCase.team.normalized_team &&
-                                        <FormattedMessage id="patientsCasesInfos.teamNotFound" defaultMessage="Equipe non trouvée" />
+                                    <FormattedMessage id="patientsCasesInfos.teamNotFound" defaultMessage="Equipe non trouvée" />
                                 }
                                 {
                                     currentCase.team.normalized_team &&

@@ -1,9 +1,11 @@
 from hat.api.export_utils import generate_xlsx
 
+
 def getPourcentage(total, value):
     if total == 0 or value == 0:
         return 0
     return float("{0:.2f}".format(100 / (total / value)))
+
 
 def getCountCell(total, value):
     cell = str(total)
@@ -28,6 +30,7 @@ columns_screener = [
     {"title": "Total Images", "width": 15},
 ]
 
+
 def get_screener_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
     return [
@@ -40,8 +43,9 @@ def get_screener_row(row, row_num, **kwargs):
         row["negative_catt_count"],
         row["positive_rdt_count"],
         row["negative_rdt_count"],
-         row["rdt_test_pictures"] +  row["catt_test_pictures"]
+        row["rdt_test_pictures"] + row["catt_test_pictures"]
     ]
+
 
 columns_confirmer = [
     {"title": "Nom", "width": 20},
@@ -54,6 +58,7 @@ columns_confirmer = [
     {"title": "Stage 2", "width": 15},
     {"title": "Vidéos", "width": 15},
 ]
+
 
 def get_confirmer_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
@@ -69,6 +74,7 @@ def get_confirmer_row(row, row_num, **kwargs):
         row["confirmation_video_count"],
     ]
 
+
 columns_screenerqa = [
     {"title": "Nom", "width": 20},
     {"title": "Coordination", "width": 15},
@@ -81,6 +87,7 @@ columns_screenerqa = [
     {"title": "Non concordants", "width": 15},
 ]
 
+
 def get_screenerqa_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
     total_invalid = row["checked_unreadable"] + row["checked_invalid"] + row["checked_mismatch"]
@@ -88,13 +95,14 @@ def get_screenerqa_row(row, row_num, **kwargs):
         name,
         row["tester__team__coordination__name"],
         row["test_pictures"],
-        str(row["checked"]) + " (" + str(getPourcentage(row["test_pictures"], row["checked"])) +"%)",
-        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) +"%)",
-        str(total_invalid) + " (" + str(getPourcentage(row["checked"], row["total_invalid"])) +"%)",
-        str(row["checked_unreadable"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_unreadable"])) +"%)",
-        str(row["checked_invalid"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_invalid"])) +"%)",
-        str(row["checked_mismatch"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_mismatch"])) +"%)",
+        str(row["checked"]) + " (" + str(getPourcentage(row["test_pictures"], row["checked"])) + "%)",
+        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) + "%)",
+        str(total_invalid) + " (" + str(getPourcentage(row["checked"], total_invalid)) + "%)",
+        str(row["checked_unreadable"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_unreadable"])) + "%)",
+        str(row["checked_invalid"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_invalid"])) + "%)",
+        str(row["checked_mismatch"]) + " (" + str(getPourcentage(row["checked_ko"], row["checked_mismatch"])) + "%)",
     ]
+
 
 columns_confirmerqa = [
     {"title": "Nom", "width": 20},
@@ -107,17 +115,21 @@ columns_confirmerqa = [
     {"title": "Mauvais endroit", "width": 15},
 ]
 
+
 def get_confirmerqa_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
     return [
         name,
         row["tester__team__coordination__name"],
         getCountCell(row["confirmation_video_count"], row["confirmation_positive_video_count"]),
-        str(row["checked"]) + " (" + str(getPourcentage(row["confirmation_video_count"], row["checked"])) +"%)",
-        str(row["checked_ko"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko"])) +"%)",
-        str(row["checked"] - row["is_clear"]) + " (" + str(getPourcentage(row["checked"], row["checked"] - row["is_clear"])) +"%)",
-        str(row["checked"] - row["is_good_place"]) + " (" + str(getPourcentage(row["checked"], row["checked"] - row["is_good_place"])) +"%)",
+        str(row["checked"]) + " (" + str(getPourcentage(row["confirmation_video_count"], row["checked"])) + "%)",
+        str(row["checked_ko"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko"])) + "%)",
+        str(row["checked"] - row["is_clear"]) + " (" + str(getPourcentage(row["checked"], row["checked"] -
+                                                                          row["is_clear"])) + "%)",
+        str(row["checked"] - row["is_good_place"]) + " (" + str(getPourcentage(row["checked"], row["checked"] -
+                                                                               row["is_good_place"])) + "%)",
     ]
+
 
 columns_screenercentralqa = [
     {"title": "Nom", "width": 20},
@@ -130,18 +142,20 @@ columns_screenercentralqa = [
     {"title": "<> terrain", "width": 15},
 ]
 
+
 def get_screenercentralqa_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
     return [
         name,
         row["tester__team__coordination__name"],
         row["test_pictures"],
-        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["test_pictures"], row["checked"])) +"%)",
-        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok_central"])) +"%)",
-        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) +"%)",
-        str(row["checked_ko_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko_central"])) +"%)",
-        str(row["checked_ko"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko"])) +"%)",
+        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["test_pictures"], row["checked"])) + "%)",
+        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok_central"])) + "%)",
+        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) + "%)",
+        str(row["checked_ko_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko_central"])) + "%)",
+        str(row["checked_ko"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko"])) + "%)",
     ]
+
 
 columns_confirmercentralqa = [
     {"title": "Nom", "width": 20},
@@ -154,6 +168,7 @@ columns_confirmercentralqa = [
     {"title": "<> terrain", "width": 15},
 ]
 
+
 def get_confirmercentralqa_row(row, row_num, **kwargs):
     name = row["tester__user__first_name"] + " " + row["tester__user__last_name"]
     return [
@@ -161,11 +176,12 @@ def get_confirmercentralqa_row(row, row_num, **kwargs):
         row["tester__team__coordination__name"],
         row["confirmation_video_count"],
         row["checked"],
-        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok_central"])) +"%)",
-        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) +"%)",
-        str(row["checked_ko_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko_central"])) +"%)",
-        str(row["checked_mismatch"]) + " (" + str(getPourcentage(row["checked"], row["checked_mismatch"])) +"%)",
+        str(row["checked_ok_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok_central"])) + "%)",
+        str(row["checked_ok"]) + " (" + str(getPourcentage(row["checked"], row["checked_ok"])) + "%)",
+        str(row["checked_ko_central"]) + " (" + str(getPourcentage(row["checked"], row["checked_ko_central"])) + "%)",
+        str(row["checked_mismatch"]) + " (" + str(getPourcentage(row["checked"], row["checked_mismatch"])) + "%)",
     ]
+
 
 def generate_stats_xlsx(report_type, queryset):
     if report_type == "screener":

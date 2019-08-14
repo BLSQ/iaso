@@ -173,8 +173,9 @@ class InstancesViewSet(viewsets.ViewSet):
                 new_instances.append(instance_db)
                 instance_db.save()
 
-            return Response([org_unit.as_dict() for org_unit in new_instances])
-        except:
+            return Response({"res": "ok"})
+        except Exception as e:
+            print("exception", e)
             api_import.has_problem = True
             api_import.save()
             return Response({"result": "ok"})

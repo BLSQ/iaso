@@ -206,6 +206,8 @@ class Instance(models.Model):
             file_content = flat_parse_xml_file(file)
             self.json = file_content
             self.save()
+        else:
+            file_content = {}
         return file_content
 
     def __str__(self):
@@ -253,6 +255,9 @@ class InstanceFile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    device = models.ForeignKey(
+        "Device", null=True, blank=True, on_delete=models.DO_NOTHING
+    )
 
     def __str__(self):
         return "%s " % (self.name,)

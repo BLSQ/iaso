@@ -3,9 +3,10 @@ from django.contrib.gis.db.models.fields import PointField, PolygonField
 
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
 
-from iaso.utils import parse_xml_file, flat_parse_xml_file
+from iaso.utils import flat_parse_xml_file
 from urllib.request import urlopen
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import Point
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -149,6 +150,8 @@ class Form(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
+    device_field = models.TextField(null=True, blank=True)
+    location_field = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -194,6 +197,21 @@ class Instance(models.Model):
     )
     form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
     json = JSONField(null=True, blank=True)
+    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+
+    def convert_location_from_field(self, field_name=None):
+        f = field_name
+        if f is None:
+            f = self.form.location_field
+
+        if self.json and f:
+            location = self.json[f]
+            latitude, longitude, altitude, accuracy = [
+                float(x) for x in location.split(" ")
+            ]
+            self.location = Point(x=longitude, y=latitude, srid=4326)
+            self.accuracy = accuracy
+            self.save()
 
     def get_and_save_json_of_xml(self):
         if self.json:

@@ -134,6 +134,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     new_org_units.append(org_unit_db)
                     org_unit_db.save()
                 else:
+                    api_import.has_problem = True
+                    api_import.save()
                     print("not created")
 
             return Response([org_unit.as_dict() for org_unit in new_org_units])

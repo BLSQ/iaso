@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
 
 from iaso.utils import parse_xml_file, flat_parse_xml_file
 from urllib.request import urlopen
@@ -123,7 +123,9 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_name": self.org_unit_type.name
+            if self.org_unit_type
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -191,20 +193,27 @@ class Instance(models.Model):
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    json = JSONField(null=True, blank=True)
 
-    def __str__(self):
-        return "%s " % (self.form,)
-
-    def as_dict(self, isFlat=False):
-        file_content = ""
-        if self.file:
+    def get_and_save_json_of_xml(self):
+        if self.json:
+            file_content = self.json
+        elif self.file:
             if "amazonaws" in self.file.url:
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            file_content = (
-                parse_xml_file(file) if not isFlat else flat_parse_xml_file(file)
-            )
+            file_content = flat_parse_xml_file(file)
+            self.json = file_content
+            self.save()
+        return file_content
+
+    def __str__(self):
+        return "%s " % (self.form,)
+
+    def as_dict(self):
+        file_content = self.get_and_save_json_of_xml()
+
         return {
             "uuid": self.uuid,
             "file_name": self.file_name,

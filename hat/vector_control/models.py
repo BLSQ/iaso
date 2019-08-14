@@ -49,6 +49,7 @@ class APIImport(models.Model):
         max_length=25, choices=IMPORT_TYPE, null=True, blank=True
     )
     json_body = JSONField()
+    has_problem = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (

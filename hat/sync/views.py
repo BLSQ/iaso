@@ -79,14 +79,14 @@ def user_signin(request: HttpRequest) -> HttpResponse:
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
-    username = request.data.get('username', '').rstrip()
-    if username == '':
+    username = request.data.get("username", "").rstrip()
+    if username == "":
         msg = 'No "username" sent for device_id {}'.format(device_id)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
 
-    password = request.data.get('password', '').rstrip()
-    if password == '':
+    password = request.data.get("password", "").rstrip()
+    if password == "":
         msg = 'No "password" sent (username "{}")'.format(username)
         logger.error(msg)
         return Response(msg, status.HTTP_400_BAD_REQUEST)
@@ -121,7 +121,11 @@ def user_signin(request: HttpRequest) -> HttpResponse:
             device_db.last_user = user
             device_db.save()
     except DeviceDB.DoesNotExist:
-        logger.info('Creating db for device {} and user {} ({})'.format(device_id, username, user.id))
+        logger.info(
+            "Creating db for device {} and user {} ({})".format(
+                device_id, username, user.id
+            )
+        )
         device_db = DeviceDB(device_id=device_id, creator=user, last_user=user)
         device_db.save()
 
@@ -284,7 +288,10 @@ def form_upload(request: HttpRequest) -> HttpResponse:
     i, created = Instance.objects.get_or_create(file_name=main_file.name)
     i.file = request.FILES["xml_submission_file"]
     i.save()
-
+    try:
+        i.get_and_save_json_of_xml()
+    except:
+        pass
     for file_name in request.FILES:
         if file_name != "xml_submission_file":
             fi = InstanceFile()

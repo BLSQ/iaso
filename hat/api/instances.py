@@ -33,6 +33,11 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.exclude(file="").order_by(
             *orders
         )  ## quickfix to avoid updating the front, but here, we should also display entries without xml
+
+        queryset = queryset.prefetch_related("org_unit")
+        queryset = queryset.prefetch_related("org_unit__org_unit_type")
+        queryset = queryset.prefetch_related("form")
+
         if form_id:
             queryset = queryset.filter(form_id=form_id)
         if csv_format is None and xlsx_format is None:

@@ -1,3 +1,4 @@
+/* globals STATIC_URL */
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -14,8 +15,6 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-
-import logo from '../../images/iaso-dark-logo.svg';
 
 const SIDEBAR_WIDTH = 250;
 
@@ -66,7 +65,7 @@ class SidebarMenu extends PureComponent {
                 onClose={toggleSidebar}
             >
                 <div className={classes.toolbar}>
-                    <img src={logo} className={classes.logo} alt="logo" />
+                    <img src={`${STATIC_URL}images/iaso-dark-logo.png`} className={classes.logo} alt="logo" />
                     <IconButton
                         className={classes.menuButton}
                         color="inherit"

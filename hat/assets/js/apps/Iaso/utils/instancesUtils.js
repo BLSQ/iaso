@@ -9,7 +9,7 @@ const getInstancesColumns = (formatMessage, instances, component) => {
         const childrenArray = [];
 
         Object.keys(instances[0].file_content).forEach((k) => {
-            if (k !== 'meta') {
+            if (k !== 'meta' && k !== 'uuid') {
                 childrenArray.push({
                     class: 'small',
                     sortable: false,

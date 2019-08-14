@@ -21,6 +21,11 @@ const instancesTableColumns = (formatMessage, component) => (
             width: 200,
         },
         {
+            Header: 'Uid',
+            accessor: 'uuid',
+            width: 200,
+        },
+        {
             Header: formatMessage({
                 defaultMessage: 'Création',
                 id: 'iaso.instance.created_at',

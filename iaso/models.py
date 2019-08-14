@@ -206,6 +206,7 @@ class Instance(models.Model):
                 parse_xml_file(file) if not isFlat else flat_parse_xml_file(file)
             )
         return {
+            "uuid": self.uuid,
             "file_name": self.file_name,
             "file_content": file_content,
             "file_url": self.file.url if self.file else None,

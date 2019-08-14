@@ -151,8 +151,8 @@ class Instances extends Component {
             this.props.setInstances(data.instances, true, params, data.count, data.pages);
         });
 
-        const urlLocation = this.getEndpointUrl(false, '', true);
-        getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
+        // const urlLocation = this.getEndpointUrl(false, '', true);
+        // getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
     }
 
     render() {

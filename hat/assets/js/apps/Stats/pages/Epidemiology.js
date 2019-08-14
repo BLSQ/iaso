@@ -23,7 +23,7 @@ const baseUrl = 'epidemiology';
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
-        id: 'Epidemiology.labels.all',
+        id: 'main.label.allMale',
     },
     loading: {
         defaultMessage: 'Loading',
@@ -105,7 +105,7 @@ export class Epidemiology extends Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="Epidemiology.title"
-                                defaultMessage="Epidémiologie"
+                                defaultMessage="Epidemiology"
                             />
                         </h2>
                     </div>

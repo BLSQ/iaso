@@ -104,7 +104,7 @@ class PatientDetails extends React.Component {
                             <i className="fa fa-arrow-left" />{' '}
                         </button>
                         <h2 className="widget__heading with-button">
-                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Informations detaillées" />:
+                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Detailed informations" />:
                         </h2>
                         {
                             patient && patient.similar_patients && patient.similar_patients.length > 0 &&
@@ -113,7 +113,7 @@ class PatientDetails extends React.Component {
                                 onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id, patient.similar_patients[0].duplicateId)}
                             >
                                 <i className="fa fa-files-o" />
-                                <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Doublon" />
+                                <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Duplicate" />
                             </button>
                         }
                     </div>

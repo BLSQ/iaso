@@ -21,7 +21,7 @@ const baseUrl = 'data_monitoring';
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
-        id: 'DataMonitoring.labels.all',
+        id: 'main.label.allMale',
     },
     loading: {
         defaultMessage: 'Loading',

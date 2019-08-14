@@ -60,7 +60,7 @@ class ManagementWorkZones extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Equipes',
+                        defaultMessage: 'Teams',
                         id: 'main.label.teams',
                     }),
                     sortable: false,
@@ -75,7 +75,7 @@ class ManagementWorkZones extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Capacité totale',
+                        defaultMessage: 'Total capacity',
                         id: 'main.label.total_capacity',
                     }),
                     width: 100,
@@ -102,7 +102,7 @@ class ManagementWorkZones extends React.Component {
                 {
                     Header: formatMessage({
                         defaultMessage: 'Actions',
-                        id: 'main.actions',
+                        id: 'main.label.actions',
                     }),
                     width: 250,
                     sortable: false,
@@ -114,14 +114,14 @@ class ManagementWorkZones extends React.Component {
                                 onClick={() => this.editWorkzone(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                             </button>
                             <button
                                 className="button--delete--tiny margin-right"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                             </button>
                         </section>
                     ),
@@ -349,7 +349,7 @@ class ManagementWorkZones extends React.Component {
                                 onClick={() => this.editWorkzone()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

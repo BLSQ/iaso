@@ -255,7 +255,7 @@ class CustomTableComponent extends React.Component {
                                 <div>
                                     {`${formatThousand(this.state.count)} `}
                                     <FormattedMessage
-                                        id="locator.list.result"
+                                        id="table.results_"
                                         defaultMessage="résultat(s)"
                                     />
                                 </div>

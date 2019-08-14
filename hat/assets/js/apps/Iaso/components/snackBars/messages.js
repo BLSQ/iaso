@@ -1,23 +1,23 @@
 const MESSAGES = {
     successful: {
-        id: 'snackBar.successful',
-        defaultMessage: 'Sauvergade effectuée avec succès',
+        id: 'iaso.snackBar.successful',
+        defaultMessage: 'Saved successfully',
     },
     error: {
-        id: 'snackBar.error',
-        defaultMessage: 'Impossible de sauvegarder',
+        id: 'iaso.snackBar.error',
+        defaultMessage: 'An error occured while saving',
     },
     reload: {
-        id: 'snackBar.reload',
-        defaultMessage: 'Recharger',
+        id: 'iaso.snackBar.reload',
+        defaultMessage: 'Reload',
     },
     reloadPage: {
-        id: 'snackBar.reloadPage',
-        defaultMessage: '"Une nouvelle version est disponible! Rafraichissez la page.',
+        id: 'iaso.snackBar.reloadPage',
+        defaultMessage: 'A new version is available! Refresh the page.',
     },
     delete_successful: {
-        id: 'snackBar.delete_successful',
-        defaultMessage: 'Cette entrée à bien été effacée',
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
     },
 };
 

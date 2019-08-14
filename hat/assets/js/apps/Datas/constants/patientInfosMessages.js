@@ -1,40 +1,40 @@
 
 const patientInfosMessages = formatMessage => ({
     last_name: {
-        defaultMessage: 'Nom',
-        id: 'patientsinfos.last_name',
+        defaultMessage: 'Name',
+        id: 'main.label.name',
         type: 'text',
     },
     post_name: {
-        defaultMessage: 'Postnom',
-        id: 'patientsinfos.post_name',
+        defaultMessage: 'Post name',
+        id: 'main.label.postName',
         type: 'text',
     },
     first_name: {
-        defaultMessage: 'Prénom',
-        id: 'patientsinfos.first_name',
+        defaultMessage: 'First name',
+        id: 'main.label.firstName',
         type: 'text',
     },
     mothers_surname: {
-        defaultMessage: 'Nom de la mère',
-        id: 'patientsinfos.mothers_surname',
+        defaultMessage: 'Mother surname',
+        id: 'main.label.mothers_surname',
         type: 'text',
     },
     sex: {
-        defaultMessage: 'Sexe',
-        id: 'patientsinfos.sex',
+        defaultMessage: 'Sex',
+        id: 'main.label.sex',
         type: 'select',
         options: [
             {
                 label: formatMessage ? formatMessage({
-                    defaultMessage: 'Homme',
+                    defaultMessage: 'Male',
                     id: 'main.label.male',
                 }) : 'Homme',
                 value: 'male',
             },
             {
                 label: formatMessage ? formatMessage({
-                    defaultMessage: 'Femme',
+                    defaultMessage: 'Female',
                     id: 'main.label.female',
                 }) : 'Homme',
                 value: 'female',
@@ -42,32 +42,32 @@ const patientInfosMessages = formatMessage => ({
         ],
     },
     death_date: {
-        defaultMessage: 'Décès',
-        id: 'patientsinfos.death_date',
+        defaultMessage: 'Death date',
+        id: 'main.label.death_date',
         editable: false,
         type: 'date',
     },
     year_of_birth: {
-        defaultMessage: 'Année de naissance',
-        id: 'patientsinfos.year_of_birth',
+        defaultMessage: 'Year of birth',
+        id: 'main.label.year_of_birth',
         type: 'int',
         min: 1900,
     },
     province: {
-        defaultMessage: 'Province d\'origine',
-        id: 'patientsinfos.province',
+        defaultMessage: 'Province of origin',
+        id: 'main.label.provinceOrigin',
     },
     ZS: {
-        defaultMessage: 'Zone d\'origine',
-        id: 'patientsinfos.ZS',
+        defaultMessage: 'Zone of origin',
+        id: 'main.label.ZSOrigin',
     },
     AS: {
-        defaultMessage: 'Aire d\'origine',
-        id: 'patientsinfos.AS',
+        defaultMessage: 'Aire of origin',
+        id: 'main.label.ASOrigin',
     },
     village: {
-        defaultMessage: 'Village d\'origine',
-        id: 'patientsinfos.village',
+        defaultMessage: 'Village of origin',
+        id: 'main.label.villageOrigin',
     },
 });
 

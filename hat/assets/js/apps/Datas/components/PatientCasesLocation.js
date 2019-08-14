@@ -50,7 +50,7 @@ class PatientCasesLocation extends React.Component {
                                 }
                                 {
                                     isLocalised &&
-                                    <strong><FormattedMessage id="patientsCasesLocation.tableTitle" defaultMessage="Localisation" /></strong>
+                                    <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
                                 }
 
                             </th>
@@ -61,7 +61,7 @@ class PatientCasesLocation extends React.Component {
                         <tbody>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.province" defaultMessage="Province" />
+                                    <FormattedMessage id="main.label.province" defaultMessage="Province" />
                                 </th>
                                 <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.province !== currentCase.location.province)
                                     ? 'error' : ''} ${!currentCase.location || (currentCase.location && !currentCase.location.province) ? 'error-text' : ''}`}
@@ -71,7 +71,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.ZS" defaultMessage="Zone de santé" />
+                                    <FormattedMessage id="main.label.zone" defaultMessage="Health zone" />
                                 </th>
                                 <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.ZS !== currentCase.location.ZS) ?
                                     'error' : ''} ${!currentCase.location || (currentCase.location && !currentCase.location.ZS) ? 'error-text' : ''}`}
@@ -81,7 +81,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.AS" defaultMessage="Aire de santé" />
+                                    <FormattedMessage id="main.label.area" defaultMessage="Health area" />
                                 </th>
                                 <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.AS !== currentCase.location.AS) ?
                                     'error' : ''} ${!currentCase.location.normalized.as ? 'error-text' : ''}`}
@@ -91,7 +91,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Village" />
+                                    <FormattedMessage id="main.label.village" defaultMessage="Village" />
                                 </th>
                                 <td className={`${similarCase && currentCase.location && similarCase.location && (similarCase.location.village !== currentCase.location.village) ?
                                     'error' : ''} ${!currentCase.location.normalized.village ? 'error-text' : ''}`}
@@ -106,7 +106,7 @@ class PatientCasesLocation extends React.Component {
                         <tbody>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.province" defaultMessage="Province" />
+                                    <FormattedMessage id="main.label.province" defaultMessage="Province" />
                                 </th>
                                 <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.province_name !== currentCase.location.normalized.village.province_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.province_name}
@@ -114,7 +114,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.ZS" defaultMessage="Zone de santé" />
+                                    <FormattedMessage id="main.label.zone" defaultMessage="Health zone" />
                                 </th>
                                 <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.ZS_name !== currentCase.location.normalized.village.ZS_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.ZS_name}
@@ -122,7 +122,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.AS" defaultMessage="Aire de santé" />
+                                    <FormattedMessage id="main.label.area" defaultMessage="Health area" />
                                 </th>
                                 <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.AS_name !== currentCase.location.normalized.village.AS_name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.AS_name}
@@ -130,7 +130,7 @@ class PatientCasesLocation extends React.Component {
                             </tr>
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesLocation.village" defaultMessage="Village" />
+                                    <FormattedMessage id="main.label.village" defaultMessage="Village" />
                                 </th>
                                 <td className={`${similarCase && similarCase.location.normalized && similarCase.location.normalized.village && (similarCase.location.normalized.village.name !== currentCase.location.normalized.village.name) ? 'error' : ''}`}>
                                     {currentCase.location.normalized.village.name}

@@ -56,7 +56,7 @@ class ManagementCoordinations extends React.Component {
                 {
                     Header: formatMessage({
                         defaultMessage: 'Actions',
-                        id: 'main.actions',
+                        id: 'main.label.actions',
                     }),
                     sortable: false,
                     resizable: false,
@@ -67,14 +67,14 @@ class ManagementCoordinations extends React.Component {
                                 onClick={() => this.editCoordination(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                             </button>
                             <button
                                 className="button--delete"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                             </button>
                         </section>
                     ),
@@ -249,7 +249,7 @@ class ManagementCoordinations extends React.Component {
                                 onClick={() => this.editCoordination()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

@@ -30,7 +30,7 @@ const MESSAGES = defineMessages({
         id: 'management.detail.geo',
     },
     map: {
-        defaultMessage: 'Carte',
+        defaultMessage: 'Map',
         id: 'management.detail.map',
     },
 });
@@ -209,8 +209,8 @@ class PatientDetailsWrapper extends React.Component {
                                         onClick={() => this.toggleEdit()}
                                     >
                                         <FormattedMessage
-                                            id="patientInfos.edit"
-                                            defaultMessage="Editer"
+                                            id="main.label.edit"
+                                            defaultMessage="Edit"
                                         />
                                     </button>
                                 </div>
@@ -295,15 +295,15 @@ class PatientDetailsWrapper extends React.Component {
                                         <ul className="map__option__list legend with-icons">
                                             <li className="map__option__list__item">
                                                 <i className="fa fa-tint negative" />
-                                                <FormattedMessage id="datas.detail.legend.noNewCases" defaultMessage="Tests négatifs" />
+                                                <FormattedMessage id="main.label.noNewCases" defaultMessage="No new cases" />
                                             </li>
                                             <li className="map__option__list__item">
                                                 <i className="fa fa-tint positive" />
-                                                <FormattedMessage id="datas.detail.legend.newCases" defaultMessage="Tests positifs" />
+                                                <FormattedMessage id="main.label.newCases" defaultMessage="New cases" />
                                             </li>
                                             <li className="map__option__list__item">
                                                 <i className="fa fa-home" />
-                                                <FormattedMessage id="datas.detail.legend.vilages" defaultMessage="Villages" />
+                                                <FormattedMessage id="main.label.villages" defaultMessage="Villages" />
                                             </li>
                                         </ul>
                                     </form>

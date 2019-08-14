@@ -33,7 +33,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                     >
                                         <FormattedMessage
                                             id="patientsDuplicate.merge"
-                                            defaultMessage="Fusionner les patients dans {value}"
+                                            defaultMessage="Merge patients into {value}"
                                             values={{
                                                 value: 'A',
                                             }}
@@ -47,7 +47,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                     >
                                         <FormattedMessage
                                             id="patientsDuplicate.merge"
-                                            defaultMessage="Fusionner les patients dans {value}"
+                                            defaultMessage="Merge patients into {value}"
                                             values={{
                                                 value: 'B',
                                             }}
@@ -59,12 +59,12 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                         <tr>
                             <td>
                                 <h2 className="widget__heading">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> A:
+                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" /> A:
                                 </h2>
                             </td>
                             <td>
                                 <h2 className="widget__heading">
-                                    <FormattedMessage id="patientsDuplicate.tableTitle" defaultMessage="Enregistrement" /> B:
+                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" /> B:
                                 </h2>
                             </td>
                         </tr>

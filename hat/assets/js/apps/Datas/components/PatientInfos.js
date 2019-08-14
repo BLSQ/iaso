@@ -67,7 +67,7 @@ class PatientInfos extends React.Component {
                                                             <i className="fa fa-female" /> {' - '}
                                                             {
                                                                 formatMessage({
-                                                                    defaultMessage: 'Femme',
+                                                                    defaultMessage: 'Female',
                                                                     id: 'main.label.female',
                                                                 })
                                                             }
@@ -79,7 +79,7 @@ class PatientInfos extends React.Component {
                                                             <i className="fa fa-male" /> {' - '}
                                                             {
                                                                 formatMessage({
-                                                                    defaultMessage: 'Homme',
+                                                                    defaultMessage: 'Male',
                                                                     id: 'main.label.male',
                                                                 })
                                                             }
@@ -115,8 +115,8 @@ class PatientInfos extends React.Component {
                                                         <span>
                                                             {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)} ${
                                                                 formatMessage({
-                                                                    defaultMessage: 'ans',
-                                                                    id: 'patientsinfos.years',
+                                                                    defaultMessage: 'years',
+                                                                    id: 'main.label.years',
                                                                 })})`}
                                                         </span>
                                                         : fieldPlaceholder

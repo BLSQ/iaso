@@ -172,7 +172,7 @@ class PatientsDuplicates extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.duplicates.header.title" defaultMessage="Doublons" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="main.label.duplicates" defaultMessage="Doublons" /></h2>
                     </div>
                     <div className="border-bottom">
                         <ChoosePeriodSelectorComponent

@@ -7,8 +7,8 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
         [
             {
                 Header: formatMessage({
-                    defaultMessage: 'Dernière modif.',
-                    id: 'register.label.updated_at',
+                    defaultMessage: 'Updated at',
+                    id: 'main.label.updated_at',
                 }),
                 accessor: 'updated_at',
                 className: 'small',
@@ -20,40 +20,40 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Nom',
-                    id: 'register.label.name',
+                    defaultMessage: 'Name',
+                    id: 'main.label.name',
                 }),
                 accessor: 'last_name',
                 className: 'small',
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Postnom',
-                    id: 'register.label.Postnom',
+                    defaultMessage: 'Post name',
+                    id: 'main.label.postName',
                 }),
                 accessor: 'post_name',
                 className: 'small',
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Prénom',
-                    id: 'register.label.prename',
+                    defaultMessage: 'First name',
+                    id: 'main.label.firstName',
                 }),
                 accessor: 'first_name',
                 className: 'small',
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Nom de la mère',
-                    id: 'register.label.mothers_surname',
+                    defaultMessage: 'Mother surname',
+                    id: 'main.label.mothers_surname',
                 }),
                 accessor: 'mothers_surname',
                 className: 'small',
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Sexe',
-                    id: 'register.label.sex',
+                    defaultMessage: 'Sex',
+                    id: 'main.label.sex',
                 }),
                 accessor: 'sex',
                 className: 'small',
@@ -62,14 +62,14 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
                         {
                             settings.original.sex === 'female'
                             && formatMessage({
-                                defaultMessage: 'Femme',
+                                defaultMessage: 'Female',
                                 id: 'main.label.female',
                             })
                         }
                         {
                             settings.original.sex === 'male'
                             && formatMessage({
-                                defaultMessage: 'Homme',
+                                defaultMessage: 'Male',
                                 id: 'main.label.male',
                             })
                         }
@@ -79,7 +79,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             {
                 Header: formatMessage({
                     defaultMessage: 'Age',
-                    id: 'register.label.age',
+                    id: 'main.label.age',
                 }),
                 accessor: 'year_of_birth',
                 className: 'small',
@@ -92,7 +92,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             {
                 Header: formatMessage({
                     defaultMessage: 'Province',
-                    id: 'register.label.province',
+                    id: 'main.label.province',
                 }),
                 accessor: 'origin_area__ZS__province__name',
                 className: 'small',
@@ -108,7 +108,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             {
                 Header: formatMessage({
                     defaultMessage: 'Zone',
-                    id: 'register.label.zone',
+                    id: 'main.label.zone_short',
                 }),
                 accessor: 'origin_area__ZS_name',
                 className: 'small',
@@ -123,8 +123,8 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             },
             {
                 Header: formatMessage({
-                    defaultMessage: 'Aire',
-                    id: 'register.label.area',
+                    defaultMessage: 'Area',
+                    id: 'main.label.area_short',
                 }),
                 accessor: 'origin_area__name',
                 className: 'small',
@@ -140,7 +140,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             {
                 Header: formatMessage({
                     defaultMessage: 'Village',
-                    id: 'register.label.village',
+                    id: 'main.label.village',
                 }),
                 accessor: 'origin_village__name',
                 className: 'small',
@@ -156,7 +156,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             {
                 Header: formatMessage({
                     defaultMessage: 'Actions',
-                    id: 'main.actions',
+                    id: 'main.label.actions',
                 }),
                 sortable: false,
                 resizable: false,
@@ -182,7 +182,7 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
         columns.push({
             Header: formatMessage({
                 defaultMessage: 'Doublons',
-                id: 'register.label.duplicate',
+                id: 'main.label.duplicates',
             }),
             sortable: false,
             resizable: false,

@@ -150,7 +150,7 @@ const filtersZone2 = (
             ],
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'management.village.label.located',
@@ -176,7 +176,7 @@ const filtersSearch = (
             displayIcon: false,
             placeholder: {
                 id: 'main.label.search',
-                defaultMessage: 'Recherche',
+                defaultMessage: 'Search',
             },
             label: {
                 id: 'management.village.label.search',
@@ -229,10 +229,10 @@ const filtersGeo = (
             options: provinces,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.provinces',
+                id: 'main.label.provinces',
                 defaultMessage: 'Provinces',
             },
             type: 'select',
@@ -247,7 +247,7 @@ const filtersGeo = (
             options: zones,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'cases.label.zones',
@@ -265,7 +265,7 @@ const filtersGeo = (
             options: areas,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'cases.label.areas',

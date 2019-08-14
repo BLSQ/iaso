@@ -18,7 +18,7 @@ const filtersGeo = (
                 defaultMessage: 'Toutes',
             },
             label: {
-                id: 'cases.label.provinces',
+                id: 'main.label.provinces',
                 defaultMessage: 'Provinces',
             },
             type: 'select',
@@ -33,7 +33,7 @@ const filtersGeo = (
             options: zones,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'cases.label.zones',
@@ -51,7 +51,7 @@ const filtersGeo = (
             options: areas,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'cases.label.areas',

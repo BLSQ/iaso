@@ -1,63 +1,59 @@
 const MESSAGES = {
     name: {
-        id: 'forms.name',
-        defaultMessage: 'Nom',
-    },
-    short_name: {
-        id: 'forms.short_name',
-        defaultMessage: 'Nom court',
+        id: 'iaso.forms.name',
+        defaultMessage: 'Name',
     },
     org_unit_type_id: {
-        id: 'forms.org_unit_type_id',
+        id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Type',
     },
     source_ref: {
-        id: 'forms.source_ref',
-        defaultMessage: 'Référence externe',
+        id: 'iaso.forms.source_ref',
+        defaultMessage: 'External reference',
     },
     created_at: {
-        id: 'forms.created_at',
-        defaultMessage: 'Création',
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created at',
     },
     updated_at: {
-        id: 'forms.updated_at',
-        defaultMessage: 'Modification',
+        id: 'iaso.forms.updated_at',
+        defaultMessage: 'Updated at',
     },
     source: {
-        id: 'forms.source',
+        id: 'iaso.forms.source',
         defaultMessage: 'Source',
     },
     snis: {
-        id: 'forms.source.snis',
+        id: 'iaso.forms.source.snis',
         defaultMessage: 'SNIS',
     },
     ucla: {
-        id: 'forms.source.ucla',
+        id: 'iaso.forms.source.ucla',
         defaultMessage: 'UCLA',
     },
     pnltha: {
-        id: 'forms.source.pnltha',
+        id: 'iaso.forms.source.pnltha',
         defaultMessage: 'PNLTHA',
     },
     derivated: {
-        id: 'forms.source.derivated',
-        defaultMessage: 'Dérivé des données actuelles',
+        id: 'iaso.forms.source.derivated',
+        defaultMessage: 'Derivated from actual data',
     },
     aliases: {
-        id: 'forms.aliases',
-        defaultMessage: 'Alias',
+        id: 'iaso.forms.aliases',
+        defaultMessage: 'Aliases',
     },
     status: {
-        id: 'forms.status',
+        id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
     validated: {
-        id: 'forms.validated',
-        defaultMessage: 'Validé',
+        id: 'iaso.forms.validated',
+        defaultMessage: 'Validated',
     },
     notValidated: {
-        id: 'forms.notValidated',
-        defaultMessage: 'Non validé',
+        id: 'iaso.forms.notValidated',
+        defaultMessage: 'Not validated',
     },
 };
 

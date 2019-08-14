@@ -62,7 +62,7 @@ const targetsColumns = (formatMessage, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Actions',
-                id: 'main.actions',
+                id: 'main.label.actions',
             }),
             sortable: false,
             resizable: false,

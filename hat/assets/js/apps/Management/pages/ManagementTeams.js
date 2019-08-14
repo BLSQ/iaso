@@ -276,7 +276,7 @@ class ManagementTeams extends React.Component {
                                 onClick={() => this.editTeam()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

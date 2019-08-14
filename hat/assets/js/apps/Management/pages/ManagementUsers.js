@@ -48,14 +48,14 @@ class ManagementUsers extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Prénom',
+                        defaultMessage: 'First name',
                         id: 'main.label.firstName',
                     }),
                     accessor: 'firstName',
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Nom',
+                        defaultMessage: 'Name',
                         id: 'main.label.lastName',
                     }),
                     accessor: 'lastName',
@@ -72,7 +72,7 @@ class ManagementUsers extends React.Component {
                 {
                     Header: formatMessage({
                         defaultMessage: 'Actions',
-                        id: 'main.actions',
+                        id: 'main.label.actions',
                     }),
                     width: 180,
                     sortable: false,
@@ -84,14 +84,14 @@ class ManagementUsers extends React.Component {
                                 onClick={() => this.props.selectUser(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                             </button>
                             <button
                                 className="button--delete--tiny"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                             </button>
                         </section>
                     ),
@@ -245,7 +245,7 @@ class ManagementUsers extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.users.title"
-                                defaultMessage="Utilisateurs"
+                                defaultMessage="Users"
                             />
                         </h2>
 
@@ -256,8 +256,8 @@ class ManagementUsers extends React.Component {
                         <div>
                             <span className="map__text--select">
                                 <FormattedMessage
-                                    id="locator.list.textualsearch.label"
-                                    defaultMessage="Recherche textuelle"
+                                    id="main.label.textSearch"
+                                    defaultMessage="Text search"
                                 />
                             </span>
                             <Search
@@ -283,11 +283,11 @@ class ManagementUsers extends React.Component {
                                 filters={[
                                     teamType(formatMessage, teamTypes, {
                                         id: 'main.label.team_user_type',
-                                        defaultMessage: 'Type d\'utilisateur',
+                                        defaultMessage: 'User type',
                                     }, {
-                                        id: 'cases.label.allMale',
-                                        defaultMessage: 'Tous',
-                                    }),
+                                            id: 'main.label.allMale',
+                                            defaultMessage: 'All',
+                                        }),
                                 ]}
                             />
                         </div>
@@ -297,7 +297,7 @@ class ManagementUsers extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
+                            defaultMessage: 'Loading',
                             id: 'main.labels.loading',
                         })}
                         />
@@ -331,7 +331,7 @@ class ManagementUsers extends React.Component {
                                 })}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

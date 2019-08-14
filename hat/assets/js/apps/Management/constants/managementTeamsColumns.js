@@ -62,7 +62,7 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
     {
         Header: formatMessage({
             defaultMessage: 'Actions',
-            id: 'main.actions',
+            id: 'main.label.actions',
         }),
         sortable: false,
         resizable: false,
@@ -82,14 +82,14 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
                     onClick={() => component.editTeam(settings.original)}
                 >
                     <i className="fa fa-pencil-square-o" />
-                    <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                    <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                 </button>
                 <button
                     className="button--delete--tiny"
                     onClick={() => component.showDelete(settings.original)}
                 >
                     <i className="fa fa-trash" />
-                    <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                    <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                 </button>
             </section>
         ),

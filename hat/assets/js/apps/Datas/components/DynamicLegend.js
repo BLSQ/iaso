@@ -33,7 +33,7 @@ class DynamicLegend extends Component {
         return (
             <div className="map__option">
                 <span className="map__option__header">
-                    <FormattedMessage id="datas.label.dynamicLegend.title" defaultMessage="Visibilité" />
+                    <FormattedMessage id="main.label.visibility" defaultMessage="Visibility" />
                 </span>
                 <ul className="dynamic-legend">
                     {villages.map(village => (
@@ -60,7 +60,7 @@ class DynamicLegend extends Component {
                                 {
                                     !village.isLocalised &&
                                     <span className="text-padding-left">
-                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="Pas de localisation" />)
+                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />)
                                     </span>
                                 }
                             </div>

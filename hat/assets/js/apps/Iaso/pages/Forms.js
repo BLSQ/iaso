@@ -89,8 +89,8 @@ class Forms extends Component {
         return (
             <section>
                 <TopBar title={formatMessage({
-                    defaultMessage: 'Formulaires',
-                    id: 'iaso.form.title',
+                    defaultMessage: 'Forms',
+                    id: 'iaso.forms.title',
                 })}
                 />
                 <Container maxWidth={false} className={classes.whiteContainer}>

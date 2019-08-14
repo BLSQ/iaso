@@ -42,19 +42,19 @@ class PatientTestComponent extends React.Component {
                             <th colSpan="2">
                                 {
                                     test.type && (test.type === 'CATT' || test.type === 'RDT') &&
-                                    <strong><FormattedMessage id="patientsCasesTests.screening" defaultMessage="Dépistage" /></strong>
+                                    <strong><FormattedMessage id="main.label.screening_result" defaultMessage="Dépistage" /></strong>
                                 }
                                 {
                                     test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL') &&
-                                    <strong><FormattedMessage id="patientsCasesTests.confirmation" defaultMessage="Confirmation" /></strong>
+                                    <strong><FormattedMessage id="main.label.confirmation_result" defaultMessage="Confirmation" /></strong>
                                 }
                                 {
                                     test.type && test.type === 'PL' &&
-                                    <strong><FormattedMessage id="patientsCasesTests.stade" defaultMessage="Détermination du stade" /></strong>
+                                    <strong><FormattedMessage id="main.label.stageTest" defaultMessage="Stage" /></strong>
                                 }
                                 {
                                     test.hidden &&
-                                    <strong> <FormattedMessage id="patientsCasesTests.duplicate" defaultMessage="doublon" /></strong>
+                                    <strong> <FormattedMessage id="main.label.duplicate_single" defaultMessage="duplicate" /></strong>
                                 }
                                 {
                                     test.hidden &&
@@ -80,7 +80,7 @@ class PatientTestComponent extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.type" defaultMessage="Type de test" />
+                                <FormattedMessage id="main.label.testType" defaultMessage="Test type" />
                             </th>
                             <td className={`${similarTest && (similarTest.type !== test.type) ? 'error' : ''}`}>
                                 {test.type ? test.type : '--'}
@@ -88,7 +88,7 @@ class PatientTestComponent extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.date" defaultMessage="Date" />
+                                <FormattedMessage id="main.label.date" defaultMessage="Date" />
                             </th>
                             <td className={`${test.date && similarTest && similarTest.date && (moment(similarTest.date).format('DD-MM-YYYY') !== moment(test.date).format('DD-MM-YYYY')) ? 'error' : ''}`}>
                                 {test.date ? moment(test.date).format('DD-MM-YYYY') : '--'}
@@ -96,7 +96,7 @@ class PatientTestComponent extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.hour" defaultMessage="Heure" />
+                                <FormattedMessage id="main.label.hour" defaultMessage="Hour" />
                             </th>
                             <td className={`${test.date && similarTest && similarTest.date && (moment(similarTest.date).format('HH:mm') !== moment(test.date).format('HH:mm')) ? 'error' : ''}`}>
                                 {test.date ? moment(test.date).format('HH:mm') : '--'}
@@ -110,7 +110,7 @@ class PatientTestComponent extends React.Component {
                                 }
                                 {
                                     test.type && test.type !== 'PL' &&
-                                    <FormattedMessage id="patientsCasesTests.result" defaultMessage="Résultat" />
+                                    <FormattedMessage id="main.label.result" defaultMessage="Result" />
                                 }
                             </th>
                             <td className={`${similarTest && (similarTest.result !== test.result) ? 'error' : ''}`}>
@@ -122,21 +122,21 @@ class PatientTestComponent extends React.Component {
                             test.type && (test.type === 'CATT' || test.type === 'RDT') &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesTests.image" defaultMessage="Photo" />
+                                    <FormattedMessage id="main.label.photo" defaultMessage="Photo" />
                                 </th>
                                 <td className={`${(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''} ${test.image ? 'align-center' : ''}`}>
                                     {
                                         !test.image_filename && !test.image &&
                                         <span>
                                             <i className="fa fa-camera small-padding-right" />
-                                            <FormattedMessage id="patientsCasesTests.notDoneFem" defaultMessage="Non prise" />
+                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
                                         </span>
                                     }
                                     {
                                         test.image_filename && !test.image &&
                                         <span>
                                             <i className="fa fa-upload small-padding-right" />
-                                            <FormattedMessage id="patientsCasesTests.notUploadedFem" defaultMessage="Non transmise" />
+                                            <FormattedMessage id="main.label.notUploadedFem" defaultMessage="Non transmise" />
                                         </span>
                                     }
                                     {
@@ -144,8 +144,8 @@ class PatientTestComponent extends React.Component {
                                         <ImgModal
                                             imgPath={test.image}
                                             altText={formatMessage({
-                                                defaultMessage: 'Résultat test dépistage',
-                                                id: 'main.screening.result',
+                                                defaultMessage: 'Screening result',
+                                                id: 'main.label.screening_result_long',
                                             })}
                                         />
                                     }
@@ -156,10 +156,10 @@ class PatientTestComponent extends React.Component {
                             test.image && test.type === 'CATT' &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Index photo" />
+                                    <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Photo index" />
                                 </th>
                                 <td className={!test.index ? 'error-text' : ''}>
-                                    {test.index ? test.index : <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />}
+                                    {test.index ? test.index : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />}
                                 </td>
                             </tr>
                         }
@@ -167,21 +167,21 @@ class PatientTestComponent extends React.Component {
                             test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesTests.video" defaultMessage="Vidéo" />
+                                    <FormattedMessage id="main.label.video" defaultMessage="Video" />
                                 </th>
                                 <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
                                     {
                                         !test.video_filename && !test.video &&
                                         <span>
                                             <i className="fa fa-video-camera small-padding-right" />
-                                            <FormattedMessage id="patientsCasesTests.notDoneFem" defaultMessage="Non prise" />
+                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
                                         </span>
                                     }
                                     {
                                         test.video_filename && !test.video &&
                                         <span>
                                             <i className="fa fa-upload small-padding-right" />
-                                            <FormattedMessage id="patientsCasesTests.notUploadedFem" defaultMessage="Non transmise" />
+                                            <FormattedMessage id="main.label..notUploadedFem" defaultMessage="Non transmise" />
                                         </span>
                                     }
                                     {
@@ -200,7 +200,7 @@ class PatientTestComponent extends React.Component {
                             test.type === 'CATT' &&
                             <tr>
                                 <th>
-                                    <FormattedMessage id="patientsCasesTests.cattSessiontype" defaultMessage="Type de session" />
+                                    <FormattedMessage id="patientsCasesTests.cattSessiontype" defaultMessage="Session type" />
                                 </th>
                                 <td className={!currentCase.test_catt_session_type ? 'error-text' : ''}>
                                     {
@@ -208,17 +208,17 @@ class PatientTestComponent extends React.Component {
                                         <span>
                                             {
                                                 currentCase.test_catt_session_type === 'doorToDoor' &&
-                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.doorToDoor" defaultMessage="Porte à porte" />
+                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.doorToDoor" defaultMessage="Door to door" />
                                             }
                                             {
                                                 (currentCase.test_catt_session_type === 'onTheSpot' || currentCase.test_catt_session_type === 'onSite') &&
-                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.onSite" defaultMessage="Sur site" />
+                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.onSite" defaultMessage="On site" />
                                             }
                                         </span>
                                     }
                                     {
                                         !currentCase.test_catt_session_type &&
-                                        <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
                                     }
                                 </td>
                             </tr>
@@ -228,7 +228,7 @@ class PatientTestComponent extends React.Component {
                             <Fragment>
                                 <tr>
                                     <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumine" />
+                                        <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumin" />
                                     </th>
                                     <td>
                                         {
@@ -238,7 +238,7 @@ class PatientTestComponent extends React.Component {
                                 </tr>
                                 <tr>
                                     <th>
-                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="Globules blancs/mm&sup3;" />
+                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="White blood cells/mm&sup3;" />
                                     </th>
                                     <td>
                                         {
@@ -248,7 +248,7 @@ class PatientTestComponent extends React.Component {
                                 </tr>
                                 <tr>
                                     <th>
-                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_result" defaultMessage="Stade" />
+                                        <FormattedHTMLMessage id="main.label.stage" defaultMessage="Stade" />
                                     </th>
                                     <td>
                                         {
@@ -262,7 +262,7 @@ class PatientTestComponent extends React.Component {
                                         }
                                         {
                                             currentCase.test_pl_result === 'unknown' ?
-                                                <FormattedMessage id="patientsCasesTests.test_pl_result.unknown" defaultMessage="Inconnu" /> : ''
+                                                <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
                                         }
                                     </td>
                                 </tr>
@@ -288,7 +288,7 @@ class PatientTestComponent extends React.Component {
                                 </tr>
                                 <tr>
                                     <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_comments" defaultMessage="Commentaires" />
+                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
                                     </th>
                                     <td>
                                         {
@@ -300,25 +300,25 @@ class PatientTestComponent extends React.Component {
                         }
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.latitude" defaultMessage="Latitude" />
+                                <FormattedMessage id="main.label.latitude" defaultMessage="Latitude" />
                             </th>
                             <td className={!test.latitude ? 'error-text' : ''}>
                                 {
                                     test.latitude ?
                                         test.latitude :
-                                        <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
                                 }
                             </td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="patientsCasesTests.longitude" defaultMessage="Longitude" />
+                                <FormattedMessage id="main.label.longitude" defaultMessage="Longitude" />
                             </th>
                             <td className={!test.longitude ? 'error-text' : ''}>
                                 {
                                     test.longitude ?
                                         test.longitude :
-                                        <FormattedMessage id="patientsCasesTests.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
                                 }
                             </td>
                         </tr>

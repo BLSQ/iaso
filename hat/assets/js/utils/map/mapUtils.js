@@ -29,23 +29,23 @@ const BASE_LAYERS = {
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
         defaultMessage: 'Center to relevant villages',
-        id: 'locator.label.fitToBounds',
+        id: 'map.label.fitToBounds',
     },
     'box-zoom-title': {
         defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'locator.label.zoom.box',
+        id: 'map.label.zoom.box',
     },
     'info-zoom-title': {
         defaultMessage: 'Current zoom level',
-        id: 'locator.label.zoom.info',
+        id: 'map.label.zoom.info',
     },
     'shape-loader': {
-        defaultMessage: 'Chargement des délimitations',
+        defaultMessage: 'Loading shapes',
         id: 'main.label.shape-loader',
     },
     'endemic-population': {
-        defaultMessage: 'Population endémique',
-        id: 'locator.label.endemic-population',
+        defaultMessage: 'Endemic population',
+        id: 'main.label.endemic-population',
     },
     catch: {
         defaultMessage: 'Piège',
@@ -53,31 +53,31 @@ export const MESSAGES = defineMessages({
     },
     site: {
         defaultMessage: 'Site',
-        id: 'locator.label.site',
+        id: 'main.label.site',
     },
     trap: {
-        defaultMessage: 'Piège',
-        id: 'locator.label.trap',
+        defaultMessage: 'Trap',
+        id: 'main.label.trap',
     },
     sites: {
-        defaultMessage: 'Site',
-        id: 'details.label.site',
+        defaultMessage: 'Sites',
+        id: 'main.label.sites',
     },
     traps: {
-        defaultMessage: 'Piège',
-        id: 'details.label.trap',
+        defaultMessage: 'Trzps',
+        id: 'main.label.traps',
     },
     targets: {
-        defaultMessage: 'Ecran',
-        id: 'details.label.target',
+        defaultMessage: 'Target',
+        id: 'main.label.target',
     },
     catches: {
-        defaultMessage: 'Déploiement',
-        id: 'details.label.catche',
+        defaultMessage: 'Catch',
+        id: 'main.label.catch',
     },
     villages: {
         defaultMessage: 'Village',
-        id: 'details.label.village',
+        id: 'main.label.village',
     },
 });
 

@@ -10,7 +10,7 @@ import { createUrl } from '../../../utils/fetchData';
 
 const patientPlaceHolder = () => (
     <div className="no-patient">
-        <FormattedMessage id="manualDuplicate.label.no-patient" defaultMessage="Aucun patient sélectionné" />
+        <FormattedMessage id="manualDuplicate.label.no-patient" defaultMessage="No patient selected" />
     </div>
 );
 
@@ -78,7 +78,7 @@ class ManualDuplicate extends Component {
                     onClick={() => this.toggleExpandable()}
                 >
                     <h2 className="widget__heading manual-duplicate_heading">
-                        <FormattedMessage id="manualDuplicate.title" defaultMessage="Doublon manuel" />
+                        <FormattedMessage id="manualDuplicate.title" defaultMessage="Manual duplicate" />
                     </h2>
                 </div>
                 <section
@@ -121,7 +121,7 @@ class ManualDuplicate extends Component {
                                 onClick={() => saveManualDuplicate(patientA, patientB)}
                             >
                                 <i className="fa fa-plus" aria-hidden="true" />
-                                <FormattedMessage id="manualDuplicate.label.save" defaultMessage="Ajouter aux doublons" />
+                                <FormattedMessage id="manualDuplicate.label.save" defaultMessage="Add to duplicate" />
                             </button>
                             <button
                                 type="button"
@@ -130,7 +130,7 @@ class ManualDuplicate extends Component {
                                 onClick={() => this.goToDuplicateDetail()}
                             >
                                 <i className="fa fa-eye" aria-hidden="true" />
-                                <FormattedMessage id="manualDuplicate.label.details" defaultMessage="Détails doublon" />
+                                <FormattedMessage id="manualDuplicate.label.details" defaultMessage="Duplicate detail" />
                             </button>
                         </div>
                     </div>

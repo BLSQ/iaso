@@ -60,7 +60,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.userName"
-                            defaultMessage="Nom d'utilisateur"
+                            defaultMessage="User name"
                         />:
                     </label>
                     <input
@@ -79,7 +79,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.firstName"
-                            defaultMessage="Prénom"
+                            defaultMessage="First name"
                         />:
                     </label>
                     <input
@@ -97,7 +97,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.lastName"
-                            defaultMessage="Nom"
+                            defaultMessage="Name"
                         />:
                     </label>
                     <input
@@ -115,7 +115,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.phone"
-                            defaultMessage="Téléphone"
+                            defaultMessage="Phone"
                         />:
                     </label>
                     <input
@@ -133,7 +133,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.email"
-                            defaultMessage="Email"
+                            defaultMessage="E-mail"
                         />:
                     </label>
                     <input
@@ -151,7 +151,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.tester_type"
-                            defaultMessage="Type de testeur"
+                            defaultMessage="Tester type"
                         />:
                     </label>
                     <Select
@@ -171,7 +171,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.user_level"
-                            defaultMessage="Niveau de QC"
+                            defaultMessage="QC level"
                         />:
                     </label>
                     <Select
@@ -194,14 +194,14 @@ class UserInfosComponent extends Component {
                             this.state.user.id === 0 &&
                             <FormattedMessage
                                 id="main.label.password"
-                                defaultMessage="Mot de passe"
+                                defaultMessage="Password"
                             />
                         }
                         {
                             this.state.user.id !== 0 &&
                             <FormattedMessage
                                 id="main.label.newPassword"
-                                defaultMessage="Nouveau mot de passe"
+                                defaultMessage="New password"
                             />
                         }:
                     </label>
@@ -232,7 +232,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.teams"
-                            defaultMessage="Equipe"
+                            defaultMessage="Team"
                         />:
                     </label>
                     <Select

@@ -5,7 +5,7 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Type',
-                id: 'casesList.label.screening_type',
+                id: 'main.label.type',
             }),
             accessor: 'screening_type',
             className: 'small',
@@ -13,13 +13,13 @@ const casesListColumns = formatMessage => (
                 <span>
                     {
                         settings.original.screening_type === 'active' && formatMessage({
-                            defaultMessage: 'Actif',
+                            defaultMessage: 'Active',
                             id: 'main.label.active',
                         })
                     }
                     {
                         settings.original.screening_type === 'passive' && formatMessage({
-                            defaultMessage: 'Passif',
+                            defaultMessage: 'Passive',
                             id: 'main.label.passive',
                         })
                     }
@@ -31,16 +31,16 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Année',
-                id: 'casesList.label.normalized_year',
+                defaultMessage: 'Year',
+                id: 'main.label.year',
             }),
             accessor: 'normalized_year',
             className: 'small',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'casesList.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             accessor: 'normalized_patient__last_name',
             className: 'small',
@@ -54,8 +54,8 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Postnom',
-                id: 'casesList.label.Postnom',
+                defaultMessage: 'Post name',
+                id: 'main.label.postName',
             }),
             accessor: 'normalized_patient__post_name',
             className: 'small',
@@ -69,8 +69,8 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Prénom',
-                id: 'casesList.label.prename',
+                defaultMessage: 'First name',
+                id: 'main.label.firstName',
             }),
             accessor: 'normalized_patient__first_name',
             className: 'small',
@@ -84,8 +84,8 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom de la mère',
-                id: 'casesList.label.mothers_surname',
+                defaultMessage: 'Mother surname',
+                id: 'main.label.mothers_surname',
             }),
             accessor: 'normalized_patient__mothers_surname',
             className: 'small',
@@ -99,8 +99,8 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Équipe',
-                id: 'casesList.label.team',
+                defaultMessage: 'team',
+                id: 'main.label.team',
             }),
             accessor: 'normalized_team_name',
             className: 'small',
@@ -108,7 +108,7 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Province',
-                id: 'casesList.tooltip.province',
+                id: 'main.label.province',
             }),
             accessor: 'normalized_province_name',
             className: 'small',
@@ -126,7 +126,7 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Village',
-                id: 'casesList.tooltip.village',
+                id: 'main.label.village',
             }),
             accessor: 'normalized_village_name',
             className: 'small',
@@ -141,8 +141,8 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Localisation',
-                id: 'main.label.localisation',
+                defaultMessage: 'Location',
+                id: 'main.label.location',
             }),
             className: 'small',
             Cell: settings => (
@@ -154,7 +154,7 @@ const casesListColumns = formatMessage => (
                         >
                             <i className="fa fa-thumb-tack" />
                             {formatMessage({
-                                defaultMessage: 'Localiser ',
+                                defaultMessage: 'Locate ',
                                 id: 'main.label.locateCase',
                             })}
                         </button>

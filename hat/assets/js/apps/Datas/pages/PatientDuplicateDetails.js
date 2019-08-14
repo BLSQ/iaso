@@ -202,7 +202,7 @@ class PatientDuplicateDetails extends React.Component {
                             <i className="fa fa-arrow-left" />{' '}
                         </button>
                         <h2 className="widget__heading">
-                            <FormattedMessage id="datas.patientsDuplicate.header.title" defaultMessage="Détail Doublon" />:
+                            <FormattedMessage id="datas.patientsDuplicate.header.title" defaultMessage="Duplicate detail" />:
                         </h2>
                         <div className="widget__header-button-container">
                             <button
@@ -213,14 +213,14 @@ class PatientDuplicateDetails extends React.Component {
                                     !manualMerge &&
                                     <FormattedMessage
                                         id="patientsDuplicate.manualMerge"
-                                        defaultMessage="Fusionner manuellement"
+                                        defaultMessage="Merge manually"
                                     />
                                 }
                                 {
                                     manualMerge &&
                                     <FormattedMessage
                                         id="patientsDuplicate.autoMerge"
-                                        defaultMessage="Fusionner automatiquement"
+                                        defaultMessage="Merge automatically"
                                     />
                                 }
                             </button>
@@ -228,7 +228,7 @@ class PatientDuplicateDetails extends React.Component {
                                 className="button"
                                 onClick={() => this.props.mergeDuplicates(duplicatePatient.id, this.props.params.duplicate_id, this, true)}
                             >
-                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignorer ce doublon" />
+                                <FormattedMessage id="patientsDuplicate.keep" defaultMessage="Ignore this duplicate" />
                             </button>
                         </div>
                     </div>
@@ -245,7 +245,7 @@ class PatientDuplicateDetails extends React.Component {
                                             {`${conflictsNotSolved.length} `}
                                             <FormattedMessage
                                                 id="patientsDuplicate.conflicts"
-                                                defaultMessage="conflit(s) à fixer"
+                                                defaultMessage="conflict(s) to solve"
                                             />
                                         </span>
                                     }
@@ -254,7 +254,7 @@ class PatientDuplicateDetails extends React.Component {
                                         <span className="success-text">
                                             <FormattedMessage
                                                 id="patientsDuplicate.conflictssolved"
-                                                defaultMessage="Tous les conflits sont réglés"
+                                                defaultMessage="All confilcts are solved"
                                             />
                                         </span>
                                     }
@@ -266,8 +266,8 @@ class PatientDuplicateDetails extends React.Component {
                                 onClick={() => this.resetMergedPatient()}
                             >
                                 <FormattedMessage
-                                    id="patientsDuplicate.cancel"
-                                    defaultMessage="Annuler"
+                                    id="main.label.cancel"
+                                    defaultMessage="Cancel"
                                 />
                             </button>
                             <button
@@ -276,8 +276,8 @@ class PatientDuplicateDetails extends React.Component {
                                 onClick={() => this.manualMerge()}
                             >
                                 <FormattedMessage
-                                    id="patientsDuplicate.mergeManualButton"
-                                    defaultMessage="Valider"
+                                    id="main.label.validate"
+                                    defaultMessage="Validate"
                                 />
                             </button>
                         </div>

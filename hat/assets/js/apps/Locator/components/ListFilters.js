@@ -21,7 +21,7 @@ const MESSAGES = defineMessages({
         id: 'microplanning.labels.loading',
     },
     searchPlaceholder: {
-        defaultMessage: 'Recherche',
+        defaultMessage: 'Search',
         id: 'listlocator.search.placeholder',
     },
     not_located: {
@@ -61,8 +61,8 @@ class ListFilters extends React.Component {
                 <div>
                     <span className="map__text--select">
                         <FormattedMessage
-                            id="locator.list.textualsearch.label"
-                            defaultMessage="Recherche textuelle"
+                            id="main.label.textSearch"
+                            defaultMessage="Text search"
                         />
                     </span>
                     <Search

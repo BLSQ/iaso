@@ -12,27 +12,27 @@ const tempTreatmentsMedecineMessages = {
 delete tempTreatmentsMedecineMessages.none;
 export const MESSAGES = {
     positive: {
-        defaultMessage: 'Positif',
+        defaultMessage: 'Positive',
         id: 'main.label.postive',
     },
     negative: {
-        defaultMessage: 'Négatif',
+        defaultMessage: 'Negative',
         id: 'main.label.negative',
     },
     not_done: {
-        defaultMessage: 'Non fait',
+        defaultMessage: 'Not done',
         id: 'main.label.not_done',
     },
     mobile_sync: {
-        defaultMessage: 'Sync Tablette',
+        defaultMessage: 'Tablet sync',
         id: 'main.label.mobile_sync',
     },
     mobile_backup: {
-        defaultMessage: 'Backup Tablette',
+        defaultMessage: 'Tablet back up',
         id: 'main.label.mobile_backup',
     },
     historic: {
-        defaultMessage: 'Historique',
+        defaultMessage: 'Historic',
         id: 'main.label.historic',
     },
     pv: {
@@ -40,27 +40,27 @@ export const MESSAGES = {
         id: 'main.label.pv',
     },
     located: {
-        defaultMessage: 'Uniquement les cas localisés',
+        defaultMessage: 'Only located cases',
         id: 'main.label.located',
     },
     notLocated: {
-        defaultMessage: 'Uniquement les cas non localisés',
+        defaultMessage: 'Only not located cases',
         id: 'main.label.notLocated',
     },
     notLocatedNotFound: {
-        defaultMessage: 'Uniquement les cas non localisés et non trouvés',
+        defaultMessage: 'Only not located and not found cases',
         id: 'main.label.notLocatedNotFound',
     },
     test_lymph_node_puncture: {
-        defaultMessage: 'Ponction noeud lymphatique',
+        defaultMessage: 'Lymphatic node puncture',
         id: 'main.label.test_lymph_node_puncture',
     },
     sf: {
-        defaultMessage: 'Sang frais',
+        defaultMessage: 'Fresh blood',
         id: 'main.label.sf',
     },
     screener: {
-        defaultMessage: 'Dépisteur',
+        defaultMessage: 'Screener',
         id: 'main.label.screener',
     },
     confirmer: {
@@ -68,79 +68,79 @@ export const MESSAGES = {
         id: 'main.label.confirmer',
     },
     with_pictures: {
-        defaultMessage: 'Avec images',
+        defaultMessage: 'With images',
         id: 'main.label.with_pictures',
     },
     with_pictures_uploaded: {
-        defaultMessage: 'Avec images envoyées',
+        defaultMessage: 'With uploaded pictures',
         id: 'main.label.with_pictures_uploaded',
     },
     without_pictures_uploaded: {
-        defaultMessage: 'Avec images mais non envoyées',
+        defaultMessage: 'With pictures but not uploaded',
         id: 'main.label.without_pictures_uploaded',
     },
     with_videos: {
-        defaultMessage: 'Avec vidéos',
+        defaultMessage: 'With videos',
         id: 'main.label.with_videos',
     },
     with_videos_uploaded: {
-        defaultMessage: 'Avec vidéos envoyées',
+        defaultMessage: 'Wiht uploaded videos',
         id: 'main.label.with_videos_uploaded',
     },
     without_videos_uploaded: {
-        defaultMessage: 'Avec vidéos mais non envoyées',
+        defaultMessage: 'With videos but not uploaded',
         id: 'main.label.without_videos_uploaded',
     },
     without_pictures: {
-        defaultMessage: 'Sans images',
+        defaultMessage: 'Without pictures',
         id: 'main.label.without_pictures',
     },
     without_videos: {
-        defaultMessage: 'Sans vidéos',
+        defaultMessage: 'Without videos',
         id: 'main.label.without_videos',
     },
     ignored: {
-        defaultMessage: 'Ignorés',
+        defaultMessage: 'Ignored',
         id: 'main.label.ignored',
     },
     not_ignored: {
-        defaultMessage: 'Non ignorés',
+        defaultMessage: 'Not ignored',
         id: 'main.label.not_ignored',
     },
     assigned: {
-        defaultMessage: 'Assignés',
+        defaultMessage: 'Assigned',
         id: 'main.label.assigned',
     },
     not_assigned: {
-        defaultMessage: 'Non assignés',
+        defaultMessage: 'Not assigned',
         id: 'main.label.not_assigned',
     },
     selected: {
-        defaultMessage: 'Sélectionné',
+        defaultMessage: 'Selected',
         id: 'main.label.selected',
     },
     not_selected: {
-        defaultMessage: 'Non sélectionné',
+        defaultMessage: 'Not selected',
         id: 'main.label.not_selected',
     },
     active: {
-        defaultMessage: 'Actif',
+        defaultMessage: 'Active',
         id: 'main.label.active',
     },
     passive: {
-        defaultMessage: 'Passif',
+        defaultMessage: 'Passive',
         id: 'main.label.passive',
     },
     stage1: {
-        defaultMessage: 'Stade 1',
+        defaultMessage: 'Stage 1',
         id: 'main.label.stage1',
     },
     stage2: {
-        defaultMessage: 'Stade 2',
+        defaultMessage: 'Stage 2',
         id: 'main.label.stage2',
     },
     unknown: {
-        defaultMessage: 'Inconnu',
+        defaultMessage: 'Unknown',
         id: 'main.label.unknown',
     },
 };
@@ -196,12 +196,12 @@ const testType = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.test_type',
-            defaultMessage: 'Test(s) effectué(s)',
+            id: 'main.label.test_type',
+            defaultMessage: 'Test(s) done',
         },
         type: 'select',
     }
@@ -224,12 +224,12 @@ const testTypeImage = () => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.test_type_image',
-            defaultMessage: 'Test(s) de dépistage effectué(s)',
+            id: 'main.label.test_type_image',
+            defaultMessage: 'Screening test(s) done',
         },
         type: 'select',
     }
@@ -260,12 +260,12 @@ const testTypeVideo = () => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.test_type_video',
-            defaultMessage: 'Test(s) de confirmation effectué(s)',
+            id: 'main.label.test_type_video',
+            defaultMessage: 'Confirmation test(s) done',
         },
         type: 'select',
     }
@@ -293,11 +293,11 @@ const screeningResult = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.screening_result',
-            defaultMessage: 'Dépistage',
+            id: 'main.label.screening_result',
+            defaultMessage: 'Screening',
         },
         type: 'select',
     }
@@ -325,10 +325,10 @@ const confirmationResult = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.confirmation_result',
+            id: 'main.label.confirmation_result',
             defaultMessage: 'Confirmation',
         },
         type: 'select',
@@ -361,10 +361,10 @@ const source = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.source',
+            id: 'main.label.source',
             defaultMessage: 'Source',
         },
         type: 'select',
@@ -379,12 +379,12 @@ const teams = (teamsList, isMultiSelect = true) => (
         isClearable: true,
         options: teamsList,
         placeholder: {
-            id: 'cases.label.all',
-            defaultMessage: 'Toutes',
+            id: 'main.label.all',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.confirmation_result',
-            defaultMessage: 'Equipe',
+            id: 'main.label.team',
+            defaultMessage: 'Team',
         },
         type: 'select',
     }
@@ -411,11 +411,11 @@ const located = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.all',
-            defaultMessage: 'Toutes',
+            id: 'main.label.all',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.located',
+            id: 'main.label.locations',
             defaultMessage: 'Localisations',
         },
         type: 'select',
@@ -432,11 +432,11 @@ const searchLastname = component => (
         displayIcon: false,
         placeholder: {
             id: 'main.label.search',
-            defaultMessage: 'Recherche',
+            defaultMessage: 'Search',
         },
         label: {
-            id: 'cases.label.searchByName',
-            defaultMessage: 'Recherche par nom',
+            id: 'main.label.searchByName',
+            defaultMessage: 'Search by last name',
         },
         type: 'search',
         onKeyPressed: () => component.onSearch(),
@@ -453,11 +453,11 @@ const searchName = component => (
         displayIcon: false,
         placeholder: {
             id: 'main.label.search',
-            defaultMessage: 'Recherche',
+            defaultMessage: 'Search',
         },
         label: {
-            id: 'cases.label.searchByPostName',
-            defaultMessage: 'Recherche par postnom',
+            id: 'main.label.searchByPostName',
+            defaultMessage: 'Search by post name',
         },
         type: 'search',
         onKeyPressed: () => component.onSearch(),
@@ -474,11 +474,11 @@ const searchPrename = component => (
         displayIcon: false,
         placeholder: {
             id: 'main.label.search',
-            defaultMessage: 'Recherche',
+            defaultMessage: 'Search',
         },
         label: {
-            id: 'cases.label.searchByPrename',
-            defaultMessage: 'Recherche par prénom',
+            id: 'main.label.searchByPrename',
+            defaultMessage: 'Search by first name',
         },
         type: 'search',
         onKeyPressed: () => component.onSearch(),
@@ -495,11 +495,11 @@ const searchMotherName = component => (
         displayIcon: false,
         placeholder: {
             id: 'main.label.search',
-            defaultMessage: 'Recherche',
+            defaultMessage: 'Search',
         },
         label: {
-            id: 'cases.label.motherName',
-            defaultMessage: 'Recherche par le nom de la mère',
+            id: 'main.label.searchByMotherName',
+            defaultMessage: 'Search by mother name',
         },
         type: 'search',
         onKeyPressed: () => component.onSearch(),
@@ -516,11 +516,11 @@ const searchUuid = component => (
         displayIcon: false,
         placeholder: {
             id: 'main.label.search',
-            defaultMessage: 'Recherche',
+            defaultMessage: 'Search',
         },
         label: {
-            id: 'cases.label.searchByUuid',
-            defaultMessage: 'Recherche par Uid',
+            id: 'main.label.searchByUuid',
+            defaultMessage: 'Search by Uid',
         },
         type: 'search',
         onKeyPressed: () => component.onSearch(),
@@ -539,7 +539,7 @@ const coordinations = (coordinationsList, isMultiSelect = true) => (
             defaultMessage: 'Toutes',
         },
         label: {
-            id: 'cases.label.coordination',
+            id: 'main.label.coordination',
             defaultMessage: 'Coordination',
         },
         type: 'select',
@@ -555,11 +555,11 @@ const workZones = (workzonesList, props, urlKey) => (
         options: workzonesList,
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.workzones',
-            defaultMessage: 'Rayons d\'actions',
+            id: 'main.label.workzones',
+            defaultMessage: 'Work zones',
         },
         type: 'select',
         callback: value => selectWorkZone(workzonesList, value, props, urlKey),
@@ -577,10 +577,10 @@ const provinces = (provincesList, props, urlKey) => (
         isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.provinces',
+            id: 'main.label.provinces',
             defaultMessage: 'Provinces',
         },
         type: 'select',
@@ -600,11 +600,11 @@ const zones = (zoneslist, props, urlKey) => (
         isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.zones',
-            defaultMessage: 'Zones de santé',
+            id: 'main.label.zones',
+            defaultMessage: 'Health zones',
         },
         type: 'select',
         callback: value => selectZone(value, props, urlKey),
@@ -623,11 +623,11 @@ const aires = (areasList, props, urlKey) => (
         isDisabled: props.params.workzone_id && props.params.workzone_id.length > 0,
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.areas',
-            defaultMessage: 'Aire de santé',
+            id: 'main.label.areas',
+            defaultMessage: 'Health areas',
         },
         type: 'select',
         callback: value => selectArea(value, props, urlKey),
@@ -644,10 +644,10 @@ const villages = villagesList => (
         options: villagesList,
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.village',
+            id: 'main.label.villages',
             defaultMessage: 'Villages',
         },
         type: 'select',
@@ -660,7 +660,7 @@ const onlyDupes = () => (
         urlKey: 'only_dupes',
         label: {
             id: 'main.label.onlyDupes',
-            defaultMessage: 'Uniquement avec Doublons',
+            defaultMessage: 'Only duplicates',
         },
         type: 'checkbox',
     }
@@ -669,14 +669,14 @@ const onlyDupes = () => (
 const users = (
     usersList,
     mainLabel = {
-        id: 'main.label.user',
-        defaultMessage: 'Utilisateurs',
+        id: 'main.label.users',
+        defaultMessage: 'Users',
     },
     isMultiSelect = true,
     urlKey = 'userId',
     placeholderLabel = {
         id: 'main.label.allMale',
-        defaultMessage: 'Tous',
+        defaultMessage: 'All',
     },
 ) => (
     {
@@ -718,11 +718,11 @@ const habitats = (formatMessage, habitatsList) => (
             })),
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.habitats',
-            defaultMessage: 'Habitats (pièges uniquement)',
+            defaultMessage: 'Habitats (only traps)',
         },
         type: 'select',
     }
@@ -755,10 +755,10 @@ const sites = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'vector.label.sites',
+            id: 'main.label.sites',
             defaultMessage: 'Sites',
         },
         type: 'select',
@@ -792,11 +792,11 @@ const traps = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'vector.label.traps',
-            defaultMessage: 'Pièges',
+            id: 'main.label.traps',
+            defaultMessage: 'Traps',
         },
         type: 'select',
     }
@@ -821,11 +821,11 @@ const targets = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'vector.label.targets',
-            defaultMessage: 'Ecrans',
+            id: 'main.label.targets',
+            defaultMessage: 'targets',
         },
         type: 'select',
     }
@@ -843,11 +843,11 @@ const medecine = formatMessage => (
             ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.medecine',
-            defaultMessage: 'Type de traitement',
+            defaultMessage: 'Type of medecine',
         },
         type: 'select',
     }
@@ -859,7 +859,7 @@ const onlyTreatedPatients = () => (
         urlKey: 'with_treatment',
         label: {
             id: 'main.label.onlyTreatedPatients',
-            defaultMessage: 'Avec traitement(s)',
+            defaultMessage: 'With treatment(s)',
         },
         type: 'checkbox',
         conditionnalCheck: 'treatment_medicine',
@@ -872,7 +872,7 @@ const onlyDead = () => (
         urlKey: 'dead',
         label: {
             id: 'main.label.onlyDead',
-            defaultMessage: 'Décédés',
+            defaultMessage: 'Deceased',
         },
         type: 'checkbox',
     }
@@ -895,11 +895,11 @@ const testerType = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.tester_type',
+            id: 'main.label.tester_type',
             defaultMessage: 'Type de testeur',
         },
         type: 'select',
@@ -912,7 +912,7 @@ const withTestDevices = () => (
         urlKey: 'with_tests_devices',
         label: {
             id: 'main.label.with_tests_devices',
-            defaultMessage: 'Inclure les tablettes de test',
+            defaultMessage: 'With tests devices',
         },
         type: 'checkbox',
     }
@@ -929,12 +929,12 @@ const device = devicesList => (
             value: d.device_id,
         })),
         placeholder: {
-            id: 'cases.label.all',
-            defaultMessage: 'Toutes',
+            id: 'main.label.all',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.devices',
-            defaultMessage: 'Tablette',
+            defaultMessage: 'Tablet',
         },
         type: 'select',
     }
@@ -965,11 +965,11 @@ const images = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'main.label.pictures',
+            id: 'main.label.images',
             defaultMessage: 'Images',
         },
         type: 'select',
@@ -1002,12 +1002,12 @@ const videos = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.videos',
-            defaultMessage: 'Vidéos',
+            defaultMessage: 'Videos',
         },
         type: 'select',
     }
@@ -1019,7 +1019,7 @@ const onlyCheckedTests = () => (
         urlKey: 'only_checked_tests',
         label: {
             id: 'main.label.onlyCheckedTests',
-            defaultMessage: 'Uniquement les test vérifiés',
+            defaultMessage: 'Only checked texts',
         },
         type: 'checkbox',
     }
@@ -1027,10 +1027,10 @@ const onlyCheckedTests = () => (
 
 const teamType = (formatMessage, teamTypeList, label = {
     id: 'main.label.team_type',
-    defaultMessage: 'Type d\'équipe',
+    defaultMessage: 'Team type',
 }, placeholder = {
-    id: 'cases.label.all',
-    defaultMessage: 'Toutes',
+    id: 'main.label.all',
+    defaultMessage: 'All',
 }) => (
     {
         name: 'team_type',
@@ -1055,12 +1055,12 @@ const screenTeamType = () => (
             { label: 'MUM', value: 'MUM' },
         ],
         placeholder: {
-            id: 'cases.label.all',
-            defaultMessage: 'Toutes',
+            id: 'main.label.all',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.screening_team_type',
-            defaultMessage: 'Type de dépistage',
+            defaultMessage: 'Screening type',
         },
         type: 'select',
     }
@@ -1072,7 +1072,7 @@ const anonymous = () => (
         urlKey: 'anonymous',
         label: {
             id: 'main.label.anonymousDownload',
-            defaultMessage: 'Données anonymisées',
+            defaultMessage: 'Anonymous data',
         },
         type: 'checkbox',
     }
@@ -1088,10 +1088,10 @@ const institutions = (institutionsList, isMultiSelect = false) => (
             ({ label: institution.name, value: institution.id })),
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.institution',
+            id: 'main.label.institution',
             defaultMessage: 'Institution',
         },
         type: 'select',
@@ -1113,12 +1113,12 @@ const problems = (formatMessage, problemsList) => (
                 value: h[0],
             })),
         placeholder: {
-            id: 'cases.label.none',
-            defaultMessage: 'Aucun',
+            id: 'main.label.none',
+            defaultMessage: 'None',
         },
         label: {
-            id: 'cases.label.problems',
-            defaultMessage: 'Problèmes (déploiements uniquement)',
+            id: 'main.label.targetsProblems',
+            defaultMessage: 'Problems (only targets)',
         },
         type: 'select',
     }
@@ -1142,11 +1142,11 @@ const screeningType = formatMessage => (
         ],
         placeholder: {
             id: 'main.label.allMale',
-            defaultMessage: 'Tous',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'cases.label.screening_type',
-            defaultMessage: 'Type de dépistage',
+            id: 'main.label.screening_type',
+            defaultMessage: 'Screening type',
         },
         type: 'select',
     }
@@ -1173,12 +1173,12 @@ const stade = formatMessage => (
             },
         ],
         placeholder: {
-            id: 'cases.label.allMale',
-            defaultMessage: 'Tous',
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
         },
         label: {
-            id: 'patients.label.stage',
-            defaultMessage: 'Stade',
+            id: 'main.label.stage',
+            defaultMessage: 'Stage',
         },
         type: 'select',
     }

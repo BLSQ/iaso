@@ -123,7 +123,7 @@ const villagesTableColumns = (
         {
             Header: formatMessage({
                 defaultMessage: 'Actions',
-                id: 'main.actions',
+                id: 'main.label.actions',
             }),
             sortable: false,
             resizable: false,
@@ -138,7 +138,7 @@ const villagesTableColumns = (
                         <i className="fa fa-pencil-square-o" />
                         {
                             formatMessage({
-                                defaultMessage: 'Editer',
+                                defaultMessage: 'Edit',
                                 id: 'main.label.edit',
                             })
                         }
@@ -154,7 +154,7 @@ const villagesTableColumns = (
                         <i className="fa fa-trash" />
                         {
                             formatMessage({
-                                defaultMessage: 'Effacer',
+                                defaultMessage: 'Delete',
                                 id: 'main.label.delete',
                             })
                         }

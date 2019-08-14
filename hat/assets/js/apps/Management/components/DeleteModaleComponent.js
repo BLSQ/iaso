@@ -40,14 +40,14 @@ class DeleteModale extends Component {
                         onClick={() => this.props.toggleModal()}
                     >
                         <i className="fa fa-arrow-left" />
-                        <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                        <FormattedMessage id="main.label.cancel" defaultMessage="Cancel" />
                     </button>
                     <button
                         className="button--delete"
                         onClick={() => this.props.deleteElement(this.props.element)}
                     >
                         <i className="fa fa-trash" />
-                        <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                        <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                     </button>
                 </div>
             </ReactModal>

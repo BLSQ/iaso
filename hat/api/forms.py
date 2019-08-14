@@ -21,7 +21,12 @@ class FormsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        queryset = Form.objects.filter(projects__app_id=app_id)
+        all_apps = request.GET.get("all", None)
+        if all_apps is not None:
+            queryset = Form.objects.all()
+        else:
+            queryset = Form.objects.filter(projects__app_id=app_id)
+
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "instance_updated_at").split(

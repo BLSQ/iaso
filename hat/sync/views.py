@@ -288,10 +288,16 @@ def form_upload(request: HttpRequest) -> HttpResponse:
     i, created = Instance.objects.get_or_create(file_name=main_file.name)
     i.file = request.FILES["xml_submission_file"]
     i.save()
+
     try:
         i.get_and_save_json_of_xml()
+        try:
+            i.convert_location_from_field()
+        except ValueError as error:
+            print(error)
     except:
         pass
+
     for file_name in request.FILES:
         if file_name != "xml_submission_file":
             fi = InstanceFile()

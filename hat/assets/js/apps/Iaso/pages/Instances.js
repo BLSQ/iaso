@@ -151,8 +151,8 @@ class Instances extends Component {
             this.props.setInstances(data.instances, true, params, data.count, data.pages);
         });
 
-        // const urlLocation = this.getEndpointUrl(false, '', true);
-        // getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
+        const urlLocation = this.getEndpointUrl(false, '', true);
+        getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
     }
 
     render() {
@@ -185,7 +185,7 @@ class Instances extends Component {
                                 <BackButton goBack={() => this.goBack()} />
                             </Container>
                             <Container maxWidth={false} className={classes.container}>
-                                {/* <AppBar position="static">
+                                { <AppBar position="static">
                                     <Tabs
                                         value={tab}
                                         classes={{
@@ -209,7 +209,7 @@ class Instances extends Component {
                                             })}
                                         />
                                     </Tabs>
-                                </AppBar> */}
+                                </AppBar> }
                                 {
                                     tab === 'list' && (
                                         <CustomTableComponent

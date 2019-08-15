@@ -60,7 +60,12 @@ class InstancesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             elif as_location:
-                return Response([instance.as_location() for instance in queryset])
+                return Response(
+                    [
+                        instance.as_location()
+                        for instance in queryset.filter(location__isnull=False)
+                    ]
+                )
             else:
                 return Response(
                     {"instances": [instance.as_dict() for instance in queryset]}

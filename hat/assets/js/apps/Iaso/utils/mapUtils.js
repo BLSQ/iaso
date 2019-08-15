@@ -12,9 +12,10 @@ export const isValidCoordinate = (latitude, longitude) => {
 
 export const getLatLngBounds = (items) => {
     if (items.length === 0) return null;
-    const latLngs = items.forEach((i) => {
+    const latLngs = [];
+    items.forEach((i) => {
         if (isValidCoordinate(i.latitude, i.longitude)) {
-            return L.latLng(i.latitude, i.longitude);
+            latLngs.push(L.latLng(i.latitude, i.longitude));
         }
         return null;
     });

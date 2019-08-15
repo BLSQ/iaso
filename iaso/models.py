@@ -263,6 +263,7 @@ class Instance(models.Model):
     def as_location(self):
         return {
             "id": self.id,
+            "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,

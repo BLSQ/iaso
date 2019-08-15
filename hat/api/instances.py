@@ -21,7 +21,7 @@ class InstancesViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        queryset = Instance.objects.order_by("id")
+        queryset = Instance.objects.order_by("-id")
         limit = request.GET.get("limit", None)
         as_location = request.GET.get("as_location", None)
         page_offset = request.GET.get("page", 1)
@@ -30,8 +30,10 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
 
-        queryset = queryset.exclude(file="").order_by(
-            *orders
+        queryset = (
+            queryset.exclude(file="")
+            .exclude(device__test_device=True)
+            .order_by(*orders)
         )  ## quickfix to avoid updating the front, but here, we should also display entries without xml
 
         queryset = queryset.prefetch_related("org_unit")

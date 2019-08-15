@@ -47,6 +47,15 @@ class InstancesMap extends Component {
                                             </tr>
                                             <tr>
                                                 <td>
+                                                    <FormattedMessage id="iaso.instance.device" defaultMessage="IMEI appareil" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                    <span>{ i.device_id }</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
                                                     <FormattedMessage id="iaso.instance.coordinate" defaultMessage="Latitude" />
                                                     :
                                                 </td>

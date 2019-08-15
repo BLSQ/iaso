@@ -293,6 +293,7 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         i.get_and_save_json_of_xml()
         try:
             i.convert_location_from_field()
+            i.convert_device()
         except ValueError as error:
             print(error)
     except:

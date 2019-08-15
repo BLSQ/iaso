@@ -198,6 +198,9 @@ class Instance(models.Model):
     form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
     json = JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    device = models.ForeignKey(
+        "Device", null=True, blank=True, on_delete=models.DO_NOTHING
+    )
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -212,6 +215,14 @@ class Instance(models.Model):
             self.location = Point(x=longitude, y=latitude, srid=4326)
             self.accuracy = accuracy
             self.save()
+
+    def convert_device(self):
+        if self.json and not self.device:
+            imei = self.json.get("deviceid", None)
+            if imei is not None:
+                device, created = Device.objects.get_or_create(imei=imei)
+                self.device = device
+                self.save()
 
     def get_and_save_json_of_xml(self):
         if self.json:
@@ -276,9 +287,6 @@ class InstanceFile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
-    device = models.ForeignKey(
-        "Device", null=True, blank=True, on_delete=models.DO_NOTHING
-    )
 
     def __str__(self):
         return "%s " % (self.name,)
@@ -297,6 +305,7 @@ class InstanceFile(models.Model):
 
 class Device(models.Model):
     imei = models.CharField(max_length=20, null=True, blank=True)
+    test_device = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

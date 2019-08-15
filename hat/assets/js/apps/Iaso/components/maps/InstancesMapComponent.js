@@ -38,29 +38,20 @@ class InstancesMap extends Component {
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.latitude" defaultMessage="Latitude" />
+                                                    <FormattedMessage id="iaso.instance.name" defaultMessage="Nom" />
                                                     :
                                                 </td>
                                                 <td>
-                                                    {i.latitude}
+                                                    <span>{i.org_unit.name} <br/> {i.org_unit.org_unit_type_name}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.longitude" defaultMessage="Longitude" />
+                                                    <FormattedMessage id="iaso.instance.coordinate" defaultMessage="Latitude" />
                                                     :
                                                 </td>
                                                 <td>
-                                                    {i.longitude}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <FormattedMessage id="iaso.instance.updated_at" defaultMessage="Mise à jour" />
-                                                    :
-                                                </td>
-                                                <td>
-                                                    {moment.unix(i.updated_at).format('DD/MM/YYYY HH:mm')}
+                                                    Long: {i.longitude} <br/> Lat: {i.latitude}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -79,6 +70,15 @@ class InstancesMap extends Component {
                                                 </td>
                                                 <td className={classes.link}>
                                                     <a target="_blank" rel="noopener noreferrer" href={i.file_url}>{i.file_name}</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <FormattedMessage id="iaso.instance.files" defaultMessage="Autres fichiers" />
+                                                    :
+                                                </td>
+                                                <td>
+                                                  {i.files.map(f => (<p><a href={f}><img style={{maxWidth: '100px', maxHeight: '100px'}} src={f}/></a></p>))}
                                                 </td>
                                             </tr>
                                         </tbody>

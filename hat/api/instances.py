@@ -63,7 +63,9 @@ class InstancesViewSet(viewsets.ViewSet):
                 return Response(
                     [
                         instance.as_location()
-                        for instance in queryset.filter(location__isnull=False)
+                        for instance in queryset.filter(
+                            location__isnull=False
+                        ).prefetch_related("instancefile_set")
                     ]
                 )
             else:

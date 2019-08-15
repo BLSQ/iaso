@@ -229,7 +229,7 @@ class Instance(models.Model):
         return file_content
 
     def __str__(self):
-        return "%s " % (self.form,)
+        return "%s %s" % (self.form, self.name)
 
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()
@@ -261,6 +261,9 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "files": [
+                f.file.url if f.file else None for f in self.instancefile_set.all()
+            ],
         }
 
 

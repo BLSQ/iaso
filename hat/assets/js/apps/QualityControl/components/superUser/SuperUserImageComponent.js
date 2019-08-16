@@ -35,15 +35,15 @@ class SuperUserImageComponent extends React.Component {
             <Fragment>
                 <section className="test-infos">
                     <h4>
-                        <FormattedMessage id="quality.initialTest" defaultMessage="Résultat Initial" />
+                        <FormattedMessage id="quality.initialTest" defaultMessage="Inital result" />
                         <span className="date">
-                            <FormattedMessage id="quality.date" defaultMessage="Date" />:
+                            <FormattedMessage id="main.label.date" defaultMessage="Date" />:
                             {` ${moment(currentTest.date).format('DD-MM-YYYY')}`}
                         </span>
                     </h4>
                     <div>
                         <div className="quality-label inline">
-                            <FormattedMessage id="quality.tester" defaultMessage="Testeur" />:
+                            <FormattedMessage id="main.label.tester" defaultMessage="Tester" />:
                         </div>
                         <span>
                             {currentTest.tester.firstName} {' '}
@@ -53,7 +53,7 @@ class SuperUserImageComponent extends React.Component {
                     </div>
                     <div>
                         <div className="quality-label inline">
-                            <FormattedMessage id="quality.device" defaultMessage="Tablette" />:
+                            <FormattedMessage id="main.label.devices" defaultMessage="Device" />:
                         </div>
                         <span>
                             {currentTest.device ? currentTest.device : '--'}
@@ -62,8 +62,8 @@ class SuperUserImageComponent extends React.Component {
                     <div>
                         <div className="quality-label inline">
                             <FormattedMessage
-                                id="quality.results"
-                                defaultMessage="Résultat"
+                                id="main.label.result"
+                                defaultMessage="Result"
                             />:
                         </div>
                         <span>
@@ -78,7 +78,7 @@ class SuperUserImageComponent extends React.Component {
                         currentTest={check1}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
-                            id: 'quality.check',
+                            id: 'main.label.validation',
                         })} 1`}
                     />
                 }
@@ -89,7 +89,7 @@ class SuperUserImageComponent extends React.Component {
                         currentTest={check2}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
-                            id: 'quality.check',
+                            id: 'main.label.validation',
                         })} 2`}
                     />
                 }
@@ -100,7 +100,7 @@ class SuperUserImageComponent extends React.Component {
                         currentTest={check3}
                         title={`${formatMessage({
                             defaultMessage: 'Validation',
-                            id: 'quality.check',
+                            id: 'main.label.validation',
                         })} 3`}
                     />
                 }

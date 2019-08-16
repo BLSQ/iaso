@@ -253,8 +253,8 @@ export class Vector extends Component {
             <section className="vectors-container">
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }

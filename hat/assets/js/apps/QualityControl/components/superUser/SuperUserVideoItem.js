@@ -37,8 +37,8 @@ class SuperUserImageItem extends React.Component {
                     </div>
                     <span>
                         {currentTest.is_clear ?
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" /> :
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />}
+                            <FormattedMessage id="main.label.yes" defaultMessage="Yes" /> :
+                            <FormattedMessage id="main.label.no" defaultMessage="No" />}
                     </span>
                 </div>
                 {
@@ -53,8 +53,8 @@ class SuperUserImageItem extends React.Component {
                             </div>
                             <span>
                                 {currentTest.is_good_place ?
-                                    <FormattedMessage id="main.submit.yes" defaultMessage="Oui" /> :
-                                    <FormattedMessage id="main.submit.no" defaultMessage="Non" />}
+                                    <FormattedMessage id="main.label.yes" defaultMessage="Yes" /> :
+                                    <FormattedMessage id="main.label.no" defaultMessage="No" />}
                             </span>
                         </div>
                         <div>
@@ -66,8 +66,8 @@ class SuperUserImageItem extends React.Component {
                             </div>
                             <span>
                                 {currentTest.is_confirmed_case ?
-                                    <FormattedMessage id="main.submit.yes" defaultMessage="Oui" /> :
-                                    <FormattedMessage id="main.submit.no" defaultMessage="Non" />}
+                                    <FormattedMessage id="main.label.yes" defaultMessage="Yes" /> :
+                                    <FormattedMessage id="main.label.no" defaultMessage="No" />}
                             </span>
                         </div>
                     </Fragment>
@@ -81,8 +81,8 @@ class SuperUserImageItem extends React.Component {
                     </div>
                     <span>
                         {currentTest.has_other_parasite ?
-                            <FormattedMessage id="main.submit.yes" defaultMessage="Oui" /> :
-                            <FormattedMessage id="main.submit.no" defaultMessage="Non" />}
+                            <FormattedMessage id="main.label.yes" defaultMessage="Yes" /> :
+                            <FormattedMessage id="main.label.no" defaultMessage="No" />}
                     </span>
                 </div>
                 {

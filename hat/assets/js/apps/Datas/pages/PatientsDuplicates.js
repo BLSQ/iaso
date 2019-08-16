@@ -164,15 +164,15 @@ class PatientsDuplicates extends Component {
             <section className="cases-list-container">
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="main.label.duplicates" defaultMessage="Doublons" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="main.label.duplicates" defaultMessage="Duplicates" /></h2>
                     </div>
                     <div className="border-bottom">
                         <ChoosePeriodSelectorComponent

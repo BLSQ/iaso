@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
         id: 'main.label.none',
     },
     team_select: {
-        defaultMessage: 'Unité',
+        defaultMessage: 'Team',
         id: 'microplanning.label.team',
     },
     add_as: {
@@ -279,7 +279,7 @@ class MapTooltip extends Component {
                         <div className={`label${this.props.workzoneId !== '' ? ' select-team' : ''}`}>
                             <FormattedMessage
                                 id="microplanning.label.team"
-                                defaultMessage="Unité"
+                                defaultMessage="Team"
                             />
                         </div>
                         <div className="value">

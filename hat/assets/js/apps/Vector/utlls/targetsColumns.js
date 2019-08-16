@@ -13,7 +13,7 @@ const targetsColumns = (formatMessage, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Date',
-                id: 'main.label.date_time',
+                id: 'main.label.date',
             }),
             accessor: 'date_time',
             Cell: settings => (
@@ -27,7 +27,7 @@ const targetsColumns = (formatMessage, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Name',
-                id: 'main.label.nom',
+                id: 'main.label.name',
             }),
             accessor: 'name',
         },
@@ -47,7 +47,7 @@ const targetsColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Rivière',
+                defaultMessage: 'River',
                 id: 'main.label.river',
             }),
             accessor: 'river',
@@ -73,7 +73,7 @@ const targetsColumns = (formatMessage, getDetail) => (
                         onClick={() => getDetail(settings.original.id, 'targets', 'showEditTargetModale')}
                     >
                         <i className="fa fa-pencil-square-o" />
-                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                     </button>
                 </section>
             ),

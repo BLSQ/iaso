@@ -12,21 +12,21 @@ const sitesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
+                defaultMessage: 'Name',
                 id: 'main.label.name',
             }),
             accessor: 'name',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Créateur',
+                defaultMessage: 'Creator',
                 id: 'main.label.creator',
             }),
             accessor: 'creator',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Création',
+                defaultMessage: 'Created at',
                 id: 'main.label.created_at',
             }),
             accessor: 'created_at',
@@ -40,7 +40,7 @@ const sitesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Responsable',
+                defaultMessage: 'Responsible',
                 id: 'main.label.responsible',
             }),
             accessor: 'responsible',

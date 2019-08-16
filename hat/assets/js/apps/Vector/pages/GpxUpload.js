@@ -23,14 +23,14 @@ class GpxUpload extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="uploadFile.Title" defaultMessage="Import de fichiers GPX" />
+                            <FormattedMessage id="uploadFile.Title" defaultMessage="Import GPX files" />
                         </h2>
                     </div>
                     <div className="widget__content">

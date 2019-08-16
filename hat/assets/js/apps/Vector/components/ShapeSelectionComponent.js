@@ -59,13 +59,13 @@ class ShapeSelectionComponent extends Component {
                                         <thead>
                                             <tr className="center">
                                                 <th className="small">
-                                                    <FormattedMessage id="vector.modale.assignation.label.name" defaultMessage="Nom" />
+                                                    <FormattedMessage id="main.label.name" defaultMessage="Name" />
                                                 </th>
                                                 <th className="small">
-                                                    <FormattedMessage id="vector.modale.assignation.label.responsible" defaultMessage="Responsable actuel" />
+                                                    <FormattedMessage id="vector.modale.assignation.label.responsible" defaultMessage="Actual responsible" />
                                                 </th>
                                                 <th className="small">
-                                                    <FormattedMessage id="vector.modale.assignation.label.updateDate" defaultMessage="Dérnière mise à jour" />
+                                                    <FormattedMessage id="vector.modale.assignation.label.updateDate" defaultMessage="Last update" />
                                                 </th>
                                             </tr>
                                         </thead>
@@ -127,7 +127,7 @@ class ShapeSelectionComponent extends Component {
                                 onClick={() => this.props.saveAssignations(this.props.sites, this.state.responsibleId)}
                             >
                                 <i className="fa fa-save" />
-                                <FormattedMessage id="vector.label.saveAssignation" defaultMessage="Sauvegarder les assignations" />
+                                <FormattedMessage id="vector.label.saveAssignation" defaultMessage="Save assignations" />
                             </button>
                         }
                     </div>

@@ -55,8 +55,8 @@ class LogsDetails extends Component {
                 {
                     load.loading && (
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     )

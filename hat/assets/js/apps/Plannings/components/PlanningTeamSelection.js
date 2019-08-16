@@ -93,7 +93,7 @@ class PlanningTeamSelection extends Component {
                         this.state.currentPlanning &&
                         this.state.teams.length > 0 &&
                         <div>
-                            <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+                            <FormattedMessage id="microplanning.label.team" defaultMessage="Team" />
                             <Select
                                 simpleValue
                                 name="team_id"

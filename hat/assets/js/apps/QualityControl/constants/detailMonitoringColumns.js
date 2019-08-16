@@ -9,7 +9,7 @@ const detailMonitoringColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Date',
-                id: 'monitoring.label.createdAt',
+                id: 'main.label.date',
             }),
             className: 'small',
             accessor: 'created_at',
@@ -17,7 +17,7 @@ const detailMonitoringColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Réponse terrain',
+                defaultMessage: 'Field answer',
                 id: 'monitoring.label.fieldAnswer',
             }),
             accessor: 'result',
@@ -32,7 +32,7 @@ const detailMonitoringColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Réponse coordination',
+                defaultMessage: 'Coordination answer',
                 id: 'monitoring.label.coordinationAnswer',
             }),
             accessor: 'check_20_result',
@@ -47,7 +47,7 @@ const detailMonitoringColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Réponse central',
+                defaultMessage: 'Central answer',
                 id: 'monitoring.label.centralAnswer',
             }),
             accessor: 'check_30_result',
@@ -88,7 +88,7 @@ const detailMonitoringColumns = formatMessage => (
                                 imgPath={settings.original.media_url}
                                 smallPreview
                                 altText={formatMessage({
-                                    defaultMessage: 'Résultat test dépistage',
+                                    defaultMessage: 'Screening test result',
                                     id: 'main.screening.result',
                                 })}
                             />
@@ -97,8 +97,8 @@ const detailMonitoringColumns = formatMessage => (
                 return (
                     <a href={settings.original.media_url} onClick={() => window.open(settings.original.media_url)}>
                         {formatMessage({
-                            defaultMessage: 'Voir la vidéo',
-                            id: 'main.label.seeVidei',
+                            defaultMessage: 'See vidéo',
+                            id: 'main.label.seeVideo',
                         })}
                     </a>
                 );

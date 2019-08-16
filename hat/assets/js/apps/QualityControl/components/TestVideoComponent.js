@@ -20,7 +20,7 @@ class TestVideoComponent extends React.Component {
                         <h4>
                             <FormattedMessage
                                 id="quality.finalCheck"
-                                defaultMessage="Vérification finale"
+                                defaultMessage="Finale check"
                             />
                         </h4>
                     </section>
@@ -29,7 +29,7 @@ class TestVideoComponent extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.isClear"
-                            defaultMessage="Netteté"
+                            defaultMessage="Clearness"
                         />:
                     </div>
                     <div className="quality-radio">
@@ -40,7 +40,7 @@ class TestVideoComponent extends React.Component {
                             checked={isClear ? 'checked' : ''}
                             onChange={() => changeOption('isClear')}
                         />
-                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                        <FormattedMessage id="main.label.yes" defaultMessage="Yes" />
                     </div>
                     <div className="quality-radio">
                         <input
@@ -50,7 +50,7 @@ class TestVideoComponent extends React.Component {
                             checked={!isClear ? 'checked' : ''}
                             onChange={() => changeOption('isClear')}
                         />
-                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                        <FormattedMessage id="main.label.no" defaultMessage="No" />
                     </div>
                 </section>
 
@@ -58,7 +58,7 @@ class TestVideoComponent extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.search"
-                            defaultMessage="Recherche parasite au bon endroit"
+                            defaultMessage="Parasitic search in the right place"
                         />:
                     </div>
                     <div className="quality-radio">
@@ -69,7 +69,7 @@ class TestVideoComponent extends React.Component {
                             checked={isGoodPlace ? 'checked' : ''}
                             onChange={() => changeOption('isGoodPlace')}
                         />
-                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                        <FormattedMessage id="main.label.yes" defaultMessage="Yes" />
                     </div>
                     <div className="quality-radio">
                         <input
@@ -79,7 +79,7 @@ class TestVideoComponent extends React.Component {
                             checked={!isGoodPlace ? 'checked' : ''}
                             onChange={() => changeOption('isGoodPlace')}
                         />
-                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                        <FormattedMessage id="main.label.no" defaultMessage="No" />
                     </div>
                 </section>
 
@@ -89,7 +89,7 @@ class TestVideoComponent extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.confirm"
-                            defaultMessage="Confirmation vue trypanosome"
+                            defaultMessage="Trypanosome view confirmation"
                         />:
                     </div>
                     <div className="quality-radio">
@@ -100,7 +100,7 @@ class TestVideoComponent extends React.Component {
                             checked={isConfirmedCase ? 'checked' : ''}
                             onChange={() => changeOption('isConfirmedCase')}
                         />
-                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                        <FormattedMessage id="main.label.yes" defaultMessage="Yes" />
                     </div>
                     <div className="quality-radio">
                         <input
@@ -110,7 +110,7 @@ class TestVideoComponent extends React.Component {
                             checked={!isConfirmedCase ? 'checked' : ''}
                             onChange={() => changeOption('isConfirmedCase')}
                         />
-                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                        <FormattedMessage id="main.label.no" defaultMessage="No" />
                     </div>
                 </section>
 
@@ -118,7 +118,7 @@ class TestVideoComponent extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.otherParasites"
-                            defaultMessage="Autre parasite"
+                            defaultMessage="Other parasite"
                         />:
                     </div>
                     <div className="quality-radio">
@@ -129,7 +129,7 @@ class TestVideoComponent extends React.Component {
                             checked={hasOtherParasite ? 'checked' : ''}
                             onChange={() => changeOption('hasOtherParasite')}
                         />
-                        <FormattedMessage id="main.submit.yes" defaultMessage="Oui" />
+                        <FormattedMessage id="main.label.yes" defaultMessage="Yes" />
                     </div>
                     <div className="quality-radio">
                         <input
@@ -139,7 +139,7 @@ class TestVideoComponent extends React.Component {
                             checked={!hasOtherParasite ? 'checked' : ''}
                             onChange={() => changeOption('hasOtherParasite')}
                         />
-                        <FormattedMessage id="main.submit.no" defaultMessage="Non" />
+                        <FormattedMessage id="main.label.no" defaultMessage="No" />
                     </div>
                 </section>
             </div>);

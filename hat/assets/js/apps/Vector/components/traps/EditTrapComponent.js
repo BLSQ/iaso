@@ -17,15 +17,15 @@ import CatchesMap from './CatchesMap';
 const LOCAL_MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Infos',
-        id: 'vector.labels.infos',
+        id: 'main.label.infos',
     },
     catches: {
-        defaultMessage: 'Liste des déploiements',
-        id: 'vector.labels.catches',
+        defaultMessage: 'Catches list',
+        id: 'main.label.catchesList',
     },
     map: {
-        defaultMessage: 'Carte',
-        id: 'vector.labels.map',
+        defaultMessage: 'Map',
+        id: 'main.label.map',
     },
 });
 class EditTrapComponent extends Component {
@@ -89,7 +89,7 @@ class EditTrapComponent extends Component {
                 className={hidden ? 'hidden-modal' : ''}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.trap.title" defaultMessage="Piège" />:
+                    <FormattedMessage id="main.label.trap" defaultMessage="Trap" />:
                     {' '}{trap.name}
                 </div>
                 <section className="edit-modal large extra-extra">
@@ -130,11 +130,11 @@ class EditTrapComponent extends Component {
                                     <ul className="map__option__list legend">
                                         <li className="map__option__list__item">
                                             <i className="map__option__icon--site" />
-                                            <FormattedMessage id="vector.modale.catches.legend.trap" defaultMessage="Piège" />
+                                            <FormattedMessage id="main.label.trap" defaultMessage="Trap" />
                                         </li>
                                         <li className="map__option__list__item">
                                             <i className="map__option__icon--catches small" />
-                                            <FormattedMessage id="vector.modale.catches.legend.catches" defaultMessage="Déploiements" />
+                                            <FormattedMessage id="main.label.catches" defaultMessage="Catches" />
                                         </li>
                                     </ul>
                                 </div>
@@ -181,7 +181,7 @@ class EditTrapComponent extends Component {
                             onClick={() => this.props.toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Close" />
                         </button>
                         <button
                             disabled={
@@ -192,7 +192,7 @@ class EditTrapComponent extends Component {
                             onClick={() => saveTrap(trap)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="vector.label.savetrap" defaultMessage="Sauvegarder le piège" />
+                            <FormattedMessage id="vector.label.savetrap" defaultMessage="Save trap" />
                         </button>
                     </div>
                 </section>

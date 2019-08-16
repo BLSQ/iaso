@@ -27,24 +27,24 @@ const request = require('superagent');
 
 const MESSAGES = defineMessages({
     searchPlaceholder: {
-        defaultMessage: 'Taper ici pour chercher dans la liste de tous les villages',
+        defaultMessage: 'Tap here to search into all villages',
         id: 'search.placeholder.all',
     },
     searchNoResult: {
-        defaultMessage: 'Aucun village trouvé',
+        defaultMessage: 'No village found',
         id: 'search.result.none',
     },
     searchResult: {
-        defaultMessage: 'resultat(s)',
+        defaultMessage: 'result(s)',
         id: 'search.result',
     },
     searchMinChar: {
-        defaultMessage: 'Taper au moins 2 charactères',
+        defaultMessage: 'At least 2 characters',
         id: 'search.result.minChar',
     },
     villageNameLabel: {
-        defaultMessage: 'Nom',
-        id: 'search.result.villageName',
+        defaultMessage: 'Name',
+        id: 'main.label.name',
     },
     populationLabel: {
         defaultMessage: 'Pop.',
@@ -153,7 +153,7 @@ export class Locator extends Component {
                             </div>
                             <div>
                                 <div className="locator-title">
-                                    <FormattedMessage id="locator.label.search" defaultMessage="Recherche du village" />
+                                    <FormattedMessage id="locator.label.search" defaultMessage="Search a village" />
                                 </div>
                                 <Filters
                                     isClearable
@@ -198,7 +198,7 @@ export class Locator extends Component {
                                                 <p>
                                                     <FormattedMessage
                                                         id="microplanning.tooltip.population.source"
-                                                        defaultMessage="Source de la population"
+                                                        defaultMessage="Population source"
                                                     />
                                                     {': '}{this.state.villageDetail.population_source}
                                                 </p>
@@ -208,7 +208,7 @@ export class Locator extends Component {
                                                 <p>
                                                     <FormattedMessage
                                                         id="microplanning.tooltip.population.year"
-                                                        defaultMessage="Année relevé population"
+                                                        defaultMessage="Year surveyed population"
                                                     />
                                                     {': '}{this.state.villageDetail.population_year}
                                                 </p>
@@ -224,7 +224,7 @@ export class Locator extends Component {
                                                 }}
                                             >
                                                 <i className="fa fa-save" />
-                                                <FormattedMessage id="locator.label.save" defaultMessage="Associer le village au cas" />
+                                                <FormattedMessage id="locator.label.save" defaultMessage="Link village to case" />
                                             </button>
                                         </div>}
                                     <button
@@ -234,13 +234,13 @@ export class Locator extends Component {
                                         }}
                                     >
                                         <i className="fa fa-arrow-right" />
-                                        <FormattedMessage id="locator.label.not_found" defaultMessage="Non trouvé" />
+                                        <FormattedMessage id="main.label.notfound" defaultMessage="Not found" />
                                     </button>
                                 </div>
                             </div>
                             <div>
                                 <div className="locator-title">
-                                    <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Recherche textuelle (par village)" />
+                                    <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Text search (by village)" />
                                 </div>
                                 <Search
                                     placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
@@ -265,8 +265,8 @@ export class Locator extends Component {
                         this.props.load.loading &&
                         <div className="widget__content">
                             <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Chargement en cours',
-                                id: 'microplanning.labels.loading',
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
                             })}
                             />
                         </div>

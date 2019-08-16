@@ -25,7 +25,7 @@ const MESSAGES = defineMessages({
     },
     loading: {
         defaultMessage: 'Loading',
-        id: 'DataMonitoring.labels.loading',
+        id: 'main.label.loading',
     },
 });
 
@@ -53,7 +53,7 @@ export class DataMonitoring extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="DataMonitoring.title"
+                                id="dataMonitoring.title"
                                 defaultMessage="Monitorage de données"
                             />
                         </h2>

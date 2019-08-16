@@ -5,15 +5,15 @@ const listLocatorColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Année du formulaire',
-                id: 'locator.label.form_year',
+                defaultMessage: 'Form year',
+                id: 'main.label.form_year',
             }),
             accessor: 'form_year',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Equipe',
-                id: 'microplanning.label.team',
+                defaultMessage: 'Team',
+                id: 'main.label.team',
             }),
             accessor: 'mobile_unit',
             Cell: settings => (
@@ -26,8 +26,8 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Equipe normalisée',
-                id: 'microplanning.label.normalized_team',
+                defaultMessage: 'Normalized team',
+                id: 'main.label.normalized_team',
             }),
             accessor: 'normalized_team_name',
             Cell: settings => (
@@ -40,15 +40,15 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'N° de formulaire',
-                id: 'locator.label.form_number',
+                defaultMessage: 'Form number',
+                id: 'main.label.form_number',
             }),
             accessor: 'form_number',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Province',
-                id: 'microplanning.tooltip.province',
+                id: 'main.label.province',
             }),
             accessor: 'province',
             sortable: false,
@@ -102,7 +102,7 @@ const listLocatorColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Village',
-                id: 'microplanning.tooltip.village',
+                id: 'main.label.village',
             }),
             accessor: 'location.village',
         },

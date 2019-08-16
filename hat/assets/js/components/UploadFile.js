@@ -7,11 +7,11 @@ const request = require('superagent');
 
 const MESSAGES = defineMessages({
     'no-file': {
-        defaultMessage: 'Aucun fichier sélectionné',
+        defaultMessage: 'No file choosen',
         id: 'uploadFile.labels.no-file',
     },
     'click-to-send': {
-        defaultMessage: 'Cliquez sur envoyer',
+        defaultMessage: 'Click to send',
         id: 'uploadFile.labels.click-to-send',
     },
 });
@@ -148,7 +148,7 @@ class UploadfFle extends React.Component {
                         className="button--add"
                         disabled={isUploadInProgress}
                     >
-                        <FormattedMessage id="uploadFile.label.browse" defaultMessage="Ouvrir" />
+                        <FormattedMessage id="uploadFile.label.browse" defaultMessage="Browse" />
                     </button>
                 </div>
                 {
@@ -160,7 +160,7 @@ class UploadfFle extends React.Component {
                             onClick={() => this.handleUpload()}
                         >
                             <i className="fa fa-upload" />
-                            <FormattedMessage id="uploadFile.label.send" defaultMessage="Envoyer" />
+                            <FormattedMessage id="uploadFile.label.send" defaultMessage="Send" />
                         </button>
                         <button
                             className="button--danger"
@@ -168,7 +168,7 @@ class UploadfFle extends React.Component {
                             onClick={() => this.resetUpload(true)}
                         >
                             <i className="fa fa-times" />
-                            <FormattedMessage id="uploadFile.label.reset" defaultMessage="Tout effacer" />
+                            <FormattedMessage id="uploadFile.label.reset" defaultMessage="Erase all" />
                         </button>
                     </span>
                 }
@@ -208,20 +208,20 @@ class UploadfFle extends React.Component {
                 {
                     hasErrors &&
                     <div className="error">
-                        <FormattedMessage id="uploadFile.label.error" defaultMessage="Une erreur est survenue pendant l'envoi du fichier" />
+                        <FormattedMessage id="uploadFile.label.error" defaultMessage="An error occured while uploading files" />
                     </div>
                 }
                 {
                     isUploaded &&
                     <section>
                         <div className="success">
-                            <FormattedMessage id="uploadFile.label.success" defaultMessage="Fichier(s) correctement envoyé(s)" />:
+                            <FormattedMessage id="uploadFile.label.success" defaultMessage="File(s) correctly send" />:
                         </div>
                         <ul className="file-list">
                             {
                                 resultsList.map(r => (
                                     <li key={r.gpx_import_id}>
-                                        {r.fileName}: {r.count}{' '}<FormattedMessage id="uploadFile.label.points-imported" defaultMessage="point(s) importé(s)" />
+                                        {r.fileName}: {r.count}{' '}<FormattedMessage id="uploadFile.label.points-imported" defaultMessage="point(s) imported" />
                                     </li>))
                             }
                         </ul>

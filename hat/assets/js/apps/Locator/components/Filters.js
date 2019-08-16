@@ -15,7 +15,7 @@ class Filters extends React.Component {
             <div>
                 <div className="locator-filter">
                     <div className="locator-subtitle">
-                        <FormattedMessage id="locator.label.provinces" defaultMessage="Provinces" />
+                        <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
                     </div>
                     {
                         filters.provinces &&
@@ -35,7 +35,7 @@ class Filters extends React.Component {
                 {filters.zones && filters.zones.length !== 0 &&
                     <div className="locator-filter">
                         <div className="locator-subtitle">
-                            <FormattedMessage id="locator.label.zones" defaultMessage="Zone de santé" />
+                            <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
                         </div>
                         <div>
                             <Select
@@ -55,7 +55,7 @@ class Filters extends React.Component {
                 {filters.areas && filters.areas.length !== 0 &&
                     <div className="locator-filter">
                         <div className="locator-subtitle">
-                            <FormattedMessage id="locator.label.areas" defaultMessage="Aire de santé" />
+                            <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
                         </div>
                         <div>
                             <Select
@@ -79,7 +79,7 @@ class Filters extends React.Component {
                     <div>
                         <div className="locator-filter">
                             <div className="locator-subtitle">
-                                <FormattedMessage id="locator.label.village" defaultMessage="Village" />
+                                <FormattedMessage id="main.label.village" defaultMessage="Village" />
                             </div>
                             <Select
                                 multi={this.props.isMultiSelect}
@@ -91,7 +91,7 @@ class Filters extends React.Component {
                                 options={filters.villages.map(village =>
                                     ({ label: village.name, value: village.id }))}
                                 onChange={value => this.props.selectVillage(value)}
-                                noResultsText={<FormattedMessage id="locator.label.noresult" defaultMessage="Aucun village trouvé" />}
+                                noResultsText={<FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />}
                             />
                         </div>
                     </div>
@@ -100,7 +100,7 @@ class Filters extends React.Component {
                     filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId &&
                     <div className="locator-filter">
                         <div className="locator-subtitle no-result">
-                            <FormattedMessage id="locator.label.noresult" defaultMessage="Aucun village trouvé" />
+                            <FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />
                         </div>
                     </div>
                 }

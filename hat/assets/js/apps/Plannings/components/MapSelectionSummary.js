@@ -82,7 +82,7 @@ class MapSelectionSummary extends Component {
                 <div className="map__selection__summary__item tooltip--warning">
                     <FormattedMessage
                         id="microplanning.selected.population"
-                        defaultMessage="Population estimée"
+                        defaultMessage="Estimated population"
                     />
                     <span className="map__selection__summary__number">{population}</span>
                 </div>

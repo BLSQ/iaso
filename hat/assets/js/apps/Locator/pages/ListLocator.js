@@ -58,7 +58,6 @@ export class ListLocator extends Component {
     }
 
     onSearch() {
-        console.log('search');
         this.setState({
             tableUrl: this.getEndpointUrl(),
         });
@@ -166,8 +165,8 @@ export class ListLocator extends Component {
                         this.props.load.loading &&
                         <div>
                             <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Chargement en cours',
-                                id: 'microplanning.labels.loading',
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
                             })}
                             />
                         </div>

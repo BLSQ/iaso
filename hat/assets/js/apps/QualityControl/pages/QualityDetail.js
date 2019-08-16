@@ -95,8 +95,8 @@ class QualityDetail extends React.Component {
                 {
                     (loading || !userLevel) &&
                     <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }

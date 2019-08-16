@@ -4,12 +4,12 @@ import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 
 const MESSAGES = defineMessages({
     withCluster: {
-        id: 'vactor.map.with',
-        defaultMessage: 'Avec',
+        id: 'main.label.with',
+        defaultMessage: 'With',
     },
     withOutCluster: {
-        id: 'vactor.map.without',
-        defaultMessage: 'Sans',
+        id: 'main.label.without',
+        defaultMessage: 'Without',
     },
 });
 

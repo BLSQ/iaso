@@ -7,8 +7,8 @@ import Select from 'react-select';
 
 const MESSAGES = defineMessages({
     none: {
-        defaultMessage: 'Aucun',
-        id: 'vector.labels.none',
+        defaultMessage: 'None',
+        id: 'main.label.none',
     },
 });
 
@@ -34,7 +34,7 @@ class TrapInfos extends PureComponent {
                         >
                             <FormattedMessage
                                 id="main.label.name"
-                                defaultMessage="Nom"
+                                defaultMessage="Name"
                             />:
                         </label>
                         <input
@@ -69,7 +69,7 @@ class TrapInfos extends PureComponent {
                             className="filter__container__select__label select-label"
                         >
                             <FormattedMessage
-                                id="vector.label.habitat"
+                                id="main.label.habitat"
                                 defaultMessage="Habitat"
                             />:
                         </label>
@@ -84,7 +84,7 @@ class TrapInfos extends PureComponent {
                                 ({
                                     label: formatMessage({
                                         defaultMessage: h[1],
-                                        id: h[0],
+                                        id: `vectors.label.${h[0]}`,
                                     }),
                                     value: h[0],
                                 }))}
@@ -96,8 +96,8 @@ class TrapInfos extends PureComponent {
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
-                                id="verctor.label.selected"
-                                defaultMessage="Piège sélectionné"
+                                id="vector.labels.is_selected"
+                                defaultMessage="Selected trap"
                             />:
                         </label>
                         <section className="check-box-container">
@@ -114,8 +114,8 @@ class TrapInfos extends PureComponent {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.yes"
-                                    defaultMessage="Oui"
+                                    id="main.label.yes"
+                                    defaultMessage="Yes"
                                 />
                             </label>
                             <input
@@ -131,8 +131,8 @@ class TrapInfos extends PureComponent {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.no"
-                                    defaultMessage="Non"
+                                    id="main.label.no"
+                                    defaultMessage="No"
                                 />
                             </label>
                         </section>
@@ -142,8 +142,8 @@ class TrapInfos extends PureComponent {
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
-                                id="verctor.label.ignore"
-                                defaultMessage="Ignorer"
+                                id="main.label.ignore"
+                                defaultMessage="Ignore"
                             />:
                         </label>
                         <section className="check-box-container">
@@ -160,8 +160,8 @@ class TrapInfos extends PureComponent {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.yes"
-                                    defaultMessage="Oui"
+                                    id="main.label.yes"
+                                    defaultMessage="Yes"
                                 />
                             </label>
                             <input
@@ -177,8 +177,8 @@ class TrapInfos extends PureComponent {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.no"
-                                    defaultMessage="Non"
+                                    id="main.label.no"
+                                    defaultMessage="No"
                                 />
                             </label>
                         </section>
@@ -196,7 +196,7 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.site"
+                                        id="main.label.site"
                                         defaultMessage="Site"
                                     />
                                 </th>
@@ -224,8 +224,8 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.creation"
-                                        defaultMessage="Création"
+                                        id="main.label.created_at"
+                                        defaultMessage="Created at"
                                     />
                                 </th>
                                 <td>
@@ -235,8 +235,8 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.user"
-                                        defaultMessage="Utilisateur"
+                                        id="main.label.user"
+                                        defaultMessage="user"
                                     />
                                 </th>
                                 <td>
@@ -246,7 +246,7 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.latitude"
+                                        id="main.label.latitude"
                                         defaultMessage="Latitude"
                                     />
                                 </th>
@@ -257,7 +257,7 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.longitude"
+                                        id="main.label.longitude"
                                         defaultMessage="Longitude"
                                     />
                                 </th>
@@ -268,7 +268,7 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.altitude"
+                                        id="main.label.altitude"
                                         defaultMessage="Altitude"
                                     />
                                 </th>
@@ -279,8 +279,8 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.accuracy"
-                                        defaultMessage="Précision"
+                                        id="main.label.accuracy"
+                                        defaultMessage="Accuracy"
                                     />
                                 </th>
                                 <td>{trap.accuracy ? trap.accuracy : '--'}</td>
@@ -288,7 +288,7 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.source"
+                                        id="main.label.source"
                                         defaultMessage="Source"
                                     />
                                 </th>
@@ -297,8 +297,8 @@ class TrapInfos extends PureComponent {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.catches"
-                                        defaultMessage="Déploiements"
+                                        id="main.label.catches"
+                                        defaultMessage="Catches"
                                     />
                                 </th>
                                 <td>{trap.catches_count}</td>
@@ -308,8 +308,8 @@ class TrapInfos extends PureComponent {
                                 <tr>
                                     <th>
                                         <FormattedMessage
-                                            id="vector.label.male"
-                                            defaultMessage="Males"
+                                            id="vector.catchs.male"
+                                            defaultMessage="Male"
                                         />
                                     </th>
                                     <td>{trap.catches_count_male}</td>
@@ -320,8 +320,8 @@ class TrapInfos extends PureComponent {
                                 <tr>
                                     <th>
                                         <FormattedMessage
-                                            id="vector.label.female"
-                                            defaultMessage="Femelles"
+                                            id="vector.catchs.female"
+                                            defaultMessage="Female"
                                         />
                                     </th>
                                     <td>{trap.catches_count_female}</td>
@@ -332,8 +332,8 @@ class TrapInfos extends PureComponent {
                                 <tr>
                                     <th>
                                         <FormattedMessage
-                                            id="vector.label.unknown"
-                                            defaultMessage="Inconnus"
+                                            id="main.label.unknowns"
+                                            defaultMessage="Unknown"
                                         />
                                     </th>
                                     <td>{trap.catches_count_unknown}</td>

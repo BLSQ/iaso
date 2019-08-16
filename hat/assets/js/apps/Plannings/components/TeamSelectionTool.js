@@ -161,7 +161,7 @@ class TeamSelectionTool extends Component {
                                 />
                             </div>
                             <div>
-                                <FormattedMessage id="microplanning.label.team" defaultMessage="Unité" />
+                                <FormattedMessage id="microplanning.label.team" defaultMessage="Team" />
 
                                 <Select
                                     disabled={!this.props.params.workzone_id}

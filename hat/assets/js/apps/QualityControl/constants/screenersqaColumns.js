@@ -6,8 +6,8 @@ const screenersColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'monitoring.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             accessor: 'tester__user__last_name',
             className: 'small',
@@ -16,7 +16,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Coordination',
-                id: 'monitoring.label.coordination',
+                id: 'main.label.coordination',
             }),
             className: 'small',
             accessor: 'tester__team__coordination__name',
@@ -25,7 +25,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Total',
-                id: 'monitoring.label.picturesTotal',
+                id: 'main.label.totalMin',
             }),
             accessor: 'test_pictures',
             className: 'small',
@@ -39,8 +39,8 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vérifiés',
-                id: 'monitoring.label.checked',
+                defaultMessage: 'Checked',
+                id: 'main.label.checked',
             }),
             accessor: 'checked',
             className: 'small',
@@ -73,8 +73,8 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'A problème',
-                id: 'monitoring.label.checkedInvalid',
+                defaultMessage: 'With problem',
+                id: 'monitoring.label.withProblem',
             }),
             accessor: 'with_problem',
             className: 'small',
@@ -92,7 +92,7 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Illisible',
+                defaultMessage: 'Not readable',
                 id: 'monitoring.label.checked_unreadable',
             }),
             accessor: 'checked_unreadable',
@@ -109,7 +109,7 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Invalide',
+                defaultMessage: 'Invalid',
                 id: 'monitoring.label.checkedInvalid',
             }),
             accessor: 'checked_invalid',

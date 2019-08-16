@@ -19,7 +19,7 @@ const gpsImportsColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Utilisateur',
+                defaultMessage: 'user',
                 id: 'main.label.user',
             }),
             accessor: 'user__username',
@@ -42,7 +42,7 @@ const gpsImportsColumns = formatMessage => (
                 <section>
                     {`${settings.original.count} `}
                     {formatMessage({
-                        defaultMessage: 'nouveau(x) écran(s)',
+                        defaultMessage: 'new target(s)',
                         id: 'vector.sync.label.newTargets',
                     })}
                 </section>

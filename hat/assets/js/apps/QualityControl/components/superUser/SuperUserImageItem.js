@@ -18,13 +18,13 @@ class SuperUserImageItem extends React.Component {
                 <h4>
                     {title}
                     <span className="date">
-                        <FormattedMessage id="quality.date" defaultMessage="Date" />:
+                        <FormattedMessage id="main.label.date" defaultMessage="Date" />:
                         {` ${moment(currentTest.updated_at).format('DD-MM-YYYY')}`}
                     </span>
                 </h4>
                 <div>
                     <div className="quality-label inline">
-                        <FormattedMessage id="quality.user" defaultMessage="Utilisateur" />:
+                        <FormattedMessage id="main.label.user" defaultMessage="User" />:
                     </div>
                     <span>
                         {currentTest.validator.firstName} {' '}
@@ -35,8 +35,8 @@ class SuperUserImageItem extends React.Component {
                 <div>
                     <div className="quality-label inline">
                         <FormattedMessage
-                            id="quality.results"
-                            defaultMessage="Résultat"
+                            id="qmain.label.result"
+                            defaultMessage="Result"
                         />:
                     </div>
                     <span>
@@ -48,8 +48,8 @@ class SuperUserImageItem extends React.Component {
                     <div className="comment-container">
                         <div className="quality-label inline">
                             <FormattedMessage
-                                id="quality.comment"
-                                defaultMessage="Commentaire"
+                                id="main.label.comment"
+                                defaultMessage="Comment"
                             />:
                         </div>
                         <span>

@@ -3,87 +3,87 @@ import L from 'leaflet';
 
 const MESSAGES = defineMessages({
     cancel: {
-        defaultMessage: 'Annuler',
+        defaultMessage: 'Cancel',
         id: 'map.draw.label.cancel',
     },
     finish: {
-        defaultMessage: 'Arrêter',
+        defaultMessage: 'Stop',
         id: 'map.draw.label.finish',
     },
     undo: {
-        defaultMessage: 'Revenir en arrière',
+        defaultMessage: 'Back',
         id: 'map.draw.label.undo',
     },
     polygon: {
-        defaultMessage: 'Dessiner un polygône',
+        defaultMessage: 'Draw a polygon',
         id: 'map.draw.label.polygon',
     },
     polygonTooltipStart: {
-        defaultMessage: 'Cliquez pour commencer à dessiner une forme',
+        defaultMessage: 'Click here to start draw a shape',
         id: 'map.draw.label.polygonTooltipStart',
     },
     polygonTooltipCont: {
-        defaultMessage: 'Cliquez pour continuer à dessiner la forme',
+        defaultMessage: 'Click to continue draw a shape',
         id: 'map.draw.label.polygonTooltipCont',
     },
     polygonTooltipEnd: {
-        defaultMessage: 'Cliquez sur le premier point pour finir la forme',
+        defaultMessage: 'Click on the first point to finish the shape',
         id: 'map.draw.label.polygonTooltipEnd',
     },
     rectangle: {
-        defaultMessage: 'Dessiner un rectangle',
+        defaultMessage: 'Draw a rectangle',
         id: 'map.draw.label.rectangle',
     },
     rectangleTooltip: {
-        defaultMessage: 'Cliquez et bougez pour dessiner un rectangle ',
+        defaultMessage: 'Click and move to draw a rectangle',
         id: 'map.draw.label.rectangleTooltip',
     },
     circle: {
-        defaultMessage: 'Dessiner un cercle',
+        defaultMessage: 'Draw a circle',
         id: 'map.draw.label.circle',
     },
     circleTooltip: {
-        defaultMessage: 'Cliquez et bougez pour dessiner un cercle ',
+        defaultMessage: 'Click and move to draw a circle ',
         id: 'map.draw.label.circleTooltip',
     },
     save: {
-        defaultMessage: 'Sauver',
+        defaultMessage: 'Save',
         id: 'map.draw.label.save',
     },
     clearAll: {
-        defaultMessage: 'Tout effacer',
+        defaultMessage: 'Clear all',
         id: 'map.draw.label.clearAll',
     },
     edit: {
-        defaultMessage: 'Editer',
+        defaultMessage: 'Edit',
         id: 'map.draw.label.edit',
     },
     editDisabled: {
-        defaultMessage: 'Rien à éditer',
+        defaultMessage: 'Nothing to edit',
         id: 'map.draw.label.editDisabled',
     },
     clear: {
-        defaultMessage: 'Effacer',
+        defaultMessage: 'Clear',
         id: 'map.draw.label.clear',
     },
     removeDisabled: {
-        defaultMessage: 'Rien à effacer',
+        defaultMessage: 'Nothing to clear',
         id: 'map.draw.label.removeDisabled',
     },
     editTooltip1: {
-        defaultMessage: 'Cliquez pour modifier les formes',
+        defaultMessage: 'Click to edit shapes',
         id: 'map.draw.label.editTooltip1',
     },
     editTooltip2: {
-        defaultMessage: 'Cliquez sur annuler pour effacer les changements',
+        defaultMessage: 'Click on cancel to reset changes',
         id: 'map.draw.label.editTooltip2',
     },
     removeTooltip: {
-        defaultMessage: 'Cliquez sur une forme pour l\'effacer',
+        defaultMessage: 'Click on a shape o delete it',
         id: 'map.draw.label.removeTooltip',
     },
     radius: {
-        defaultMessage: 'Rayon',
+        defaultMessage: 'Radius',
         id: 'map.draw.label.radius',
     },
 });

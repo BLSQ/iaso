@@ -30,7 +30,7 @@ export const baseUrl = 'monitoring';
 
 const MESSAGES = defineMessages({
     screener: {
-        defaultMessage: 'Stats Dép.',
+        defaultMessage: 'Stats Screener',
         id: 'management.monitoring.screener',
     },
     confirmer: {
@@ -168,8 +168,8 @@ class Monitoring extends Component {
                 {
                     this.props.load.loading && (
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     )
@@ -177,7 +177,7 @@ class Monitoring extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.monitoring.header.title" defaultMessage="Monitorage" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="datas.monitoring.header.title" defaultMessage="Monitoring" /></h2>
                     </div>
                     <div className="widget__header widget__content--quarter">
                         <PeriodSelectorComponent
@@ -202,7 +202,7 @@ class Monitoring extends Component {
                                         baseUrl={baseUrl}
                                         filters={filtersValidators(profiles, {
                                             id: 'quality.label.validator',
-                                            defaultMessage: 'Validateur',
+                                            defaultMessage: 'Validato',
                                         })}
                                     />
                                 </div>

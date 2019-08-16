@@ -6,8 +6,8 @@ const screenersColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'monitoring.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             accessor: 'tester__user__last_name',
             className: 'small',
@@ -16,7 +16,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Coordination',
-                id: 'monitoring.label.coordination',
+                id: 'main.label.coordination',
             }),
             className: 'small',
             accessor: 'tester__team__coordination__name',
@@ -24,8 +24,8 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Tests de dépistage',
-                id: 'monitoring.label.screening_count',
+                defaultMessage: 'Screening tests',
+                id: 'statspage.screening.header.results',
             }),
             accessor: 'screening_count',
             className: 'small',

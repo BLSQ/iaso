@@ -40,7 +40,7 @@ class CatchDetailComponent extends Component {
             const problemItem = problems.find(p => p[0] === catchItem.problem);
             problemLabel = problemItem ? formatMessage({
                 defaultMessage: problemItem[1],
-                id: problemItem[0],
+                id: `vectors.label.${problemItem[0]}`,
             }) : '--';
         }
         return (
@@ -51,7 +51,7 @@ class CatchDetailComponent extends Component {
                 overlayClassName="transparent-overlay"
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.catch.title" defaultMessage="Déploiement" />
+                    <FormattedMessage id="vector.modale.catch.title" defaultMessage="Catch" />
                 </div>
                 <section className="edit-modal large extra">
                     <section className="half-container">
@@ -67,7 +67,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.site"
+                                                id="main.label.site"
                                                 defaultMessage="Site"
                                             />
                                         </th>
@@ -95,8 +95,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.creation"
-                                                defaultMessage="Création"
+                                                id="main.label.created_at"
+                                                defaultMessage="Created at"
                                             />
                                         </th>
                                         <td>
@@ -107,7 +107,7 @@ class CatchDetailComponent extends Component {
                                         <th>
                                             <FormattedMessage
                                                 id="vector.label.collecte"
-                                                defaultMessage="Dernière collecte"
+                                                defaultMessage="Last collection"
                                             />
                                         </th>
                                         <td>
@@ -117,7 +117,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.latitude"
+                                                id="main.label.latitude"
                                                 defaultMessage="Latitude"
                                             />
                                         </th>
@@ -128,7 +128,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.longitude"
+                                                id="main.label.longitude"
                                                 defaultMessage="Longitude"
                                             />
                                         </th>
@@ -139,7 +139,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.altitude"
+                                                id="main.label.altitude"
                                                 defaultMessage="Altitude"
                                             />
                                         </th>
@@ -150,7 +150,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.accuracy"
+                                                id="main.label.accuracy"
                                                 defaultMessage="Précision"
                                             />
                                         </th>
@@ -165,8 +165,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.male_count"
-                                                defaultMessage="Mâles"
+                                                id="vector.catchs.male_count"
+                                                defaultMessage="Males"
                                             />
                                         </th>
                                         <td>{catchItem.male_count}</td>
@@ -174,8 +174,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.female_count"
-                                                defaultMessage="Femelles"
+                                                id="vector.catchs.female_count"
+                                                defaultMessage="Females"
                                             />
                                         </th>
                                         <td>{catchItem.female_count}</td>
@@ -183,8 +183,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.unknown_count"
-                                                defaultMessage="Inconnus"
+                                                id="main.label.unknowns"
+                                                defaultMessage="Unknown"
                                             />
                                         </th>
                                         <td>{catchItem.unknown_count}</td>
@@ -192,8 +192,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.remarks"
-                                                defaultMessage="Remarque"
+                                                id="main.label.remarks"
+                                                defaultMessage="Remark"
                                             />
                                         </th>
                                         <td>{catchItem.remarks}</td>
@@ -201,8 +201,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.problem"
-                                                defaultMessage="Problème"
+                                                id="main.label.problem"
+                                                defaultMessage="Problem"
                                             />
                                         </th>
                                         <td>{problemLabel}</td>
@@ -210,8 +210,8 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.username"
-                                                defaultMessage="Utilisateur"
+                                                id="main.label.user"
+                                                defaultMessage="User"
                                             />
                                         </th>
                                         <td>{catchItem.username}</td>
@@ -219,7 +219,7 @@ class CatchDetailComponent extends Component {
                                     <tr>
                                         <th>
                                             <FormattedMessage
-                                                id="vector.label.source"
+                                                id="main.label.source"
                                                 defaultMessage="Source"
                                             />
                                         </th>
@@ -236,7 +236,7 @@ class CatchDetailComponent extends Component {
                             onClick={() => toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Close" />
                         </button>
                     </div>
                 </section>

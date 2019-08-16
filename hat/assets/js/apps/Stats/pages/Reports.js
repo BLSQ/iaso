@@ -78,7 +78,7 @@ export class Report extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="Report.title"
+                                id="report.title"
                                 defaultMessage="Rapport"
                             />
                         </h2>

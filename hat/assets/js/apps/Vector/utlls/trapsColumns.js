@@ -12,7 +12,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Création',
+                defaultMessage: 'Created at',
                 id: 'main.label.created_at',
             }),
             accessor: 'created_at',
@@ -27,7 +27,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
+                defaultMessage: 'Name',
                 id: 'main.label.name',
             }),
             className: 'small',
@@ -52,7 +52,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Déploiements',
+                defaultMessage: 'Catches',
                 id: 'main.label.catches',
             }),
             className: 'small',
@@ -61,7 +61,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Mouches',
-                id: 'main.label.catches_count_total',
+                id: 'main.label.flies',
             }),
             accessor: 'catches_count_total',
             className: 'small',
@@ -76,7 +76,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Utilisateur',
+                defaultMessage: 'User',
                 id: 'main.label.user',
             }),
             className: 'small',
@@ -96,7 +96,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
                         {
                             currentHabitat ?
                                 formatMessage({
-                                    id: currentHabitat[0],
+                                    id: `vectors.label.${currentHabitat[0]}`,
                                     defaultMessage: currentHabitat[1],
                                 }) :
                                 formatMessage(messages.unknown)
@@ -120,7 +120,7 @@ const trapsColumns = (formatMessage, messages, habitats, getDetail) => (
                         onClick={() => getDetail(settings.original.id, 'traps', 'showEditTrapsModale')}
                     >
                         <i className="fa fa-pencil-square-o" />
-                        <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                        <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                     </button>
                 </section>
             ),

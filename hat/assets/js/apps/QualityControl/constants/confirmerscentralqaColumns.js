@@ -6,8 +6,8 @@ const screenersColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'monitoring.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             accessor: 'tester__user__last_name',
             className: 'small',
@@ -16,7 +16,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Coordination',
-                id: 'monitoring.label.coordination',
+                id: 'main.label.coordination',
             }),
             className: 'small',
             accessor: 'tester__team__coordination__name',
@@ -25,7 +25,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Videos',
-                id: 'monitoring.label.videos',
+                id: 'main.label.videos',
             }),
             accessor: 'confirmation_video_count',
             className: 'small',
@@ -41,8 +41,8 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vérifiés',
-                id: 'monitoring.label.checked',
+                defaultMessage: 'Checked',
+                id: 'main.label.checked',
             }),
             accessor: 'checked',
             className: 'small',
@@ -75,7 +75,7 @@ const screenersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: '= terrain',
+                defaultMessage: '= field',
                 id: 'monitoring.label.coordmatch',
             }),
             accessor: 'checked_ok',
@@ -93,7 +93,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: '<> coord.',
-                id: 'monitoring.label.centralmatch',
+                id: 'monitoring.label.notcentralmatch',
             }),
             accessor: 'checked_ko_central',
             className: 'small',
@@ -110,7 +110,7 @@ const screenersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: '<> terrain',
-                id: 'monitoring.label.coordmatch',
+                id: 'monitoring.label.notcoordmatch',
             }),
             accessor: 'checked_ko',
             className: 'small',

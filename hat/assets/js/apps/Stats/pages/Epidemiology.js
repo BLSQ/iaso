@@ -27,7 +27,7 @@ const MESSAGES = defineMessages({
     },
     loading: {
         defaultMessage: 'Loading',
-        id: 'Epidemiology.labels.loading',
+        id: 'main.label.loading',
     },
 });
 
@@ -104,7 +104,7 @@ export class Epidemiology extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="Epidemiology.title"
+                                id="epidemiology.title"
                                 defaultMessage="Epidemiology"
                             />
                         </h2>

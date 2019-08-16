@@ -60,8 +60,8 @@ class SiteInfos extends Component {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.creation"
-                                        defaultMessage="Création"
+                                        id="main.label.created_at"
+                                        defaultMessage="Created at"
                                     />
                                 </th>
                                 <td>
@@ -71,7 +71,7 @@ class SiteInfos extends Component {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.latitude"
+                                        id="main.label.latitude"
                                         defaultMessage="Latitude"
                                     />
                                 </th>
@@ -82,7 +82,7 @@ class SiteInfos extends Component {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.longitude"
+                                        id="main.label.longitude"
                                         defaultMessage="Longitude"
                                     />
                                 </th>
@@ -93,7 +93,7 @@ class SiteInfos extends Component {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.altitude"
+                                        id="main.label.altitude"
                                         defaultMessage="Altitude"
                                     />
                                 </th>
@@ -104,8 +104,8 @@ class SiteInfos extends Component {
                             <tr>
                                 <th>
                                     <FormattedMessage
-                                        id="vector.label.accuracy"
-                                        defaultMessage="Précision"
+                                        id="main.label.accuracy"
+                                        defaultMessage="Accuracy"
                                     />
                                 </th>
                                 <td>{site.accuracy ? site.accuracy : '--'}</td>
@@ -119,8 +119,8 @@ class SiteInfos extends Component {
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
-                                id="verctor.label.ignore"
-                                defaultMessage="Ignorer"
+                                id="main.label.ignore"
+                                defaultMessage="Ignore"
                             />:
                         </label>
                         <section className="check-box-container">
@@ -137,8 +137,8 @@ class SiteInfos extends Component {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.yes"
-                                    defaultMessage="Oui"
+                                    id="main.label.yes"
+                                    defaultMessage="Yes"
                                 />
                             </label>
                             <input
@@ -154,8 +154,8 @@ class SiteInfos extends Component {
                                 className="checkbox-label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.no"
-                                    defaultMessage="Non"
+                                    id="main.label.no"
+                                    defaultMessage="No"
                                 />
                             </label>
                         </section>

@@ -59,7 +59,7 @@ function OrgUnitsFiltersComponent(props) {
                         color="primary"
                         onClick={onSearch}
                     >
-                        <FormattedMessage id="iaso.search" defaultMessage="Rechercher" />
+                        <FormattedMessage id="iaso.search" defaultMessage="Search" />
                     </Button>
                 </Grid>
             </Grid>

@@ -15,11 +15,11 @@ import TabsComponent from '../../../components/TabsComponent';
 const MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Informations',
-        id: 'management.infos',
+        id: 'main.label.informations',
     },
     localisation: {
         defaultMessage: 'Localisation',
-        id: 'management.localisation',
+        id: 'main.label.location',
     },
 });
 let timerSuccess;
@@ -221,7 +221,7 @@ class VillageModale extends Component {
                             onClick={() => this.props.saveVillage(this.state.village)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveVillage" defaultMessage="Sauvegarder le village" />
+                            <FormattedMessage id="management.label.saveVillage" defaultMessage="Save village" />
                         </button>
                     </div>
                 </section>

@@ -1,18 +1,18 @@
 const customTableTranslations = formatMessage => ({
     previousText: formatMessage({
-        defaultMessage: 'Précédent',
+        defaultMessage: 'Previous',
         id: 'table.previous',
     }),
     nextText: formatMessage({
-        defaultMessage: 'Suivant',
+        defaultMessage: 'Next',
         id: 'table.next',
     }),
     loadingText: formatMessage({
-        defaultMessage: 'Chargement...',
+        defaultMessage: 'Loading...',
         id: 'table.loading',
     }),
     noDataText: formatMessage({
-        defaultMessage: 'Aucun résultat',
+        defaultMessage: 'No result',
         id: 'table.noResult',
     }),
     pageText: formatMessage({
@@ -20,11 +20,11 @@ const customTableTranslations = formatMessage => ({
         id: 'table.page',
     }),
     ofText: formatMessage({
-        defaultMessage: 'de',
+        defaultMessage: 'of',
         id: 'table.of',
     }),
     rowsText: formatMessage({
-        defaultMessage: 'résultats',
+        defaultMessage: 'results',
         id: 'table.results',
     }),
 }

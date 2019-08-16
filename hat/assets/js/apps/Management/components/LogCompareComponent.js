@@ -14,7 +14,7 @@ const LogCompareComponent = ({ log, compareLog }) => (
                     <th>
                         <FormattedMessage
                             id="logs.label.model"
-                            defaultMessage="Modèle"
+                            defaultMessage="Model"
                         />
                     </th>
                     <td>{l.model}</td>

@@ -59,7 +59,7 @@ class VideoFormComponent extends React.Component {
                             <div className="quality-label inline comment-label">
                                 <FormattedMessage
                                     id="main.label.comment"
-                                    defaultMessage="Commentaire"
+                                    defaultMessage="Comment"
                                 />:
                             </div>
                             <div className="comment-container">
@@ -78,7 +78,7 @@ class VideoFormComponent extends React.Component {
                         {
                             this.props.error &&
                             <div className="saving--error">
-                                <FormattedMessage id="main.submit.error" defaultMessage="Erreur lors de la sauvegarde" />
+                                <FormattedMessage id="main.label.submit.error" defaultMessage="An error occured while saving" />
                             </div>
                         }
                         <button
@@ -86,7 +86,7 @@ class VideoFormComponent extends React.Component {
                             onClick={e => this.onSubmit(e)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="main.submit" defaultMessage="Valider" />
+                            <FormattedMessage id="main.label.validate" defaultMessage="Validate" />
                         </button>
                     </div>
                 }

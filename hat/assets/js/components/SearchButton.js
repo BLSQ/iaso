@@ -14,7 +14,7 @@ class SearchButton extends Component {
                     <i className="fa fa-search" aria-hidden="true" />
                     <FormattedMessage
                         id="main.label.search"
-                        defaultMessage="Recherche"
+                        defaultMessage="Search"
                     />
                 </button>
             </div>

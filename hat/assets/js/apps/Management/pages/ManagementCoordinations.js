@@ -45,7 +45,7 @@ class ManagementCoordinations extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Date de création',
+                        defaultMessage: 'Creation date',
                         id: 'main.label.creationDate',
                     }),
                     accessor: 'created_at',
@@ -56,7 +56,7 @@ class ManagementCoordinations extends React.Component {
                 {
                     Header: formatMessage({
                         defaultMessage: 'Actions',
-                        id: 'main.actions',
+                        id: 'main.label.actions',
                     }),
                     sortable: false,
                     resizable: false,
@@ -67,14 +67,14 @@ class ManagementCoordinations extends React.Component {
                                 onClick={() => this.editCoordination(settings.original)}
                             >
                                 <i className="fa fa-pencil-square-o" />
-                                <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                             </button>
                             <button
                                 className="button--delete"
                                 onClick={() => this.showDelete(settings.original)}
                             >
                                 <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                             </button>
                         </section>
                     ),
@@ -212,7 +212,7 @@ class ManagementCoordinations extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.coord.title"
+                                id="main.label.coordinations"
                                 defaultMessage="Coordinations"
                             />
                         </h2>
@@ -223,8 +223,8 @@ class ManagementCoordinations extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }
@@ -249,7 +249,7 @@ class ManagementCoordinations extends React.Component {
                                 onClick={() => this.editCoordination()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

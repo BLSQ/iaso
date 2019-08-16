@@ -38,7 +38,7 @@ class InstancesMap extends Component {
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.name" defaultMessage="Nom" />
+                                                    <FormattedMessage id="iaso.instance.name" defaultMessage="Name" />
                                                     :
                                                 </td>
                                                 <td>
@@ -65,7 +65,7 @@ class InstancesMap extends Component {
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.created_at" defaultMessage="Création" />
+                                                    <FormattedMessage id="iaso.instance.created_at" defaultMessage="Created at" />
                                                     :
                                                 </td>
                                                 <td>
@@ -74,7 +74,7 @@ class InstancesMap extends Component {
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.file" defaultMessage="Fichier" />
+                                                    <FormattedMessage id="iaso.instance.file" defaultMessage="File" />
                                                     :
                                                 </td>
                                                 <td className={classes.link}>

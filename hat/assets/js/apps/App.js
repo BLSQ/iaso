@@ -7,19 +7,25 @@ import { Router } from 'react-router';
 import { SnackbarProvider } from 'notistack';
 
 // the intl paths get rewritten by webpack depending on the locale
-import messages from '__intl/messages'; // eslint-disable-line
-import localeData from '__intl/localeData'; // eslint-disable-line
+import fr from '__intl/messages/fr'; // eslint-disable-line
+import en from '__intl/messages/en'; // eslint-disable-line
+import localeDataFr from '__intl/localeData/fr'; // eslint-disable-line
+import localeDataEn from '__intl/localeData/en'; // eslint-disable-line
 
 import SnackBarContainer from './Iaso/components/snackBars/SnackBarContainer';
 
-addLocaleData(localeData);
+const messages = {
+    fr,
+    en,
+};
+addLocaleData([...localeDataEn, ...localeDataFr]);
 const locale = __LOCALE;
 
-export default class App extends Component {
+class App extends Component {
     render() {
         const { store, routes, history } = this.props;
         return (
-            <IntlProvider locale={locale} messages={messages}>
+            <IntlProvider locale={locale} messages={messages[locale]}>
                 <Provider store={store}>
                     <SnackbarProvider
                         maxSnack={3}
@@ -46,3 +52,5 @@ App.propTypes = {
     routes: PropTypes.array.isRequired,
     history: PropTypes.object.isRequired,
 };
+
+export default App;

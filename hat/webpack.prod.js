@@ -37,12 +37,20 @@ module.exports = {
   plugins: [
     // provide intl modules depending on locale
     new webpack.NormalModuleReplacementPlugin(
-      /^__intl\/localeData$/,
-      'react-intl/locale-data/' + LOCALE
+      /^__intl\/localeData\/en$/,
+      'react-intl/locale-data/en'
     ),
     new webpack.NormalModuleReplacementPlugin(
-      /^__intl\/messages$/,
-      '../translations/' + LOCALE + '.json'
+      /^__intl\/messages\/en$/,
+      '../translations/en.json'
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/localeData\/fr$/,
+      'react-intl/locale-data/fr'
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/messages\/fr$/,
+      '../translations/fr.json'
     ),
     new BundleTracker({
       path: __dirname,

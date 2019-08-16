@@ -12,8 +12,8 @@ import DeleteModaleComponent from '../components/DeleteModaleComponent';
 
 const MESSAGES = defineMessages({
     none: {
-        defaultMessage: 'Aucun',
-        id: 'management.none.masc',
+        defaultMessage: 'None',
+        id: 'main.label.noneFem',
     },
 });
 
@@ -155,7 +155,7 @@ class UserPermissionsComponent extends Component {
                     >
                         <FormattedMessage
                             id="main.label.userType"
-                            defaultMessage="Type de rôle"
+                            defaultMessage="User type"
                         />:
                     </label>
                     {
@@ -188,7 +188,7 @@ class UserPermissionsComponent extends Component {
                                 userTypeAlreadyExist &&
                                 <span className="permission-select-user-type__error error-text">
                                     <FormattedMessage
-                                        id="mangement.userType.label.userTypeAlreadyExist"
+                                        id="management.userType.label.userTypeAlreadyExist"
                                         defaultMessage="Ce type de rôle existe déjà"
                                     />
                                 </span>
@@ -197,7 +197,7 @@ class UserPermissionsComponent extends Component {
                                 errorOnSaveUserType &&
                                 <span className="permission-select-user-type__error error-text">
                                     <FormattedMessage
-                                        id="mangement.userType.label.errorOnSaveUserType"
+                                        id="management.userType.label.errorOnSaveUserType"
                                         defaultMessage="Une erreur est survenue lors de la sauvegarde"
                                     />
                                 </span>
@@ -215,7 +215,7 @@ class UserPermissionsComponent extends Component {
                                 onClick={() => this.toggleDeleteModale()}
                             >
                                 <i className="fa fa-trash" />
-                                <FormattedMessage id="mangement.userType.label.delete" defaultMessage="Effacer ce rôle" />
+                                <FormattedMessage id="management.userType.label.delete" defaultMessage="Delete this role" />
                             </button>
                             <button
                                 disabled={Boolean(userType) || userPermissions.length === 0}
@@ -223,7 +223,7 @@ class UserPermissionsComponent extends Component {
                                 onClick={() => this.toggleAddUserType(true)}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="mangement.userType.label.add" defaultMessage="Ajouter un rôle" />
+                                <FormattedMessage id="management.userType.label.add" defaultMessage="Add this role" />
                             </button>
                         </Fragment>
                     }
@@ -234,7 +234,7 @@ class UserPermissionsComponent extends Component {
                                 className="button--tiny margin-right--tiny"
                                 onClick={() => this.toggleAddUserType(false)}
                             >
-                                <FormattedMessage id="mangement.userType.label.cancel" defaultMessage="Annuler" />
+                                <FormattedMessage id="main.label.cancel" defaultMessage="Cancel" />
                             </button>
                             <button
                                 disabled={newUserType === ''}
@@ -242,7 +242,7 @@ class UserPermissionsComponent extends Component {
                                 onClick={() => this.onSaveUserType()}
                             >
                                 <i className="fa fa-save" />
-                                <FormattedMessage id="mangement.userType.label.save" defaultMessage="Sauver" />
+                                <FormattedMessage id="main.label.save" defaultMessage="Save" />
                             </button>
                         </Fragment>
                     }

@@ -79,7 +79,7 @@ class SidebarMenu extends PureComponent {
                 <List className={classes.list}>
                     <ListItem button onClick={() => this.onClick('forms')}>
                         <ListItemText primary={formatMessage({
-                            defaultMessage: 'Formulaires',
+                            defaultMessage: 'Forms',
                             id: 'iaso.forms.title',
                         })}
                         />
@@ -87,7 +87,7 @@ class SidebarMenu extends PureComponent {
                     <ListItem button onClick={() => this.onClick('orgunits')}>
                         <ListItemText primary={formatMessage({
                             defaultMessage: 'Org units',
-                            id: 'iaso.orgunits.title',
+                            id: 'iaso.orgUnits.title',
                         })}
                         />
                     </ListItem>

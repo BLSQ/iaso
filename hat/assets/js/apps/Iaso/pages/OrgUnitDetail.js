@@ -184,14 +184,14 @@ class OrgUnitDetail extends Component {
                                             value="infos"
                                             label={formatMessage({
                                                 defaultMessage: 'Infos',
-                                                id: 'iaso.orgunits.infos',
+                                                id: 'iaso.orgUnits.infos',
                                             })}
                                         />
                                         <Tab
                                             value="map"
                                             label={formatMessage({
-                                                defaultMessage: 'Carte',
-                                                id: 'iaso.orgunits.map',
+                                                defaultMessage: 'Map',
+                                                id: 'iaso.orgUnits.map',
                                             })}
                                         />
                                     </Tabs>
@@ -220,7 +220,7 @@ class OrgUnitDetail extends Component {
                                             onClick={() => this.resetOrgUnit()}
                                         >
                                             <Cancel className={classes.buttonIcon} fontSize="small" />
-                                            <FormattedMessage id="iaso.label.cancel" defaultMessage="Annuler" />
+                                            <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
                                         </Button>
                                         <Button
                                             disabled={!orgUnitModified}
@@ -230,7 +230,7 @@ class OrgUnitDetail extends Component {
                                             onClick={() => this.saveOrgUnit(currentOrgUnit)}
                                         >
                                             <Save className={classes.buttonIcon} fontSize="small" />
-                                            <FormattedMessage id="iaso.label.save" defaultMessage="Sauver" />
+                                            <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
                                         </Button>
                                     </div>
                                 </Container>

@@ -156,8 +156,8 @@ class Cases extends Component {
             <section className="cases-list-container">
                 {
                     this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }

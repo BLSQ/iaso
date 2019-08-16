@@ -17,7 +17,7 @@ class TestImageComponent extends React.Component {
                         <div className="quality-label inline">
                             <FormattedMessage
                                 id="quality.image.noindex"
-                                defaultMessage="aucun index fourni"
+                                defaultMessage="no index"
                             />
                         </div>
                     </section>
@@ -37,8 +37,8 @@ class TestImageComponent extends React.Component {
                 <section>
                     <div className="quality-label inline">
                         <FormattedMessage
-                            id="quality.results"
-                            defaultMessage="Résultat"
+                            id="main.label.result"
+                            defaultMessage="Result"
                         />:
                     </div>
                     {

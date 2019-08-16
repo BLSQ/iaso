@@ -206,8 +206,8 @@ class ManagementTeams extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.teams.title"
-                                defaultMessage="Equipes"
+                                id="main.label.teams"
+                                defaultMessage="Teams"
                             />
                         </h2>
 
@@ -249,8 +249,8 @@ class ManagementTeams extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }
@@ -276,7 +276,7 @@ class ManagementTeams extends React.Component {
                                 onClick={() => this.editTeam()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

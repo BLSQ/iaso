@@ -166,7 +166,7 @@ class WorkZonesSelect extends Component {
                                 style={{ backgroundColor: 'grey' }}
                             />
                             <div className="infos">
-                                <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="Aucun rayon d'action" />
+                                <FormattedMessage id="macroplanning.legend.notAssigned" defaultMessage="No work zone" />
                             </div>
                         </section>
                         <div className="expand-collapse">
@@ -183,7 +183,7 @@ class WorkZonesSelect extends Component {
                                         {
                                             this.state.unUsedAreas.length > 0 &&
                                             <div>
-                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Aire(s) de santé non assignée(s)" />:
+                                                <FormattedMessage id="macroplanning.label.unUsedAreas" defaultMessage="Not assigned area(s)" />:
                                                 {` ${this.state.unUsedAreas.length}`}
                                                 {
                                                     this.state.isAreasOpen &&

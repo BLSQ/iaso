@@ -15,12 +15,12 @@ const baseApiUrl = '/api/qccheckstats/';
 
 const MESSAGES = defineMessages({
     all: {
-        defaultMessage: 'Toutes',
-        id: 'microplanning.all',
+        defaultMessage: 'All',
+        id: 'main.label.all',
     },
     allMale: {
-        defaultMessage: 'Tous',
-        id: 'microplanning.allMale',
+        defaultMessage: 'All',
+        id: 'main.label.allMale',
     },
 });
 
@@ -46,8 +46,8 @@ class QualityStats extends React.Component {
                         },
                         {
                             Header: formatMessage({
-                                defaultMessage: 'Nom',
-                                id: 'main.name',
+                                defaultMessage: 'Name',
+                                id: 'main.label.name',
                             }),
                             accessor: 'name',
                         },
@@ -240,7 +240,9 @@ class QualityStats extends React.Component {
                     </div>
                     <div className="widget__content--tier">
                         <div>
-                            <FormattedMessage id="microplanning.label.coordination" defaultMessage="Coordination: " />
+                            <span>
+                                <FormattedMessage id="main.label.coordination" defaultMessage="Coordination" />{`: `}
+                            </span>
                             {
                                 this.state.coordinations &&
                                 <Select
@@ -274,8 +276,8 @@ class QualityStats extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }

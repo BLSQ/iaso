@@ -23,11 +23,11 @@ const baseUrl = 'dashboard';
 const MESSAGES = defineMessages({
     images: {
         defaultMessage: 'Images',
-        id: 'quality.label.images',
+        id: 'main.label.images',
     },
     videos: {
-        defaultMessage: 'Vidéos',
-        id: 'quality.label.videos',
+        defaultMessage: 'Videos',
+        id: 'main.label.videos',
     },
 });
 
@@ -179,8 +179,8 @@ class QualityDashboard extends React.Component {
                 {
                     loading &&
                     <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'main.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }
@@ -217,8 +217,8 @@ class QualityDashboard extends React.Component {
                                 params={params}
                                 baseUrl={baseUrl}
                                 filters={filtersUsers(profiles, {
-                                    id: 'quality.label.tester',
-                                    defaultMessage: 'Testeurs',
+                                    id: 'main.label.tester',
+                                    defaultMessage: 'Tester',
                                 })}
                             />
                             {

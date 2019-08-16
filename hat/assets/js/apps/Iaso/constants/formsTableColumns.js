@@ -8,15 +8,15 @@ const formsTableColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'iaso.form.name',
+                defaultMessage: 'Name',
+                id: 'iaso.forms.name',
             }),
             accessor: 'name',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Mise à jour',
-                id: 'iaso.form.updated_at',
+                defaultMessage: 'Updated at',
+                id: 'iaso.forms.updated_at',
             }),
             accessor: 'instance_updated_at',
             Cell: settings => (
@@ -30,8 +30,8 @@ const formsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Création',
-                id: 'iaso.form.created_at',
+                defaultMessage: 'Created at',
+                id: 'iaso.forms.created_at',
             }),
             accessor: 'created_at',
             Cell: settings => (
@@ -43,7 +43,7 @@ const formsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Type',
-                id: 'iaso.form.type',
+                id: 'iaso.forms.type',
             }),
             sortable: false,
             accessor: 'org_unit_types',
@@ -57,8 +57,8 @@ const formsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Enregistrement(s)',
-                id: 'iaso.form.records',
+                defaultMessage: 'Record(s)',
+                id: 'iaso.forms.records',
             }),
             resizable: false,
             width: 250,
@@ -81,7 +81,7 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         !settings.original.instances_count
                         && (
-                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="Aucun enregistrement" />
+                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="No record" />
                         )}
                 </section>
             ),

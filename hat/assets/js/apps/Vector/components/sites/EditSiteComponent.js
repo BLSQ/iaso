@@ -17,20 +17,20 @@ import trapsColumns from '../../utlls/trapsColumns';
 
 const LOCAL_MESSAGES = defineMessages({
     none: {
-        defaultMessage: 'Aucun',
-        id: 'vector.labels.none',
+        defaultMessage: 'None',
+        id: 'main.label.none',
     },
     infos: {
         defaultMessage: 'Infos',
-        id: 'vector.labels.infos',
+        id: 'main.label.infos',
     },
     traps: {
-        defaultMessage: 'Liste des pièges',
+        defaultMessage: 'Traps list',
         id: 'vector.labels.traps',
     },
     map: {
-        defaultMessage: 'Carte',
-        id: 'vector.labels.map',
+        defaultMessage: 'Map',
+        id: 'main.label.map',
     },
 });
 class EditSiteComponent extends Component {
@@ -119,7 +119,7 @@ class EditSiteComponent extends Component {
                 className={hidden ? 'hidden-modal' : ''}
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.site.title" defaultMessage="Site" />:
+                    <FormattedMessage id="main.label.site" defaultMessage="Site" />:
                     {' '}{site.name}
                 </div>
                 <section className="edit-modal large extra-extra">
@@ -203,7 +203,7 @@ class EditSiteComponent extends Component {
                             onClick={() => this.props.toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Close" />
                         </button>
                         <button
                             disabled={
@@ -214,7 +214,7 @@ class EditSiteComponent extends Component {
                             onClick={() => saveSite(site)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="vector.label.savesite" defaultMessage="Sauvegarder le site" />
+                            <FormattedMessage id="vector.label.savesite" defaultMessage="Save site" />
                         </button>
                     </div>
                 </section>

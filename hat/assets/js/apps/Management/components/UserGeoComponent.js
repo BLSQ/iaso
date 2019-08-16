@@ -8,8 +8,8 @@ import { deepEqual } from '../../../utils';
 
 const MESSAGES = defineMessages({
     none: {
-        defaultMessage: 'Aucune',
-        id: 'management.none',
+        defaultMessage: 'None',
+        id: 'main.label.noneFem',
     },
 });
 

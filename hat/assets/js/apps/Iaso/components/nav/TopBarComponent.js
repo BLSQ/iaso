@@ -44,7 +44,7 @@ function TopBar(props) {
                     </Typography>
 
                     <Button variant="contained" href="/logout-iaso" className={classes.button} color="primary">
-                        <FormattedMessage id="iaso.logout" defaultMessage="Se déconnecter" />
+                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
                     </Button>
                 </Toolbar>
             </AppBar>

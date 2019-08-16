@@ -12,7 +12,7 @@ const catchesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Installé',
+                defaultMessage: 'Set up',
                 id: 'vector.catchs.setup_date',
             }),
             accessor: 'setup_date',
@@ -27,7 +27,7 @@ const catchesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Collecté',
+                defaultMessage: 'Collected',
                 id: 'vector.catchs.collect_date',
             }),
             accessor: 'collect_date',
@@ -42,7 +42,7 @@ const catchesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Males',
+                defaultMessage: 'Male',
                 id: 'vector.catchs.male',
             }),
             className: 'small',
@@ -50,7 +50,7 @@ const catchesColumns = (formatMessage, getDetail) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Femelles',
+                defaultMessage: 'Female',
                 id: 'vector.catchs.female',
             }),
             className: 'small',
@@ -59,23 +59,23 @@ const catchesColumns = (formatMessage, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Inconnu',
-                id: 'vector.catchs.unknown',
+                id: 'main.label.unknown',
             }),
             className: 'small',
             accessor: 'unknown_count',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Remarques',
-                id: 'vector.catchs.remarks',
+                defaultMessage: 'Remarks',
+                id: 'main.label.remarks',
             }),
             className: 'small',
             accessor: 'remarks',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Utilisateur',
-                id: 'vector.catchs.user',
+                defaultMessage: 'User',
+                id: 'main.label.user',
             }),
             className: 'small',
             accessor: 'username',
@@ -83,7 +83,7 @@ const catchesColumns = (formatMessage, getDetail) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Actions',
-                id: 'main.actions',
+                id: 'main.label.actions',
             }),
             sortable: false,
             resizable: false,
@@ -94,7 +94,7 @@ const catchesColumns = (formatMessage, getDetail) => (
                         onClick={() => getDetail(settings.original.id, 'catches', 'showEditCatchesModale')}
                     >
                         <i className="fa fa-info-circle" />
-                        <FormattedMessage id="main.label.detail" defaultMessage="Détails" />
+                        <FormattedMessage id="main.label.details" defaultMessage="Détails" />
                     </button>
                 </section>
             ),

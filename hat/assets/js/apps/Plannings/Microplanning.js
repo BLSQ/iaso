@@ -52,19 +52,19 @@ const MESSAGES = defineMessages({
         id: 'microplanning.labels.years.select',
     },
     loading: {
-        defaultMessage: 'Chargement en cours',
-        id: 'microplanning.labels.loading',
+        defaultMessage: 'Loading',
+        id: 'main.label.loading',
     },
     villageSelection: {
-        defaultMessage: 'Sélection des villages',
+        defaultMessage: 'Villages selection',
         id: 'microplanning.labels.villageSelection',
     },
     geoScope: {
-        defaultMessage: 'Couverture géographique',
+        defaultMessage: 'Geographical scope',
         id: 'microplanning.labels.geoScope',
     },
     cluster_title: {
-        defaultMessage: 'Regroupement des villages',
+        defaultMessage: 'Village clustering',
         id: 'microplanning.labels.cluster_title',
     },
 });
@@ -428,7 +428,9 @@ export class Microplanning extends Component {
                                             <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
                                             {
                                                 this.state.isSelectionModified && !this.state.isSavingTeam && !loading &&
-                                                <div className="warning-box"><FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modifié mais non sauvegardé" /></div>
+                                                <div className="warning-box">
+                                                    <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
+                                                </div>
                                             }
                                         </div>
 

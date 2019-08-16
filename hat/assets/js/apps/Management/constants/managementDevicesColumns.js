@@ -7,8 +7,8 @@ const managementDevicesColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Utilisateur',
-                id: 'teamsdevices.label.user',
+                defaultMessage: 'User',
+                id: 'main.label.user',
             }),
             accessor: 'last_user',
             className: 'small',
@@ -16,14 +16,14 @@ const managementDevicesColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Equipe',
-                id: 'teamsdevices.label.team',
+                id: 'main.label.team',
             }),
             accessor: 'last_team',
             className: 'small',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Dernière Sync',
+                defaultMessage: 'Last Sync',
                 id: 'teamsdevices.last_sync',
             }),
             accessor: 'last_synced_date',
@@ -40,7 +40,7 @@ const managementDevicesColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Jours passés',
+                defaultMessage: 'Days passed',
                 id: 'teamsdevices.days_ago',
             }),
             accessor: 'days_since_sync',
@@ -50,14 +50,14 @@ const managementDevicesColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Images',
-                id: 'teamsdevices.images',
+                id: 'main.label.images',
             }),
             accessor: 'count_captured_pictures',
             className: 'small',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Images importées',
+                defaultMessage: 'Uploaded images',
                 id: 'teamsdevices.uploaded_images',
             }),
             accessor: 'count_uploaded_pictures',
@@ -83,7 +83,7 @@ const managementDevicesColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Jours passés (img)',
+                defaultMessage: 'Days passed (img)',
                 id: 'teamsdevices.daysImgSync',
             }),
             accessor: 'latest_image_upload',
@@ -100,15 +100,15 @@ const managementDevicesColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vidéos',
-                id: 'teamsdevices.vidéos',
+                defaultMessage: 'Videos',
+                id: 'main.label.videos',
             }),
             className: 'small',
             accessor: 'count_captured_video',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vidéos importées',
+                defaultMessage: 'Uploaded videos',
                 id: 'teamsdevices.vidéos_uploaded',
             }),
             className: 'small',
@@ -151,7 +151,7 @@ const managementDevicesColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Total-Créé-Màj-Effacé',
+                defaultMessage: 'Total-Created-Update-Delete',
                 id: 'teamsdevices.sync_summary',
             }),
             className: 'small',
@@ -160,7 +160,7 @@ const managementDevicesColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Action',
-                id: 'main.action',
+                id: 'main.label.action',
             }),
             sortable: false,
             resizable: false,

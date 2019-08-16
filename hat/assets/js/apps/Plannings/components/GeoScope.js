@@ -139,7 +139,7 @@ class GeoScope extends Component {
                         </div>
                         <div className="locator-filter">
                             <div className="locator-subtitle">
-                                <FormattedMessage id="microplanning.geoscope.label.zones" defaultMessage="Zones de santé" />
+                                <FormattedMessage id="main.label.zones" defaultMessage="Health zone" />
                             </div>
                             <div>
                                 {
@@ -159,7 +159,7 @@ class GeoScope extends Component {
                         </div>
                         <div className="locator-filter">
                             <div className="locator-subtitle">
-                                <FormattedMessage id="microplanning.geoscope.label.areas" defaultMessage="Aires de santé" />
+                                <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
                             </div>
                             <div>
                                 {

@@ -52,7 +52,7 @@ class PlanningModale extends Component {
                     {
                         this.props.isDuplicate &&
                         <div className="subtitle">
-                            <FormattedMessage id="main.management.planning.duplicate" defaultMessage="Copie du planning" />:
+                            <FormattedMessage id="main.management.planning.duplicate" defaultMessage="Copy of planning" />:
                             {' '}{this.state.duplicateName}
                         </div>
                     }
@@ -63,7 +63,7 @@ class PlanningModale extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.name"
-                                defaultMessage="Nom"
+                                defaultMessage="Name"
                             />:
                         </label>
                         <input
@@ -103,8 +103,8 @@ class PlanningModale extends Component {
                                 className="filter__container__select__label"
                             >
                                 <FormattedMessage
-                                    id="management.planning.label.template"
-                                    defaultMessage="Modèle"
+                                    id="main.label.template"
+                                    defaultMessage="Template"
                                 />:
                             </label>
                             <input
@@ -134,7 +134,7 @@ class PlanningModale extends Component {
                             onClick={() => (this.props.isDuplicate ? this.props.duplicatePlanning(this.state.planning) : this.props.savePlanning(this.state.planning))}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.savePlanning" defaultMessage="Sauvegarder la planning" />
+                            <FormattedMessage id="management.label.savePlanning" defaultMessage="Save planning" />
                         </button>
                     </div>
                 </section>

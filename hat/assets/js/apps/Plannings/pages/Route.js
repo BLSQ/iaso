@@ -74,7 +74,7 @@ class Routes extends React.Component {
                 <div className="widget__container">
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="microplanning.route.title" defaultMessage="Itinéraires" />
+                            <FormattedMessage id="microplanning.route.title" defaultMessage="Itineraries" />
                         </h2>
                     </div>
                 </div>
@@ -95,22 +95,22 @@ class Routes extends React.Component {
                         <div className="widget__content--tier">
                             <div className="map__option">
                                 <span className="map__option__header">
-                                    <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                                    <FormattedMessage id="microplanning.legend.key" defaultMessage="Legend" />
                                 </span>
                                 <form>
                                     <ul className="map__option__list legend">
                                         <li className="map__option__list__item">
                                             <i className="map__option__icon--route-with-positive-cases" />
-                                            <FormattedMessage id="microplanning.legend.highlight" defaultMessage="Villages endémiques" />
+                                            <FormattedMessage id="microplanning.legend.highlight" defaultMessage="Endemic villages" />
                                         </li>
                                         <li className="map__option__list__item">
                                             <i className="map__option__icon--route-assigned" />
-                                            <FormattedMessage id="microplanning.legend.assigned" defaultMessage="Village(s) assigné(s) au mois de" />
+                                            <FormattedMessage id="microplanning.legend.assigned" defaultMessage="Village(s) assigned to the month of" />
                                             <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
                                         </li>
                                         <li className="map__option__list__item">
                                             <i className="map__option__icon--route-not-assigned" />
-                                            <FormattedMessage id="microplanning.legend.notAssigned" defaultMessage="Village(s) non assigné(s) au mois de" />
+                                            <FormattedMessage id="microplanning.legend.notAssigned" defaultMessage="Village(s) not assinged to the month of" />
                                             <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
                                         </li>
                                     </ul>
@@ -131,8 +131,8 @@ class Routes extends React.Component {
                             {
                                 loading &&
                                 <LoadingSpinner message={formatMessage({
-                                    defaultMessage: 'Chargement en cours',
-                                    id: 'microplanning.labels.loading',
+                                    defaultMessage: 'Loading',
+                                    id: 'main.label.loading',
                                 })}
                                 />
                             }

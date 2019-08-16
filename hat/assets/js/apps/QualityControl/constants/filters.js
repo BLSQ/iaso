@@ -42,10 +42,10 @@ const filtersGeo = (
             options: provinces,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.provinces',
+                id: 'main.label.provinces',
                 defaultMessage: 'Provinces',
             },
             type: 'select',
@@ -60,11 +60,11 @@ const filtersGeo = (
             options: zones,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.zones',
-                defaultMessage: 'Zones de santé',
+                id: 'main.label.zones',
+                defaultMessage: 'Health zones',
             },
             type: 'select',
             callback: value => selectZone(value, props, urlKey),
@@ -78,11 +78,11 @@ const filtersGeo = (
             options: areas,
             placeholder: {
                 id: 'main.label.all',
-                defaultMessage: 'Toutes',
+                defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.areas',
-                defaultMessage: 'Aire de santé',
+                id: 'main.label.area',
+                defaultMessage: 'Health areas',
             },
             type: 'select',
             callback: value => selectArea(value, props, urlKey),

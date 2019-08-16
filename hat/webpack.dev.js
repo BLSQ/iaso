@@ -4,7 +4,7 @@ var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
-var LOCALE = 'en'
+var LOCALE = 'fr'
 var WEBPACK_URL = 'https://localhost:3000'
 
 module.exports = {
@@ -76,14 +76,20 @@ module.exports = {
   plugins: [
     // provide intl modules depending on locale
     new webpack.NormalModuleReplacementPlugin(
-      /^__intl\/localeData$/,
-      'react-intl/locale-data/' + LOCALE
+      /^__intl\/localeData\/en$/,
+      'react-intl/locale-data/en'
     ),
     new webpack.NormalModuleReplacementPlugin(
-      /^__intl\/messages$/,
-      // Don't include the english translations, it will
-      // mess up text updates via hot module reloading
-      '../translations/' + LOCALE + '.json'
+      /^__intl\/messages\/en$/,
+      '../translations/en.json'
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/localeData\/fr$/,
+      'react-intl/locale-data/fr'
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /^__intl\/messages\/fr$/,
+      '../translations/fr.json'
     ),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error

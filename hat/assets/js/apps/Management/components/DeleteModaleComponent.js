@@ -31,7 +31,7 @@ class DeleteModale extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <div>
-                    <FormattedMessage id="main.management.eraseMsg" defaultMessage="Confirmer la suppression de" />
+                    <FormattedMessage id="main.label.eraseMsg" defaultMessage="Confirm deletion of" />
                     {` ${this.props.message !== '' ? this.props.message : this.props.element.name}`}
                 </div>
                 <div className="delete-modal-buttons">
@@ -40,14 +40,14 @@ class DeleteModale extends Component {
                         onClick={() => this.props.toggleModal()}
                     >
                         <i className="fa fa-arrow-left" />
-                        <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                        <FormattedMessage id="main.label.cancel" defaultMessage="Cancel" />
                     </button>
                     <button
                         className="button--delete"
                         onClick={() => this.props.deleteElement(this.props.element)}
                     >
                         <i className="fa fa-trash" />
-                        <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                        <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                     </button>
                 </div>
             </ReactModal>

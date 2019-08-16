@@ -4,8 +4,8 @@ export const search = () => (
     {
         urlKey: 'search',
         label: {
-            id: 'management.village.label.search',
-            defaultMessage: 'Recherche textuelle',
+            id: 'iaso.forms.textSearch',
+            defaultMessage: 'Text search',
         },
         type: 'search',
     }

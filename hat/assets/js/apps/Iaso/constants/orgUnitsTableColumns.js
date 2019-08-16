@@ -14,14 +14,14 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Nom',
-                id: 'iaso.orgUnit.name',
+                id: 'iaso.orgUnits.name',
             }),
             accessor: 'name',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Type',
-                id: 'iaso.orgUnit.type',
+                id: 'iaso.orgUnits.type',
             }),
             accessor: 'org_unit_type_id',
             Cell: settings => (
@@ -32,8 +32,8 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Création',
-                id: 'iaso.orgUnit.created_at',
+                defaultMessage: 'Created at',
+                id: 'iaso.orgUnits.created_at',
             }),
             accessor: 'created_at',
             Cell: settings => (
@@ -45,7 +45,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Action',
-                id: 'iaso.orgUnit.actions',
+                id: 'iaso.orgUnits.actions',
             }),
             resizable: false,
             width: 250,
@@ -59,7 +59,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                         onClick={() => component.selectOrgUnit(settings.original)}
                     >
                         <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
-                        <FormattedMessage id="iaso.main.label.details" defaultMessage="Details" />
+                        <FormattedMessage id="iaso.orgUnits.details" defaultMessage="Details" />
                     </Button>
                 </section>
             ),

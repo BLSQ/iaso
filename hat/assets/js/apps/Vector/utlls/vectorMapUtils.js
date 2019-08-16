@@ -3,31 +3,31 @@ import { defineMessages } from 'react-intl';
 
 export const MESSAGES = defineMessages({
     map: {
-        defaultMessage: 'Carte',
-        id: 'details.label.map',
+        defaultMessage: 'Map',
+        id: 'main.label.map',
     },
     sites: {
         defaultMessage: 'Sites',
-        id: 'details.label.sites',
+        id: 'main.label.sites',
     },
     traps: {
-        defaultMessage: 'Pièges',
-        id: 'details.label.traps',
+        defaultMessage: 'Traps',
+        id: 'main.label.traps',
     },
     targets: {
-        defaultMessage: 'Ecrans',
-        id: 'details.label.targets',
+        defaultMessage: 'Targets',
+        id: 'main.label.targets',
     },
     catches: {
-        defaultMessage: 'Déploiements',
-        id: 'details.label.catches',
+        defaultMessage: 'Catches',
+        id: 'main.label.catches',
     },
     unknown: {
-        defaultMessage: 'Inconnu',
-        id: 'vectors.label.unknown',
+        defaultMessage: 'Unknown',
+        id: 'main.label.unknown',
     },
     cluster_title: {
-        defaultMessage: 'Regroupement',
+        defaultMessage: 'Clustering',
         id: 'vectors.labels.cluster_title',
     },
 });
@@ -35,7 +35,7 @@ export const MESSAGES = defineMessages({
 
 export const renderSitesPopup = (site, formatMessage) => `<section class="custom-popup-container">
                 <h6>
-                    ${formatMessage({ defaultMessage: 'Site', id: 'vector.labels.site' })}:
+                    ${formatMessage({ defaultMessage: 'Site', id: 'main.label.site' })}:
                 </h6>
 
                 <table>
@@ -48,7 +48,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
+                                ${formatMessage({ defaultMessage: 'Name', id: 'main.label.name' })}
                             </td>
                             <td>
                                 ${site.name}
@@ -56,7 +56,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
+                                ${formatMessage({ defaultMessage: 'Latitude', id: 'main.label.latitude' })}
                             </td>
                             <td>
                                 ${site.latitude}
@@ -64,7 +64,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
+                                ${formatMessage({ defaultMessage: 'Longitude', id: 'main.label.longitude' })}
                             </td>
                             <td>
                                 ${site.longitude}
@@ -72,7 +72,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
+                                ${formatMessage({ defaultMessage: 'Altitude', id: 'main.label.altitude' })}
                             </td>
                             <td class="${!site.altitude ? 'align-center' : ''}">
                                 ${site.altitude ? site.altitude : '/'}
@@ -80,7 +80,7 @@ export const renderSitesPopup = (site, formatMessage) => `<section class="custom
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
+                                ${formatMessage({ defaultMessage: 'Creation date', id: 'main.label.creationDate' })}
                             </td>
                             <td>
                                 ${moment(site.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
@@ -101,7 +101,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
     }
     return `<section class="custom-popup-container">
     <h6>
-        ${formatMessage({ defaultMessage: 'Piège', id: 'vector.labels.trap' })}:
+        ${formatMessage({ defaultMessage: 'Trap', id: 'main.label.trap' })}:
     </h6>
 
     <table>
@@ -114,7 +114,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}
+                    ${formatMessage({ defaultMessage: 'Name', id: 'main.label.name' })}
                 </td>
                 <td>
                     ${trap.name}
@@ -122,7 +122,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Déploiements', id: 'vector.labels.catches' })}
+                    ${formatMessage({ defaultMessage: 'Catches', id: 'main.label.catches' })}
                 </td>
                 <td>
                     ${trap.catches_count !== undefined ? trap.catches_count : '0'}
@@ -130,7 +130,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Mâles', id: 'vector.labels.male' })}
+                    ${formatMessage({ defaultMessage: 'Male', id: 'vector.catchs.male' })}
                 </td>
                 <td>
                     ${trap.catches_count_male || '0'}
@@ -138,7 +138,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Femelles', id: 'vector.labels.female' })}
+                    ${formatMessage({ defaultMessage: 'Female', id: 'vector.catchs.female' })}
                 </td>
                 <td>
                     ${trap.catches_count_female || '0'}
@@ -146,7 +146,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Inconnus', id: 'vector.labels.unknown' })}
+                    ${formatMessage({ defaultMessage: 'Unknown', id: 'main.label.unknown' })}
                 </td>
                 <td>
                     ${trap.catches_count_unknown || '0'}
@@ -154,7 +154,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}
+                    ${formatMessage({ defaultMessage: 'Latitude', id: 'main.label.latitude' })}
                 </td>
                 <td>
                     ${trap.latitude}
@@ -162,7 +162,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}
+                    ${formatMessage({ defaultMessage: 'Longitude', id: 'main.label.longitude' })}
                 </td>
                 <td>
                     ${trap.longitude}
@@ -170,7 +170,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Altitude', id: 'vector.labels.altitude' })}
+                    ${formatMessage({ defaultMessage: 'Altitude', id: 'main.label.altitude' })}
                 </td>
                 <td class="${!trap.altitude ? 'align-center' : ''}">
                     ${trap.altitude ? trap.altitude : '/'}
@@ -178,7 +178,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Habitat', id: 'vector.labels.habitat' })}
+                    ${formatMessage({ defaultMessage: 'Habitat', id: 'main.label.habitat' })}
                 </td>
                 <td>
                     ${habitatLabel}
@@ -186,7 +186,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Date de création', id: 'vector.labels.created_at' })}
+                    ${formatMessage({ defaultMessage: 'Created at', id: 'main.label.created_at' })}
                 </td>
                 <td>
                     ${moment(trap.created_at.replace('Z', '')).format('HH:mm DD/MM/YYYY')}
@@ -194,7 +194,7 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
             </tr>
             <tr>
                 <td>
-                    ${formatMessage({ defaultMessage: 'Piège sélectionné', id: 'vector.labels.is_selected' })}
+                    ${formatMessage({ defaultMessage: 'Trap selected', id: 'vector.labels.is_selected' })}
                 </td>
                 <td>
                     <input
@@ -213,13 +213,13 @@ export const renderTrapsPopup = (trap, formatMessage, habitats) => {
 
 export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<section class="custom-popup-container">
                 <h6>
-                    ${formatMessage({ defaultMessage: 'Village', id: 'vector.labels.village' })}:
+                    ${formatMessage({ defaultMessage: 'Village', id: 'main.label.village' })}:
                 </h6>
                 <table>
                     <tbody>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Nom', id: 'vector.labels.name' })}:
+                                ${formatMessage({ defaultMessage: 'Name', id: 'main.label.name' })}:
                             </td>
                             <td>
                                 ${village.name}
@@ -227,7 +227,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Description', id: 'vector.labels.description' })}:
+                                ${formatMessage({ defaultMessage: 'Description', id: 'main.label.description' })}:
                             </td>
                             <td>
                                 ${village.description}
@@ -235,7 +235,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Latitude', id: 'vector.labels.latitude' })}:
+                                ${formatMessage({ defaultMessage: 'Latitude', id: 'main.label.latitude' })}:
                             </td>
                             <td>
                                 ${village.latitude}
@@ -243,7 +243,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Longitude', id: 'vector.labels.longitude' })}:
+                                ${formatMessage({ defaultMessage: 'Longitude', id: 'main.label.longitude' })}:
                             </td>
                             <td>
                                 ${village.longitude}
@@ -251,7 +251,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         ${isEndemic ? `<tr>
                                 <td>
-                                    ${formatMessage({ defaultMessage: 'Cas positifs', id: 'vector.labels.nr_positive_cases' })}:
+                                    ${formatMessage({ defaultMessage: 'Positive cases', id: 'vector.labels.nr_positive_cases' })}:
                                 </td>
                                 <td>
                                     ${village.nr_positive_cases}
@@ -259,7 +259,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                             </tr>` : ''}
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Population', id: 'vector.labels.population' })}:
+                                ${formatMessage({ defaultMessage: 'Population', id: 'main.label.population' })}:
                             </td>
                             <td>
                                 ${village.population}
@@ -267,7 +267,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Source GPS', id: 'vector.labels.gps_source' })}:
+                                ${formatMessage({ defaultMessage: 'GPS source', id: 'main.label.gps_source' })}:
                             </td>
                             <td>
                                 ${village.gps_source}
@@ -275,7 +275,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Province', id: 'vector.labels.province' })}
+                                ${formatMessage({ defaultMessage: 'Province', id: 'main.label.province' })}
                             </td>
                             <td class="${!village.province ? 'align-center' : ''}">
                                 ${village.province ? village.province : '/'}
@@ -283,7 +283,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Zone', id: 'vector.labels.zone' })}
+                                ${formatMessage({ defaultMessage: 'Health zone', id: 'main.label.zone' })}
                             </td>
                             <td class="${!village.zs ? 'align-center' : ''}">
                                 ${village.zs ? village.zs : '/'}
@@ -291,7 +291,7 @@ export const renderVillagesPopup = (village, formatMessage, isEndemic) => `<sect
                         </tr>
                         <tr>
                             <td>
-                                ${formatMessage({ defaultMessage: 'Aire', id: 'vector.labels.area' })}
+                                ${formatMessage({ defaultMessage: 'Health area', id: 'main.label.area' })}
                             </td>
                             <td class="${!village.as ? 'align-center' : ''}">
                                 ${village.as ? village.as : '/'}
@@ -310,31 +310,31 @@ export const itemsToShow = params => [
     },
     {
         id: 'traps',
-        defaultMessage: 'Pièges',
+        defaultMessage: 'Traps',
         isActive: params.traps === 'true',
         iconClass: 'map__option__icon--traps',
     },
     {
         id: 'catches',
-        defaultMessage: 'Déploiements',
+        defaultMessage: 'Catches',
         isActive: params.catches === 'true',
         iconClass: 'map__option__icon--catches',
     },
     {
         id: 'targets',
-        defaultMessage: 'Ecrans',
+        defaultMessage: 'Targets',
         isActive: params.targets === 'true',
         iconClass: 'map__option__icon--targets',
     },
     {
         id: 'nonEndemicVillages',
-        defaultMessage: 'Villages non endémiques',
+        defaultMessage: 'Not endemic villages',
         isActive: params.nonEndemicVillages === 'true',
         iconClass: 'map__option__icon--villages',
     },
     {
         id: 'endemicVillages',
-        defaultMessage: 'Villages endémiques',
+        defaultMessage: 'Endemic villages',
         isActive: params.endemicVillages === 'true',
         iconClass: 'map__option__icon--villages-with-case',
     },
@@ -343,22 +343,22 @@ export const itemsToShow = params => [
 
 export const itemsEditSitesToShow = [
     {
-        id: 'vector.modal.legend.sites',
+        id: 'main.label.sites',
         defaultMessage: 'Sites',
         key: 'sites',
         isActive: true,
         iconClass: 'map__option__icon--site',
     },
     {
-        id: 'vector.modal.legend.selectedTraps',
-        defaultMessage: 'Piège sélectionné',
+        id: 'vector.labels.is_selected',
+        defaultMessage: 'Selected traps',
         key: 'selected-traps',
         isActive: true,
         iconClass: 'map__option__icon--traps--selected',
     },
     {
-        id: 'vector.modal.legend.notSelectedTraps',
-        defaultMessage: 'Piège non sélectionné',
+        id: 'vector.labels.is_not_selected',
+        defaultMessage: 'Not selected traps',
         key: 'not-selected-traps',
         isActive: true,
         iconClass: 'map__option__icon--traps--not-selected',

@@ -6,8 +6,8 @@ const confirmersColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'monitoring.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             className: 'small',
             accessor: 'tester__user__last_name',
@@ -16,7 +16,7 @@ const confirmersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Coordination',
-                id: 'monitoring.label.coordination',
+                id: 'main.label.coordination',
             }),
             className: 'small',
             accessor: 'tester__team__coordination__name',
@@ -24,7 +24,7 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Tests de confirmation',
+                defaultMessage: 'Confirmation tests',
                 id: 'monitoring.label.confirmation_count',
             }),
             className: 'small',
@@ -60,7 +60,7 @@ const confirmersColumns = formatMessage => (
         {
             Header: `${formatMessage({
                 defaultMessage: 'Stage',
-                id: 'monitoring.label.stade',
+                id: 'main.label.stage',
             })} 1`,
             className: 'small',
             accessor: 'pl_count_stage1',
@@ -68,15 +68,15 @@ const confirmersColumns = formatMessage => (
         {
             Header: `${formatMessage({
                 defaultMessage: 'Stage',
-                id: 'monitoring.label.stade',
+                id: 'main.label.stage',
             })} 2`,
             className: 'small',
             accessor: 'pl_count_stage2',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vidéos',
-                id: 'monitoring.label.vidéos',
+                defaultMessage: 'Videos',
+                id: 'main.label.videos',
             }),
             accessor: 'confirmation_video_count',
             className: 'small',

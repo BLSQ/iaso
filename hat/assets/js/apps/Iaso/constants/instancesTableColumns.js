@@ -9,7 +9,7 @@ const instancesTableColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Mise à jour',
+                defaultMessage: 'Updated at',
                 id: 'iaso.instance.updated_at',
             }),
             accessor: 'updated_at',
@@ -27,7 +27,7 @@ const instancesTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Création',
+                defaultMessage: 'Created at',
                 id: 'iaso.instance.created_at',
             }),
             accessor: 'created_at',
@@ -40,7 +40,7 @@ const instancesTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Fichier',
+                defaultMessage: 'File',
                 id: 'iaso.instance.file',
             }),
             sortable: false,
@@ -54,10 +54,7 @@ const instancesTableColumns = (formatMessage, component) => (
                         color="primary"
                     >
                         <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
-                        {formatMessage({
-                            defaultMessage: 'XML',
-                            id: 'iaso.instance.XML',
-                        })}
+                        XML
                     </Button>
                 </span>
             ),

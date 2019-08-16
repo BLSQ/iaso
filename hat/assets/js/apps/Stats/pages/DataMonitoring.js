@@ -21,11 +21,11 @@ const baseUrl = 'data_monitoring';
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
-        id: 'DataMonitoring.labels.all',
+        id: 'main.label.allMale',
     },
     loading: {
         defaultMessage: 'Loading',
-        id: 'DataMonitoring.labels.loading',
+        id: 'main.label.loading',
     },
 });
 
@@ -53,7 +53,7 @@ export class DataMonitoring extends Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="DataMonitoring.title"
+                                id="dataMonitoring.title"
                                 defaultMessage="Monitorage de données"
                             />
                         </h2>

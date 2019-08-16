@@ -8,7 +8,7 @@ class typeFilters extends React.Component {
         return (
             <div className="type-filters-containers">
                 <span className="locator-subtitle">
-                    <FormattedMessage id="microplanning.label.types" defaultMessage="Types de villages" />
+                    <FormattedMessage id="main.label.villageType" defaultMessage="Villages types" />
                 </span>
                 <ul>
                     {

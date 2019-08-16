@@ -7,8 +7,8 @@ const confirmersColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
-                id: 'monitoring.label.name',
+                defaultMessage: 'Name',
+                id: 'main.label.name',
             }),
             className: 'small',
             accessor: 'tester__user__last_name',
@@ -17,7 +17,7 @@ const confirmersColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Coordination',
-                id: 'monitoring.label.coordination',
+                id: 'main.label.coordination',
             }),
             className: 'small',
             accessor: 'tester__team__coordination__name',
@@ -25,8 +25,8 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vidéos',
-                id: 'monitoring.label.vidéos',
+                defaultMessage: 'Videos',
+                id: 'main.label.videos',
             }),
             accessor: 'confirmation_video_count',
             className: 'small',
@@ -35,8 +35,8 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Vérifiés',
-                id: 'monitoring.label.checked',
+                defaultMessage: 'Checked',
+                id: 'main.label.checked',
             }),
             accessor: 'checked',
             className: 'small',
@@ -69,7 +69,7 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Non concordant',
+                defaultMessage: 'Not concordant',
                 id: 'monitoring.label.checkedKo',
             }),
             accessor: 'checked_ko',
@@ -86,7 +86,7 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Pas net',
+                defaultMessage: 'Not clear',
                 id: 'monitoring.label.checkedIsClear',
             }),
             accessor: 'is_clear',
@@ -103,7 +103,7 @@ const confirmersColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Mauvais endroit',
+                defaultMessage: 'Wrong place',
                 id: 'monitoring.label.checkedGoodPlace',
             }),
             accessor: 'is_good_place',

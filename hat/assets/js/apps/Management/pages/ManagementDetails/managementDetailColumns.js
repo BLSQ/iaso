@@ -7,19 +7,19 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Village',
-                id: 'details.label.village',
+                id: 'main.label.village',
             }),
             className: 'small',
             accessor: 'village__name',
             Footer: formatMessage({
                 defaultMessage: 'TOTAL',
-                id: 'details.label.total',
+                id: 'main.label.total',
             }),
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Jour',
-                id: 'details.label.day',
+                defaultMessage: 'Day',
+                id: 'main.label.day',
             }),
             className: 'small',
             accessor: 'date',
@@ -27,8 +27,8 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Dépistages',
-                id: 'details.label.screenings',
+                defaultMessage: 'Screening',
+                id: 'main.label.screening_results',
             }),
             columns: [
                 {
@@ -49,8 +49,8 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Positifs',
-                        id: 'details.label.positive',
+                        defaultMessage: 'Positives',
+                        id: 'main.label.positives',
                     }),
                     accessor: 'positive_screening_test_count',
                     className: 'small',
@@ -61,7 +61,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 {
                     Header: formatMessage({
                         defaultMessage: 'TOTAL',
-                        id: 'details.label.total',
+                        id: 'main.label.total',
                     }),
                     accessor: 'screening_count',
                     className: 'small',
@@ -74,7 +74,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Confirmations',
-                id: 'details.label.confirmations',
+                id: 'main.label.confirmation_results',
             }),
             columns: [
                 {
@@ -112,7 +112,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 {
                     Header: formatMessage({
                         defaultMessage: 'Positifs',
-                        id: 'details.label.positive',
+                        id: 'main.label.positives',
                     }),
                     accessor: 'positive_confirmation_test_count',
                     className: 'small',
@@ -123,7 +123,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 {
                     Header: formatMessage({
                         defaultMessage: 'TOTAL',
-                        id: 'details.label.total',
+                        id: 'main.label.total',
                     }),
                     accessor: 'confirmation_count',
                     className: 'small',
@@ -133,8 +133,8 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Stade 1',
-                        id: 'details.label.pl_count_stage1',
+                        defaultMessage: 'Stage 1',
+                        id: 'main.label.stage1',
                     }),
                     accessor: 'pl_count_stage1',
                     className: 'small',
@@ -144,8 +144,8 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Stade 2',
-                        id: 'details.label.pl_count_stage2',
+                        defaultMessage: 'Stage 2',
+                        id: 'main.label.stage2',
                     }),
                     accessor: 'pl_count_stage2',
                     className: 'small',

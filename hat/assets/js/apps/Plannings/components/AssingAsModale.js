@@ -39,7 +39,7 @@ class AssingAsModale extends Component {
             >
                 <section className="half">
                     <div>
-                        <FormattedMessage id="microplanning.macro.selectedAs" defaultMessage="Aire de santé" />:
+                        <FormattedMessage id="main.label.area" defaultMessage="Health area" />:
                         {' '}
                         <b>{area.name}</b>
                         <div className="align-center">
@@ -67,7 +67,7 @@ class AssingAsModale extends Component {
                                     <span>
                                         <FormattedMessage
                                             id="macroplanning.label.unAssignAs"
-                                            defaultMessage="Enlever l'AS de"
+                                            defaultMessage="Remove the area from"
                                         />
                                         {' '}  {area.workzone}
                                     </span>
@@ -76,7 +76,7 @@ class AssingAsModale extends Component {
                         </div>
                     </div>
                     <div>
-                        <FormattedMessage id="macroplanning.label.selectedZs" defaultMessage="Zone de santé" />:
+                        <FormattedMessage id="main.label.zone" defaultMessage="Health area" />:
                         {' '}
                         <b>{zoneName}</b>
                         <div className="align-center">
@@ -89,7 +89,7 @@ class AssingAsModale extends Component {
                                     <span>
                                         <FormattedMessage
                                             id="macroplanning.label.assignZs"
-                                            defaultMessage="Assigner la ZS à"
+                                            defaultMessage="Assigned zone to"
                                         />
                                         {' '}   {workZone.name}
                                     </span>
@@ -104,7 +104,7 @@ class AssingAsModale extends Component {
                                     <span>
                                         <FormattedMessage
                                             id="macroplanning.label.unAssignZs"
-                                            defaultMessage="Enlever la ZS de"
+                                            defaultMessage="Remove zone from"
                                         />
                                         {' '}  {area.workzone}
                                     </span>
@@ -119,7 +119,7 @@ class AssingAsModale extends Component {
                         onClick={() => this.props.closeModale()}
                     >
                         <i className="fa fa-arrow-left" />
-                        <FormattedMessage id="main.label.cancel" defaultMessage="Annuler" />
+                        <FormattedMessage id="main.label.cancel" defaultMessage="Cancel" />
                     </button>
                 </div>
             </ReactModal>

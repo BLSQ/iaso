@@ -55,8 +55,8 @@ class LogsDetails extends Component {
                 {
                     load.loading && (
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     )
@@ -71,7 +71,7 @@ class LogsDetails extends Component {
                             <i className="fa fa-arrow-left" />
                             {' '}
                         </button>
-                        <h2 className="widget__heading"><FormattedMessage id="logs.title" defaultMessage="Modification" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="logs.title" defaultMessage="Log" /></h2>
                     </div>
                     {
                         log && (
@@ -83,7 +83,7 @@ class LogsDetails extends Component {
                                                 <tr>
                                                     <th>
                                                         <FormattedMessage
-                                                            id="logs.label.date"
+                                                            id="main.label.date"
                                                             defaultMessage="Date"
                                                         />
                                                     </th>
@@ -92,8 +92,8 @@ class LogsDetails extends Component {
                                                 <tr>
                                                     <th>
                                                         <FormattedMessage
-                                                            id="logs.label.user"
-                                                            defaultMessage="Utilisateur"
+                                                            id="main.label.user"
+                                                            defaultMessage="User"
                                                         />
                                                     </th>
                                                     <td>
@@ -108,7 +108,7 @@ class LogsDetails extends Component {
                                                 <tr>
                                                     <th>
                                                         <FormattedMessage
-                                                            id="logs.label.type"
+                                                            id="main.label.type"
                                                             defaultMessage="Type"
                                                         />
                                                     </th>
@@ -117,7 +117,7 @@ class LogsDetails extends Component {
                                                 <tr>
                                                     <th>
                                                         <FormattedMessage
-                                                            id="logs.label.source"
+                                                            id="main.label.source"
                                                             defaultMessage="source"
                                                         />
                                                     </th>
@@ -137,8 +137,8 @@ class LogsDetails extends Component {
                                                     {
                                                         !isDuplicateLog && (
                                                             <FormattedMessage
-                                                                id="logs.label.past_value"
-                                                                defaultMessage="Avant"
+                                                                id="main.label.before"
+                                                                defaultMessage="Before"
                                                             />
                                                         )
                                                     }
@@ -146,7 +146,7 @@ class LogsDetails extends Component {
                                                         isDuplicateLog && (
                                                             <FormattedMessage
                                                                 id="logs.label.duplicate_erased"
-                                                                defaultMessage="Doublon effacé"
+                                                                defaultMessage="Duplicate erased"
                                                             />
                                                         )
                                                     }
@@ -158,8 +158,8 @@ class LogsDetails extends Component {
                                                     {
                                                         !isDuplicateLog && (
                                                             <FormattedMessage
-                                                                id="logs.label.now_value"
-                                                                defaultMessage="Après"
+                                                                id="main.label.after"
+                                                                defaultMessage="After"
                                                             />
                                                         )
                                                     }
@@ -167,7 +167,7 @@ class LogsDetails extends Component {
                                                         isDuplicateLog && (
                                                             <FormattedMessage
                                                                 id="logs.label.patient_saved"
-                                                                defaultMessage="Patient sauvé"
+                                                                defaultMessage="Saved patient"
                                                             />
                                                         )
                                                     }
@@ -186,7 +186,7 @@ class LogsDetails extends Component {
                                                 <h4 className="margin-bottom">
                                                     <FormattedMessage
                                                         id="logs.label.delete"
-                                                        defaultMessage="Suppression"
+                                                        defaultMessage="Delted"
                                                     />
                                                 </h4>
                                                 {<LogCompareComponent log={log.past_value} />}
@@ -203,7 +203,7 @@ class LogsDetails extends Component {
                                                 <h4 className="margin-bottom">
                                                     <FormattedMessage
                                                         id="logs.label.create"
-                                                        defaultMessage="Création"
+                                                        defaultMessage="Creation"
                                                     />
                                                 </h4>
                                                 {<LogCompareComponent log={log.new_value} />}

@@ -26,13 +26,13 @@ class HighlightAssignedSiteComponent extends PureComponent {
                             profiles
                             , {
                                 id: 'vector.label.assignedToUser',
-                                defaultMessage: 'Mettre en avant les sites assignés à',
+                                defaultMessage: 'Highlight sites assigned to',
                             },
                             false,
                             'assignedToUser',
                             {
                                 id: 'main.label.none',
-                                defaultMessage: 'Aucun',
+                                defaultMessage: 'None',
                             },
                         ),
                     ]}
@@ -45,7 +45,7 @@ class HighlightAssignedSiteComponent extends PureComponent {
                             <div>
                                 <FormattedMessage
                                     id="vector.label.assignedToCurrent"
-                                    defaultMessage="Assigné à "
+                                    defaultMessage="Assinged to"
                                 />
                                 {currentUserName}
                             </div>
@@ -55,7 +55,7 @@ class HighlightAssignedSiteComponent extends PureComponent {
                             <div>
                                 <FormattedMessage
                                     id="vector.label.assignedToOther"
-                                    defaultMessage="Assigné à un autre utilisateur"
+                                    defaultMessage="Assigned to another user"
                                 />
                             </div>
                         </li>
@@ -64,7 +64,7 @@ class HighlightAssignedSiteComponent extends PureComponent {
                             <div>
                                 <FormattedMessage
                                     id="vector.label.notAssigned"
-                                    defaultMessage="Non assigné"
+                                    defaultMessage="Not assigned"
                                 />
                             </div>
                         </li>

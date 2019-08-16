@@ -174,7 +174,7 @@ class Instances extends Component {
             <section className="instances">
                 <TopBar
                     title={`${formatMessage({
-                        defaultMessage: 'Enregistrement(s) pour le formulaire',
+                        defaultMessage: 'Record(s) for the form',
                         id: 'iaso.instance.form',
                     })}: ${currentForm ? currentForm.name : ''}`}
                 />
@@ -197,14 +197,14 @@ class Instances extends Component {
                                         <Tab
                                             value="list"
                                             label={formatMessage({
-                                                defaultMessage: 'Liste',
+                                                defaultMessage: 'List',
                                                 id: 'iaso.instande.list',
                                             })}
                                         />
                                         <Tab
                                             value="map"
                                             label={formatMessage({
-                                                defaultMessage: 'Carte',
+                                                defaultMessage: 'Map',
                                                 id: 'iaso.instande.map',
                                             })}
                                         />

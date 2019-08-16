@@ -21,7 +21,7 @@ class MergedPatientDetailsWrapper extends React.Component {
                         <tr>
                             <td>
                                 <h2 className="widget__heading">
-                                    <FormattedMessage id="patientsDuplicate.tableTitleResult" defaultMessage="Résultat" />
+                                    <FormattedMessage id="main.label.result" defaultMessage="Résultat" />
                                 </h2>
                             </td>
                         </tr>

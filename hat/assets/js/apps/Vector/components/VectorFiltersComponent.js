@@ -46,7 +46,7 @@ class VectorFiltersComponent extends PureComponent {
                     <h2 className="widget__heading inline-block width-auto margin-right small-padding-top">
                         <FormattedMessage
                             id="vector.label.period"
-                            defaultMessage="Période d'activité"
+                            defaultMessage="Activity period"
                         />:{' '}
                     </h2>
                     <PeriodSelectorComponent

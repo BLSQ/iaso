@@ -1,7 +1,7 @@
 const treatmentsMedecineMessages = {
     none: {
-        defaultMessage: 'Aucun',
-        id: 'treatements.values.none',
+        defaultMessage: 'None',
+        id: 'main.label.none',
     },
     pentamidine: {
         defaultMessage: 'Pentamidine',
@@ -36,19 +36,19 @@ const treatmentsEventsMessages = {
         id: 'treatements.events.coma',
     },
     desorientation: {
-        defaultMessage: 'Désorientation',
+        defaultMessage: 'Deesorientation',
         id: 'treatements.events.desorientation',
     },
     obnubilation: {
         defaultMessage: 'Obnibulation',
-        id: 'treatements.events.coma',
+        id: 'treatements.events.obnibulation',
     },
     behaviour: {
-        defaultMessage: 'Troubles du comportement',
+        defaultMessage: 'Behavioral disorders',
         id: 'treatements.events.behaviour',
     },
     neuro: {
-        defaultMessage: 'Troubles neurologiques',
+        defaultMessage: 'Neurological disorders',
         id: 'treatements.events.neuro',
     },
     convulsion: {
@@ -56,49 +56,49 @@ const treatmentsEventsMessages = {
         id: 'treatements.events.convulsion',
     },
     'acute respiratory failure': {
-        defaultMessage: 'Troubles respiratoires sévères',
+        defaultMessage: 'Severe respiratory problems',
         id: 'treatements.events.cacute-respiratory-failure',
     },
     septicemy: {
-        defaultMessage: 'Septicémie',
+        defaultMessage: 'Septicemy',
         id: 'treatements.events.septicemy',
     },
     vomiting: {
-        defaultMessage: 'Diarrhées',
+        defaultMessage: 'Vomitting',
         id: 'treatements.events.vomiting',
     },
 };
 
 const incompleteReasonsMessages = {
     outofstock: {
-        defaultMessage: 'Rupture de stock',
+        defaultMessage: 'Out of stock',
         id: 'treatements.events.outofstock',
     },
     abandon: {
-        defaultMessage: 'Abandon',
+        defaultMessage: 'Abandonment',
         id: 'treatements.events.abandon',
     },
     death: {
-        defaultMessage: 'Décès',
-        id: 'treatements.events.death',
+        defaultMessage: 'Death',
+        id: 'main.label.death',
     },
     patientincapacity: {
-        defaultMessage: 'Incapacité du patient',
+        defaultMessage: 'Patient incapacity',
         id: 'treatements.events.patientincapacity',
     },
 };
 
 const deathMomentMessages = {
     before: {
-        defaultMessage: 'Avant traitement',
+        defaultMessage: 'Before treatment',
         id: 'treatements.events.before',
     },
     during: {
-        defaultMessage: 'Pendant traitement',
+        defaultMessage: 'During treatment',
         id: 'treatements.events.during',
     },
     after: {
-        defaultMessage: 'Après traitement',
+        defaultMessage: 'After treatment',
         id: 'treatements.events.after',
     },
 };

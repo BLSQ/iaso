@@ -52,21 +52,21 @@ class VectorSync extends React.Component {
                 {
                     loading &&
                     <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Chargement en cours',
-                        id: 'microplanning.labels.loading',
+                        defaultMessage: 'Loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }
                 <div className="widget__container">
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="VectorSync.title" defaultMessage="Synchronisation des données" />
+                            <FormattedMessage id="vectorSync.title" defaultMessage="Synchronisation des données" />
                         </h2>
                     </div>
                     <div className="widget__content display-flex ">
                         <div>
                             <div className="filter-item-subtitle ">
-                                <FormattedMessage id="VectorSync.period.title" defaultMessage="Période" />
+                                <FormattedMessage id="main.label.period" defaultMessage="Period" />
                             </div>
                             <PeriodSelectorComponent
                                 dateFrom={params.dateFrom}

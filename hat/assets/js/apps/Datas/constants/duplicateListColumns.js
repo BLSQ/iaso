@@ -16,7 +16,7 @@ const duplicateListColumns = formatMessage => (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Score de similarité',
+                defaultMessage: 'Similarity score',
                 id: 'duplicate.label.similarity_score',
             }),
             accessor: 'similarity_score',
@@ -43,7 +43,7 @@ const duplicateListColumns = formatMessage => (
         {
             Header: `${formatMessage({
                 defaultMessage: 'Enregistrement',
-                id: 'duplicate.label.patient',
+                id: 'main.label.record',
             })} A`,
             accessor: 'patient1__last_name',
             Cell: settings => (
@@ -51,8 +51,8 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Nom',
-                                id: 'duplicate.label.name',
+                                defaultMessage: 'Name',
+                                id: 'main.label.name',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.last_name !== settings.original.patient2.last_name ? 'error-text' : ''}`}>
@@ -62,8 +62,8 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Postnom',
-                                id: 'duplicate.label.post_nom',
+                                defaultMessage: 'Post name',
+                                id: 'main.label.postName',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.post_name !== settings.original.patient2.post_name ? 'error-text' : ''}`}>
@@ -73,8 +73,8 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Prénom',
-                                id: 'duplicate.label.first_name',
+                                defaultMessage: 'First name',
+                                id: 'main.label.firstName',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.first_name !== settings.original.patient2.first_name ? 'error-text' : ''}`}>
@@ -84,8 +84,8 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Nom de la mère',
-                                id: 'duplicate.label.mothers_surname',
+                                defaultMessage: 'Mother surname',
+                                id: 'main.label.mothers_surname',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.mothers_surname !== settings.original.patient2.mothers_surname ? 'error-text' : ''}`}>
@@ -95,8 +95,8 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Année de naissance',
-                                id: 'duplicate.label.year_of_birth',
+                                defaultMessage: 'Year of birth',
+                                id: 'main.label.year_of_birth',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.year_of_birth !== settings.original.patient2.year_of_birth ? 'error-text' : ''}`}>
@@ -106,22 +106,22 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <strong>
                             {`${formatMessage({
-                                defaultMessage: 'Sexe',
-                                id: 'duplicate.label.sex',
+                                defaultMessage: 'Sex',
+                                id: 'main.label.sex',
                             })}: `}
                         </strong>
                         <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error-text' : ''}`}>
                             {
                                 settings.original.patient1.sex === 'female' &&
                                 formatMessage({
-                                    defaultMessage: 'Femme',
+                                    defaultMessage: 'Female',
                                     id: 'main.label.female',
                                 })
                             }
                             {
                                 settings.original.patient1.sex === 'male' &&
                                 formatMessage({
-                                    defaultMessage: 'Homme',
+                                    defaultMessage: 'Male',
                                     id: 'main.label.male',
                                 })
                             }
@@ -137,8 +137,8 @@ const duplicateListColumns = formatMessage => (
         },
         {
             Header: `${formatMessage({
-                defaultMessage: 'Enregistrement',
-                id: 'duplicate.label.patient',
+                defaultMessage: 'Record',
+                id: 'main.label.record',
             })} B`,
             accessor: 'patient2__last_name',
             Cell: settings => (
@@ -173,14 +173,14 @@ const duplicateListColumns = formatMessage => (
                             {
                                 settings.original.patient2.sex === 'female' &&
                                 formatMessage({
-                                    defaultMessage: 'Femme',
+                                    defaultMessage: 'Female',
                                     id: 'main.label.female',
                                 })
                             }
                             {
                                 settings.original.patient2.sex === 'male' &&
                                 formatMessage({
-                                    defaultMessage: 'Homme',
+                                    defaultMessage: 'Male',
                                     id: 'main.label.male',
                                 })
                             }
@@ -195,7 +195,7 @@ const duplicateListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Algorithme',
+                defaultMessage: 'Algorith',
                 id: 'duplicate.label.algorithm',
             }),
             accessor: 'algorithm',

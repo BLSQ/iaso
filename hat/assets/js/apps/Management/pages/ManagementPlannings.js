@@ -23,7 +23,7 @@ class ManagementPlannings extends React.Component {
             tableColumns: [
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Nom',
+                        defaultMessage: 'Name',
                         id: 'main.label.name',
                     }),
                     accessor: 'name',
@@ -33,8 +33,8 @@ class ManagementPlannings extends React.Component {
                         >
                             <span>
                                 {`${settings.original.is_template ? `${formatMessage({
-                                    defaultMessage: 'Modèle',
-                                    id: 'management.planning.label.template',
+                                    defaultMessage: 'Template',
+                                    id: 'main.label.template',
                                 })}: ` : ''}`}{settings.original.name}
                             </span>
                         </span>
@@ -52,7 +52,7 @@ class ManagementPlannings extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Date de modification',
+                        defaultMessage: 'Update date',
                         id: 'main.label.updateDate',
                     }),
                     accessor: 'updated_at',
@@ -63,7 +63,7 @@ class ManagementPlannings extends React.Component {
                 {
                     Header: formatMessage({
                         defaultMessage: 'Actions',
-                        id: 'main.actions',
+                        id: 'main.label.actions',
                     }),
                     sortable: false,
                     resizable: false,
@@ -75,7 +75,7 @@ class ManagementPlannings extends React.Component {
                                     onClick={() => this.editPlanning(settings.original, true)}
                                 >
                                     <i className="fa fa-files-o" />
-                                    <FormattedMessage id="main.label.duplicate" defaultMessage="Copier" />
+                                    <FormattedMessage id="main.label.duplicate" defaultMessage="Copy" />
                                 </button>
                                 {
                                     (!settings.original.is_template ||
@@ -86,7 +86,7 @@ class ManagementPlannings extends React.Component {
                                             onClick={() => this.editPlanning(settings.original)}
                                         >
                                             <i className="fa fa-pencil-square-o" />
-                                            <FormattedMessage id="main.label.edit" defaultMessage="Editer" />
+                                            <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                                         </button>
                                     </span>
                                 }
@@ -99,7 +99,7 @@ class ManagementPlannings extends React.Component {
                                             onClick={() => this.showDelete(settings.original)}
                                         >
                                             <i className="fa fa-trash" />
-                                            <FormattedMessage id="main.label.delete" defaultMessage="Effacer" />
+                                            <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
                                         </button>
                                     </span>
                                 }
@@ -257,7 +257,7 @@ class ManagementPlannings extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.planning.title"
-                                defaultMessage="Reprogrammation"
+                                defaultMessage="Planning"
                             />
                         </h2>
 
@@ -267,8 +267,8 @@ class ManagementPlannings extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }
@@ -296,7 +296,7 @@ class ManagementPlannings extends React.Component {
                                 onClick={() => this.editPlanning()}
                             >
                                 <i className="fa fa-plus" />
-                                <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
+                                <FormattedMessage id="main.label.new" defaultMessage="New" />
                             </button>
                         </div>
                     </section>

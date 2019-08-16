@@ -31,7 +31,7 @@ class Home extends Component {
                 {
                     currentUser.isConnected === false &&
                     <a href="/login" className="button home-login-button">
-                        <FormattedMessage id="home.connect" defaultMessage="Se connecter" />
+                        <FormattedMessage id="home.connect" defaultMessage="Login" />
                     </a>
                 }
 

@@ -172,8 +172,8 @@ export class ManagementDetails extends Component {
                     loading &&
                     <div>
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microplanning.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     </div>
@@ -194,15 +194,15 @@ export class ManagementDetails extends Component {
                                 {
                                     currentDetail &&
                                     <span>
-                                        <FormattedMessage id="details.label.user" defaultMessage="Utilisateur" />:{` ${currentDetail.last_user}`}
+                                        <FormattedMessage id="main.label.user" defaultMessage="User" />:{` ${currentDetail.last_user}`}
                                         {' - '}
-                                        <FormattedMessage id="details.label.team" defaultMessage="Equipe" />:{` ${currentDetail.last_team}`}
+                                        <FormattedMessage id="main.label.team" defaultMessage="Team" />:{` ${currentDetail.last_team}`}
                                     </span>
                                 }
                                 <div className="float-right">
                                     <span className="filter-checkbox">
                                         <label htmlFor="checkbox-is-test">
-                                            <FormattedMessage id="details.label.is_test" defaultMessage="Tablette de test" />:
+                                            <FormattedMessage id="details.label.is_test" defaultMessage="Test device" />:
                                         </label>
                                         <input
                                             id="checkbox-is-test"
@@ -221,8 +221,8 @@ export class ManagementDetails extends Component {
                                         className="button--save--tiny margin-left"
                                     >
                                         <FormattedMessage
-                                            id="details.label.save"
-                                            defaultMessage="Sauver"
+                                            id="main.label.save"
+                                            defaultMessage="Save"
                                         />
                                     </button>
                                 </div>
@@ -249,7 +249,7 @@ export class ManagementDetails extends Component {
                                 {
                                     currentDetail &&
                                     <div>
-                                        <FormattedMessage id="details.label.team" defaultMessage="Equipe" />:{` ${currentDetail.name}`}
+                                        <FormattedMessage id="main.label.team" defaultMessage="Team" />:{` ${currentDetail.name}`}
                                     </div>
                                 }
                             </h2>
@@ -308,8 +308,8 @@ export class ManagementDetails extends Component {
                         <div>
                             {`${formatThousand(villages.length)} `}
                             <FormattedMessage
-                                id="locator.list.result"
-                                defaultMessage="résultat(s)"
+                                id="table.results_"
+                                defaultMessage="result(s)"
                             />
                         </div>
                     </div>
@@ -328,8 +328,8 @@ export class ManagementDetails extends Component {
                         villages.length === 0 &&
                         <div className="widget__content">
                             <FormattedMessage
-                                id="details.label.noresult"
-                                defaultMessage="Aucun résultat"
+                                id="table.noResult"
+                                defaultMessage="No result"
                             />
                         </div>
                     }
@@ -348,11 +348,11 @@ export class ManagementDetails extends Component {
                                         <ul className="map__option__list legend">
                                             <li className="map__option__list__item">
                                                 <i className="map__option__icon--without-positive-cases" />
-                                                <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Sans nouveau cas" />
+                                                <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Without new cases" />
                                             </li>
                                             <li className="map__option__list__item">
                                                 <i className="map__option__icon--with-positive-cases" />
-                                                <FormattedMessage id="management.detail.legend.newCases" defaultMessage="Avec nouveaux cas" />
+                                                <FormattedMessage id="management.detail.legend.newCases" defaultMessage="With new cases" />
                                             </li>
                                         </ul>
                                     </form>
@@ -391,8 +391,8 @@ export class ManagementDetails extends Component {
                         <div className="widget__container">
                             <div className="widget__content">
                                 <FormattedMessage
-                                    id="details.label.noresult"
-                                    defaultMessage="Aucun résultat"
+                                    id="table.noResult"
+                                    defaultMessage="No result"
                                 />
                             </div>
                         </div>

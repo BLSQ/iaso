@@ -1,22 +1,22 @@
 const villageSelectionLegend = [
     {
         key: 'highlight',
-        defaultMessage: 'Villages endémiques',
+        defaultMessage: 'Endemic villages',
         messageKey: 'microplanning.legend.highlight',
     },
     {
         key: 'YES',
-        defaultMessage: 'Villages NON endémiques',
+        defaultMessage: 'Officla villages',
         messageKey: 'microplanning.legend.official',
     },
     {
         key: 'selected',
-        defaultMessage: 'Villages sélectionnés',
+        defaultMessage: 'Selected villages',
         messageKey: 'microplanning.legend.selected',
     },
     {
         key: 'OTHER',
-        defaultMessage: 'Villages sélectionnés pour une autre équipe que l’équipe courante',
+        defaultMessage: 'Selected villages for another team than current one',
         messageKey: 'microplanning.legend.selectedByOther',
     },
 ];
@@ -24,12 +24,12 @@ const villageSelectionLegend = [
 const geoScopeLegend = [
     {
         key: 'insideGeoloc',
-        defaultMessage: 'Villages dans une AS couverte par l’équipe courante',
+        defaultMessage: 'Villages in one area of current team',
         messageKey: 'microplanning.legend.insideGeoloc',
     },
     {
         key: 'outsideGeoloc',
-        defaultMessage: 'Villages dans une AS NON couverte par l’équipe courante',
+        defaultMessage: 'Villages not in one area of current team',
         messageKey: 'microplanning.legend.outsideGeoloc',
     },
 ];

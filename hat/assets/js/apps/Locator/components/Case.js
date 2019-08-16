@@ -18,56 +18,56 @@ class Case extends React.Component {
                     <thead>
                         <tr>
                             <th colSpan="2">
-                                <FormattedMessage id="locator.label.case-container.title" defaultMessage="Données rapportées" />
+                                <FormattedMessage id="locator.label.case-container.title" defaultMessage="Reported data" />
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.source" defaultMessage="Source" />
+                                <FormattedMessage id="main.label.source" defaultMessage="Source" />
                             </th>
                             <td>{this.props.case.source ? this.props.case.source : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.form_year" defaultMessage="Année" />
+                                <FormattedMessage id="main.label.year" defaultMessage="Année" />
                             </th>
                             <td>{this.props.case.form_year ? this.props.case.form_year : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.form_number" defaultMessage="N° de formulaire" />
+                                <FormattedMessage id="main.label.form_number" defaultMessage="Form number" />
                             </th>
                             <td>{this.props.case.form_number ? this.props.case.form_number : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.mobile_unit" defaultMessage="Unité" />
+                                <FormattedMessage id="microplanning.label.team" defaultMessage="Team" />
                             </th>
                             <td>{currentTeam}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.lastname" defaultMessage="Nom" />
+                                <FormattedMessage id="main.label.team" defaultMessage="Name" />
                             </th>
                             <td>{this.props.case.patient.last_name ? this.props.case.patient.last_name : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.prename" defaultMessage="Postnom" />
+                                <FormattedMessage id="main.label.postName" defaultMessage="Post name" />
                             </th>
                             <td>{this.props.case.patient.post_name ? this.props.case.patient.post_name : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.first_name" defaultMessage="Prénom" />
+                                <FormattedMessage id="main.label.firstName" defaultMessage="First name" />
                             </th>
                             <td>{this.props.case.patient.first_name ? this.props.case.patient.first_name : '--'}</td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.province" defaultMessage="Province" />
+                                <FormattedMessage id="main.label.province" defaultMessage="Province" />
                             </th>
                             <td>{this.props.case.location.province ? this.props.case.location.province : '--'}</td>
                         </tr>
@@ -85,7 +85,7 @@ class Case extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="locator.label.case-container.village" defaultMessage="Village" />
+                                <FormattedMessage id="main.label.village" defaultMessage="Village" />
                             </th>
                             <td>{this.props.case.location.village ? this.props.case.location.village : '--'}</td>
                         </tr>

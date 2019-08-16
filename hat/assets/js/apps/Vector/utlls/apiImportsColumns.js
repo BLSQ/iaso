@@ -19,7 +19,7 @@ const apiImportsColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Utilisateur',
+                defaultMessage: 'User',
                 id: 'main.label.user',
             }),
             accessor: 'user__username',
@@ -45,7 +45,7 @@ const apiImportsColumns = formatMessage => (
                         <span>
                             {`${settings.original.site_count} `}
                             {formatMessage({
-                                defaultMessage: 'nouveau(x) site(s)',
+                                defaultMessage: 'new site(s)',
                                 id: 'vector.sync.label.newSites',
                             })}
                         </span>
@@ -55,7 +55,7 @@ const apiImportsColumns = formatMessage => (
                         <span>
                             {`${settings.original.catch_count} `}
                             {formatMessage({
-                                defaultMessage: 'nouveau(x) piège(s)',
+                                defaultMessage: 'new(x) catch(s)',
                                 id: 'vector.sync.label.newCatches',
                             })}
                         </span>

@@ -10,7 +10,7 @@ const qualityColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Date',
-                id: 'quality.label.date',
+                id: 'main.label.date',
             }),
             accessor: 'date',
             Cell: settings => (
@@ -23,13 +23,13 @@ const qualityColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Testeur',
-                id: 'quality.label.tester',
+                defaultMessage: 'Tester',
+                id: 'main.label.tester',
             }),
             accessor: 'tester__user__username',
             Cell: settings => (
                 <span>
-                    {settings.original.tester ? settings.original.tester.userName : formatMessage({defaultMessage: '*Inconnu*', id: 'quality.label.testerUnknown'})}
+                    {settings.original.tester ? settings.original.tester.userName : formatMessage({defaultMessage: '*Inconnu*', id: 'main.label.testerUnknown'})}
                     {settings.original.tester && ` (${settings.original.tester.firstName}${settings.original.tester.lastName ? `${settings.original.tester.lastName}` : ''})`}
                 </span>
             ),
@@ -37,14 +37,14 @@ const qualityColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Type',
-                id: 'quality.label.type',
+                id: 'main.label.type',
             }),
             accessor: 'type',
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Province',
-                id: 'quality.label.province',
+                id: 'main.label.province',
             }),
             accessor: 'village__province_name',
             Cell: settings => (
@@ -57,7 +57,7 @@ const qualityColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Zone',
-                id: 'quality.label.zone',
+                id: 'main.label.zone_short',
             }),
             accessor: 'village__ZS_name',
             Cell: settings => (
@@ -69,8 +69,8 @@ const qualityColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Aire',
-                id: 'quality.label.area',
+                defaultMessage: 'Area',
+                id: 'main.label.area_short',
             }),
             accessor: 'village__AS_name',
             Cell: settings => (

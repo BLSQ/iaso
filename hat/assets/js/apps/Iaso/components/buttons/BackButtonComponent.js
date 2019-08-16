@@ -26,8 +26,8 @@ function BackButton(props) {
         >
             <ArrowBackIcon className={classes.backButton} />
             <FormattedMessage
-                id="iaso.orgunits.back"
-                defaultMessage="Retour"
+                id="iaso.orgUnits.back"
+                defaultMessage="Back"
             />
         </Button>
     );

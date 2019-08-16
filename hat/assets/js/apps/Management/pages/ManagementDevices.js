@@ -28,8 +28,8 @@ const MESSAGES = defineMessages({
         id: 'teamsdevices.labels.all',
     },
     loading: {
-        defaultMessage: 'Chargement en cours',
-        id: 'teamsdevices.labels.loading',
+        defaultMessage: 'Loading',
+        id: 'main.label.loading',
     },
 });
 
@@ -131,7 +131,7 @@ export class ManagementDevices extends Component {
                 <div className="widget__container ">
                     <div className="widget__header">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="teamsdevices.header.results" defaultMessage="Synchronisation des Appareils" />
+                            <FormattedMessage id="teamsdevices.header.results" defaultMessage="Devices sync" />
                         </h2>
                     </div>
                     <div className="widget__content--tier">
@@ -142,7 +142,7 @@ export class ManagementDevices extends Component {
                                 filters={[
                                     users(filters.profiles, {
                                         id: 'main.label.lastUser',
-                                        defaultMessage: 'Dernier utilisateur',
+                                        defaultMessage: 'Last user',
                                     }, true, 'profile_id'),
                                     withTestDevices(),
                                 ]}

@@ -51,15 +51,15 @@ class MapSelectionSummary extends Component {
                 </div>
                 <div className={`map__selection__summary__item ${displayWarning ? 'error-text' : ''}`}>
                     <FormattedMessage
-                        id="microplanning.selected.capacity"
-                        defaultMessage="Capacité"
+                        id="main.label.capacity"
+                        defaultMessage="Capacity"
                     />
                     <span className="map__selection__summary__number">{capacity}</span>
                 </div>
                 <div className={`map__selection__summary__item tooltip--warning ${displayWarning ? 'error-text' : ''}`}>
                     <FormattedMessage
                         id="microplanning.selected.assignedPopulation"
-                        defaultMessage="Population assignée"
+                        defaultMessage="Assigned population"
                     />
                     <span className="map__selection__summary__number">{assignedPopulation}</span>
                     <div className="tooltip__warning">
@@ -82,7 +82,7 @@ class MapSelectionSummary extends Component {
                 <div className="map__selection__summary__item tooltip--warning">
                     <FormattedMessage
                         id="microplanning.selected.population"
-                        defaultMessage="Population estimée"
+                        defaultMessage="Estimated population"
                     />
                     <span className="map__selection__summary__number">{population}</span>
                 </div>

@@ -10,26 +10,26 @@ import Filters from './Filters';
 const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
-        id: 'microplanning.labels.all',
+        id: 'main.label.all',
     },
     'years-select': {
         defaultMessage: 'Select years',
         id: 'microplanning.labels.years.select',
     },
     loading: {
-        defaultMessage: 'Chargement en cours',
-        id: 'microplanning.labels.loading',
+        defaultMessage: 'Loading',
+        id: 'main.labels.loading',
     },
     searchPlaceholder: {
-        defaultMessage: 'Recherche',
-        id: 'listlocator.search.placeholder',
+        defaultMessage: 'Search',
+        id: 'main.label.search',
     },
     not_located: {
-        defaultMessage: 'Pas encore localisés',
+        defaultMessage: 'Not yet localised',
         id: 'listlocator.search.locationUnlocalized',
     },
     not_found: {
-        defaultMessage: 'Marqués comme non trouvés',
+        defaultMessage: 'Mark as not found',
         id: 'listlocator.search.locationUnfound',
     },
 });
@@ -61,8 +61,8 @@ class ListFilters extends React.Component {
                 <div>
                     <span className="map__text--select">
                         <FormattedMessage
-                            id="locator.list.textualsearch.label"
-                            defaultMessage="Recherche textuelle"
+                            id="main.label.textSearch"
+                            defaultMessage="Text search"
                         />
                     </span>
                     <Search
@@ -79,7 +79,7 @@ class ListFilters extends React.Component {
                     <span className="map__text--select align-right">
                         <FormattedMessage
                             id="locator.list.normalized"
-                            defaultMessage="AS déjà trouvée"
+                            defaultMessage="Area already found"
                         />
                         <input
                             type="checkbox"
@@ -92,7 +92,7 @@ class ListFilters extends React.Component {
                     <span className="map__text--select align-right">
                         <FormattedMessage
                             id="locator.list.notnormalized"
-                            defaultMessage="AS pas encore trouvée"
+                            defaultMessage="Area not found"
                         />
                         <input
                             type="checkbox"
@@ -107,8 +107,8 @@ class ListFilters extends React.Component {
                     <div className="filter-item">
                         <div className="map__text--select filter-item-subtitle ">
                             <FormattedMessage
-                                id="management.teams.title"
-                                defaultMessage="Equipes"
+                                id="main.label.teams"
+                                defaultMessage="Teams"
                             />
                         </div>
                         <Select
@@ -130,8 +130,8 @@ class ListFilters extends React.Component {
                     <div className="filter-item">
                         <div className="map__text--select filter-item-subtitle ">
                             <FormattedMessage
-                                id="locator.list.years"
-                                defaultMessage="Années"
+                                id="main.label.years"
+                                defaultMessage="Years"
                             />
                         </div>
                         <Select
@@ -154,8 +154,8 @@ class ListFilters extends React.Component {
                     <div className="filter-item">
                         <div className="map__text--select filter-item-subtitle ">
                             <FormattedMessage
-                                id="locator.list.location"
-                                defaultMessage="Localisation"
+                                id="main.label.location"
+                                defaultMessage="Location"
                             />
                         </div>
                         <Select

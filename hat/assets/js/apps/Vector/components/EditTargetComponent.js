@@ -48,7 +48,7 @@ class EditTargetComponent extends Component {
                 overlayClassName="transparent-overlay"
             >
                 <div className="widget__header">
-                    <FormattedMessage id="vector.modale.Target.title" defaultMessage="Ecran" />
+                    <FormattedMessage id="vector.modale.Target.title" defaultMessage="Target" />
                 </div>
                 <section className="edit-modal large">
                     <section>
@@ -68,7 +68,7 @@ class EditTargetComponent extends Component {
                             >
                                 <FormattedMessage
                                     id="main.label.name"
-                                    defaultMessage="Nom"
+                                    defaultMessage="Name"
                                 />:
                             </label>
                             <input
@@ -87,7 +87,7 @@ class EditTargetComponent extends Component {
                             >
                                 <FormattedMessage
                                     id="main.label.river"
-                                    defaultMessage="Rivière"
+                                    defaultMessage="River"
                                 />:
                             </label>
                             <input
@@ -103,8 +103,8 @@ class EditTargetComponent extends Component {
                                 className="filter__container__select__label"
                             >
                                 <FormattedMessage
-                                    id="verctor.label.ignore"
-                                    defaultMessage="Ignorer"
+                                    id="main.label.ignore"
+                                    defaultMessage="Ignore"
                                 />:
                             </label>
                             <section className="check-box-container">
@@ -121,8 +121,8 @@ class EditTargetComponent extends Component {
                                     className="checkbox-label"
                                 >
                                     <FormattedMessage
-                                        id="verctor.label.yes"
-                                        defaultMessage="Oui"
+                                        id="main.label.yes"
+                                        defaultMessage="Yes"
                                     />
                                 </label>
                                 <input
@@ -138,8 +138,8 @@ class EditTargetComponent extends Component {
                                     className="checkbox-label"
                                 >
                                     <FormattedMessage
-                                        id="verctor.label.no"
-                                        defaultMessage="Non"
+                                        id="main.label.no"
+                                        defaultMessage="No"
                                     />
                                 </label>
                             </section>
@@ -152,7 +152,7 @@ class EditTargetComponent extends Component {
                             onClick={() => this.props.toggleModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="close" />
                         </button>
                         <button
                             disabled={
@@ -163,7 +163,7 @@ class EditTargetComponent extends Component {
                             onClick={() => saveTarget(target)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="vector.label.savetarget" defaultMessage="Sauvegarder l'écran" />
+                            <FormattedMessage id="vector.label.savetarget" defaultMessage="Save target" />
                         </button>
                     </div>
                 </section>

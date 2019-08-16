@@ -97,7 +97,7 @@
                     &.select-label,
                     &.textarea-label {
                         top: -6px;
-                        flex-basis: 35%;
+                        flex-basis: 37%;
                         position: relative;
                         padding-top: 0 !important;
                     }
@@ -261,7 +261,7 @@
     }
     input[type="checkbox"] {
         margin: 5px 0;
-        width: 100%;
+        // width: 100%;
     }
     &.user-modale {
         input[type="checkbox"] {

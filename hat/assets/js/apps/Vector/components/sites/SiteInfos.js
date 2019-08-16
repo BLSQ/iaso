@@ -23,7 +23,7 @@ class SiteInfos extends Component {
                                 <th>
                                     <FormattedMessage
                                         id="main.label.name"
-                                        defaultMessage="Nom"
+                                        defaultMessage="Name"
                                     />
                                 </th>
                                 <td>

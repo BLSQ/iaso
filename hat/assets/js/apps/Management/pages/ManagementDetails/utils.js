@@ -111,7 +111,7 @@ export const renderConfirmationPourcentage = (total) => {
             {
                 total.total_confirmation_tests !== 0 &&
                 <div>
-                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.cattPositive" defaultMessage="poistive(s)" /> ({confirmationPercentage}%)
+                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.cattPositive" defaultMessage="positive(s)" /> ({confirmationPercentage}%)
                 </div>
             }
         </div>);

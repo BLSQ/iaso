@@ -78,7 +78,7 @@ class WorkzoneModale extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.name"
-                                defaultMessage="Nom"
+                                defaultMessage="Name"
                             />:
                         </label>
                         <input

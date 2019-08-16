@@ -38,7 +38,7 @@ class InstancesMap extends Component {
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <FormattedMessage id="iaso.instance.name" defaultMessage="Nom" />
+                                                    <FormattedMessage id="iaso.instance.name" defaultMessage="Name" />
                                                     :
                                                 </td>
                                                 <td>

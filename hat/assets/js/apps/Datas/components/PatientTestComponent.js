@@ -218,7 +218,7 @@ class PatientTestComponent extends React.Component {
                                     }
                                     {
                                         !currentCase.test_catt_session_type &&
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
                                     }
                                 </td>
                             </tr>
@@ -306,7 +306,7 @@ class PatientTestComponent extends React.Component {
                                 {
                                     test.latitude ?
                                         test.latitude :
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
                                 }
                             </td>
                         </tr>
@@ -318,7 +318,7 @@ class PatientTestComponent extends React.Component {
                                 {
                                     test.longitude ?
                                         test.longitude :
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Non communiqué" />
+                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
                                 }
                             </td>
                         </tr>

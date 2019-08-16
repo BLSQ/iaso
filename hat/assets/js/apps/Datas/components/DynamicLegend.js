@@ -92,7 +92,7 @@ class DynamicLegend extends Component {
                                                 {
                                                     !hasLocalisation &&
                                                     <span className="text-padding-left">
-                                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="Pas de localisation" />)
+                                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />)
                                                     </span>
                                                 }
                                             </div>

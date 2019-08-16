@@ -123,7 +123,7 @@ class Instances extends Component {
     goBack() {
         const { redirectTo, params } = this.props;
         this.props.setCurrentForm(undefined);
-        this.props.setInstances([], true, params, 0, 0);
+        this.props.setInstances([], params, 0, 0);
         redirectTo('forms', {
             date_from: params.date_from,
             date_to: params.date_to,
@@ -145,10 +145,10 @@ class Instances extends Component {
             const instances = {
                 ...data.instances,
             };
+            this.props.setInstances(data.instances, params, data.count, data.pages);
             this.setState({
                 tableColumns: getInstancesColumns(formatMessage, instances, this),
             });
-            this.props.setInstances(data.instances, true, params, data.count, data.pages);
         });
 
         const urlLocation = this.getEndpointUrl(false, '', true);
@@ -185,31 +185,33 @@ class Instances extends Component {
                                 <BackButton goBack={() => this.goBack()} />
                             </Container>
                             <Container maxWidth={false} className={classes.container}>
-                                { <AppBar position="static">
-                                    <Tabs
-                                        value={tab}
-                                        classes={{
-                                            indicator: classes.indicator,
-                                        }}
-                                        onChange={(event, newtab) => this.handleChangeTab(newtab)
-                                        }
-                                    >
-                                        <Tab
-                                            value="list"
-                                            label={formatMessage({
-                                                defaultMessage: 'List',
-                                                id: 'iaso.instande.list',
-                                            })}
-                                        />
-                                        <Tab
-                                            value="map"
-                                            label={formatMessage({
-                                                defaultMessage: 'Map',
-                                                id: 'iaso.instande.map',
-                                            })}
-                                        />
-                                    </Tabs>
-                                </AppBar> }
+                                {
+                                    <AppBar position="static">
+                                        <Tabs
+                                            value={tab}
+                                            classes={{
+                                                indicator: classes.indicator,
+                                            }}
+                                            onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                            }
+                                        >
+                                            <Tab
+                                                value="list"
+                                                label={formatMessage({
+                                                    defaultMessage: 'List',
+                                                    id: 'iaso.instande.list',
+                                                })}
+                                            />
+                                            <Tab
+                                                value="map"
+                                                label={formatMessage({
+                                                    defaultMessage: 'Map',
+                                                    id: 'iaso.instande.map',
+                                                })}
+                                            />
+                                        </Tabs>
+                                    </AppBar>
+                                }
                                 {
                                     tab === 'list' && (
                                         <CustomTableComponent
@@ -276,7 +278,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
-    setInstances: (instances, showPagination, params, count, pages) => dispatch(setInstances(instances, showPagination, params, count, pages)),
+    setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
     setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });

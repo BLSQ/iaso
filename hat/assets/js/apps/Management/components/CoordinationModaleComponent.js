@@ -130,7 +130,7 @@ class CoordinationModale extends Component {
                             onClick={() => this.props.saveCoordination(this.state.coordination)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveCoordination" defaultMessage="Sauvegarder la coordination" />
+                            <FormattedMessage id="management.label.saveCoordination" defaultMessage="Save coordination" />
                         </button>
                     </div>
                 </section>

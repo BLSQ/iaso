@@ -31,7 +31,7 @@ class DeleteModale extends Component {
                 onRequestClose={() => this.props.toggleModal()}
             >
                 <div>
-                    <FormattedMessage id="main.management.eraseMsg" defaultMessage="Confirmer la suppression de" />
+                    <FormattedMessage id="main.label.eraseMsg" defaultMessage="Confirm deletion of" />
                     {` ${this.props.message !== '' ? this.props.message : this.props.element.name}`}
                 </div>
                 <div className="delete-modal-buttons">

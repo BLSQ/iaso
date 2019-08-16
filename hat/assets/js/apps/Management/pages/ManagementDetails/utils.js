@@ -7,24 +7,24 @@ import { formatThousand, getPercentage } from '../../../../utils';
 
 export const MESSAGES = defineMessages({
     table: {
-        defaultMessage: 'Liste',
-        id: 'details.label.list',
+        defaultMessage: 'List',
+        id: 'main.label.list',
     },
     map: {
-        defaultMessage: 'Carte',
-        id: 'details.label.map',
+        defaultMessage: 'Map',
+        id: 'main.label.map',
     },
     stats: {
-        defaultMessage: 'Statistiques',
-        id: 'details.label.stats',
+        defaultMessage: 'Statistics',
+        id: 'main.label.stats',
     },
     testStatsTitle: {
         defaultMessage: 'Dépistages',
-        id: 'details.title.testStatsTitle',
+        id: 'main.label.screening_results',
     },
     confirmationStatsTitle: {
         defaultMessage: 'Confirmations',
-        id: 'details.title.confirmationStatsTitle',
+        id: 'main.label.confirmation_results',
     },
 });
 
@@ -53,37 +53,37 @@ export const renderTestPourcentage = (total) => {
             {
                 total.total_catt !== 0 &&
                 <div className="padding-bottom">
-                    {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="test(s) CATT effectué(s)" />
+                    {formatThousand(total.total_catt)} <FormattedMessage id="details.label.totalCatt" defaultMessage="CATT test(s) done" />
                 </div>
             }
             {
                 total.total_catt === 0 &&
                 <div className="padding-bottom">
-                    <FormattedMessage id="details.label.noCATT" defaultMessage="Aucun test CATT" />
+                    <FormattedMessage id="details.label.noCATT" defaultMessage="No CATT test" />
                 </div>
             }
             {
                 total.total_catt !== 0 &&
                 <div className="padding-bottom">
-                    {total.total_catt_positive} CATT <FormattedMessage id="details.label.cattPositive" defaultMessage="positif(s)" /> ({cattPercentage}%)
+                    {total.total_catt_positive} CATT <FormattedMessage id="details.label.cattPositive" defaultMessage="positive(s)" /> ({cattPercentage}%)
                 </div>
             }
             {
                 total.total_rdt !== 0 &&
                 <div className="padding-bottom">
-                    {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="test(s) RDT effectué(s)" />
+                    {formatThousand(total.total_rdt)} <FormattedMessage id="details.label.totalRdt" defaultMessage="RDT test(s) done" />
                 </div>
             }
             {
                 total.total_rdt === 0 &&
                 <div>
-                    <FormattedMessage id="details.label.noRDT" defaultMessage="Aucun test RDT" />
+                    <FormattedMessage id="details.label.noRDT" defaultMessage="No RDT test" />
                 </div>
             }
             {
                 total.total_rdt !== 0 &&
                 <div>
-                    {total.total_rdt_positive} RDT <FormattedMessage id="details.label.rdtPositive" defaultMessage="positif(s)" /> ({rdtPercentage}%)
+                    {total.total_rdt_positive} RDT <FormattedMessage id="details.label.cattPositive" defaultMessage="positive(s)" /> ({rdtPercentage}%)
                 </div>
             }
         </div>);
@@ -94,24 +94,24 @@ export const renderConfirmationPourcentage = (total) => {
     return (
         <div className="align-right bold large-text">
             <div className="padding-bottom">
-                {formatThousand(total.total_catt_positive + total.total_rdt_positive)} <FormattedMessage id="details.label.suspect" defaultMessage="test(s) suspects" />
+                {formatThousand(total.total_catt_positive + total.total_rdt_positive)} <FormattedMessage id="details.label.suspect" defaultMessage="suspect(s) test(s)" />
             </div>
             {
                 total.total_confirmation_tests !== 0 &&
                 <div className="padding-bottom">
-                    {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="test(s) de confirmation" />
+                    {formatThousand(total.total_confirmation_tests)} <FormattedMessage id="details.label.total_confirmation_tests" defaultMessage="confirmation test(s)" />
                 </div>
             }
             {
                 total.total_confirmation_tests === 0 &&
                 <div>
-                    <FormattedMessage id="details.label.noConfirmation" defaultMessage="Aucun test de confirmation" />
+                    <FormattedMessage id="details.label.noConfirmation" defaultMessage="No confirmation test" />
                 </div>
             }
             {
                 total.total_confirmation_tests !== 0 &&
                 <div>
-                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.positiveConfirmation" defaultMessage="positif(s)" /> ({confirmationPercentage}%)
+                    {total.total_confirmation_tests_positive} <FormattedMessage id="details.label.cattPositive" defaultMessage="poistive(s)" /> ({confirmationPercentage}%)
                 </div>
             }
         </div>);

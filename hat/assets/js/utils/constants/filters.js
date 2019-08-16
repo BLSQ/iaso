@@ -13,7 +13,7 @@ delete tempTreatmentsMedecineMessages.none;
 export const MESSAGES = {
     positive: {
         defaultMessage: 'Positive',
-        id: 'main.label.postive',
+        id: 'main.label.positive',
     },
     negative: {
         defaultMessage: 'Negative',
@@ -536,7 +536,7 @@ const coordinations = (coordinationsList, isMultiSelect = true) => (
         options: coordinationsList,
         placeholder: {
             id: 'main.label.all',
-            defaultMessage: 'Toutes',
+            defaultMessage: 'All',
         },
         label: {
             id: 'main.label.coordination',

@@ -14,24 +14,24 @@ import workZonesColors from '../utils/constants/colors';
 
 const MESSAGES = defineMessages({
     capacity: {
-        defaultMessage: 'capacité',
-        id: 'macroplanning.capacity',
+        defaultMessage: 'capacity',
+        id: 'main.label.capacityLowCase',
     },
     population: {
         defaultMessage: 'population',
-        id: 'macroplanning.population',
+        id: 'main.label.total_population',
     },
     endemic_population: {
-        defaultMessage: 'endémique',
-        id: 'macroplanning.endemic_population',
+        defaultMessage: 'endemic',
+        id: 'main.label.endemic',
     },
     lowCapacity: {
-        defaultMessage: 'Capacité insuffisante',
-        id: 'macroplanning.lowCapacity',
+        defaultMessage: 'Insufficient capacity',
+        id: 'main.label.lowCapacity',
     },
     goodCapacity: {
-        defaultMessage: 'Capacité suffisante',
-        id: 'macroplanning.goodCapacity',
+        defaultMessage: 'Sufficient capacity',
+        id: 'main.label.goodCapacity',
     },
 });
 
@@ -135,7 +135,7 @@ class WorkZoneElement extends Component {
                                 className="locator-subtitle"
                                 onClick={() => this.toggelSubSection('isZonesOpen')}
                             >
-                                <FormattedMessage id="macroplanning.label.zones" defaultMessage="Zone(s) de santé" />
+                                <FormattedMessage id="main.label.zonesOr" defaultMessage="Health zone(s)" />
                                 {
                                     this.state.isZonesOpen &&
                                     <i className="fa fa-minus" />
@@ -165,7 +165,7 @@ class WorkZoneElement extends Component {
                                 className="locator-subtitle"
                                 onClick={() => this.toggelSubSection('isAreasOpen')}
                             >
-                                <FormattedMessage id="macroplanning.label.areas" defaultMessage="Aire(s) de santé" />
+                                <FormattedMessage id="main.label.areasOr" defaultMessage="Health area(s)" />
                                 {
                                     this.state.isAreasOpen &&
                                     <i className="fa fa-minus" />

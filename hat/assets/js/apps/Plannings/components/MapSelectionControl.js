@@ -49,7 +49,7 @@ class MapSelectionControl extends Component {
                             onClick={() => selectHighlightBuffer()}
                         >
                             <span className="map__text--select">
-                                <FormattedMessage id="microplanning.selection.active.assign" defaultMessage="Assigner villages" />
+                                <FormattedMessage id="microplanning.selection.active.assign" defaultMessage="Assign villages" />
                                 &nbsp;
                                 <FormattedMessage
                                     id="microplanning.selection.buffer.highlight.label"

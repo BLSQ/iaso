@@ -45,7 +45,7 @@ class ManagementCoordinations extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Date de création',
+                        defaultMessage: 'Creation date',
                         id: 'main.label.creationDate',
                     }),
                     accessor: 'created_at',
@@ -212,7 +212,7 @@ class ManagementCoordinations extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.coord.title"
+                                id="main.label.coordinations"
                                 defaultMessage="Coordinations"
                             />
                         </h2>

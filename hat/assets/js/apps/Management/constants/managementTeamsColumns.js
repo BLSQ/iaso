@@ -23,7 +23,7 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
     },
     {
         Header: formatMessage({
-            defaultMessage: 'Capacité',
+            defaultMessage: 'Capacity',
             id: 'main.label.capacity',
         }),
         accessor: 'capacity',

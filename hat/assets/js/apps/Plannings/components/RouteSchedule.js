@@ -109,7 +109,7 @@ class RouteSchedule extends Component {
                                         {
                                             this.state.assignations[assIndex].data.length === 0 &&
                                             <li className="no-assignation-text">
-                                                <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="Aucune assignation" />
+                                                <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
                                             </li>
                                         }
                                         {this.state.assignations[assIndex]
@@ -135,7 +135,7 @@ class RouteSchedule extends Component {
                                                                     a.tests_count > 0 &&
                                                                     <span className="visited-village">
                                                                         <i className="fa fa-check-circle" aria-hidden="true" />
-                                                                        <span>{a.tests_count}<FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) effectué(s)" /></span>
+                                                                        <span>{a.tests_count}<FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" /></span>
                                                                     </span>
                                                                 }
                                                             </span>

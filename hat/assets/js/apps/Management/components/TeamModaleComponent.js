@@ -136,7 +136,7 @@ class TeamModale extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.capacity"
-                                defaultMessage="Capacité"
+                                defaultMessage="Capacity"
                             />
                             :
                         </label>
@@ -160,7 +160,7 @@ class TeamModale extends Component {
                                 >
                                     <FormattedMessage
                                         id="main.label.teamtype"
-                                        defaultMessage="Type d'unité"
+                                        defaultMessage="Team type"
                                     />
                                     :
                                 </label>
@@ -210,7 +210,7 @@ class TeamModale extends Component {
                             onClick={() => this.props.saveTeam(this.state.team)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveTeam" defaultMessage="Sauvegarder l'équipe" />
+                            <FormattedMessage id="management.label.saveTeam" defaultMessage="Save team" />
                         </button>
                     </div>
                 </section>

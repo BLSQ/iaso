@@ -58,7 +58,7 @@ class VillageInfosComponent extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.aliases"
-                                defaultMessage="Alias"
+                                defaultMessage="Aliases"
                             />:
                         </label>
                         <ArrayFieldInput
@@ -93,8 +93,8 @@ class VillageInfosComponent extends Component {
                             className="filter__container__select__label select-label"
                         >
                             <FormattedMessage
-                                id="main.label.village_official"
-                                defaultMessage="Officiel"
+                                id="main.label.official"
+                                defaultMessage="Official"
                             />:
                         </label>
                         <Select
@@ -108,29 +108,29 @@ class VillageInfosComponent extends Component {
                             options={[
                                 {
                                     label: formatMessage({
-                                        defaultMessage: 'Villages officiels',
-                                        id: 'management.village_official.YES',
+                                        defaultMessage: 'Official villages',
+                                        id: 'village.type.official',
                                     }),
                                     value: 'YES',
                                 },
                                 {
                                     label: formatMessage({
-                                        defaultMessage: 'Villages non officiels',
-                                        id: 'management.village_official.NO',
+                                        defaultMessage: 'Non official villages',
+                                        id: 'village.type.notofficial',
                                     }),
                                     value: 'NO',
                                 },
                                 {
                                     label: formatMessage({
-                                        defaultMessage: 'Villages trouvés lors de campagne',
-                                        id: 'management.village_official.OTHER',
+                                        defaultMessage: 'Villages found during campaign',
+                                        id: 'village.type.campaign',
                                     }),
                                     value: 'OTHER',
                                 },
                                 {
                                     label: formatMessage({
-                                        defaultMessage: 'Villages issus d\'images satellite',
-                                        id: 'management.village_official.NA',
+                                        defaultMessage: 'Villages found from satellite',
+                                        id: 'village.type.satellite',
                                     }),
                                     value: 'NA',
                                 },
@@ -147,7 +147,7 @@ class VillageInfosComponent extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.village_type"
-                                defaultMessage="Type de village"
+                                defaultMessage="Village type"
                             />:
                         </label>
                         <input
@@ -164,8 +164,8 @@ class VillageInfosComponent extends Component {
                             className="filter__container__select__label  select-label"
                         >
                             <FormattedMessage
-                                id="main.label.village_source"
-                                defaultMessage="Source du village"
+                                id="management.village.label.village_source"
+                                defaultMessage="Village source"
                             />:
                         </label>
                         <Select
@@ -186,7 +186,7 @@ class VillageInfosComponent extends Component {
                         >
                             <FormattedMessage
                                 id="main.label.gps_source"
-                                defaultMessage="Source gps"
+                                defaultMessage="Gps source"
                             />:
                         </label>
                         <input

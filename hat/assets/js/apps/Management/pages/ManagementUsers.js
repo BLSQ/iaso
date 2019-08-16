@@ -298,7 +298,7 @@ class ManagementUsers extends React.Component {
                         loading &&
                         <LoadingSpinner message={formatMessage({
                             defaultMessage: 'Loading',
-                            id: 'main.labels.loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }

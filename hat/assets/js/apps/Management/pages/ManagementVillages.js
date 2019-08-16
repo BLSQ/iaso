@@ -203,7 +203,7 @@ class ManagementVillages extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.village.title"
+                                id="main.label.villages"
                                 defaultMessage="Villages"
                             />
                         </h2>

@@ -2,43 +2,43 @@ import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo
 
 const MESSAGES = {
     positive: {
-        defaultMessage: 'Positif',
-        id: 'main.label.postive',
+        defaultMessage: 'Posiotive',
+        id: 'main.label.positive',
     },
     negative: {
-        defaultMessage: 'Négatif',
+        defaultMessage: 'Negative',
         id: 'main.label.negative',
     },
     YES: {
-        defaultMessage: 'Villages officiels',
+        defaultMessage: 'Official villages',
         id: 'village.type.official',
     },
     NO: {
-        defaultMessage: 'Villages non officiels',
+        defaultMessage: 'Non official villages',
         id: 'village.type.notofficial',
     },
     OTHER: {
-        defaultMessage: 'Villages trouvés lors de campagne',
+        defaultMessage: 'Villages found during campaign',
         id: 'village.type.campaign',
     },
     NA: {
-        defaultMessage: 'Villages issus d\'images satellite',
+        defaultMessage: 'Villages found from satellite',
         id: 'village.type.satellite',
     },
     populationOk: {
-        defaultMessage: 'Avec',
-        id: 'village.type.satellite',
+        defaultMessage: 'With',
+        id: 'main.label.with',
     },
     populationNok: {
-        defaultMessage: 'Sans',
+        defaultMessage: 'Without',
         id: 'village.type.satellite',
     },
     located: {
-        defaultMessage: 'Localisés',
-        id: 'village.type.located',
+        defaultMessage: 'Locacted',
+        id: 'main.label.willagelocated',
     },
     unlocated: {
-        defaultMessage: 'Non Localisés',
+        defaultMessage: 'Not located',
         id: 'village.type.satellite',
     },
 };
@@ -75,12 +75,12 @@ const filtersZone1 = (
                 },
             ],
             placeholder: {
-                id: 'management.label.allMasc',
-                defaultMessage: 'Tous',
+                id: 'main.label.allMale',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'management.village.label.village_official',
-                defaultMessage: 'Village officiel',
+                defaultMessage: 'Official village',
             },
             type: 'select',
         },
@@ -91,12 +91,12 @@ const filtersZone1 = (
             isClearable: true,
             options: villageSources.map(v => ({ label: v[1], value: v[0] })),
             placeholder: {
-                id: 'management.label.allMasc',
-                defaultMessage: 'Tous',
+                id: 'main.label.allMale',
+                defaultMessage: 'All',
             },
             label: {
                 id: 'management.village.label.village_source',
-                defaultMessage: 'Source du village',
+                defaultMessage: 'Village source',
             },
             type: 'select',
         },
@@ -124,12 +124,12 @@ const filtersZone2 = (
                 },
             ],
             placeholder: {
-                id: 'main.label.allMasc',
+                id: 'main.label.allMale',
                 defaultMessage: 'Tous',
             },
             label: {
                 id: 'management.village.label.results',
-                defaultMessage: 'Cas',
+                defaultMessage: 'Cass',
             },
             type: 'select',
         },
@@ -153,8 +153,8 @@ const filtersZone2 = (
                 defaultMessage: 'All',
             },
             label: {
-                id: 'management.village.label.located',
-                defaultMessage: 'Localisation',
+                id: 'main.label.location',
+                defaultMessage: 'Location',
             },
             type: 'select',
         },
@@ -179,8 +179,8 @@ const filtersSearch = (
                 defaultMessage: 'Search',
             },
             label: {
-                id: 'management.village.label.search',
-                defaultMessage: 'Recherche textuelle',
+                id: 'main.label.textSearch',
+                defaultMessage: 'Text search',
             },
             type: 'search',
             onKeyPressed: () => component.onSearch(),
@@ -201,11 +201,11 @@ const filtersSearch = (
                 },
             ],
             placeholder: {
-                id: 'management.label.all',
-                defaultMessage: 'Toutes',
+                id: 'main.label.all',
+                defaultMessage: 'All',
             },
             label: {
-                id: 'management.village.label.population',
+                id: 'main.label.population',
                 defaultMessage: 'Population',
             },
             type: 'select',
@@ -250,8 +250,8 @@ const filtersGeo = (
                 defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.zones',
-                defaultMessage: 'Zones de santé',
+                id: 'main.label.zones',
+                defaultMessage: 'Health zones',
             },
             type: 'select',
             callback: value => selectZone(value, props, urlKey),
@@ -268,8 +268,8 @@ const filtersGeo = (
                 defaultMessage: 'All',
             },
             label: {
-                id: 'cases.label.areas',
-                defaultMessage: 'Aire de santé',
+                id: 'main.label.area',
+                defaultMessage: 'Health areas',
             },
             type: 'select',
             callback: value => selectArea(value, props, urlKey),

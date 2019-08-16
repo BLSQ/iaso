@@ -58,7 +58,7 @@ const MESSAGES = defineMessages({
     },
     as: {
         id: 'microplanning.tooltip.area',
-        defaultMessage: 'Aire de sante',
+        defaultMessage: 'Health area',
     },
     name: {
         id: 'microplanning.tooltip.village',
@@ -99,11 +99,11 @@ const MESSAGES = defineMessages({
     },
     population_source: {
         id: 'microplanning.tooltip.population.source',
-        defaultMessage: 'Source de la population',
+        defaultMessage: 'Population source',
     },
     population_year: {
         id: 'microplanning.tooltip.population.year',
-        defaultMessage: 'Année relevé population',
+        defaultMessage: 'Year surveyed population',
     },
 
     lastConfirmedCaseDate: {
@@ -120,18 +120,18 @@ const MESSAGES = defineMessages({
     },
     team_all: {
         defaultMessage: 'None',
-        id: 'microplanning.label.team.all',
+        id: 'main.label.none',
     },
     team_select: {
         defaultMessage: 'Unité',
         id: 'microplanning.label.team',
     },
     add_as: {
-        defaultMessage: 'Ajouter l\'aire de santé à l\'équipe',
+        defaultMessage: 'Add arrea to the',
         id: 'microplanning.label.add_as',
     },
     remove_as: {
-        defaultMessage: 'Supprimer l\'aire de santé de l\'équipe',
+        defaultMessage: 'Remove area form the team',
         id: 'microplanning.label.remove_as',
     },
 

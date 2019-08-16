@@ -11,15 +11,15 @@ import { clone, getPossibleYears } from '../../../utils';
 
 const MESSAGES = defineMessages({
     all: {
-        defaultMessage: 'Toutes',
-        id: 'microplanning.all',
+        defaultMessage: 'All',
+        id: 'main.label.all',
     },
     allMale: {
-        defaultMessage: 'Tous',
-        id: 'microplanning.allMale',
+        defaultMessage: 'All',
+        id: 'main.label.allMale',
     },
     'years-select': {
-        defaultMessage: 'Toutes les années',
+        defaultMessage: 'All years',
         id: 'macroplanning.labels.years.select',
     },
 });
@@ -114,7 +114,7 @@ class PlanningTeamSelection extends Component {
                             this.state.currentPlanning &&
                             this.state.coordinations.length > 0 &&
                             <section>
-                                <FormattedMessage id="microplanning.label.coordinations" defaultMessage="Coordination" />
+                                <FormattedMessage id="main.label.coordination" defaultMessage="Coordination" />
                                 <Select
                                     simpleValue
                                     name="coordination_id"
@@ -133,7 +133,7 @@ class PlanningTeamSelection extends Component {
                     {
                         displayYearsSelect &&
                         <div>
-                            <FormattedMessage id="microplanning.label.years" defaultMessage="Années" />
+                            <FormattedMessage id="main.label.years" defaultMessage="Years" />
                             <Select
                                 multi
                                 clearable={false}

@@ -9,12 +9,12 @@ import { MESSAGES } from '../../../utils/constants/filters';
 
 const LOCAL_MESSAGES = defineMessages({
     none: {
-        defaultMessage: 'Aucune',
-        id: 'management.none',
+        defaultMessage: 'None',
+        id: 'main.label.noneFem',
     },
     noneMasc: {
-        defaultMessage: 'Aucun',
-        id: 'management.noneMasc',
+        defaultMessage: 'None',
+        id: 'main.label.none',
     },
 });
 
@@ -272,7 +272,7 @@ class UserInfosComponent extends Component {
                     >
                         <FormattedMessage
                             id="management.user.resetpassword"
-                            defaultMessage="Réinitialiser le mot de passe"
+                            defaultMessage="Reset password"
                         />:
                     </label>
                     <input

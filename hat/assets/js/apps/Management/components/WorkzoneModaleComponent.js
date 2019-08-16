@@ -172,7 +172,7 @@ class WorkzoneModale extends Component {
                             onClick={() => this.props.saveWorkzone(this.state.workzone)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveWorkzone" defaultMessage="Sauvegarder le rayon d'action" />
+                            <FormattedMessage id="management.label.saveWorkzone" defaultMessage="Save work zone" />
                         </button>
                     </div>
                 </section>

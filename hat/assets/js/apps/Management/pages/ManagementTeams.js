@@ -206,8 +206,8 @@ class ManagementTeams extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.teams.title"
-                                defaultMessage="Equipes"
+                                id="main.label.teams"
+                                defaultMessage="Teams"
                             />
                         </h2>
 

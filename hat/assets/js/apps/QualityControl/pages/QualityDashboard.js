@@ -180,7 +180,7 @@ class QualityDashboard extends React.Component {
                     loading &&
                     <LoadingSpinner message={formatMessage({
                         defaultMessage: 'Chargement en cours',
-                        id: 'main.labels.loading',
+                        id: 'main.label.loading',
                     })}
                     />
                 }

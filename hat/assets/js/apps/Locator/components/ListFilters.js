@@ -107,8 +107,8 @@ class ListFilters extends React.Component {
                     <div className="filter-item">
                         <div className="map__text--select filter-item-subtitle ">
                             <FormattedMessage
-                                id="management.teams.title"
-                                defaultMessage="Equipes"
+                                id="main.label.teams"
+                                defaultMessage="Teams"
                             />
                         </div>
                         <Select

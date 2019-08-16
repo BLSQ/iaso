@@ -52,7 +52,7 @@ class VillageMapComponent extends Component {
                             className="filter__container__select__label"
                         >
                             <FormattedMessage
-                                id="main.label.lat"
+                                id="main.label.latitude"
                                 defaultMessage="Latitude"
                             />:
                         </label>

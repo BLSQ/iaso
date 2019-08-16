@@ -292,7 +292,7 @@ class ManagementWorkZones extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.workzone.title"
-                                defaultMessage="Rayon d'actions"
+                                defaultMessage="Work zone"
                             />
                         </h2>
                     </div>
@@ -323,8 +323,8 @@ class ManagementWorkZones extends React.Component {
                     {
                         loading &&
                         <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'microWorkzone.labels.loading',
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
                         })}
                         />
                     }

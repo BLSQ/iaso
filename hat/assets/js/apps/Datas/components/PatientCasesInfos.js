@@ -5,7 +5,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 const MESSAGES = {
     positive: {
         defaultMessage: 'Positive',
-        id: 'main.label.postive',
+        id: 'main.label.positive',
     },
     negative: {
         defaultMessage: 'Negative',

@@ -12,10 +12,10 @@ import UserPermissionsComponent from './UserPermissionsComponent';
 const MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Informations',
-        id: 'management.infos',
+        id: 'main.label.informations',
     },
     geo: {
-        defaultMessage: 'Régions',
+        defaultMessage: 'Regions',
         id: 'management.geo',
     },
     permissions: {
@@ -233,7 +233,7 @@ class UserModale extends Component {
                             onClick={() => this.onSave()}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveUser" defaultMessage="Sauvegarder" />
+                            <FormattedMessage id="main.label.save" defaultMessage="Save" />
                         </button>
                     </div>
                 </section>

@@ -33,8 +33,8 @@ class ManagementPlannings extends React.Component {
                         >
                             <span>
                                 {`${settings.original.is_template ? `${formatMessage({
-                                    defaultMessage: 'Modèle',
-                                    id: 'management.planning.label.template',
+                                    defaultMessage: 'Template',
+                                    id: 'main.label.template',
                                 })}: ` : ''}`}{settings.original.name}
                             </span>
                         </span>
@@ -257,7 +257,7 @@ class ManagementPlannings extends React.Component {
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.planning.title"
-                                defaultMessage="Reprogrammation"
+                                defaultMessage="Planning"
                             />
                         </h2>
 

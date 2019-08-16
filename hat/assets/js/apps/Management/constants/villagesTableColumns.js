@@ -4,7 +4,7 @@ import { formatThousand } from '../../../utils';
 const MESSAGES = {
     YES: {
         defaultMessage: 'Officiel',
-        id: 'main.label.postive',
+        id: 'main.label.positive',
     },
     NO: {
         defaultMessage: 'Non officiel',
@@ -27,7 +27,7 @@ const villagesTableColumns = (
     [
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
+                defaultMessage: 'Name',
                 id: 'main.label.name',
             }),
             width: 250,
@@ -48,7 +48,7 @@ const villagesTableColumns = (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Cas positifs',
+                defaultMessage: 'Positive cases',
                 id: 'main.label.nr_positive_cases',
             }),
             className: 'small',
@@ -71,7 +71,7 @@ const villagesTableColumns = (
         {
             Header: formatMessage({
                 defaultMessage: 'Zone',
-                id: 'main.label.ZS.singular',
+                id: 'main.label.zone_short',
             }),
             className: 'small',
             sortable: true,
@@ -79,8 +79,8 @@ const villagesTableColumns = (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Aire',
-                id: 'main.label.AS.singular',
+                defaultMessage: 'Area',
+                id: 'main.label.area_short',
             }),
             className: 'small',
             sortable: true,
@@ -89,15 +89,15 @@ const villagesTableColumns = (
         {
             Header: formatMessage({
                 defaultMessage: 'Type',
-                id: 'main.label.village_type',
+                id: 'main.label.type',
             }),
             className: 'small',
             accessor: 'village_type',
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Officiel',
-                id: 'main.label.village_official',
+                defaultMessage: 'Official',
+                id: 'main.label.official',
             }),
             className: 'small',
             accessor: 'village_official',
@@ -110,7 +110,7 @@ const villagesTableColumns = (
         {
             Header: formatMessage({
                 defaultMessage: 'Source',
-                id: 'main.label.village_source',
+                id: 'main.label.source',
             }),
             className: 'small',
             accessor: 'village_source',

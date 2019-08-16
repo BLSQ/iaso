@@ -17,11 +17,11 @@ import AssingAsModale from '../components/AssingAsModale';
 
 const MESSAGES = defineMessages({
     capacity: {
-        defaultMessage: 'Capacité totale de la coordination',
+        defaultMessage: 'Total capacity of this coordination',
         id: 'macroplanning.total_capacity',
     },
     endemic_population: {
-        defaultMessage: 'Population endémique totale',
+        defaultMessage: 'Total endemic population',
         id: 'macroplanning.endemic_population_total',
     },
 });
@@ -150,12 +150,12 @@ class Macroplanning extends React.Component {
                 <div className="widget__container">
                     <div className="widget__header with-link">
                         <h2 className="widget__heading">
-                            <FormattedMessage id="microplanning.macro.title" defaultMessage="Définir les rayons d'actions" />
+                            <FormattedMessage id="microplanning.macro.title" defaultMessage="Define work zone" />
                         </h2>
                         <a
                             href="/dashboard/management/workzones"
                         >
-                            <FormattedMessage id="main.label.worzonesPage" defaultMessage="Gérer les rayons d'actions" />
+                            <FormattedMessage id="main.label.worzonesPage" defaultMessage="Manage work zones" />
                         </a>
                     </div>
                 </div>
@@ -186,14 +186,14 @@ class Macroplanning extends React.Component {
                                     {
                                         currentWorkZones && currentWorkZones.length === 0 && !loading &&
                                         <div className="bold-subtitle">
-                                            <FormattedMessage id="microplanning.macro.nows" defaultMessage="Aucun rayon d'action pour cette coordination" />
+                                            <FormattedMessage id="microplanning.macro.nows" defaultMessage="No workzone for this coordination" />
                                         </div>
                                     }
                                     {
                                         currentWorkZones && currentWorkZones.length > 0 &&
                                         <div className="ws-select">
                                             <div className="bold-subtitle">
-                                                1) <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Sélectionnez un rayon d'action" />
+                                                1) <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Welect a work zone" />
                                             </div>
                                             <div className="type-filters-containers">
                                                 <WorkZonesSelect
@@ -224,7 +224,7 @@ class Macroplanning extends React.Component {
                                             {
                                                 this.state.workzoneId &&
                                                 <div className="bold-subtitle">
-                                                    2) <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Sélectionnez une Aire de santé sur la carte" />
+                                                    2) <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Select one area on the map" />
                                                 </div>
                                             }
                                         </div>

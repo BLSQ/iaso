@@ -11,12 +11,12 @@ import { clone } from '../../../utils';
 
 const MESSAGES = defineMessages({
     all: {
-        defaultMessage: 'Toutes',
-        id: 'microplanning.all',
+        defaultMessage: 'All',
+        id: 'main.label.all',
     },
     allMale: {
-        defaultMessage: 'Tous',
-        id: 'microplanning.allMale',
+        defaultMessage: 'All',
+        id: 'main.label.allMale',
     },
 });
 
@@ -125,7 +125,9 @@ class TeamSelectionTool extends Component {
                         </div>
                         <div className="widget__content--tier">
                             <div>
-                                <FormattedMessage id="microplanning.label.coordination" defaultMessage="Coordination: " />
+                                <span>
+                                    <FormattedMessage id="main.label.coordination" defaultMessage="Coordination" />{`: `}
+                                </span>
                                 <Select
                                     simpleValue
                                     name="coordination_id"
@@ -137,14 +139,23 @@ class TeamSelectionTool extends Component {
                                 />
                             </div>
                             <div>
-                                <FormattedMessage id="microplanning.label.workzone" defaultMessage="Rayon d'action" />
+                                <span>
+                                    <FormattedMessage id="main.label.workzone" defaultMessage="Work zone" />{`: `}
+                                </span>
 
                                 <Select
                                     disabled={!this.props.params.coordination_id}
                                     simpleValue
                                     name="workzone_id"
                                     value={parseInt(this.props.params.workzone_id, 10)}
-                                    placeholder="Rayon d'action"
+                                    placeholder={
+                                        formatMessage(
+                                            {
+                                                id: 'main.label.workzone',
+                                                defaultMessage: 'Work zone'
+                                            }
+                                        )
+                                    }
                                     options={this.state.workzones.map(wz => ({ label: `${wz.name}`, value: wz.id }))}
                                     onChange={event => this.onChangeWorkZone(event)}
                                 />

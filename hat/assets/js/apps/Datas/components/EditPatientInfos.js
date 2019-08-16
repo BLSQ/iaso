@@ -19,7 +19,7 @@ import {
 const MESSAGES = {
     years: {
         defaultMessage: 'ans',
-        id: 'main.label.years',
+        id: 'main.label.yearsOld',
     },
 };
 

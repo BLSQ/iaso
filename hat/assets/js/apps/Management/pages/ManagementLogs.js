@@ -105,7 +105,7 @@ class Logs extends Component {
 
                 <div className="widget__container ">
                     <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="management.logs.header.title" defaultMessage="Modifications" /></h2>
+                        <h2 className="widget__heading"><FormattedMessage id="management.logs.header.title" defaultMessage="Logs" /></h2>
                     </div>
                     <div className="border-bottom">
                         <ChoosePeriodSelectorComponent

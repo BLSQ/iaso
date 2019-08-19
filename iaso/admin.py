@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 
 from .models import (
     OrgUnitType,
@@ -13,7 +13,7 @@ from .models import (
 )
 
 
-class OrgUnitAdmin(admin.ModelAdmin):
+class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
     list_filter = ("org_unit_type", "custom", "validated")
     search_fields = ("name", "source_ref")
@@ -23,7 +23,7 @@ class OrgUnitAdmin(admin.ModelAdmin):
 admin.site.register(OrgUnit, OrgUnitAdmin)
 
 
-class OrgUnitTypeAdmin(admin.ModelAdmin):
+class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -31,12 +31,12 @@ class OrgUnitTypeAdmin(admin.ModelAdmin):
 admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
 
 
-class FormAdmin(admin.ModelAdmin):
+class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
     ordering = ("name",)
 
 
-class InstanceAdmin(admin.ModelAdmin):
+class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
 
 

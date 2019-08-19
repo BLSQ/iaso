@@ -1,12 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import Button from '@material-ui/core/Button';
 import Tabs from '@material-ui/core/Tabs';
 import AppBar from '@material-ui/core/AppBar';
 import Tab from '@material-ui/core/Tab';
@@ -26,6 +24,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import InstancesMap from '../components/maps/InstancesMapComponent';
 import BackButton from '../components/buttons/BackButtonComponent';
+import LoadingSpinner from '../components/LoadingSpinnerComponent';
 
 import commonStyles from '../styles/common';
 
@@ -178,6 +177,10 @@ class Instances extends Component {
                         id: 'iaso.instance.form',
                     })}: ${currentForm ? currentForm.name : ''}`}
                 />
+                {
+                    fetching
+                    && <LoadingSpinner />
+                }
                 {!fetching
                     && (
                         <Fragment>

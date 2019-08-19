@@ -37,6 +37,7 @@ const shapeOptions = (type, element) => ({
 
 const drawShapeOptions = element => ({
     pane: 'custom-draw',
+    stroke: false,
     title: 'super title',
     color: 'blue',
     onEachFeature: (feature, layer) => {

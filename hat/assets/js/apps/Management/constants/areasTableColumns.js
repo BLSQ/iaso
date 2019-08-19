@@ -54,7 +54,7 @@ const areasTableColumns = (
         tableColumns.push({
             Header: formatMessage({
                 defaultMessage: 'Actions',
-                id: 'main.actions',
+                id: 'main.label.actions',
             }),
             sortable: false,
             resizable: false,
@@ -71,7 +71,7 @@ const areasTableColumns = (
                                 <i className="fa fa-map-o" />
                                 {
                                     formatMessage({
-                                        defaultMessage: 'Editer la forme',
+                                        defaultMessage: 'Edit shape',
                                         id: 'main.label.editMap',
                                     })
                                 }

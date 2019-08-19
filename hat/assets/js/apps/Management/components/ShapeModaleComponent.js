@@ -121,13 +121,13 @@ class ShapeModale extends Component {
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
-                            <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Forme sauvegardée" />
+                            <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Shape saved" />
                         </div>
                     }
                     {
                         this.state.error &&
                         <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
                         </div>
                     }
                     <div className="align-right">
@@ -136,7 +136,7 @@ class ShapeModale extends Component {
                             onClick={() => this.props.closeModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Close" />
                         </button>
                         <button
                             disabled={!this.state.isChanged}
@@ -144,7 +144,7 @@ class ShapeModale extends Component {
                             onClick={() => this.props.saveShape(item)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.save" defaultMessage="Sauvegarder" />
+                            <FormattedMessage id="main.label.save" defaultMessage="Save" />
                         </button>
                     </div>
                 </section>

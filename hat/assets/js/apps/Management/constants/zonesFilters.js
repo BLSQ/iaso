@@ -12,11 +12,11 @@ const filtersSearch = component => (
             displayIcon: false,
             placeholder: {
                 id: 'main.label.search',
-                defaultMessage: 'Recherche',
+                defaultMessage: 'Search',
             },
             label: {
-                id: 'management.village.label.search',
-                defaultMessage: 'Recherche textuelle',
+                id: 'main.label.textSearch',
+                defaultMessage: 'Text search',
             },
             type: 'search',
             onKeyPressed: () => component.onSearch(),
@@ -35,14 +35,14 @@ const filtersShapes = formatMessage => (
             options: [
                 {
                     label: formatMessage({
-                        defaultMessage: 'Avec',
+                        defaultMessage: 'With',
                         id: 'main.label.with',
                     }),
                     value: 'with',
                 },
                 {
                     label: formatMessage({
-                        defaultMessage: 'Sans',
+                        defaultMessage: 'Without',
                         id: 'main.label.without',
                     }),
                     value: 'without',
@@ -54,7 +54,7 @@ const filtersShapes = formatMessage => (
             },
             label: {
                 id: 'main.label.shapes',
-                defaultMessage: 'Formes',
+                defaultMessage: 'Shapes',
             },
             type: 'select',
         },
@@ -78,7 +78,7 @@ const filtersGeo = (
                 defaultMessage: 'Toutes',
             },
             label: {
-                id: 'cases.label.provinces',
+                id: 'main.label.provinces',
                 defaultMessage: 'Provinces',
             },
             type: 'select',

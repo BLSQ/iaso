@@ -49,7 +49,7 @@ class ShapeSelectionComponent extends Component {
                     <section>
                         {
                             sites.length === 0 &&
-                            <FormattedMessage id="vector.modale.assignation.label.noSites" defaultMessage="Aucun site sélectionné" />
+                            <FormattedMessage id="vector.modale.assignation.label.noSites" defaultMessage="No selected site" />
                         }
                         {
                             sites.length > 0 &&

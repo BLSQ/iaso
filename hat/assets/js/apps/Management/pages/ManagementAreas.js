@@ -216,8 +216,8 @@ class ManagementAreas extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="management.areas.title"
-                                defaultMessage="Aires de santé"
+                                id="main.label.areas"
+                                defaultMessage="Health area"
                             />
                         </h2>
 

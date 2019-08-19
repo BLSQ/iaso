@@ -94,13 +94,13 @@ class AreaModale extends Component {
                     {
                         this.state.isUpdated &&
                         <div className="align-right text--success">
-                            <FormattedMessage id="main.label.areaUpdated" defaultMessage="Aire de santé sauvegardée" />
+                            <FormattedMessage id="main.label.areaUpdated" defaultMessage="Health area saved" />
                         </div>
                     }
                     {
                         this.state.error &&
                         <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
                         </div>
                     }
                     <div className="align-right">
@@ -109,7 +109,7 @@ class AreaModale extends Component {
                             onClick={() => this.props.closeModal()}
                         >
                             <i className="fa fa-arrow-left" />
-                            <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                            <FormattedMessage id="main.label.close" defaultMessage="Close" />
                         </button>
                         <button
                             disabled={this.isSavedDisabled()}
@@ -117,7 +117,7 @@ class AreaModale extends Component {
                             onClick={() => this.props.saveArea(this.state.area)}
                         >
                             <i className="fa fa-save" />
-                            <FormattedMessage id="mangement.label.saveArea" defaultMessage="Sauvegarder l'aire" />
+                            <FormattedMessage id="mangement.label.saveArea" defaultMessage="Save area" />
                         </button>
                     </div>
                 </section>

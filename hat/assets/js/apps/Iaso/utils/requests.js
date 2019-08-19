@@ -3,28 +3,55 @@ import { getRequest, patchRequest } from '../libs/Api';
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../components/snackBars';
 
-const fetchOrgUnitsTypes = () => getRequest('/api/orgunittypes')
+const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
     .then(res => res.orgUnitTypes)
     .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitTypesError')));
         console.error('Error while fetching org unit types list:', error);
         throw error;
     });
 
-const fetchSourceTypes = () => getRequest('/api/sourcetypes')
+const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes')
     .then(soureTypes => soureTypes)
     .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchSourceTypesError')));
         console.error('Error while fetching source types list:', error);
         throw error;
     });
 
-const fetchOrgUnitDetail = orgUnitId => getRequest(`/api/orgunits/${orgUnitId}`)
-    .then(orgUnit => orgUnit)
+const fetchInstancesAsDict = (dispatch, url) => getRequest(url)
+    .then(instances => instances)
     .catch((error) => {
-        console.error('Error while org unit detail:', error);
+        dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceDictError')));
+        console.error('Error while fetching instances list:', error);
         throw error;
     });
 
-const saveOrgUnit = (orgUnit, dispatch) => patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
+const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
+    .then(instances => instances)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));
+        console.error('Error while fetching instances locations list:', error);
+        throw error;
+    });
+
+const fetchFormDetail = (dispatch, formId) => getRequest(`/api/forms/${formId}`)
+    .then(form => form)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchFormError')));
+        console.error('Error while fetching form detail:', error);
+        throw error;
+    });
+
+const fetchOrgUnitDetail = (dispatch, orgUnitId) => getRequest(`/api/orgunits/${orgUnitId}`)
+    .then(orgUnit => orgUnit)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitError')));
+        console.error('Error while fetching org unit detail:', error);
+        throw error;
+    });
+
+const saveOrgUnit = (dispatch, orgUnit) => patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
     .then((savedOrgUnit) => {
         dispatch(enqueueSnackbar(succesfullSnackBar()));
         return savedOrgUnit;
@@ -39,5 +66,8 @@ export {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
     fetchOrgUnitDetail,
+    fetchInstancesAsLocations,
+    fetchInstancesAsDict,
+    fetchFormDetail,
     saveOrgUnit,
 };

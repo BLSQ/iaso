@@ -10,7 +10,7 @@ import Button from '@material-ui/core/Button';
 
 import commonStyles from '../../styles/common';
 
-import { search, status } from '../../constants/orgUnitsFilters';
+import { search, status, orgUnitType, source } from '../../constants/orgUnitsFilters';
 
 import FiltersComponent from './FiltersComponent';
 
@@ -27,6 +27,8 @@ function OrgUnitsFiltersComponent(props) {
             formatMessage,
         },
         onSearch,
+        orgUnitTypes,
+        sourceTypes,
     } = props;
     return (
         <Container maxWidth={false} className={classes.whiteContainer}>
@@ -37,6 +39,7 @@ function OrgUnitsFiltersComponent(props) {
                         baseUrl={baseUrl}
                         filters={[
                             search(),
+                            source(formatMessage, sourceTypes),
                         ]}
                         onEnterPressed={onSearch}
                     />
@@ -47,6 +50,15 @@ function OrgUnitsFiltersComponent(props) {
                         baseUrl={baseUrl}
                         filters={[
                             status(formatMessage),
+                        ]}
+                    />
+                </Grid>
+                <Grid item xs={4}>
+                    <FiltersComponent
+                        params={params}
+                        baseUrl={baseUrl}
+                        filters={[
+                            orgUnitType(formatMessage, orgUnitTypes),
                         ]}
                     />
                 </Grid>
@@ -76,6 +88,8 @@ OrgUnitsFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
+    sourceTypes: PropTypes.array.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(OrgUnitsFiltersComponent));

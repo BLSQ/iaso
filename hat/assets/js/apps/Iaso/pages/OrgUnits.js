@@ -7,8 +7,13 @@ import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 
 import PropTypes from 'prop-types';
+import {
+    fetchOrgUnitsTypes,
+    fetchSourceTypes,
+} from '../utils/requests';
 
-import { setOrgUnits } from '../redux/orgUnitsReducer';
+
+import { setOrgUnits, setOrgUnitTypes, setSourceTypes } from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
@@ -59,6 +64,8 @@ class OrgUnits extends Component {
             delete params.back;
             this.props.redirectTo(baseUrl, params);
         }
+        fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
     }
 
     onSearch() {
@@ -109,6 +116,8 @@ class OrgUnits extends Component {
             intl: {
                 formatMessage,
             },
+            orgUnitTypes,
+            sourceTypes,
         } = this.props;
         const {
             tableUrl,
@@ -125,6 +134,8 @@ class OrgUnits extends Component {
                     baseUrl={baseUrl}
                     params={params}
                     onSearch={() => this.onSearch()}
+                    orgUnitTypes={orgUnitTypes}
+                    sourceTypes={sourceTypes}
                 />
                 {
                     tableUrl && (
@@ -165,15 +176,25 @@ OrgUnits.propTypes = {
     params: PropTypes.object.isRequired,
     setOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    setOrgUnitTypes: PropTypes.func.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
+    setSourceTypes: PropTypes.func.isRequired,
+    sourceTypes: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
+    sourceTypes: state.orgUnits.sourceTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
+    dispatch,
     setOrgUnits: (orgUnitsList, params, count, pages) => dispatch(setOrgUnits(orgUnitsList, true, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
+    setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
 });
 
 export default withStyles(styles)(

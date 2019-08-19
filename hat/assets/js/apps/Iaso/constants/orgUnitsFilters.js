@@ -30,3 +30,31 @@ export const status = formatMessage => (
         type: 'select',
     }
 );
+
+export const orgUnitType = (formatMessage, orgunitTypesList) => (
+    {
+        urlKey: 'orgUnitTypeId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: orgunitTypesList.map(t => ({
+            label: formatMessage(MESSAGES[t.short_name]),
+            value: t.id,
+        })),
+        label: MESSAGES.org_unit_type_id,
+        type: 'select',
+    }
+);
+
+export const source = (formatMessage, sourceList) => (
+    {
+        urlKey: 'sourceId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: sourceList.map(t => ({
+            label: formatMessage(MESSAGES[t[0]]),
+            value: t[0],
+        })),
+        label: MESSAGES.source,
+        type: 'select',
+    }
+);

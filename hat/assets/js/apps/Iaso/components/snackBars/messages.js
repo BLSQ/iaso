@@ -19,6 +19,30 @@ const MESSAGES = {
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    fetchFormError: {
+        id: 'iaso.snackBar.fetchFormError',
+        defaultMessage: 'An error occured while fetching form detail',
+    },
+    fetchOrgUnitError: {
+        id: 'iaso.snackBar.fetchOrgUnitError',
+        defaultMessage: 'An error occured while fetching org unit detail',
+    },
+    fetchInstanceLocationError: {
+        id: 'iaso.snackBar.fetchInstanceLocationError',
+        defaultMessage: 'An error occured while fetching instances locations',
+    },
+    fetchInstanceDictError: {
+        id: 'iaso.snackBar.fetchInstanceDictError',
+        defaultMessage: 'An error occured while fetching instances list',
+    },
+    fetchSourceTypesError: {
+        id: 'iaso.snackBar.fetchSourceTypesError',
+        defaultMessage: 'An error occured while fetching sources list',
+    },
+    fetchOrgUnitTypesError: {
+        id: 'iaso.snackBar.fetchOrgUnitTypesError',
+        defaultMessage: 'An error occured while fetching org unit types list',
+    },
 };
 
 export default MESSAGES;

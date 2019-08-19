@@ -55,6 +55,30 @@ const MESSAGES = {
         id: 'iaso.forms.notValidated',
         defaultMessage: 'Not validated',
     },
+    Prov: {
+        id: 'iaso.province',
+        defaultMessage: 'Province',
+    },
+    ZS: {
+        id: 'iaso.zone',
+        defaultMessage: 'Health zone',
+    },
+    AS: {
+        id: 'iaso.area',
+        defaultMessage: 'Health area',
+    },
+    'Hosp.': {
+        id: 'iaso.hospital',
+        defaultMessage: 'Hospital',
+    },
+    CDS: {
+        id: 'iaso.CDS',
+        defaultMessage: 'Health centre',
+    },
+    SSC: {
+        id: 'iaso.SSC',
+        defaultMessage: 'Community Health Site',
+    },
 };
 
 export default MESSAGES;

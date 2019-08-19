@@ -4,6 +4,8 @@ import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 
+import MESSAGES from '../components/forms/messages';
+
 const orgUnitsTableColumns = (formatMessage, component) => (
     [
         {
@@ -13,7 +15,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Nom',
+                defaultMessage: 'Name',
                 id: 'iaso.orgUnits.name',
             }),
             accessor: 'name',
@@ -27,6 +29,20 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             Cell: settings => (
                 <section>
                     {settings.original.org_unit_type_name}
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Source',
+                id: 'iaso.orgUnits.source',
+            }),
+            accessor: 'source',
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.source && formatMessage(MESSAGES[settings.original.source])
+                    }
                 </section>
             ),
         },

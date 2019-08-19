@@ -14,7 +14,11 @@ import PropTypes from 'prop-types';
 import { setInstances, setInstancesLocations } from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 
-import { getRequest } from '../libs/Api';
+import {
+    fetchInstancesAsDict,
+    fetchInstancesAsLocations,
+    fetchFormDetail,
+} from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
 import getInstancesColumns from '../utils/instancesUtils';
@@ -50,10 +54,11 @@ class Instances extends Component {
             params: {
                 formId,
             },
+            dispatch,
             currentForm,
         } = this.props;
         if (formId && !currentForm) {
-            getRequest(`/api/forms/${formId}`).then((form) => {
+            fetchFormDetail(dispatch, formId).then((form) => {
                 this.props.setCurrentForm(form);
             });
         }
@@ -138,9 +143,10 @@ class Instances extends Component {
             intl: {
                 formatMessage,
             },
+            dispatch,
         } = this.props;
         const url = this.getEndpointUrl();
-        getRequest(url).then((data) => {
+        fetchInstancesAsDict(dispatch, url).then((data) => {
             const instances = {
                 ...data.instances,
             };
@@ -151,7 +157,7 @@ class Instances extends Component {
         });
 
         const urlLocation = this.getEndpointUrl(false, '', true);
-        getRequest(urlLocation).then(data => this.props.setInstancesLocations(data));
+        fetchInstancesAsLocations(dispatch, urlLocation).then(data => this.props.setInstancesLocations(data));
     }
 
     render() {
@@ -270,6 +276,7 @@ Instances.propTypes = {
     currentForm: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -280,6 +287,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
+    dispatch,
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
     setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),

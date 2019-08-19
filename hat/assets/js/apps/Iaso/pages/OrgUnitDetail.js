@@ -53,8 +53,12 @@ class OrgUnitDetail extends Component {
 
     componentDidMount() {
         this.fetchDetail();
-        fetchOrgUnitsTypes().then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSourceTypes().then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+        if (this.props.orgUnitTypes.length === 0) {
+            fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        }
+        if (this.props.sourceTypes.length === 0) {
+            fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -75,9 +79,10 @@ class OrgUnitDetail extends Component {
                 orgUnitId,
             },
             currentOrgUnit,
+            dispatch,
         } = this.props;
         if (orgUnitId && !currentOrgUnit) {
-            fetchOrgUnitDetail(orgUnitId).then((orgUnit) => {
+            fetchOrgUnitDetail(dispatch, orgUnitId).then((orgUnit) => {
                 this.props.setCurrentOrgUnit(orgUnit);
                 this.setState({
                     currentOrgUnit: orgUnit,
@@ -111,7 +116,7 @@ class OrgUnitDetail extends Component {
     }
 
     saveOrgUnit() {
-        saveOrgUnit(this.state.currentOrgUnit, this.props.dispatch).then(
+        saveOrgUnit(this.props.dispatch, this.state.currentOrgUnit).then(
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,

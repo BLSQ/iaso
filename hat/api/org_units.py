@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from hat.geo.geojson import geojson_queryset
 from django.db.models import Q
 
 
@@ -73,6 +74,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         validated = request.GET.get("validated", True)
         search = request.GET.get("search", None)
         page_offset = request.GET.get("page", 1)
+        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
+        source_id = request.GET.get("sourceId", None)
         order = request.GET.get("order", "id").split(",")
 
         if validated == "true":
@@ -91,6 +94,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(aliases__contains=[search])
             )
+        if org_unit_type_id:
+            queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
+
+        if source_id:
+            queryset = queryset.filter(source=source_id)
 
         if limit:
             limit = int(limit)
@@ -149,4 +157,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
         res = org_unit.as_dict()
+        res["geo_json"] = None
+        if org_unit.simplified_geom:
+            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
         return Response(res)

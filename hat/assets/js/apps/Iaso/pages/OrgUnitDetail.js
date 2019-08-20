@@ -214,8 +214,11 @@ class OrgUnitDetail extends Component {
                                         )
                                     }
                                     {
-                                        tab === 'map' && (
-                                            <OrgUnitMap />
+                                        tab === 'map' && currentOrgUnit && (
+                                            <OrgUnitMap
+                                                orgUnit={currentOrgUnit}
+                                                onChange={geoJson => console.log('onChange')}
+                                            />
                                         )
                                     }
                                     <div className={classes.justifyFlexEnd}>

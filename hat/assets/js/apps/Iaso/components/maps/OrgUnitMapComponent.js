@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
 import {
-    Map, TileLayer, FeatureGroup,
+    Map, FeatureGroup, TileLayer,
 } from 'react-leaflet';
-import { EditControl } from 'react-leaflet-draw';
+import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
@@ -16,10 +17,14 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
+import { MESSAGES } from '../../../../utils/map/mapUtils';
 
 import ErrorPaper from '../papers/ErrorPaperComponent';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
+
+const zoom = 5;
+const padding = [10, 10];
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -54,7 +59,15 @@ class OrgUnitMapComponent extends Component {
             },
         } = this.props;
         setDrawMessages(formatMessage);
-        editableFeatureGroup = null;
+
+        const zoomBar = L.control.zoombar({
+            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
+            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
+            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+            fitToBounds: () => this.fitToBounds(),
+            position: 'topleft',
+        });
+        zoomBar.addTo(this.map.leafletElement);
     }
 
 
@@ -87,6 +100,12 @@ class OrgUnitMapComponent extends Component {
         onChange(geojsonData);
     }
 
+    fitToBounds() {
+        const { currentTile } = this.props;
+        const { leafletGeoJSON } = this.state;
+        this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding });
+    }
+
     toggleEdit() {
         const { editEnabled } = this.state;
         editableFeatureGroup.leafletElement.eachLayer((layer) => {
@@ -102,7 +121,9 @@ class OrgUnitMapComponent extends Component {
     }
 
     render() {
-        const { classes, orgUnit, intl: { formatMessage } } = this.props;
+        const {
+            classes, orgUnit, intl: { formatMessage }, currentTile,
+        } = this.props;
         const { leafletGeoJSON, editEnabled } = this.state;
         return (
             <Grid container spacing={4}>
@@ -128,36 +149,21 @@ class OrgUnitMapComponent extends Component {
                         <Fragment>
                             <Grid item xs={10} className={classes.mapContainer}>
                                 <Map
+                                    maxZoom={currentTile.maxZoom}
                                     style={{ height: '100%' }}
                                     ref={(ref) => {
                                         this.map = ref;
                                     }}
                                     bounds={leafletGeoJSON.getBounds()}
-                                    boundsOptions={{ padding: [10, 10] }}
-                                    zoom={5}
+                                    boundsOptions={{ padding }}
+                                    zoom={zoom}
+                                    zoomControl={false}
                                 >
                                     <TileLayer
-                                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                                        url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
+                                        attribution={currentTile.attribution ? currentTile.attribution : ''}
+                                        url={currentTile.url}
                                     />
-                                    <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }}>
-                                        <EditControl
-                                            position="topright"
-                                            draw={{
-                                                polyline: false,
-                                                polygon: false,
-                                                circle: false,
-                                                marker: false,
-                                                circlemarker: false,
-                                                rectangle: false,
-                                            }}
-                                            edit={{
-                                                remove: false,
-                                                edit: false,
-                                            }
-                                            }
-                                        />
-                                    </FeatureGroup>
+                                    <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }} />
                                 </Map>
                             </Grid>
                             <Grid item xs={2}>
@@ -206,7 +212,12 @@ OrgUnitMapComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
+    currentTile: PropTypes.object.isRequired,
 };
 
+const MapStateToProps = state => ({
+    currentTile: state.map.currentTile,
+});
 
-export default withStyles(styles)(injectIntl(OrgUnitMapComponent));
+
+export default withStyles(styles)(connect(MapStateToProps)(injectIntl(OrgUnitMapComponent)));

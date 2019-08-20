@@ -17,6 +17,7 @@ import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './redux/formsReducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
+import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
@@ -29,6 +30,7 @@ import OrgUnits from './pages/OrgUnits';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
+import * as zoomBar from '../../components/leaflet/zoom-bar';
 
 export default function datasApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
@@ -81,7 +83,6 @@ export default function datasApp(element, baseUrl) {
     let history = useRouterHistory(createHistory)({
         basename: baseUrl,
     });
-
     const store = createStore({
         load: {},
         currentUser: currentUserInitialState,
@@ -90,6 +91,7 @@ export default function datasApp(element, baseUrl) {
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
+        map: mapInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -98,6 +100,7 @@ export default function datasApp(element, baseUrl) {
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
         snackBar: snackBarsReducer,
+        map: mapReducer,
     }, [
         routerMiddleware(history),
     ]);

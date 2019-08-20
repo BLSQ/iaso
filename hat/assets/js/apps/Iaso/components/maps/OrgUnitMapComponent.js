@@ -1,122 +1,212 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {
-    Map, TileLayer, Marker, Popup, FeatureGroup, Circle,
+    Map, TileLayer, FeatureGroup,
 } from 'react-leaflet';
-import L from 'leaflet';
 import { EditControl } from 'react-leaflet-draw';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Edit from '@material-ui/icons/Edit';
+import Check from '@material-ui/icons/Check';
 
+import L from 'leaflet';
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
-import { getLatLngBounds, isValidCoordinate } from '../../utils/mapUtils';
+import setDrawMessages from '../../../../utils/map/drawMapMessages';
+
+import ErrorPaper from '../papers/ErrorPaperComponent';
+
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    link: {
-        wordBreak: 'break-all',
+    mapContainer: {
+        height: '70vh',
+        marginBottom: theme.spacing(2),
+    },
+    button: {
+        width: '100%',
+        marginBottom: theme.spacing(2),
     },
 });
 
-let editableFG;
+let editableFeatureGroup;
 
 class OrgUnitMapComponent extends Component {
-    onEdited(e) {
-        let numEdited = 0;
-        e.layers.eachLayer((layer) => {
-            numEdited += 1;
+    constructor(props) {
+        super(props);
+        const leafletGeoJSON = new L.GeoJSON(props.orgUnit.geo_json, {
+            stroke: false,
         });
-        console.log(`onEdited: edited ${numEdited} layers`, e);
-
-        this.onChange();
+        this.state = {
+            leafletGeoJSON,
+            editEnabled: false,
+        };
     }
 
-    onCreated(e) {
-        const type = e.layerType;
-        const layer = e.layer;
-        if (type === 'marker') {
-            // Do marker specific actions
-            console.log('onCreated: marker created', e);
-        } else {
-            console.log('onCreated: something else created:', type, e);
-        }
-        // Do whatever else you need to. (save to db; etc)
-
-        this.onChange();
+    componentDidMount() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        setDrawMessages(formatMessage);
+        editableFeatureGroup = null;
     }
 
-    onFeatureGroupReady(reactFGref) {
-        if (reactFGref) {
-            const leafletGeoJSON = new L.GeoJSON(this.props.orgUnit.geo_json, {
+
+    componentWillReceiveProps(newProps) {
+        this.setState({
+            leafletGeoJSON: new L.GeoJSON(newProps.orgUnit.geo_json, {
                 stroke: false,
-            });
+            }),
+        });
+    }
 
+    onFeatureGroupReady(reactFGref, leafletGeoJSON = this.state.leafletGeoJSON) {
+        if (reactFGref) {
             const leafletFG = reactFGref.leafletElement;
-
+            leafletFG.clearLayers();
             leafletGeoJSON.eachLayer((layer) => {
-                layer.editing.enable();
                 leafletFG.addLayer(layer);
             });
-
-            editableFG = reactFGref;
+            editableFeatureGroup = reactFGref;
         }
     }
 
     onChange() {
         const { onChange } = this.props;
 
-        if (!editableFG || !onChange) {
+        if (!editableFeatureGroup || !onChange) {
             return;
         }
-
-        const geojsonData = editableFG.leafletElement.toGeoJSON();
+        const geojsonData = editableFeatureGroup.leafletElement.toGeoJSON();
         onChange(geojsonData);
     }
 
+    toggleEdit() {
+        const { editEnabled } = this.state;
+        editableFeatureGroup.leafletElement.eachLayer((layer) => {
+            if (!editEnabled) {
+                layer.editing.enable();
+            } else {
+                layer.editing.disable();
+            }
+        });
+        this.setState({
+            editEnabled: !editEnabled,
+        });
+    }
+
     render() {
+        const { classes, orgUnit, intl: { formatMessage } } = this.props;
+        const { leafletGeoJSON, editEnabled } = this.state;
         return (
-            <Map
-                center={[28.5205, -7.6019]}
-                boundsOptions={{ padding: [50, 50] }}
-                zoom={13}
-            >
-                <TileLayer
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
-                />
-                <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }}>
-                    <EditControl
-                        position="topright"
-                        onEdited={this.onEdited}
-                        onCreated={this.onCreated}
-                        draw={{
-                            polyline: false,
-                            polygon: false,
-                            circle: false,
-                            marker: false,
-                            circlemarker: false,
-                            rectangle: false,
-                        }}
-                        edit={{
-                            remove: false,
-                            edit: false,
-                        }
-                        }
-                    />
-                </FeatureGroup>
-            </Map>
+            <Grid container spacing={4}>
+                {
+                    !orgUnit.geo_json
+                    && (
+                        <Fragment>
+                            <Grid item xs={4} />
+                            <Grid item xs={4}>
+                                <ErrorPaper message={formatMessage({
+                                    id: 'iaso.orgunit.shapeMissing',
+                                    defaultMessage: 'No shape found for this org unit',
+                                })}
+                                />
+                            </Grid>
+                            <Grid item xs={4} />
+                        </Fragment>
+                    )
+                }
+                {
+                    orgUnit.geo_json
+                    && (
+                        <Fragment>
+                            <Grid item xs={10} className={classes.mapContainer}>
+                                <Map
+                                    style={{ height: '100%' }}
+                                    ref={(ref) => {
+                                        this.map = ref;
+                                    }}
+                                    bounds={leafletGeoJSON.getBounds()}
+                                    boundsOptions={{ padding: [10, 10] }}
+                                    zoom={5}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                                        url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
+                                    />
+                                    <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }}>
+                                        <EditControl
+                                            position="topright"
+                                            draw={{
+                                                polyline: false,
+                                                polygon: false,
+                                                circle: false,
+                                                marker: false,
+                                                circlemarker: false,
+                                                rectangle: false,
+                                            }}
+                                            edit={{
+                                                remove: false,
+                                                edit: false,
+                                            }
+                                            }
+                                        />
+                                    </FeatureGroup>
+                                </Map>
+                            </Grid>
+                            <Grid item xs={2}>
+                                {
+                                    !editEnabled
+                                    && (
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => this.toggleEdit()}
+                                            className={classes.button}
+                                            color="primary"
+                                        >
+                                            <Edit className={classes.buttonIcon} />
+                                            <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
+                                        </Button>
+                                    )
+                                }
+                                {
+                                    editEnabled
+                                    && (
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => {
+                                                this.toggleEdit();
+                                                this.onChange();
+                                            }}
+                                            className={classes.button}
+                                            color="secondary"
+                                        >
+                                            <Check className={classes.buttonIcon} />
+                                            <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
+                                        </Button>
+                                    )
+                                }
+                            </Grid>
+                        </Fragment>
+                    )
+                }
+            </Grid>
         );
     }
 }
 
 OrgUnitMapComponent.propTypes = {
+    intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
 };
 
 
-export default withStyles(styles)(OrgUnitMapComponent);
+export default withStyles(styles)(injectIntl(OrgUnitMapComponent));

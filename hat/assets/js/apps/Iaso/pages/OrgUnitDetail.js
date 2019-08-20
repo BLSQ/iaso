@@ -138,12 +138,19 @@ class OrgUnitDetail extends Component {
     goBack() {
         const { redirectTo, params } = this.props;
         this.props.setCurrentOrgUnit(undefined);
+        const tempParams = {
+            ...params,
+        };
+        delete tempParams.tab;
+        delete tempParams.orgUnitId;
+        delete tempParams.orgUnitsPageSize;
+        delete tempParams.orgUnitsPageSize;
+        delete tempParams.orgUnitsPage;
         redirectTo('orgunits', {
-            validated: params.validated,
+            ...tempParams,
             order: params.orgUnitsOrder,
             pageSize: params.orgUnitsPageSize,
             page: params.orgUnitsPage,
-            search: params.search,
             back: true,
         });
     }
@@ -174,6 +181,26 @@ class OrgUnitDetail extends Component {
                         <Fragment>
                             <Container maxWidth={false} className={classes.whiteContainer}>
                                 <BackButton goBack={() => this.goBack()} />
+                                <div className={classes.floatRight}>
+                                    <Button
+                                        disabled={!orgUnitModified}
+                                        variant="contained"
+                                        onClick={() => this.resetOrgUnit()}
+                                    >
+                                        <Cancel className={classes.buttonIcon} fontSize="small" />
+                                        <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                                    </Button>
+                                    <Button
+                                        disabled={!orgUnitModified}
+                                        variant="contained"
+                                        className={classes.marginLeft}
+                                        color="primary"
+                                        onClick={() => this.saveOrgUnit(currentOrgUnit)}
+                                    >
+                                        <Save className={classes.buttonIcon} fontSize="small" />
+                                        <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
+                                    </Button>
+                                </div>
                             </Container>
                             <Container maxWidth={false} className={classes.container}>
                                 <AppBar position="static">
@@ -214,33 +241,13 @@ class OrgUnitDetail extends Component {
                                         )
                                     }
                                     {
-                                        tab === 'map' && currentOrgUnit && (
+                                        tab === 'map' && (
                                             <OrgUnitMap
                                                 orgUnit={currentOrgUnit}
-                                                onChange={geoJson => console.log('onChange')}
+                                                onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
                                             />
                                         )
                                     }
-                                    <div className={classes.justifyFlexEnd}>
-                                        <Button
-                                            disabled={!orgUnitModified}
-                                            variant="contained"
-                                            onClick={() => this.resetOrgUnit()}
-                                        >
-                                            <Cancel className={classes.buttonIcon} fontSize="small" />
-                                            <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
-                                        </Button>
-                                        <Button
-                                            disabled={!orgUnitModified}
-                                            variant="contained"
-                                            className={classes.marginLeft}
-                                            color="primary"
-                                            onClick={() => this.saveOrgUnit(currentOrgUnit)}
-                                        >
-                                            <Save className={classes.buttonIcon} fontSize="small" />
-                                            <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
-                                        </Button>
-                                    </div>
                                 </Container>
                             </Container>
                         </Fragment>

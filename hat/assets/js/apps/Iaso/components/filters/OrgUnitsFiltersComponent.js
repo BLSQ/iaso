@@ -10,7 +10,13 @@ import Button from '@material-ui/core/Button';
 
 import commonStyles from '../../styles/common';
 
-import { search, status, orgUnitType, source } from '../../constants/orgUnitsFilters';
+import {
+    search,
+    status,
+    orgUnitType,
+    source,
+    shape,
+} from '../../constants/orgUnitsFilters';
 
 import FiltersComponent from './FiltersComponent';
 
@@ -50,6 +56,7 @@ function OrgUnitsFiltersComponent(props) {
                         baseUrl={baseUrl}
                         filters={[
                             status(formatMessage),
+                            shape(formatMessage),
                         ]}
                     />
                 </Grid>

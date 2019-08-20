@@ -79,6 +79,18 @@ const MESSAGES = {
         id: 'iaso.SSC',
         defaultMessage: 'Community Health Site',
     },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
+    shape: {
+        id: 'iaso.forms.shape',
+        defaultMessage: 'Shapes',
+    },
 };
 
 export default MESSAGES;

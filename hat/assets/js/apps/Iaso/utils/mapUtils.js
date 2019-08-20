@@ -2,7 +2,9 @@ import L from 'leaflet';
 
 export const isValidCoordinate = (latitude, longitude) => {
     if (
-        latitude > 90
+        !latitude
+        || !longitude
+        || latitude > 90
         || latitude < -90
         || longitude > 180
         || longitude < -180
@@ -16,6 +18,8 @@ export const getLatLngBounds = (items) => {
     items.forEach((i) => {
         if (isValidCoordinate(i.latitude, i.longitude)) {
             latLngs.push(L.latLng(i.latitude, i.longitude));
+        } else if (isValidCoordinate(i[0], i[1])) {
+            latLngs.push(L.latLng(i[0], i[1]));
         }
         return null;
     });

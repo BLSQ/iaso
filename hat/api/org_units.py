@@ -76,6 +76,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
         source_id = request.GET.get("sourceId", None)
+        with_shape = request.GET.get("withShape", None)
         order = request.GET.get("order", "id").split(",")
 
         if validated == "true":
@@ -96,6 +97,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
+
+        if with_shape == 'true':
+            queryset = queryset.filter(simplified_geom__isnull=False)
+
+        if with_shape == 'false':
+            queryset = queryset.filter(simplified_geom__isnull=True)
 
         if source_id:
             queryset = queryset.filter(source=source_id)
@@ -127,6 +134,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
         org_unit.validated = request.data.get("status", True)
+        # TO-DO: save geo-json to simplified_geom
+        # org_unit.simplified_geom = request.data.get("simplified_geom", None)
         org_unit.aliases = request.data.get("aliases", "")
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
@@ -136,7 +145,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit.save()
 
-        return Response(org_unit.as_dict())
+        res = org_unit.as_dict()
+        res["geo_json"] = None
+        if org_unit.simplified_geom:
+            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
+
+        return Response(res)
 
     def create(self, request):
         org_units = request.data

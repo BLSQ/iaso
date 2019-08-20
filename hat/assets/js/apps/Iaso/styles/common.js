@@ -49,6 +49,9 @@ const commonStyles = theme => ({
         display: 'flex',
         justifyContent: 'flex-end',
     },
+    floatRight: {
+        float: 'right',
+    },
 });
 
 export default commonStyles;

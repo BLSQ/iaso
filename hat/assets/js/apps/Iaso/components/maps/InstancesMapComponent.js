@@ -42,7 +42,13 @@ class InstancesMap extends Component {
                                                     :
                                                 </td>
                                                 <td>
-                                                    <span>{i.org_unit.name} <br/> {i.org_unit.org_unit_type_name}</span>
+                                                    <span>
+                                                        {i.org_unit.name}
+                                                        {' '}
+                                                        <br />
+                                                        {' '}
+                                                        {i.org_unit.org_unit_type_name}
+                                                    </span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -51,7 +57,7 @@ class InstancesMap extends Component {
                                                     :
                                                 </td>
                                                 <td>
-                                                    <span>{ i.device_id }</span>
+                                                    <span>{i.device_id}</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -60,7 +66,15 @@ class InstancesMap extends Component {
                                                     :
                                                 </td>
                                                 <td>
-                                                    Long: {i.longitude} <br/> Lat: {i.latitude}
+                                                    Long:
+                                                    {' '}
+                                                    {i.longitude}
+                                                    {' '}
+                                                    <br />
+                                                    {' '}
+                                                    Lat:
+                                                    {' '}
+                                                    {i.latitude}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -87,7 +101,13 @@ class InstancesMap extends Component {
                                                     :
                                                 </td>
                                                 <td>
-                                                  {i.files.map(f => (<p><a href={f}><img style={{maxWidth: '100px', maxHeight: '100px'}} src={f}/></a></p>))}
+                                                    {i.files.map(f => (
+                                                        <p>
+                                                            <a href={f}>
+                                                                <img alt="" style={{ maxWidth: '100px', maxHeight: '100px' }} src={f} />
+                                                            </a>
+                                                        </p>
+                                                    ))}
                                                 </td>
                                             </tr>
                                         </tbody>

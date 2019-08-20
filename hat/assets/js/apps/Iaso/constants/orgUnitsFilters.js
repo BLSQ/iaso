@@ -58,3 +58,24 @@ export const source = (formatMessage, sourceList) => (
         type: 'select',
     }
 );
+
+
+export const shape = formatMessage => (
+    {
+        urlKey: 'withShape',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(MESSAGES.with),
+                value: 'true',
+            },
+            {
+                label: formatMessage(MESSAGES.without),
+                value: 'false',
+            },
+        ],
+        label: MESSAGES.shape,
+        type: 'select',
+    }
+);

@@ -1,16 +1,18 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
     Map, FeatureGroup, TileLayer,
 } from 'react-leaflet';
-import 'react-leaflet-draw';
+import { EditControl } from 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Edit from '@material-ui/icons/Edit';
+import Add from '@material-ui/icons/Add';
 import Check from '@material-ui/icons/Check';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import L from 'leaflet';
 import PropTypes from 'prop-types';
@@ -19,13 +21,16 @@ import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { MESSAGES } from '../../../../utils/map/mapUtils';
 
-import ErrorPaper from '../papers/ErrorPaperComponent';
 import TileSwitch from './TileSwitchComponent';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const zoom = 5;
 const padding = [10, 10];
+
+const polygonDrawOpiton = {
+    shapeOptions: { color: 'blue' },
+};
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -45,7 +50,9 @@ class OrgUnitMapComponent extends Component {
     constructor(props) {
         super(props);
         const leafletGeoJSON = new L.GeoJSON(props.orgUnit.geo_json, {
-            stroke: false,
+            style: {
+                weight: 3,
+            },
         });
         this.state = {
             leafletGeoJSON,
@@ -74,9 +81,11 @@ class OrgUnitMapComponent extends Component {
 
     componentWillReceiveProps(newProps) {
         this.setState({
-            leafletGeoJSON: new L.GeoJSON(newProps.orgUnit.geo_json, {
-                stroke: false,
-            }),
+            leafletGeoJSON: newProps.orgUnit.geo_json ? new L.GeoJSON(newProps.orgUnit.geo_json, {
+                style: {
+                    weight: 3,
+                },
+            }) : null,
         });
     }
 
@@ -84,9 +93,11 @@ class OrgUnitMapComponent extends Component {
         if (reactFGref) {
             const leafletFG = reactFGref.leafletElement;
             leafletFG.clearLayers();
-            leafletGeoJSON.eachLayer((layer) => {
-                leafletFG.addLayer(layer);
-            });
+            if (leafletGeoJSON) {
+                leafletGeoJSON.eachLayer((layer) => {
+                    layer.addTo(leafletFG);
+                });
+            }
             editableFeatureGroup = reactFGref;
         }
     }
@@ -109,101 +120,147 @@ class OrgUnitMapComponent extends Component {
 
     toggleEdit() {
         const { editEnabled } = this.state;
-        editableFeatureGroup.leafletElement.eachLayer((layer) => {
-            if (!editEnabled) {
-                layer.editing.enable();
-            } else {
-                layer.editing.disable();
-            }
-        });
+        const layer = editableFeatureGroup.leafletElement.getLayers()[0];
+        console.log('ICI');
+        
+        if (!editEnabled) {
+            layer.editing.enable();
+        } else {
+            layer.editing.disable();
+        }
+        // editableFeatureGroup.leafletElement.eachLayer((layer) => {
+        //     // if (!editEnabled) {
+        //     //     layer.editing.enable();
+        //     // } else {
+        //     //     layer.editing.disable();
+        //     // }
+        // });
         this.setState({
             editEnabled: !editEnabled,
         });
     }
 
+    deleteShape() {
+        const { onChange } = this.props;
+        editableFeatureGroup = null;
+        onChange(null);
+    }
+
+    addShape() {
+        new L.Draw.Polygon(this.map.leafletElement, polygonDrawOpiton).enable();
+    }
+
     render() {
         const {
-            classes, orgUnit, intl: { formatMessage }, currentTile,
+            classes, orgUnit, currentTile,
         } = this.props;
         const { leafletGeoJSON, editEnabled } = this.state;
+        const drawnItems = new L.FeatureGroup();
         return (
             <Grid container spacing={4}>
-                {
-                    !orgUnit.geo_json
-                    && (
-                        <Fragment>
-                            <Grid item xs={4} />
-                            <Grid item xs={4}>
-                                <ErrorPaper message={formatMessage({
-                                    id: 'iaso.orgunit.shapeMissing',
-                                    defaultMessage: 'No shape found for this org unit',
-                                })}
-                                />
-                            </Grid>
-                            <Grid item xs={4} />
-                        </Fragment>
-                    )
-                }
-                {
-                    orgUnit.geo_json
-                    && (
-                        <Fragment>
-                            <Grid item xs={10} className={classes.mapContainer}>
-                                <Map
-                                    maxZoom={currentTile.maxZoom}
-                                    style={{ height: '100%' }}
-                                    ref={(ref) => {
-                                        this.map = ref;
-                                    }}
-                                    bounds={leafletGeoJSON.getBounds()}
-                                    boundsOptions={{ padding }}
-                                    zoom={zoom}
-                                    zoomControl={false}
-                                >
-                                    <TileLayer
-                                        attribution={currentTile.attribution ? currentTile.attribution : ''}
-                                        url={currentTile.url}
-                                    />
-                                    <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }} />
-                                </Map>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <TileSwitch />
-                                {
-                                    !editEnabled
-                                    && (
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => this.toggleEdit()}
-                                            className={classes.button}
-                                            color="primary"
-                                        >
-                                            <Edit className={classes.buttonIcon} />
-                                            <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
-                                        </Button>
-                                    )
+                <Grid item xs={10} className={classes.mapContainer}>
+                    <Map
+                        maxZoom={currentTile.maxZoom}
+                        style={{ height: '100%' }}
+                        ref={(ref) => {
+                            this.map = ref;
+                        }}
+                        center={[0, 0]}
+                        bounds={leafletGeoJSON ? leafletGeoJSON.getBounds() : null}
+                        boundsOptions={{ padding }}
+                        zoom={zoom}
+                        zoomControl={false}
+                    >
+                        <TileLayer
+                            attribution={currentTile.attribution ? currentTile.attribution : ''}
+                            url={currentTile.url}
+                        />
+                        <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }}>
+                            <EditControl
+                                position="topright"
+                                draw={{
+                                    polyline: false,
+                                    polygon: false,
+                                    circle: false,
+                                    marker: false,
+                                    circlemarker: false,
+                                    rectangle: false,
+                                }}
+                                edit={{
+                                    remove: false,
+                                    edit: {
+                                        featureGroup: drawnItems,
+                                    },
                                 }
-                                {
-                                    editEnabled
-                                    && (
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => {
-                                                this.toggleEdit();
-                                                this.onChange();
-                                            }}
-                                            className={classes.button}
-                                            color="secondary"
-                                        >
-                                            <Check className={classes.buttonIcon} />
-                                            <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
-                                        </Button>
-                                    )
                                 }
-                            </Grid>
-                        </Fragment>
-                    )
-                }
+                            />
+                        </FeatureGroup>
+                    </Map>
+                </Grid>
+                <Grid item xs={2}>
+                    <TileSwitch />
+                    {
+                        !editEnabled
+                        && orgUnit.geo_json
+                        && (
+                            <Button
+                                variant="contained"
+                                onClick={() => this.toggleEdit()}
+                                className={classes.button}
+                                color="primary"
+                            >
+                                <Edit className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
+                            </Button>
+                        )
+                    }
+                    {
+                        editEnabled
+                        && orgUnit.geo_json
+                        && (
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+                                    this.toggleEdit();
+                                    this.onChange();
+                                }}
+                                className={classes.button}
+                                color="secondary"
+                            >
+                                <Check className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
+                            </Button>
+                        )
+                    }
+                    {
+                        orgUnit.geo_json
+                        && (
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.button}
+                                onClick={() => this.deleteShape()}
+                            >
+                                <DeleteIcon className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                            </Button>
+                        )
+                    }
+                    {
+                        !orgUnit.geo_json
+                        && (
+                            <Button
+                                variant="contained"
+                                onClick={() => this.addShape()}
+                                className={classes.button}
+                                color="primary"
+                            >
+                                <Add className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.map.shape.add" defaultMessage="Add shape" />
+                            </Button>
+                        )
+                    }
+                </Grid>
             </Grid>
         );
     }

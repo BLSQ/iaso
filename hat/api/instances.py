@@ -82,13 +82,13 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
             ]
-            file_content_template = queryset.first().as_dict(True)["file_content"]
+            file_content_template = queryset.first().as_dict()["file_content"]
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
             filename = "instances"
 
             def get_row(instance, **kwargs):
-                idict = instance.as_dict(True)
+                idict = instance.as_dict()
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 instance_values = [

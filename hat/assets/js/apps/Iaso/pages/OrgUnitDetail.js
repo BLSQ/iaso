@@ -38,6 +38,11 @@ const baseUrl = 'orgunits/detail';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    whiteContainerNoMargin: {
+        ...commonStyles(theme).whiteContainerNoMargin,
+        paddingLeft: theme.spacing(4),
+        paddingRight: theme.spacing(4),
+    },
 });
 
 

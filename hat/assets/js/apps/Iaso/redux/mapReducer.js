@@ -9,7 +9,7 @@ export const setCurrentTile = currentTile => ({
 });
 
 export const mapInitialState = {
-    currentTile: tiles['arcgis-satellite'],
+    currentTile: tiles.osm,
 };
 
 export const mapReducer = (state = mapInitialState, action = {}) => {

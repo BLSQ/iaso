@@ -20,6 +20,7 @@ import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { MESSAGES } from '../../../../utils/map/mapUtils';
 
 import ErrorPaper from '../papers/ErrorPaperComponent';
+import TileSwitch from './TileSwitchComponent';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 
@@ -167,6 +168,7 @@ class OrgUnitMapComponent extends Component {
                                 </Map>
                             </Grid>
                             <Grid item xs={2}>
+                                <TileSwitch />
                                 {
                                     !editEnabled
                                     && (

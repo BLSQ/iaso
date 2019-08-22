@@ -46,6 +46,9 @@ const styles = theme => ({
         width: 15,
         height: 15,
     },
+    tableButton: {
+        marginRight: theme.spacing(2),
+    },
 });
 
 class OrgUnits extends Component {
@@ -68,32 +71,28 @@ class OrgUnits extends Component {
         fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
     }
 
-    onSearch() {
-        this.setState({
-            tableUrl: this.getEndpointUrl(),
-        });
+    componentWillUnmount() {
+        this.props.setOrgUnits(null, this.props.params, 0, 1);
     }
 
-    getEndpointUrl() {
+    onSearch() {
         let url = '/api/orgunits/?';
         const {
             params,
         } = this.props;
-
-        const urlParams = {
-            ...params,
-        };
-
-        Object.keys(urlParams).forEach((key) => {
-            const value = urlParams[key];
+        Object.keys(params).forEach((key) => {
+            const value = params[key];
             if (value && !url.includes(key)) {
                 url += `&${key}=${value}`;
             }
         });
-        return url;
+
+        this.setState({
+            tableUrl: url,
+        });
     }
 
-    selectOrgUnit(orgUnit) {
+    selectOrgUnit(orgUnit, isMap) {
         const { redirectTo, params } = this.props;
         const newParams = {
             orgUnitId: orgUnit.id,
@@ -105,6 +104,9 @@ class OrgUnits extends Component {
         delete newParams.page;
         delete newParams.pageSize;
         delete newParams.order;
+        if (isMap) {
+            newParams.tab = 'map';
+        }
         redirectTo('orgunits/detail', newParams);
     }
 

@@ -16,6 +16,7 @@ import {
     orgUnitType,
     source,
     shape,
+    location,
 } from '../../constants/orgUnitsFilters';
 
 import FiltersComponent from './FiltersComponent';
@@ -55,7 +56,7 @@ function OrgUnitsFiltersComponent(props) {
                         params={params}
                         baseUrl={baseUrl}
                         filters={[
-                            status(formatMessage),
+                            location(formatMessage),
                             shape(formatMessage),
                         ]}
                     />
@@ -65,6 +66,7 @@ function OrgUnitsFiltersComponent(props) {
                         params={params}
                         baseUrl={baseUrl}
                         filters={[
+                            status(formatMessage),
                             orgUnitType(formatMessage, orgUnitTypes),
                         ]}
                     />

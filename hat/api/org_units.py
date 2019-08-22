@@ -77,6 +77,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
         source_id = request.GET.get("sourceId", None)
         with_shape = request.GET.get("withShape", None)
+        with_location = request.GET.get("withLocation", None)
         order = request.GET.get("order", "id").split(",")
 
         if validated == "true":
@@ -103,6 +104,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if with_shape == 'false':
             queryset = queryset.filter(simplified_geom__isnull=True)
+
+        if with_location == 'true':
+            queryset = queryset.filter(
+                Q(location__isnull=False) | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+            )
+
+        if with_location == 'false':
+            queryset = queryset.filter(
+                Q(location__isnull=True) & Q(latitude__isnull=True) & Q(longitude__isnull=True)
+            )
 
         if source_id:
             queryset = queryset.filter(source=source_id)
@@ -135,7 +146,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.source = request.data.get("source", "")
         org_unit.validated = request.data.get("status", True)
         # TO-DO: save geo-json to simplified_geom
-        # org_unit.simplified_geom = request.data.get("simplified_geom", None)
+        org_unit.simplified_geom = request.data.get("geo_json", None)
+        latitude = request.data.get("latitude", None)
+        longitude = request.data.get("longitude", None)
+        org_unit.latitude = latitude;
+        org_unit.longitude = latitude;
+
+        if latitude and longitude:
+            org_unit.location = Point(
+                x=latitude, y=longitude, srid=4326
+            )
         org_unit.aliases = request.data.get("aliases", "")
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)

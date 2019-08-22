@@ -79,3 +79,24 @@ export const shape = formatMessage => (
         type: 'select',
     }
 );
+
+
+export const location = formatMessage => (
+    {
+        urlKey: 'withLocation',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(MESSAGES.with),
+                value: 'true',
+            },
+            {
+                label: formatMessage(MESSAGES.without),
+                value: 'false',
+            },
+        ],
+        label: MESSAGES.location,
+        type: 'select',
+    }
+);

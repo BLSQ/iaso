@@ -248,6 +248,10 @@ class OrgUnitDetail extends Component {
                                         tab === 'map' && (
                                             <OrgUnitMap
                                                 orgUnit={currentOrgUnit}
+                                                onChangeLocation={(location) => {
+                                                    this.handleChangeInfo('latitude', location.lat);
+                                                    this.handleChangeInfo('longitude', location.lng);
+                                                }}
                                                 onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
                                             />
                                         )

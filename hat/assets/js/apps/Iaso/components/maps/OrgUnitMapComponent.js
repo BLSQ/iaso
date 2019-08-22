@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
-    Map, TileLayer,
+    Map, TileLayer, Marker,
 } from 'react-leaflet';
 import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -10,7 +10,8 @@ import { withStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Edit from '@material-ui/icons/Edit';
-import Add from '@material-ui/icons/Add';
+import AddLocation from '@material-ui/icons/AddLocation';
+import FormatShapes from '@material-ui/icons/FormatShapes';
 import Check from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 
@@ -32,6 +33,8 @@ const padding = [10, 10];
 const polygonDrawOpiton = {
     shapeOptions: { color: 'blue' },
 };
+
+let editToolbar;
 
 const shapeOptions = () => ({
     onEachFeature: (feature, layer) => {
@@ -104,15 +107,37 @@ class OrgUnitMapComponent extends Component {
         this.map.leafletElement.addLayer(editableFeatureGroup);
         this.map.leafletElement.on('draw:created', (e) => {
             e.layer.addTo(editableFeatureGroup);
-            this.onChange();
+            if (e.layerType === 'polygon') {
+                this.onChange();
+            }
+            if (e.layerType === 'marker') {
+                this.props.onChangeLocation(e.layer.getLatLng());
+            }
         });
-        this.updateShape(this.state.leafletGeoJSON, true);
+
+        editToolbar = new L.EditToolbar({
+            featureGroup: editableFeatureGroup,
+        });
+        editHandler = editToolbar.getModeHandlers()[0].handler;
+        editHandler._map = this.map.leafletElement;
+        if (this.props.orgUnit.geo_json) {
+            this.updateShape(this.state.leafletGeoJSON, true);
+        }
+        if (this.props.orgUnit.latitude && this.props.orgUnit.longitude) {
+            this.fitToBounds();
+        }
     }
 
 
     componentWillReceiveProps(newProps) {
         if (!isEqual(newProps.orgUnit.geo_json && this.props.orgUnit.geo_json)) {
             this.mapGeoJson(newProps.orgUnit.geo_json);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.state.editEnabled) {
+            this.toggleEditShape();
         }
     }
 
@@ -141,26 +166,24 @@ class OrgUnitMapComponent extends Component {
                 layer.addTo(editableFeatureGroup);
             });
         }
-
-        const editToolbar = new L.EditToolbar({
-            featureGroup: editableFeatureGroup,
-        });
-        editHandler = editToolbar.getModeHandlers()[0].handler;
-        editHandler._map = this.map.leafletElement;
         if (fitToBounds) {
             this.fitToBounds(leafletGeoJSON);
         }
     }
 
     fitToBounds(leafletGeoJSON = this.state.leafletGeoJSON) {
-        console.log('fitToBounds');
-        const { currentTile } = this.props;
-        if (leafletGeoJSON) {
+        const { currentTile, orgUnit } = this.props;
+        if (orgUnit.geo_json) {
             this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding });
+        }
+        if (orgUnit.latitude && orgUnit.longitude) {
+            const latlng = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
+            const markerBounds = L.latLngBounds(latlng);
+            this.map.leafletElement.fitBounds(markerBounds, { maxZoom: 10, padding });
         }
     }
 
-    toggleEdit() {
+    toggleEditShape() {
         const { editEnabled } = this.state;
 
         if (!editEnabled) {
@@ -177,11 +200,16 @@ class OrgUnitMapComponent extends Component {
         new L.Draw.Polygon(this.map.leafletElement, polygonDrawOpiton).enable();
     }
 
+    addMarker() {
+        new L.Draw.Marker(this.map.leafletElement).enable();
+    }
+
     render() {
         const {
             classes, orgUnit, currentTile,
         } = this.props;
-        const { leafletGeoJSON, editEnabled } = this.state;
+        const { editEnabled } = this.state;
+        const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         return (
             <Grid container spacing={4}>
                 <Grid item xs={10} className={classes.mapContainer}>
@@ -200,17 +228,26 @@ class OrgUnitMapComponent extends Component {
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
                             url={currentTile.url}
                         />
+                        {
+                            hasMarker
+                            && (
+                                <Marker
+                                    position={[orgUnit.latitude, orgUnit.longitude]}
+                                    draggable
+                                    onDragend={e => this.props.onChangeLocation(e.target.getLatLng())}
+                                />
+                            )
+                        }
                     </Map>
                 </Grid>
                 <Grid item xs={2}>
                     <TileSwitch />
                     {
-                        !editEnabled
-                        && orgUnit.geo_json
+                        !editEnabled && orgUnit.geo_json
                         && (
                             <Button
                                 variant="contained"
-                                onClick={() => this.toggleEdit()}
+                                onClick={() => this.toggleEditShape()}
                                 className={classes.button}
                                 color="primary"
                             >
@@ -220,13 +257,12 @@ class OrgUnitMapComponent extends Component {
                         )
                     }
                     {
-                        editEnabled
-                        && orgUnit.geo_json
+                        (editEnabled && orgUnit.geo_json)
                         && (
                             <Button
                                 variant="contained"
                                 onClick={() => {
-                                    this.toggleEdit();
+                                    this.toggleEditShape();
                                     this.onChange();
                                 }}
                                 className={classes.button}
@@ -239,7 +275,6 @@ class OrgUnitMapComponent extends Component {
                     }
                     {
                         orgUnit.geo_json
-                        && !editEnabled
                         && (
                             <Button
                                 variant="contained"
@@ -253,17 +288,43 @@ class OrgUnitMapComponent extends Component {
                         )
                     }
                     {
-                        !orgUnit.geo_json
+                        hasMarker
                         && (
                             <Button
                                 variant="contained"
-                                onClick={() => this.addShape()}
+                                color="secondary"
                                 className={classes.button}
-                                color="primary"
+                                onClick={() => this.props.onChangeLocation({ latitude: null, longitude: null })}
                             >
-                                <Add className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.shape.add" defaultMessage="Add shape" />
+                                <DeleteIcon className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
                             </Button>
+                        )
+                    }
+                    {
+                        !orgUnit.geo_json
+                        && !hasMarker
+                        && (
+                            <Fragment>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => this.addShape()}
+                                    className={classes.button}
+                                    color="primary"
+                                >
+                                    <FormatShapes className={classes.buttonIcon} />
+                                    <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => this.addMarker()}
+                                    className={classes.button}
+                                    color="primary"
+                                >
+                                    <AddLocation className={classes.buttonIcon} />
+                                    <FormattedMessage id="iaso.map.shape.addLocation" defaultMessage="Add a location" />
+                                </Button>
+                            </Fragment>
                         )
                     }
                 </Grid>
@@ -277,6 +338,7 @@ OrgUnitMapComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
+    onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
 };
 

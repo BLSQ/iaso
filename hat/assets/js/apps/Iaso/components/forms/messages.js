@@ -91,6 +91,10 @@ const MESSAGES = {
         id: 'iaso.forms.shape',
         defaultMessage: 'Shapes',
     },
+    location: {
+        id: 'iaso.forms.location',
+        defaultMessage: 'Location',
+    },
 };
 
 export default MESSAGES;

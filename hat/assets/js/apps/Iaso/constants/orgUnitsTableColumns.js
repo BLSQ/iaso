@@ -3,6 +3,7 @@ import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
+import Map from '@material-ui/icons/Map';
 
 import MESSAGES from '../components/forms/messages';
 
@@ -68,6 +69,22 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             accessor: 'instances_count',
             Cell: settings => (
                 <section>
+                    {
+                        (settings.original.has_geo_json
+                            || (settings.original.latitude && settings.original.longitude))
+                        && (
+                            <Button
+                                className={component.props.classes.tableButton}
+                                size="small"
+                                variant="contained"
+                                color="primary"
+                                onClick={() => component.selectOrgUnit(settings.original, true)}
+                            >
+                                <Map className={component.props.classes.buttonIcon} fontSize="small" />
+                                <FormattedMessage id="iaso.label.map" defaultMessage="Map" />
+                            </Button>
+                        )
+                    }
                     <Button
                         size="small"
                         variant="contained"

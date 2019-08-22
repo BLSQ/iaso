@@ -16,6 +16,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
 import L from 'leaflet';
 import PropTypes from 'prop-types';
+import isEqual from 'lodash/isEqual';
 
 import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
@@ -75,7 +76,7 @@ class OrgUnitMapComponent extends Component {
             zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
             zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
             fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => this.fitToBounds,
+            fitToBounds: () => this.fitToBounds(),
             position: 'topleft',
         });
         zoomBar.addTo(this.map.leafletElement);
@@ -105,15 +106,14 @@ class OrgUnitMapComponent extends Component {
             e.layer.addTo(editableFeatureGroup);
             this.onChange();
         });
+        this.updateShape(this.state.leafletGeoJSON, true);
     }
 
 
     componentWillReceiveProps(newProps) {
-        const leafletGeoJSON = newProps.orgUnit.geo_json ? L.geoJson(newProps.orgUnit.geo_json, shapeOptions) : null;
-        this.setState({
-            leafletGeoJSON,
-        });
-        this.updateShape(leafletGeoJSON);
+        if (!isEqual(newProps.orgUnit.geo_json && this.props.orgUnit.geo_json)) {
+            this.mapGeoJson(newProps.orgUnit.geo_json);
+        }
     }
 
     onChange() {
@@ -126,7 +126,15 @@ class OrgUnitMapComponent extends Component {
         onChange(geojsonData);
     }
 
-    updateShape(leafletGeoJSON = this.state.leafletGeoJSON) {
+    mapGeoJson(geoJson) {
+        const leafletGeoJSON = geoJson ? L.geoJson(geoJson, shapeOptions) : null;
+        this.setState({
+            leafletGeoJSON,
+        });
+        this.updateShape(leafletGeoJSON, false);
+    }
+
+    updateShape(leafletGeoJSON = this.state.leafletGeoJSON, fitToBounds = false) {
         editableFeatureGroup.clearLayers();
         if (leafletGeoJSON) {
             leafletGeoJSON.eachLayer((layer) => {
@@ -139,12 +147,17 @@ class OrgUnitMapComponent extends Component {
         });
         editHandler = editToolbar.getModeHandlers()[0].handler;
         editHandler._map = this.map.leafletElement;
+        if (fitToBounds) {
+            this.fitToBounds(leafletGeoJSON);
+        }
     }
 
-    fitToBounds() {
+    fitToBounds(leafletGeoJSON = this.state.leafletGeoJSON) {
+        console.log('fitToBounds');
         const { currentTile } = this.props;
-        const { leafletGeoJSON } = this.state;
-        this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding });
+        if (leafletGeoJSON) {
+            this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding });
+        }
     }
 
     toggleEdit() {
@@ -179,7 +192,6 @@ class OrgUnitMapComponent extends Component {
                             this.map = ref;
                         }}
                         center={[0, 0]}
-                        bounds={orgUnit.geo_json ? leafletGeoJSON.getBounds() : null}
                         boundsOptions={{ padding }}
                         zoom={zoom}
                         zoomControl={false}

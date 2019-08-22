@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
-    Map, FeatureGroup, TileLayer,
+    Map, TileLayer,
 } from 'react-leaflet';
-import { EditControl } from 'react-leaflet-draw';
+import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
@@ -32,6 +32,14 @@ const polygonDrawOpiton = {
     shapeOptions: { color: 'blue' },
 };
 
+const shapeOptions = () => ({
+    onEachFeature: (feature, layer) => {
+        layer.setStyle({
+            weight: 3,
+        });
+    },
+});
+
 const styles = theme => ({
     ...commonStyles(theme),
     mapContainer: {
@@ -44,16 +52,13 @@ const styles = theme => ({
     },
 });
 
-let editableFeatureGroup;
+const editableFeatureGroup = new L.FeatureGroup();
+let editHandler;
 
 class OrgUnitMapComponent extends Component {
     constructor(props) {
         super(props);
-        const leafletGeoJSON = new L.GeoJSON(props.orgUnit.geo_json, {
-            style: {
-                weight: 3,
-            },
-        });
+        const leafletGeoJSON = L.geoJson(props.orgUnit.geo_json, shapeOptions);
         this.state = {
             leafletGeoJSON,
             editEnabled: false,
@@ -66,40 +71,49 @@ class OrgUnitMapComponent extends Component {
                 formatMessage,
             },
         } = this.props;
-        setDrawMessages(formatMessage);
-
         const zoomBar = L.control.zoombar({
             zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
             zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
             fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => this.fitToBounds(),
+            fitToBounds: () => this.fitToBounds,
             position: 'topleft',
         });
         zoomBar.addTo(this.map.leafletElement);
+        const options = {
+            position: 'topright',
+            draw: {
+                polyline: false,
+                polygon: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                featureGroup: editableFeatureGroup,
+                rectangle: false,
+            },
+            edit: {
+                edit: false,
+                featureGroup: editableFeatureGroup,
+                remove: false,
+            },
+        };
+        setDrawMessages(formatMessage);
+
+        const drawControl = new L.Control.Draw(options);
+        this.map.leafletElement.addControl(drawControl);
+        this.map.leafletElement.addLayer(editableFeatureGroup);
+        this.map.leafletElement.on('draw:created', (e) => {
+            e.layer.addTo(editableFeatureGroup);
+            this.onChange();
+        });
     }
 
 
     componentWillReceiveProps(newProps) {
+        const leafletGeoJSON = newProps.orgUnit.geo_json ? L.geoJson(newProps.orgUnit.geo_json, shapeOptions) : null;
         this.setState({
-            leafletGeoJSON: newProps.orgUnit.geo_json ? new L.GeoJSON(newProps.orgUnit.geo_json, {
-                style: {
-                    weight: 3,
-                },
-            }) : null,
+            leafletGeoJSON,
         });
-    }
-
-    onFeatureGroupReady(reactFGref, leafletGeoJSON = this.state.leafletGeoJSON) {
-        if (reactFGref) {
-            const leafletFG = reactFGref.leafletElement;
-            leafletFG.clearLayers();
-            if (leafletGeoJSON) {
-                leafletGeoJSON.eachLayer((layer) => {
-                    layer.addTo(leafletFG);
-                });
-            }
-            editableFeatureGroup = reactFGref;
-        }
+        this.updateShape(leafletGeoJSON);
     }
 
     onChange() {
@@ -108,8 +122,23 @@ class OrgUnitMapComponent extends Component {
         if (!editableFeatureGroup || !onChange) {
             return;
         }
-        const geojsonData = editableFeatureGroup.leafletElement.toGeoJSON();
+        const geojsonData = editableFeatureGroup.toGeoJSON();
         onChange(geojsonData);
+    }
+
+    updateShape(leafletGeoJSON = this.state.leafletGeoJSON) {
+        editableFeatureGroup.clearLayers();
+        if (leafletGeoJSON) {
+            leafletGeoJSON.eachLayer((layer) => {
+                layer.addTo(editableFeatureGroup);
+            });
+        }
+
+        const editToolbar = new L.EditToolbar({
+            featureGroup: editableFeatureGroup,
+        });
+        editHandler = editToolbar.getModeHandlers()[0].handler;
+        editHandler._map = this.map.leafletElement;
     }
 
     fitToBounds() {
@@ -120,30 +149,15 @@ class OrgUnitMapComponent extends Component {
 
     toggleEdit() {
         const { editEnabled } = this.state;
-        const layer = editableFeatureGroup.leafletElement.getLayers()[0];
-        console.log('ICI');
-        
+
         if (!editEnabled) {
-            layer.editing.enable();
+            editHandler.enable();
         } else {
-            layer.editing.disable();
+            editHandler.disable();
         }
-        // editableFeatureGroup.leafletElement.eachLayer((layer) => {
-        //     // if (!editEnabled) {
-        //     //     layer.editing.enable();
-        //     // } else {
-        //     //     layer.editing.disable();
-        //     // }
-        // });
         this.setState({
             editEnabled: !editEnabled,
         });
-    }
-
-    deleteShape() {
-        const { onChange } = this.props;
-        editableFeatureGroup = null;
-        onChange(null);
     }
 
     addShape() {
@@ -155,7 +169,6 @@ class OrgUnitMapComponent extends Component {
             classes, orgUnit, currentTile,
         } = this.props;
         const { leafletGeoJSON, editEnabled } = this.state;
-        const drawnItems = new L.FeatureGroup();
         return (
             <Grid container spacing={4}>
                 <Grid item xs={10} className={classes.mapContainer}>
@@ -166,7 +179,7 @@ class OrgUnitMapComponent extends Component {
                             this.map = ref;
                         }}
                         center={[0, 0]}
-                        bounds={leafletGeoJSON ? leafletGeoJSON.getBounds() : null}
+                        bounds={orgUnit.geo_json ? leafletGeoJSON.getBounds() : null}
                         boundsOptions={{ padding }}
                         zoom={zoom}
                         zoomControl={false}
@@ -175,26 +188,6 @@ class OrgUnitMapComponent extends Component {
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
                             url={currentTile.url}
                         />
-                        <FeatureGroup ref={(reactFGref) => { this.onFeatureGroupReady(reactFGref); }}>
-                            <EditControl
-                                position="topright"
-                                draw={{
-                                    polyline: false,
-                                    polygon: false,
-                                    circle: false,
-                                    marker: false,
-                                    circlemarker: false,
-                                    rectangle: false,
-                                }}
-                                edit={{
-                                    remove: false,
-                                    edit: {
-                                        featureGroup: drawnItems,
-                                    },
-                                }
-                                }
-                            />
-                        </FeatureGroup>
                     </Map>
                 </Grid>
                 <Grid item xs={2}>
@@ -234,12 +227,13 @@ class OrgUnitMapComponent extends Component {
                     }
                     {
                         orgUnit.geo_json
+                        && !editEnabled
                         && (
                             <Button
                                 variant="contained"
                                 color="secondary"
                                 className={classes.button}
-                                onClick={() => this.deleteShape()}
+                                onClick={() => this.props.onChange(null)}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
                                 <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />

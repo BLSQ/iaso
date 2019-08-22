@@ -1,6 +1,6 @@
 import tiles from '../constants/mapTiles';
 
-const SET_CURRENT_TILE = 'SET_FORMS';
+const SET_CURRENT_TILE = 'SET_CURRENT_TILE';
 
 
 export const setCurrentTile = currentTile => ({

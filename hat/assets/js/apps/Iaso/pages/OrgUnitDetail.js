@@ -56,7 +56,7 @@ class OrgUnitDetail extends Component {
         };
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.fetchDetail();
         if (this.props.orgUnitTypes.length === 0) {
             fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -83,10 +83,9 @@ class OrgUnitDetail extends Component {
             params: {
                 orgUnitId,
             },
-            currentOrgUnit,
             dispatch,
         } = this.props;
-        if (orgUnitId && !currentOrgUnit) {
+        if (orgUnitId) {
             fetchOrgUnitDetail(dispatch, orgUnitId).then((orgUnit) => {
                 this.props.setCurrentOrgUnit(orgUnit);
                 this.setState({

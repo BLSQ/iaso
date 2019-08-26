@@ -35,7 +35,6 @@ export const logsInitialState = {
 
 export const logsReducer = (state = logsInitialState, action = {}) => {
     switch (action.type) {
-
         case SET_LOGS_LIST: {
             const {
                 list, showPagination, params, count, pages,

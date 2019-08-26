@@ -33,7 +33,7 @@ import { areaReducer, areasInitialState } from './redux/areas';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { devicesReducer, devicesInitialState } from './redux/devices';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
-import { logsReducer, logsInitialState } from './redux/logs';
+import { logsReducer, logsInitialState } from '../../redux/logs';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*

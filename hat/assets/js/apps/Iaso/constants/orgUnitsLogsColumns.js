@@ -1,7 +1,14 @@
 import React from 'react';
 import moment from 'moment';
 
-const managementLogsColumns = formatMessage => ([
+import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
+import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
+
+const orgUnitsLogsColumns = formatMessage => ([
+    {
+        Header: 'ID',
+        accessor: 'id',
+    },
     {
         Header: formatMessage({
             defaultMessage: 'Date',
@@ -23,19 +30,16 @@ const managementLogsColumns = formatMessage => ([
         ),
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Type',
-            id: 'main.label.type',
-        }),
-        accessor: 'content_type',
-    },
-    {
-        Header: formatMessage({
-            defaultMessage: 'Source',
-            id: 'main.label.source',
-        }),
-        accessor: 'source',
+        expander: true,
+        width: 65,
+        // eslint-disable-next-line react/prop-types
+        Expander: ({ isExpanded }) => (
+            isExpanded
+                ? <RemoveCircleOutline />
+                : <AddCircleOutline />
+        ),
     },
 ]
 );
-export default managementLogsColumns;
+
+export default orgUnitsLogsColumns;

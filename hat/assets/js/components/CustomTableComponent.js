@@ -220,6 +220,17 @@ class CustomTableComponent extends React.Component {
         if (data.length === 0) {
             currentPageSize = 2;
         }
+        let extraProps;
+
+        if (this.props.canSelect) {
+            extraProps = {
+                getTdProps: (state, rowInfo) => this.onRowClicked(state, rowInfo),
+            };
+        } else {
+            extraProps = {
+                SubComponent: this.props.SubComponent ? this.props.SubComponent : null,
+            };
+        }
         return (
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section
@@ -244,10 +255,9 @@ class CustomTableComponent extends React.Component {
                         pageSize={currentPageSize}
                         page={this.state.page - 1}
                         className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''} ${!this.props.canSelect ? 'no-select' : ''}`}
-                        getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
-                        showPagination={this.state.showPagination}
                         defaultSorted={this.state.order}
                         pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
+                        {...extraProps}
                     />
                     <div className="count-container">
                         {this.state.count !== undefined && this.state.count > 0
@@ -301,6 +311,7 @@ CustomTableComponent.defaultProps = {
     orderKey: 'order',
     canSelect: true,
     displayLoader: true,
+    SubComponent: null,
 };
 
 CustomTableComponent.propTypes = {
@@ -335,6 +346,7 @@ CustomTableComponent.propTypes = {
     orderKey: PropTypes.string,
     canSelect: PropTypes.bool,
     displayLoader: PropTypes.bool,
+    SubComponent: PropTypes.any,
 };
 
 const MapDispatchToProps = dispatch => ({

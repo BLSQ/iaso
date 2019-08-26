@@ -8,6 +8,10 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from hat.geo.geojson import geojson_queryset
 from django.db.models import Q
+from copy import deepcopy
+from hat.audit.models import log_modification, ORG_UNIT_API
+from .authentication import CsrfExemptSessionAuthentication
+from rest_framework.authentication import BasicAuthentication
 
 
 def import_data(org_units, user, api_import):
@@ -64,7 +68,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = []
+    # Check with Mobile application if not broken
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
@@ -141,6 +146,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, id=pk)
+        original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
@@ -149,8 +155,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.simplified_geom = request.data.get("geo_json", None)
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-        org_unit.latitude = latitude;
-        org_unit.longitude = latitude;
+        if latitude and str(latitude) != str(org_unit.latitude):
+            org_unit.latitude = latitude;
+        if longitude and str(longitude) != str(org_unit.longitude):
+            org_unit.longitude = longitude;
 
         if latitude and longitude:
             org_unit.location = Point(
@@ -163,6 +171,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
 
+        log_modification(original_copy, org_unit, source=ORG_UNIT_API, user=request.user)
         org_unit.save()
 
         res = org_unit.as_dict()

@@ -13,6 +13,7 @@ AREA_API = "area_api"
 PROFILE_API = "profile_api"
 PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"
+ORG_UNIT_API = "org_unit_api"
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

@@ -33,6 +33,8 @@ class LogsViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
+        object_id = request.GET.get("objectId", None)
+        source = request.GET.get("source", None)
 
         queryset = Modification.objects.all()
 
@@ -42,6 +44,10 @@ class LogsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(created_at__lte=to_date)
         if user_ids is not None:
             queryset = queryset.filter(user_id__in=user_ids.split(","))
+        if object_id is not None:
+            queryset = queryset.filter(object_id=object_id)
+        if source is not None:
+            queryset = queryset.filter(source=source)
 
         queryset = queryset.order_by(*orders)
 

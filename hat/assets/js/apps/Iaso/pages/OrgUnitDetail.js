@@ -30,6 +30,7 @@ import TopBar from '../components/nav/TopBarComponent';
 import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
 import BackButton from '../components/buttons/BackButtonComponent';
 import OrgUnitMap from '../components/maps/OrgUnitMapComponent';
+import Logs from '../components/logs/LogsComponent';
 
 import commonStyles from '../styles/common';
 
@@ -148,7 +149,7 @@ class OrgUnitDetail extends Component {
         delete tempParams.tab;
         delete tempParams.orgUnitId;
         delete tempParams.orgUnitsPageSize;
-        delete tempParams.orgUnitsPageSize;
+        delete tempParams.orgUnitsOrder;
         delete tempParams.orgUnitsPage;
         redirectTo('orgunits', {
             ...tempParams,
@@ -168,6 +169,7 @@ class OrgUnitDetail extends Component {
             },
             orgUnitTypes,
             sourceTypes,
+            params,
         } = this.props;
         const {
             tab,
@@ -230,6 +232,13 @@ class OrgUnitDetail extends Component {
                                                 id: 'iaso.orgUnits.map',
                                             })}
                                         />
+                                        <Tab
+                                            value="history"
+                                            label={formatMessage({
+                                                defaultMessage: 'History',
+                                                id: 'iaso.label.history',
+                                            })}
+                                        />
                                     </Tabs>
                                 </AppBar>
                                 <Container maxWidth={false} className={classes.whiteContainerNoMargin}>
@@ -249,10 +258,18 @@ class OrgUnitDetail extends Component {
                                             <OrgUnitMap
                                                 orgUnit={currentOrgUnit}
                                                 onChangeLocation={(location) => {
-                                                    this.handleChangeInfo('latitude', location.lat);
-                                                    this.handleChangeInfo('longitude', location.lng);
+                                                    this.handleChangeInfo('latitude', parseFloat(location.lat.toFixed(8)));
+                                                    this.handleChangeInfo('longitude', parseFloat(location.lng.toFixed(8)));
                                                 }}
                                                 onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        tab === 'history' && (
+                                            <Logs
+                                                params={params}
+                                                logObjectId={currentOrgUnit.id}
                                             />
                                         )
                                     }

@@ -15,7 +15,7 @@ import ChoosePeriodSelectorComponent from '../../../components/ChoosePeriodSelec
 
 import managementLogsColumns from '../constants/managementLogsColumns';
 
-import { logsActions } from '../redux/logs';
+import { logsActions } from '../../../redux/logs';
 import { filterActions } from '../../../redux/filtersRedux';
 
 import { users } from '../../../utils/constants/filters';

@@ -49,6 +49,18 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Updated at',
+                id: 'iaso.orgUnits.updated_at',
+            }),
+            accessor: 'updated_at',
+            Cell: settings => (
+                <section>
+                    {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Created at',
                 id: 'iaso.orgUnits.created_at',
             }),

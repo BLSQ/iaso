@@ -62,6 +62,14 @@ const saveOrgUnit = (dispatch, orgUnit) => patchRequest(`/api/orgunits/${orgUnit
         throw error;
     });
 
+const fetchLogDetail = (dispatch, logId) => getRequest(`/api/logs/${logId}`)
+    .then(logDetail => logDetail)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchLogDetailError')));
+        console.error('Error while fetching log detail:', error);
+        throw error;
+    });
+
 export {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
@@ -70,4 +78,5 @@ export {
     fetchInstancesAsDict,
     fetchFormDetail,
     saveOrgUnit,
+    fetchLogDetail,
 };

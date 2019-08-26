@@ -43,6 +43,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchOrgUnitTypesError',
         defaultMessage: 'An error occured while fetching org unit types list',
     },
+    fetchLogDetailError: {
+        id: 'iaso.snackBar.fetchLogDetailError',
+        defaultMessage: 'An error occured while fetching log detail',
+    },
 };
 
 export default MESSAGES;

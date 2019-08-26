@@ -9,7 +9,7 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 
 import { createUrl } from '../../../utils/fetchData';
-import { logsActions } from '../redux/logs';
+import { logsActions } from '../../../redux/logs';
 import { loadActions } from '../../../redux/load';
 
 import LoadingSpinner from '../../../components/loading-spinner';

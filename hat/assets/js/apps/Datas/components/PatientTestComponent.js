@@ -164,39 +164,6 @@ class PatientTestComponent extends React.Component {
                             </tr>
                         }
                         {
-                            test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="main.label.video" defaultMessage="Video" />
-                                </th>
-                                <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
-                                    {
-                                        !test.video_filename && !test.video &&
-                                        <span>
-                                            <i className="fa fa-video-camera small-padding-right" />
-                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.video_filename && !test.video &&
-                                        <span>
-                                            <i className="fa fa-upload small-padding-right" />
-                                            <FormattedMessage id="main.label..notUploadedFem" defaultMessage="Non transmise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.video &&
-                                        <VideoComponent videoItem={
-                                            {
-                                                video: test.video,
-                                            }
-                                        }
-                                        />
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
                             test.type === 'CATT' &&
                             <tr>
                                 <th>
@@ -228,6 +195,16 @@ class PatientTestComponent extends React.Component {
                             <Fragment>
                                 <tr>
                                     <th>
+                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="White blood cells/mm&sup3;" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
                                         <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumin" />
                                     </th>
                                     <td>
@@ -238,11 +215,21 @@ class PatientTestComponent extends React.Component {
                                 </tr>
                                 <tr>
                                     <th>
-                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="White blood cells/mm&sup3;" />
+                                        <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
                                     </th>
                                     <td>
                                         {
-                                            currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
+                                            currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
+                                    </th>
+                                    <td>
+                                        {
+                                            currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
                                         }
                                     </td>
                                 </tr>
@@ -266,37 +253,40 @@ class PatientTestComponent extends React.Component {
                                         }
                                     </td>
                                 </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_trypanosome" defaultMessage="Trypanosome" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_trypanosome ? currentCase.test_pl_trypanosome : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
-                                        }
-                                    </td>
-                                </tr>
                             </Fragment>
+                        }
+                        {
+                            test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
+                            <tr>
+                                <th>
+                                    <FormattedMessage id="main.label.video" defaultMessage="Video" />
+                                </th>
+                                <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
+                                    {
+                                        !test.video_filename && !test.video &&
+                                        <span>
+                                            <i className="fa fa-video-camera small-padding-right" />
+                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
+                                        </span>
+                                    }
+                                    {
+                                        test.video_filename && !test.video &&
+                                        <span>
+                                            <i className="fa fa-upload small-padding-right" />
+                                            <FormattedMessage id="main.label..notUploadedFem" defaultMessage="Non transmise" />
+                                        </span>
+                                    }
+                                    {
+                                        test.video &&
+                                        <VideoComponent videoItem={
+                                            {
+                                                video: test.video,
+                                            }
+                                        }
+                                        />
+                                    }
+                                </td>
+                            </tr>
                         }
                         <tr>
                             <th>

@@ -68,7 +68,7 @@ class CasesViewSet(viewsets.ViewSet):
         years = request.GET.get("years", None)
         teams = request.GET.get("teams", None)
         anonymous_request = request.GET.get("anonymous", None)
-
+        stage = request.GET.get("stage", None)
         coordination_ids = request.GET.get("coordination_id", None)
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
@@ -131,6 +131,9 @@ class CasesViewSet(viewsets.ViewSet):
                 CaseView.objects.filter(normalized_village__isnull=False)
                 .order_by(*orders)
             )
+
+        if stage is not None:
+            queryset = CaseView.objects.filter(test_pl_result=stage)
 
         if located != 'all' and is_locator != 'true':
             queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup").exclude(province__icontains="kas").exclude(province__icontains="kinsh").exclude(province__icontains="bas").exclude(province__icontains="maniema").exclude(province__icontains="k.").exclude(province__icontains="equateur")

@@ -34,6 +34,7 @@ const filtersCases = (formatMessage, devices) => (
         confirmationResult(formatMessage),
         source(formatMessage),
         device(devices),
+        stade(formatMessage),
     ]
 );
 

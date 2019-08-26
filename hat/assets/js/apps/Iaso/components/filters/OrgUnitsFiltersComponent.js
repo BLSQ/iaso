@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+
 
 import { withStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
@@ -20,72 +23,110 @@ import {
 } from '../../constants/orgUnitsFilters';
 
 import FiltersComponent from './FiltersComponent';
+import { createUrl } from '../../../../utils/fetchData';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    whiteContainer: {
+        ...commonStyles(theme).whiteContainer,
+        padding: theme.spacing(4),
+    },
 });
 
-function OrgUnitsFiltersComponent(props) {
-    const {
-        params,
-        classes,
-        baseUrl,
-        intl: {
-            formatMessage,
-        },
-        onSearch,
-        orgUnitTypes,
-        sourceTypes,
-    } = props;
-    return (
-        <Container maxWidth={false} className={classes.whiteContainer}>
-            <Grid container spacing={4}>
-                <Grid item xs={4}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        filters={[
-                            search(),
-                            source(formatMessage, sourceTypes),
-                        ]}
-                        onEnterPressed={onSearch}
-                    />
+class OrgUnitsFiltersComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            filtersUpdated: false,
+        };
+    }
+
+    onFilterChanged() {
+        console.log('onFilterChanged');
+        this.setState({
+            filtersUpdated: true,
+        });
+    }
+
+    onSearch() {
+        console.log('this.state.filtersUpdated', this.state.filtersUpdated);
+        if (this.state.filtersUpdated) {
+            this.setState({
+                filtersUpdated: false,
+            });
+            const tempParams = {
+                ...this.props.params,
+            };
+            tempParams.page = 1;
+            this.props.redirectTo(this.props.baseUrl, tempParams);
+        }
+        this.props.onSearch();
+    }
+
+    render() {
+        const {
+            params,
+            classes,
+            baseUrl,
+            intl: {
+                formatMessage,
+            },
+            orgUnitTypes,
+            sourceTypes,
+        } = this.props;
+        return (
+            <Container maxWidth={false} className={classes.whiteContainer}>
+                <Grid container spacing={4}>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                search(),
+                                source(formatMessage, sourceTypes),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                location(formatMessage),
+                                shape(formatMessage),
+                            ]}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                status(formatMessage),
+                                orgUnitType(formatMessage, orgUnitTypes),
+                            ]}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={4}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        filters={[
-                            location(formatMessage),
-                            shape(formatMessage),
-                        ]}
-                    />
+                <Grid container spacing={1} justify="flex-end" alignItems="center">
+                    <Grid item xs={2} container justify="flex-end" alignItems="center">
+                        <Button
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => this.onSearch()}
+                        >
+                            <FormattedMessage id="iaso.search" defaultMessage="Search" />
+                        </Button>
+                    </Grid>
                 </Grid>
-                <Grid item xs={4}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        filters={[
-                            status(formatMessage),
-                            orgUnitType(formatMessage, orgUnitTypes),
-                        ]}
-                    />
-                </Grid>
-            </Grid>
-            <Grid container spacing={1} justify="flex-end" alignItems="center">
-                <Grid item xs={2} container justify="flex-end" alignItems="center">
-                    <Button
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={onSearch}
-                    >
-                        <FormattedMessage id="iaso.search" defaultMessage="Search" />
-                    </Button>
-                </Grid>
-            </Grid>
-        </Container>
-    );
+            </Container>
+        );
+    }
 }
 OrgUnitsFiltersComponent.defaultProps = {
     baseUrl: '',
@@ -99,6 +140,14 @@ OrgUnitsFiltersComponent.propTypes = {
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(injectIntl(OrgUnitsFiltersComponent));
+const MapStateToProps = () => ({});
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));

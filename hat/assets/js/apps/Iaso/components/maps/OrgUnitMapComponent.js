@@ -130,7 +130,7 @@ class OrgUnitMapComponent extends Component {
 
 
     componentWillReceiveProps(newProps) {
-        if (!isEqual(newProps.orgUnit.geo_json && this.props.orgUnit.geo_json)) {
+        if (!isEqual(newProps.orgUnit.geo_json, this.props.orgUnit.geo_json)) {
             this.mapGeoJson(newProps.orgUnit.geo_json);
         }
     }

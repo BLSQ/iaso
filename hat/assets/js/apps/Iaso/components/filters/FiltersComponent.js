@@ -8,11 +8,6 @@ import { createUrl } from '../../../../utils/fetchData';
 import InputComponent from '../forms/InputComponent';
 
 class FiltersComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
     onChange(urlKey, value, callback) {
         if (callback) {
             callback(value);
@@ -26,6 +21,7 @@ class FiltersComponent extends React.Component {
                 ...params,
             };
             newParams[urlKey] = value;
+            this.props.onFilterChanged();
             redirectTo(baseUrl, newParams);
         }
     }
@@ -53,6 +49,7 @@ class FiltersComponent extends React.Component {
             return null;
         });
 
+        this.props.onFilterChanged();
         redirectTo(baseUrl, newParams);
     }
 
@@ -70,6 +67,7 @@ class FiltersComponent extends React.Component {
         } else if (newParams[urlKey]) {
             delete newParams[urlKey];
         }
+        this.props.onFilterChanged();
         redirectTo(baseUrl, newParams);
     }
 
@@ -149,6 +147,7 @@ class FiltersComponent extends React.Component {
 FiltersComponent.defaultProps = {
     baseUrl: '',
     onEnterPressed: () => null,
+    onFilterChanged: () => null,
 };
 
 FiltersComponent.propTypes = {
@@ -157,6 +156,7 @@ FiltersComponent.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     baseUrl: PropTypes.string,
     onEnterPressed: PropTypes.func,
+    onFilterChanged: PropTypes.func,
 };
 
 const MapStateToProps = () => ({});

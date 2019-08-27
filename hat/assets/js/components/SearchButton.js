@@ -4,9 +4,10 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 
 class SearchButton extends Component {
     render() {
-        const { onSearch } = this.props;
+        const { onSearch, children } = this.props;
         return (
             <div className="widget__content align-right no-padding-top">
+                {children}
                 <button
                     onClick={() => onSearch()}
                     className="button--save--tiny"
@@ -22,8 +23,13 @@ class SearchButton extends Component {
     }
 }
 
+SearchButton.defaultProps = {
+    children: null,
+};
+
 SearchButton.propTypes = {
     onSearch: PropTypes.func.isRequired,
+    children: PropTypes.object,
 };
 
 export default injectIntl(SearchButton);

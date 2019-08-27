@@ -60,6 +60,7 @@ class ZS(models.Model):
     simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -68,7 +69,22 @@ class ZS(models.Model):
         verbose_name_plural = "ZS"
 
     def as_dict(self):
-        return {"id": self.id, "name": self.name, "province_id": self.province_id}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "province_id": self.province_id,
+        }
+
+    def as_full_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "province_id": self.province_id,
+            "province__name": self.province.name,
+            "aliases": self.aliases,
+            "source": self.source,
+            "has_shape": False if self.simplified_geom is None else True,
+        }
 
 
 class AS(models.Model):
@@ -84,6 +100,7 @@ class AS(models.Model):
     simplified_geom = PolygonField(srid=4326, null=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True)
     geom_ref = models.IntegerField(null=True)
+    is_erased = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "AS"
@@ -99,6 +116,19 @@ class AS(models.Model):
             "zs_name": self.ZS.name,
             "province_id": self.ZS.province_id,
             "province_name": self.ZS.province.name,
+        }
+
+    def as_full_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "ZS_id": self.ZS_id,
+            "ZS__name": self.ZS.name,
+            "ZS__province_id": self.ZS.province_id,
+            "ZS__province_id": self.ZS.province.name,
+            "aliases": self.aliases,
+            "source": self.source,
+            "has_shape": False if self.simplified_geom is None else True,
         }
 
 

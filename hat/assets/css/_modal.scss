@@ -182,6 +182,14 @@
         }
         .map-container {
             width: 560px;
+            &.full {
+                width: 100%;
+            }
+        }
+        &.small {
+            >div {
+                flex-basis: 25%;
+            }
         }
     }
 }
@@ -241,6 +249,11 @@
 
 .edit-modal {
     width: 445px;
+    .display-flex {
+        .array-field-container {
+            width: 338px;
+        }
+    }
     .rt-table {
         max-height: 400px;
     }

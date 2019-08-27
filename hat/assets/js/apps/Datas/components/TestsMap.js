@@ -11,7 +11,6 @@ import ReactResizeDetector from 'react-resize-detector';
 import L from 'leaflet';
 
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
-import { deepEqual } from '../../../utils';
 
 import {
     updateBaseLayer,

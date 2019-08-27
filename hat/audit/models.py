@@ -8,6 +8,8 @@ import json
 
 CASE_API = "case_api"
 VILLAGE_API = "village_api"
+ZONE_API = "zone_api"
+AREA_API = "area_api"
 PROFILE_API = "profile_api"
 PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"

@@ -18,6 +18,9 @@ import ManagementUsersPage from './pages/ManagementUsers';
 import ManagementVillagesPage from './pages/ManagementVillages';
 import ManagementLogs from './pages/ManagementLogs';
 import ManagementLogsDetails from './pages/ManagementLogsDetails';
+import ManagementZonesPage from './pages/ManagementZones';
+import ManagementAreasPage from './pages/ManagementAreas';
+
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
@@ -25,6 +28,8 @@ import { planningsReducer, planningsInitialState } from './redux/plannings';
 import { detailsReducer, detailsInitialState } from './redux/details';
 import { userReducer, usersInitialState } from './redux/users';
 import { villageReducer, villagesInitialState } from './redux/villages';
+import { zoneReducer, zonesInitialState } from './redux/zones';
+import { areaReducer, areasInitialState } from './redux/areas';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { devicesReducer, devicesInitialState } from './redux/devices';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
@@ -82,6 +87,14 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             path="/logs/detail/log_id/:log_id/order/:order/pageSize/:pageSize/page/:page(/search/:search)(/date_from/:date_from)(/userId/:userId)(/date_to/:date_to)"
             component={ManagementLogsDetails}
         />,
+        <Route
+            path="/zones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/shapes/:shapes)"
+            component={ManagementZonesPage}
+        />,
+        <Route
+            path="/areas(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/shapes/:shapes)"
+            component={ManagementAreasPage}
+        />,
         <Redirect path="/logs" to={defaultLogsTests} />,
     ];
 
@@ -99,6 +112,8 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         map: mapInitialState,
         details: detailsInitialState,
         users: usersInitialState,
+        zones: zonesInitialState,
+        areas: areasInitialState,
         villages: villagesInitialState,
         geoFilters: filtersInitialState,
         geoFiltersModale: filtersInitialState,
@@ -115,6 +130,8 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         map: mapReducer,
         details: detailsReducer,
         users: userReducer,
+        zones: zoneReducer,
+        areas: areaReducer,
         villages: villageReducer,
         geoFilters: filtersReducer,
         geoFiltersModale: filtersReducer,

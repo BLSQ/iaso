@@ -63,6 +63,8 @@ if settings.FLAVOR == "trypelim":
             views.log_detail,
             name="log_detail",
         ),
+        url(r'^management/zones.*$', views.zones_management, name='management_zone'),
+        url(r'^management/areas.*$', views.areas_management, name='management_area'),
         url(r"^locator/list.*$", views.locator, name="locator_list"),
         url(r"^locator/case.*$", views.locator, name="locator"),
         url(r"^vector/map.*$", views.vector, name="vector"),

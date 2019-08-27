@@ -146,6 +146,6 @@ export default {
     extendVillageInfo,
     villagesInHighlightBuffer,
     zoomDelta: 0.50,
-    zoomSnap: 0.50,
+    zoomSnap: 0.1,
     getShape,
 };

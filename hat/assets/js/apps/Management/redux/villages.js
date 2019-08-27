@@ -6,9 +6,6 @@ export const SET_VILLAGES = 'hat/management/villages/SET_VILLAGES';
 export const VILLAGE_UPDATED = 'hat/management/villages/VILLAGE_UPDATED';
 export const SELECT_VILLAGE = 'hat/management/villages/SELECT_VILLAGE';
 export const UPDATE_CURRENT_VILLAGE = 'hat/management/villages/UPDATE_CURRENT_VILLAGE';
-export const SET_GEO_PROVINCES = 'hat/management/villages/SET_GEO_PROVINCES';
-export const SET_GEO_ZONES = 'hat/management/villages/SET_GEO_ZONES';
-export const SET_GEO_AREAS = 'hat/management/villages/SET_GEO_AREAS';
 
 const req = require('superagent');
 
@@ -31,23 +28,6 @@ export const updateCurrentVillage = payload => ({
 
 export const selectVillage = payload => ({
     type: SELECT_VILLAGE,
-    payload,
-});
-
-export const setGeoProvinces = payload => ({
-    type: SET_GEO_PROVINCES,
-    payload,
-});
-
-
-export const setGeoZones = payload => ({
-    type: SET_GEO_ZONES,
-    payload,
-});
-
-
-export const setGeoAreas = payload => ({
-    type: SET_GEO_AREAS,
     payload,
 });
 
@@ -77,7 +57,7 @@ export const createVillage = (dispatch, village) => {
         .send(village)
         .then((res) => {
             dispatch(villageUpdated(true));
-            dispatch(selectVillage(res.body));
+            // dispatch(selectVillage(res.body));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -115,39 +95,6 @@ export const deleteVillage = (dispatch, village) => {
 };
 
 
-export const fetchGeoDatas = (dispatch) => {
-    req
-        .get('/api/provinces/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoProvinces(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    req
-        .get('/api/zs/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoZones(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    req
-        .get('/api/as/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoAreas(res.body));
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
 export const villagesInitialState = {
     isUpdated: false,
     list: [],
@@ -165,7 +112,6 @@ export const villageActions = {
     createVillage,
     selectVillage,
     updateCurrentVillage,
-    fetchGeoDatas,
 };
 
 
@@ -212,30 +158,6 @@ export const villageReducer = (state = villagesInitialState, action = {}) => {
             return {
                 ...state,
                 current,
-            };
-        }
-
-        case SET_GEO_PROVINCES: {
-            const geoProvinces = action.payload;
-            return {
-                ...state,
-                geoProvinces,
-            };
-        }
-
-        case SET_GEO_ZONES: {
-            const geoZones = action.payload;
-            return {
-                ...state,
-                geoZones,
-            };
-        }
-
-        case SET_GEO_AREAS: {
-            const geoAreas = action.payload;
-            return {
-                ...state,
-                geoAreas,
             };
         }
 

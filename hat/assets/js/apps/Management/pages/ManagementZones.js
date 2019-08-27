@@ -2,41 +2,39 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
-import VillageModaleComponent from '../components/VillageModaleComponent';
+import ZoneModaleComponent from '../components/ZoneModaleComponent';
 import DeleteModaleComponent from '../components/DeleteModaleComponent';
-import villagesTableColumns from '../constants/villagesTableColumns';
-import { villageActions } from '../redux/villages';
-import { mapActions } from '../redux/mapReducer';
-import { filterActions } from '../../../redux/filtersRedux';
+import ShapeModaleComponent from '../components/ShapeModaleComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
-import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
 
-const newItem = {
-    id: 0,
-    name: '',
-    latitude: 0,
-    longitude: 0,
-    aliases: [],
-};
+import zonesTableColumns from '../constants/zonesTableColumns';
+import { filtersSearch, filtersGeo, filtersShapes } from '../constants/zonesFilters';
 
-const baseUrl = 'villages';
+import { zoneActions } from '../redux/zones';
+import { filterActions } from '../../../redux/filtersRedux';
+import { currentUserActions } from '../../../redux/currentUserReducer';
+import { mapActions } from '../redux/mapReducer';
 
-class ManagementVillages extends React.Component {
+import { userHasPermission } from '../../../utils';
+import { createUrl } from '../../../utils/fetchData';
+
+
+const baseUrl = 'zones';
+
+class ManagementZones extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
         this.state = {
-            tableColumns: villagesTableColumns(formatMessage, this),
+            tableColumns: [],
             showEditModale: false,
             showDeleteModale: false,
+            showEditShape: false,
             dataDeleted: undefined,
             tableUrl: null,
         };
@@ -46,33 +44,31 @@ class ManagementVillages extends React.Component {
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchGeoDatas(),
-            this.props.fetchVillageSource(),
             this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id);
-            }
-            if (this.props.params.zs_id) {
-                this.props.selectZone(this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
-            }
-            if (this.props.params.as_id) {
-                this.props.selectArea(this.props.params.as_id, this.props.params.village_id, this.props.params.zs_id);
             }
         });
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            showEditModale: nextProps.selectedVillage !== null,
+            showEditModale: nextProps.selectedZone !== null,
         });
+        const { intl: { formatMessage }, permissions, currentUser } = nextProps;
+        if (nextProps.currentUser.id &&
+            permissions.length > 0 &&
+            this.state.tableColumns.length === 0) {
+            const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_zones');
+            const userCanEditShape = userHasPermission(permissions, currentUser, 'x_management_edit_shape_zones');
+
+            this.setState({
+                tableColumns: zonesTableColumns(formatMessage, this, userCanEditOrDelete, userCanEditShape),
+            });
+        }
         if (nextProps.params.province_id !== this.props.params.province_id) {
             this.props.selectProvince(nextProps.params.province_id);
-        }
-        if (nextProps.params.zs_id !== this.props.params.zs_id) {
-            this.props.selectZone(nextProps.params.zs_id, nextProps.params.as_id, nextProps.params.village_id);
-        }
-        if (nextProps.params.as_id !== this.props.params.as_id) {
-            this.props.selectArea(nextProps.params.as_id, nextProps.params.village_id, nextProps.params.zs_id);
         }
     }
 
@@ -91,21 +87,14 @@ class ManagementVillages extends React.Component {
     }
 
     getEndpointUrl(toExport = false, exportType = 'csv') {
-        let newEndPointUrl = '/api/villages/?';
+        let newEndPointUrl = '/api/zs/?';
         const {
             params,
         } = this.props;
         const urlParams = {
-            include_unlocated: true,
-            unlocated: params.unlocated,
-            types: params.village_official ? params.village_official : 'all',
             province_id: params.province_id,
-            zs_id: params.zs_id,
-            as_id: params.as_id,
             search: params.search,
-            population: params.population,
-            results: params.results,
-            village_source: params.village_source,
+            shapes: params.shapes,
             as_list: true,
         };
 
@@ -134,9 +123,9 @@ class ManagementVillages extends React.Component {
     saveData(newData) {
         const { dispatch } = this.props;
         if (newData.id === 0) {
-            dispatch(villageActions.createVillage(dispatch, newData));
+            dispatch(zoneActions.createZone(dispatch, newData));
         } else {
-            dispatch(villageActions.updateVillage(dispatch, newData));
+            dispatch(zoneActions.updateZone(dispatch, newData));
         }
     }
 
@@ -146,51 +135,71 @@ class ManagementVillages extends React.Component {
             showDeleteModale: false,
             dataDeleted: undefined,
         });
-        dispatch(villageActions.deleteVillage(dispatch, element));
+        dispatch(zoneActions.deleteZone(dispatch, element));
+    }
+
+    editShape(zone) {
+        this.setState({
+            showEditShape: true,
+        });
+        this.props.fetchZoneDetail(zone.id);
+    }
+
+    closeShapeModal() {
+        this.setState({
+            showEditShape: false,
+        });
+        this.props.resetShapeItem();
     }
 
     render() {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
-            updateCurrentVillage,
-            selectedVillage,
+            updateCurrentZone,
+            selectedZone,
             isUpdated,
             load,
-            selectVillage,
+            selectZone,
+            selectedShapeItem,
             geoProvinces,
             geoFilters: {
                 provinces,
-                zones,
-                areas,
-                villageSources,
             },
         } = this.props;
-        const filters1 = filtersZone1(formatMessage, defineMessages, villageSources);
-        const filters2 = filtersZone2(formatMessage, defineMessages);
         const geo = filtersGeo(
             provinces || [],
-            zones || [],
-            areas || [],
             this.props,
             baseUrl,
         );
-        const search = filtersSearch(formatMessage, defineMessages, this);
+        const search = filtersSearch(this);
+        const shapes = filtersShapes(formatMessage);
         return (
             <section>
                 {
                     this.state.showEditModale &&
-                    <VillageModaleComponent
+                    <ZoneModaleComponent
                         showModale={this.state.showEditModale}
-                        closeModal={() => selectVillage(null)}
-                        village={selectedVillage}
-                        saveVillage={newVillage => this.saveData(newVillage)}
-                        updateCurrentVillage={village => updateCurrentVillage(village)}
+                        closeModal={() => selectZone(null)}
+                        zone={selectedZone}
+                        saveZone={newZone => this.saveData(newZone)}
+                        updateCurrentZone={zone => updateCurrentZone(zone)}
                         isUpdated={isUpdated}
                         error={load.error}
                         params={this.props.params}
                         geoProvinces={geoProvinces}
-                        villageSources={villageSources}
+                    />
+                }
+                {
+                    this.state.showEditShape &&
+                    selectedShapeItem &&
+                    <ShapeModaleComponent
+                        showModale={this.state.showEditShape}
+                        closeModal={() => this.closeShapeModal()}
+                        item={selectedShapeItem}
+                        saveShape={newZone => this.saveData(newZone)}
+                        isUpdated={isUpdated}
+                        error={load.error}
                     />
                 }
                 {
@@ -207,15 +216,15 @@ class ManagementVillages extends React.Component {
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
-                                id="main.label.villages"
-                                defaultMessage="Villages"
+                                id="main.label.zones"
+                                defaultMessage="Health zones"
                             />
                         </h2>
 
                     </div>
                 </div>
                 <div className="widget__container ">
-                    <div className="widget__content--quarter">
+                    <div className="widget__content--tier">
                         <div>
                             <FiltersComponent
                                 params={this.props.params}
@@ -234,26 +243,11 @@ class ManagementVillages extends React.Component {
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={filters1}
-                            />
-                        </div>
-                        <div>
-                            <FiltersComponent
-                                params={this.props.params}
-                                baseUrl={baseUrl}
-                                filters={filters2}
+                                filters={shapes}
                             />
                         </div>
                     </div>
-                    <SearchButton onSearch={() => this.onSearch()} >
-                        <button
-                            className="button--save--tiny margin-right"
-                            onClick={() => this.props.selectVillage(newItem)}
-                        >
-                            <i className="fa fa-plus" />
-                            <FormattedMessage id="main.label.new" defaultMessage="Nouveau" />
-                        </button>
-                    </SearchButton>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container management-control">
                     {
@@ -279,8 +273,8 @@ class ManagementVillages extends React.Component {
                                 params={this.props.params}
                                 defaultPath={baseUrl}
                                 dataKey={baseUrl}
-                                onDataLoaded={villages => (this.props.setVillages(villages))}
-                                onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
+                                onDataLoaded={zonesList => (this.props.setZones(zonesList))}
+                                onDataUpdated={isDataUpdated => (this.props.zoneUpdated(isDataUpdated))}
                                 isUpdated={isUpdated}
                                 canSelect={false}
                             />
@@ -289,13 +283,6 @@ class ManagementVillages extends React.Component {
                                     csvUrl={this.getEndpointUrl(true, 'csv')}
                                     xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                                 />
-                                <button
-                                    className="button--add"
-                                    onClick={() => this.props.selectVillage(newItem)}
-                                >
-                                    <i className="fa fa-plus" />
-                                    <FormattedMessage id="main.label.new" defaultMessage="New" />
-                                </button>
                             </div>
                         </section>
                     }
@@ -304,58 +291,63 @@ class ManagementVillages extends React.Component {
     }
 }
 
-ManagementVillages.defaultProps = {
-    selectedVillage: null,
+ManagementZones.defaultProps = {
+    selectedZone: null,
+    selectedShapeItem: null,
 };
 
-ManagementVillages.propTypes = {
+ManagementZones.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    setVillages: PropTypes.func.isRequired,
-    villageUpdated: PropTypes.func.isRequired,
-    updateCurrentVillage: PropTypes.func.isRequired,
-    selectVillage: PropTypes.func.isRequired,
+    setZones: PropTypes.func.isRequired,
+    zoneUpdated: PropTypes.func.isRequired,
+    updateCurrentZone: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    selectedShapeItem: PropTypes.object,
     isUpdated: PropTypes.bool.isRequired,
-    selectedVillage: PropTypes.object,
+    selectedZone: PropTypes.object,
     fetchProvinces: PropTypes.func.isRequired,
     fetchGeoDatas: PropTypes.func.isRequired,
     geoFilters: PropTypes.object.isRequired,
     geoProvinces: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
-    selectZone: PropTypes.func.isRequired,
-    selectArea: PropTypes.func.isRequired,
-    fetchVillageSource: PropTypes.func.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    permissions: PropTypes.array.isRequired,
+    fetchZoneDetail: PropTypes.func.isRequired,
+    resetShapeItem: PropTypes.func.isRequired,
 };
 
-const ManagementVillagesIntl = injectIntl(ManagementVillages);
+const ManagementZonesIntl = injectIntl(ManagementZones);
 
 const MapStateToProps = state => ({
     load: state.load,
-    isUpdated: state.villages.isUpdated,
-    selectedVillage: state.villages.current,
+    isUpdated: state.zones.isUpdated,
+    selectedZone: state.zones.current,
+    selectedShapeItem: state.zones.selectedShapeItem,
     geoFilters: state.geoFilters,
     geoProvinces: state.map.geoProvinces,
+    currentUser: state.currentUser.user,
+    permissions: state.currentUser.permissions,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setVillages: villages => dispatch(villageActions.setVillages(villages)),
-    villageUpdated: isUpdated => dispatch(villageActions.villageUpdated(isUpdated)),
-    updateCurrentVillage: villageId => dispatch(villageActions.updateCurrentVillage(villageId)),
-    selectVillage: village => dispatch(villageActions.selectVillage(village)),
+    setZones: zones => dispatch(zoneActions.setZones(zones)),
+    zoneUpdated: isUpdated => dispatch(zoneActions.zoneUpdated(isUpdated)),
+    updateCurrentZone: zoneId => dispatch(zoneActions.updateCurrentZone(zoneId)),
+    selectZone: zone => dispatch(zoneActions.selectZone(zone)),
+    fetchZoneDetail: zoneId => dispatch(zoneActions.fetchZoneDetail(dispatch, zoneId)),
+    resetShapeItem: () => dispatch(zoneActions.resetShapeItem()),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId, villageId)),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId, villageId)),
-    fetchVillageSource: () => dispatch(filterActions.fetchVillageSource(dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(ManagementZonesIntl);
 

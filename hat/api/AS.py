@@ -1,18 +1,26 @@
+from copy import copy
+
+from django.contrib.gis.geos import Polygon
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.db.models import Count
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
+from django.core.paginator import Paginator
 from hat.geo.geojson import geojson_queryset
 from hat.geo.models import AS
 from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
 from hat.users.models import Team
-from hat.users.models import get_user_geo_list
+from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
+from django.db.models.expressions import RawSQL
+from django.http import StreamingHttpResponse, HttpResponse
+from .export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, AREA_API
 
 
 class ASViewSet(viewsets.ViewSet):
@@ -33,13 +41,42 @@ class ASViewSet(viewsets.ViewSet):
         'menupermissions.x_locator'
     ]
 
-    @cache_control(max_age=24*60*60, public=True)
+    # @cache_control(max_age=24*60*60, public=True)
     def list(self, request):
         zs_ids = request.GET.get("zs_id", None)
         as_geo_json = request.GET.get("geojson", None)
         years = request.GET.get("years", None)
 
+        as_list = request.GET.get("as_list", False)
+        orders = request.GET.get("order", "name").split(",")
+        page_offset = request.GET.get("page", None)
+        limit = request.GET.get("limit", None)
+        search = request.GET.get("search", None)
+        province_ids = request.GET.get("province_id", None)
+        zone_ids = request.GET.get("zone_id", None)
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+        is_erased = request.GET.get("is_erased", False)
+        shapes = request.GET.get("shapes", None)
+
         queryset = AS.objects.all()
+
+        queryset = queryset.filter(is_erased=is_erased)
+        if search:
+            aliases_query = RawSQL("select count(*) from unnest(""geo_as"".aliases) it where it ilike %s",
+                                   (f"%{search}%",))
+            queryset = queryset.annotate(alias_match=aliases_query)
+            queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
+
+        if shapes == "with":
+            queryset = queryset.filter(simplified_geom__isnull=False)
+        if shapes == "without":
+            queryset = queryset.filter(simplified_geom__isnull=True)
+        if province_ids:
+            queryset = queryset.filter(ZS__province_id__in=province_ids.split(','))
+        if zone_ids:
+            queryset = queryset.filter(ZS_id__in=zone_ids.split(','))
+
         if request.user.profile.province_scope.count() != 0:
             queryset = queryset.filter(ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
         if request.user.profile.ZS_scope.count() != 0:
@@ -63,7 +100,80 @@ class ASViewSet(viewsets.ViewSet):
             geo_json = geojson_queryset(queryset, geometry_field='geo_as.simplified_geom', fields=['name', 'ZS'])
 
             return Response(geo_json)
-        else:
+        elif as_list:
+            if page_offset:
+                page_offset = int(page_offset)
+                queryset = queryset.order_by(*orders)
+                values = (
+                    'name',
+                    'id',
+                    "ZS_id",
+                    "ZS__name",
+                    "ZS__province_id",
+                    "ZS__province__name",
+                    "aliases",
+                    "source",
+                )
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
+                res["areas"] = map(lambda x: x.as_full_dict(), page.object_list)
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+            return Response(res)
+        elif csv_format or xlsx_format:
+                if (
+                    request.user.has_perm("menupermissions.x_anonymous")
+                    or not request.user.has_perm("menupermissions.x_datas_download")
+                ) and not request.user.is_superuser:
+                    return Response("Unauthorized", status=401)
+                filename = "aires"
+                columns = [
+                    {"title": "Identifiant"},
+                    {"title": "Nom"},
+                    {"title": "Province"},
+                    {"title": "Zone"},
+                    {"title": "Alias"},
+                    {"title": "Source"},
+                ]
+
+                def get_row(area, **kwargs):
+                    aliases = "/"
+                    if area.aliases:
+                        aliases = ', '.join(area.aliases)
+                    return [
+                        area.id,
+                        area.name,
+                        area.ZS.province.name,
+                        area.ZS.name,
+                        aliases,
+                        area.source,
+                    ]
+
+                if xlsx_format:
+                    filename = filename + ".xlsx"
+                    response = HttpResponse(
+                        generate_xlsx("Villages", columns, queryset, get_row),
+                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    )
+                if csv_format:
+                    filename = filename + ".csv"
+                    response = StreamingHttpResponse(
+                        streaming_content=(
+                            iter_items(queryset, Echo(), columns, get_row)
+                        ),
+                        content_type="text/csv",
+                    )
+
+                response["Content-Disposition"] = "attachment; filename=%s" % filename
+                response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+                return response
+        else :
             return Response(queryset.values(*values).order_by('name'))
 
     def retrieve(self, request, pk=None):
@@ -81,9 +191,12 @@ class ASViewSet(viewsets.ViewSet):
                 is_authorized = True
             if aire.id in user_as_ids:
                 is_authorized = True
-
+        res = aire.as_full_dict()
+        if aire.simplified_geom:
+            queryset = AS.objects.all().filter(id=aire.id)
+            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
         if is_authorized:
-            return Response(aire.as_dict())
+            return Response(res)
         else:
             return Response('Unauthorized', status=401)
 
@@ -125,7 +238,31 @@ class ASViewSet(viewsets.ViewSet):
 
         return Response(area.as_dict())
 
+    def partial_update(self, request, pk=None):
+        area = get_object_or_404(AS, id=pk)
+        is_authorized = is_authorized_user(
+            request.user, area.ZS.province.id, area.ZS.id, area.id
+        ) and (request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser)
+        if is_authorized:
+            original_area = copy(area)
+            area.name = request.data.get("name", "")
+            area.source = request.data.get("source", None)
+            area.aliases = request.data.get("aliases", "")
+            area.is_erased = request.data.get("is_erased", False)
+            geo_json = request.data.get("geo_json", None)
+            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if len(geo_json["geometry"]["coordinates"]) == 1:
+                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response("Only one polygon should be saved in the geo_json shape",
+                                    status=status.HTTP_400_BAD_REQUEST)
 
+            area.save()
+            log_modification(original_area, area, AREA_API, request.user)
+            return Response(area.as_dict())
+        else:
+            return Response("Unauthorized", status=401)
 
 
 

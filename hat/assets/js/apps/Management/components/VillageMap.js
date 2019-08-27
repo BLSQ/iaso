@@ -168,11 +168,11 @@ class VillageMap extends Component {
         this.asGroup.on('click', (event) => {
             const { village } = this.state;
             if (event.sourceTarget.feature.properties.ZS && village.latitude === 0 && village.longitude === 0) {
-                const zone = geoJson.zs.features.filter(z => parseInt(z.properties.pk, 10) === event.sourceTarget.feature.properties.ZS)[0];
+                const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
                 this.props.updateVillageLocation({
-                    AS__ZS_id: zone.properties.pk,
+                    AS__ZS_id: zone.id,
                     AS__ZS__province_id: `${zone.properties.province}`,
-                    AS_id: event.sourceTarget.feature.properties.pk,
+                    AS_id: event.sourceTarget.feature.id,
                 });
             }
             if (village.latitude === 0 && village.longitude === 0) {

@@ -204,7 +204,7 @@ class VillageModale extends Component {
                     {
                         this.state.error &&
                         <div className="align-right text--error">
-                            <FormattedMessage id="main.label.erro" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
                         </div>
                     }
                     <div className="align-right">

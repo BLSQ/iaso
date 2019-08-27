@@ -1,9 +1,10 @@
 import json
 from copy import copy
 
+from django.contrib.gis.geos import Polygon
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_control
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -193,10 +194,13 @@ class ZSViewSet(viewsets.ViewSet):
             zone.aliases = request.data.get("aliases", "")
             zone.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
-            if geo_json:
-                # zone.simplified_geom = geo_json
-                print("TO-DO save geojson to polygonfield")
-
+            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if len(geo_json["geometry"]["coordinates"]) == 1:
+                    zone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response("Only one polygon should be saved in the geo_json shape",
+                                    status=status.HTTP_400_BAD_REQUEST)
 
             zone.save()
             log_modification(original_zone, zone, ZONE_API, request.user)

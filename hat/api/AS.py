@@ -1,10 +1,11 @@
 from copy import copy
 
+from django.contrib.gis.geos import Polygon
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.db.models import Count
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
@@ -249,10 +250,13 @@ class ASViewSet(viewsets.ViewSet):
             area.aliases = request.data.get("aliases", "")
             area.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
-            if geo_json:
-                # area.simplified_geom = geo_json
-                print("TO-DO save geojson to polygonfield")
-
+            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if len(geo_json["geometry"]["coordinates"]) == 1:
+                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response("Only one polygon should be saved in the geo_json shape",
+                                    status=status.HTTP_400_BAD_REQUEST)
 
             area.save()
             log_modification(original_area, area, AREA_API, request.user)

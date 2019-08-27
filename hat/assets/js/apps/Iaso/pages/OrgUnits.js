@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
+import Paper from '@material-ui/core/Paper';
 
 import PropTypes from 'prop-types';
 import {
@@ -29,18 +29,6 @@ const baseUrl = 'orgunits';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    filterContainer: {
-        margin: theme.spacing(4),
-        backgroundColor: 'white',
-        padding: theme.spacing(2),
-        width: 'auto',
-        border: '1px solid #ccc',
-    },
-    container: {
-        ...commonStyles(theme).container,
-        marginTop: theme.spacing(2),
-        marginBottom: theme.spacing(4),
-    },
     buttonIcon: {
         marginRight: theme.spacing(1),
         width: 15,
@@ -126,23 +114,23 @@ class OrgUnits extends Component {
             tableColumns,
         } = this.state;
         return (
-            <section>
+            <Fragment>
                 <TopBar title={formatMessage({
                     defaultMessage: 'Org units',
                     id: 'iaso.orgUnits.title',
                 })}
                 />
-                <OrgUnitsFiltersComponent
-                    baseUrl={baseUrl}
-                    params={params}
-                    onSearch={() => this.onSearch()}
-                    orgUnitTypes={orgUnitTypes}
-                    sourceTypes={sourceTypes}
-                />
-                {
-                    tableUrl && (
-                        <Fragment>
-                            <Container maxWidth={false} className={classes.container}>
+                <Paper className={classes.paperContainer}>
+                    <OrgUnitsFiltersComponent
+                        baseUrl={baseUrl}
+                        params={params}
+                        onSearch={() => this.onSearch()}
+                        orgUnitTypes={orgUnitTypes}
+                        sourceTypes={sourceTypes}
+                    />
+                    {
+                        tableUrl && (
+                            <div className={classes.marginTopBig}>
                                 <CustomTableComponent
                                     isSortable
                                     pageSize={50}
@@ -158,12 +146,11 @@ class OrgUnits extends Component {
                                     onDataLoaded={(orgUnitsList, count, pages) => this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages)}
                                     reduxPage={reduxPage}
                                 />
-                            </Container>
-                        </Fragment>
-
-                    )
-                }
-            </section>
+                            </div>
+                        )
+                    }
+                </Paper>
+            </Fragment>
         );
     }
 }

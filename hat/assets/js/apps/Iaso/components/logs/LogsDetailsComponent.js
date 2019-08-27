@@ -3,14 +3,15 @@ import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
+import { withStyles, Container, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
 import LoadingSpinner from '../LoadingSpinnerComponent';
 import LogCompareComponent from '../../../Management/components/LogCompareComponent';
+
+import getDisplayName from '../../utils/usersUtils';
+
 import commonStyles from '../../styles/common';
 
 import {
@@ -20,10 +21,9 @@ import {
 
 const styles = theme => ({
     ...commonStyles(theme),
-    container: {
-        ...commonStyles(theme).container,
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(4),
+    root: {
+        paddingBottom: theme.spacing(4),
+        paddingTop: theme.spacing(4),
     },
 });
 
@@ -66,7 +66,7 @@ class LogsDetails extends Component {
         const { log, loading } = this.state;
         const isDuplicateLog = log && log.past_value[0] && log.past_value[0].model === 'patient.patientduplicatespair';
         return (
-            <Container maxWidth={false} className={classes.container}>
+            <Container maxWidth={false} className={classes.root}>
                 {
                     loading && (
                         <LoadingSpinner message={formatMessage({
@@ -102,11 +102,7 @@ class LogsDetails extends Component {
                                                 </th>
                                                 <td>
                                                     {log.user.userName}
-                                                    {
-                                                        (log.user.firstName || log.user.lastName) && (
-                                                            ` - ${log.user.firstName ? `${log.user.firstName} ` : ''}${log.user.lastName}`
-                                                        )
-                                                    }
+                                                    {getDisplayName(log.user)}
                                                 </td>
                                             </tr>
                                             <tr>

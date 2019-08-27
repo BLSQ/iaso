@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -7,9 +7,9 @@ import { push } from 'react-router-redux';
 
 
 import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import Search from '@material-ui/icons/Search';
 
 import commonStyles from '../../styles/common';
 
@@ -27,10 +27,6 @@ import { createUrl } from '../../../../utils/fetchData';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    whiteContainer: {
-        ...commonStyles(theme).whiteContainer,
-        padding: theme.spacing(4),
-    },
 });
 
 class OrgUnitsFiltersComponent extends Component {
@@ -42,14 +38,12 @@ class OrgUnitsFiltersComponent extends Component {
     }
 
     onFilterChanged() {
-        console.log('onFilterChanged');
         this.setState({
             filtersUpdated: true,
         });
     }
 
     onSearch() {
-        console.log('this.state.filtersUpdated', this.state.filtersUpdated);
         if (this.state.filtersUpdated) {
             this.setState({
                 filtersUpdated: false,
@@ -75,7 +69,7 @@ class OrgUnitsFiltersComponent extends Component {
             sourceTypes,
         } = this.props;
         return (
-            <Container maxWidth={false} className={classes.whiteContainer}>
+            <Fragment>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
                         <FiltersComponent
@@ -112,7 +106,7 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                     </Grid>
                 </Grid>
-                <Grid container spacing={1} justify="flex-end" alignItems="center">
+                <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
                         <Button
                             variant="contained"
@@ -120,11 +114,12 @@ class OrgUnitsFiltersComponent extends Component {
                             color="primary"
                             onClick={() => this.onSearch()}
                         >
+                            <Search className={classes.buttonIcon} />
                             <FormattedMessage id="iaso.search" defaultMessage="Search" />
                         </Button>
                     </Grid>
                 </Grid>
-            </Container>
+            </Fragment>
         );
     }
 }

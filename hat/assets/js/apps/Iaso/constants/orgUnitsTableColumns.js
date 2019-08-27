@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
-import Button from '@material-ui/core/Button';
+import { IconButton, Tooltip } from '@material-ui/core';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import Map from '@material-ui/icons/Map';
 
@@ -72,40 +72,35 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Action',
-                id: 'iaso.orgUnits.actions',
-            }),
             resizable: false,
-            width: 250,
-            accessor: 'instances_count',
+            sortable: false,
+            width: 150,
             Cell: settings => (
                 <section>
                     {
                         (settings.original.has_geo_json
                             || (settings.original.latitude && settings.original.longitude))
                         && (
-                            <Button
-                                className={component.props.classes.tableButton}
-                                size="small"
-                                variant="contained"
-                                color="primary"
-                                onClick={() => component.selectOrgUnit(settings.original, true)}
-                            >
-                                <Map className={component.props.classes.buttonIcon} fontSize="small" />
-                                <FormattedMessage id="iaso.label.map" defaultMessage="Map" />
-                            </Button>
+
+                            <Tooltip title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}>
+                                <IconButton
+                                    color="primary"
+                                    onClick={() => component.selectOrgUnit(settings.original, true)}
+                                >
+                                    <Map />
+                                </IconButton>
+                            </Tooltip>
                         )
                     }
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => component.selectOrgUnit(settings.original)}
-                    >
-                        <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
-                        <FormattedMessage id="iaso.orgUnits.details" defaultMessage="Details" />
-                    </Button>
+
+                    <Tooltip title={<FormattedMessage id="iaso.orgUnits.details" defaultMessage="Details" />}>
+                        <IconButton
+                            color="primary"
+                            onClick={() => component.selectOrgUnit(settings.original)}
+                        >
+                            <RemoveRedEye />
+                        </IconButton>
+                    </Tooltip>
                 </section>
             ),
         },

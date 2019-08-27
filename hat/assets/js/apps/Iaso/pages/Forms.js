@@ -4,7 +4,8 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
+import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
 
@@ -25,10 +26,6 @@ const baseUrl = 'forms';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    container: {
-        ...commonStyles(theme).container,
-        marginTop: theme.spacing(2),
-    },
 });
 
 class Forms extends Component {
@@ -93,7 +90,7 @@ class Forms extends Component {
                     id: 'iaso.forms.title',
                 })}
                 />
-                <Container maxWidth={false} className={classes.whiteContainer}>
+                <Paper className={classes.paperContainer}>
                     <PeriodSelectorComponent
                         dateFrom={params.date_from}
                         dateTo={params.date_to}
@@ -103,31 +100,33 @@ class Forms extends Component {
                             date_to: dateTo,
                         })}
                     />
-                </Container>
-                <Container maxWidth={false} className={classes.container}>
-                    <CustomTableComponent
-                        isSortable
-                        pageSize={50}
-                        showPagination
-                        endPointUrl={`/api/forms/?date_from=${params.date_from}&date_to=${params.date_to}&all=true`}
-                        columns={this.state.tableColumns}
-                        defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                        params={params}
-                        defaultPath={baseUrl}
-                        dataKey="forms"
-                        canSelect={false}
-                        multiSort
-                        onDataLoaded={(newFormsList, count, pages) => this.props.setForms(newFormsList, true, params, count, pages)}
-                        reduxPage={reduxPage}
-                    />
-                </Container>
-                {reduxPage.list
-                    && (
-                        <DownloadButtonsComponent
-                            csvUrl={this.getExportUrl('csv')}
-                            xlsxUrl={this.getExportUrl('xlsx')}
+                    <div className={classes.marginTopBig}>
+                        <CustomTableComponent
+                            isSortable
+                            pageSize={50}
+                            showPagination
+                            endPointUrl={`/api/forms/?date_from=${params.date_from}&date_to=${params.date_to}&all=true`}
+                            columns={this.state.tableColumns}
+                            defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            dataKey="forms"
+                            canSelect={false}
+                            multiSort
+                            onDataLoaded={(newFormsList, count, pages) => this.props.setForms(newFormsList, true, params, count, pages)}
+                            reduxPage={reduxPage}
                         />
-                    )}
+                    </div>
+                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        {reduxPage.list
+                            && (
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getExportUrl('csv')}
+                                    xlsxUrl={this.getExportUrl('xlsx')}
+                                />
+                            )}
+                    </Grid>
+                </Paper>
             </section>
         );
     }

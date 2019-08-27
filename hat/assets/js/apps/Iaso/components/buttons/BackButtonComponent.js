@@ -21,10 +21,11 @@ function BackButton(props) {
     } = props;
     return (
         <Button
+            variant="contained"
             color="primary"
             onClick={goBack}
         >
-            <ArrowBackIcon className={classes.backButton} />
+            <ArrowBackIcon className={classes.buttonIcon} />
             <FormattedMessage
                 id="iaso.orgUnits.back"
                 defaultMessage="Back"

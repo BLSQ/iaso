@@ -1,20 +1,12 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import PropTypes from 'prop-types';
 
-import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core';
 import SaveAlt from '@material-ui/icons/SaveAlt';
-import commonStyles from '../../styles/common';
 
 const styles = theme => ({
-    container: {
-        ...commonStyles(theme).container,
-        textAlign: 'right',
-        marginBottom: theme.spacing(4),
-        marginTop: theme.spacing(2),
-    },
     button: {
         marginLeft: theme.spacing(2),
         '& svg, & i': {
@@ -31,7 +23,7 @@ function DownloadButtonsComponent(props) {
     } = props;
 
     return (
-        <Container maxWidth={false} className={classes.container}>
+        <Fragment>
             <Button
                 variant="contained"
                 className={classes.button}
@@ -54,7 +46,7 @@ function DownloadButtonsComponent(props) {
                 <i className="fa fa-file-excel-o" />
                 XLSX
             </Button>
-        </Container>
+        </Fragment>
     );
 }
 

@@ -9,10 +9,15 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
-import { withStyles, IconButton } from '@material-ui/core';
+import { withStyles, IconButton, ListItemIcon } from '@material-ui/core';
+
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
+import EditLocation from '@material-ui/icons/EditLocation';
 
 import PropTypes from 'prop-types';
+
+import logoUrl from '../../images/iaso-logo.svg';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
@@ -20,7 +25,7 @@ const SIDEBAR_WIDTH = 250;
 
 const styles = theme => ({
     logo: {
-        height: '40px',
+        height: 35,
         width: 'auto',
     },
     toolbar: {
@@ -28,8 +33,9 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
+        height: 90,
     },
     menuButton: {
         marginLeft: 'auto',
@@ -65,7 +71,7 @@ class SidebarMenu extends PureComponent {
                 onClose={toggleSidebar}
             >
                 <div className={classes.toolbar}>
-                    <img src={`${STATIC_URL}images/iaso-dark-logo.png`} className={classes.logo} alt="logo" />
+                    <img src={logoUrl} className={classes.logo} alt="logo" />
                     <IconButton
                         className={classes.menuButton}
                         color="inherit"
@@ -78,6 +84,9 @@ class SidebarMenu extends PureComponent {
                 <Divider />
                 <List className={classes.list}>
                     <ListItem button onClick={() => this.onClick('forms')}>
+                        <ListItemIcon>
+                            <DataSourceIcon />
+                        </ListItemIcon>
                         <ListItemText primary={formatMessage({
                             defaultMessage: 'Forms',
                             id: 'iaso.forms.title',
@@ -85,6 +94,9 @@ class SidebarMenu extends PureComponent {
                         />
                     </ListItem>
                     <ListItem button onClick={() => this.onClick('orgunits')}>
+                        <ListItemIcon>
+                            <EditLocation />
+                        </ListItemIcon>
                         <ListItemText primary={formatMessage({
                             defaultMessage: 'Org units',
                             id: 'iaso.orgUnits.title',

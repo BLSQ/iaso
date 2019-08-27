@@ -2,12 +2,13 @@ import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
-import { withStyles, IconButton } from '@material-ui/core';
+import { withStyles, IconButton, Tooltip } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
+
 import MenuIcon from '@material-ui/icons/Menu';
+import ExitIcon from '@material-ui/icons/ExitToApp';
 
 import PropTypes from 'prop-types';
 
@@ -25,11 +26,11 @@ const styles = theme => ({
 
 function TopBar(props) {
     const {
-        classes, title, toggleSidebar,
+        classes, title, toggleSidebar, children,
     } = props;
     return (
         <Fragment>
-            <AppBar position="static" color="default">
+            <AppBar position="relative" color="primary">
                 <Toolbar>
                     <IconButton
                         className={classes.menuButton}
@@ -43,19 +44,32 @@ function TopBar(props) {
                         {title}
                     </Typography>
 
-                    <Button variant="contained" href="/logout-iaso" className={classes.button} color="primary">
-                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
-                    </Button>
+                    <Tooltip title={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}>
+                        <IconButton
+                            className={classes.button}
+                            color="inherit"
+                            href="/logout-iaso"
+                            aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                        >
+                            <ExitIcon />
+                        </IconButton>
+                    </Tooltip>
                 </Toolbar>
+                {children}
             </AppBar>
         </Fragment>
     );
 }
 
+TopBar.defaultProps = {
+    children: null,
+};
+
 TopBar.propTypes = {
     classes: PropTypes.object.isRequired,
     title: PropTypes.string.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
+    children: PropTypes.any,
 };
 
 const MapDispatchToProps = dispatch => ({

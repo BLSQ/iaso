@@ -29,6 +29,7 @@ $fa-font-path: "~font-awesome/fonts";
 @import "quality-control";
 @import "images";
 @import "videos";
+@import "iaso";
 @import "customTable";
 @import "vector";
 @import "leafletCluster";
@@ -49,7 +50,6 @@ $fa-font-path: "~font-awesome/fonts";
 @import "dynamicLegend";
 @import "radioComponent";
 @import "manualDuplicates";
-@import "iaso";
 
 
 body {

@@ -1,7 +1,86 @@
 body {
+    &.trypelim {
+        .ReactTable {
+            .rt-thead .rt-th.-sort-asc,
+            .rt-thead .rt-td.-sort-asc,
+            .rt-thead .rt-th.-sort-desc,
+            .rt-thead .rt-td.-sort-desc {
+                box-shadow: none;
+                display: inline-block;
+                font-weight: bold;
+                border-left: 1px solid $gray;
+
+                &:before {
+                    font: normal normal normal 14px/1 FontAwesome;
+                    font-size: inherit;
+                    text-rendering: auto;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    content: "\f063";
+                    color: $blue;
+                    position: absolute;
+                    left: 10px;
+                    top: 14px;
+                }
+            }
+
+            .rt-thead .rt-th.-sort-desc,
+            .rt-thead .rt-td.-sort-desc {
+                &:before {
+                    content: "\f062";
+                }
+            }
+
+            .rt-resizer {
+                right: 0;
+                display: inline-block;
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: inherit;
+                text-rendering: auto;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                border-left: 1px solid $gray;
+                width: 17px;
+
+                &:before {
+                    color: $blue;
+                    content: "\f07e";
+                    position: relative;
+                    top: 14px;
+                }
+            }
+
+            .rt-thead.-header {
+                .rt-th {
+                    font-size: 12px;
+                    padding-top: 12px;
+
+                    &.rt-resizable-header-content {
+                        margin-left: -28%;
+                    }
+                }
+
+                .rt-resizable-header-content {
+                    padding-right: 40px;
+                    padding-left: 20px;
+                }
+            }
+        }
+    }
+
     .ReactTable {
         // min-height: 130px;
         border: 1px solid $gray;
+
+        .rt-thead .rt-th.-sort-asc,
+        .rt-thead .rt-td.-sort-asc{
+            box-shadow: inset 0 3px 0 0 $primary-color;
+        }
+
+        .rt-thead .rt-th.-sort-desc,
+        .rt-thead .rt-td.-sort-desc {
+            box-shadow: inset 0 -3px 0 0 $primary-color;
+        }
 
         &.no-border {
             border: none;
@@ -59,55 +138,6 @@ body {
             box-sizing: border-box;
         }
 
-        .rt-thead .rt-th.-sort-asc,
-        .rt-thead .rt-td.-sort-asc,
-        .rt-thead .rt-th.-sort-desc,
-        .rt-thead .rt-td.-sort-desc {
-            box-shadow: none;
-            display: inline-block;
-            font-weight: bold;
-            border-left: 1px solid $gray;
-
-            &:before {
-                font: normal normal normal 14px/1 FontAwesome;
-                font-size: inherit;
-                text-rendering: auto;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-                content: "\f063";
-                color: $blue;
-                position: absolute;
-                left: 10px;
-                top: 14px;
-            }
-        }
-
-        .rt-thead .rt-th.-sort-desc,
-        .rt-thead .rt-td.-sort-desc {
-            &:before {
-                content: "\f062";
-            }
-        }
-
-        .rt-resizer {
-            right: 0;
-            display: inline-block;
-            font: normal normal normal 14px/1 FontAwesome;
-            font-size: inherit;
-            text-rendering: auto;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            border-left: 1px solid $gray;
-            width: 17px;
-
-            &:before {
-                color: $blue;
-                content: "\f07e";
-                position: relative;
-                top: 14px;
-            }
-        }
-
         .rt-thead.-filters {
             .rt-th {
                 height: 50px;
@@ -163,15 +193,6 @@ body {
             .rt-th {
                 font-size: 12px;
                 padding-top: 12px;
-
-                &.rt-resizable-header-content {
-                    margin-left: -28%;
-                }
-            }
-
-            .rt-resizable-header-content {
-                padding-right: 40px;
-                padding-left: 20px;
             }
         }
 
@@ -253,6 +274,7 @@ body {
                     background-color: white;
                 }
             }
+
             th {
                 &.small {
                     padding: 4px;

@@ -1,13 +1,13 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
 import Tabs from '@material-ui/core/Tabs';
-import AppBar from '@material-ui/core/AppBar';
+import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
 
 import PropTypes from 'prop-types';
 
@@ -37,6 +37,10 @@ const baseUrl = 'instances';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    paperContainer: {
+        ...commonStyles(theme).paperContainer,
+        marginTop: 0,
+    },
 });
 
 
@@ -182,77 +186,79 @@ class Instances extends Component {
                         defaultMessage: 'Record(s) for the form',
                         id: 'iaso.instance.form',
                     })}: ${currentForm ? currentForm.name : ''}`}
-                />
+                >
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                            indicator: classes.indicator,
+                        }}
+                        onChange={(event, newtab) => this.handleChangeTab(newtab)
+                        }
+                    >
+                        <Tab
+                            value="list"
+                            label={formatMessage({
+                                defaultMessage: 'List',
+                                id: 'iaso.instande.list',
+                            })}
+                        />
+                        <Tab
+                            value="map"
+                            label={formatMessage({
+                                defaultMessage: 'Map',
+                                id: 'iaso.instande.map',
+                            })}
+                        />
+                    </Tabs>
+                </TopBar>
                 {
                     fetching
                     && <LoadingSpinner />
                 }
                 {!fetching
                     && (
-                        <Fragment>
-                            <Container maxWidth={false} className={classes.whiteContainer}>
-                                <BackButton goBack={() => this.goBack()} />
-                            </Container>
-                            <Container maxWidth={false} className={classes.container}>
-                                {
-                                    <AppBar position="static">
-                                        <Tabs
-                                            value={tab}
-                                            classes={{
-                                                indicator: classes.indicator,
-                                            }}
-                                            onChange={(event, newtab) => this.handleChangeTab(newtab)
-                                            }
-                                        >
-                                            <Tab
-                                                value="list"
-                                                label={formatMessage({
-                                                    defaultMessage: 'List',
-                                                    id: 'iaso.instande.list',
-                                                })}
-                                            />
-                                            <Tab
-                                                value="map"
-                                                label={formatMessage({
-                                                    defaultMessage: 'Map',
-                                                    id: 'iaso.instande.map',
-                                                })}
-                                            />
-                                        </Tabs>
-                                    </AppBar>
-                                }
-                                {
-                                    tab === 'list' && (
-                                        <CustomTableComponent
-                                            isSortable
-                                            pageSize={50}
-                                            showPagination
-                                            columns={this.state.tableColumns}
-                                            defaultSorted={[{ id: 'updated_at', desc: false }]}
-                                            params={params}
-                                            defaultPath={baseUrl}
-                                            dataKey="instances"
-                                            multiSort={false}
-                                            fetchDatas={false}
-                                            canSelect={false}
-                                            reduxPage={reduxPage}
-                                        />
-                                    )
-                                }
-                                {
-                                    tab === 'map' && (
-                                        <InstancesMap instances={instancesLocations} />
-                                    )
-                                }
-                            </Container>
-                            {tab === 'list'
-                                && (
-                                    <DownloadButtonsComponent
-                                        csvUrl={this.getEndpointUrl(true, 'csv')}
-                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        <Paper className={classes.paperContainer}>
+                            {
+                                tab === 'list' && (
+                                    <CustomTableComponent
+                                        isSortable
+                                        pageSize={50}
+                                        showPagination
+                                        columns={this.state.tableColumns}
+                                        defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                        params={params}
+                                        defaultPath={baseUrl}
+                                        dataKey="instances"
+                                        multiSort={false}
+                                        fetchDatas={false}
+                                        canSelect={false}
+                                        reduxPage={reduxPage}
                                     />
-                                )}
-                        </Fragment>
+                                )
+                            }
+                            {
+                                tab === 'map' && (
+                                    <InstancesMap instances={instancesLocations} />
+                                )
+                            }
+                            <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+
+                                <Grid xs={6} container justify="flex-start">
+                                    <BackButton goBack={() => this.goBack()} />
+                                </Grid>
+
+                                <Grid xs={6} container justify="flex-end">
+                                    {tab === 'list'
+                                        && (
+                                            <DownloadButtonsComponent
+                                                csvUrl={this.getEndpointUrl(true, 'csv')}
+                                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                            />
+                                        )}
+                                </Grid>
+                            </Grid>
+                        </Paper>
                     )
                 }
             </section>

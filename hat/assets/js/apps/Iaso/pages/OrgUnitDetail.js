@@ -4,10 +4,11 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
+import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import AppBar from '@material-ui/core/AppBar';
+import Grid from '@material-ui/core/Grid';
+
 import Button from '@material-ui/core/Button';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
@@ -39,10 +40,9 @@ const baseUrl = 'orgunits/detail';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    whiteContainerNoMargin: {
-        ...commonStyles(theme).whiteContainerNoMargin,
-        paddingLeft: theme.spacing(4),
-        paddingRight: theme.spacing(4),
+    paperContainer: {
+        ...commonStyles(theme).paperContainer,
+        marginTop: 0,
     },
 });
 
@@ -177,108 +177,116 @@ class OrgUnitDetail extends Component {
             orgUnitModified,
         } = this.state;
         return (
-            <section className="orgunit detail">
+            <Fragment>
                 <TopBar
                     title={this.props.currentOrgUnit ? this.props.currentOrgUnit.name : ''}
-                />
+                >
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                            indicator: classes.indicator,
+                        }}
+                        onChange={(event, newtab) => this.handleChangeTab(newtab)
+                        }
+                    >
+                        <Tab
+                            value="infos"
+                            label={formatMessage({
+                                defaultMessage: 'Infos',
+                                id: 'iaso.orgUnits.infos',
+                            })}
+                        />
+                        <Tab
+                            value="map"
+                            label={formatMessage({
+                                defaultMessage: 'Map',
+                                id: 'iaso.orgUnits.map',
+                            })}
+                        />
+                        <Tab
+                            value="history"
+                            label={formatMessage({
+                                defaultMessage: 'History',
+                                id: 'iaso.label.history',
+                            })}
+                        />
+                    </Tabs>
+                </TopBar>
                 {!fetching
                     && currentOrgUnit
                     && (
-                        <Fragment>
-                            <Container maxWidth={false} className={classes.whiteContainer}>
-                                <BackButton goBack={() => this.goBack()} />
-                                <div className={classes.floatRight}>
-                                    <Button
-                                        disabled={!orgUnitModified}
-                                        variant="contained"
-                                        onClick={() => this.resetOrgUnit()}
-                                    >
-                                        <Cancel className={classes.buttonIcon} fontSize="small" />
-                                        <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
-                                    </Button>
-                                    <Button
-                                        disabled={!orgUnitModified}
-                                        variant="contained"
-                                        className={classes.marginLeft}
-                                        color="primary"
-                                        onClick={() => this.saveOrgUnit(currentOrgUnit)}
-                                    >
-                                        <Save className={classes.buttonIcon} fontSize="small" />
-                                        <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
-                                    </Button>
-                                </div>
-                            </Container>
-                            <Container maxWidth={false} className={classes.container}>
-                                <AppBar position="static">
-                                    <Tabs
-                                        value={tab}
-                                        classes={{
-                                            indicator: classes.indicator,
-                                        }}
-                                        onChange={(event, newtab) => this.handleChangeTab(newtab)
+                        <section>
+                            <Paper className={classes.paperContainer}>
+                                {
+                                    tab === 'infos' && (
+                                        <OrgUnitInfos
+                                            orgUnitModified={orgUnitModified}
+                                            orgUnit={currentOrgUnit}
+                                            orgUnitTypes={orgUnitTypes}
+                                            sourceTypes={sourceTypes}
+                                            onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
+                                        />
+                                    )
+                                }
+                                {
+                                    tab === 'map' && (
+                                        <OrgUnitMap
+                                            orgUnit={currentOrgUnit}
+                                            onChangeLocation={(location) => {
+                                                this.handleChangeInfo('latitude', parseFloat(location.lat.toFixed(8)));
+                                                this.handleChangeInfo('longitude', parseFloat(location.lng.toFixed(8)));
+                                            }}
+                                            onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                        />
+                                    )
+                                }
+                                {
+                                    tab === 'history' && (
+                                        <Logs
+                                            params={params}
+                                            logObjectId={currentOrgUnit.id}
+                                        />
+                                    )
+                                }
+                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+
+                                    <Grid xs={6} container justify="flex-start">
+                                        <BackButton goBack={() => this.goBack()} />
+                                    </Grid>
+                                    <Grid xs={6} container justify="flex-end">
+                                        {
+                                            tab !== 'history' && (
+                                                <Fragment>
+                                                    <Button
+                                                        className={classes.marginLeft}
+                                                        disabled={!orgUnitModified}
+                                                        variant="contained"
+                                                        onClick={() => this.resetOrgUnit()}
+                                                    >
+                                                        <Cancel className={classes.buttonIcon} fontSize="small" />
+                                                        <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                                                    </Button>
+                                                    <Button
+                                                        disabled={!orgUnitModified}
+                                                        variant="contained"
+                                                        className={classes.marginLeft}
+                                                        color="primary"
+                                                        onClick={() => this.saveOrgUnit(currentOrgUnit)}
+                                                    >
+                                                        <Save className={classes.buttonIcon} fontSize="small" />
+                                                        <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
+                                                    </Button>
+                                                </Fragment>
+                                            )
                                         }
-                                    >
-                                        <Tab
-                                            value="infos"
-                                            label={formatMessage({
-                                                defaultMessage: 'Infos',
-                                                id: 'iaso.orgUnits.infos',
-                                            })}
-                                        />
-                                        <Tab
-                                            value="map"
-                                            label={formatMessage({
-                                                defaultMessage: 'Map',
-                                                id: 'iaso.orgUnits.map',
-                                            })}
-                                        />
-                                        <Tab
-                                            value="history"
-                                            label={formatMessage({
-                                                defaultMessage: 'History',
-                                                id: 'iaso.label.history',
-                                            })}
-                                        />
-                                    </Tabs>
-                                </AppBar>
-                                <Container maxWidth={false} className={classes.whiteContainerNoMargin}>
-                                    {
-                                        tab === 'infos' && (
-                                            <OrgUnitInfos
-                                                orgUnitModified={orgUnitModified}
-                                                orgUnit={currentOrgUnit}
-                                                orgUnitTypes={orgUnitTypes}
-                                                sourceTypes={sourceTypes}
-                                                onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
-                                            />
-                                        )
-                                    }
-                                    {
-                                        tab === 'map' && (
-                                            <OrgUnitMap
-                                                orgUnit={currentOrgUnit}
-                                                onChangeLocation={(location) => {
-                                                    this.handleChangeInfo('latitude', parseFloat(location.lat.toFixed(8)));
-                                                    this.handleChangeInfo('longitude', parseFloat(location.lng.toFixed(8)));
-                                                }}
-                                                onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
-                                            />
-                                        )
-                                    }
-                                    {
-                                        tab === 'history' && (
-                                            <Logs
-                                                params={params}
-                                                logObjectId={currentOrgUnit.id}
-                                            />
-                                        )
-                                    }
-                                </Container>
-                            </Container>
-                        </Fragment>
+                                    </Grid>
+                                </Grid>
+                            </Paper>
+                        </section>
                     )
                 }
-            </section>
+            </Fragment>
         );
     }
 }

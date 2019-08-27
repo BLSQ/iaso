@@ -66,7 +66,7 @@ class Logs extends Component {
                         <div className="widget__container  no-border">
                             <CustomTableComponent
                                 disableHeaderFixed
-                                pageSize={50}
+                                pageSize={10}
                                 isSortable
                                 showPagination
                                 endPointUrl={tableUrl}

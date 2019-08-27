@@ -46,10 +46,6 @@ const shapeOptions = () => ({
 
 const styles = theme => ({
     ...commonStyles(theme),
-    mapContainer: {
-        height: '70vh',
-        marginBottom: theme.spacing(2),
-    },
     button: {
         width: '100%',
         marginBottom: theme.spacing(2),

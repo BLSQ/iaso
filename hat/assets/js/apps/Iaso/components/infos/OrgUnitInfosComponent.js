@@ -22,18 +22,11 @@ function OrgUnitInfosComponent(props) {
     } = props;
     return (
         <Grid container spacing={4}>
-            <Grid item xs={1} />
-            <Grid item xs={5}>
+            <Grid item xs={4}>
                 <InputComponent
                     keyValue="name"
                     onChange={onChangeInfo}
                     value={orgUnit.name}
-                />
-                <InputComponent
-                    keyValue="aliases"
-                    onChange={onChangeInfo}
-                    value={orgUnit.aliases}
-                    type="arrayInput"
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
@@ -47,6 +40,14 @@ function OrgUnitInfosComponent(props) {
                         }))
                     }
                 />
+                <InputComponent
+                    keyValue="aliases"
+                    onChange={onChangeInfo}
+                    value={orgUnit.aliases}
+                    type="arrayInput"
+                />
+            </Grid>
+            <Grid item xs={4}>
                 <InputComponent
                     keyValue="source"
                     onChange={onChangeInfo}
@@ -79,7 +80,7 @@ function OrgUnitInfosComponent(props) {
                     }
                 />
             </Grid>
-            <Grid item xs={5}>
+            <Grid item xs={4}>
                 <InputComponent
                     keyValue="source_ref"
                     value={orgUnit.source_ref}
@@ -96,7 +97,6 @@ function OrgUnitInfosComponent(props) {
                     disabled
                 />
             </Grid>
-            <Grid item xs={1} />
         </Grid>
     );
 }

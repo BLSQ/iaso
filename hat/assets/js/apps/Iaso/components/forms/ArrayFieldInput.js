@@ -50,7 +50,8 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
     input: {
-        width: '100%',
+        width: '95%',
+        marginLeft: '5%',
     },
     deleteIcon: {
         position: 'absolute',
@@ -104,7 +105,7 @@ class ArrayFieldInput extends Component {
         } = this.state;
         const addFieldButtonDisabled = fieldList.length > 0 && fieldList[fieldList.length - 1].value === '';
         return (
-            <Grid container spacing={0}>
+            <Grid container spacing={0} className={classes.marginTop}>
                 <Grid item xs={1}>
                     <span className={classes.label}>
                         {label}

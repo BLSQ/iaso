@@ -3,11 +3,9 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Grid from '@material-ui/core/Grid';
+import {
+    withStyles, Divider, Paper, Tabs, Tab, Grid,
+} from '@material-ui/core';
 
 import Button from '@material-ui/core/Button';
 import Save from '@material-ui/icons/Save';
@@ -148,7 +146,7 @@ class OrgUnitDetail extends Component {
             aliases: getAliasesArrayFromString(orgUnitRevision.fields.aliases),
             id: orgUnitRevision.pk,
         };
-        saveOrgUnit(this.props.dispatch, mappedRevision).then(
+        return saveOrgUnit(this.props.dispatch, mappedRevision).then(
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,
@@ -270,7 +268,8 @@ class OrgUnitDetail extends Component {
                                         />
                                     )
                                 }
-                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+                                <Divider className={classes.dividerMarginNeg} />
+                                <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
 
                                     <Grid xs={6} item className={classes.textAlignLeft}>
                                         <BackButton goBack={() => this.goBack()} />

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
 import {
-    withStyles, Container, Grid, Button, Divider,
+    withStyles, Container, Grid, Divider,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -22,6 +22,7 @@ import {
 const styles = theme => ({
     ...commonStyles(theme),
     root: {
+        cursor: 'default',
         paddingBottom: theme.spacing(4),
         paddingTop: theme.spacing(4),
     },
@@ -77,7 +78,6 @@ class LogsDetails extends Component {
                             />
                         )
                     }
-
                     {
                         log && (
                             <Fragment>
@@ -87,49 +87,18 @@ class LogsDetails extends Component {
                                     && (
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
-                                                <h4 className="margin-bottom">
-                                                    <FormattedMessage
-                                                        id="main.label.before"
-                                                        defaultMessage="Before"
-                                                    />
-
-                                                    <Button
-                                                        className={classes.floatRight}
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        onClick={() => goToRevision(log.past_value[0])}
-                                                    >
-                                                        <FormattedMessage
-                                                            id="iaso.logs.goToRevision"
-                                                            defaultMessage="Reset to this revision"
-                                                        />
-                                                    </Button>
-
-                                                </h4>
-                                                {<LogCompareComponent log={log.past_value} compareLog={log.new_value} />}
+                                                <LogCompareComponent
+                                                    log={log.past_value}
+                                                    compareLog={log.new_value}
+                                                    goToRevision={goToRevision}
+                                                />
                                             </Grid>
                                             <Grid item xs={6}>
-                                                <h4 className="margin-bottom">
-                                                    <FormattedMessage
-                                                        id="main.label.after"
-                                                        defaultMessage="After"
-                                                    />
-
-                                                    <Button
-                                                        className={classes.floatRight}
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        onClick={() => goToRevision(log.new_value[0])}
-                                                    >
-                                                        <FormattedMessage
-                                                            id="iaso.logs.goToRevision"
-                                                            defaultMessage="Reset to this revision"
-                                                        />
-                                                    </Button>
-                                                </h4>
-                                                {<LogCompareComponent log={log.new_value} compareLog={log.past_value} />}
+                                                <LogCompareComponent
+                                                    log={log.new_value}
+                                                    compareLog={log.past_value}
+                                                    goToRevision={goToRevision}
+                                                />
                                             </Grid>
                                         </Grid>
                                     )

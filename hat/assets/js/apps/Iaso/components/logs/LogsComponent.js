@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
+import { withStyles} from '@material-ui/core';
+
 import PropTypes from 'prop-types';
 
 import CustomTableComponent from '../../../../components/CustomTableComponent';
@@ -9,6 +11,11 @@ import LoadingSpinner from '../LoadingSpinnerComponent';
 
 import orgUnitsLogsColumns from '../../constants/orgUnitsLogsColumns';
 import LogsDetails from './LogsDetailsComponent';
+import commonStyles from '../../styles/common';
+
+const styles = theme => ({
+    ...commonStyles(theme),
+});
 
 const baseUrl = 'orgunits/detail';
 
@@ -42,16 +49,27 @@ class Logs extends Component {
         return url;
     }
 
+    goToRevision(revision) {
+        this.props.goToRevision(revision).then(() => {
+            this.setState({
+                tableUrl: null,
+            });
+            this.setState({
+                tableUrl: this.getEndpointUrl(),
+            });
+        });
+    }
+
     render() {
         const {
             intl: { formatMessage },
             load,
             params,
-            goToRevision,
+            classes,
         } = this.props;
         const { tableUrl, tableColumns } = this.state;
         return (
-            <section className="logs-list-container">
+            <section className={classes.marginBottom}>
                 {
                     load.loading && (
                         <LoadingSpinner message={formatMessage({
@@ -64,23 +82,21 @@ class Logs extends Component {
                 {
                     tableUrl
                     && (
-                        <div className="widget__container  no-border">
-                            <CustomTableComponent
-                                disableHeaderFixed
-                                pageSize={10}
-                                isSortable
-                                showPagination
-                                endPointUrl={tableUrl}
-                                columns={tableColumns}
-                                defaultSorted={[{ id: 'created_at', desc: true }]}
-                                params={params}
-                                defaultPath={baseUrl}
-                                dataKey="list"
-                                multiSort
-                                canSelect={false}
-                                SubComponent={({ original }) => (original ?<LogsDetails logId={original.id} goToRevision={goToRevision} /> : null)}
-                            />
-                        </div>
+                        <CustomTableComponent
+                            disableHeaderFixed
+                            pageSize={10}
+                            isSortable
+                            showPagination
+                            endPointUrl={tableUrl}
+                            columns={tableColumns}
+                            defaultSorted={[{ id: 'created_at', desc: true }]}
+                            params={params}
+                            defaultPath={baseUrl}
+                            dataKey="list"
+                            multiSort
+                            canSelect={false}
+                            SubComponent={({ original }) => (original ? <LogsDetails logId={original.id} goToRevision={revision => this.goToRevision(revision)} /> : null)}
+                        />
                     )
                 }
             </section>
@@ -94,6 +110,7 @@ Logs.propTypes = {
     intl: PropTypes.object.isRequired,
     logObjectId: PropTypes.number.isRequired,
     goToRevision: PropTypes.func.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -106,4 +123,4 @@ const MapDispatchToProps = dispatch => ({
 
 const LogsWithIntl = injectIntl(Logs);
 
-export default connect(MapStateToProps, MapDispatchToProps)(LogsWithIntl);
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(LogsWithIntl));

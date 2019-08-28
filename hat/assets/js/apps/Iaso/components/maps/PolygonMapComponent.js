@@ -13,6 +13,7 @@ import tiles from '../../constants/mapTiles';
 const styles = () => ({
     mapContainer: {
         height: 400,
+        minWidth: 400,
     },
 });
 
@@ -28,7 +29,7 @@ class PolygonMap extends Component {
                     style={{ height: '100%' }}
                     center={[0, 0]}
                     bounds={getLatLngBounds(polygonPositions)}
-                    boundsOptions={{ padding: [50, 50] }}
+                    boundsOptions={{ padding: [20, 20] }}
                 >
                     <TileLayer
                         attribution={currentTile.attribution ? currentTile.attribution : ''}

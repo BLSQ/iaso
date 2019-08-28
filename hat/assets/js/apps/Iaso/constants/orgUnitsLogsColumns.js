@@ -3,8 +3,8 @@ import moment from 'moment';
 
 
 import { Tooltip } from '@material-ui/core';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
+import Add from '@material-ui/icons/Add';
+import Remove from '@material-ui/icons/Remove';
 
 const orgUnitsLogsColumns = formatMessage => ([
     {
@@ -39,7 +39,7 @@ const orgUnitsLogsColumns = formatMessage => ([
         Expander: ({ isExpanded }) => (
             isExpanded
                 ? (
-                    <RemoveCircleOutline />
+                    <Remove color="primary" />
                 )
                 : (
                     <Tooltip title={formatMessage({
@@ -47,7 +47,7 @@ const orgUnitsLogsColumns = formatMessage => ([
                         id: 'iaso.label.details',
                     })}
                     >
-                        <AddCircleOutline />
+                        <Add color="primary" />
                     </Tooltip>
                 )
         ),

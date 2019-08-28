@@ -163,6 +163,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
         elif simplified_geom:
             org_unit.simplified_geom = simplified_geom
+        else:
+            org_unit.simplified_geom = None
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
         if latitude and str(latitude) != str(org_unit.latitude):
